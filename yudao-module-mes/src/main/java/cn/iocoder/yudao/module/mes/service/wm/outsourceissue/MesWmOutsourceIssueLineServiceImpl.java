@@ -17,6 +17,7 @@ import cn.iocoder.yudao.module.mes.service.wm.batch.MesWmBatchService;
 import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
@@ -78,6 +79,7 @@ public class MesWmOutsourceIssueLineServiceImpl implements MesWmOutsourceIssueLi
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteOutsourceIssueLine(Long id) {
         // 校验存在
         validateOutsourceIssueLineExists(id);

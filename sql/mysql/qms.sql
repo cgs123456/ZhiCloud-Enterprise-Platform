@@ -76,6 +76,8 @@ CREATE TABLE IF NOT EXISTS qms_capa_document (
     id BIGINT PRIMARY KEY COMMENT '主键',
     capa_no VARCHAR(64) NOT NULL COMMENT 'CAPA 单号',
     source TINYINT NOT NULL COMMENT '来源（10 内部 20 外部 30 客户投诉 40 审核）',
+    priority TINYINT COMMENT '优先级（10 高 20 中 30 低）',
+    stage TINYINT DEFAULT 10 COMMENT '当前阶段（10 已创建 20 根本原因分析 30 纠正措施 40 预防措施 50 有效性验证 60 已关闭）',
     problem TEXT NOT NULL COMMENT '问题描述',
     cause TEXT COMMENT '原因',
     root_cause_analysis TEXT COMMENT '根本原因分析',
@@ -85,6 +87,10 @@ CREATE TABLE IF NOT EXISTS qms_capa_document (
     due_date DATETIME COMMENT '截止日期',
     close_date DATETIME COMMENT '关闭日期',
     status TINYINT DEFAULT 10 COMMENT '状态（10 待处理 20 处理中 30 已关闭）',
+    verification_result TINYINT COMMENT '有效性验证结果（10 待验证 20 通过 30 不通过）',
+    verification_comment TEXT COMMENT '有效性验证意见',
+    verified_by VARCHAR(64) COMMENT '验证人',
+    verified_time DATETIME COMMENT '验证时间',
     remark VARCHAR(500) COMMENT '备注',
     creator VARCHAR(64) COMMENT '创建者',
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -93,3 +99,31 @@ CREATE TABLE IF NOT EXISTS qms_capa_document (
     deleted BIT(1) DEFAULT 0 COMMENT '是否删除',
     tenant_id BIGINT DEFAULT 0 COMMENT '租户 ID'
 ) COMMENT='QMS CAPA 纠正预防措施文档表';
+
+-- ----------------------------
+-- 8D 报告表
+-- ----------------------------
+CREATE TABLE IF NOT EXISTS qms_eight_d_report (
+    id BIGINT PRIMARY KEY COMMENT '主键',
+    report_no VARCHAR(64) NOT NULL COMMENT '8D 报告编号',
+    title VARCHAR(255) COMMENT '标题',
+    ncr_id BIGINT COMMENT '关联 NCR 不合格品报告 ID',
+    capa_id BIGINT COMMENT '关联 CAPA 纠正预防措施 ID',
+    status TINYINT DEFAULT 0 COMMENT '状态（0 草稿 10 D1 成立团队 20 D2 描述问题 30 D3 临时遏制 40 D4 根本原因 50 D5 永久纠正 60 D6 实施验证 70 D7 预防再发 80 D8 关闭）',
+    d1_team_members TEXT COMMENT 'D1 团队成员',
+    d2_problem_description TEXT COMMENT 'D2 问题描述',
+    d3_interim_action TEXT COMMENT 'D3 临时遏制措施',
+    d4_root_cause TEXT COMMENT 'D4 根本原因分析',
+    d5_permanent_action TEXT COMMENT 'D5 永久纠正措施',
+    d6_implementation_result TEXT COMMENT 'D6 实施并验证结果',
+    d7_prevention_action TEXT COMMENT 'D7 预防再发生措施',
+    d8_team_recognition TEXT COMMENT 'D8 团队表彰',
+    close_time DATETIME COMMENT '关闭时间',
+    remark VARCHAR(500) COMMENT '备注',
+    creator VARCHAR(64) COMMENT '创建者',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updater VARCHAR(64) COMMENT '更新者',
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted BIT(1) DEFAULT 0 COMMENT '是否删除',
+    tenant_id BIGINT DEFAULT 0 COMMENT '租户 ID'
+) COMMENT='QMS 8D 报告表';

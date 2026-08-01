@@ -25,9 +25,27 @@ services:
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --default-time-zone=+08:00
     volumes:
       - mysql:/var/lib/mysql/
+      # 初始化脚本按文件名字典序依次执行，序号前缀用于控制顺序：
+      # 0x 核心（system/infra）→ 1x 平台能力（调度 / AI）→ 2x~6x 各业务模块
       - ../../sql/mysql/zhicloud_platform.sql:/docker-entrypoint-initdb.d/01-zhicloud_platform.sql:ro
-      - ../../sql/mysql/qms.sql:/docker-entrypoint-initdb.d/02-qms.sql:ro
-      - ../../sql/mysql/aimultiagent.sql:/docker-entrypoint-initdb.d/03-aimultiagent.sql:ro
+      - ../../sql/mysql/quartz.sql:/docker-entrypoint-initdb.d/10-quartz.sql:ro
+      - ../../sql/mysql/ai_prompt_template.sql:/docker-entrypoint-initdb.d/11-ai_prompt_template.sql:ro
+      - ../../sql/mysql/aimultiagent.sql:/docker-entrypoint-initdb.d/12-aimultiagent.sql:ro
+      - ../../sql/mysql/hr.sql:/docker-entrypoint-initdb.d/20-hr.sql:ro
+      - ../../sql/mysql/erp.sql:/docker-entrypoint-initdb.d/30-erp.sql:ro
+      - ../../sql/mysql/erp_cost.sql:/docker-entrypoint-initdb.d/31-erp_cost.sql:ro
+      - ../../sql/mysql/erp_mps.sql:/docker-entrypoint-initdb.d/32-erp_mps.sql:ro
+      - ../../sql/mysql/erp_tax.sql:/docker-entrypoint-initdb.d/33-erp_tax.sql:ro
+      - ../../sql/mysql/mes.sql:/docker-entrypoint-initdb.d/40-mes.sql:ro
+      - ../../sql/mysql/mes_rework.sql:/docker-entrypoint-initdb.d/41-mes_rework.sql:ro
+      - ../../sql/mysql/mes_tpm.sql:/docker-entrypoint-initdb.d/42-mes_tpm.sql:ro
+      - ../../sql/mysql/qms.sql:/docker-entrypoint-initdb.d/50-qms.sql:ro
+      - ../../sql/mysql/qms_ext.sql:/docker-entrypoint-initdb.d/51-qms_ext.sql:ro
+      - ../../sql/mysql/qms_document_audit.sql:/docker-entrypoint-initdb.d/52-qms_document_audit.sql:ro
+      - ../../sql/mysql/qms_instrument.sql:/docker-entrypoint-initdb.d/53-qms_instrument.sql:ro
+      - ../../sql/mysql/wms.sql:/docker-entrypoint-initdb.d/60-wms.sql:ro
+      - ../../sql/mysql/wms_wave.sql:/docker-entrypoint-initdb.d/61-wms_wave.sql:ro
+      - ../../sql/mysql/wms_zone_location.sql:/docker-entrypoint-initdb.d/62-wms_zone_location.sql:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}"]
       interval: 10s

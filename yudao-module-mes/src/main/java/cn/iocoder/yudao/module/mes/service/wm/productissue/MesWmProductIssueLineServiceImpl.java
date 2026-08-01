@@ -14,6 +14,7 @@ import cn.iocoder.yudao.module.mes.service.pro.workorder.MesProWorkOrderBomServi
 import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
@@ -65,6 +66,7 @@ public class MesWmProductIssueLineServiceImpl implements MesWmProductIssueLineSe
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteProductIssueLine(Long id) {
         // 校验存在
         MesWmProductIssueLineDO line = validateProductIssueLineExists(id);

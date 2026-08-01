@@ -486,11 +486,12 @@ public class ErpFixedAssetServiceImpl implements ErpFixedAssetService {
             return slMonthly.compareTo(remaining) > 0 ? remaining : slMonthly;
         }
 
-        // DDB 月折旧率 = 2 / 使用年限月数
-        BigDecimal monthlyRate = BigDecimal.valueOf(2.0)
-                .divide(BigDecimal.valueOf(usefulLifeMonths), SCALE + 4, RoundingMode.HALF_UP);
-        BigDecimal ddbMonthly = netBookValue.multiply(monthlyRate)
-                .setScale(SCALE, RoundingMode.HALF_UP);
+        // DDB 月折旧额 = 账面净值 × 2 / 使用年限月数
+        // 注意：必须「先乘后除、只舍入一次」。若先把月折旧率 2/n 预舍入成有限小数再相乘，
+        // 会引入可观的精度损失——例如 2/60 预舍入 6 位得 0.033333，乘以 100000 得 3333.30，
+        // 而正确值为 3333.33；该误差还会随折旧期数累积，最终全部挤压到尾月尾差中。
+        BigDecimal ddbMonthly = netBookValue.multiply(BigDecimal.valueOf(2))
+                .divide(BigDecimal.valueOf(usefulLifeMonths), SCALE, RoundingMode.HALF_UP);
         // 不能超过剩余可折旧额
         BigDecimal remaining = depreciableAmount.subtract(accumulatedDepreciation);
         return ddbMonthly.compareTo(remaining) > 0 ? remaining : ddbMonthly;
@@ -532,12 +533,11 @@ public class ErpFixedAssetServiceImpl implements ErpFixedAssetService {
         int elapsedYears = depreciatedMonths / 12;
         // 剩余使用年数（含当年）
         int remainingYears = usefulLifeYears - elapsedYears;
-        // 年折旧率 = 剩余年数 / 年数总和
-        // 月折旧额 = (原值 - 残值) × 年折旧率 / 12
+        // 月折旧额 = (原值 - 残值) × 剩余年数 / (年数总和 × 12)
+        // 同 DDB：合并为一次除法、只舍入一次，避免「先除年数总和再除 12」两次舍入带来的精度损失
         BigDecimal sydMonthly = depreciableAmount
                 .multiply(BigDecimal.valueOf(remainingYears))
-                .divide(BigDecimal.valueOf(sumOfYears), SCALE + 4, RoundingMode.HALF_UP)
-                .divide(BigDecimal.valueOf(12), SCALE, RoundingMode.HALF_UP);
+                .divide(BigDecimal.valueOf((long) sumOfYears * 12), SCALE, RoundingMode.HALF_UP);
         // 不能超过剩余可折旧额
         BigDecimal remaining = depreciableAmount.subtract(accumulatedDepreciation);
         return sydMonthly.compareTo(remaining) > 0 ? remaining : sydMonthly;

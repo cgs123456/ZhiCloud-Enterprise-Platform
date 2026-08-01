@@ -111,6 +111,13 @@
             <artifactId>spring-modulith-core</artifactId>
             <optional>true</optional>
         </dependency>
+
+        <!-- Test 测试相关（单元测试：SimpleReranker / RerankerServiceImpl fallback） -->
+        <dependency>
+            <groupId>cn.iocoder.boot</groupId>
+            <artifactId>yudao-spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>

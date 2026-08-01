@@ -20,7 +20,11 @@ import java.util.Arrays;
  * </ul>
  *
  * <p>状态机：CREATED → ROOT_CAUSE_ANALYSIS → CORRECTIVE_ACTION → PREVENTIVE_ACTION
- * → VERIFICATION → CLOSED。每一步前进不可逆，但允许回退到上一步（纠错）。
+ * → VERIFICATION → CLOSED。常规流转为前进 1 步或回退 1 步（纠错）。
+ *
+ * <p>额外允许一条跨步回退路径：{@link #VERIFICATION} → {@link #CORRECTIVE_ACTION}。
+ * 该路径对应 ISO 9001 中「有效性验证不通过 → 退回重新制定纠正措施」的返工闭环，
+ * 流转时会由 Service 清空 verificationResult / verificationComment / verifiedBy / verifiedTime。
  *
  * @author 芋道源码
  */
@@ -52,7 +56,13 @@ public enum CAPAStageEnum implements ArrayValuable<Integer> {
     }
 
     /**
-     * 判断是否可以从前一阶段流转到当前阶段
+     * 判断是否可以从当前阶段流转到目标阶段
+     *
+     * <p>规则：
+     * <ol>
+     *   <li>常规：前进 1 步或后退 1 步</li>
+     *   <li>例外：{@link #VERIFICATION} → {@link #CORRECTIVE_ACTION}（验证不通过返工，跨 2 步回退）</li>
+     * </ol>
      *
      * @param fromStage 当前阶段
      * @param toStage 目标阶段
@@ -62,7 +72,11 @@ public enum CAPAStageEnum implements ArrayValuable<Integer> {
         if (fromStage == null || toStage == null) {
             return false;
         }
-        // 允许前进 1 步或后退 1 步
+        // 例外：有效性验证不通过，退回纠正措施阶段重新返工
+        if (VERIFICATION.getStage().equals(fromStage) && CORRECTIVE_ACTION.getStage().equals(toStage)) {
+            return true;
+        }
+        // 常规：允许前进 1 步或后退 1 步
         int diff = toStage - fromStage;
         return diff == 10 || diff == -10;
     }

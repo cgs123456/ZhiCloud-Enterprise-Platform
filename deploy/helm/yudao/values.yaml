@@ -174,10 +174,10 @@ env:
   # JVM 参数
   JAVA_OPTS: "-Xms512m -Xmx512m -XX:+UseZGC -XX:+ZGenerational -Djava.security.egd=file:/dev/./urandom"
   # ----- 主数据源 -----
-  MASTER_DATASOURCE_URL: "jdbc:mysql://yudao-mysql:3306/ruoyi-vue-pro?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true"
+  MASTER_DATASOURCE_URL: "jdbc:mysql://yudao-mysql:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true"
   MASTER_DATASOURCE_USERNAME: "root"
   # ----- 从数据源 -----
-  SLAVE_DATASOURCE_URL: "jdbc:mysql://yudao-mysql:3306/ruoyi-vue-pro?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true"
+  SLAVE_DATASOURCE_URL: "jdbc:mysql://yudao-mysql:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true"
   SLAVE_DATASOURCE_USERNAME: "root"
   # ----- Redis -----
   REDIS_HOST: "yudao-redis"

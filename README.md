@@ -10,7 +10,7 @@
  <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License">
 </p>
 
-> 基于 JDK 21 + Spring Boot 3.5 的企业级全栈数字化平台，覆盖 ERP / MES / WMS / QMS / CRM / HR / OA / TMS 八大业务域，集成 AI 多智能体编排、RAG 混合检索、数据湖仓三大 AI 模块，配套 DevOps 全套交付链。
+> 基于 JDK 21 + Spring Boot 3.5 的企业级全栈数字化平台，覆盖 ERP / MES / WMS / QMS / CRM / HR / OA / TMS 八大业务域，集成 AI 多智能体编排、RAG 混合检索（含可选 ONNX Cross-Encoder reranker，模型缺失时降级为 TF-IDF 打分）、数据湖仓三大 AI 模块，配套 DevOps 全套交付链。
 
 ## 📊 项目规模
 
@@ -22,7 +22,7 @@
 | Flyway 迁移脚本 | 71 个 |
 | SQL 文件 | 214 个 |
 | 单元测试文件 | 286 个 |
-| 框架 Starter | 15 个 |
+| 框架 Starter | 14 个 |
 
 ## 🏗️ 技术架构
 
@@ -74,7 +74,7 @@
 
 | 模块 | 核心能力 |
 |------|----------|
-| **AI-RAG** 检索增强生成 | Tika 文档解析 + TokenTextSplitter 分块 + PgVector 向量存储 + BM25+向量混合检索 + ONNX Cross-Encoder 重排 + RAG 评估体系 |
+| **AI-RAG** 检索增强生成 | Tika 文档解析 + TokenTextSplitter 分块 + PgVector 向量存储 + BM25+向量混合检索 + ONNX Cross-Encoder 重排（可选，`yudao.airag.reranker.enabled` 开关；模型文件缺失时自动降级为 TF-IDF `SimpleReranker`，不影响主链路）+ RAG 评估体系 |
 | **AI-MultiAgent** 多智能体 | ReAct（Reasoning+Acting）循环编排、Supervisor+Worker 拓扑、Spring AI ChatClient + @Tool 自动收集、步数/Token/超时熔断 |
 | **DataLake** 数据湖仓 | Apache Iceberg + Trino 冷数据归档、MCP 工具暴露（datalake_list_tables/query_table/get_archive_status）、SQL 注入 4 重白名单防护 |
 
@@ -91,11 +91,11 @@
 | 能力 | 工具/实现 |
 |------|----------|
 | 容器化 | Dockerfile（非 root 用户、HEALTHCHECK、多阶段构建） |
-| 编排 | docker-compose（18 服务：MySQL/Redis/PG/Nacos/MinIO/Trino/Prometheus/Grafana/Loki/Jaeger 等） |
-| K8s 部署 | Helm Chart（15 模板）、ArgoCD GitOps、金丝雀发布 |
+| 编排 | docker-compose（14 服务：MySQL/Redis/PG/Nacos/MinIO/Trino/Prometheus/Grafana/Loki/Jaeger 等） |
+| K8s 部署 | Helm Chart（11 模板）、ArgoCD GitOps、金丝雀发布 |
 | CI/CD | Jenkins Pipeline（测试→安全扫描→SonarQube→构建→部署/回滚） |
-| 安全 | OWASP Dependency-Check（CVSS≥7 阻断）、CycloneDX SBOM、pre-commit 密钥扫描、security-check.sh 部署前检查 |
-| 质量门禁 | JaCoCo 覆盖率（≥30%，分阶段→60%→80%）、JUnit + Mockito 单元测试 |
+| 安全 | OWASP Dependency-Check（CVSS≥7 高危阻断；需配置 NVD API Key，未配置时 CI 跳过并告警）、CycloneDX SBOM、pre-commit 密钥扫描、security-check.sh 部署前检查 |
+| 质量门禁 | JaCoCo 覆盖率报告（基线 30%、目标 60%，分阶段提升；门禁规划中，当前仅生成报告不阻断构建）、JUnit + Mockito 单元测试 |
 | 监控 | Prometheus + Grafana（4 Dashboard）+ Loki 日志 + Jaeger 链路追踪 + AlertManager 告警 |
 | 压测 | JMeter（yudao-load-test.jmx）+ Gatling（YudaoLoadTest.scala） |
 | 灾备 | 备份脚本、异地容灾、disaster-recovery-drill.sh 演练脚本 |
@@ -142,7 +142,7 @@
 ```
 yudao/
 ├── yudao-dependencies/          # Maven BOM 依赖版本管理
-├── yudao-framework/             # 15 个 Spring Boot Starter
+├── yudao-framework/             # 14 个 Spring Boot Starter
 │   ├── yudao-common/            # 通用工具、POJO、枚举
 │   ├── starter-web/             # Web 配置、全局异常、Swagger
 │   ├── starter-security/        # 认证鉴权、RBAC、多租户
@@ -231,7 +231,7 @@ mvn spring-boot:run
 
 - TOTP 两步验证（Google Authenticator）
 - 操作日志哈希链（防篡改）
-- OWASP 依赖漏洞扫描（CVSS≥7 阻断构建）
+- OWASP 依赖漏洞扫描（CVSS≥7 高危阻断；需配置 NVD API Key，未配置时 CI 跳过并告警）
 - CycloneDX SBOM 物料清单
 - pre-commit Git Hook 密钥泄露扫描
 - 部署前安全检查脚本（6 项检查）

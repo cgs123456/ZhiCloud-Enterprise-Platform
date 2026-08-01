@@ -39,8 +39,8 @@ ingress:
 env:
   SPRING_PROFILES_ACTIVE: "dev"
   # 开发环境指向本地/独立数据库
-  MASTER_DATASOURCE_URL: "jdbc:mysql://yudao-mysql-dev:3306/ruoyi-vue-pro?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true"
-  SLAVE_DATASOURCE_URL: "jdbc:mysql://yudao-mysql-dev:3306/ruoyi-vue-pro?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true"
+  MASTER_DATASOURCE_URL: "jdbc:mysql://yudao-mysql-dev:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true"
+  SLAVE_DATASOURCE_URL: "jdbc:mysql://yudao-mysql-dev:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true"
   REDIS_HOST: "yudao-redis-dev"
   YUDAO_AIRAG_DATASOURCE_URL: "jdbc:postgresql://yudao-postgres-dev:5432/yudao_rag"
   # 关闭 OTel（开发环境可选）

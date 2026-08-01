@@ -38,8 +38,8 @@ ingress:
 # 环境变量：staging profile
 env:
   SPRING_PROFILES_ACTIVE: "staging"
-  MASTER_DATASOURCE_URL: "jdbc:mysql://yudao-mysql-staging:3306/ruoyi-vue-pro?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true"
-  SLAVE_DATASOURCE_URL: "jdbc:mysql://yudao-mysql-staging:3306/ruoyi-vue-pro?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true"
+  MASTER_DATASOURCE_URL: "jdbc:mysql://yudao-mysql-staging:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true"
+  SLAVE_DATASOURCE_URL: "jdbc:mysql://yudao-mysql-staging:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true"
   REDIS_HOST: "yudao-redis-staging"
   YUDAO_AIRAG_DATASOURCE_URL: "jdbc:postgresql://yudao-postgres-staging:5432/yudao_rag"
   OTEL_EXPORTER_OTLP_ENDPOINT: "http://yudao-jaeger-staging:4318/v1/traces"

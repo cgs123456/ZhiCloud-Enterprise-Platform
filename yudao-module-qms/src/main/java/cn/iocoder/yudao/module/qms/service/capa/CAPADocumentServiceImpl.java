@@ -12,6 +12,7 @@ import cn.iocoder.yudao.module.qms.enums.qms.CAPAStageEnum;
 import cn.iocoder.yudao.module.qms.enums.qms.CAPAStatusEnum;
 import cn.iocoder.yudao.module.qms.enums.qms.CAPAVerificationResultEnum;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -134,6 +135,27 @@ public class CAPADocumentServiceImpl implements CAPADocumentService {
         }
         // 4. 更新阶段，并同步状态
         CAPAStatusEnum newStatus = resolveStatusByStage(targetStage);
+
+        // 4.1 特殊路径：从 VERIFICATION 回退到 CORRECTIVE_ACTION（验证不通过返工），需清空验证结果。
+        // 注意：MyBatis-Plus updateById 默认字段策略为 NOT_NULL，会忽略值为 null 的字段，
+        // 直接 setXxx(null) 无法把列写回 NULL，因此这里必须改用 LambdaUpdateWrapper 显式 set(null)。
+        if (CAPAStageEnum.VERIFICATION.getStage().equals(currentStage)
+                && CAPAStageEnum.CORRECTIVE_ACTION.getStage().equals(targetStage)) {
+            LambdaUpdateWrapper<CAPADocumentDO> wrapper = new LambdaUpdateWrapper<CAPADocumentDO>()
+                    .eq(CAPADocumentDO::getId, document.getId())
+                    .set(CAPADocumentDO::getStage, targetStage)
+                    .set(CAPADocumentDO::getVerificationResult, null)
+                    .set(CAPADocumentDO::getVerificationComment, null)
+                    .set(CAPADocumentDO::getVerifiedBy, null)
+                    .set(CAPADocumentDO::getVerifiedTime, null);
+            if (newStatus != null) {
+                wrapper.set(CAPADocumentDO::getStatus, newStatus.getStatus());
+            }
+            capaDocumentMapper.update(null, wrapper);
+            return;
+        }
+
+        // 4.2 常规路径
         CAPADocumentDO updateObj = new CAPADocumentDO();
         updateObj.setId(document.getId());
         updateObj.setStage(targetStage);
@@ -143,14 +165,6 @@ public class CAPADocumentServiceImpl implements CAPADocumentService {
         // 若流转到 CLOSED，自动设置 closeDate
         if (CAPAStageEnum.CLOSED.getStage().equals(targetStage)) {
             updateObj.setCloseDate(LocalDateTime.now());
-        }
-        // 若从 VERIFICATION 回退到 CORRECTIVE_ACTION（验证不通过场景），清空验证结果
-        if (CAPAStageEnum.VERIFICATION.getStage().equals(currentStage)
-                && CAPAStageEnum.CORRECTIVE_ACTION.getStage().equals(targetStage)) {
-            updateObj.setVerificationResult(null);
-            updateObj.setVerificationComment(null);
-            updateObj.setVerifiedBy(null);
-            updateObj.setVerifiedTime(null);
         }
         capaDocumentMapper.updateById(updateObj);
     }

@@ -151,6 +151,14 @@
                         </execution>
                     </executions>
                     <configuration>
+                        <!--
+                          Coverage 规则（分阶段提升策略）：当前基线 0.30，目标 0.60，后续按模块逐步上调。
+                          注意：本插件仅绑定 prepare-agent 与 report 两个 goal，check goal 未绑定到任何 phase，
+                          因此「覆盖率不足不会阻断构建」。这是有意为之——当前仅 QMS / AI-RAG 等少数模块补充了单测，
+                          全量模块的聚合覆盖率远低于 0.30，立即强制门禁会直接 brick CI。
+                          待各模块单测补齐后，再将 check goal 绑定到 verify（聚合级别）以真正生效。
+                          本地审计可手动执行：mvn jacoco:check -Djacoco.minimum=0.30
+                        -->
                         <rules>
                             <rule>
                                 <element>BUNDLE</element>
@@ -158,7 +166,7 @@
                                     <limit>
                                         <counter>INSTRUCTION</counter>
                                         <value>COVEREDRATIO</value>
-                                        <minimum>${jacoco.minimum}</minimum> <!-- 分阶段提升策略：当前 0.30 基线，目标 0.60，后续按模块逐步上调 -->
+                                        <minimum>${jacoco.minimum}</minimum>
                                     </limit>
                                 </limits>
                             </rule>

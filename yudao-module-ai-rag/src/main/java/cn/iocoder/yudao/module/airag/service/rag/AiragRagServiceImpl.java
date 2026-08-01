@@ -10,6 +10,7 @@ import cn.iocoder.yudao.module.ai.service.model.AiModelService;
 import cn.iocoder.yudao.module.airag.dal.dataobject.AiragDocumentDO;
 import cn.iocoder.yudao.module.airag.dal.dataobject.AiragKnowledgeDO;
 import cn.iocoder.yudao.module.airag.dal.mysql.AiragDocumentMapper;
+import cn.iocoder.yudao.module.airag.service.RerankerService;
 import cn.iocoder.yudao.module.airag.service.knowledge.AiragKnowledgeService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -88,6 +89,15 @@ public class AiragRagServiceImpl implements AiragRagService {
      */
     @Autowired(required = false)
     private AiModelService aiModelService;
+
+    /**
+     * 可选重排序服务（Reranker）。
+     *
+     * <p>由 {@link cn.iocoder.yudao.module.airag.config.AiragConfiguration} 条件加载，
+     * 仅当 {@code yudao.airag.reranker.enabled=true} 时存在；未启用时为 null，检索结果保持向量召回原序。
+     */
+    @Autowired(required = false)
+    private RerankerService rerankerService;
 
     @Override
     public void importDocument(Long knowledgeId, Long documentId) {
@@ -195,6 +205,12 @@ public class AiragRagServiceImpl implements AiragRagService {
                 .build();
         List<Document> documents = vectorStore.similaritySearch(request);
         log.info("[chat][向量检索完成，knowledgeId={}, tenantId={}, 命中 {} 条]", knowledgeId, tenantId, CollUtil.size(documents));
+
+        // 可选重排序：若启用了 Reranker（yudao.airag.reranker.enabled=true），对召回结果二次排序以提升注入上下文精度
+        if (rerankerService != null && CollUtil.isNotEmpty(documents)) {
+            documents = rerankerService.rerank(question, documents, SEARCH_TOP_K);
+            log.info("[chat][已执行 Reranker 重排序，重排后 {} 条]", CollUtil.size(documents));
+        }
 
         // 4. 拼接上下文（P0-2 引用溯源：每个 chunk 前加 [N] 编号 + 文档名+页码+chunk_id）
         String context = CollUtil.isEmpty(documents) ? "" : buildCitationContext(documents);

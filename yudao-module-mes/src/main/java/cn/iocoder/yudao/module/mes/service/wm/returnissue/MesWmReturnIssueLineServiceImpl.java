@@ -16,6 +16,7 @@ import cn.iocoder.yudao.module.mes.service.md.item.MesMdItemService;
 import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
@@ -70,6 +71,7 @@ public class MesWmReturnIssueLineServiceImpl implements MesWmReturnIssueLineServ
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteReturnIssueLine(Long id) {
         // 校验存在
         MesWmReturnIssueLineDO line = validateReturnIssueLineExists(id);
@@ -151,6 +153,7 @@ public class MesWmReturnIssueLineServiceImpl implements MesWmReturnIssueLineServ
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateReturnIssueLineWhenRqcFinish(Long sourceLineId, Long sourceDocId, Integer checkResult,
                                                     BigDecimal qualifiedQuantity, BigDecimal unqualifiedQuantity) {
         MesWmReturnIssueLineDO sourceLine = validateReturnIssueLineExists(sourceLineId);
