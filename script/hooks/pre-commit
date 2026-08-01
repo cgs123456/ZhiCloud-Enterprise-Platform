@@ -8,16 +8,8 @@
 # 命中密钥模式时拒绝提交并提示。
 # 可选：如已安装 truffleHog 或 git-secrets，可替换为更强的扫描器。
 
-# 密钥模式（正则），命中任一即拒绝提交
-PATTERNS='(
-    sk-[A-Za-z0-9_]{20,}              # OpenAI API Key
-    | AKIA[0-9A-Z]{16}                # AWS Access Key ID
-    | sk_[A-Za-z0-9]{20,}             # Stripe Secret Key
-    | password\s*=\s*["'"'"'][^"'"'"']{4,}["'"'"']  # password = "xxx"
-    | secret\s*=\s*["'"'"'][^"'"'"']{4,}["'"'"']    # secret = "xxx"
-    | api[_-]?key\s*=\s*["'"'"'][^"'"'"']{4,}["'"'"']  # api_key = "xxx"
-    | -----BEGIN [A-Z ]*PRIVATE KEY-----  # PEM 私钥
-)'
+# 密钥模式（正则，单行 alternation，避免 grep -E 因多行/内联注释导致 Unmatched (）
+PATTERNS='sk-[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16}|sk_[A-Za-z0-9]{20,}|password\s*=\s*["'"'"'][^"'"'"']{4,}["'"'"']|secret\s*=\s*["'"'"'][^"'"'"']{4,}["'"'"']|api[_-]?key\s*=\s*["'"'"'][^"'"'"']{4,}["'"'"']|-----BEGIN [A-Z ]*PRIVATE KEY-----'
 
 # 仅扫描暂存的文本文件，排除二进制和大文件
 FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -vE '\.(png|jpg|jpeg|gif|bmp|ico|pdf|zip|jar|war|class|so|dll|exe|bin)$' | head -100)

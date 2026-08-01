@@ -303,6 +303,11 @@ public class ReActAgent {
                 }
             }
         }
+        // 使用 Hutool 的 Map 重载：{tools} / {tool_descriptions} 为具名占位符，
+        // 不能用变参重载（{}/{} 位置占位符），否则工具清单永远不会注入提示词。
+        Map<String, Object> promptParams = new LinkedHashMap<>();
+        promptParams.put("tools", toolDesc.toString());
+        promptParams.put("tool_descriptions", toolDesc.toString());
         return StrUtil.format("""
                 You are a ReAct agent. Answer the user's question using the following tools:
                 {tools}
@@ -318,7 +323,7 @@ public class ReActAgent {
 
                 Available tools:
                 {tool_descriptions}
-                """, tools, toolDesc.toString());
+                """, promptParams);
     }
 
     /**

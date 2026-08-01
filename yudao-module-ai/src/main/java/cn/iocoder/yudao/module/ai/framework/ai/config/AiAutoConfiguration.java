@@ -53,6 +53,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -443,7 +444,8 @@ public class AiAutoConfiguration {
                                             ObjectProvider<WmsMcpTools> wmsMcpToolsProvider,
                                             ObjectProvider<MesMcpTools> mesMcpToolsProvider,
                                             ObjectProvider<ErpMcpTools> erpMcpToolsProvider,
-                                            ObjectProvider<QmsMcpTools> qmsMcpToolsProvider) {
+                                            ObjectProvider<QmsMcpTools> qmsMcpToolsProvider,
+                                            ObjectProvider<ToolCallback[]> externalToolArrays) {
         List<ToolCallback> callbacks = new ArrayList<>();
         // 示例工具
         callbacks.addAll(List.of(ToolCallbacks.from(personService)));
@@ -470,6 +472,13 @@ public class AiAutoConfiguration {
         if (qmsMcpTools != null) {
             callbacks.addAll(List.of(ToolCallbacks.from(qmsMcpTools)));
             log.info("[AiAutoConfiguration] 注册 QmsMcpTools 成功");
+        }
+        // 其它模块（如数据湖仓）通过 ToolCallback[] 暴露的 MCP 工具，避免与上方 List<ToolCallback> 类型冲突
+        for (ToolCallback[] arr : externalToolArrays) {
+            if (arr != null) {
+                callbacks.addAll(Arrays.asList(arr));
+                log.info("[AiAutoConfiguration] 聚合外部模块 ToolCallback 数组成功");
+            }
         }
         return callbacks;
     }

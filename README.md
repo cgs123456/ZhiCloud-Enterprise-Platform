@@ -177,7 +177,7 @@ yudao/
 ├── deploy/                      # ArgoCD + Helm Chart
 ├── k8s/                         # K8s 部署（含金丝雀）
 ├── script/                      # Docker/Jenkins/JMeter/Gatling/安全/灾备
-├── docs/                        # DDD 试点文档、OAuth2 指南
+├── docs/                        # OAuth2 接入指南
 └── sql/                         # 多数据库初始化脚本（MySQL/Oracle/PG/达梦/金仓/openGauss）
 ```
 

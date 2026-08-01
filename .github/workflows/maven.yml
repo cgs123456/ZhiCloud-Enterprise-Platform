@@ -6,13 +6,17 @@ name: Java CI with Maven
 on:
   push:
     branches: [ master ]
-  # pull_request:
-  #   branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   build:
 
     runs-on: ubuntu-latest
+
+    # NVD API Key 提升到 job 级别，使后续步骤的 if 条件可以引用（step 级 env 无法用于自身 if）
+    env:
+      NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
 
     strategy:
       matrix:
@@ -27,17 +31,29 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build with Maven
-      run: mvn -B verify --file pom.xml -Djacoco.minimum=0.00
+      run: mvn -B verify --file pom.xml
     - name: Security Check (deploy gate)
       run: |
         chmod +x script/security/security-check.sh
         ./script/security/security-check.sh
-      continue-on-error: true  # 安全检查仅报告，不阻断 CI（部署前人工 review）
+    # NVD 漏洞库体积较大，缓存后可将后续构建的同步时间从分钟级降到秒级
+    - name: Cache NVD Database
+      if: env.NVD_API_KEY != ''
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2/repository/org/owasp/dependency-check-data
+        key: nvd-data-${{ github.run_id }}
+        restore-keys: nvd-data-
     - name: OWASP Dependency Check
-      run: mvn dependency-check:check -DskipTests -Ddependency-check.suppressionFile=dependency-check-suppressions.xml
-      continue-on-error: true  # 初期不阻断流水线，定期 review 报告
+      if: env.NVD_API_KEY != ''
+      run: mvn dependency-check:check -DskipTests -Dnvd.api.key=$NVD_API_KEY
+    # 未配置 Key 时显式告警并跳过，而不是用 continue-on-error 伪装成通过
+    - name: OWASP Dependency Check (skipped)
+      if: env.NVD_API_KEY == ''
+      run: |
+        echo "::warning title=OWASP 扫描已跳过::未配置仓库 Secret NVD_API_KEY，依赖漏洞扫描未执行。请在 Settings → Secrets and variables → Actions 添加 NVD_API_KEY 以启用 CVSS>=7 阻断门禁。"
     - name: Upload Dependency Check Report
-      if: always()
+      if: always() && env.NVD_API_KEY != ''
       uses: actions/upload-artifact@v4
       with:
         name: dependency-check-report

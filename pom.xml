@@ -54,6 +54,8 @@
         <flatten-maven-plugin.version>1.7.2</flatten-maven-plugin.version>
         <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version> <!-- JaCoCo 覆盖率插件：mvn verify 生成报告，目标 target/site/jacoco/index.html -->
         <jacoco.minimum>0.30</jacoco.minimum> <!-- JaCoCo 最低覆盖率基线（分阶段提升：0.30 → 0.60 → 0.80）；-Djacoco.minimum=0.00 可临时跳过 -->
+        <dependency-check-maven.version>12.2.2</dependency-check-maven.version> <!-- OWASP 依赖漏洞扫描；CI 门禁 failBuildOnCVSS=7 -->
+        <nvd.api.key/> <!-- NVD API Key，本地留空；CI 通过 -Dnvd.api.key=${{ secrets.NVD_API_KEY }} 注入 -->
         <!-- maven-surefire-plugin 暂时无法通过 bom 的依赖读取（兼容老版本 IDEA 2024 及以前版本） -->
         <lombok.version>1.18.46</lombok.version>
         <spring.boot.version>3.5.16</spring.boot.version>
@@ -170,6 +172,24 @@
                             <exclude>**/controller/admin/**/vo/**</exclude>
                             <exclude>**/package-info.*</exclude>
                         </excludes>
+                    </configuration>
+                </plugin>
+                <!-- OWASP Dependency-Check：依赖漏洞扫描（CI 安全门禁，failBuildOnCVSS=7 阻断高危漏洞） -->
+                <plugin>
+                    <groupId>org.owasp</groupId>
+                    <artifactId>dependency-check-maven</artifactId>
+                    <version>${dependency-check-maven.version}</version>
+                    <configuration>
+                        <suppressionFile>dependency-check-suppressions.xml</suppressionFile>
+                        <!-- CVSS >= 7（高危及以上）阻断构建 -->
+                        <failBuildOnCVSS>7</failBuildOnCVSS>
+                        <!-- NVD 自 2023 年起对匿名调用严格限流，必须携带 API Key 才能在 CI 时限内完成同步；
+                             未配置 Key 时 CI 会跳过该步骤并给出 warning，而非伪装通过 -->
+                        <nvdApiKey>${nvd.api.key}</nvdApiKey>
+                        <nvdApiDelay>4000</nvdApiDelay>
+                        <nvdValidForHours>24</nvdValidForHours>
+                        <!-- 关闭 .NET 程序集分析器，避免 Linux Runner 上因缺少 dotnet 运行时产生噪声告警 -->
+                        <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                     </configuration>
                 </plugin>
             </plugins>
