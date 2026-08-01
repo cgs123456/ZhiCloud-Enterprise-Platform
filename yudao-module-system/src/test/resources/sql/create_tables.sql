@@ -237,6 +237,8 @@ CREATE TABLE IF NOT EXISTS "system_users" (
     "status" tinyint not null default '0',
     "login_ip" varchar(50) default '',
     "login_date" timestamp default null,
+    "totp_secret" varchar(255) default null,
+    "totp_enabled" bit not null default false,
     "creator" varchar(64) default '',
     "create_time" timestamp not null default current_timestamp,
     "updater" varchar(64) default '',

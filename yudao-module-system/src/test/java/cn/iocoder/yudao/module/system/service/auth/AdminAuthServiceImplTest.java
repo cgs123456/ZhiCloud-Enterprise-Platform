@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.system.service.auth;
 import cn.hutool.core.util.ReflectUtil;
 import cn.iocoder.yudao.framework.common.enums.CommonStatusEnum;
 import cn.iocoder.yudao.framework.common.enums.UserTypeEnum;
+import cn.iocoder.yudao.framework.security.config.SecurityProperties;
 import cn.iocoder.yudao.framework.test.core.ut.BaseDbUnitTest;
 import cn.iocoder.yudao.module.system.api.sms.SmsCodeApi;
 import cn.iocoder.yudao.module.system.api.social.dto.SocialUserBindReqDTO;
@@ -18,6 +19,7 @@ import cn.iocoder.yudao.module.system.service.logger.LoginLogService;
 import cn.iocoder.yudao.module.system.service.member.MemberService;
 import cn.iocoder.yudao.module.system.service.oauth2.OAuth2TokenService;
 import cn.iocoder.yudao.module.system.service.social.SocialUserService;
+import cn.iocoder.yudao.module.system.service.totp.TotpService;
 import cn.iocoder.yudao.module.system.service.user.AdminUserService;
 import com.anji.captcha.model.common.ResponseModel;
 import com.anji.captcha.service.CaptchaService;
@@ -59,6 +61,10 @@ public class AdminAuthServiceImplTest extends BaseDbUnitTest {
     private OAuth2TokenService oauth2TokenService;
     @MockitoBean
     private MemberService memberService;
+    @MockitoBean
+    private TotpService totpService;
+    @MockitoBean
+    private SecurityProperties securityProperties;
     @MockitoBean
     private Validator validator;
 
@@ -157,7 +163,8 @@ public class AdminAuthServiceImplTest extends BaseDbUnitTest {
         authService.setCaptchaEnable(false);
         // mock user 数据
         AdminUserDO user = randomPojo(AdminUserDO.class, o -> o.setId(1L).setUsername("test_username")
-                .setPassword("test_password").setStatus(CommonStatusEnum.ENABLE.getStatus()));
+                .setPassword("test_password").setStatus(CommonStatusEnum.ENABLE.getStatus())
+                .setTotpEnabled(false).setTotpSecret(null));
         when(userService.getUserByUsername(eq("test_username"))).thenReturn(user);
         // mock password 匹配
         when(userService.isPasswordMatch(eq("test_password"), eq(user.getPassword()))).thenReturn(true);
