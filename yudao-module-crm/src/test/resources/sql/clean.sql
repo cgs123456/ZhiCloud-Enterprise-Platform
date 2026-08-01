@@ -1,0 +1,31 @@
+-- 每个单元测试结束后，清理 DB（与 create_tables.sql 的表保持一致）
+
+DELETE FROM "crm_business";
+DELETE FROM "crm_business_product";
+DELETE FROM "crm_business_status";
+DELETE FROM "crm_business_status_type";
+DELETE FROM "crm_clue";
+DELETE FROM "crm_clue_channel";
+DELETE FROM "crm_clue_pool_config";
+DELETE FROM "crm_contact";
+DELETE FROM "crm_contact_business";
+DELETE FROM "crm_contract";
+DELETE FROM "crm_contract_config";
+DELETE FROM "crm_contract_product";
+DELETE FROM "crm_customer";
+DELETE FROM "crm_customer_limit_config";
+DELETE FROM "crm_customer_pool_config";
+DELETE FROM "crm_follow_up_record";
+DELETE FROM "crm_invoice";
+DELETE FROM "crm_invoice_line";
+DELETE FROM "crm_owner_record";
+DELETE FROM "crm_performance_config";
+DELETE FROM "crm_permission";
+DELETE FROM "crm_product";
+DELETE FROM "crm_product_category";
+DELETE FROM "crm_receivable";
+DELETE FROM "crm_receivable_plan";
+DELETE FROM "crm_sale_order";
+DELETE FROM "crm_sale_order_item";
+DELETE FROM "crm_visit_record";
+DELETE FROM "crm_work_order";

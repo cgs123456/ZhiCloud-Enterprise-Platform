@@ -5,6 +5,10 @@ import cn.iocoder.yudao.module.crm.controller.admin.customer.vo.customer.CrmCust
 import cn.iocoder.yudao.module.crm.controller.admin.customer.vo.customer.CrmCustomerSaveReqVO;
 import cn.iocoder.yudao.module.crm.dal.dataobject.customer.CrmCustomerDO;
 import cn.iocoder.yudao.module.crm.dal.mysql.customer.CrmCustomerMapper;
+import cn.iocoder.yudao.module.crm.service.business.CrmBusinessService;
+import cn.iocoder.yudao.module.crm.service.contact.CrmContactService;
+import cn.iocoder.yudao.module.crm.service.contract.CrmContractService;
+import cn.iocoder.yudao.module.crm.service.permission.CrmOwnerRecordService;
 import cn.iocoder.yudao.module.crm.service.permission.CrmPermissionService;
 import cn.iocoder.yudao.module.system.api.user.AdminUserApi;
 import cn.iocoder.yudao.module.system.api.user.dto.AdminUserRespDTO;
@@ -36,6 +40,18 @@ public class CrmCustomerServiceImplTest extends BaseDbUnitTest {
 
     @MockitoBean
     private CrmPermissionService crmPermissionService;
+    @MockitoBean
+    private CrmOwnerRecordService ownerRecordService;
+    @MockitoBean
+    private CrmContactService contactService;
+    @MockitoBean
+    private CrmCustomerPoolConfigService customerPoolConfigService;
+    @MockitoBean
+    private CrmBusinessService businessService;
+    @MockitoBean
+    private CrmContractService contractService;
+    @MockitoBean
+    private CrmCustomerLimitConfigService customerLimitConfigService;
     @MockitoBean
     private AdminUserApi adminUserApi;
 

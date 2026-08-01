@@ -3,6 +3,8 @@ package cn.iocoder.yudao.module.crm.service.contract;
 import cn.iocoder.yudao.framework.test.core.ut.BaseDbUnitTest;
 import cn.iocoder.yudao.module.crm.dal.dataobject.contract.CrmContractDO;
 import cn.iocoder.yudao.module.crm.dal.mysql.contract.CrmContractMapper;
+import cn.iocoder.yudao.module.bpm.api.task.BpmProcessInstanceApi;
+import cn.iocoder.yudao.module.crm.dal.redis.no.CrmNoRedisDAO;
 import cn.iocoder.yudao.module.crm.service.business.CrmBusinessService;
 import cn.iocoder.yudao.module.crm.service.contact.CrmContactService;
 import cn.iocoder.yudao.module.crm.service.customer.CrmCustomerService;
@@ -46,6 +48,12 @@ public class CrmContractServiceImplTest extends BaseDbUnitTest {
     private CrmProductService productService;
     @MockitoBean
     private CrmReceivableService receivableService;
+    @MockitoBean
+    private CrmContractConfigService contractConfigService;
+    @MockitoBean
+    private CrmNoRedisDAO noRedisDAO;
+    @MockitoBean
+    private BpmProcessInstanceApi bpmProcessInstanceApi;
     @MockitoBean
     private AdminUserApi adminUserApi;
 
