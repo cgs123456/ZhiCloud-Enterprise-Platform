@@ -41,7 +41,14 @@ CREATE TABLE IF NOT EXISTS oa_reimburse_item (
   creator VARCHAR(64), create_time DATETIME, updater VARCHAR(64), update_time DATETIME, deleted BIT DEFAULT 0,
   tenant_id BIGINT DEFAULT 0
 );
-CREATE INDEX IF NOT EXISTS idx_reimburse_item_reimburse ON oa_reimburse_item(reimburse_id);
+-- 幂等新增索引：oa_reimburse_item.idx_reimburse_item_reimburse
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.STATISTICS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'oa_reimburse_item' AND INDEX_NAME = 'idx_reimburse_item_reimburse'),
+                  'DO 0',
+                  'ALTER TABLE `oa_reimburse_item` ADD INDEX `idx_reimburse_item_reimburse` (reimburse_id)');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;
 
 -- ----------------------------
 -- 3. 会议室 oa_meeting_room

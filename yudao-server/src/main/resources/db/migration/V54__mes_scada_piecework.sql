@@ -103,5 +103,19 @@ CREATE TABLE IF NOT EXISTS mes_pro_piecework_record (
 -- 4. MES 设备台账新增 SCADA 集成字段
 --    iot_device_pk：IoT 平台设备 PK，用于 MES 设备与 IoT 设备的映射
 --    protocol_type：SCADA 协议类型（MQTT / MODBUS_TCP / OPC-UA）
-ALTER TABLE mes_dv_machinery ADD COLUMN IF NOT EXISTS iot_device_pk VARCHAR(100) COMMENT 'IoT 平台设备 PK' AFTER last_check_time;
-ALTER TABLE mes_dv_machinery ADD COLUMN IF NOT EXISTS protocol_type VARCHAR(20) COMMENT 'SCADA 协议类型（MQTT / MODBUS_TCP / OPC-UA）' AFTER iot_device_pk;
+-- 幂等新增列：mes_dv_machinery.iot_device_pk
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.COLUMNS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'mes_dv_machinery' AND COLUMN_NAME = 'iot_device_pk'),
+                  'DO 0',
+                  'ALTER TABLE `mes_dv_machinery` ADD COLUMN `iot_device_pk` VARCHAR(100) COMMENT ''IoT 平台设备 PK'' AFTER last_check_time');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;
+-- 幂等新增列：mes_dv_machinery.protocol_type
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.COLUMNS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'mes_dv_machinery' AND COLUMN_NAME = 'protocol_type'),
+                  'DO 0',
+                  'ALTER TABLE `mes_dv_machinery` ADD COLUMN `protocol_type` VARCHAR(20) COMMENT ''SCADA 协议类型（MQTT / MODBUS_TCP / OPC-UA）'' AFTER iot_device_pk');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;

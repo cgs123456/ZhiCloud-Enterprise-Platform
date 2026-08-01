@@ -195,7 +195,7 @@ yudao/
 ```bash
 # 1. 启动中间件
 cd script/docker
-docker-compose --env-file docker.env up -d mysql redis pgvector
+docker-compose --env-file docker.env up -d mysql redis postgres
 
 # 2. 编译
 cd ../..

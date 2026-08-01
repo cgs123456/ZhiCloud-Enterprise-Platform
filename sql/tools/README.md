@@ -119,7 +119,7 @@ docker compose up -d highgo
 
 ```Bash
 docker compose down postgres
-docker volume rm ruoyi-vue-pro_postgres
+docker volume rm zhicloud_platform_postgres
 ```
 
 ## 2. MySQL 转换其它数据库
@@ -128,7 +128,7 @@ docker volume rm ruoyi-vue-pro_postgres
 
 ### 2.1 实现原理
 
-通过读取 MySQL 的 `sql/mysql/ruoyi-vue-pro.sql` 数据库文件，转换成对应的数据库脚本。
+通过读取 MySQL 的 `sql/mysql/zhicloud_platform.sql` 数据库文件，转换成对应的数据库脚本。
 
 ### 2.2 使用方法
 
@@ -144,7 +144,7 @@ pip install simple-ddl-parser
 ```Bash
 python3 convertor.py postgres
 # python3 convertor.py postgres > tmp.sql
-# python3 convertor.py highgo ../mysql/ruoyi-vue-pro.sql > ../highgo/ruoyi-vue-pro.sql
+# python3 convertor.py highgo ../mysql/zhicloud_platform.sql > ../highgo/zhicloud_platform.sql
 ```
 
 程序将 SQL 脚本打印到终端，可以重定向到临时文件 `tmp.sql`。

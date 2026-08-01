@@ -1,5 +1,12 @@
 -- ========== 任务1：合同附件 ==========
-ALTER TABLE crm_contract ADD COLUMN IF NOT EXISTS file_urls VARCHAR(2048) DEFAULT NULL COMMENT '合同附件 URL 列表';
+-- 幂等新增列：crm_contract.file_urls
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.COLUMNS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'crm_contract' AND COLUMN_NAME = 'file_urls'),
+                  'DO 0',
+                  'ALTER TABLE `crm_contract` ADD COLUMN `file_urls` VARCHAR(2048) DEFAULT NULL COMMENT ''合同附件 URL 列表''');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;
 
 -- ========== 任务2：开票管理 ==========
 CREATE TABLE IF NOT EXISTS crm_invoice (
@@ -62,7 +69,14 @@ CREATE TABLE IF NOT EXISTS crm_clue_pool_config (
     deleted TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否删除'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='CRM 线索公海配置表';
 
-ALTER TABLE crm_clue ADD COLUMN IF NOT EXISTS receive_count INT DEFAULT 0 COMMENT '领取次数';
+-- 幂等新增列：crm_clue.receive_count
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.COLUMNS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'crm_clue' AND COLUMN_NAME = 'receive_count'),
+                  'DO 0',
+                  'ALTER TABLE `crm_clue` ADD COLUMN `receive_count` INT DEFAULT 0 COMMENT ''领取次数''');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;
 
 -- ========== 任务4：拜访签到 ==========
 CREATE TABLE IF NOT EXISTS crm_visit_record (
@@ -88,4 +102,11 @@ CREATE TABLE IF NOT EXISTS crm_visit_record (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='CRM 拜访签到记录表';
 
 -- ========== 任务5：客户标签 ==========
-ALTER TABLE crm_customer ADD COLUMN IF NOT EXISTS tag_ids VARCHAR(255) DEFAULT NULL COMMENT '客户标签 ID 列表';
+-- 幂等新增列：crm_customer.tag_ids
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.COLUMNS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'crm_customer' AND COLUMN_NAME = 'tag_ids'),
+                  'DO 0',
+                  'ALTER TABLE `crm_customer` ADD COLUMN `tag_ids` VARCHAR(255) DEFAULT NULL COMMENT ''客户标签 ID 列表''');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;

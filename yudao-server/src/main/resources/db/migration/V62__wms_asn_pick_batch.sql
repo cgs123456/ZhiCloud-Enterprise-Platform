@@ -17,11 +17,23 @@
 -- ----------------------------
 -- 1. 为 wms_inventory_batch 增加保质期天数、供应商批次号字段
 -- ----------------------------
-ALTER TABLE wms_inventory_batch
-    ADD COLUMN IF NOT EXISTS shelf_life_days INT DEFAULT NULL COMMENT '保质期天数（生产日期 + 保质期天数 = 过期日期）' AFTER expiry_date;
+-- 幂等新增列：wms_inventory_batch.shelf_life_days
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.COLUMNS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'wms_inventory_batch' AND COLUMN_NAME = 'shelf_life_days'),
+                  'DO 0',
+                  'ALTER TABLE `wms_inventory_batch` ADD COLUMN `shelf_life_days` INT DEFAULT NULL COMMENT ''保质期天数（生产日期 + 保质期天数 = 过期日期）'' AFTER expiry_date');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;
 
-ALTER TABLE wms_inventory_batch
-    ADD COLUMN IF NOT EXISTS supplier_batch_no VARCHAR(64) DEFAULT NULL COMMENT '供应商批次号（供应链批次追溯）' AFTER shelf_life_days;
+-- 幂等新增列：wms_inventory_batch.supplier_batch_no
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.COLUMNS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'wms_inventory_batch' AND COLUMN_NAME = 'supplier_batch_no'),
+                  'DO 0',
+                  'ALTER TABLE `wms_inventory_batch` ADD COLUMN `supplier_batch_no` VARCHAR(64) DEFAULT NULL COMMENT ''供应商批次号（供应链批次追溯）'' AFTER shelf_life_days');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;
 
 -- 更新批次状态注释以包含 NEAR_EXPIRY 临期预警状态
 ALTER TABLE wms_inventory_batch

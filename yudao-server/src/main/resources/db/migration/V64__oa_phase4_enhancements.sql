@@ -44,7 +44,14 @@ CREATE TABLE IF NOT EXISTS oa_knowledge_article (
 CREATE INDEX idx_knowledge_article_category ON oa_knowledge_article(category_id);
 CREATE INDEX idx_knowledge_article_status ON oa_knowledge_article(status);
 CREATE INDEX idx_knowledge_article_author ON oa_knowledge_article(author_user_id);
-CREATE FULLTEXT INDEX IF NOT EXISTS ftx_knowledge_article_content ON oa_knowledge_article(title, summary, content, tags);
+-- 幂等新增全文索引：oa_knowledge_article.ftx_knowledge_article_content
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.STATISTICS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'oa_knowledge_article' AND INDEX_NAME = 'ftx_knowledge_article_content'),
+                  'DO 0',
+                  'ALTER TABLE `oa_knowledge_article` ADD FULLTEXT INDEX `ftx_knowledge_article_content` (title, summary, content, tags)');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;
 
 -- ----------------------------
 -- 3. 知识库版本 oa_knowledge_version
@@ -134,25 +141,130 @@ CREATE INDEX idx_approval_template_status ON oa_approval_template(status);
 -- 7. 公文完整流转扩展（核稿/签发/归档字段）
 -- ----------------------------
 -- 核稿阶段
-ALTER TABLE oa_document ADD COLUMN IF NOT EXISTS reviewer_user_id BIGINT COMMENT '核稿人 ID';
-ALTER TABLE oa_document ADD COLUMN IF NOT EXISTS reviewer_name VARCHAR(64) COMMENT '核稿人姓名';
-ALTER TABLE oa_document ADD COLUMN IF NOT EXISTS review_time DATETIME COMMENT '核稿时间';
-ALTER TABLE oa_document ADD COLUMN IF NOT EXISTS review_opinion VARCHAR(500) COMMENT '核稿意见';
+-- 幂等新增列：oa_document.reviewer_user_id
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.COLUMNS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'oa_document' AND COLUMN_NAME = 'reviewer_user_id'),
+                  'DO 0',
+                  'ALTER TABLE `oa_document` ADD COLUMN `reviewer_user_id` BIGINT COMMENT ''核稿人 ID''');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;
+-- 幂等新增列：oa_document.reviewer_name
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.COLUMNS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'oa_document' AND COLUMN_NAME = 'reviewer_name'),
+                  'DO 0',
+                  'ALTER TABLE `oa_document` ADD COLUMN `reviewer_name` VARCHAR(64) COMMENT ''核稿人姓名''');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;
+-- 幂等新增列：oa_document.review_time
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.COLUMNS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'oa_document' AND COLUMN_NAME = 'review_time'),
+                  'DO 0',
+                  'ALTER TABLE `oa_document` ADD COLUMN `review_time` DATETIME COMMENT ''核稿时间''');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;
+-- 幂等新增列：oa_document.review_opinion
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.COLUMNS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'oa_document' AND COLUMN_NAME = 'review_opinion'),
+                  'DO 0',
+                  'ALTER TABLE `oa_document` ADD COLUMN `review_opinion` VARCHAR(500) COMMENT ''核稿意见''');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;
 -- 签发阶段
-ALTER TABLE oa_document ADD COLUMN IF NOT EXISTS signer_user_id BIGINT COMMENT '签发人 ID';
-ALTER TABLE oa_document ADD COLUMN IF NOT EXISTS signer_name VARCHAR(64) COMMENT '签发人姓名';
-ALTER TABLE oa_document ADD COLUMN IF NOT EXISTS sign_time DATETIME COMMENT '签发时间';
-ALTER TABLE oa_document ADD COLUMN IF NOT EXISTS sign_opinion VARCHAR(500) COMMENT '签发意见';
+-- 幂等新增列：oa_document.signer_user_id
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.COLUMNS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'oa_document' AND COLUMN_NAME = 'signer_user_id'),
+                  'DO 0',
+                  'ALTER TABLE `oa_document` ADD COLUMN `signer_user_id` BIGINT COMMENT ''签发人 ID''');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;
+-- 幂等新增列：oa_document.signer_name
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.COLUMNS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'oa_document' AND COLUMN_NAME = 'signer_name'),
+                  'DO 0',
+                  'ALTER TABLE `oa_document` ADD COLUMN `signer_name` VARCHAR(64) COMMENT ''签发人姓名''');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;
+-- 幂等新增列：oa_document.sign_time
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.COLUMNS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'oa_document' AND COLUMN_NAME = 'sign_time'),
+                  'DO 0',
+                  'ALTER TABLE `oa_document` ADD COLUMN `sign_time` DATETIME COMMENT ''签发时间''');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;
+-- 幂等新增列：oa_document.sign_opinion
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.COLUMNS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'oa_document' AND COLUMN_NAME = 'sign_opinion'),
+                  'DO 0',
+                  'ALTER TABLE `oa_document` ADD COLUMN `sign_opinion` VARCHAR(500) COMMENT ''签发意见''');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;
 -- 归档阶段
-ALTER TABLE oa_document ADD COLUMN IF NOT EXISTS archiver_user_id BIGINT COMMENT '归档人 ID';
-ALTER TABLE oa_document ADD COLUMN IF NOT EXISTS archiver_name VARCHAR(64) COMMENT '归档人姓名';
-ALTER TABLE oa_document ADD COLUMN IF NOT EXISTS archive_time DATETIME COMMENT '归档时间';
-ALTER TABLE oa_document ADD COLUMN IF NOT EXISTS archive_no VARCHAR(64) COMMENT '归档编号';
+-- 幂等新增列：oa_document.archiver_user_id
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.COLUMNS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'oa_document' AND COLUMN_NAME = 'archiver_user_id'),
+                  'DO 0',
+                  'ALTER TABLE `oa_document` ADD COLUMN `archiver_user_id` BIGINT COMMENT ''归档人 ID''');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;
+-- 幂等新增列：oa_document.archiver_name
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.COLUMNS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'oa_document' AND COLUMN_NAME = 'archiver_name'),
+                  'DO 0',
+                  'ALTER TABLE `oa_document` ADD COLUMN `archiver_name` VARCHAR(64) COMMENT ''归档人姓名''');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;
+-- 幂等新增列：oa_document.archive_time
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.COLUMNS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'oa_document' AND COLUMN_NAME = 'archive_time'),
+                  'DO 0',
+                  'ALTER TABLE `oa_document` ADD COLUMN `archive_time` DATETIME COMMENT ''归档时间''');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;
+-- 幂等新增列：oa_document.archive_no
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.COLUMNS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'oa_document' AND COLUMN_NAME = 'archive_no'),
+                  'DO 0',
+                  'ALTER TABLE `oa_document` ADD COLUMN `archive_no` VARCHAR(64) COMMENT ''归档编号''');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;
 -- 主送/抄送
-ALTER TABLE oa_document ADD COLUMN IF NOT EXISTS main_send_depts VARCHAR(500) COMMENT '主送部门（逗号分隔 ID）';
-ALTER TABLE oa_document ADD COLUMN IF NOT EXISTS copy_send_depts VARCHAR(500) COMMENT '抄送部门（逗号分隔 ID）';
+-- 幂等新增列：oa_document.main_send_depts
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.COLUMNS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'oa_document' AND COLUMN_NAME = 'main_send_depts'),
+                  'DO 0',
+                  'ALTER TABLE `oa_document` ADD COLUMN `main_send_depts` VARCHAR(500) COMMENT ''主送部门（逗号分隔 ID）''');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;
+-- 幂等新增列：oa_document.copy_send_depts
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.COLUMNS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'oa_document' AND COLUMN_NAME = 'copy_send_depts'),
+                  'DO 0',
+                  'ALTER TABLE `oa_document` ADD COLUMN `copy_send_depts` VARCHAR(500) COMMENT ''抄送部门（逗号分隔 ID）''');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;
 -- 抄送阅读记录
-ALTER TABLE oa_document ADD COLUMN IF NOT EXISTS read_count INT DEFAULT 0 COMMENT '阅读量';
+-- 幂等新增列：oa_document.read_count
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.COLUMNS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'oa_document' AND COLUMN_NAME = 'read_count'),
+                  'DO 0',
+                  'ALTER TABLE `oa_document` ADD COLUMN `read_count` INT DEFAULT 0 COMMENT ''阅读量''');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;
 
 -- ----------------------------
 -- 8. 新增菜单：知识库/工作台/审批模板库

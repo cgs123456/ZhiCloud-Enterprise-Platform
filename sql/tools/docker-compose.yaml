@@ -22,7 +22,7 @@ services:
         volumes:
             - mysql:/var/lib/mysql/
             # 注入初始化脚本
-            - ./mysql/ruoyi-vue-pro.sql:/docker-entrypoint-initdb.d/init.sql:ro
+            - ./mysql/zhicloud_platform.sql:/docker-entrypoint-initdb.d/init.sql:ro
         command:
             --default-authentication-plugin=mysql_native_password
             --character-set-server=utf8mb4

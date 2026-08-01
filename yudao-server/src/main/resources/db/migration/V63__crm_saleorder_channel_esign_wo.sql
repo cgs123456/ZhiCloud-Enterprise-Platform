@@ -65,7 +65,14 @@ CREATE TABLE IF NOT EXISTS crm_clue_channel (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='CRM 线索渠道表';
 
 -- ========== 任务3：合同电子签 ==========
-ALTER TABLE crm_contract ADD COLUMN IF NOT EXISTS esign_task_id VARCHAR(64) DEFAULT NULL COMMENT '电子签任务ID';
+-- 幂等新增列：crm_contract.esign_task_id
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.COLUMNS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'crm_contract' AND COLUMN_NAME = 'esign_task_id'),
+                  'DO 0',
+                  'ALTER TABLE `crm_contract` ADD COLUMN `esign_task_id` VARCHAR(64) DEFAULT NULL COMMENT ''电子签任务ID''');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;
 
 -- ========== 任务4：售后工单 ==========
 CREATE TABLE IF NOT EXISTS crm_work_order (

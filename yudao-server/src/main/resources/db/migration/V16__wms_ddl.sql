@@ -485,4 +485,11 @@ CREATE TABLE IF NOT EXISTS wms_inventory_batch (
 -- ----------------------------
 -- 商品表补充 ABC 分类字段
 -- ----------------------------
-ALTER TABLE wms_item ADD COLUMN IF NOT EXISTS abc_classification VARCHAR(10) COMMENT 'ABC 分类（A 高频 / B 中频 / C 低频）' AFTER remark;
+-- 幂等新增列：wms_item.abc_classification
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.COLUMNS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'wms_item' AND COLUMN_NAME = 'abc_classification'),
+                  'DO 0',
+                  'ALTER TABLE `wms_item` ADD COLUMN `abc_classification` VARCHAR(10) COMMENT ''ABC 分类（A 高频 / B 中频 / C 低频）'' AFTER remark');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;

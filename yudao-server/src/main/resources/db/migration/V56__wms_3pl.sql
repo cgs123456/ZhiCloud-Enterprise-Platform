@@ -19,11 +19,23 @@
 -- ----------------------------
 -- 1. 为 wms_inventory 增加货主字段
 -- ----------------------------
-ALTER TABLE wms_inventory
-    ADD COLUMN IF NOT EXISTS owner_id BIGINT DEFAULT NULL COMMENT '货主ID（3PL 场景区分不同货主库存归属）' AFTER warehouse_id;
+-- 幂等新增列：wms_inventory.owner_id
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.COLUMNS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'wms_inventory' AND COLUMN_NAME = 'owner_id'),
+                  'DO 0',
+                  'ALTER TABLE `wms_inventory` ADD COLUMN `owner_id` BIGINT DEFAULT NULL COMMENT ''货主ID（3PL 场景区分不同货主库存归属）'' AFTER warehouse_id');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;
 
-ALTER TABLE wms_inventory
-    ADD INDEX IF NOT EXISTS idx_warehouse_owner_sku (warehouse_id, owner_id, sku_id);
+-- 幂等新增索引：wms_inventory.idx_warehouse_owner_sku
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.STATISTICS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'wms_inventory' AND INDEX_NAME = 'idx_warehouse_owner_sku'),
+                  'DO 0',
+                  'ALTER TABLE `wms_inventory` ADD INDEX `idx_warehouse_owner_sku` (warehouse_id, owner_id, sku_id)');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;
 
 -- ----------------------------
 -- 2. 越库单表

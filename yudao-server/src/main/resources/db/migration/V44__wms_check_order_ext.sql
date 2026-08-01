@@ -14,11 +14,23 @@
 -- ----------------------------
 -- 1. 为 wms_check_order 增加字段
 -- ----------------------------
-ALTER TABLE wms_check_order
-    ADD COLUMN IF NOT EXISTS check_type TINYINT DEFAULT 2 COMMENT '盘点类型（1 暗盘 BLIND / 2 明盘 OPEN / 3 循环盘点 CYCLE）' AFTER status;
+-- 幂等新增列：wms_check_order.check_type
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.COLUMNS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'wms_check_order' AND COLUMN_NAME = 'check_type'),
+                  'DO 0',
+                  'ALTER TABLE `wms_check_order` ADD COLUMN `check_type` TINYINT DEFAULT 2 COMMENT ''盘点类型（1 暗盘 BLIND / 2 明盘 OPEN / 3 循环盘点 CYCLE）'' AFTER status');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;
 
-ALTER TABLE wms_check_order
-    ADD COLUMN IF NOT EXISTS cycle_days INT COMMENT '循环盘点周期天数（仅 CYCLE 类型使用）' AFTER check_type;
+-- 幂等新增列：wms_check_order.cycle_days
+SET @zc_sql := IF(EXISTS(SELECT 1 FROM information_schema.COLUMNS
+                         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'wms_check_order' AND COLUMN_NAME = 'cycle_days'),
+                  'DO 0',
+                  'ALTER TABLE `wms_check_order` ADD COLUMN `cycle_days` INT COMMENT ''循环盘点周期天数（仅 CYCLE 类型使用）'' AFTER check_type');
+PREPARE zc_stmt FROM @zc_sql;
+EXECUTE zc_stmt;
+DEALLOCATE PREPARE zc_stmt;
 
 -- ----------------------------
 -- 2. 循环盘点计划表
