@@ -25,7 +25,7 @@ public class AnthropicChatModelTest {
 
     private final String apiKey = System.getenv("ANTHROPIC_API_KEY");
 
-    private final AnthropicChatModel chatModel = AnthropicChatModel.builder()
+    private final AnthropicChatModel chatModel = apiKey != null ? (AnthropicChatModel.builder()
             .anthropicApi(AnthropicApi.builder()
                     .apiKey(apiKey)
                     .baseUrl("https://aihubmix.com")
@@ -35,7 +35,7 @@ public class AnthropicChatModelTest {
                     .temperature(0.7)
                     .maxTokens(4096)
                     .build())
-            .build();
+            .build()) : null;
 
     @Test
     @Disabled

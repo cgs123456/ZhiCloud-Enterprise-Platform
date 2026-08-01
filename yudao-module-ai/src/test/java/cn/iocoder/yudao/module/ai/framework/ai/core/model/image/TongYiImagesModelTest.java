@@ -27,11 +27,11 @@ public class TongYiImagesModelTest {
 
     private final String apiKey = System.getenv("TONGYI_API_KEY"); // https://bailian.console.aliyun.com/cn-beijing/?tab=model#/api-key 获取密钥
 
-    private final DashScopeImageModel imageModel = DashScopeImageModel.builder()
+    private final DashScopeImageModel imageModel = apiKey != null ? (DashScopeImageModel.builder()
             .dashScopeApi(DashScopeImageApi.builder()
                     .apiKey(apiKey)
                     .build())
-            .build();
+            .build()) : null;
 
     // TODO @芋艿：
     @Test

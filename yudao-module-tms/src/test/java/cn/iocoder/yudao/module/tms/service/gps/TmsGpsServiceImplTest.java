@@ -91,7 +91,7 @@ public class TmsGpsServiceImplTest extends BaseDbUnitTest {
 
         // 断言：返回最后一条（时间最大）
         assertNotNull(latest);
-        assertEquals(new BigDecimal("116.2"), latest.getLongitude());
+        assertEquals(0, new BigDecimal("116.2").compareTo(latest.getLongitude()));
     }
 
     @Test

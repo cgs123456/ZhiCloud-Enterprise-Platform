@@ -26,7 +26,7 @@ public class OpenAIChatModelTests {
 
     private final String apiKey = System.getenv("OPENAI_API_KEY");
 
-    private final OpenAiChatModel chatModel = OpenAiChatModel.builder()
+    private final OpenAiChatModel chatModel = apiKey != null ? (OpenAiChatModel.builder()
             .openAiApi(OpenAiApi.builder()
                     .baseUrl("https://api.holdai.top")
                     .apiKey(apiKey) // apiKey
@@ -36,7 +36,7 @@ public class OpenAIChatModelTests {
 //                    .model(OpenAiApi.ChatModel.O1) // 模型
                     .temperature(0.7)
                     .build())
-            .build();
+            .build()) : null;
 
     @Test
     @Disabled

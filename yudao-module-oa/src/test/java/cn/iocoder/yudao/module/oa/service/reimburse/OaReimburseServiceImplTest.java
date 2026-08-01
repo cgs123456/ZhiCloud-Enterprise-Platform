@@ -1,12 +1,14 @@
 package cn.iocoder.yudao.module.oa.service.reimburse;
 
 import cn.iocoder.yudao.framework.test.core.ut.BaseDbUnitTest;
+import cn.iocoder.yudao.module.bpm.api.task.BpmProcessInstanceApi;
 import cn.iocoder.yudao.module.oa.controller.admin.reimburse.vo.OaReimbursePageReqVO;
 import cn.iocoder.yudao.module.oa.controller.admin.reimburse.vo.OaReimburseSaveReqVO;
 import cn.iocoder.yudao.module.oa.dal.dataobject.reimburse.OaReimburseDO;
 import cn.iocoder.yudao.module.oa.dal.mysql.reimburse.OaReimburseMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import jakarta.annotation.Resource;
 import java.math.BigDecimal;
@@ -28,6 +30,9 @@ public class OaReimburseServiceImplTest extends BaseDbUnitTest {
 
     @Resource
     private OaReimburseMapper reimburseMapper;
+
+    @MockitoBean
+    private BpmProcessInstanceApi processInstanceApi;
 
     @Test
     public void test_createReimburse_success() {
@@ -69,6 +74,7 @@ public class OaReimburseServiceImplTest extends BaseDbUnitTest {
         OaReimburseDO reimburse = randomPojo(OaReimburseDO.class, o -> {
             o.setNo("RB003");
             o.setReimburseName("旧名称");
+            o.setStatus(10); // 草稿，update 仅允许草稿状态
         });
         reimburseMapper.insert(reimburse);
 
@@ -109,7 +115,7 @@ public class OaReimburseServiceImplTest extends BaseDbUnitTest {
     public void test_submitReimburse_success() {
         // mock 数据
         OaReimburseDO reimburse = randomPojo(OaReimburseDO.class, o -> {
-            o.setStatus(0); // 草稿
+            o.setStatus(10); // 草稿 STATUS_DRAFT=10
         });
         reimburseMapper.insert(reimburse);
 

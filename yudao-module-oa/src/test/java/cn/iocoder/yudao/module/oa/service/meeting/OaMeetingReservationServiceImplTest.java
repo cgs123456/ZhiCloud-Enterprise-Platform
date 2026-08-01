@@ -6,8 +6,10 @@ import cn.iocoder.yudao.module.oa.dal.dataobject.meeting.OaMeetingReservationDO;
 import cn.iocoder.yudao.module.oa.dal.dataobject.meeting.OaMeetingRoomDO;
 import cn.iocoder.yudao.module.oa.dal.mysql.meeting.OaMeetingReservationMapper;
 import cn.iocoder.yudao.module.oa.dal.mysql.meeting.OaMeetingRoomMapper;
+import cn.iocoder.yudao.module.oa.service.meeting.OaMeetingRoomService;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import jakarta.annotation.Resource;
 import java.time.LocalDateTime;
@@ -33,11 +35,14 @@ public class OaMeetingReservationServiceImplTest extends BaseDbUnitTest {
     @Resource
     private OaMeetingRoomMapper meetingRoomMapper;
 
+    @MockitoBean
+    private OaMeetingRoomService meetingRoomService;
+
     @Test
     public void test_createReservation_success() {
         // mock 会议室
         OaMeetingRoomDO room = randomPojo(OaMeetingRoomDO.class, o -> {
-            o.setStatus(1);
+            o.setStatus(10); // 会议室可用状态 ROOM_STATUS_AVAILABLE=10
         });
         meetingRoomMapper.insert(room);
 
@@ -85,7 +90,7 @@ public class OaMeetingReservationServiceImplTest extends BaseDbUnitTest {
             o.setRoomId(room.getId());
             o.setStartTime(LocalDateTime.of(2026, 8, 1, 14, 0));
             o.setEndTime(LocalDateTime.of(2026, 8, 1, 15, 0));
-            o.setStatus(1);
+            o.setStatus(10); // 会议室可用状态 ROOM_STATUS_AVAILABLE=10
         });
         reservationMapper.insert(exist);
 

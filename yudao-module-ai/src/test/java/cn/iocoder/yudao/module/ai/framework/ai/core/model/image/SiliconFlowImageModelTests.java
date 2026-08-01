@@ -16,9 +16,9 @@ public class SiliconFlowImageModelTests {
 
     private final String apiKey = System.getenv("SILICONFLOW_API_KEY");
 
-    private final SiliconFlowImageModel imageModel = new SiliconFlowImageModel(
-            new SiliconFlowImageApi(apiKey) // 密钥
-    );
+    private final SiliconFlowImageModel imageModel = apiKey != null
+            ? new SiliconFlowImageModel(new SiliconFlowImageApi(apiKey)) // 密钥
+            : null;
 
     @Test
     @Disabled

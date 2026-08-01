@@ -4,7 +4,9 @@ import cn.iocoder.yudao.framework.test.core.ut.BaseDbUnitTest;
 import cn.iocoder.yudao.module.hr.controller.admin.leave.vo.HrLeaveRequestPageReqVO;
 import cn.iocoder.yudao.module.hr.controller.admin.leave.vo.HrLeaveRequestSaveReqVO;
 import cn.iocoder.yudao.module.hr.dal.dataobject.leave.HrLeaveRequestDO;
+import cn.iocoder.yudao.module.hr.dal.dataobject.leave.HrLeaveTypeDO;
 import cn.iocoder.yudao.module.hr.dal.mysql.leave.HrLeaveRequestMapper;
+import cn.iocoder.yudao.module.hr.dal.mysql.leave.HrLeaveTypeMapper;
 import cn.iocoder.yudao.module.hr.service.employee.HrEmployeeService;
 import cn.iocoder.yudao.module.hr.service.leave.HrLeaveTypeService;
 import org.junit.jupiter.api.Test;
@@ -31,6 +33,8 @@ public class HrLeaveRequestServiceImplTest extends BaseDbUnitTest {
 
     @Resource
     private HrLeaveRequestMapper leaveRequestMapper;
+    @Resource
+    private HrLeaveTypeMapper leaveTypeMapper;
 
     @MockitoBean
     private HrEmployeeService employeeService;
@@ -39,6 +43,13 @@ public class HrLeaveRequestServiceImplTest extends BaseDbUnitTest {
 
     @Test
     public void test_createLeaveRequest_success() {
+        // 准备关联的请假类型（createLeaveRequest 通过 leaveTypeMapper 校验存在）
+        HrLeaveTypeDO leaveType = randomPojo(HrLeaveTypeDO.class, o -> {
+            o.setId(1L);
+            o.setIsPaid(0); // 非带薪，跳过余额校验
+        });
+        leaveTypeMapper.insert(leaveType);
+
         // 准备参数
         HrLeaveRequestSaveReqVO reqVO = new HrLeaveRequestSaveReqVO();
         reqVO.setEmployeeId(1L);
@@ -52,7 +63,7 @@ public class HrLeaveRequestServiceImplTest extends BaseDbUnitTest {
         // 校验
         HrLeaveRequestDO result = leaveRequestMapper.selectById(id);
         assertNotNull(result);
-        assertEquals(new BigDecimal("2.0"), result.getDays());
+        assertEquals(0, new BigDecimal("2.0").compareTo(result.getDays()));
         assertEquals("个人事务", result.getReason());
     }
 
@@ -69,7 +80,7 @@ public class HrLeaveRequestServiceImplTest extends BaseDbUnitTest {
 
         // 校验
         HrLeaveRequestDO result = leaveRequestMapper.selectById(leaveRequest.getId());
-        assertEquals(2, result.getStatus()); // 已取消
+        assertEquals(3, result.getStatus()); // 已取消 CANCELLED=3
     }
 
     @Test

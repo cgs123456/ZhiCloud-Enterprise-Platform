@@ -27,7 +27,7 @@ public class SiliconFlowChatModelTests {
 
     private final String apiKey = System.getenv("SILICONFLOW_API_KEY");
 
-    private final DeepSeekChatModel openAiChatModel = DeepSeekChatModel.builder()
+    private final DeepSeekChatModel openAiChatModel = apiKey != null ? (DeepSeekChatModel.builder()
             .deepSeekApi(DeepSeekApi.builder()
                     .baseUrl(SiliconFlowApiConstants.DEFAULT_BASE_URL)
                     .apiKey(apiKey) // apiKey
@@ -38,7 +38,7 @@ public class SiliconFlowChatModelTests {
 //                    .model("Pro/deepseek-ai/DeepSeek-R1") // 模型（Pro/deepseek-ai/DeepSeek-R1）需要付费
                     .temperature(0.7)
                     .build())
-            .build();
+            .build()) : null;
 
     private final SiliconFlowChatModel chatModel = new SiliconFlowChatModel(openAiChatModel);
 

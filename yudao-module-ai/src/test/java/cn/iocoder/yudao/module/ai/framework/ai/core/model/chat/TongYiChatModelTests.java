@@ -35,7 +35,7 @@ public class TongYiChatModelTests {
 
     private final String apiKey = System.getenv("TONGYI_API_KEY"); // https://bailian.console.aliyun.com/cn-beijing/?tab=model#/api-key 获取密钥
 
-    private final DashScopeChatModel chatModel = DashScopeChatModel.builder()
+    private final DashScopeChatModel chatModel = apiKey != null ? (DashScopeChatModel.builder()
             .dashScopeApi(DashScopeApi.builder()
                     .apiKey(apiKey)
                     .build())
@@ -47,7 +47,7 @@ public class TongYiChatModelTests {
 //                    .model("deepseek-r1-distill-qwen-1.5b") // 模型（deepseek-r1-distill-qwen-1.5b）
 //                    .enableThinking(true)
                     .build())
-            .build();
+            .build()) : null;
 
     @Test
     @Disabled

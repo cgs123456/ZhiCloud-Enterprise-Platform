@@ -58,7 +58,7 @@ public class TmsFreightServiceImplTest extends BaseDbUnitTest {
         TmsFreightCalculateRespVO respVO = freightService.calculateFreight(reqVO);
 
         // 断言：500 * 3 = 1500 + 50 - 20 = 1530
-        assertEquals(new BigDecimal("500.0"), respVO.getBillingQuantity());
+        assertEquals(0, new BigDecimal("500.0").compareTo(respVO.getBillingQuantity()));
         assertEquals(new BigDecimal("3.00"), respVO.getUnitPrice());
         assertEquals(new BigDecimal("1500.00"), respVO.getBaseAmount());
         assertEquals(new BigDecimal("1530.00"), respVO.getTotalAmount());
@@ -132,7 +132,7 @@ public class TmsFreightServiceImplTest extends BaseDbUnitTest {
         TmsFreightCalculateRespVO respVO = freightService.calculateFreight(reqVO);
 
         // 断言：max(100 - 200, 0) = 0
-        assertEquals(BigDecimal.ZERO, respVO.getTotalAmount());
+        assertEquals(0, BigDecimal.ZERO.compareTo(respVO.getTotalAmount()));
     }
 
     // ==================== CRUD 测试 ====================
