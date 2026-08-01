@@ -60,7 +60,7 @@ jobs:
         path: target/dependency-check-report.html
         retention-days: 30
     - name: Generate CycloneDX SBOM (P2-3 软件物料清单)
-      run: mvn cyclonedx:makeAggregateBom -DskipTests -q
+      run: mvn org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -DskipTests -q
     - name: Upload SBOM Artifact
       if: always()
       uses: actions/upload-artifact@v4
