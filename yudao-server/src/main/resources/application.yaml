@@ -66,16 +66,17 @@
     redis:
       time-to-live: 1h # 设置过期时间为 1 小时
 
+  # 优雅停机生命周期配置（合并自原先独立的 spring 顶层键，避免 YAML 重复 key 报错）
+  lifecycle:
+    timeout-per-shutdown-phase: 30s # 优雅停机最大等待时间 30 秒
+
 server:
   servlet:
     encoding:
       enabled: true
       charset: UTF-8 # 必须设置 UTF-8，避免 WebFlux 流式返回（AI 场景）会乱码问题
       force: true
-  shutdown: graceful # 优雅停机，等待进行中请求完成
-spring:
-  lifecycle:
-    timeout-per-shutdown-phase: 30s # 优雅停机最大等待时间 30 秒
+    shutdown: graceful # 优雅停机，等待进行中请求完成
 
 --- #################### 接口文档配置 ####################
 
