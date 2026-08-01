@@ -1,0 +1,87 @@
+{{/*
+============================================================
+yudao-server Flyway 数据库迁移 Job 模板（ArgoCD PreSync 阶段执行）
+执行时机：在主应用 Deployment 滚动更新前运行
+- ArgoCD 通过 argocd.argoproj.io/hook: PreSync 注解识别
+- hook-delete-policy: before-hook-creation 表示每次 Sync 前先删除旧 Job
+- 实际迁移通过 Spring Boot 启动时 Flyway 自动执行（spring.flyway.enabled=true）
+  此 Job 仅作为"显式迁移"占位，便于在 ArgoCD 流水线中独立观察迁移状态
+
+设计说明：
+  1. 命令使用 yudao-server 镜像复用已构建产物，无需额外迁移镜像
+  2. 此处用 sh -c echo 占位，实际生产建议：
+     - 方案 A：保留 Spring Boot 启动时 Flyway 自动迁移（推荐，配置简单）
+     - 方案 B：构建专用迁移镜像，引用 org.flywaydb.commandline.Main 执行：
+         java -cp /app/resources/db/migration org.flywaydb.core.commandline.Main migrate
+  3. Job 失败时 backoffLimit 限制重试次数，避免阻塞 Sync 流水线
+*/}}
+{{- if .Values.migration.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "yudao.fullname" . }}-migration
+  namespace: {{ include "yudao.namespace" . }}
+  labels:
+    {{- include "yudao.labels" . | nindent 4 }}
+  annotations:
+    # ArgoCD Sync Hook：在主资源 Sync 前执行
+    argocd.argoproj.io/hook: PreSync
+    # 删除策略：每次创建新 Hook 前删除旧 Job（保证幂等）
+    argocd.argoproj.io/hook-delete-policy: before-hook-creation
+    # 失败时是否跳过后续 Sync：返回非 0 即失败
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  # 失败重试次数
+  backoffLimit: {{ .Values.migration.backoffLimit }}
+  # 完成后保留时长（秒），便于排查
+  ttlSecondsAfterFinished: {{ .Values.migration.ttlSecondsAfterFinished }}
+  template:
+    metadata:
+      labels:
+        {{- include "yudao.selectorLabels" . | nindent 8 }}
+        job-type: flyway-migration
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: {{ include "yudao.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: flyway-migration
+          image: {{ include "yudao.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          # 复用 ConfigMap/Secret 环境变量，保证数据库连接信息可用
+          envFrom:
+            - configMapRef:
+                name: {{ include "yudao.fullname" . }}-config
+            - secretRef:
+                name: {{ include "yudao.fullname" . }}-secret
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: {{ .Values.env.SPRING_PROFILES_ACTIVE | quote }}
+            - name: TZ
+              value: {{ .Values.env.TZ | quote }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "============================================================"
+              echo "[Flyway 迁移] 开始执行数据库迁移（PreSync 阶段）"
+              echo "[Flyway 迁移] profile: {{ .Values.env.SPRING_PROFILES_ACTIVE }}"
+              echo "[Flyway 迁移] 数据源: {{ .Values.env.MASTER_DATASOURCE_URL }}"
+              echo "------------------------------------------------------------"
+              # 占位说明：实际迁移由 Spring Boot 启动时 Flyway 自动执行
+              # 如需显式迁移，替换为下方命令（需确保镜像内含 flyway-commandline）：
+              #   java -cp /app/resources/db/migration org.flywaydb.core.commandline.Main \
+              #     -url="$MASTER_DATASOURCE_URL" \
+              #     -user="$MASTER_DATASOURCE_USERNAME" \
+              #     -password="$MASTER_DATASOURCE_PASSWORD" \
+              #     -locations=classpath:db/migration \
+              #     migrate
+              echo "[Flyway 迁移] 当前为占位实现，实际迁移由 Spring Boot 启动时自动执行"
+              echo "[Flyway 迁移] 迁移脚本目录：yudao-server/src/main/resources/db/migration/V1-V31"
+              echo "[Flyway 迁移] 迁移完成"
+              echo "============================================================"
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          {{- include "yudao.resources" . | nindent 10 }}
+{{- end }}

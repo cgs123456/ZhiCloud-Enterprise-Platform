@@ -1,0 +1,28 @@
+# Patterns to ignore when packaging Helm Chart
+# 文档与示例文件
+README.md
+*.md
+LICENSE
+*.txt
+
+# IDE / 编辑器
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# 多环境 values（仅打包默认 values.yaml，环境覆盖文件单独管理）
+values-dev.yaml
+values-staging.yaml
+values-prod.yaml
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml

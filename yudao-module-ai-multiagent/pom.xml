@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.zhicloud</groupId>
+        <artifactId>yudao</artifactId>
+        <version>${revision}</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <packaging>jar</packaging>
+    <artifactId>yudao-module-ai-multiagent</artifactId>
+
+    <name>${project.artifactId}</name>
+    <description>
+        ai-multiagent 模块下，基于 Spring AI 1.1.8 的 ChatClient 实现 Supervisor-Worker 多 Agent 编排能力。
+        核心能力包括：
+          1. 多 Agent 拓扑配置管理（aimultiagent_topology）
+          2. 编排执行引擎（Supervisor 任务拆解 → Worker 分发执行 → Supervisor 汇总）
+          3. 执行日志记录（aimultiagent_execution_log）
+          4. 熔断机制（调用深度上限 + Token 预算上限）
+    </description>
+
+    <properties>
+        <spring-ai.version>1.1.8</spring-ai.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>${spring-ai.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!-- 复用 yudao-module-ai 的 Spring AI 配置、AiModelService、MCP Tools 等 -->
+        <dependency>
+            <groupId>com.zhicloud</groupId>
+            <artifactId>yudao-module-ai</artifactId>
+            <version>${revision}</version>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- 业务组件 -->
+        <dependency>
+            <groupId>com.zhicloud</groupId>
+            <artifactId>yudao-spring-boot-starter-biz-tenant</artifactId>
+        </dependency>
+
+        <!-- Web 相关 -->
+        <dependency>
+            <groupId>com.zhicloud</groupId>
+            <artifactId>yudao-spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.zhicloud</groupId>
+            <artifactId>yudao-spring-boot-starter-web</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- DB 相关 -->
+        <dependency>
+            <groupId>com.zhicloud</groupId>
+            <artifactId>yudao-spring-boot-starter-mybatis</artifactId>
+        </dependency>
+        <!-- A3 Spring Modulith：@ApplicationModule 注解依赖（compile-time only，runtime 由 yudao-server 提供） -->
+        <dependency>
+            <groupId>org.springframework.modulith</groupId>
+            <artifactId>spring-modulith-core</artifactId>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+
+</project>

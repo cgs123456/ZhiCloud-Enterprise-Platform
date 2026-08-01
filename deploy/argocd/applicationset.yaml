@@ -1,0 +1,108 @@
+# ============================================================
+# yudao-server ArgoCD ApplicationSet
+# 基于 list 生成器，为 dev/staging/prod 三个环境自动创建 Application
+# 每个环境对应一个 Helm values 文件，部署到独立 namespace
+#
+# 设计说明：
+#   - 使用 list 生成器而非 git directories 生成器，便于显式声明每个环境
+#   - PreSync Hook 由 Helm Chart 内 job-migration.yaml 提供（hook 注解）
+#   - PostSync 健康检查由 ArgoCD 内置资源健康检查完成
+# ============================================================
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: yudao-server
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: yudao-server
+    app.kubernetes.io/part-of: yudao-gitops
+spec:
+  # 生成器：list 生成器，显式枚举三个环境
+  generators:
+    - list:
+        elements:
+          - env: dev
+            namespace: yudao-dev
+            valuesFile: values-dev.yaml
+          - env: staging
+            namespace: yudao-staging
+            valuesFile: values-staging.yaml
+          - env: prod
+            namespace: yudao-prod
+            valuesFile: values-prod.yaml
+  template:
+    metadata:
+      # Application 名称：yudao-server-<env>
+      name: 'yudao-server-{{env}}'
+      labels:
+        app.kubernetes.io/name: yudao-server
+        app.kubernetes.io/environment: '{{env}}'
+      annotations:
+        # 通知配置（按需启用）
+        notifications.argoproj.io/subscribe.on-deployed.slack: yudao-deploy
+    spec:
+      project: yudao
+      source:
+        # Git 仓库地址（部署前必须替换为真实仓库地址，否则 ArgoCD 无法拉取 Chart 模板）
+        repoURL: https://github.com/yudao/yudao-server.git
+        targetRevision: main
+        # Helm Chart 路径
+        path: deploy/helm/yudao
+        # Helm 部署配置
+        helm:
+          # values 文件（dev/staging/prod）
+          valueFiles:
+            - '{{valuesFile}}'
+          # 传入环境参数（覆盖 profile）
+          parameters:
+            - name: env.SPRING_PROFILES_ACTIVE
+              value: '{{env}}'
+          # Helm 版本
+          version: v3
+          # releaseName：yudao-<env>
+          releaseName: 'yudao-{{env}}'
+          # 是否跳过 CRD 安装（yudao 无 CRD）
+          skipCrds: true
+      destination:
+        # 部署到 in-cluster（同集群内）
+        server: https://kubernetes.default.svc
+        namespace: '{{namespace}}'
+      # 同步策略：自动化 + 自愈
+      syncPolicy:
+        automated:
+          # 自动剪枝：Git 中删除的资源在集群中也删除
+          prune: true
+          # 自愈：当有人手动改集群资源时自动回滚到 Git 状态
+          selfHeal: true
+          # 允许空应用（防止误删全部资源时 sync 失败）
+          allowEmpty: false
+        syncOptions:
+          # 自动创建 namespace
+          - CreateNamespace=true
+          # 服务端 Apply（更安全的字段管理）
+          - ServerSideApply=true
+          # 失败不阻塞共享资源
+          - FailOnSharedResource=false
+          # 前台删除（等待依赖清理）
+          - PrunePropagationPolicy=foreground
+          # 最后剪枝（先创建新资源再删旧）
+          - PruneLast=true
+        # 重试策略：失败自动重试 5 次
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m
+      # 忽略 Deployment.replicas 差异（HPA 接管后副本数会变）
+      ignoreDifferences:
+        - group: apps
+          kind: Deployment
+          jsonPointers:
+            - /spec/replicas
+        # 忽略 HPA 的当前副本数
+        - group: autoscaling
+          kind: HorizontalPodAutoscaler
+          jsonPointers:
+            - /status/currentReplicas
+            - /status/desiredReplicas

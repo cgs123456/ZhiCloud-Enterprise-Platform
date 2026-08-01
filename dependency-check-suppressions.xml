@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  yudao-server OWASP Dependency-Check 漏洞抑制规则
+  -
+  - 用途：对已评估为「可接受风险」或「误报」的 CVE 进行抑制，避免 CI 流水线被阻断
+  - 使用：
+  -   1. mvn dependency-check:check -DskipTests
+  -   2. CI 任务会读取此文件作为 -suppression 参数
+  - 原则：
+  -   1. 仅抑制已确认误报或已通过其他方式缓解的 CVE
+  -   2. 每条 suppression 必须填写 <notes> 说明抑制理由
+  -   3. 定期 review（建议每季度一次），评估是否可以解除抑制
+  -->
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+
+    <!-- 示例：抑制 BCrypt strength=4 的误报（实际已通过 SecurityProperties.passwordEncoderLength=10 + 数据库迁移脚本解决） -->
+    <!--
+    <suppress>
+        <packageUrl regex="true">^pkg:maven/org\.springframework\.boot/spring\-boot\-starter.*$</packageUrl>
+        <cve>CVE-YYYY-NNNNN</cve>
+        <notes>已在 application-prod.yaml 中通过 ${ENV_VAR} 注入，不存在硬编码风险。</notes>
+    </suppress>
+    -->
+
+    <!-- 抑制 fastjson 1.x 已知漏洞（项目已升级到 fastjson2 2.0.62+，不再使用 1.x） -->
+    <suppress>
+        <packageUrl regex="true">^pkg:maven/com\.alibaba/fastjson.*$</packageUrl>
+        <cve>CVE-2022-25845</cve>
+        <notes>项目已移除 fastjson 1.x，统一使用 fastjson2 2.0.62+，此 CVE 不再适用。</notes>
+    </suppress>
+
+    <!-- 抑制开发环境依赖漏洞（仅 dev/test scope，不会进入生产镜像） -->
+    <suppress>
+        <packageUrl regex="true">^pkg:maven/junit/junit.*$</packageUrl>
+        <cve>CVE-2020-15250</cve>
+        <notes>junit 4.x 仅在测试 scope 使用，不会进入生产镜像，且 TempDir 漏洞不适用于本项目的测试代码。</notes>
+    </suppress>
+
+    <!-- 抑制 H2 数据库漏洞（仅测试环境使用） -->
+    <suppress>
+        <packageUrl regex="true">^pkg:maven/com\.h2database/h2.*$</packageUrl>
+        <cve>CVE-2022-23221</cve>
+        <notes>H2 仅用于单元测试，不会部署到生产环境。</notes>
+    </suppress>
+
+</suppressions>

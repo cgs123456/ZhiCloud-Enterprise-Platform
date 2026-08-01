@@ -1,0 +1,205 @@
+{
+  "annotations": {
+    "list": [
+      {"builtIn": 1, "datasource": "-- Grafana --", "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}
+    ]
+  },
+  "description": "芋道源码 yudao JVM 监控看板（堆内存 / 非堆内存 / GC / 线程 / 类加载）",
+  "editable": true,
+  "graphTooltip": 1,
+  "id": null,
+  "panels": [
+    {"collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0}, "id": 100, "panels": [], "title": "堆内存与非堆内存", "type": "row"},
+    {
+      "datasource": "Prometheus",
+      "description": "JVM 堆内存使用量与最大上限",
+      "fieldConfig": {"defaults": {"unit": "bytes"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 1},
+      "id": 1,
+      "legend": {"avg": false, "current": true, "max": true, "min": false, "show": true, "total": false, "values": true},
+      "lines": true,
+      "linewidth": 2,
+      "nullPointMode": "null",
+      "targets": [
+        {"datasource": "Prometheus", "expr": "sum(jvm_memory_used_bytes{application=~\"$application\", area=\"heap\"})", "legendFormat": "heap used", "range": true, "refId": "A"},
+        {"datasource": "Prometheus", "expr": "sum(jvm_memory_max_bytes{application=~\"$application\", area=\"heap\"})", "legendFormat": "heap max", "range": true, "refId": "B"}
+      ],
+      "title": "堆内存使用量 / 最大值",
+      "type": "graph",
+      "xaxis": {"mode": "time", "show": true, "values": []},
+      "yaxes": [{"format": "bytes", "logBase": 1, "show": true}, {"format": "short", "logBase": 1, "show": true}],
+      "yaxis": {"align": false}
+    },
+    {
+      "datasource": "Prometheus",
+      "description": "JVM 非堆内存（元空间 / 代码缓存 / 直接内存等）使用量",
+      "fieldConfig": {"defaults": {"unit": "bytes"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 1},
+      "id": 2,
+      "legend": {"avg": false, "current": true, "max": true, "min": false, "show": true, "total": false, "values": true},
+      "lines": true,
+      "linewidth": 2,
+      "nullPointMode": "null",
+      "targets": [
+        {"datasource": "Prometheus", "expr": "sum(jvm_memory_used_bytes{application=~\"$application\", area=\"nonheap\"}) by (id)", "legendFormat": "{{id}}", "range": true, "refId": "A"}
+      ],
+      "title": "非堆内存使用量（按区域）",
+      "type": "graph",
+      "xaxis": {"mode": "time", "show": true, "values": []},
+      "yaxes": [{"format": "bytes", "logBase": 1, "show": true}, {"format": "short", "logBase": 1, "show": true}],
+      "yaxis": {"align": false}
+    },
+    {"collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 9}, "id": 101, "panels": [], "title": "GC 垃圾回收", "type": "row"},
+    {
+      "datasource": "Prometheus",
+      "description": "GC 暂停时间 P95（毫秒），按 GC 动作聚合",
+      "fieldConfig": {"defaults": {"unit": "ms"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 10},
+      "id": 3,
+      "legend": {"avg": false, "current": true, "max": true, "min": false, "show": true, "total": false, "values": true},
+      "lines": true,
+      "linewidth": 2,
+      "nullPointMode": "null",
+      "targets": [
+        {"datasource": "Prometheus", "expr": "histogram_quantile(0.95, sum(rate(jvm_gc_pause_seconds_bucket{application=~\"$application\"}[5m])) by (le, action)) * 1000", "legendFormat": "P95 - {{action}}", "range": true, "refId": "A"},
+        {"datasource": "Prometheus", "expr": "histogram_quantile(0.5, sum(rate(jvm_gc_pause_seconds_bucket{application=~\"$application\"}[5m])) by (le, action)) * 1000", "legendFormat": "P50 - {{action}}", "range": true, "refId": "B"}
+      ],
+      "title": "GC 暂停时间 P50 / P95",
+      "type": "graph",
+      "xaxis": {"mode": "time", "show": true, "values": []},
+      "yaxes": [{"format": "ms", "logBase": 1, "show": true}, {"format": "short", "logBase": 1, "show": true}],
+      "yaxis": {"align": false}
+    },
+    {
+      "datasource": "Prometheus",
+      "description": "GC 次数速率（次/秒），按 GC 动作（end_of_major_gc / end_of_minor_gc）聚合",
+      "fieldConfig": {"defaults": {"unit": "ops"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 10},
+      "id": 4,
+      "legend": {"avg": false, "current": true, "max": true, "min": false, "show": true, "total": false, "values": true},
+      "lines": true,
+      "linewidth": 2,
+      "nullPointMode": "null",
+      "targets": [
+        {"datasource": "Prometheus", "expr": "sum(rate(jvm_gc_pause_seconds_count{application=~\"$application\"}[5m])) by (action)", "legendFormat": "{{action}}", "range": true, "refId": "A"}
+      ],
+      "title": "GC 次数速率",
+      "type": "graph",
+      "xaxis": {"mode": "time", "show": true, "values": []},
+      "yaxes": [{"format": "ops", "logBase": 1, "show": true}, {"format": "short", "logBase": 1, "show": true}],
+      "yaxis": {"align": false}
+    },
+    {"collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 18}, "id": 102, "panels": [], "title": "线程", "type": "row"},
+    {
+      "datasource": "Prometheus",
+      "description": "JVM 线程状态分布（runnable / blocked / waiting / timed-waiting）",
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 19},
+      "id": 5,
+      "legend": {"avg": false, "current": true, "max": true, "min": false, "show": true, "total": false, "values": true},
+      "lines": true,
+      "linewidth": 2,
+      "nullPointMode": "null",
+      "targets": [
+        {"datasource": "Prometheus", "expr": "sum(jvm_threads_states_threads{application=~\"$application\"}) by (state)", "legendFormat": "{{state}}", "range": true, "refId": "A"}
+      ],
+      "title": "线程状态分布",
+      "type": "graph",
+      "xaxis": {"mode": "time", "show": true, "values": []},
+      "yaxes": [{"format": "short", "logBase": 1, "show": true}, {"format": "short", "logBase": 1, "show": true}],
+      "yaxis": {"align": false}
+    },
+    {
+      "datasource": "Prometheus",
+      "description": "活跃 / 守护 / 峰值线程数",
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 19},
+      "id": 6,
+      "legend": {"avg": false, "current": true, "max": true, "min": false, "show": true, "total": false, "values": true},
+      "lines": true,
+      "linewidth": 2,
+      "nullPointMode": "null",
+      "targets": [
+        {"datasource": "Prometheus", "expr": "jvm_threads_live_threads{application=~\"$application\"}", "legendFormat": "live", "range": true, "refId": "A"},
+        {"datasource": "Prometheus", "expr": "jvm_threads_daemon_threads{application=~\"$application\"}", "legendFormat": "daemon", "range": true, "refId": "B"},
+        {"datasource": "Prometheus", "expr": "jvm_threads_peak_threads{application=~\"$application\"}", "legendFormat": "peak", "range": true, "refId": "C"}
+      ],
+      "title": "活跃 / 守护 / 峰值线程数",
+      "type": "graph",
+      "xaxis": {"mode": "time", "show": true, "values": []},
+      "yaxes": [{"format": "short", "logBase": 1, "show": true}, {"format": "short", "logBase": 1, "show": true}],
+      "yaxis": {"align": false}
+    },
+    {"collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 27}, "id": 103, "panels": [], "title": "类加载", "type": "row"},
+    {
+      "datasource": "Prometheus",
+      "description": "当前已加载类数量",
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 28},
+      "id": 7,
+      "legend": {"avg": false, "current": true, "max": true, "min": false, "show": true, "total": false, "values": true},
+      "lines": true,
+      "linewidth": 2,
+      "nullPointMode": "null",
+      "targets": [
+        {"datasource": "Prometheus", "expr": "jvm_classes_loaded_classes{application=~\"$application\"}", "legendFormat": "loaded", "range": true, "refId": "A"}
+      ],
+      "title": "已加载类数量",
+      "type": "graph",
+      "xaxis": {"mode": "time", "show": true, "values": []},
+      "yaxes": [{"format": "short", "logBase": 1, "show": true}, {"format": "short", "logBase": 1, "show": true}],
+      "yaxis": {"align": false}
+    },
+    {
+      "datasource": "Prometheus",
+      "description": "类卸载速率（个/秒）",
+      "fieldConfig": {"defaults": {"unit": "ops"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 28},
+      "id": 8,
+      "legend": {"avg": false, "current": true, "max": true, "min": false, "show": true, "total": false, "values": true},
+      "lines": true,
+      "linewidth": 2,
+      "nullPointMode": "null",
+      "targets": [
+        {"datasource": "Prometheus", "expr": "rate(jvm_classes_unloaded_classes_total{application=~\"$application\"}[5m])", "legendFormat": "unloaded", "range": true, "refId": "A"}
+      ],
+      "title": "类卸载速率",
+      "type": "graph",
+      "xaxis": {"mode": "time", "show": true, "values": []},
+      "yaxes": [{"format": "ops", "logBase": 1, "show": true}, {"format": "short", "logBase": 1, "show": true}],
+      "yaxis": {"align": false}
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["yudao", "jvm"],
+  "templating": {
+    "list": [
+      {
+        "current": {"selected": false, "text": "yudao-server", "value": "yudao-server"},
+        "datasource": "Prometheus",
+        "definition": "label_values(application)",
+        "hide": 0,
+        "includeAll": false,
+        "label": "应用",
+        "multi": false,
+        "name": "application",
+        "options": [],
+        "query": {"query": "label_values(application)", "refId": "Prometheus-application-Variable-Query"},
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {"from": "now-30m", "to": "now"},
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Yudao JVM 监控看板",
+  "uid": "yudao-jvm",
+  "version": 1,
+  "weekStart": ""
+}

@@ -1,0 +1,168 @@
+{
+  "annotations": {
+    "list": [
+      {"builtIn": 1, "datasource": "-- Grafana --", "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}
+    ]
+  },
+  "description": "芋道源码 yudao HTTP 请求监控看板（QPS / 响应时间 / 错误率 / 状态码分布）",
+  "editable": true,
+  "graphTooltip": 1,
+  "id": null,
+  "panels": [
+    {"collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0}, "id": 100, "panels": [], "title": "QPS 吞吐量", "type": "row"},
+    {
+      "datasource": "Prometheus",
+      "description": "总 QPS（每秒请求数）",
+      "fieldConfig": {"defaults": {"unit": "reqps"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 1},
+      "id": 1,
+      "legend": {"avg": false, "current": true, "max": true, "min": false, "show": true, "total": false, "values": true},
+      "lines": true,
+      "linewidth": 2,
+      "nullPointMode": "null",
+      "targets": [
+        {"datasource": "Prometheus", "expr": "sum(rate(http_server_requests_seconds_count{application=~\"$application\"}[1m]))", "legendFormat": "total qps", "range": true, "refId": "A"}
+      ],
+      "title": "总 QPS",
+      "type": "graph",
+      "xaxis": {"mode": "time", "show": true, "values": []},
+      "yaxes": [{"format": "reqps", "logBase": 1, "show": true}, {"format": "short", "logBase": 1, "show": true}],
+      "yaxis": {"align": false}
+    },
+    {
+      "datasource": "Prometheus",
+      "description": "按接口 URI 聚合的 QPS（TopN）",
+      "fieldConfig": {"defaults": {"unit": "reqps"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 1},
+      "id": 2,
+      "legend": {"avg": false, "current": true, "max": true, "min": false, "show": true, "total": false, "values": true},
+      "lines": true,
+      "linewidth": 2,
+      "nullPointMode": "null",
+      "targets": [
+        {"datasource": "Prometheus", "expr": "sum(rate(http_server_requests_seconds_count{application=~\"$application\"}[1m])) by (uri)", "legendFormat": "{{uri}}", "range": true, "refId": "A"}
+      ],
+      "title": "按接口 QPS",
+      "type": "graph",
+      "xaxis": {"mode": "time", "show": true, "values": []},
+      "yaxes": [{"format": "reqps", "logBase": 1, "show": true}, {"format": "short", "logBase": 1, "show": true}],
+      "yaxis": {"align": false}
+    },
+    {"collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 9}, "id": 101, "panels": [], "title": "响应时间", "type": "row"},
+    {
+      "datasource": "Prometheus",
+      "description": "HTTP 请求响应时间百分位 P50 / P95 / P99（毫秒）",
+      "fieldConfig": {"defaults": {"unit": "ms"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 10},
+      "id": 3,
+      "legend": {"avg": false, "current": true, "max": true, "min": false, "show": true, "total": false, "values": true},
+      "lines": true,
+      "linewidth": 2,
+      "nullPointMode": "null",
+      "targets": [
+        {"datasource": "Prometheus", "expr": "histogram_quantile(0.5, sum(rate(http_server_requests_seconds_bucket{application=~\"$application\"}[5m])) by (le)) * 1000", "legendFormat": "P50", "range": true, "refId": "A"},
+        {"datasource": "Prometheus", "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{application=~\"$application\"}[5m])) by (le)) * 1000", "legendFormat": "P95", "range": true, "refId": "B"},
+        {"datasource": "Prometheus", "expr": "histogram_quantile(0.99, sum(rate(http_server_requests_seconds_bucket{application=~\"$application\"}[5m])) by (le)) * 1000", "legendFormat": "P99", "range": true, "refId": "C"}
+      ],
+      "thresholds": [{"colorMode": "warning", "fill": false, "line": true, "op": "gt", "value": 500, "visible": true}, {"colorMode": "critical", "fill": false, "line": true, "op": "gt", "value": 1000, "visible": true}],
+      "title": "响应时间 P50 / P95 / P99",
+      "type": "graph",
+      "xaxis": {"mode": "time", "show": true, "values": []},
+      "yaxes": [{"format": "ms", "logBase": 1, "show": true}, {"format": "short", "logBase": 1, "show": true}],
+      "yaxis": {"align": false}
+    },
+    {
+      "datasource": "Prometheus",
+      "description": "按接口平均响应时间（毫秒）",
+      "fieldConfig": {"defaults": {"unit": "ms"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 18},
+      "id": 4,
+      "legend": {"avg": false, "current": true, "max": true, "min": false, "show": true, "total": false, "values": true},
+      "lines": true,
+      "linewidth": 2,
+      "nullPointMode": "null",
+      "targets": [
+        {"datasource": "Prometheus", "expr": "sum(rate(http_server_requests_seconds_sum{application=~\"$application\"}[5m])) by (uri) / sum(rate(http_server_requests_seconds_count{application=~\"$application\"}[5m])) by (uri) * 1000", "legendFormat": "{{uri}}", "range": true, "refId": "A"}
+      ],
+      "title": "按接口平均响应时间",
+      "type": "graph",
+      "xaxis": {"mode": "time", "show": true, "values": []},
+      "yaxes": [{"format": "ms", "logBase": 1, "show": true}, {"format": "short", "logBase": 1, "show": true}],
+      "yaxis": {"align": false}
+    },
+    {"collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 26}, "id": 102, "panels": [], "title": "错误率", "type": "row"},
+    {
+      "datasource": "Prometheus",
+      "description": "5xx 错误率 = 5xx 请求 / 总请求",
+      "fieldConfig": {"defaults": {"unit": "percentunit"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 27},
+      "id": 5,
+      "legend": {"avg": false, "current": true, "max": true, "min": false, "show": true, "total": false, "values": true},
+      "lines": true,
+      "linewidth": 2,
+      "nullPointMode": "null",
+      "targets": [
+        {"datasource": "Prometheus", "expr": "sum(rate(http_server_requests_seconds_count{application=~\"$application\", status=~\"5..\"}[1m])) / sum(rate(http_server_requests_seconds_count{application=~\"$application\"}[1m]))", "legendFormat": "5xx error rate", "range": true, "refId": "A"}
+      ],
+      "thresholds": [{"colorMode": "critical", "fill": true, "line": true, "op": "gt", "value": 0.005, "visible": true}],
+      "title": "5xx 错误率",
+      "type": "graph",
+      "xaxis": {"mode": "time", "show": true, "values": []},
+      "yaxes": [{"format": "percentunit", "logBase": 1, "show": true}, {"format": "short", "logBase": 1, "show": true}],
+      "yaxis": {"align": false}
+    },
+    {"collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 35}, "id": 103, "panels": [], "title": "状态码分布", "type": "row"},
+    {
+      "datasource": "Prometheus",
+      "description": "各 HTTP 状态码请求速率（堆叠）",
+      "fieldConfig": {"defaults": {"unit": "reqps"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 36},
+      "id": 6,
+      "legend": {"avg": false, "current": true, "max": true, "min": false, "show": true, "total": false, "values": true},
+      "lines": true,
+      "linewidth": 2,
+      "nullPointMode": "null",
+      "stack": true,
+      "targets": [
+        {"datasource": "Prometheus", "expr": "sum(rate(http_server_requests_seconds_count{application=~\"$application\"}[1m])) by (status)", "legendFormat": "{{status}}", "range": true, "refId": "A"}
+      ],
+      "title": "状态码分布",
+      "type": "graph",
+      "xaxis": {"mode": "time", "show": true, "values": []},
+      "yaxes": [{"format": "reqps", "logBase": 1, "show": true}, {"format": "short", "logBase": 1, "show": true}],
+      "yaxis": {"align": false}
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["yudao", "http"],
+  "templating": {
+    "list": [
+      {
+        "current": {"selected": false, "text": "yudao-server", "value": "yudao-server"},
+        "datasource": "Prometheus",
+        "definition": "label_values(application)",
+        "hide": 0,
+        "includeAll": false,
+        "label": "应用",
+        "multi": false,
+        "name": "application",
+        "options": [],
+        "query": {"query": "label_values(application)", "refId": "Prometheus-application-Variable-Query"},
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {"from": "now-30m", "to": "now"},
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Yudao HTTP 请求监控看板",
+  "uid": "yudao-http",
+  "version": 1,
+  "weekStart": ""
+}

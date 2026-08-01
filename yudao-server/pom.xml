@@ -1,0 +1,281 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.zhicloud</groupId>
+        <artifactId>yudao</artifactId>
+        <version>${revision}</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>yudao-server</artifactId>
+    <packaging>jar</packaging>
+
+    <name>${project.artifactId}</name>
+    <description>
+        后端 Server 的主项目，通过引入需要 yudao-module-xxx 的依赖，
+        从而实现提供 RESTful API 给 yudao-ui-admin、yudao-ui-user 等前端项目。
+        本质上来说，它就是个空壳（容器）！
+    </description>
+    <url>https://github.com/cgs123456/ZhiCloud-Enterprise-Platform</url>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.zhicloud</groupId>
+            <artifactId>yudao-module-system</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.zhicloud</groupId>
+            <artifactId>yudao-module-infra</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <!-- 会员中心。默认注释，保证编译速度 -->
+<!--        <dependency>-->
+<!--            <groupId>com.zhicloud</groupId>-->
+<!--            <artifactId>yudao-module-member</artifactId>-->
+<!--            <version>${revision}</version>-->
+<!--        </dependency>-->
+
+        <!-- 数据报表。默认注释，保证编译速度 -->
+<!--        <dependency>-->
+<!--            <groupId>com.zhicloud</groupId>-->
+<!--            <artifactId>yudao-module-report</artifactId>-->
+<!--            <version>${revision}</version>-->
+<!--        </dependency>-->
+        <!-- 工作流。默认注释，保证编译速度 -->
+        <dependency>
+            <groupId>com.zhicloud</groupId>
+            <artifactId>yudao-module-bpm</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- 支付服务。默认注释，保证编译速度 -->
+<!--        <dependency>-->
+<!--            <groupId>com.zhicloud</groupId>-->
+<!--            <artifactId>yudao-module-pay</artifactId>-->
+<!--            <version>${revision}</version>-->
+<!--        </dependency>-->
+
+        <!-- 微信公众号模块。默认注释，保证编译速度 -->
+<!--        <dependency>-->
+<!--            <groupId>com.zhicloud</groupId>-->
+<!--            <artifactId>yudao-module-mp</artifactId>-->
+<!--            <version>${revision}</version>-->
+<!--        </dependency>-->
+
+        <!-- 商城相关模块。默认注释，保证编译速度-->
+<!--        <dependency>-->
+<!--            <groupId>com.zhicloud</groupId>-->
+<!--            <artifactId>yudao-module-product</artifactId>-->
+<!--            <version>${revision}</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>com.zhicloud</groupId>-->
+<!--            <artifactId>yudao-module-promotion</artifactId>-->
+<!--            <version>${revision}</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>com.zhicloud</groupId>-->
+<!--            <artifactId>yudao-module-trade</artifactId>-->
+<!--            <version>${revision}</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>com.zhicloud</groupId>-->
+<!--            <artifactId>yudao-module-statistics</artifactId>-->
+<!--            <version>${revision}</version>-->
+<!--        </dependency>-->
+
+        <!-- CRM 相关模块。B5 启用：客户关系管理 -->
+        <dependency>
+            <groupId>com.zhicloud</groupId>
+            <artifactId>yudao-module-crm</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <!-- ERP 相关模块。已启用：配合 MCP Tool 暴露 -->
+        <dependency>
+            <groupId>com.zhicloud</groupId>
+            <artifactId>yudao-module-erp</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <!-- TMS 运输管理模块。已启用：承运商/车辆/司机/运单/跟踪 -->
+        <dependency>
+            <groupId>com.zhicloud</groupId>
+            <artifactId>yudao-module-tms</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <!-- AI 大模型相关模块。启用：AI Native 核心 -->
+        <dependency>
+            <groupId>com.zhicloud</groupId>
+            <artifactId>yudao-module-ai</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- AI RAG 本地化检索增强生成模块 -->
+        <dependency>
+            <groupId>com.zhicloud</groupId>
+            <artifactId>yudao-module-ai-rag</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- AI MultiAgent 多 Agent 编排模块（含 ReAct Agent） -->
+        <dependency>
+            <groupId>com.zhicloud</groupId>
+            <artifactId>yudao-module-ai-multiagent</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <!-- P2-5 数据湖仓模块（Iceberg + Trino，默认关闭，通过 yudao.datalake.enabled=true 启用） -->
+        <dependency>
+            <groupId>com.zhicloud</groupId>
+            <artifactId>yudao-module-datalake</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <!-- IoT 物联网相关模块。默认注释，保证编译速度 -->
+<!--        <dependency>-->
+<!--            <groupId>com.zhicloud</groupId>-->
+<!--            <artifactId>yudao-module-iot-biz</artifactId>-->
+<!--            <version>${revision}</version>-->
+<!--        </dependency>-->
+
+        <!-- MES 制造执行系统相关模块。已启用：配合 MCP Tool 暴露 -->
+        <dependency>
+            <groupId>com.zhicloud</groupId>
+            <artifactId>yudao-module-mes</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <!-- WMS 仓库管理模块。已启用：配合 MCP Tool 暴露 -->
+        <dependency>
+            <groupId>com.zhicloud</groupId>
+            <artifactId>yudao-module-wms</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <!-- QMS 质量管理模块。B1 新增：IQC/IPQC/OQC/CAPA -->
+        <dependency>
+            <groupId>com.zhicloud</groupId>
+            <artifactId>yudao-module-qms</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <!-- OA 办公自动化模块。报销/会议室/公文 -->
+        <dependency>
+            <groupId>com.zhicloud</groupId>
+            <artifactId>yudao-module-oa</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <!-- HR 人力资源模块。员工/部门/考勤/薪资/绩效 -->
+        <dependency>
+            <groupId>com.zhicloud</groupId>
+            <artifactId>yudao-module-hr</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <!-- IM 相关模块。默认注释，保证编译速度 -->
+<!--        <dependency>-->
+<!--            <groupId>com.zhicloud</groupId>-->
+<!--            <artifactId>yudao-module-im</artifactId>-->
+<!--            <version>${revision}</version>-->
+<!--        </dependency>-->
+
+        <!-- spring boot 配置所需依赖 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- 服务保障相关 -->
+        <dependency>
+            <groupId>com.zhicloud</groupId>
+            <artifactId>yudao-spring-boot-starter-protection</artifactId>
+        </dependency>
+
+        <!-- 监控相关：Spring Boot Actuator + Micrometer Prometheus -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+        <!-- A4 OpenTelemetry 分布式追踪：使用 micrometer-tracing-bridge-otel 桥接，OTLP 上报到 Jaeger/Tempo -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-otel</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-exporter-otlp</artifactId>
+        </dependency>
+        <!-- A3 Spring Modulith：模块化强化，模块边界校验 + 事件驱动通信 -->
+        <dependency>
+            <groupId>org.springframework.modulith</groupId>
+            <artifactId>spring-modulith-starter-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.modulith</groupId>
+            <artifactId>spring-modulith-actuator</artifactId>
+        </dependency>
+        <!-- A3 Spring Modulith Test：模块边界校验测试（ModularityTests） -->
+        <dependency>
+            <groupId>org.springframework.modulith</groupId>
+            <artifactId>spring-modulith-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- P1-3 Flyway：数据库版本管理，替代 sql/ 手工脚本 -->
+        <!-- 启动时自动执行 db/migration 下的 V*__*.sql，schema 演进可追溯/可回滚/CI 可校验 -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-mysql</artifactId>
+        </dependency>
+
+
+        <!-- P1 Nacos: nacos-config starter (optional, activate via -Dspring.profiles.active=nacos) -->
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+        </dependency>
+        <!-- P1 Nacos: spring-cloud-starter-bootstrap (enables bootstrap.yml for Nacos config loading) -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-bootstrap</artifactId>
+        </dependency>
+        </dependencies>
+
+    <build>
+        <!-- 设置构建的 jar 包名 -->
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+            <!-- 打包 -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring.boot.version}</version>
+                <configuration>
+                    <!-- ZGC 配置（JDK 21，GC 停顿 < 10ms） -->
+                    <jvmArguments>-XX:+UseZGC -XX:+ZGenerational</jvmArguments>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal> <!-- 将引入的 jar 打入其中 -->
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

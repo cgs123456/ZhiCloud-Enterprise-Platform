@@ -1,0 +1,51 @@
+#!/bin/sh
+# Git pre-commit hook: 扫描暂存文件中的密钥模式
+#
+# 安装方式：
+#   cp script/hooks/pre-commit .git/hooks/pre-commit
+#   chmod +x .git/hooks/pre-commit
+#
+# 命中密钥模式时拒绝提交并提示。
+# 可选：如已安装 truffleHog 或 git-secrets，可替换为更强的扫描器。
+
+# 密钥模式（正则），命中任一即拒绝提交
+PATTERNS='(
+    sk-[A-Za-z0-9_]{20,}              # OpenAI API Key
+    | AKIA[0-9A-Z]{16}                # AWS Access Key ID
+    | sk_[A-Za-z0-9]{20,}             # Stripe Secret Key
+    | password\s*=\s*["'"'"'][^"'"'"']{4,}["'"'"']  # password = "xxx"
+    | secret\s*=\s*["'"'"'][^"'"'"']{4,}["'"'"']    # secret = "xxx"
+    | api[_-]?key\s*=\s*["'"'"'][^"'"'"']{4,}["'"'"']  # api_key = "xxx"
+    | -----BEGIN [A-Z ]*PRIVATE KEY-----  # PEM 私钥
+)'
+
+# 仅扫描暂存的文本文件，排除二进制和大文件
+FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -vE '\.(png|jpg|jpeg|gif|bmp|ico|pdf|zip|jar|war|class|so|dll|exe|bin)$' | head -100)
+
+if [ -z "$FILES" ]; then
+    exit 0
+fi
+
+FOUND=0
+for FILE in $FILES; do
+    # 跳过已删除文件
+    [ ! -f "$FILE" ] && continue
+
+    # 获取暂存的文件内容并扫描
+    MATCH=$(git diff --cached -- "$FILE" | grep -E '^\+' | grep -vE '^\+\+\+' | grep -iE "$PATTERNS" | head -5)
+    if [ -n "$MATCH" ]; then
+        echo "❌ 检测到疑似密钥/凭证，提交被拒绝："
+        echo "   文件: $FILE"
+        echo "   匹配内容: $MATCH"
+        echo ""
+        echo "如确认为误报，请使用 git commit --no-verify 跳过检查。"
+        echo "建议：使用环境变量或配置中心管理密钥，切勿提交到代码仓库。"
+        FOUND=1
+    fi
+done
+
+if [ "$FOUND" -ne 0 ]; then
+    exit 1
+fi
+
+exit 0

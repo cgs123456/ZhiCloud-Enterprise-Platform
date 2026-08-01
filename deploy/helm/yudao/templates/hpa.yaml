@@ -1,0 +1,45 @@
+{{/*
+============================================================
+yudao-server HorizontalPodAutoscaler 模板
+基于 CPU 使用率自动伸缩副本数
+- 当 hpa.enabled=false 时跳过（由 Deployment.replicaCount 固定副本）
+- scaleDown 冷却窗口比 scaleUp 长，避免抖动
+*/}}
+{{- if .Values.hpa.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "yudao.fullname" . }}
+  namespace: {{ include "yudao.namespace" . }}
+  labels:
+    {{- include "yudao.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "yudao.fullname" . }}
+  minReplicas: {{ .Values.hpa.minReplicas }}
+  maxReplicas: {{ .Values.hpa.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.hpa.targetCPUUtilizationPercentage }}
+  behavior:
+    # 扩容策略：快速响应流量增长
+    scaleUp:
+      stabilizationWindowSeconds: {{ .Values.hpa.scaleUpStabilizationWindowSeconds }}
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 30
+    # 缩容策略：缓慢释放资源，避免抖动
+    scaleDown:
+      stabilizationWindowSeconds: {{ .Values.hpa.scaleDownStabilizationWindowSeconds }}
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+{{- end }}

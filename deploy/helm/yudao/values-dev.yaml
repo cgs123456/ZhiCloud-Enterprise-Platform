@@ -1,0 +1,73 @@
+# ============================================================
+# yudao-server Helm Chart - DEV 环境覆盖配置
+# 用途：开发环境覆盖，单副本 + 低资源 + 调试用
+# 使用：helm install yudao ./yudao -f values-dev.yaml -n yudao-dev
+# ============================================================
+
+# 开发环境单副本（HPA 关闭，固定副本便于调试）
+replicaCount: 1
+
+# 镜像：dev 环境使用 latest tag 便于快速迭代
+image:
+  tag: "2026.06.0-dev"
+
+# 关闭 HPA（开发环境固定副本）
+hpa:
+  enabled: false
+
+# 关闭 PDB（开发环境无需）
+pdb:
+  enabled: false
+
+# 资源配额（开发环境低配）
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 1Gi
+
+# Ingress：开发环境域名
+ingress:
+  enabled: true
+  host: "api-dev.yudao.example.com"
+  tls:
+    enabled: false
+
+# 环境变量：dev profile
+env:
+  SPRING_PROFILES_ACTIVE: "dev"
+  # 开发环境指向本地/独立数据库
+  MASTER_DATASOURCE_URL: "jdbc:mysql://yudao-mysql-dev:3306/ruoyi-vue-pro?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true"
+  SLAVE_DATASOURCE_URL: "jdbc:mysql://yudao-mysql-dev:3306/ruoyi-vue-pro?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true"
+  REDIS_HOST: "yudao-redis-dev"
+  YUDAO_AIRAG_DATASOURCE_URL: "jdbc:postgresql://yudao-postgres-dev:5432/yudao_rag"
+  # 关闭 OTel（开发环境可选）
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://yudao-jaeger-dev:4318/v1/traces"
+  MANAGEMENT_OTLP_TRACING_ENDPOINT: "http://yudao-jaeger-dev:4318/v1/traces"
+
+# 开发环境可关闭迁移 Job（直接由 Spring Boot 启动迁移）
+migration:
+  enabled: false
+
+# 优雅停机：开发环境缩短
+terminationGracePeriodSeconds: 15
+
+# 健康检查：开发环境缩短初始延迟
+probes:
+  liveness:
+    initialDelaySeconds: 30
+  readiness:
+    initialDelaySeconds: 15
+
+# 调试：开发环境不强制非 root（便于本地挂载调试）
+# 注意：如需保持 nonroot，注释下方配置即可
+podSecurityContext:
+  runAsNonRoot: false
+  runAsUser: 0
+  fsGroup: 0
+securityContext:
+  runAsNonRoot: false
+  runAsUser: 0
+  allowPrivilegeEscalation: false

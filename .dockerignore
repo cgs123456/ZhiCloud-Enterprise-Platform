@@ -1,0 +1,77 @@
+# ==== yudao .dockerignore ====
+# 构建上下文排除清单，减小镜像体积 + 避免源码/凭证泄露
+
+# ---- 版本控制 ----
+.git/
+.gitignore
+.gitee/
+.github/
+
+# ---- IDE 与编辑器 ----
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.settings/
+.project
+.classpath
+.factorypath
+
+# ---- 构建产物 ----
+target/
+**/target/
+build/
+**/build/
+out/
+**/out/
+*.class
+
+# ---- 测试代码(后端镜像不需要)----
+**/src/test/
+**/test/
+
+# ---- 日志与临时文件 ----
+logs/
+**/logs/
+*.log
+*.out
+*.tmp
+.tmp_*/
+.tmp_beans.json
+
+# ---- Maven 本地仓库与缓存 ----
+.mvn/wrapper/maven-wrapper.jar
+
+# ---- SQL 临时文件（保留 sql/ 目录用于 Flyway 迁移）----
+tmp_*.sql
+
+# ---- 开发工具与规格文档（不需进入镜像）----
+.trae/
+docs/
+
+# ---- 前端 UI 源码（后端镜像不需要）----
+yudao-ui/
+
+# ---- 截图与图片资源 ----
+.image/
+
+# ---- Spring Modulith 临时解压目录 ----
+.tmp_core/
+.tmp_runtime/
+actuator/
+org/
+
+# ---- 脚本与运维文件（运行时不需要）----
+script/
+scripts/
+k8s/
+
+# ---- 环境变量文件（防止凭证泄露）----
+.env
+.env.*
+!.env.example
+
+# ---- 其他 ----
+dependency-check-suppressions.xml
+yudao-server-startup.out

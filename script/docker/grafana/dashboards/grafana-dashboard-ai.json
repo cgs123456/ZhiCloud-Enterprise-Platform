@@ -1,0 +1,166 @@
+{
+  "annotations": {
+    "list": [
+      {"builtIn": 1, "datasource": "-- Grafana --", "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}
+    ]
+  },
+  "description": "芋道源码 yudao AI 调用监控看板（Token 用量 / 模型调用次数 / 耗时 / 成功率）",
+  "editable": true,
+  "graphTooltip": 1,
+  "id": null,
+  "panels": [
+    {"collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0}, "id": 100, "panels": [], "title": "Token 用量", "type": "row"},
+    {
+      "datasource": "Prometheus",
+      "description": "输入 / 输出 Token 每秒用量（基于 micrometer GenAI 语义约定 gen_ai_client_token_usage）",
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 1},
+      "id": 1,
+      "legend": {"avg": false, "current": true, "max": true, "min": false, "show": true, "total": false, "values": true},
+      "lines": true,
+      "linewidth": 2,
+      "nullPointMode": "null",
+      "targets": [
+        {"datasource": "Prometheus", "expr": "sum(rate(gen_ai_client_token_usage{application=~\"$application\"}[5m])) by (gen_ai_token_type)", "legendFormat": "{{gen_ai_token_type}}", "range": true, "refId": "A"}
+      ],
+      "title": "Token 用量速率（输入 / 输出）",
+      "type": "graph",
+      "xaxis": {"mode": "time", "show": true, "values": []},
+      "yaxes": [{"format": "short", "logBase": 1, "show": true}, {"format": "short", "logBase": 1, "show": true}],
+      "yaxis": {"align": false}
+    },
+    {
+      "datasource": "Prometheus",
+      "description": "累计 Token 用量（按输入 / 输出）",
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 1},
+      "id": 2,
+      "legend": {"avg": false, "current": true, "max": true, "min": false, "show": true, "total": false, "values": true},
+      "lines": true,
+      "linewidth": 2,
+      "nullPointMode": "null",
+      "targets": [
+        {"datasource": "Prometheus", "expr": "sum(gen_ai_client_token_usage{application=~\"$application\"}) by (gen_ai_token_type)", "legendFormat": "{{gen_ai_token_type}}", "range": true, "refId": "A"}
+      ],
+      "title": "累计 Token 用量",
+      "type": "graph",
+      "xaxis": {"mode": "time", "show": true, "values": []},
+      "yaxes": [{"format": "short", "logBase": 1, "show": true}, {"format": "short", "logBase": 1, "show": true}],
+      "yaxis": {"align": false}
+    },
+    {"collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 9}, "id": 101, "panels": [], "title": "模型调用", "type": "row"},
+    {
+      "datasource": "Prometheus",
+      "description": "各模型调用次数速率（次/秒），基于 gen_ai_client_operation_seconds_count",
+      "fieldConfig": {"defaults": {"unit": "reqps"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 10},
+      "id": 3,
+      "legend": {"avg": false, "current": true, "max": true, "min": false, "show": true, "total": false, "values": true},
+      "lines": true,
+      "linewidth": 2,
+      "nullPointMode": "null",
+      "targets": [
+        {"datasource": "Prometheus", "expr": "sum(rate(gen_ai_client_operation_seconds_count{application=~\"$application\"}[5m])) by (gen_ai_request_model)", "legendFormat": "{{gen_ai_request_model}}", "range": true, "refId": "A"}
+      ],
+      "title": "模型调用次数速率",
+      "type": "graph",
+      "xaxis": {"mode": "time", "show": true, "values": []},
+      "yaxes": [{"format": "reqps", "logBase": 1, "show": true}, {"format": "short", "logBase": 1, "show": true}],
+      "yaxis": {"align": false}
+    },
+    {"collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 18}, "id": 102, "panels": [], "title": "调用耗时", "type": "row"},
+    {
+      "datasource": "Prometheus",
+      "description": "AI 调用耗时百分位 P50 / P95 / P99（毫秒）",
+      "fieldConfig": {"defaults": {"unit": "ms"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 19},
+      "id": 4,
+      "legend": {"avg": false, "current": true, "max": true, "min": false, "show": true, "total": false, "values": true},
+      "lines": true,
+      "linewidth": 2,
+      "nullPointMode": "null",
+      "targets": [
+        {"datasource": "Prometheus", "expr": "histogram_quantile(0.5, sum(rate(gen_ai_client_operation_seconds_bucket{application=~\"$application\"}[5m])) by (le)) * 1000", "legendFormat": "P50", "range": true, "refId": "A"},
+        {"datasource": "Prometheus", "expr": "histogram_quantile(0.95, sum(rate(gen_ai_client_operation_seconds_bucket{application=~\"$application\"}[5m])) by (le)) * 1000", "legendFormat": "P95", "range": true, "refId": "B"},
+        {"datasource": "Prometheus", "expr": "histogram_quantile(0.99, sum(rate(gen_ai_client_operation_seconds_bucket{application=~\"$application\"}[5m])) by (le)) * 1000", "legendFormat": "P99", "range": true, "refId": "C"}
+      ],
+      "title": "调用耗时 P50 / P95 / P99",
+      "type": "graph",
+      "xaxis": {"mode": "time", "show": true, "values": []},
+      "yaxes": [{"format": "ms", "logBase": 1, "show": true}, {"format": "short", "logBase": 1, "show": true}],
+      "yaxis": {"align": false}
+    },
+    {
+      "datasource": "Prometheus",
+      "description": "按模型平均调用耗时（毫秒）",
+      "fieldConfig": {"defaults": {"unit": "ms"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 19},
+      "id": 5,
+      "legend": {"avg": false, "current": true, "max": true, "min": false, "show": true, "total": false, "values": true},
+      "lines": true,
+      "linewidth": 2,
+      "nullPointMode": "null",
+      "targets": [
+        {"datasource": "Prometheus", "expr": "sum(rate(gen_ai_client_operation_seconds_sum{application=~\"$application\"}[5m])) by (gen_ai_request_model) / sum(rate(gen_ai_client_operation_seconds_count{application=~\"$application\"}[5m])) by (gen_ai_request_model) * 1000", "legendFormat": "{{gen_ai_request_model}}", "range": true, "refId": "A"}
+      ],
+      "title": "按模型平均调用耗时",
+      "type": "graph",
+      "xaxis": {"mode": "time", "show": true, "values": []},
+      "yaxes": [{"format": "ms", "logBase": 1, "show": true}, {"format": "short", "logBase": 1, "show": true}],
+      "yaxis": {"align": false}
+    },
+    {"collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 27}, "id": 103, "panels": [], "title": "成功率", "type": "row"},
+    {
+      "datasource": "Prometheus",
+      "description": "AI 调用成功率 = 1 - 错误调用 / 总调用（micrometer 中 error 标签非空表示失败）",
+      "fieldConfig": {"defaults": {"unit": "percentunit"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 28},
+      "id": 6,
+      "legend": {"avg": false, "current": true, "max": true, "min": false, "show": true, "total": false, "values": true},
+      "lines": true,
+      "linewidth": 2,
+      "nullPointMode": "null",
+      "targets": [
+        {"datasource": "Prometheus", "expr": "1 - (sum(rate(gen_ai_client_operation_seconds_count{application=~\"$application\", error!=\"\"}[5m])) / sum(rate(gen_ai_client_operation_seconds_count{application=~\"$application\"}[5m])))", "legendFormat": "success rate", "range": true, "refId": "A"}
+      ],
+      "thresholds": [{"colorMode": "critical", "fill": true, "line": true, "op": "lt", "value": 0.95, "visible": true}],
+      "title": "AI 调用成功率",
+      "type": "graph",
+      "xaxis": {"mode": "time", "show": true, "values": []},
+      "yaxes": [{"format": "percentunit", "logBase": 1, "max": "1.05", "min": "0", "show": true}, {"format": "short", "logBase": 1, "show": true}],
+      "yaxis": {"align": false}
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["yudao", "ai", "genai"],
+  "templating": {
+    "list": [
+      {
+        "current": {"selected": false, "text": "yudao-server", "value": "yudao-server"},
+        "datasource": "Prometheus",
+        "definition": "label_values(application)",
+        "hide": 0,
+        "includeAll": false,
+        "label": "应用",
+        "multi": false,
+        "name": "application",
+        "options": [],
+        "query": {"query": "label_values(application)", "refId": "Prometheus-application-Variable-Query"},
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {"from": "now-30m", "to": "now"},
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Yudao AI 调用监控看板",
+  "uid": "yudao-ai",
+  "version": 1,
+  "weekStart": ""
+}

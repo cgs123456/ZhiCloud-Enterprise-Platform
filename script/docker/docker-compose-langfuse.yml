@@ -1,0 +1,86 @@
+# Langfuse 自托管部署栈（P1-6 LLM 可观测性）
+#
+# 启用方式：
+#   docker compose -f docker-compose-langfuse.yml up -d
+#
+# 启动后：
+#   1. 访问 http://localhost:3000 创建账号 + Project
+#   2. Project Settings → API Keys → 创建 PK/SK
+#   3. 配置 yudao-server 启动环境变量：
+#        OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:3000/api/public/otel
+#        OTEL_EXPORTER_OTLP_HEADERS=Authorization=Basic <base64(PK:SK)>
+#   4. yudao-server 启动后，所有 Spring AI ChatClient.call() 的 Observation
+#      会自动上报到 Langfuse，按 Prompt / Token / Cost 维度可视化
+#
+# 资源占用：约 2GB 内存（含 ClickHouse）
+# 与现有 docker-compose.yml 的 MySQL/Redis 共用，无需重复部署
+#
+# 官方文档：https://langfuse.com/self-hosting/docker-compose
+
+services:
+  langfuse-db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: langfuse
+      POSTGRES_PASSWORD: ${LANGFUSE_DB_PASSWORD:?LANGFUSE_DB_PASSWORD is required}
+      POSTGRES_DB: langfuse
+    volumes:
+      - langfuse-db-data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5433:5432"  # 与主 PG 5432 错开，仅本机访问
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U langfuse"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  langfuse-clickhouse:
+    image: clickhouse/clickhouse-server:24.1-alpine
+    restart: unless-stopped
+    environment:
+      CLICKHOUSE_DB: langfuse
+      CLICKHOUSE_USER: langfuse
+      CLICKHOUSE_PASSWORD: ${LANGFUSE_CLICKHOUSE_PASSWORD:?LANGFUSE_CLICKHOUSE_PASSWORD is required}
+    volumes:
+      - langfuse-clickhouse-data:/var/lib/clickhouse
+    ports:
+      - "127.0.0.1:8123:8123"  # ClickHouse HTTP
+      - "127.0.0.1:9000:9000"  # ClickHouse Native
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  langfuse-web:
+    image: langfuse/langfuse:2
+    restart: unless-stopped
+    depends_on:
+      langfuse-db:
+        condition: service_healthy
+      langfuse-clickhouse:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://langfuse:${LANGFUSE_DB_PASSWORD:?LANGFUSE_DB_PASSWORD is required}@langfuse-db:5432/langfuse
+      CLICKHOUSE_URL: http://langfuse-clickhouse:8123
+      CLICKHOUSE_USER: langfuse
+      CLICKHOUSE_PASSWORD: ${LANGFUSE_CLICKHOUSE_PASSWORD:?LANGFUSE_CLICKHOUSE_PASSWORD is required}
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?NEXTAUTH_SECRET is required}
+      SALT: ${SALT:?SALT is required}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?ENCRYPTION_KEY is required}
+      # 复用主 docker-compose.yml 的 Redis（若未启动，可注释掉 NEXTAUTH_REDIS_URL）
+      NEXTAUTH_REDIS_URL: redis://127.0.0.1:6379/3  # 使用 DB 3 避免与 yudao 业务库冲突
+      TELEMETRY_ENABLED: "false"
+    ports:
+      - "127.0.0.1:3000:3000"  # 仅本机访问，生产环境需走反向代理 + HTTPS
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  langfuse-db-data:
+  langfuse-clickhouse-data:

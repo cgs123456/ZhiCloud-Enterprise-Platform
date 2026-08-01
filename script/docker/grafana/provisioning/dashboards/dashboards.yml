@@ -1,0 +1,13 @@
+# Grafana 看板自动加载（E1）
+apiVersion: 1
+
+providers:
+  - name: 'yudao-dashboards'
+    orgId: 1
+    folder: 'Yudao'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards
+      foldersFromFilesStructure: true

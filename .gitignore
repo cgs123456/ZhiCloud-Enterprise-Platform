@@ -1,0 +1,86 @@
+######################################################################
+# Build Tools
+
+.gradle
+/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+.flattened-pom.xml
+
+######################################################################
+# IDE
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+nbproject/private/
+build/*
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+######################################################################
+# Others
+*.log
+*.xml.versionsBackup
+*.swp
+
+!*/build/*.java
+!*/build/*.html
+!*/build/*.xml
+
+### JRebel ###
+rebel.xml
+
+application-my.yaml
+
+/yudao-ui-app/unpackage/
+.DS_Store
+**/.DS_Store
+
+######################################################################
+# 凭证 / 临时文件（不可入仓）
+token.txt
+*-startup.err
+*.secret
+*.key
+.env
+.env.local
+**/docker.env
+docker.env
+
+### 编译产物（不可入仓）
+*.class
+
+### IDE 运行时解压目录（不可入仓）
+actuator/
+.tmp_core/
+.tmp_runtime/
+.trae/tmp/
+
+### BGE ONNX 模型文件（体积大，按需下载）
+yudao-server/src/main/resources/airag/bge-base-zh/
+yudao-server/src/main/resources/airag/bge-small-zh/
+yudao-server/src/main/resources/airag/bge-large-zh/
+
+### IDE 运行时输出
+*.iml
+.idea/
+# IDE HTTP Client
+*.http

@@ -1,0 +1,26 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  group_by: ['alertname', 'service', 'env']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  receiver: 'default'
+
+receivers:
+  - name: 'default'
+    webhook_configs:
+      # 钉钉/企业微信 webhook URL
+      # Alertmanager 配置文件不支持 ${VAR} 环境变量插值，直接写 ${DINGTALK_WEBHOOK_URL} 会导致 URL 非法、启动失败。
+      # 此处使用 __DINGTALK_WEBHOOK_URL__ 占位符，由 alertmanager-entrypoint.sh 在容器启动时
+      # 用环境变量 DINGTALK_WEBHOOK_URL 替换；未设置时回退到本地默认地址，保证 Alertmanager 可正常启动。
+      - url: '__DINGTALK_WEBHOOK_URL__'
+        send_resolved: true
+
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'service']

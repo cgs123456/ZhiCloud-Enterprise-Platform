@@ -1,0 +1,361 @@
+﻿version: "3.8"
+
+name: yudao-system
+
+# ====================================================================
+# 芋道 MES/ERP 企业级一键部署栈
+# 包含：MySQL 8 + Redis 7 + PostgreSQL 16 + pgvector
+#       + Prometheus + Grafana + Jaeger + yudao-server
+# 使用：docker compose up -d
+# ====================================================================
+
+services:
+  # ---------------- 业务数据库 ----------------
+  mysql:
+    container_name: yudao-mysql
+    image: mysql:8.0
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-zhicloud_platform}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}
+      TZ: Asia/Shanghai
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --default-time-zone=+08:00
+    volumes:
+      - mysql:/var/lib/mysql/
+      - ../../sql/mysql/zhicloud_platform.sql:/docker-entrypoint-initdb.d/01-zhicloud_platform.sql:ro
+      - ../../sql/mysql/qms.sql:/docker-entrypoint-initdb.d/02-qms.sql:ro
+      - ../../sql/mysql/aimultiagent.sql:/docker-entrypoint-initdb.d/03-aimultiagent.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [yudao-net]
+
+  # ---------------- 缓存 ----------------
+  redis:
+    container_name: yudao-redis
+    image: redis:7-alpine # E1 升级：Redis 6 → 7（多线程 IO、ACL、Function）
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD is required} --maxmemory 512mb --maxmemory-policy allkeys-lru --io-threads 4 --io-threads-do-reads yes
+    volumes:
+      - redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:?REDIS_PASSWORD is required}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [yudao-net]
+
+  # ---------------- 向量数据库（RAG 模块） ----------------
+  postgres:
+    container_name: yudao-postgres
+    image: pgvector/pgvector:pg16 # E1 新增：PostgreSQL 16 + pgvector 扩展（供 yudao-module-ai-rag 使用）
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-yudao_rag}
+      POSTGRES_USER: ${POSTGRES_USER:-yudao}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      TZ: Asia/Shanghai
+    volumes:
+      - postgres:/var/lib/postgresql/data
+      - ../../sql/postgresql/airag_pgvector.sql:/docker-entrypoint-initdb.d/01-airag_pgvector.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-yudao} -d ${POSTGRES_DB:-yudao_rag}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [yudao-net]
+
+  # ---------------- 备份：异地备份与容灾演练（按需启动） ----------------
+  # 启动方式：docker compose --profile backup run --rm backup
+  # 或一次性执行：docker compose --profile backup run --rm backup /backup.sh
+  backup:
+    container_name: yudao-backup
+    image: yudao-backup:latest  # 自定义镜像，需预装 mysqldump / pg_dump / redis-cli / rsync / aws-cli
+    restart: "no"  # 通过 cron 触发，不常驻
+    profiles: ["backup"]  # 仅在 docker compose --profile backup up 时启动
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST:-yudao-mysql}
+      MYSQL_PORT: ${MYSQL_PORT:-3306}
+      MYSQL_USER: ${MYSQL_USER:-root}
+      MYSQL_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}
+      MYSQL_DATABASES: ${MYSQL_DATABASES:-zhicloud_platform}
+      PG_HOST: ${PG_HOST:-yudao-postgres}
+      PG_PORT: ${PG_PORT:-5432}
+      PG_USER: ${POSTGRES_USER:-yudao}
+      PG_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      PG_DATABASES: ${PG_DATABASES:-yudao_rag}
+      REDIS_HOST: ${REDIS_HOST:-yudao-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD is required}
+      LOCAL_BACKUP_DIR: /data/backup/yudao
+      LOCAL_RETENTION_DAYS: ${LOCAL_RETENTION_DAYS:-7}
+      REMOTE_RSYNC_ENABLED: ${REMOTE_RSYNC_ENABLED:-false}
+      REMOTE_RSYNC_HOST: ${REMOTE_RSYNC_HOST:-backup.example.com}
+      REMOTE_RSYNC_USER: ${REMOTE_RSYNC_USER:-backup}
+      REMOTE_RSYNC_PATH: ${REMOTE_RSYNC_PATH:-/data/backup/yudao}
+      REMOTE_RETENTION_DAYS: ${REMOTE_RETENTION_DAYS:-30}
+      S3_ENABLED: ${S3_ENABLED:-false}
+      S3_BUCKET: ${S3_BUCKET:-yudao-backup}
+      S3_ENDPOINT: ${S3_ENDPOINT:-https://s3.amazonaws.com}
+      S3_PREFIX: ${S3_PREFIX:-backup/}
+      S3_RETENTION_DAYS: ${S3_RETENTION_DAYS:-30}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      NOTIFY_WEBHOOK: ${NOTIFY_WEBHOOK:-}
+      TZ: Asia/Shanghai
+    volumes:
+      - ../../script/shell/backup-remote.sh:/backup.sh:ro
+      - ../../script/shell/backup-config.sh:/backup-config.sh:ro
+      - backup-data:/data/backup
+      - ../../logs:/var/log/yudao-backup
+    networks: [yudao-net]
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+
+  # ---------------- 监控：指标采集 ----------------
+  prometheus:
+    container_name: yudao-prometheus
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./prometheus/rules/prometheus-alerts.yml:/etc/prometheus/rules/prometheus-alerts.yml:ro
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus:/prometheus
+    depends_on:
+      - server
+    networks: [yudao-net]
+
+  # ---------------- 监控：可视化看板 ----------------
+  grafana:
+    container_name: yudao-grafana
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:?GRAFANA_PASSWORD is required}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_INSTALL_PLUGINS: "grafana-piechart-panel"
+    volumes:
+      - grafana:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - ../../.trae/specs/upgrade-tech-stack-and-ai-native/grafana-dashboard-yudao.json:/var/lib/grafana/dashboards/yudao-overview.json:ro
+    depends_on:
+      - prometheus
+    networks: [yudao-net]
+
+  # ---------------- 分布式追踪：Jaeger ----------------
+  jaeger:
+    container_name: yudao-jaeger
+    image: jaegertracing/all-in-one:1.60 # E1 新增：OpenTelemetry OTLP 上报端点
+    restart: unless-stopped
+    ports:
+      - "16686:16686"   # Jaeger UI
+      - "4317:4317"     # OTLP gRPC
+      - "4318:4318"     # OTLP HTTP
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+      MEMORY_MAX_TRACES: 50000
+    networks: [yudao-net]
+
+  # ---------------- 告警：Alertmanager ----------------
+  alertmanager:
+    container_name: yudao-alertmanager
+    image: prom/alertmanager:latest
+    restart: unless-stopped
+    ports:
+      - "9093:9093"
+    # Alertmanager 不支持配置文件内环境变量插值，通过 entrypoint 渲染 webhook URL
+    entrypoint: ["sh", "/etc/alertmanager/alertmanager-entrypoint.sh"]
+    environment:
+      # 钉钉/企业微信 webhook URL，未设置时回退到本地默认地址
+      DINGTALK_WEBHOOK_URL: ${DINGTALK_WEBHOOK_URL:-http://127.0.0.1:9093/alertmanager}
+    volumes:
+      # 配置模板（含 __DINGTALK_WEBHOOK_URL__ 占位符），由 entrypoint 渲染
+      - ./prometheus/alertmanager.yml:/etc/alertmanager/config.tpl.yml:ro
+      # 启动入口脚本
+      - ./prometheus/alertmanager-entrypoint.sh:/etc/alertmanager/alertmanager-entrypoint.sh:ro
+    networks: [yudao-net]
+
+  # ---------------- 日志聚合：Loki ----------------
+  loki:
+    container_name: yudao-loki
+    image: grafana/loki:2.9.8
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/loki-config.yml
+    volumes:
+      - ./loki/loki-config.yml:/etc/loki/loki-config.yml:ro
+      - loki:/loki
+    networks: [yudao-net]
+
+  # ---------------- 日志采集：Promtail ----------------
+  promtail:
+    container_name: yudao-promtail
+    image: grafana/promtail:2.9.8
+    restart: unless-stopped
+    command: -config.file=/etc/promtail/promtail-config.yml
+    volumes:
+      - ./loki/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
+      - ../../logs:/var/log/yudao-server:ro
+    depends_on:
+      - loki
+    networks: [yudao-net]
+
+  # ---------------- 应用服务器 ----------------
+  server:
+    container_name: yudao-server
+    build:
+      context: ../../
+      dockerfile: yudao-server/Dockerfile
+    image: yudao-server
+    restart: unless-stopped
+    ports:
+      - "48080:48080"
+      - "48090:48090" # Actuator 管理端口
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-local}
+      JAVA_OPTS:
+        ${JAVA_OPTS:-
+          -Xms512m
+          -Xmx512m
+          -XX:+UseZGC
+          -XX:+ZGenerational
+          -Djava.security.egd=file:/dev/./urandom
+        }
+      ARGS:
+        --spring.datasource.dynamic.datasource.master.url=${MASTER_DATASOURCE_URL:-jdbc:mysql://yudao-mysql:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true}
+        --spring.datasource.dynamic.datasource.master.username=${MASTER_DATASOURCE_USERNAME:-root}
+        --spring.datasource.dynamic.datasource.master.password=${MASTER_DATASOURCE_PASSWORD:?MASTER_DATASOURCE_PASSWORD is required}
+        --spring.datasource.dynamic.datasource.slave.url=${SLAVE_DATASOURCE_URL:-jdbc:mysql://yudao-mysql:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true}
+        --spring.datasource.dynamic.datasource.slave.username=${SLAVE_DATASOURCE_USERNAME:-root}
+        --spring.datasource.dynamic.datasource.slave.password=${SLAVE_DATASOURCE_PASSWORD:?SLAVE_DATASOURCE_PASSWORD is required}
+        --spring.data.redis.host=${REDIS_HOST:-yudao-redis}
+        --spring.data.redis.port=6379
+        --spring.data.redis.password=${REDIS_PASSWORD:?REDIS_PASSWORD is required}
+        --yudao.airag.enabled=true
+        --yudao.airag.datasource.url=jdbc:postgresql://yudao-postgres:5432/${POSTGRES_DB:-yudao_rag}
+        --yudao.airag.datasource.username=${POSTGRES_USER:-yudao}
+        --yudao.airag.datasource.password=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+        --management.otlp.tracing.endpoint=http://yudao-jaeger:4318/v1/traces
+        --OTEL_EXPORTER_OTLP_ENDPOINT=http://yudao-jaeger:4318/v1/traces
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:48090/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
+    networks: [yudao-net]
+
+  # ---------------- 配置中心：Nacos ----------------
+  nacos:
+    image: nacos/nacos-server:v2.4.3
+    container_name: yudao-nacos
+    restart: unless-stopped
+    environment:
+      - MODE=standalone
+      - PREFER_HOST_MODE=hostname
+      - NACOS_AUTH_ENABLE=true
+      - NACOS_AUTH_TOKEN=${NACOS_AUTH_TOKEN:?required}
+      - NACOS_AUTH_IDENTITY_KEY=${NACOS_AUTH_IDENTITY_KEY:?required}
+      - NACOS_AUTH_IDENTITY_VALUE=${NACOS_AUTH_IDENTITY_VALUE:?required}
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+    volumes:
+      - ./nacos/data:/home/nacos/data
+      - ./nacos/logs:/home/nacos/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8848/nacos/v1/console/health/readiness"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks: [yudao-net]
+
+  # ---------------- 数据湖仓：Trino（Iceberg 查询引擎） ----------------
+  # P2-5 数据湖仓基础架构：通过 Trino REST API（/v1/statement）操作 Iceberg 表
+  # 启用方式：yudao.datalake.enabled=true + yudao.datalake.catalog-uri=http://trino:8080
+  trino:
+    container_name: yudao-trino
+    image: trinodb/trino:450
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./trino/catalog:/etc/trino/catalog:ro
+    networks: [yudao-net]
+
+  # ---------------- 数据湖仓：MinIO（S3 兼容存储） ----------------
+  # Iceberg 表数据的物理存储后端，替代 AWS S3
+  minio:
+    container_name: yudao-minio
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?required}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?required}
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks: [yudao-net]
+
+networks:
+  yudao-net:
+    driver: bridge
+
+volumes:
+  mysql:
+    driver: local
+  redis:
+    driver: local
+  postgres:
+    driver: local
+  prometheus:
+    driver: local
+  grafana:
+    driver: local
+  loki:
+    driver: local
+  backup-data:
+    driver: local
+  minio-data:
+    driver: local

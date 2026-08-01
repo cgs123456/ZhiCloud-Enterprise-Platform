@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.zhicloud</groupId>
+        <artifactId>yudao</artifactId>
+        <version>${revision}</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <packaging>jar</packaging>
+    <artifactId>yudao-module-datalake</artifactId>
+
+    <name>${project.artifactId}</name>
+    <description>
+        datalake 模块下，基于 Apache Iceberg + Trino 实现数据湖仓基础架构。
+        核心定位：
+          1. 历史数据冷归档（MySQL 热数据 → Iceberg 冷数据）
+          2. AI 训练数据源（统一查询接口，MCP 工具暴露给 AI Agent）
+          3. BI 分析加速（Trino 分布式查询，避免压垮业务库）
+        重要说明：Iceberg/Trino/Flink 不作为编译期依赖，运行时通过 REST API 与独立部署的
+        Trino / Iceberg REST Catalog 交互。本模块仅做配置管理、查询代理和 MCP 工具暴露。
+    </description>
+
+    <properties>
+        <spring-ai.version>1.1.8</spring-ai.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>${spring-ai.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!-- 基础组件 -->
+        <dependency>
+            <groupId>com.zhicloud</groupId>
+            <artifactId>yudao-common</artifactId>
+        </dependency>
+
+        <!-- DB 相关：本模块不直接操作业务库，但保留 mybatis starter 以复用配置体系 -->
+        <dependency>
+            <groupId>com.zhicloud</groupId>
+            <artifactId>yudao-spring-boot-starter-mybatis</artifactId>
+        </dependency>
+
+        <!-- Web 相关（provided，运行时由 yudao-server 提供） -->
+        <dependency>
+            <groupId>com.zhicloud</groupId>
+            <artifactId>yudao-spring-boot-starter-security</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.zhicloud</groupId>
+            <artifactId>yudao-spring-boot-starter-web</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Spring AI：仅引入 spring-ai-model 以获取 @Tool / @ToolParam 注解，不引入 LLM 客户端 -->
+        <!-- Iceberg/Trino/Flink 不作为编译期依赖，运行时通过 REST API 与独立服务交互 -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-model</artifactId>
+            <version>${spring-ai.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- A3 Spring Modulith：@ApplicationModule 注解依赖（compile-time only，runtime 由 yudao-server 提供） -->
+        <dependency>
+            <groupId>org.springframework.modulith</groupId>
+            <artifactId>spring-modulith-core</artifactId>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+
+</project>

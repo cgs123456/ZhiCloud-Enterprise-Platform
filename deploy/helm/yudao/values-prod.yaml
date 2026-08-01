@@ -1,0 +1,133 @@
+# ============================================================
+# yudao-server Helm Chart - PROD 环境覆盖配置
+# 用途：生产环境，高可用 + 高资源 + 严格安全
+# 使用：helm install yudao ./yudao -f values-prod.yaml -n yudao-prod
+# ============================================================
+
+# 生产环境 3 副本起步（HPA 接管后最高 15）
+replicaCount: 3
+
+# 镜像：生产使用稳定 tag
+image:
+  tag: "2026.06.0"
+  # 生产环境建议 Always（确保拉取最新 patch）
+  pullPolicy: IfNotPresent
+
+# HPA 配置：生产环境更高上限
+hpa:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 15
+  targetCPUUtilizationPercentage: 70
+  scaleUpStabilizationWindowSeconds: 60
+  scaleDownStabilizationWindowSeconds: 600
+
+# 资源配额（生产高配）
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    cpu: 2000m
+    memory: 4Gi
+
+# Ingress：生产域名 + TLS
+ingress:
+  enabled: true
+  className: nginx
+  host: "api.yudao.example.com"
+  tls:
+    enabled: true
+    secretName: "yudao-tls-secret"
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    # 生产环境启用限流
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/limit-connections: "200"
+
+# 环境变量：prod profile
+env:
+  SPRING_PROFILES_ACTIVE: "prod"
+  # 生产环境数据库连接（指向生产集群）
+  MASTER_DATASOURCE_URL: "jdbc:mysql://yudao-mysql-prod:3306/ruoyi-vue-pro?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true"
+  SLAVE_DATASOURCE_URL: "jdbc:mysql://yudao-mysql-prod-slave:3306/ruoyi-vue-pro?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true"
+  REDIS_HOST: "yudao-redis-prod"
+  YUDAO_AIRAG_DATASOURCE_URL: "jdbc:postgresql://yudao-postgres-prod:5432/yudao_rag"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://yudao-jaeger-prod:4318/v1/traces"
+  MANAGEMENT_OTLP_TRACING_ENDPOINT: "http://yudao-jaeger-prod:4318/v1/traces"
+  # 生产 JVM 参数（更大堆 + ZGC）
+  JAVA_OPTS: "-Xms1g -Xmx2g -XX:+UseZGC -XX:+ZGenerational -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/heapdump.hprof -Djava.security.egd=file:/dev/./urandom"
+
+# 启用迁移 Job（生产环境显式迁移）
+migration:
+  enabled: true
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 1800
+
+# 优雅停机：生产环境给足时间处理在途请求
+terminationGracePeriodSeconds: 60
+
+# 健康检查：生产环境更严格
+probes:
+  liveness:
+    enabled: true
+    httpGet:
+      path: /actuator/health/liveness
+      port: 48090
+    initialDelaySeconds: 90
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+  readiness:
+    enabled: true
+    httpGet:
+      path: /actuator/health/readiness
+      port: 48090
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+# PDB：生产环境保证至少 2 个可用副本
+pdb:
+  enabled: true
+  minAvailable: 2
+
+# 拓扑分布：生产环境强制跨节点/可用区打散
+topologySpreadConstraints:
+  enabled: true
+  maxSkew: 1
+  topologyKey: topology.kubernetes.io/zone
+  whenUnsatisfiable: DoNotSchedule
+
+# 生产环境强制 nonroot
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  capabilities:
+    drop:
+      - ALL
+
+# 亲和性：生产环境避免与 MySQL/Redis 等数据服务同节点
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - yudao-mysql
+                  - yudao-redis
+                  - yudao-postgres
+          topologyKey: kubernetes.io/hostname

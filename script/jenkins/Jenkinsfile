@@ -1,0 +1,175 @@
+﻿#!groovy
+##==================================================================
+## yudao-server CI/CD 流水线（D3 修复：现代化 Jenkinsfile）
+## 包含：检出 / 测试 / SonarQube / 镜像构建 / 推送 / K8s 部署 / 回滚 / 通知
+##==================================================================
+
+pipeline {
+    agent {
+        label 'docker-builder'
+    }
+
+    parameters {
+        choice(name: 'ACTION', choices: ['deploy', 'rollback', 'canary'], description: '部署/回滚/灰度')
+        string(name: 'TAG_NAME', defaultValue: '', description: '镜像标签（留空则用 BUILD_NUMBER）')
+        string(name: 'NAMESPACE', defaultValue: 'default', description: 'K8s 命名空间')
+        string(name: 'CANARY_REPLICAS', defaultValue: '1', description: '灰度发布的副本数（默认 1）')
+        string(name: 'CANARY_DURATION', defaultValue: '300', description: '灰度观察时长（秒，默认 300）')
+    }
+
+    environment {
+        // DockerHub 凭证 ID（登录 DockerHub）
+        DOCKER_CREDENTIAL_ID     = 'dockerhub-id'
+        // Git SSH 凭证 ID（拉取仓库）
+        GITHUB_CREDENTIAL_ID     = 'github-ssh'
+        // kubeconfig 凭证 ID（访问 Kubernetes 集群）
+        KUBECONFIG_CREDENTIAL_ID = 'kubeconfig'
+        // 镜像仓库地址
+        REGISTRY                 = 'docker.io'
+        // DockerHub 账号名
+        DOCKERHUB_NAMESPACE      = 'yudao'
+        // Git 账号名
+        GITHUB_ACCOUNT           = 'zhicloud'
+        // 应用名称
+        APP_NAME                 = 'yudao-server'
+        // 镜像标签：优先使用入参，否则使用构建号
+        IMAGE_TAG                = "${params.TAG_NAME ?: env.BUILD_NUMBER}"
+        // 完整镜像名
+        IMAGE_FULL_NAME          = "${REGISTRY}/${DOCKERHUB_NAMESPACE}/${APP_NAME}:${IMAGE_TAG}"
+    }
+
+    stages {
+        stage('检出') {
+            steps {
+                git branch: 'master',
+                    credentialsId: "${GITHUB_CREDENTIAL_ID}",
+                    url: "git@github.com:${GITHUB_ACCOUNT}/zhicloud-platform.git"
+            }
+        }
+
+        stage('测试') {
+            steps {
+                sh 'mvn -B test'
+            }
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+
+        stage('安全扫描') {
+            steps {
+                sh 'chmod +x script/security/security-check.sh && ./script/security/security-check.sh'
+            }
+        }
+
+        stage('SonarQube 分析') {
+            when {
+                expression { env.SONAR_TOKEN != null }
+            }
+            steps {
+                sh 'mvn -B sonar:sonar -Dsonar.token=${SONAR_TOKEN}'
+            }
+        }
+
+        stage('构建镜像') {
+            steps {
+                script {
+                    docker.build("${IMAGE_FULL_NAME}", "-f yudao-server/Dockerfile .")
+                }
+            }
+        }
+
+        stage('推送镜像') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIAL_ID}",
+                    usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh """
+                        echo \$DOCKER_PASS | docker login ${REGISTRY} -u \$DOCKER_USER --password-stdin
+                        docker push ${IMAGE_FULL_NAME}
+                        docker rmi ${IMAGE_FULL_NAME} || true
+                    """
+                }
+            }
+        }
+
+        stage('部署 K8s') {
+            when {
+                expression { params.ACTION == 'deploy' }
+            }
+            steps {
+                withCredentials([file(credentialsId: "${KUBECONFIG_CREDENTIAL_ID}", variable: 'KUBECONFIG')]) {
+                    sh """
+                        kubectl --namespace ${NAMESPACE} set image deployment/${APP_NAME} ${APP_NAME}=${IMAGE_FULL_NAME}
+                        kubectl --namespace ${NAMESPACE} rollout status deployment/${APP_NAME} --timeout=300s
+                    """
+                }
+            }
+        }
+
+        stage('灰度发布（Canary）') {
+            when {
+                expression { params.ACTION == 'canary' }
+            }
+            steps {
+                withCredentials([file(credentialsId: "${KUBECONFIG_CREDENTIAL_ID}", variable: 'KUBECONFIG')]) {
+                    sh """
+                        # 1. 创建灰度 Deployment（独立标签 canary=true，避免被原 Service 命中）
+                        kubectl --namespace ${NAMESPACE} create deployment ${APP_NAME}-canary --image=${IMAGE_FULL_NAME} --replicas=${params.CANARY_REPLICAS} || true
+                        kubectl --namespace ${NAMESPACE} label deployment ${APP_NAME}-canary app=${APP_NAME} canary=true --overwrite
+                        kubectl --namespace ${NAMESPACE} set env deployment/${APP_NAME}-canary SPRING_PROFILES_ACTIVE=prod
+
+                        # 2. 等待灰度 Pod Ready
+                        kubectl --namespace ${NAMESPACE} rollout status deployment/${APP_NAME}-canary --timeout=300s
+
+                        # 3. 灰度观察期（人工或自动健康检查）
+                        echo "灰度观察期 ${params.CANARY_DURATION}s，开始监控..."
+                        sleep ${params.CANARY_DURATION}
+
+                        # 4. 检查灰度 Pod 健康状态
+                        CANARY_PODS=\$(kubectl --namespace ${NAMESPACE} get pods -l app=${APP_NAME},canary=true -o jsonpath='{.items[*].metadata.name}')
+                        for POD in \$CANARY_PODS; do
+                            HEALTH=\$(kubectl --namespace ${NAMESPACE} exec \$POD -- wget -qO- http://127.0.0.1:48090/actuator/health 2>/dev/null || echo '{}')
+                            echo "灰度 Pod \$POD 健康状态: \$HEALTH"
+                            if ! echo "\$HEALTH" | grep -q '"status":"UP"'; then
+                                echo "灰度 Pod \$POD 健康检查失败，回滚灰度"
+                                kubectl --namespace ${NAMESPACE} delete deployment ${APP_NAME}-canary || true
+                                exit 1
+                            fi
+                        done
+
+                        # 5. 灰度通过，全量更新
+                        kubectl --namespace ${NAMESPACE} set image deployment/${APP_NAME} ${APP_NAME}=${IMAGE_FULL_NAME}
+                        kubectl --namespace ${NAMESPACE} rollout status deployment/${APP_NAME} --timeout=300s
+
+                        # 6. 清理灰度 Deployment
+                        kubectl --namespace ${NAMESPACE} delete deployment ${APP_NAME}-canary || true
+                        echo "灰度发布完成，已切流到全量"
+                    """
+                }
+            }
+        }
+
+        stage('回滚') {
+            when {
+                expression { params.ACTION == 'rollback' }
+            }
+            steps {
+                withCredentials([file(credentialsId: "${KUBECONFIG_CREDENTIAL_ID}", variable: 'KUBECONFIG')]) {
+                    sh "kubectl --namespace ${NAMESPACE} rollout undo deployment/${APP_NAME}"
+                }
+            }
+        }
+    }
+
+    post {
+        failure {
+            echo "构建失败: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+            // 飞书/钉钉通知 webhook 可在此配置
+        }
+        success {
+            echo "构建成功: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+        }
+    }
+}
