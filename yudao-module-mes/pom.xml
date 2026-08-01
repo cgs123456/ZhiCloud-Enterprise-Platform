@@ -3,7 +3,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <groupId>com.zhicloud</groupId>
+        <groupId>cn.iocoder.boot</groupId>
         <artifactId>yudao</artifactId>
         <version>${revision}</version>
     </parent>
@@ -19,14 +19,14 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.zhicloud</groupId>
+            <groupId>cn.iocoder.boot</groupId>
             <artifactId>yudao-module-system</artifactId>
             <version>${revision}</version>
         </dependency>
 
         <!-- ERP 模块：ErpMrpExecutorGatewayImpl 反向调用需要引用 erp 中的 SPI 接口与 ErpMpsPlanDO -->
         <dependency>
-            <groupId>com.zhicloud</groupId>
+            <groupId>cn.iocoder.boot</groupId>
             <artifactId>yudao-module-erp</artifactId>
             <version>${revision}</version>
         </dependency>
@@ -34,12 +34,12 @@
 
         <!-- Web 相关 -->
         <dependency>
-            <groupId>com.zhicloud</groupId>
+            <groupId>cn.iocoder.boot</groupId>
             <artifactId>yudao-spring-boot-starter-web</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>com.zhicloud</groupId>
+            <groupId>cn.iocoder.boot</groupId>
             <artifactId>yudao-spring-boot-starter-security</artifactId>
         </dependency>
 
@@ -51,24 +51,24 @@
 
         <!-- DB 相关 -->
         <dependency>
-            <groupId>com.zhicloud</groupId>
+            <groupId>cn.iocoder.boot</groupId>
             <artifactId>yudao-spring-boot-starter-mybatis</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>com.zhicloud</groupId>
+            <groupId>cn.iocoder.boot</groupId>
             <artifactId>yudao-spring-boot-starter-redis</artifactId>
         </dependency>
 
         <!-- 工具类相关 -->
         <dependency>
-            <groupId>com.zhicloud</groupId>
+            <groupId>cn.iocoder.boot</groupId>
             <artifactId>yudao-spring-boot-starter-excel</artifactId>
         </dependency>
 
         <!-- Test 测试相关 -->
         <dependency>
-            <groupId>com.zhicloud</groupId>
+            <groupId>cn.iocoder.boot</groupId>
             <artifactId>yudao-spring-boot-starter-test</artifactId>
         </dependency>
 

@@ -3,7 +3,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <groupId>com.zhicloud</groupId>
+        <groupId>cn.iocoder.boot</groupId>
         <artifactId>yudao</artifactId>
         <version>${revision}</version>
     </parent>
@@ -39,37 +39,37 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.zhicloud</groupId>
+            <groupId>cn.iocoder.boot</groupId>
             <artifactId>yudao-module-system</artifactId>
             <version>${revision}</version>
         </dependency>
         <dependency>
-            <groupId>com.zhicloud</groupId>
+            <groupId>cn.iocoder.boot</groupId>
             <artifactId>yudao-module-infra</artifactId>
             <version>${revision}</version>
         </dependency>
 
         <!-- 业务模块依赖：仅供 MCP Tool 包装使用，optional=true 不传递 -->
         <dependency>
-            <groupId>com.zhicloud</groupId>
+            <groupId>cn.iocoder.boot</groupId>
             <artifactId>yudao-module-erp</artifactId>
             <version>${revision}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>com.zhicloud</groupId>
+            <groupId>cn.iocoder.boot</groupId>
             <artifactId>yudao-module-mes</artifactId>
             <version>${revision}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>com.zhicloud</groupId>
+            <groupId>cn.iocoder.boot</groupId>
             <artifactId>yudao-module-wms</artifactId>
             <version>${revision}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>com.zhicloud</groupId>
+            <groupId>cn.iocoder.boot</groupId>
             <artifactId>yudao-module-qms</artifactId>
             <version>${revision}</version>
             <optional>true</optional>
@@ -78,37 +78,37 @@
         <!-- 业务组件 -->
 
         <dependency>
-            <groupId>com.zhicloud</groupId>
+            <groupId>cn.iocoder.boot</groupId>
             <artifactId>yudao-spring-boot-starter-biz-tenant</artifactId>
         </dependency>
 
         <!-- Web 相关 -->
         <dependency>
-            <groupId>com.zhicloud</groupId>
+            <groupId>cn.iocoder.boot</groupId>
             <artifactId>yudao-spring-boot-starter-security</artifactId>
         </dependency>
 
         <!-- DB 相关 -->
         <dependency>
-            <groupId>com.zhicloud</groupId>
+            <groupId>cn.iocoder.boot</groupId>
             <artifactId>yudao-spring-boot-starter-mybatis</artifactId>
         </dependency>
 
         <!-- Job 相关 -->
         <dependency>
-            <groupId>com.zhicloud</groupId>
+            <groupId>cn.iocoder.boot</groupId>
             <artifactId>yudao-spring-boot-starter-job</artifactId>
         </dependency>
 
         <!-- Test 测试相关 -->
         <dependency>
-            <groupId>com.zhicloud</groupId>
+            <groupId>cn.iocoder.boot</groupId>
             <artifactId>yudao-spring-boot-starter-test</artifactId>
         </dependency>
 
         <!-- 工具类相关 -->
         <dependency>
-            <groupId>com.zhicloud</groupId>
+            <groupId>cn.iocoder.boot</groupId>
             <artifactId>yudao-spring-boot-starter-excel</artifactId>
         </dependency>
 
@@ -170,7 +170,7 @@
             <version>${spring-ai.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.zhicloud</groupId>
+            <groupId>cn.iocoder.boot</groupId>
             <artifactId>yudao-spring-boot-starter-redis</artifactId>
         </dependency>
 

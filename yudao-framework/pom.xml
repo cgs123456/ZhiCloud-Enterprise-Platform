@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>yudao</artifactId>
-        <groupId>com.zhicloud</groupId>
+        <groupId>cn.iocoder.boot</groupId>
         <version>${revision}</version>
     </parent>
     <packaging>pom</packaging>

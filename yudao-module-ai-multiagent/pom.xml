@@ -3,7 +3,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <groupId>com.zhicloud</groupId>
+        <groupId>cn.iocoder.boot</groupId>
         <artifactId>yudao</artifactId>
         <version>${revision}</version>
     </parent>
@@ -40,7 +40,7 @@
     <dependencies>
         <!-- 复用 yudao-module-ai 的 Spring AI 配置、AiModelService、MCP Tools 等 -->
         <dependency>
-            <groupId>com.zhicloud</groupId>
+            <groupId>cn.iocoder.boot</groupId>
             <artifactId>yudao-module-ai</artifactId>
             <version>${revision}</version>
             <optional>true</optional>
@@ -48,24 +48,24 @@
 
         <!-- 业务组件 -->
         <dependency>
-            <groupId>com.zhicloud</groupId>
+            <groupId>cn.iocoder.boot</groupId>
             <artifactId>yudao-spring-boot-starter-biz-tenant</artifactId>
         </dependency>
 
         <!-- Web 相关 -->
         <dependency>
-            <groupId>com.zhicloud</groupId>
+            <groupId>cn.iocoder.boot</groupId>
             <artifactId>yudao-spring-boot-starter-security</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.zhicloud</groupId>
+            <groupId>cn.iocoder.boot</groupId>
             <artifactId>yudao-spring-boot-starter-web</artifactId>
             <scope>provided</scope>
         </dependency>
 
         <!-- DB 相关 -->
         <dependency>
-            <groupId>com.zhicloud</groupId>
+            <groupId>cn.iocoder.boot</groupId>
             <artifactId>yudao-spring-boot-starter-mybatis</artifactId>
         </dependency>
         <!-- A3 Spring Modulith：@ApplicationModule 注解依赖（compile-time only，runtime 由 yudao-server 提供） -->
