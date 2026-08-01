@@ -171,3 +171,9 @@ aj:
   captcha:
     type: blockPuzzle # 生产环境使用滑块拼图验证码
     req-frequency-limit-enable: true # 生产环境开启接口请求频率限制
+
+--- #################### MyBatis 字段加解密配置 ####################
+# 生产环境强制要求通过环境变量注入 MyBatis-Plus 字段加解密秘钥（与 application.yaml 对齐，prod profile 显式覆盖）
+mybatis-plus:
+  encryptor:
+    password: ${MYBATIS_ENCRYPTOR_PASSWORD:?required}

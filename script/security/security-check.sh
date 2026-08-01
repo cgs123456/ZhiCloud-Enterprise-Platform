@@ -76,7 +76,7 @@ if [ -d "${SQL_DIR}" ]; then
         grep -rlE '\$2a\$04\$' "${SQL_DIR}" 2>/dev/null | sed 's/^/    - /'
         echo "  修复建议："
         echo "    部署后立即通过 admin 后台重置所有默认账号密码（admin/yudao/yuanma/test 等）"
-        echo "    或执行 SQL: UPDATE system_users SET password = '<新$2a\$10\$哈希>' WHERE username IN ('admin','yudao','yuanma','test');"
+        echo "    或执行 SQL: UPDATE system_users SET password = '<新\$2a\$10\$哈希>' WHERE username IN ('admin','yudao','yuanma','test');"
     else
         info "未发现 BCrypt strength=4 弱哈希"
     fi
@@ -102,7 +102,8 @@ fi
 echo ""
 echo "===== 3. 检查 application.yaml 硬编码敏感默认值 ====="
 if [ -f "${APP_YAML}" ]; then
-    HARDCODED_SECRETS=$(grep -E '(password|secret|key|token):.*[a-zA-Z0-9]{16,}' "${APP_YAML}" 2>/dev/null | grep -vE '^\s*#|\$\{|example|test|demo' | wc -l || echo 0)
+    HARDCODED_SECRETS=$(grep -E '(password|secret|key|token):.*[a-zA-Z0-9]{16,}' "${APP_YAML}" 2>/dev/null | grep -vE '^\s*#|\$\{|example|test|demo' | wc -l || true)
+    HARDCODED_SECRETS=${HARDCODED_SECRETS:-0}
     if [ "${HARDCODED_SECRETS}" -gt 0 ]; then
         warn "application.yaml 中发现 ${HARDCODED_SECRETS} 处可能硬编码的敏感值（建议改为 \${ENV_VAR:default}）"
     else
