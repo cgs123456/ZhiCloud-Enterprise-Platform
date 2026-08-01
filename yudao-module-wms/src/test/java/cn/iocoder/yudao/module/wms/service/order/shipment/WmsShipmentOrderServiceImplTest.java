@@ -9,6 +9,7 @@ import cn.iocoder.yudao.module.wms.dal.mysql.order.shipment.WmsShipmentOrderDeta
 import cn.iocoder.yudao.module.wms.dal.mysql.order.shipment.WmsShipmentOrderMapper;
 import cn.iocoder.yudao.module.wms.enums.order.WmsOrderTypeEnum;
 import cn.iocoder.yudao.module.wms.enums.order.WmsOrderStatusEnum;
+import cn.iocoder.yudao.module.wms.enums.inventory.WmsInventoryChangeTypeEnum;
 import cn.iocoder.yudao.module.wms.enums.order.WmsShipmentOrderTypeEnum;
 import cn.iocoder.yudao.module.wms.service.inventory.WmsInventoryService;
 import cn.iocoder.yudao.module.wms.service.inventory.dto.WmsInventoryChangeReqDTO;
@@ -124,8 +125,10 @@ public class WmsShipmentOrderServiceImplTest extends BaseDbUnitTest {
         assertEquals(1, inventoryReqDTO.getItems().size());
         assertEquals(skuId, inventoryReqDTO.getItems().get(0).getSkuId());
         assertEquals(warehouseId, inventoryReqDTO.getItems().get(0).getWarehouseId());
-        assertEquals(0, new BigDecimal("-2.00").compareTo(inventoryReqDTO.getItems().get(0).getQuantity()));
-        assertEquals(0, new BigDecimal("-40.00").compareTo(inventoryReqDTO.getItems().get(0).getTotalPrice()));
+        // 库存变更 DTO 的 quantity/totalPrice 始终为正数，扣减方向由 changeType=OUT 决定（见 WmsInventoryChangeReqDTO.Item 约定）
+        assertEquals(WmsInventoryChangeTypeEnum.OUT, inventoryReqDTO.getItems().get(0).getChangeType());
+        assertEquals(0, new BigDecimal("2.00").compareTo(inventoryReqDTO.getItems().get(0).getQuantity()));
+        assertEquals(0, new BigDecimal("40.00").compareTo(inventoryReqDTO.getItems().get(0).getTotalPrice()));
     }
 
     @Test

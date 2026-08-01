@@ -307,6 +307,8 @@ public class CAPADocumentServiceImplTest extends BaseDbUnitTest {
         cn.iocoder.yudao.module.qms.controller.admin.capa.vo.CAPADocumentSaveReqVO createReqVO =
                 new cn.iocoder.yudao.module.qms.controller.admin.capa.vo.CAPADocumentSaveReqVO();
         createReqVO.setCapaNo("CAPA20240101001");
+        // source 在 VO 上标注了 @NotNull，DB 列亦为 NOT NULL，必须显式赋值
+        createReqVO.setSource(cn.iocoder.yudao.module.qms.enums.qms.CAPASourceEnum.INTERNAL.getSource());
         createReqVO.setProblem("产品尺寸超差");
 
         // 调用

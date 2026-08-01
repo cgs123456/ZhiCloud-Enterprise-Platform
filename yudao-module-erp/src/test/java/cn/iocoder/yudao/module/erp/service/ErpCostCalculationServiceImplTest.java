@@ -111,6 +111,10 @@ public class ErpCostCalculationServiceImplTest {
                 .build();
         when(standardCostMapper.selectEffectiveListByProduct(eq(PRODUCT_ID), any(LocalDate.class)))
                 .thenReturn(Collections.singletonList(sc1));
+        // 递归卷积的第一层就是成品自身，需桩出 P1 的本层标准成本，否则严格桩会因参数不匹配抛
+        // PotentialStubbingProblem（calculateConvolutedCostRecursive 会先查询根节点的 base cost）
+        when(standardCostMapper.selectByProductAndCostItem(eq(PRODUCT_ID), eq(COST_ITEM_MATERIAL), any(LocalDate.class)))
+                .thenReturn(sc1);
         // BOM: P1 -> [P2(2), P3(1)]
         when(bomProvider.getBomComponents(PRODUCT_ID)).thenReturn(Arrays.asList(
                 new ErpBomComponent(2001L, new BigDecimal("2")),

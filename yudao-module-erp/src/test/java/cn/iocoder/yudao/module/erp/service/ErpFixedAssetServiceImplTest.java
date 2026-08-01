@@ -46,6 +46,21 @@ public class ErpFixedAssetServiceImplTest {
 
     private static final Long ASSET_ID = 1L;
     private static final Long PERIOD_ID = 10L;
+    private static final Long DEP_ID = 100L;
+
+    /**
+     * 模拟 MyBatis-Plus 的主键回填行为
+     *
+     * <p>生产环境下 {@code useGeneratedKeys} 会在 insert 后把自增主键写回实体对象，
+     * 而 Mockito 的空 mock 不会，因此需要显式桩出该副作用，否则被测方法返回的 ID 恒为 null。
+     */
+    private void mockInsertWithGeneratedId(Long generatedId) {
+        when(depreciationMapper.insert(any(ErpFixedAssetDepreciationDO.class))).thenAnswer(invocation -> {
+            ErpFixedAssetDepreciationDO arg = invocation.getArgument(0);
+            arg.setId(generatedId);
+            return 1;
+        });
+    }
 
     /**
      * 构建一个标准测试资产
@@ -79,11 +94,15 @@ public class ErpFixedAssetServiceImplTest {
                 new BigDecimal("12000"), BigDecimal.ZERO, 12, 0, BigDecimal.ZERO);
         when(fixedAssetMapper.selectById(ASSET_ID)).thenReturn(asset);
         when(depreciationMapper.selectByFixedAssetIdAndPeriodId(ASSET_ID, PERIOD_ID)).thenReturn(null);
+        // 模拟 MyBatis-Plus insert 的主键回填：真实环境下 useGeneratedKeys 会把自增 ID 写回实体，
+        // 而 Mock 的 insert 不会，导致 Service 返回的 depreciation.getId() 恒为 null
+        mockInsertWithGeneratedId(DEP_ID);
         mockPeriod();
 
         Long depId = fixedAssetService.calculateMonthlyDepreciation(ASSET_ID, PERIOD_ID);
 
         assertNotNull(depId);
+        assertEquals(DEP_ID, depId);
         ArgumentCaptor<ErpFixedAssetDepreciationDO> captor = ArgumentCaptor.forClass(ErpFixedAssetDepreciationDO.class);
         verify(depreciationMapper).insert(captor.capture());
         // 月折旧额 = 1000.00

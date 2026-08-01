@@ -23,7 +23,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -239,9 +238,12 @@ public class ErpConsolidationEngineServiceImplTest {
                 .holdingRatio(new BigDecimal("1.00")).status(0).build();
         when(consolidationScopeService.getEnabledScopeList())
                 .thenReturn(Arrays.asList(scope1, scope2));
-        // 对每个 parent 的调用都返回 scope
-        when(consolidationScopeService.getEnabledScopeListByParent(anyLong()))
+        // 按 parent 分别桩出对应的合并范围：validateScopeExists 会用 parentId 查列表后再匹配 subId，
+        // 若两个 parent 都返回 scope1，则 scope2(parent=3, sub=4) 会因匹配不到 subId 抛「合并范围不存在」
+        when(consolidationScopeService.getEnabledScopeListByParent(PARENT_ID))
                 .thenReturn(Collections.singletonList(scope1));
+        when(consolidationScopeService.getEnabledScopeListByParent(3L))
+                .thenReturn(Collections.singletonList(scope2));
         when(consolidationEntryMapper.selectListByPeriodCode(anyString()))
                 .thenReturn(Collections.emptyList());
 
