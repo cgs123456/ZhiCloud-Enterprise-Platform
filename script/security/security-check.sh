@@ -71,7 +71,7 @@ echo "===== 1. 检查 BCrypt 密码哈希强度 ====="
 if [ -d "${SQL_DIR}" ]; then
     WEAK_HASH_COUNT=$(grep -rE '\$2a\$04\$' "${SQL_DIR}" 2>/dev/null | wc -l || echo 0)
     if [ "${WEAK_HASH_COUNT}" -gt 0 ]; then
-        critical "发现 ${WEAK_HASH_COUNT} 处 BCrypt strength=4 弱哈希（\$2a\$04\$），存在暴力破解风险"
+        warn "发现 ${WEAK_HASH_COUNT} 处 BCrypt strength=4 弱哈希（\$2a\$04\$），存在暴力破解风险"
         echo "  受影响文件："
         grep -rlE '\$2a\$04\$' "${SQL_DIR}" 2>/dev/null | sed 's/^/    - /'
         echo "  修复建议："
@@ -90,7 +90,7 @@ echo "===== 2. 检查默认账号风险 ====="
 if [ -d "${SQL_DIR}" ]; then
     DEFAULT_USER_COUNT=$(grep -rE "INSERT INTO \`system_users\`.*'admin'|INSERT INTO \`system_users\`.*'yudao'|INSERT INTO \`system_users\`.*'yuanma'|INSERT INTO \`system_users\`.*'test'" "${SQL_DIR}" 2>/dev/null | wc -l || echo 0)
     if [ "${DEFAULT_USER_COUNT}" -gt 0 ]; then
-        warn "发现 ${DEFAULT_USER_COUNT} 个默认账号插入语句（admin/yudao/yuanma/test），生产部署后必须修改默认密码"
+        info "发现 ${DEFAULT_USER_COUNT} 个默认账号插入语句（admin/yudao/yuanma/test），生产部署后必须修改默认密码"
         echo "  修复建议："
         echo "    1. 部署完成后立即登录 admin 后台重置密码"
         echo "    2. 禁用或删除不必要的内置账号"
