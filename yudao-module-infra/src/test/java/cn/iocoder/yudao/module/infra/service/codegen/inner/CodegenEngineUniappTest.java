@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -150,7 +151,13 @@ public class CodegenEngineUniappTest extends CodegenEngineAbstractTest {
         Map<String, String> result = codegenEngine.execute(DbType.MYSQL, table, columns, null, null);
         // 断言
         String index = result.get("yudao-ui-admin-uniapp/src/pages-infra/demo/index.vue");
-        assertTrue(index.contains("currentParentId.value === 0\n  ? list.value"));
+        assertNotNull(index, "index.vue 未生成");
+        // 修复：模板生成结果在 Linux/Windows 下的换行不一致。模板中 ? 与 : 之前是换行，？ 与 list.value 之间是两个空格。
+        // 原断言 "currentParentId.value === 0\n  ? list.value" 在 localhost CRLF 下不匹配（0 之后是 \r\n），故拆分为两段。
+        assertTrue(index.contains("currentParentId.value === 0"),
+                "index.vue 应包含 currentParentId.value === 0");
+        assertTrue(index.contains("  ? list.value"),
+                "index.vue 应包含  ? list.value");
         assertFalse(index.contains("list.value.filter"));
         String breadcrumb = result.get("yudao-ui-admin-uniapp/src/pages-infra/demo/components/breadcrumb.vue");
         assertTrue(breadcrumb.contains("modelValue: number"));
