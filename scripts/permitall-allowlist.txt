@@ -1,0 +1,16 @@
+# @PermitAll 白名单
+#
+# 格式：<相对仓库根路径>#<方法名>，每行一条；# 开头为注释。
+# 只有登记在此的写接口才允许标注 @PermitAll（即匿名可访问）。
+#
+# 加入白名单的门槛（缺一不可）：
+#   1. 业务上必须匿名可达（登录 / 回调 / 健康检查等），无法用登录态覆盖；
+#   2. 接口自身具备独立的凭据校验（账号密码、签名、回调 token 等）；
+#   3. 已确认不返回、不修改任何依赖登录态的数据（无 IDOR 风险）。
+#
+# 历史教训：WmsPdaPickController 等曾在「类级」标注 @PermitAll，
+# 使 /app/ 下全部 PDA 接口匿名可达，且 pickerUserId 由前端传参造成越权查询。
+# 现已改为方法级最小化授权 + 从登录态推导用户身份。
+
+# PDA 设备登录：接口内部自行校验设备号与账号密码，必须匿名可达
+yudao-module-wms/src/main/java/cn/iocoder/yudao/module/wms/controller/app/pda/WmsPdaController.java#login

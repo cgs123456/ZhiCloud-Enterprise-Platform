@@ -10,12 +10,14 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
@@ -106,22 +108,38 @@ public class ElectronicSignatureAspect {
      * 避免编译期依赖。若密码错误，AdminAuthService 会抛出 AUTH_LOGIN_BAD_CREDENTIALS，
      * 此处捕获后转换为电子签名密码错误。
      *
+     * <p><b>安全约束（fail-closed）</b>：认证服务缺失或反射调用失败时，一律拒绝本次操作。
+     * 电子签名是 21 CFR Part 11 的强制管控点，任何「降级放行」都等价于签名可被绕过，
+     * 因此不得以 WARN 日志的方式静默跳过密码校验。
+     *
      * @param username 用户名
      * @param password 密码
      */
     private void authenticate(String username, String password) {
         Object adminAuthService = lookupAdminAuthService();
         if (adminAuthService == null) {
-            log.warn("[authenticate] AdminAuthService bean not found, skip password verification");
-            return;
+            // fail-closed：认证服务不可用时拒绝签名，而非跳过校验
+            log.error("[authenticate] AdminAuthService bean not found, reject electronic signature for user: {}", username);
+            throw exception(ELECTRONIC_SIGNATURE_AUTH_SERVICE_UNAVAILABLE);
+        }
+        Method authenticateMethod;
+        try {
+            authenticateMethod = adminAuthService.getClass().getMethod("authenticate", String.class, String.class);
+        } catch (NoSuchMethodException ex) {
+            // 认证服务契约不匹配属于装配问题，同样 fail-closed，且与「密码错误」区分开便于排障
+            log.error("[authenticate] AdminAuthService#authenticate(String,String) not found on bean {}",
+                    adminAuthService.getClass().getName(), ex);
+            throw exception(ELECTRONIC_SIGNATURE_AUTH_SERVICE_UNAVAILABLE);
         }
         try {
-            Method authenticateMethod = adminAuthService.getClass().getMethod("authenticate", String.class, String.class);
             authenticateMethod.invoke(adminAuthService, username, password);
-        } catch (Exception ex) {
-            Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
-            log.warn("[authenticate] electronic signature password verify failed for user: {}", username, cause);
+        } catch (InvocationTargetException ex) {
+            // 目标方法抛错：绝大多数为凭据校验失败
+            log.warn("[authenticate] electronic signature password verify failed for user: {}", username, ex.getTargetException());
             throw exception(ELECTRONIC_SIGNATURE_PASSWORD_ERROR);
+        } catch (IllegalAccessException | RuntimeException ex) {
+            log.error("[authenticate] electronic signature authenticate invocation error for user: {}", username, ex);
+            throw exception(ELECTRONIC_SIGNATURE_AUTH_SERVICE_UNAVAILABLE);
         }
     }
 
@@ -137,7 +155,9 @@ public class ElectronicSignatureAspect {
                 if (applicationContext.containsBean(name)) {
                     return applicationContext.getBean(name);
                 }
-            } catch (Exception ignored) {
+            } catch (BeansException ex) {
+                // 单个候选名解析失败不应中断查找，但必须留痕，避免「静默吞异常导致签名被绕过」
+                log.warn("[lookupAdminAuthService] resolve bean by name failed: {}", name, ex);
             }
         }
         // 兜底：按类型查找（类型名包含 AdminAuth）
@@ -148,7 +168,8 @@ public class ElectronicSignatureAspect {
                     return applicationContext.getBean(name);
                 }
             }
-        } catch (Exception ignored) {
+        } catch (BeansException ex) {
+            log.warn("[lookupAdminAuthService] resolve bean by type failed", ex);
         }
         return null;
     }

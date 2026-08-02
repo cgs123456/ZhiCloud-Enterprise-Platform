@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.datalake.service;
 
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.module.datalake.config.DataLakeProperties;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Iceberg Catalog 管理服务实现
@@ -56,11 +59,51 @@ public class IcebergCatalogServiceImpl implements IcebergCatalogService {
     private static final int MAX_NEXT_PAGES = 100;
 
     /**
+     * SQL 标识符白名单：仅允许「字母/下划线开头 + 字母数字下划线」，长度 ≤ 128。
+     *
+     * <p>Trino 的 {@code /v1/statement} 接口不支持占位符绑定，命名空间与表名只能字符串拼接，
+     * 因此必须在拼接前做严格白名单校验，杜绝 {@code ods; DROP TABLE x --} 之类的注入。
+     */
+    private static final Pattern IDENTIFIER_PATTERN = Pattern.compile("^[a-zA-Z_][a-zA-Z0-9_]{0,127}$");
+
+    /**
+     * 建表列定义片段的合法性校验：必须由小括号包裹，且不得出现语句分隔符与注释符。
+     */
+    private static final Pattern COLUMN_DEF_FORBIDDEN = Pattern.compile("(;|--|/\\*|\\*/)");
+
+    /**
      * Trino 查询响应超时时间
      */
     private static final Duration QUERY_TIMEOUT = Duration.ofSeconds(30);
 
     private final DataLakeProperties properties;
+
+    /**
+     * 校验 SQL 标识符（命名空间 / 表名），非法直接抛业务异常。
+     *
+     * @param value 待校验值
+     * @param field 字段名（用于错误信息定位）
+     * @return 校验通过的原值，便于链式使用
+     */
+    private static String checkIdentifier(String value, String field) {
+        if (value == null || !IDENTIFIER_PATTERN.matcher(value).matches()) {
+            throw new ServiceException(GlobalErrorCodeConstants.BAD_REQUEST,
+                    String.format("非法的 %s：%s（仅允许字母、数字、下划线，且不能以数字开头）", field, value));
+        }
+        return value;
+    }
+
+    /**
+     * 校验建表列定义片段，必须形如 {@code (col1 TYPE, col2 TYPE)}，且不含语句分隔符 / 注释符。
+     */
+    private static void checkColumnDefinition(String schema) {
+        String trimmed = schema == null ? null : schema.trim();
+        if (trimmed == null || !trimmed.startsWith("(") || !trimmed.endsWith(")")
+                || COLUMN_DEF_FORBIDDEN.matcher(trimmed).find()) {
+            throw new ServiceException(GlobalErrorCodeConstants.BAD_REQUEST,
+                    "非法的建表列定义，必须为小括号包裹的列声明且不得包含 ; 或注释符");
+        }
+    }
 
     /**
      * 执行 Trino SQL 并返回原始响应 Map
@@ -195,6 +238,7 @@ public class IcebergCatalogServiceImpl implements IcebergCatalogService {
 
     @Override
     public List<String> listTables(String namespace) {
+        checkIdentifier(namespace, "namespace");
         Map<String, Object> response = executeStatement("SHOW TABLES FROM iceberg." + namespace);
         if (response.isEmpty()) {
             return Collections.emptyList();
@@ -234,6 +278,9 @@ public class IcebergCatalogServiceImpl implements IcebergCatalogService {
     public void createTable(String namespace, String table, String schema) {
         // 示例 DDL: CREATE TABLE iceberg.ods.mes_pro_work_order (id BIGINT, name VARCHAR)
         // WITH (format = 'PARQUET', location = 's3://yudao-warehouse/ods/mes_pro_work_order')
+        checkIdentifier(namespace, "namespace");
+        checkIdentifier(table, "table");
+        checkColumnDefinition(schema);
         String sql = String.format("CREATE TABLE iceberg.%s.%s %s " +
                         "WITH (format = 'PARQUET', location = '%s/%s/%s')",
                 namespace, table, schema, properties.getWarehousePath(), namespace, table);
@@ -252,6 +299,8 @@ public class IcebergCatalogServiceImpl implements IcebergCatalogService {
 
     @Override
     public Map<String, String> getTableSchema(String namespace, String table) {
+        checkIdentifier(namespace, "namespace");
+        checkIdentifier(table, "table");
         String sql = String.format("SHOW COLUMNS FROM iceberg.%s.%s", namespace, table);
         Map<String, Object> response = executeStatement(sql);
         if (response.isEmpty()) {

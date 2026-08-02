@@ -29,7 +29,12 @@
     locations: classpath:db/migration
     baseline-on-migrate: true
     baseline-version: 1
-    validate-on-migrate: false # 存量库校验可能因历史 schema 差异失败，关闭后宽松执行
+    # 必须开启校验：关闭后「已应用脚本被事后篡改」不会报错，线上库与仓库 DDL 会静默漂移，
+    # 生产事故时无法用迁移历史复现 schema。存量库若因历史差异校验失败，
+    # 应通过补写 repair 迁移脚本或 flyway repair 处理，而不是长期关闭校验。
+    validate-on-migrate: true
+    # 允许 V1 基线之外的「补写历史版本」被检测出来并报错，避免乱序插入脚本
+    out-of-order: false
     table: flyway_schema_history
     encoding: UTF-8
 

@@ -53,7 +53,7 @@
         <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
         <flatten-maven-plugin.version>1.7.2</flatten-maven-plugin.version>
         <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version> <!-- JaCoCo 覆盖率插件：mvn verify 生成报告，目标 target/site/jacoco/index.html -->
-        <jacoco.minimum>0.30</jacoco.minimum> <!-- JaCoCo 最低覆盖率基线（分阶段提升：0.30 → 0.60 → 0.80）；-Djacoco.minimum=0.00 可临时跳过 -->
+        <jacoco.minimum>0.40</jacoco.minimum> <!-- JaCoCo 最低覆盖率基线（分阶段提升：0.40 → 0.60 → 0.80）；-Djacoco.minimum=0.00 可临时跳过。注意：check 规则通过 ${jacoco.minimum} 引用本属性，改这里即改门禁 -->
         <dependency-check-maven.version>12.2.2</dependency-check-maven.version> <!-- OWASP 依赖漏洞扫描；CI 门禁 failBuildOnCVSS=7 -->
         <nvd.api.key/> <!-- NVD API Key，本地留空；CI 通过 -Dnvd.api.key=${{ secrets.NVD_API_KEY }} 注入 -->
         <!-- maven-surefire-plugin 暂时无法通过 bom 的依赖读取（兼容老版本 IDEA 2024 及以前版本） -->
@@ -161,58 +161,43 @@
                             <goals>
                                 <goal>check</goal>
                             </goals>
-                            <configuration>
-                                <haltOnFailure>true</haltOnFailure>
-                                <rules>
-                                    <rule>
-                                        <element>BUNDLE</element>
-                                        <includes>
-                                            <include>cn/iocoder/yudao/module/wms/**/service/**</include>
-                                            <include>cn/iocoder/yudao/module/mes/**/service/**</include>
-                                            <include>cn/iocoder/yudao/module/bpm/**/service/**</include>
-                                        </includes>
-                                        <limits>
-                                            <limit>
-                                                <counter>INSTRUCTION</counter>
-                                                <value>COVEREDRATIO</value>
-                                                <minimum>${jacoco.minimum}</minimum>
-                                            </limit>
-                                        </limits>
-                                    </rule>
-                                </rules>
-                            </configuration>
                         </execution>
                     </executions>
                     <configuration>
-                        <!--
-                          Coverage 规则（分阶段提升策略）：当前基线 0.30，目标 0.60，后续按模块逐步上调。
-                          注意：本插件仅绑定 prepare-agent 与 report 两个 goal，check goal 未绑定到任何 phase，
-                          因此「覆盖率不足不会阻断构建」。这是有意为之——当前仅 QMS / AI-RAG 等少数模块补充了单测，
-                          全量模块的聚合覆盖率远低于 0.30，立即强制门禁会直接 brick CI。
-                          待各模块单测补齐后，再将 check goal 绑定到 verify（聚合级别）以真正生效。
-                          本地审计可手动执行：mvn jacoco:check -Djacoco.minimum=0.30
-                        -->
+                        <!-- 覆盖率门禁（Phase 4）：仅对 wms/mes/bpm 的 service 包做指令覆盖率统计与强制下限。
+                             顶层 <includes> 将「被插桩 + 被统计」的类收敛为上述 service 包；其余类（config/DO/VO/controller 等）
+                             不参与统计，避免拉低基线误 brick。每个模块只含自己的 service 类，门禁按模块独立评估、互不干扰。
+                             阈值取自 ${jacoco.minimum}（当前 0.40）；后续 crm/erp/ai/datalake/system/pay 补测达标后在此 <includes> 追加。
+
+                             关键：BUNDLE 级 <rule> 的 <includes> 匹配的是「bundle 名称」而非类名，因此包级过滤必须放在
+                             顶层 <includes>（作用于插桩/统计范围），BUNDLE 规则本身不再写 <includes>。 -->
+                        <formats>
+                            <format>HTML</format>
+                            <format>XML</format>
+                        </formats>
+                        <includes>
+                            <include>cn/iocoder/yudao/module/wms/service/**</include>
+                            <include>cn/iocoder/yudao/module/mes/service/**</include>
+                            <include>cn/iocoder/yudao/module/bpm/service/**</include>
+                        </includes>
+                        <haltOnFailure>true</haltOnFailure>
                         <rules>
+                            <!-- 单条 BUNDLE 规则：对当前模块内「被统计的 service 类」整体求指令覆盖率，必须 ≥ 0.40。
+                                 因顶层 <includes> 已把统计范围收敛到 service 包，BUNDLE 即等于该模块 service 聚合覆盖率。 -->
                             <rule>
                                 <element>BUNDLE</element>
                                 <limits>
                                     <limit>
                                         <counter>INSTRUCTION</counter>
                                         <value>COVEREDRATIO</value>
+                                        <!-- 引用 ${jacoco.minimum} 属性，而非写死数值：
+                                             此前这里硬编码 0.40，而 properties 里的 jacoco.minimum 无人引用，
+                                             导致注释中承诺的 "-Djacoco.minimum=0.00 可临时跳过" 实际完全无效。 -->
                                         <minimum>${jacoco.minimum}</minimum>
                                     </limit>
                                 </limits>
                             </rule>
                         </rules>
-                        <excludes>
-                            <!-- 排除自动生成的配置类、DO 等 -->
-                            <exclude>**/config/**</exclude>
-                            <exclude>**/*Configuration.*</exclude>
-                            <exclude>**/*Properties.*</exclude>
-                            <exclude>**/dal/dataobject/**</exclude>
-                            <exclude>**/controller/admin/**/vo/**</exclude>
-                            <exclude>**/package-info.*</exclude>
-                        </excludes>
                     </configuration>
                 </plugin>
                 <!-- OWASP Dependency-Check：依赖漏洞扫描（CI 安全门禁，failBuildOnCVSS=7 阻断高危漏洞） -->

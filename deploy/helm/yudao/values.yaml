@@ -190,31 +190,44 @@ env:
   OTEL_EXPORTER_OTLP_ENDPOINT: "http://yudao-jaeger:4318/v1/traces"
   MANAGEMENT_OTLP_TRACING_ENDPOINT: "http://yudao-jaeger:4318/v1/traces"
 
-# ----- 敏感配置（写入 Secret，使用 stringData 占位）-----
-# 部署前通过外部 Secret 管理（Sealed Secrets / External Secrets / Vault）替换占位符
+# ----- 敏感配置 -----
+# 安全约定：所有密钥默认留空，helm 渲染时会因空值直接失败（templates/_helpers.tpl 的 yudao.requiredSecret）。
+# 这是刻意为之——历史上这些字段默认值全是占位符字符串（CHANGE_ME 前缀），
+# helm install 不报错，导致「忘记改密码」可以一路进到生产而无人察觉。
+#
+# 推荐用法（按优先级）：
+#   1) secrets.existingSecret: 指向 External Secrets Operator / Sealed Secrets 生成的 Secret，
+#      此时 Chart 完全不渲染明文密钥，仓库里不存在任何密钥物料；
+#   2) helm upgrade -f secrets-prod.yaml（该文件由 SOPS/age 加密后再入库）；
+#   3) CI 中 --set-string secrets.XXX=$ENV_VAR 从密钥管理系统注入。
+# 本地/CI 冒烟可临时 --set secrets.allowInsecureDefaults=true 放行空值。
 secrets:
+  # 引用已存在的 Secret 名称（由外部体系管理）。设置后本 Chart 不再渲染下方任何密钥。
+  existingSecret: ""
+  # 是否允许空值/占位符通过校验；仅限本地与 CI 冒烟，生产必须保持 false
+  allowInsecureDefaults: false
   # 主数据源密码
-  MASTER_DATASOURCE_PASSWORD: "CHANGE_ME_IN_PRODUCTION"
+  MASTER_DATASOURCE_PASSWORD: ""
   # 从数据源密码
-  SLAVE_DATASOURCE_PASSWORD: "CHANGE_ME_IN_PRODUCTION"
+  SLAVE_DATASOURCE_PASSWORD: ""
   # Redis 密码
-  REDIS_PASSWORD: "CHANGE_ME_IN_PRODUCTION"
+  REDIS_PASSWORD: ""
   # Postgres 密码
-  POSTGRES_PASSWORD: "CHANGE_ME_IN_PRODUCTION"
+  POSTGRES_PASSWORD: ""
   # MyBatis 加密器密码
-  MYBATIS_ENCRYPTOR_PASSWORD: "CHANGE_ME_IN_PRODUCTION"
+  MYBATIS_ENCRYPTOR_PASSWORD: ""
   # API 请求加密 Key
-  API_ENCRYPT_REQUEST_KEY: "CHANGE_ME_IN_PRODUCTION"
+  API_ENCRYPT_REQUEST_KEY: ""
   # API 响应加密 Key
-  API_ENCRYPT_RESPONSE_KEY: "CHANGE_ME_IN_PRODUCTION"
+  API_ENCRYPT_RESPONSE_KEY: ""
   # Druid 监控台用户名
   DRUID_USERNAME: "druid"
   # Druid 监控台密码
-  DRUID_PASSWORD: "CHANGE_ME_IN_PRODUCTION"
+  DRUID_PASSWORD: ""
   # SBA 监控密码
-  SBA_PASSWORD: "CHANGE_ME_IN_PRODUCTION"
+  SBA_PASSWORD: ""
   # AI 平台 API Key（OpenAI/通义千问等）
-  AI_API_KEY: "CHANGE_ME_IN_PRODUCTION"
+  AI_API_KEY: ""
 
 # ----- Flyway 迁移 Job 配置（PreSync 阶段执行）-----
 migration:
@@ -224,6 +237,8 @@ migration:
   backoffLimit: 2
   # 迁移完成后的 TTL（秒），超时自动清理
   ttlSecondsAfterFinished: 600
+  # 迁移最长执行时间（秒）；超时视为失败，避免卡死 PreSync 阶段
+  activeDeadlineSeconds: 900
 
 # ----- Pod 调度 / 亲和性 / 拓扑分布 -----
 nodeSelector: {}

@@ -286,13 +286,12 @@
 
     <build>
         <plugins>
-            <!-- JaCoCo 覆盖率插件（仅在本模块激活） -->
-            <!-- 使用方式：mvn clean verify -pl yudao-module-ai -DskipTests=false -->
-            <!-- 报告路径：yudao-module-ai/target/site/jacoco/index.html -->
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-            </plugin>
+            <!-- 注意：本模块暂不纳入覆盖率门禁。
+                 根 pom 的 JaCoCo check 当前仅对 wms/mes/bpm 的 service 包做 ≥0.40 统计
+                 （见 FULL-MARKS-PLAN.md Item C）。本模块 service 包未加入 <includes>，
+                 若激活 jacoco 会产生「空 bundle → 0% → 门禁失败」的误 brick。
+                 待本模块单测补齐（ai 当前仅 3 个测试类 / 45 个 service 类）后，
+                 将其 service 包加入根 pom <includes> 再激活本插件。 -->
         </plugins>
     </build>
 

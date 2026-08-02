@@ -99,3 +99,39 @@ resources:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 {{- end -}}
+
+{{/*
+yudao.secretName：返回应用使用的 Secret 名称。
+若配置了 secrets.existingSecret（由 External Secrets Operator / Sealed Secrets 等外部体系管理），
+则直接引用该 Secret，Chart 本身不再渲染任何明文密钥。
+*/}}
+{{- define "yudao.secretName" -}}
+{{- if .Values.secrets.existingSecret -}}
+{{- .Values.secrets.existingSecret -}}
+{{- else -}}
+{{- printf "%s-secret" (include "yudao.fullname" .) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+yudao.requiredSecret：渲染一个敏感值，并在其为空或仍为占位符时直接让 helm 渲染失败。
+
+参数：list <root context> <键名> <取值>
+
+设计意图：以往 values.yaml 中 11 个密钥的默认值都是 "CHANGE_ME_IN_PRODUCTION"，
+helm install 不会报错，于是「忘了改密码」会静默进入生产——这类问题只有出事才会被发现。
+现在改为渲染期硬失败，把它前移成部署时的确定性错误。
+
+如需在本地/CI 冒烟环境临时放行，显式设置 secrets.allowInsecureDefaults=true。
+*/}}
+{{- define "yudao.requiredSecret" -}}
+{{- $root := index . 0 -}}
+{{- $key := index . 1 -}}
+{{- $value := index . 2 | default "" -}}
+{{- if or (eq $value "") (hasPrefix "CHANGE_ME" $value) -}}
+{{- if not $root.Values.secrets.allowInsecureDefaults -}}
+{{- fail (printf "secrets.%s 未设置或仍为占位符。请通过 External Secrets / Sealed Secrets / SOPS 注入真实值，或设置 secrets.existingSecret 引用外部 Secret；仅限非生产冒烟可用 --set secrets.allowInsecureDefaults=true 放行。" $key) -}}
+{{- end -}}
+{{- end -}}
+{{- $value | quote -}}
+{{- end -}}

@@ -11,6 +11,7 @@ import cn.iocoder.yudao.framework.web.core.handler.GlobalResponseBodyHandler;
 import cn.iocoder.yudao.framework.web.core.util.WebFrameworkUtils;
 import com.google.common.collect.Maps;
 import jakarta.servlet.Filter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -36,6 +37,7 @@ import java.util.function.Predicate;
 
 @AutoConfiguration
 @EnableConfigurationProperties(WebProperties.class)
+@Slf4j
 public class YudaoWebAutoConfiguration {
 
     /**
@@ -46,11 +48,15 @@ public class YudaoWebAutoConfiguration {
 
     /**
      * CORS 允许的源地址白名单，逗号分隔
-     * - 开发环境默认 "*"（允许所有）
-     * - 生产环境通过 yudao.web.cors.allowed-origins 配置白名单，例如：
-     *   https://admin.example.com,https://app.example.com
+     *
+     * <p><b>安全默认值</b>：仅放行本机开发地址，<b>不再默认 {@code *}</b>。
+     * {@code *} 与 {@code allowCredentials=true} 组合会让任意站点携带用户 Cookie 发起跨域请求
+     * （CSRF / 凭据泄露），因此默认值收敛为 localhost。
+     *
+     * <p>生产环境必须显式配置具体域名白名单，例如：
+     * {@code yudao.web.cors.allowed-origins: https://admin.example.com,https://app.example.com}
      */
-    @Value("${yudao.web.cors.allowed-origins:*}")
+    @Value("${yudao.web.cors.allowed-origins:http://localhost:[*],http://127.0.0.1:[*]}")
     private String corsAllowedOrigins;
 
     @Bean
@@ -114,10 +120,16 @@ public class YudaoWebAutoConfiguration {
     /**
      * 创建 CorsFilter Bean，解决跨域问题
      *
-     * 安全策略：通过 yudao.web.cors.allowed-origins 配置白名单
-     * - 开发环境默认 "*"（允许所有源）
-     * - 生产环境必须配置具体域名白名单，例如：
-     *   yudao.web.cors.allowed-origins: https://admin.example.com,https://app.example.com
+     * <p>安全策略：通过 {@code yudao.web.cors.allowed-origins} 配置白名单
+     * <ul>
+     *   <li>默认仅放行 localhost / 127.0.0.1（本机开发）</li>
+     *   <li>生产环境必须配置具体域名，如
+     *       {@code yudao.web.cors.allowed-origins: https://admin.example.com,https://app.example.com}</li>
+     *   <li>若显式配置了通配 {@code *}，则强制关闭 {@code allowCredentials}——
+     *       「任意源 + 携带凭据」等价于把会话 Cookie 交给全网，浏览器规范本身也禁止该组合，
+     *       此处主动降级为不带凭据，避免出现「配置写了但静默失效 / 或被绕过」的灰区</li>
+     *   <li>白名单为空时不注册任何 allowedOrigin，即默认拒绝跨域，而非默认放行</li>
+     * </ul>
      */
     @Bean
     @RefreshScope // P1 Nacos: CORS config can be dynamically refreshed via Nacos
@@ -125,18 +137,34 @@ public class YudaoWebAutoConfiguration {
     public FilterRegistrationBean<CorsFilter> corsFilterBean() {
         // 创建 CorsConfiguration 对象
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
-        // 从配置读取白名单，支持逗号分隔的多域名
-        if (corsAllowedOrigins != null && !corsAllowedOrigins.isEmpty()) {
+        // 解析白名单，支持逗号分隔的多域名
+        boolean wildcard = false;
+        int registered = 0;
+        if (StrUtil.isNotBlank(corsAllowedOrigins)) {
             for (String origin : corsAllowedOrigins.split(",")) {
                 String trimmed = origin.trim();
-                if (!trimmed.isEmpty()) {
-                    config.addAllowedOriginPattern(trimmed);
+                if (trimmed.isEmpty()) {
+                    continue;
                 }
+                if ("*".equals(trimmed)) {
+                    wildcard = true;
+                }
+                config.addAllowedOriginPattern(trimmed);
+                registered++;
             }
+        }
+        // 通配源禁止携带凭据；其余情况才允许 Cookie / Authorization 跨域
+        config.setAllowCredentials(!wildcard);
+        if (wildcard) {
+            log.error("[corsFilterBean][检测到 yudao.web.cors.allowed-origins 配置为通配 *，已强制关闭 allowCredentials。"
+                    + "生产环境请改为显式域名白名单]");
+        }
+        if (registered == 0) {
+            log.warn("[corsFilterBean][未配置 yudao.web.cors.allowed-origins，已默认拒绝所有跨域请求]");
         }
         config.addAllowedHeader("*"); // 设置访问源请求头
         config.addAllowedMethod("*"); // 设置访问源请求方法
+        config.setMaxAge(1800L); // 预检结果缓存 30 分钟，降低 OPTIONS 压力
         // 创建 UrlBasedCorsConfigurationSource 对象
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config); // 对接口配置跨域设置

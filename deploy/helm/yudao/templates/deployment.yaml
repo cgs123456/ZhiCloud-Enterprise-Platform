@@ -63,7 +63,7 @@ spec:
             - configMapRef:
                 name: {{ include "yudao.fullname" . }}-config
             - secretRef:
-                name: {{ include "yudao.fullname" . }}-secret
+                name: {{ include "yudao.secretName" . }}
           # env：覆盖关键变量（优先级高于 envFrom）
           env:
             - name: SPRING_PROFILES_ACTIVE

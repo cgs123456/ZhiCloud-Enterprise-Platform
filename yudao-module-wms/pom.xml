@@ -68,4 +68,15 @@
         </dependency>
     </dependencies>
 
+    <!-- JaCoCo 覆盖率门禁激活：引用父 pom 托管的 jacoco-maven-plugin（含 prepare-agent / report / check 执行），
+         使本模块的 service 包纳入核心域覆盖率门禁（wms/mes/bpm service ≥ 0.40）。 -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>

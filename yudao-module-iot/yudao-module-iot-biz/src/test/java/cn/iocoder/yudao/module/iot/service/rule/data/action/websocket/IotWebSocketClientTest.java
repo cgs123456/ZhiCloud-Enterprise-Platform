@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.iot.service.rule.data.action.websocket;
 
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.iocoder.yudao.module.iot.core.mq.message.IotDeviceMessage;
 import okhttp3.Response;
 import okhttp3.WebSocket;
@@ -169,7 +170,8 @@ class IotWebSocketClientTest {
                 .build();
 
         // 调用 & 断言：未连接时发送消息应抛出异常
-        assertThrows(IllegalStateException.class, () -> client.sendMessage(message));
+        // 注意：裸抛异常统一改造后，由 IllegalStateException 改为 ServiceException(INTERNAL_SERVER_ERROR)
+        assertThrows(ServiceException.class, () -> client.sendMessage(message));
     }
 
     @Test

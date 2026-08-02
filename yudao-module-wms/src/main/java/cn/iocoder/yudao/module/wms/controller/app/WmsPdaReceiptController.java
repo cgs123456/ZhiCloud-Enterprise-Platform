@@ -22,8 +22,8 @@ import cn.iocoder.yudao.module.wms.service.order.dock.WmsDockService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
-import jakarta.annotation.security.PermitAll;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,7 +45,6 @@ import static cn.iocoder.yudao.module.wms.enums.ErrorCodeConstants.ASN_ORDER_NOT
 @RestController
 @RequestMapping("/wms-api/receipt")
 @Validated
-@PermitAll
 public class WmsPdaReceiptController {
 
     @Resource
@@ -63,6 +62,7 @@ public class WmsPdaReceiptController {
 
     @PostMapping("/scan-asn")
     @Operation(summary = "扫描 ASN 条码，返回 ASN 详情")
+    @PreAuthorize("@ss.hasPermission('wms:pda:scan')")
     public CommonResult<WmsPdaAsnRespVO> scanAsn(@Valid @RequestBody WmsPdaScanAsnReqVO reqVO) {
         // 1. 查询 ASN 单
         WmsAsnOrderDO order = asnOrderMapper.selectByNo(reqVO.getScanCode());
@@ -112,6 +112,7 @@ public class WmsPdaReceiptController {
 
     @PostMapping("/confirm-receipt")
     @Operation(summary = "确认收货")
+    @PreAuthorize("@ss.hasPermission('wms:pda:receipt')")
     public CommonResult<Boolean> confirmReceipt(@Valid @RequestBody WmsPdaConfirmReceiptReqVO reqVO) {
         asnOrderDetailService.addReceivedQuantity(reqVO.getDetailId(), reqVO.getReceivedQuantity());
         return success(true);

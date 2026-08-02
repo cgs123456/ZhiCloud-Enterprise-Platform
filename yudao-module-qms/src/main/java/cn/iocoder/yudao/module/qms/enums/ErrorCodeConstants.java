@@ -63,6 +63,8 @@ public interface ErrorCodeConstants {
     ErrorCode ELECTRONIC_SIGNATURE_PASSWORD_REQUIRED = new ErrorCode(1_044_000_032, "电子签名请求头缺少密码");
     ErrorCode ELECTRONIC_SIGNATURE_PASSWORD_ERROR = new ErrorCode(1_040_109_002, "电子签名密码验证失败");
     ErrorCode ELECTRONIC_SIGNATURE_REASON_REQUIRED = new ErrorCode(1_040_109_003, "当前操作需要填写电子签名理由");
+    // 认证服务不可用时必须 fail-closed（21 CFR Part 11：签名不可绕过），禁止降级放行
+    ErrorCode ELECTRONIC_SIGNATURE_AUTH_SERVICE_UNAVAILABLE = new ErrorCode(1_044_000_050, "电子签名认证服务不可用，操作已拒绝");
 
     // ========== QMS 计量器具台账（1-040-600-000） ==========
     ErrorCode INSTRUMENT_NOT_EXISTS = new ErrorCode(1_044_000_033, "计量器具不存在");

@@ -35,30 +35,44 @@ data:
 
 # ============================================================
 # Secret：敏感配置（密码、加密密钥等）
-# 使用 stringData 明文书写，K8s 会自动 base64 编码到 data 字段，便于阅读
-# 通过 envFrom.secretRef 注入到容器环境变量
-# 生产环境部署前请替换所有 CHANGE_ME_IN_PRODUCTION 占位符
+#
+# 【安全策略】本清单刻意不包含 Secret 资源。
+#
+# 原因：此前这里内联了 9 个 "CHANGE_ME_IN_PRODUCTION" 明文占位符，
+# `kubectl apply -f` 会成功创建这些假密码，Pod 也能起来，
+# 于是"忘了改密码"不会有任何报错，直到出事才被发现。
+#
+# 现在改为：Secret 必须在 apply 本清单之前由外部体系单独创建。
+# 若 Secret 不存在，下方 Deployment 的 envFrom.secretRef 会让 Pod
+# 停在 CreateContainerConfigError，部署明确失败——fail-closed。
+#
+# 创建方式（三选一，按推荐顺序）：
+#
+#   1) External Secrets Operator / Sealed Secrets / SOPS（生产推荐）
+#      由密钥管理系统（Vault、AWS Secrets Manager 等）同步生成
+#      名为 yudao-server-secret 的 Secret。
+#
+#   2) 从环境变量创建（CI 场景）
+#      kubectl create secret generic yudao-server-secret \
+#        --from-literal=MASTER_DATASOURCE_PASSWORD="$MASTER_DATASOURCE_PASSWORD" \
+#        --from-literal=SLAVE_DATASOURCE_PASSWORD="$SLAVE_DATASOURCE_PASSWORD" \
+#        --from-literal=REDIS_PASSWORD="$REDIS_PASSWORD" \
+#        --from-literal=POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
+#        --from-literal=MYBATIS_ENCRYPTOR_PASSWORD="$MYBATIS_ENCRYPTOR_PASSWORD" \
+#        --from-literal=API_ENCRYPT_REQUEST_KEY="$API_ENCRYPT_REQUEST_KEY" \
+#        --from-literal=API_ENCRYPT_RESPONSE_KEY="$API_ENCRYPT_RESPONSE_KEY" \
+#        --from-literal=DRUID_USERNAME="druid" \
+#        --from-literal=DRUID_PASSWORD="$DRUID_PASSWORD" \
+#        --from-literal=SBA_PASSWORD="$SBA_PASSWORD"
+#
+#   3) 使用 Helm Chart 部署（deploy/helm/yudao）
+#      Chart 内置渲染期校验，空值或 CHANGE_ME 前缀会让 helm 直接失败。
+#
+# 必需的键（缺一不可）：
+#   MASTER_DATASOURCE_PASSWORD、SLAVE_DATASOURCE_PASSWORD、REDIS_PASSWORD、
+#   POSTGRES_PASSWORD、MYBATIS_ENCRYPTOR_PASSWORD、API_ENCRYPT_REQUEST_KEY、
+#   API_ENCRYPT_RESPONSE_KEY、DRUID_USERNAME、DRUID_PASSWORD、SBA_PASSWORD
 # ============================================================
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: yudao-server-secret
-  namespace: default
-  labels:
-    app: yudao-server
-type: Opaque
-stringData:
-  MASTER_DATASOURCE_PASSWORD: "CHANGE_ME_IN_PRODUCTION"
-  SLAVE_DATASOURCE_PASSWORD: "CHANGE_ME_IN_PRODUCTION"
-  REDIS_PASSWORD: "CHANGE_ME_IN_PRODUCTION"
-  POSTGRES_PASSWORD: "CHANGE_ME_IN_PRODUCTION"
-  MYBATIS_ENCRYPTOR_PASSWORD: "CHANGE_ME_IN_PRODUCTION"
-  API_ENCRYPT_REQUEST_KEY: "CHANGE_ME_IN_PRODUCTION"
-  API_ENCRYPT_RESPONSE_KEY: "CHANGE_ME_IN_PRODUCTION"
-  DRUID_USERNAME: "druid"
-  DRUID_PASSWORD: "CHANGE_ME_IN_PRODUCTION"
-  SBA_PASSWORD: "CHANGE_ME_IN_PRODUCTION"
 
 # ============================================================
 # Deployment：后端服务部署

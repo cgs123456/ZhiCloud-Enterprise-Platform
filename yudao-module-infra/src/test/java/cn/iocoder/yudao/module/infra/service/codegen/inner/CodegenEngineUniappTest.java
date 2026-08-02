@@ -265,7 +265,9 @@ public class CodegenEngineUniappTest extends CodegenEngineAbstractTest {
         bindingMap.put("subIndex", 1);
 
         // 调用
-        IllegalStateException exception = assertThrows(IllegalStateException.class,
+        // 注意：裸抛异常统一改造后，此处由 IllegalStateException 改为 ServiceException(INTERNAL_SERVER_ERROR)，
+        // 原始 message 保持不变，故仅调整断言的异常类型。
+        ServiceException exception = assertThrows(ServiceException.class,
                 () -> CodegenEngine.registerGeneratedSource(generatedSources, "same.vue", "form_sub.vm", bindingMap));
         // 断言
         assertTrue(exception.getMessage().contains("生成文件路径重复：same.vue"));

@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.annotation.security.PermitAll;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -56,6 +57,7 @@ public class WmsPdaController {
 
     @PostMapping("/task/scan-location")
     @Operation(summary = "扫码库位，返回库存信息")
+    @PreAuthorize("@ss.hasPermission('wms:pda:scan')")
     public CommonResult<WmsPdaScanRespVO> scanLocation(@RequestBody @Valid WmsPdaScanReqVO reqVO) {
         reqVO.setScanType(WmsPdaScanReqVO.SCAN_TYPE_LOCATION);
         return success(pdaService.scan(reqVO));
@@ -63,6 +65,7 @@ public class WmsPdaController {
 
     @PostMapping("/task/scan-item")
     @Operation(summary = "扫码物料，返回 SKU 信息")
+    @PreAuthorize("@ss.hasPermission('wms:pda:scan')")
     public CommonResult<WmsPdaScanRespVO> scanItem(@RequestBody @Valid WmsPdaScanReqVO reqVO) {
         reqVO.setScanType(WmsPdaScanReqVO.SCAN_TYPE_ITEM);
         return success(pdaService.scan(reqVO));
@@ -70,6 +73,7 @@ public class WmsPdaController {
 
     @PostMapping("/receipt/confirm")
     @Operation(summary = "PDA 收货确认")
+    @PreAuthorize("@ss.hasPermission('wms:pda:receipt')")
     public CommonResult<Boolean> confirmReceipt(@RequestBody @Valid WmsPdaReceiptReqVO reqVO) {
         pdaService.confirmReceipt(reqVO);
         return success(true);
@@ -77,6 +81,7 @@ public class WmsPdaController {
 
     @PostMapping("/putaway/execute")
     @Operation(summary = "PDA 上架执行")
+    @PreAuthorize("@ss.hasPermission('wms:pda:putaway')")
     public CommonResult<Boolean> executePutaway(@RequestBody @Valid WmsPdaPutawayReqVO reqVO) {
         pdaService.executePutaway(reqVO);
         return success(true);
@@ -84,6 +89,7 @@ public class WmsPdaController {
 
     @PostMapping("/pick/execute")
     @Operation(summary = "PDA 拣货执行")
+    @PreAuthorize("@ss.hasPermission('wms:pda:pick')")
     public CommonResult<Boolean> executePick(@RequestBody @Valid WmsPdaPickReqVO reqVO) {
         pdaService.executePick(reqVO);
         return success(true);
@@ -91,6 +97,7 @@ public class WmsPdaController {
 
     @PostMapping("/check/execute")
     @Operation(summary = "PDA 盘点录入")
+    @PreAuthorize("@ss.hasPermission('wms:pda:check')")
     public CommonResult<Boolean> executeCheck(@RequestBody @Valid WmsPdaCheckReqVO reqVO) {
         pdaService.executeCheck(reqVO);
         return success(true);

@@ -4,16 +4,18 @@ yudao-server Flyway 数据库迁移 Job 模板（ArgoCD PreSync 阶段执行）
 执行时机：在主应用 Deployment 滚动更新前运行
 - ArgoCD 通过 argocd.argoproj.io/hook: PreSync 注解识别
 - hook-delete-policy: before-hook-creation 表示每次 Sync 前先删除旧 Job
-- 实际迁移通过 Spring Boot 启动时 Flyway 自动执行（spring.flyway.enabled=true）
-  此 Job 仅作为"显式迁移"占位，便于在 ArgoCD 流水线中独立观察迁移状态
+- sync-wave: -1 保证本 Job 早于业务工作负载
 
 设计说明：
-  1. 命令使用 yudao-server 镜像复用已构建产物，无需额外迁移镜像
-  2. 此处用 sh -c echo 占位，实际生产建议：
-     - 方案 A：保留 Spring Boot 启动时 Flyway 自动迁移（推荐，配置简单）
-     - 方案 B：构建专用迁移镜像，引用 org.flywaydb.commandline.Main 执行：
-         java -cp /app/resources/db/migration org.flywaydb.core.commandline.Main migrate
-  3. Job 失败时 backoffLimit 限制重试次数，避免阻塞 Sync 流水线
+  1. 复用 yudao-server 业务镜像，无需额外构建迁移镜像
+  2. 通过 Spring Boot PropertiesLauncher 直接运行 fat jar 内的
+     cn.iocoder.yudao.server.DatabaseMigrationRunner，只加载 Flyway + JDBC，
+     不启动 Web 容器 / Redis / MQ 等业务组件，进程执行完即退出
+  3. 迁移串行化：本 Job 先跑完（completions=1、parallelism=1），业务副本才滚动；
+     Flyway 自身还会在 MySQL 上对 schema history 表加 GET_LOCK 兜底并发
+  4. 退出码非 0 时 PreSync 失败，直接阻断本次发布（不再是"echo 假装成功"）
+  5. 业务应用侧仍保留 spring.flyway.enabled 作为兜底，但正常路径下
+     Job 已把脚本执行完，应用启动时只做校验
 */}}
 {{- if .Values.migration.enabled }}
 apiVersion: batch/v1
@@ -35,13 +37,19 @@ spec:
   backoffLimit: {{ .Values.migration.backoffLimit }}
   # 完成后保留时长（秒），便于排查
   ttlSecondsAfterFinished: {{ .Values.migration.ttlSecondsAfterFinished }}
+  # 串行化：只允许一个 Pod、只需一次成功完成，杜绝并发迁移
+  completions: 1
+  parallelism: 1
+  # 迁移超时上限，避免异常时长期占住 PreSync 阶段
+  activeDeadlineSeconds: {{ .Values.migration.activeDeadlineSeconds | default 900 }}
   template:
     metadata:
       labels:
         {{- include "yudao.selectorLabels" . | nindent 8 }}
         job-type: flyway-migration
     spec:
-      restartPolicy: OnFailure
+      # Never + backoffLimit：失败即产生新 Pod 便于保留失败现场日志，且失败会真实反映到 Job 状态
+      restartPolicy: Never
       serviceAccountName: {{ include "yudao.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
@@ -54,33 +62,23 @@ spec:
             - configMapRef:
                 name: {{ include "yudao.fullname" . }}-config
             - secretRef:
-                name: {{ include "yudao.fullname" . }}-secret
+                name: {{ include "yudao.secretName" . }}
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: {{ .Values.env.SPRING_PROFILES_ACTIVE | quote }}
             - name: TZ
               value: {{ .Values.env.TZ | quote }}
+          # 直接运行 fat jar 内的迁移入口类：只初始化 Flyway + JDBC，跑完即退出。
+          # 迁移失败会以非 0 退出码结束，从而让 PreSync Hook 失败并阻断发布。
           command:
-            - /bin/sh
-            - -c
-            - |
-              echo "============================================================"
-              echo "[Flyway 迁移] 开始执行数据库迁移（PreSync 阶段）"
-              echo "[Flyway 迁移] profile: {{ .Values.env.SPRING_PROFILES_ACTIVE }}"
-              echo "[Flyway 迁移] 数据源: {{ .Values.env.MASTER_DATASOURCE_URL }}"
-              echo "------------------------------------------------------------"
-              # 占位说明：实际迁移由 Spring Boot 启动时 Flyway 自动执行
-              # 如需显式迁移，替换为下方命令（需确保镜像内含 flyway-commandline）：
-              #   java -cp /app/resources/db/migration org.flywaydb.core.commandline.Main \
-              #     -url="$MASTER_DATASOURCE_URL" \
-              #     -user="$MASTER_DATASOURCE_USERNAME" \
-              #     -password="$MASTER_DATASOURCE_PASSWORD" \
-              #     -locations=classpath:db/migration \
-              #     migrate
-              echo "[Flyway 迁移] 当前为占位实现，实际迁移由 Spring Boot 启动时自动执行"
-              echo "[Flyway 迁移] 迁移脚本目录：yudao-server/src/main/resources/db/migration/V1-V31"
-              echo "[Flyway 迁移] 迁移完成"
-              echo "============================================================"
+            - java
+          args:
+            - -XX:MaxRAMPercentage=75
+            - -Duser.timezone={{ .Values.env.TZ }}
+            - -Dloader.main=cn.iocoder.yudao.server.DatabaseMigrationRunner
+            - -cp
+            - /yudao-server/app.jar
+            - org.springframework.boot.loader.launch.PropertiesLauncher
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           {{- include "yudao.resources" . | nindent 10 }}

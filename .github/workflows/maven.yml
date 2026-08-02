@@ -35,16 +35,24 @@ jobs:
     # 任何重复（含历史遗留）都将失败，作为防回归护栏。
     - name: Error Code Uniqueness Gate
       run: python3 scripts/check_error_codes.py
-    # WMS 写接口方法级鉴权护栏：扫描 yudao-module-wms 的 admin Controller，
-    # 若存在写操作(POST/PUT/DELETE)缺 @PreAuthorize 即失败，防止回归。
-    # 范围刻意限定 WMS admin（当前 0 缺口，全绿）；PDA/app 端点按本仓约定为
-    # 登录即可用（controller/app 全仓均无 @PreAuthorize），不纳入此门禁。
-    - name: WMS @PreAuthorize Gate
-      run: python3 scripts/check_missing_preauthorize.py --module yudao-module-wms
+    # WMS 写接口方法级鉴权护栏：扫描 yudao-module-wms 全部 Controller（含 controller/app 下的 PDA 端点），
+    # 若存在写操作(POST/PUT/DELETE)缺 @PreAuthorize、或被 @PermitAll 放行为匿名可访问，即失败。
+    #
+    # 必须带 --include-app：早期该门禁默认跳过 controller/app，恰好漏掉了
+    # WmsPda{Pick,Inventory,Receipt}Controller 的类级 @PermitAll（PDA 全量接口匿名可达 + pickerUserId 越权），
+    # 这个盲区就是阻断级漏洞长期未被发现的直接原因。
+    # 确需匿名的接口（如 PDA 设备登录）登记在 scripts/permitall-allowlist.txt。
+    - name: WMS @PreAuthorize / @PermitAll Gate
+      run: python3 scripts/check_missing_preauthorize.py --module yudao-module-wms --include-app
     # 裸抛异常回归门禁：扫描 cn/iocoder/yudao 包内是否残留
     # throw new RuntimeException / IllegalStateException（绕过 ErrorCode 体系）。
     # 全量转换已在本次提交完成（scripts/convert_bare_throws.py，74 处），
     # 任何回归都将失败，作为防回归护栏。
+    #
+    # 豁免：运行在 Spring 容器之外的代码（如 DatabaseMigrationRunner 这个 Flyway 迁移 CLI）
+    # 硬套 ServiceException 需要为一个永远不会返回给 API 调用方的错误注册全局错误码，得不偿失。
+    # 这类位置在 throw 上方注释写 `// @bare-throw-ignore <理由>` 显式豁免；
+    # 脚本会把全部豁免项打印到 CI 日志，防止悄悄累积。
     - name: Bare-Throw Exception Gate
       run: python3 scripts/check_bare_throws.py
     - name: Build with Maven

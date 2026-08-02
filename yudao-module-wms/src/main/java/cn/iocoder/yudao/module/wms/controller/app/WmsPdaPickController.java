@@ -16,11 +16,10 @@ import cn.iocoder.yudao.module.wms.service.md.item.WmsItemSkuService;
 import cn.iocoder.yudao.module.wms.service.order.pickstrategy.WmsPickTaskService;
 import cn.iocoder.yudao.module.wms.service.order.shipment.WmsShipmentOrderService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
-import jakarta.annotation.security.PermitAll;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +30,7 @@ import java.util.Map;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 import static cn.iocoder.yudao.framework.common.util.collection.CollectionUtils.convertSet;
+import cn.iocoder.yudao.framework.security.core.util.SecurityFrameworkUtils;
 
 /**
  * WMS PDA 拣货作业 Controller
@@ -41,7 +41,6 @@ import static cn.iocoder.yudao.framework.common.util.collection.CollectionUtils.
 @RestController
 @RequestMapping("/wms-api/pick")
 @Validated
-@PermitAll
 public class WmsPdaPickController {
 
     @Resource
@@ -56,10 +55,10 @@ public class WmsPdaPickController {
     private WmsItemService itemService;
 
     @GetMapping("/my-pick-tasks")
-    @Operation(summary = "我的拣货任务")
-    @Parameter(name = "pickerUserId", description = "拣货员用户编号", required = true, example = "1")
-    public CommonResult<List<WmsPdaMyPickTaskRespVO>> getMyPickTasks(
-            @RequestParam("pickerUserId") Long pickerUserId) {
+    @Operation(summary = "我的拣货任务（基于登录用户，防越权）")
+    public CommonResult<List<WmsPdaMyPickTaskRespVO>> getMyPickTasks() {
+        // 安全修复：拣货员身份必须来自登录态，禁止从请求参数传入（水平越权 IDOR 防护）
+        Long pickerUserId = SecurityFrameworkUtils.getLoginUserId();
         List<WmsPickTaskDO> list = pickTaskService.getMyPickTasks(pickerUserId);
         if (CollUtil.isEmpty(list)) {
             return success(Collections.emptyList());
@@ -92,6 +91,7 @@ public class WmsPdaPickController {
 
     @PostMapping("/confirm-pick")
     @Operation(summary = "确认拣货")
+    @PreAuthorize("@ss.hasPermission('wms:pda:pick')")
     public CommonResult<Boolean> confirmPick(@Valid @RequestBody WmsPdaConfirmPickReqVO reqVO) {
         pickTaskService.confirmPick(reqVO.getTaskId(), reqVO.getPickedQuantity());
         return success(true);
@@ -99,6 +99,7 @@ public class WmsPdaPickController {
 
     @PostMapping("/confirm-pack")
     @Operation(summary = "确认打包")
+    @PreAuthorize("@ss.hasPermission('wms:pda:pack')")
     public CommonResult<Boolean> confirmPack(@Valid @RequestBody WmsPdaConfirmPackReqVO reqVO) {
         shipmentOrderService.pack(reqVO.getShipmentOrderId());
         return success(true);

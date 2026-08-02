@@ -20,8 +20,8 @@ import cn.iocoder.yudao.module.wms.service.md.warehouse.WmsWarehouseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
-import jakarta.annotation.security.PermitAll;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,7 +44,6 @@ import static cn.iocoder.yudao.module.wms.enums.ErrorCodeConstants.LOCATION_NOT_
 @RestController
 @RequestMapping("/wms-api/inventory")
 @Validated
-@PermitAll
 public class WmsPdaInventoryController {
 
     @Resource
@@ -60,6 +59,7 @@ public class WmsPdaInventoryController {
 
     @PostMapping("/scan-location")
     @Operation(summary = "扫描库位，返回库存信息")
+    @PreAuthorize("@ss.hasPermission('wms:pda:scan')")
     public CommonResult<WmsPdaInventoryRespVO> scanLocation(@Valid @RequestBody WmsPdaScanLocationReqVO reqVO) {
         // 1. 查询库位（先按条码，再按编码）
         WmsLocationDO location = locationMapper.selectByBarcode(reqVO.getScanCode());
@@ -81,6 +81,7 @@ public class WmsPdaInventoryController {
 
     @PostMapping("/scan-sku")
     @Operation(summary = "扫描 SKU，返回库存信息")
+    @PreAuthorize("@ss.hasPermission('wms:pda:scan')")
     public CommonResult<WmsPdaInventoryRespVO> scanSku(@Valid @RequestBody WmsPdaScanSkuReqVO reqVO) {
         // 1. 查询 SKU（先按条码，再按编码）
         WmsItemSkuDO sku = itemSkuMapper.selectOne(WmsItemSkuDO::getBarCode, reqVO.getScanCode());
@@ -104,6 +105,7 @@ public class WmsPdaInventoryController {
 
     @PostMapping("/confirm-move")
     @Operation(summary = "确认移库")
+    @PreAuthorize("@ss.hasPermission('wms:pda:move')")
     public CommonResult<Boolean> confirmMove(@Valid @RequestBody WmsPdaConfirmMoveReqVO reqVO) {
         // 简化实现：校验 SKU 存在库存，移库在库存模型无库位维度，记录操作即可
         WmsInventoryDO inventory = inventoryMapper.selectBySkuIdAndWarehouseId(
