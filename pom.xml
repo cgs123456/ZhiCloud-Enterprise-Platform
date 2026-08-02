@@ -149,6 +149,39 @@
                                 <goal>report</goal>
                             </goals>
                         </execution>
+                        <!--
+                          Phase 4 覆盖率门禁：将 check goal 绑定到 verify，对「已补齐单测的核心业务域」
+                          强制指令覆盖率下限，避免回归。范围刻意只覆盖 wms/mes/bpm 的 service 包——
+                          其余模块（crm/erp 等）单测尚在补齐中，纳入聚合会拉低基线从而误 brick CI。
+                          随各模块单测补齐，逐步把其 service 包加入 <includes> 并上调 jacoco.minimum。
+                        -->
+                        <execution>
+                            <id>check</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                            <configuration>
+                                <haltOnFailure>true</haltOnFailure>
+                                <rules>
+                                    <rule>
+                                        <element>BUNDLE</element>
+                                        <includes>
+                                            <include>cn/iocoder/yudao/module/wms/**/service/**</include>
+                                            <include>cn/iocoder/yudao/module/mes/**/service/**</include>
+                                            <include>cn/iocoder/yudao/module/bpm/**/service/**</include>
+                                        </includes>
+                                        <limits>
+                                            <limit>
+                                                <counter>INSTRUCTION</counter>
+                                                <value>COVEREDRATIO</value>
+                                                <minimum>${jacoco.minimum}</minimum>
+                                            </limit>
+                                        </limits>
+                                    </rule>
+                                </rules>
+                            </configuration>
+                        </execution>
                     </executions>
                     <configuration>
                         <!--
