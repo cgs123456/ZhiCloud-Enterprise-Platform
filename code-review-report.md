@@ -130,7 +130,7 @@
 | 3 | 导出/性能护栏：分页上限拦截器 + ExcelUtils 10万行硬上限 + Dockerfile 容器感知堆 | ✅ 已交付 | `5299aab` |
 | 4 | JaCoCo 门禁武装（wms/mes/bpm service 包 ≥30%）+ crm/erp 核心域补测 | ✅ 已交付 | `636045c` |
 | 5 | 错误码唯一性 CI 门禁 + 140 冲突基线冻结 + 冲突报告 | ✅ 已交付 | 本批次 |
-| 6 | WMS/写接口补 @PreAuthorize 方法级权限注解 | 🔄 进行中 | — |
+| 6 | WMS/写接口补 @PreAuthorize 方法级权限注解 | ✅ 已交付 | 本批次 |
 | 7 | 可观测性：logback JSON 结构化输出 + Prometheus 告警规则文件 | ⬜ 待启动 | — |
 
 **阶段5 说明（错误码去重）**：
@@ -138,3 +138,11 @@
 - 实际重编号（renumber）**刻意暂缓**：取决于 U-6（前端是否硬编码错误码）。若前端按数字码匹配提示文案，盲目重排会破坏既有交互。故本阶段交付**防回归门禁**而非一次性重排。
 - 门禁机制：`scripts/check_error_codes.py --baseline scripts/error_code_conflicts_baseline.txt`，CI 在 `mvn verify` 前 fast-fail；baseline 冻结已知 140 处，仅对「新增」重复码失败。待 U-6 确认且去重完成后，清空 baseline 即升级为全量严格检查。
 - 完整冲突清单见 `scripts/error_code_conflicts_report.txt`。
+
+**阶段6 说明（WMS/写接口 @PreAuthorize）**：
+- 经 `scripts/check_missing_preauthorize.py` 精确扫描（修正了注解顺序导致的误报后）：**WMS 模块 admin Controller 共 34 个，写接口(POST/PUT/DELETE) 0 缺口**——全部已带 `@PreAuthorize("@ss.hasPermission('wms:<resource>:<action>')")`。原报告「WMS 写接口缺 @PreAuthorize」属误报（同阶段1 已纠偏的 P0 误报一致）。
+- 全仓 admin 写接口共 120 处缺 `@PreAuthorize`，但经逐类核查，**绝大多数为「本就不该加」的端点**：
+  - 公开端点：`AuthController`(login/logout/refresh-token/register/sms-login/reset-password/social-login)、`CaptchaController`、`OAuth2OpenController`(/token、/authorize、/check-token)、各类 **webhook/回调**（`PayNotifyController`、`MpOpenController`、`SmsCallbackController`、`ImRtcLiveKitController.webhook`、`AiImageController.midjourneyNotify`）、`DefaultController` 404 处理器——这些必须匿名可访问，加 `@PreAuthorize` 会直接破坏登录/支付/短信回调。
+  - 用户自服务端点：AI 的 `*-my`（本人会话/图片/角色）、`UserProfileController`、`TotpController` 等——数据按登录用户 `userId` 在 service 层隔离，端点级只要求已登录即可，符合本仓惯例。
+- 因此**未做全量补齐**（盲目加会破坏上述端点且需注册约 120 个新权限码）。WMS 范围内无待补项。
+- 交付**防回归护栏**：`scripts/check_missing_preauthorize.py` 接入 CI，限定 `--module yudao-module-wms`（当前全绿），任何新增的 WMS admin 写接口若漏写 `@PreAuthorize` 即阻断合并。PDA/app 端点按本仓约定为登录即可用（全仓 `controller/app/**` 均无 `@PreAuthorize`），不纳入此门禁——如确需 PDA 细粒度 RBAC，属产品/RBAC 设计项（P3），需同步注册权限码并赋权给仓库角色。

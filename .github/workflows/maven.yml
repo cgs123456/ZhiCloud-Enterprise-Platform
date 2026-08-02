@@ -35,6 +35,12 @@ jobs:
     # 仅对「新增」重复码失败；待去重完成后将 baseline 清空并升级为全量严格检查。
     - name: Error Code Uniqueness Gate
       run: python3 scripts/check_error_codes.py --baseline scripts/error_code_conflicts_baseline.txt
+    # WMS 写接口方法级鉴权护栏：扫描 yudao-module-wms 的 admin Controller，
+    # 若存在写操作(POST/PUT/DELETE)缺 @PreAuthorize 即失败，防止回归。
+    # 范围刻意限定 WMS admin（当前 0 缺口，全绿）；PDA/app 端点按本仓约定为
+    # 登录即可用（controller/app 全仓均无 @PreAuthorize），不纳入此门禁。
+    - name: WMS @PreAuthorize Gate
+      run: python3 scripts/check_missing_preauthorize.py --module yudao-module-wms
     - name: Build with Maven
       run: mvn -B verify --file pom.xml
     - name: Security Check (deploy gate)
