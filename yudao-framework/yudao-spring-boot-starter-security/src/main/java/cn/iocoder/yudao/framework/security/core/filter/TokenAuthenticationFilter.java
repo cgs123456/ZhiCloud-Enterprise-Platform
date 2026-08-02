@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.framework.security.core.filter;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.iocoder.yudao.framework.common.biz.system.oauth2.OAuth2TokenCommonApi;
@@ -108,7 +109,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         }
         // 安全校验：mock-enable=true 时必须配置 mock-secret，否则拒绝启动后的 mock 登录
         if (StrUtil.isBlank(securityProperties.getMockSecret())) {
-            throw new IllegalStateException("mock-enable=true 时必须显式配置 mock-secret，请检查 yudao.security.mock-secret 配置");
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "mock-enable=true 时必须显式配置 mock-secret，请检查 yudao.security.mock-secret 配置");
         }
         // 必须以 mockSecret 开头
         if (!token.startsWith(securityProperties.getMockSecret())) {

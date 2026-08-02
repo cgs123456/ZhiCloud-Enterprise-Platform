@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.iot.gateway.protocol.udp.manager;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.hutool.core.util.ObjUtil;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -52,7 +54,7 @@ public class IotUdpSessionManager {
         // 检查是否为新设备，且会话数已达上限（同步方法确保检查和注册的原子性）
         if (deviceSessionCache.getIfPresent(deviceId) == null
                 && deviceSessionCache.size() >= maxSessions) {
-            throw new IllegalStateException("会话数已达上限: " + maxSessions);
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "会话数已达上限: " + maxSessions);
         }
         // 注册会话
         deviceSessionCache.put(deviceId, sessionInfo);

@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.iot.gateway.serialize.binary;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.StrUtil;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
@@ -86,7 +88,7 @@ public class IotBinarySerializer implements IotMessageSerializer {
             return buildCompleteMessage(message, messageType, bodyData);
         } catch (Exception e) {
             log.error("[encode][二进制消息编码失败，消息: {}]", message, e);
-            throw new RuntimeException("二进制消息编码失败: " + e.getMessage(), e);
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "二进制消息编码失败: " + e.getMessage(), e);
         }
     }
 
@@ -132,7 +134,7 @@ public class IotBinarySerializer implements IotMessageSerializer {
             return parseMessageBody(buffer, index, messageType, messageId, method);
         } catch (Exception e) {
             log.error("[decode][二进制消息解码失败，数据长度: {}]", bytes.length, e);
-            throw new RuntimeException("二进制消息解码失败: " + e.getMessage(), e);
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "二进制消息解码失败: " + e.getMessage(), e);
         }
     }
 

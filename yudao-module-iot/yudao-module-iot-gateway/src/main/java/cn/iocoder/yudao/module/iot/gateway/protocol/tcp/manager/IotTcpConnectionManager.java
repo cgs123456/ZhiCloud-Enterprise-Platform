@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.iot.gateway.protocol.tcp.manager;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.NetSocket;
 import lombok.Data;
@@ -52,7 +54,7 @@ public class IotTcpConnectionManager {
     public synchronized void registerConnection(NetSocket socket, Long deviceId, ConnectionInfo connectionInfo) {
         // 检查连接数是否已达上限（同步方法确保检查和注册的原子性）
         if (connectionMap.size() >= maxConnections) {
-            throw new IllegalStateException("连接数已达上限: " + maxConnections);
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "连接数已达上限: " + maxConnections);
         }
         // 如果设备已有其他连接，先清理旧连接
         NetSocket oldSocket = deviceSocketMap.get(deviceId);

@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.ai.framework.ai.core.model.xinghuo.api;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.crypto.digest.HmacAlgorithm;
@@ -458,7 +460,7 @@ public class XunFeiPptApi {
                 });
             } catch (IOException e) {
                 log.error("[XunFeiPptApi] 文件处理失败", e);
-                throw new IllegalStateException("[XunFeiPptApi] 文件处理失败", e);
+                throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "[XunFeiPptApi] 文件处理失败", e);
             }
         }
         Map<String, Object> param = new HashMap<>();

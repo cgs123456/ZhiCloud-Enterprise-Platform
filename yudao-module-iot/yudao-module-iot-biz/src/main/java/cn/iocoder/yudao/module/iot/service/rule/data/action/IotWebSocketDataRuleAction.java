@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.iot.service.rule.data.action;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.hutool.core.util.StrUtil;
 import cn.iocoder.yudao.module.iot.core.mq.message.IotDeviceMessage;
 import cn.iocoder.yudao.module.iot.dal.dataobject.rule.config.IotDataSinkWebSocketConfig;
@@ -111,7 +113,7 @@ public class IotWebSocketDataRuleAction extends
         try {
             acquired = lock.tryLock(LOCK_WAIT_TIME_MS, TimeUnit.MILLISECONDS);
             if (!acquired) {
-                throw new RuntimeException("获取 WebSocket 重连锁超时，服务器: " + config.getServerUrl());
+                throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "获取 WebSocket 重连锁超时，服务器: " + config.getServerUrl());
             }
             // 双重检查：获取锁后再次检查连接状态，避免重复连接
             if (!webSocketClient.isConnected()) {
@@ -120,7 +122,7 @@ public class IotWebSocketDataRuleAction extends
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new RuntimeException("获取 WebSocket 重连锁被中断，服务器: " + config.getServerUrl(), e);
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "获取 WebSocket 重连锁被中断，服务器: " + config.getServerUrl(), e);
         } finally {
             if (acquired && lock.isHeldByCurrentThread()) {
                 lock.unlock();

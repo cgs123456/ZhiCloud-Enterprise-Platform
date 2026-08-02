@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.ai.framework.ai.core.webserch.bocha;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
@@ -72,10 +74,10 @@ public class AiBoChaWebSearchClient implements AiWebSearchClient {
                 .bodyToMono(new ParameterizedTypeReference<CommonResult<WebSearchResponse>>() {})
                 .block();
         if (response == null) {
-            throw new IllegalStateException("[search][搜索结果为空]");
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "[search][搜索结果为空]");
         }
         if (response.getData() == null) {
-            throw new IllegalStateException(String.format("[search][搜索失败，code = %s, msg = %s]",
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, String.format("[search][搜索失败，code = %s, msg = %s]",
                     response.getCode(), response.getMsg()));
         }
         WebSearchResponse data = response.getData();

@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.iot.core.messagebus.core.rocketmq;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.hutool.core.util.TypeUtil;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.module.iot.core.messagebus.core.IotMessageBus;
@@ -65,7 +67,7 @@ public class IotRocketMQMessageBus implements IotMessageBus {
     public void register(IotMessageSubscriber<?> subscriber) {
         Type type = TypeUtil.getTypeArgument(subscriber.getClass(), 0);
         if (type == null) {
-            throw new IllegalStateException(String.format("类型(%s) 需要设置消息类型", getClass().getName()));
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, String.format("类型(%s) 需要设置消息类型", getClass().getName()));
         }
 
         // 1.1 创建 DefaultMQPushConsumer

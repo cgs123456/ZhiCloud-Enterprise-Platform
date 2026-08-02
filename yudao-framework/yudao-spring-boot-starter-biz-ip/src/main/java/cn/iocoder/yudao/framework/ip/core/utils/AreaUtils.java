@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.framework.ip.core.utils;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.text.csv.CsvRow;
@@ -64,7 +66,7 @@ public class AreaUtils {
             }
             log.info("启动加载 AreaUtils 成功，耗时 ({}) 毫秒", System.currentTimeMillis() - now);
         } catch (Exception e) {
-            throw new RuntimeException("AreaUtils 初始化失败", e);
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "AreaUtils 初始化失败", e);
         }
     }
 

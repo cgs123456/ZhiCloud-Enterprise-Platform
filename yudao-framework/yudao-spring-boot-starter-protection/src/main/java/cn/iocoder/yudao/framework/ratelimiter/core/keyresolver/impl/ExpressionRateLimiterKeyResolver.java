@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.framework.ratelimiter.core.keyresolver.impl;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.hutool.core.util.ArrayUtil;
 import cn.iocoder.yudao.framework.ratelimiter.core.annotation.RateLimiter;
 import cn.iocoder.yudao.framework.ratelimiter.core.keyresolver.RateLimiterKeyResolver;
@@ -57,7 +59,7 @@ public class ExpressionRateLimiterKeyResolver implements RateLimiterKeyResolver 
             return point.getTarget().getClass().getDeclaredMethod(
                     point.getSignature().getName(), method.getParameterTypes());
         } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
     }
 

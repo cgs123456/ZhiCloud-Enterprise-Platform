@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.iot.gateway.protocol.modbus.tcpserver;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.extra.spring.SpringUtil;
@@ -256,7 +258,7 @@ public class IotModbusTcpServerProtocol implements IotProtocol {
             netServer.listen().toCompletionStage().toCompletableFuture().get();
             log.info("[startTcpServer][TCP Server 启动成功, port={}]", properties.getPort());
         } catch (Exception e) {
-            throw new RuntimeException("[startTcpServer][TCP Server 启动失败]", e);
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "[startTcpServer][TCP Server 启动失败]", e);
         }
     }
 

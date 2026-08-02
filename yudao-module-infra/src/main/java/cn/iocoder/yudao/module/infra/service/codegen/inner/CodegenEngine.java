@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.infra.service.codegen.inner;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -443,7 +445,7 @@ public class CodegenEngine {
                 + (bindingMap.containsKey("subIndex") ? "[subIndex=" + bindingMap.get("subIndex") + "]" : "");
         String previousSource = generatedSources.putIfAbsent(filePath, source);
         if (previousSource != null) {
-            throw new IllegalStateException(String.format("生成文件路径重复：%s，来源模板：%s、%s",
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, String.format("生成文件路径重复：%s，来源模板：%s、%s",
                     filePath, previousSource, source));
         }
     }

@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.framework.mq.redis.core.stream;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.hutool.core.util.TypeUtil;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.mq.redis.core.RedisMQTemplate;
@@ -95,7 +97,7 @@ public abstract class AbstractRedisStreamMessageListener<T extends AbstractRedis
     private Class<T> getMessageClass() {
         Type type = TypeUtil.getTypeArgument(getClass(), 0);
         if (type == null) {
-            throw new IllegalStateException(String.format("类型(%s) 需要设置消息类型", getClass().getName()));
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, String.format("类型(%s) 需要设置消息类型", getClass().getName()));
         }
         return (Class<T>) type;
     }

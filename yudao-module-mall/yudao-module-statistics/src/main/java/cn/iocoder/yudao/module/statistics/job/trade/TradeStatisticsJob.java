@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.statistics.job.trade;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjUtil;
@@ -35,11 +37,11 @@ public class TradeStatisticsJob implements JobHandler {
         param = ObjUtil.defaultIfBlank(param, "1");
         // 校验参数的合理性
         if (!NumberUtil.isInteger(param)) {
-            throw new RuntimeException("交易统计任务的参数只能为是正整数");
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "交易统计任务的参数只能为是正整数");
         }
         Integer days = Convert.toInt(param, 0);
         if (days < 1) {
-            throw new RuntimeException("交易统计任务的参数只能为是正整数");
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "交易统计任务的参数只能为是正整数");
         }
         String result = tradeStatisticsService.statisticsTrade(days);
         return StrUtil.format("交易统计:\n{}", result);

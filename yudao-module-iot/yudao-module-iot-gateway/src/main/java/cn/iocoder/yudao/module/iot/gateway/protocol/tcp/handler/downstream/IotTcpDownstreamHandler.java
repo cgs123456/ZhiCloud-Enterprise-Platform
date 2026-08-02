@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.iot.gateway.protocol.tcp.handler.downstream;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.hutool.core.util.ObjUtil;
 import cn.iocoder.yudao.module.iot.core.enums.IotDeviceMessageMethodEnum;
 import cn.iocoder.yudao.module.iot.core.mq.message.IotDeviceMessage;
@@ -61,7 +63,7 @@ public class IotTcpDownstreamHandler {
             // 3. 发送到设备
             boolean success = connectionManager.sendToDevice(message.getDeviceId(), frameData.getBytes());
             if (!success) {
-                throw new RuntimeException("下行消息发送失败");
+                throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "下行消息发送失败");
             }
             log.info("[handle][下行消息发送成功，设备 ID: {}，方法: {}，消息 ID: {}，数据长度: {} 字节]",
                     message.getDeviceId(), message.getMethod(), message.getId(), frameData.length());

@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.aimultiagent.config;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.iocoder.yudao.module.ai.dal.dataobject.model.AiModelDO;
 import cn.iocoder.yudao.module.ai.enums.model.AiModelTypeEnum;
 import cn.iocoder.yudao.module.ai.service.model.AiModelService;
@@ -51,7 +53,7 @@ public class ChatClientHelper {
      */
     public ChatClient getChatClient() {
         if (aiModelService == null) {
-            throw new IllegalStateException("AiModelService 不可用，请确保 yudao-module-ai 已加载且配置了 LLM API Key");
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "AiModelService 不可用，请确保 yudao-module-ai 已加载且配置了 LLM API Key");
         }
         AiModelDO model = aiModelService.getRequiredDefaultModel(AiModelTypeEnum.CHAT.getType());
         ChatModel chatModel = aiModelService.getChatModel(model.getId());

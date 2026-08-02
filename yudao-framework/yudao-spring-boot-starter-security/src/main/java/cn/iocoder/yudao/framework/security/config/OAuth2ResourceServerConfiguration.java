@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.framework.security.config;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.hutool.core.util.StrUtil;
 import cn.iocoder.yudao.framework.security.core.LoginUser;
 import cn.iocoder.yudao.framework.security.core.converter.JwtToLoginUserConverter;
@@ -57,8 +59,7 @@ public class OAuth2ResourceServerConfiguration {
         if (StrUtil.isNotBlank(oauth2.getIssuerUri())) {
             return NimbusJwtDecoder.withIssuerLocation(oauth2.getIssuerUri()).build();
         }
-        throw new IllegalStateException(
-                "OAuth2 Resource Server 启用时，必须配置 yudao.security.oauth2.jwk-set-uri 或 issuer-uri");
+        throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "OAuth2 Resource Server 启用时，必须配置 yudao.security.oauth2.jwk-set-uri 或 issuer-uri");
     }
 
     /**
@@ -111,7 +112,7 @@ public class OAuth2ResourceServerConfiguration {
                 http.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
                         jwt.decoder(jwtDecoder).jwtAuthenticationConverter(jwtAuthenticationConverter)));
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, e.getMessage(), e);
             }
         };
     }

@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.framework.common.util.json;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
@@ -84,7 +86,7 @@ public class JsonUtils {
             return objectMapper.readValue(text, clazz);
         } catch (JacksonException e) {
             log.error("json parse err,json:{}", text, e);
-            throw new RuntimeException(e);
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
     }
 
@@ -98,7 +100,7 @@ public class JsonUtils {
             return objectMapper.readValue(pathNode.toString(), clazz);
         } catch (JacksonException e) {
             log.error("json parse err,json:{}", text, e);
-            throw new RuntimeException(e);
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
     }
 
@@ -110,7 +112,7 @@ public class JsonUtils {
             return objectMapper.readValue(text, objectMapper.getTypeFactory().constructType(type));
         } catch (JacksonException e) {
             log.error("json parse err,json:{}", text, e);
-            throw new RuntimeException(e);
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
     }
 
@@ -122,7 +124,7 @@ public class JsonUtils {
             return objectMapper.readValue(text, objectMapper.getTypeFactory().constructType(type));
         } catch (IOException e) {
             log.error("json parse err,json:{}", text, e);
-            throw new RuntimeException(e);
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
     }
 
@@ -150,7 +152,7 @@ public class JsonUtils {
             return objectMapper.readValue(bytes, clazz);
         } catch (IOException e) {
             log.error("json parse err,json:{}", bytes, e);
-            throw new RuntimeException(e);
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
     }
 
@@ -159,7 +161,7 @@ public class JsonUtils {
             return objectMapper.readValue(text, typeReference);
         } catch (JacksonException e) {
             log.error("json parse err,json:{}", text, e);
-            throw new RuntimeException(e);
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
     }
 
@@ -221,7 +223,7 @@ public class JsonUtils {
             return objectMapper.readValue(text, objectMapper.getTypeFactory().constructCollectionType(List.class, clazz));
         } catch (JacksonException e) {
             log.error("json parse err,json:{}", text, e);
-            throw new RuntimeException(e);
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
     }
 
@@ -235,7 +237,7 @@ public class JsonUtils {
             return objectMapper.readValue(pathNode.toString(), objectMapper.getTypeFactory().constructCollectionType(List.class, clazz));
         } catch (JacksonException e) {
             log.error("json parse err,json:{}", text, e);
-            throw new RuntimeException(e);
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
     }
 
@@ -244,7 +246,7 @@ public class JsonUtils {
             return objectMapper.readTree(text);
         } catch (JacksonException e) {
             log.error("json parse err,json:{}", text, e);
-            throw new RuntimeException(e);
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
     }
 
@@ -253,7 +255,7 @@ public class JsonUtils {
             return objectMapper.readTree(text);
         } catch (IOException e) {
             log.error("json parse err,json:{}", text, e);
-            throw new RuntimeException(e);
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
     }
 

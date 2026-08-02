@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.iot.core.messagebus.core.kafka;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.hutool.core.util.TypeUtil;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.module.iot.core.messagebus.core.IotMessageBus;
@@ -56,9 +58,9 @@ public class IotKafkaMessageBus implements IotMessageBus {
             log.info("[post][topic({}) 发送消息({})]", topic, message);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new IllegalStateException(String.format("发送 Kafka 消息失败，topic(%s) message(%s)", topic, message), e);
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, String.format("发送 Kafka 消息失败，topic(%s) message(%s)", topic, message), e);
         } catch (ExecutionException e) {
-            throw new IllegalStateException(String.format("发送 Kafka 消息失败，topic(%s) message(%s)", topic, message), e);
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, String.format("发送 Kafka 消息失败，topic(%s) message(%s)", topic, message), e);
         }
     }
 
@@ -66,7 +68,7 @@ public class IotKafkaMessageBus implements IotMessageBus {
     public void register(IotMessageSubscriber<?> subscriber) {
         Type type = TypeUtil.getTypeArgument(subscriber.getClass(), 0);
         if (type == null) {
-            throw new IllegalStateException(String.format("类型(%s) 需要设置消息类型", getClass().getName()));
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, String.format("类型(%s) 需要设置消息类型", getClass().getName()));
         }
 
         // 1. 创建消费容器

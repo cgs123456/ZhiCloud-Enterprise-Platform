@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.pay.framework.pay.core.client.impl.wallet;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.extra.spring.SpringUtil;
@@ -121,7 +122,7 @@ public class WalletPayClient extends AbstractPayClient<NonePayClientConfig> {
         }
         // 其它状态为无效状态
         log.error("[doGetOrder] 支付单 {} 的状态不正确", outTradeNo);
-        throw new IllegalStateException(String.format("支付单[%s] 状态不正确", outTradeNo));
+        throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, String.format("支付单[%s] 状态不正确", outTradeNo));
     }
 
     @Override
@@ -177,7 +178,7 @@ public class WalletPayClient extends AbstractPayClient<NonePayClientConfig> {
         }
         // 其它状态为无效状态
         log.error("[doGetRefund] 支付退款单 {} 的状态不正确", outRefundNo);
-        throw new IllegalStateException(String.format("支付退款单[%s] 状态不正确", outRefundNo));
+        throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, String.format("支付退款单[%s] 状态不正确", outRefundNo));
     }
 
     @Override
@@ -245,7 +246,7 @@ public class WalletPayClient extends AbstractPayClient<NonePayClientConfig> {
         }
         // 其它状态为无效状态
         log.error("[doGetTransfer] 转账单 {} 的状态不正确", outTradeNo);
-        throw new IllegalStateException(String.format("转账单[%s] 状态不正确", outTradeNo));
+        throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, String.format("转账单[%s] 状态不正确", outTradeNo));
     }
 
 }

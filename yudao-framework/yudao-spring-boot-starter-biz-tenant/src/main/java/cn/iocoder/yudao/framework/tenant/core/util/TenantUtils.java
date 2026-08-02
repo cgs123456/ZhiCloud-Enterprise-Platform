@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.framework.tenant.core.util;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.iocoder.yudao.framework.tenant.core.context.TenantContextHolder;
 
 import java.util.Map;
@@ -56,7 +58,7 @@ public class TenantUtils {
             // 执行逻辑
             return callable.call();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         } finally {
             TenantContextHolder.setTenantId(oldTenantId);
             TenantContextHolder.setIgnore(oldIgnore);
@@ -92,7 +94,7 @@ public class TenantUtils {
             // 执行逻辑
             return callable.call();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         } finally {
             TenantContextHolder.setIgnore(oldIgnore);
         }

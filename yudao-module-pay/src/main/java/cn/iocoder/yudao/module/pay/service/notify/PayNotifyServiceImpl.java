@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.pay.service.notify;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.exceptions.ExceptionUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -243,7 +245,7 @@ public class PayNotifyServiceImpl implements PayNotifyService {
             request = PayTransferNotifyReqDTO.builder().merchantTransferId(task.getMerchantTransferId())
                     .payTransferId(task.getDataId()).build();
         } else {
-            throw new RuntimeException("未知的通知任务类型：" + JsonUtils.toJsonString(task));
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "未知的通知任务类型：" + JsonUtils.toJsonString(task));
         }
         // 拼接 header 参数
         Map<String, String> headers = new HashMap<>();

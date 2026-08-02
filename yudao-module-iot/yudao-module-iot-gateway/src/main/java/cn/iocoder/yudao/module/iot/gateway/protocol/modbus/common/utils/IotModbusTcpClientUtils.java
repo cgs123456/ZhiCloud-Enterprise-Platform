@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.iot.gateway.protocol.modbus.common.utils;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.iocoder.yudao.module.iot.core.biz.dto.IotModbusPointRespDTO;
 import cn.iocoder.yudao.module.iot.gateway.protocol.modbus.tcpclient.manager.IotModbusTcpClientConnectionManager;
 import com.ghgande.j2mod.modbus.io.ModbusTCPTransaction;
@@ -82,7 +84,7 @@ public class IotModbusTcpClientUtils {
                 ModbusResponse response = transaction.getResponse();
                 return extractValues(response, functionCode);
             } catch (Exception e) {
-                throw new RuntimeException(String.format("Modbus 读取失败 [slaveId=%d, identifier=%s, functionCode=%d, address=%d, count=%d]",
+                throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, String.format("Modbus 读取失败 [slaveId=%d, identifier=%s, functionCode=%d, address=%d, count=%d]",
                         slaveId, identifier, functionCode, registerAddress, registerCount), e);
             }
         });
@@ -107,7 +109,7 @@ public class IotModbusTcpClientUtils {
                 ModbusRequest request = createWriteRequest(point.getFunctionCode(),
                         point.getRegisterAddress(), point.getRegisterCount(), values);
                 if (request == null) {
-                    throw new RuntimeException("功能码 " + point.getFunctionCode() + " 不支持写操作");
+                    throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "功能码 " + point.getFunctionCode() + " 不支持写操作");
                 }
                 request.setUnitID(slaveId);
 
@@ -117,7 +119,7 @@ public class IotModbusTcpClientUtils {
                 transaction.execute();
                 return true;
             } catch (Exception e) {
-                throw new RuntimeException(String.format("Modbus 写入失败 [slaveId=%d, identifier=%s, address=%d]",
+                throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, String.format("Modbus 写入失败 [slaveId=%d, identifier=%s, address=%d]",
                         slaveId, point.getIdentifier(), point.getRegisterAddress()), e);
             }
         });

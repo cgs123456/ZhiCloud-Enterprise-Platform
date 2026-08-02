@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.iot.gateway.protocol.tcp.codec.length;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.iocoder.yudao.module.iot.gateway.protocol.tcp.IotTcpConfig;
 import cn.iocoder.yudao.module.iot.gateway.protocol.tcp.codec.IotTcpCodecTypeEnum;
 import cn.iocoder.yudao.module.iot.gateway.protocol.tcp.codec.IotTcpFrameCodec;
@@ -39,7 +41,7 @@ public class IotTcpFixedLengthFrameCodec implements IotTcpFrameCodec {
         RecordParser parser = RecordParser.newFixed(fixedLength);
         parser.handler(handler);
         parser.exceptionHandler(ex -> {
-            throw new RuntimeException("[createDecodeParser][解析异常]", ex);
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "[createDecodeParser][解析异常]", ex);
         });
         return parser;
     }

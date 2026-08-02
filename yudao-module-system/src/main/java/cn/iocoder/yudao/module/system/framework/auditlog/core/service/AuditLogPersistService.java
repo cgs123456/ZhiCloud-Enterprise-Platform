@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.system.framework.auditlog.core.service;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.iocoder.yudao.module.system.dal.dataobject.logger.OperateLogDO;
 import cn.iocoder.yudao.module.system.framework.auditlog.config.AuditLogProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -241,7 +243,7 @@ public class AuditLogPersistService {
             return bytesToHex(hashBytes);
         } catch (NoSuchAlgorithmException e) {
             // SHA-256 是 JDK 标准算法，理论上不会不存在
-            throw new IllegalStateException("SHA-256 algorithm not available", e);
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "SHA-256 algorithm not available", e);
         }
     }
 

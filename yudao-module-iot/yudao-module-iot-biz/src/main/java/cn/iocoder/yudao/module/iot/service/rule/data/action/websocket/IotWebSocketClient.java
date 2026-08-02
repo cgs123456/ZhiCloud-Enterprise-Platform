@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.iot.service.rule.data.action.websocket;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.module.iot.core.mq.message.IotDeviceMessage;
 import cn.iocoder.yudao.module.iot.dal.dataobject.rule.config.IotDataSinkWebSocketConfig;
@@ -100,7 +102,7 @@ public class IotWebSocketClient {
     public void sendMessage(IotDeviceMessage message) throws Exception {
         WebSocket ws = this.webSocket;
         if (!connected.get() || ws == null) {
-            throw new IllegalStateException("WebSocket 客户端未连接");
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "WebSocket 客户端未连接");
         }
 
         try {

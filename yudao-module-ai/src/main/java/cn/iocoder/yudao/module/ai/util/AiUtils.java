@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.ai.util;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
@@ -60,7 +62,7 @@ public class AiUtils {
      */
     public static void validateApiKey(String apiKey) {
         if (StrUtil.isBlank(apiKey) || "sk-xxxx".equals(apiKey)) {
-            throw new IllegalStateException("apiKey 不能为空");
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "apiKey 不能为空");
         }
     }
 

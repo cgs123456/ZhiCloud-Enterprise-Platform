@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.datalake.mcp;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.iocoder.yudao.module.datalake.service.DataArchivalService;
 import cn.iocoder.yudao.module.datalake.service.IcebergCatalogService;
 import lombok.RequiredArgsConstructor;
@@ -167,7 +169,7 @@ public class DataLakeMcpTool {
             return result != null ? result : new ArrayList<>();
         } catch (Exception e) {
             log.error("[queryDataLakeTable][查询失败: sql={}]", truncateForLog(sql), e);
-            throw new RuntimeException("数据湖查询失败: " + e.getMessage(), e);
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "数据湖查询失败: " + e.getMessage(), e);
         }
     }
 

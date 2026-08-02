@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.datalake.service;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.iocoder.yudao.module.datalake.config.DataLakeProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -139,7 +141,7 @@ public class DataArchivalServiceImpl implements DataArchivalService {
         if (taskScheduler == null) {
             log.warn("[scheduleArchive][Spring TaskScheduler 不可用，无法注册调度任务：table={}, cron={}]",
                     tableName, cron);
-            throw new IllegalStateException("Spring TaskScheduler 不可用，请确认 @EnableScheduling 已启用");
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "Spring TaskScheduler 不可用，请确认 @EnableScheduling 已启用");
         }
 
         // 3. 校验 cron 表达式

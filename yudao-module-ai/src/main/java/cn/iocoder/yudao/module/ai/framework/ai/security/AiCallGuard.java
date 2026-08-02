@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.ai.framework.ai.security;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -141,7 +143,7 @@ public class AiCallGuard {
             if (cause instanceof RuntimeException runtimeException) {
                 throw runtimeException;
             }
-            throw new RuntimeException(cause);
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, cause.getMessage(), cause);
         }
     }
 

@@ -41,6 +41,12 @@ jobs:
     # 登录即可用（controller/app 全仓均无 @PreAuthorize），不纳入此门禁。
     - name: WMS @PreAuthorize Gate
       run: python3 scripts/check_missing_preauthorize.py --module yudao-module-wms
+    # 裸抛异常回归门禁：扫描 cn/iocoder/yudao 包内是否残留
+    # throw new RuntimeException / IllegalStateException（绕过 ErrorCode 体系）。
+    # 全量转换已在本次提交完成（scripts/convert_bare_throws.py，74 处），
+    # 任何回归都将失败，作为防回归护栏。
+    - name: Bare-Throw Exception Gate
+      run: python3 scripts/check_bare_throws.py
     - name: Build with Maven
       run: mvn -B verify --file pom.xml
     - name: Security Check (deploy gate)

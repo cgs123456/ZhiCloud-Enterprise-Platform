@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.wms.service.inventory;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Tuple;
 import cn.hutool.core.util.ObjectUtil;
@@ -151,7 +152,7 @@ public class WmsInventoryServiceImpl implements WmsInventoryService {
         for (WmsInventoryChangeReqDTO.Item item : items) {
             WmsInventoryDO inventory = findInventory(inventories, item);
             if (inventory == null) {
-                throw new IllegalStateException("库存行不存在，skuId=" + item.getSkuId()
+                throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "库存行不存在，skuId=" + item.getSkuId()
                         + ", warehouseId=" + item.getWarehouseId());
             }
             BigDecimal beforeQuantity = inventory.getQuantity();

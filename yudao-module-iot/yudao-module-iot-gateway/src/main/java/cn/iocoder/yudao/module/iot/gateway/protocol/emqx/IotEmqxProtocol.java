@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.iot.gateway.protocol.emqx;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.StrUtil;
@@ -226,7 +228,7 @@ public class IotEmqxProtocol implements IotProtocol {
                     getId(), properties.getPort(), httpConfig != null && Boolean.TRUE.equals(httpConfig.getSslEnabled()));
         } catch (Exception e) {
             log.error("[startHttpServer][IoT EMQX 协议 {} HTTP Hook 服务启动失败, port: {}]", getId(), properties.getPort(), e);
-            throw new RuntimeException("HTTP Hook 服务启动失败", e);
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "HTTP Hook 服务启动失败", e);
         }
     }
 
@@ -253,7 +255,7 @@ public class IotEmqxProtocol implements IotProtocol {
         this.mqttClient = client;
         // 1.2 连接 MQTT Broker
         if (!connectMqttClient(client)) {
-            throw new RuntimeException("MQTT Client 启动失败: 连接 Broker 失败");
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "MQTT Client 启动失败: 连接 Broker 失败");
         }
 
         // 2. 启动定时重连检查

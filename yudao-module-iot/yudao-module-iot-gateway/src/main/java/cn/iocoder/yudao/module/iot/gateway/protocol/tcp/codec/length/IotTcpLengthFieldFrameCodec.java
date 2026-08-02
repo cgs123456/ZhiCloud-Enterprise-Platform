@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.iot.gateway.protocol.tcp.codec.length;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.iocoder.yudao.module.iot.gateway.protocol.tcp.IotTcpConfig;
 import cn.iocoder.yudao.module.iot.gateway.protocol.tcp.codec.IotTcpCodecTypeEnum;
 import cn.iocoder.yudao.module.iot.gateway.protocol.tcp.codec.IotTcpFrameCodec;
@@ -78,13 +80,13 @@ public class IotTcpLengthFieldFrameCodec implements IotTcpFrameCodec {
                 int frameBodyLength = length + lengthAdjustment;
                 // 检查帧长度是否合法
                 if (frameBodyLength < 0) {
-                    throw new IllegalStateException(String.format(
+                    throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, String.format(
                             "[createDecodeParser][帧长度异常，length: %d, frameBodyLength: %d]",
                             length, frameBodyLength));
                 }
                 // 消息体为空，抛出异常
                 if (frameBodyLength == 0) {
-                    throw new IllegalStateException("[createDecodeParser][消息体不能为空]");
+                    throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "[createDecodeParser][消息体不能为空]");
                 }
 
                 // 【重要】切换到读取消息体模式
@@ -103,7 +105,7 @@ public class IotTcpLengthFieldFrameCodec implements IotTcpFrameCodec {
             }
         });
         parser.exceptionHandler(ex -> {
-            throw new RuntimeException("[createDecodeParser][解析异常]", ex);
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "[createDecodeParser][解析异常]", ex);
         });
         return parser;
     }

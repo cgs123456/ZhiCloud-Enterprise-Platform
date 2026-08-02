@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.ai.service.chatmemory;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
@@ -267,7 +269,7 @@ public class ChatMemoryServiceImpl implements ChatMemoryService {
                     .call()
                     .content();
         }
-        throw new IllegalStateException("无可用 LLM（ChatClient 与 AiModelService 均未注入），无法执行摘要压缩");
+        throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "无可用 LLM（ChatClient 与 AiModelService 均未注入），无法执行摘要压缩");
     }
 
     /**

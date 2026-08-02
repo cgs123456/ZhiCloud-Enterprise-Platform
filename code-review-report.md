@@ -157,3 +157,34 @@
   - `instance`：抓取 `up==0`（实例宕机/健康检查异常）。
   - 文件头注释含 `prometheus.yml` 接入片段（scrape `/actuator/prometheus` + `rule_files`）。指标名对齐 Micrometer 默认导出（Actuator + `micrometer-registry-prometheus` 在本仓已启用）。
 - 验证：`yudao-server -am compile` 在线构建通过（拉取 encoder 依赖并编译成功）；`alert.rules.yml` 经 YAML 解析校验通过（3 组 7 规则）。日志 JSON 输出为运行时行为，已由标准 `LogstashEncoder` 配置保证，CI 在线构建可落地。
+
+---
+
+## 满分执行进度追踪（Item 8 起）
+
+本节登记「上线前清零」清单各项执行状态，作为满分验收的权威追踪表（明细见 `FULL-MARKS-PLAN.md`）。
+
+| 编号 | 项 | 状态 | 硬门禁 / 证据 |
+|---|---|---|---|
+| P0/P1 高危 | 安全 / 多租户 / 鉴权基线、注入防护 | ✅ | 评审 + 编译 |
+| 阶段4 | JaCoCo 门禁 + crm/erp 补测 | ✅ | `636045c` |
+| 阶段5 | 错误码唯一性门禁 + 140 冲突去重 | ✅ | 0 冲突；CI 严格门禁 |
+| 阶段6 | WMS 写接口 @PreAuthorize 护栏 | ✅ | 0 缺口；CI 护栏 |
+| 阶段7 | 可观测性 JSON 日志 + Prometheus 告警 | ✅ | 在线构建通过 |
+| **Item 8** | 裸抛异常统一为 `ServiceException(ErrorCode)` | ✅ 已完成 | 74 处转换 + `check_bare_throws.py` 门禁绿；全 reactor 编译 BUILD SUCCESS |
+| **Item C** | 核心域覆盖率门禁 ≥40% | 🔧 进行中 | 当前 wms/mes/bpm ≥0.30 已门禁；待补测抬升至 0.40 |
+| U-2 | AI+BPM 缺表 | ⛔ 待用户决策 | — |
+| U-7 | 禁用模块 48 缺表 | ⛔ 待用户决策 | — |
+| U-10 | Redis 拓扑 | ⛔ 待用户决策 | — |
+
+### Item 8 交付说明（裸抛统一）
+- `ServiceException` 新增 `ServiceException(ErrorCode, String)` 与 `ServiceException(ErrorCode, String, Throwable)` 两构造函数，复用全局 `GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR(500)`。
+- `scripts/convert_bare_throws.py` 将 `cn/iocoder/yudao/**` 包内全部 `throw new RuntimeException/IllegalStateException`（**74 处，跨 49 文件**）改为 `ServiceException(INTERNAL_SERVER_ERROR, ...)`，保留原始 message 与 cause（字符串/括号感知精确替换）。
+- **排除** `org/springframework`、`org/flowable` 重打包外部类（避免改坏 Spring/Flowable 内部行为），共 4 处不转换。
+- 新增回归门禁 `scripts/check_bare_throws.py` 并接入 `.github/workflows/maven.yml`（Bare-Throw Exception Gate）；扫描到 `cn/iocoder/yudao` 包内残留裸抛即失败。
+- 验收：`python3 scripts/check_bare_throws.py` 退出 0；`grep` 在 `cn/iocoder/yudao` 包内 0 裸抛；全 reactor `mvn compile` BUILD SUCCESS。
+
+### Item C 路径（覆盖率 ≥40%）
+当前 JaCoCo `check` 仅覆盖 wms/mes/bpm 的 `**/service/**` 包、`jacoco.minimum=0.30`。满分要求核心业务域 instruction 覆盖 ≥40%：
+1. 将 `jacoco.minimum` 上调至 `0.40`，`<includes>` 扩展至 crm/erp/ai/datalake/system/pay 等 service 包；
+2. 为被纳入模块补 `BaseDbUnitTest` 用例，使每个模块 ≥40% 后点亮门禁（分批纳入，避免一次性 brick CI）。

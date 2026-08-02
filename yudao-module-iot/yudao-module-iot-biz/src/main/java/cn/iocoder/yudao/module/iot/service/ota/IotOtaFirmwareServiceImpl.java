@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.iot.service.ota;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.hutool.crypto.digest.DigestAlgorithm;
 import cn.hutool.crypto.digest.DigestUtil;
 import cn.hutool.http.HttpUtil;
@@ -58,7 +60,7 @@ public class IotOtaFirmwareServiceImpl implements IotOtaFirmwareService {
             calculateFileDigest(firmware);
         } catch (Exception e) {
             log.error("[createOtaFirmware][url({}) 计算文件签名失败]", firmware.getFileUrl(), e);
-            throw new RuntimeException("计算文件签名失败: " + e.getMessage());
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "计算文件签名失败: " + e.getMessage());
         }
         otaFirmwareMapper.insert(firmware);
         return firmware.getId();

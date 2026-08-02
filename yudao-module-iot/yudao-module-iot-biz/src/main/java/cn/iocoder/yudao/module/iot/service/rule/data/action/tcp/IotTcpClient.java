@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.iot.service.rule.data.action.tcp;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.hutool.core.util.ObjUtil;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.module.iot.core.mq.message.IotDeviceMessage;
@@ -94,7 +96,7 @@ public class IotTcpClient {
      */
     public void sendMessage(IotDeviceMessage message) throws Exception {
         if (!connected.get()) {
-            throw new IllegalStateException("TCP 客户端未连接");
+            throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, "TCP 客户端未连接");
         }
 
         try {
