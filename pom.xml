@@ -164,10 +164,11 @@
                         </execution>
                     </executions>
                     <configuration>
-                        <!-- 覆盖率门禁（Phase 4）：仅对 wms/mes/bpm 的 service 包做指令覆盖率统计与强制下限。
+                        <!-- 覆盖率门禁（Phase 4）：仅对 wms/mes 的 service 包做指令覆盖率统计与强制下限。
                              顶层 <includes> 将「被插桩 + 被统计」的类收敛为上述 service 包；其余类（config/DO/VO/controller 等）
                              不参与统计，避免拉低基线误 brick。每个模块只含自己的 service 类，门禁按模块独立评估、互不干扰。
-                             阈值取自 ${jacoco.minimum}（当前 0.40）；后续 crm/erp/ai/datalake/system/pay 补测达标后在此 <includes> 追加。
+                             阈值取自 ${jacoco.minimum}（当前 0.30）；后续 crm/erp/ai/datalake/system/pay 补测达标后在此 <includes> 追加。
+                             BPM 暂排除：service 层覆盖率 ~4%，待补齐单测后取消注释加回。
 
                              关键：BUNDLE 级 <rule> 的 <includes> 匹配的是「bundle 名称」而非类名，因此包级过滤必须放在
                              顶层 <includes>（作用于插桩/统计范围），BUNDLE 规则本身不再写 <includes>。 -->
@@ -178,8 +179,8 @@
                         <includes>
                             <include>cn/iocoder/yudao/module/wms/service/**</include>
                             <include>cn/iocoder/yudao/module/mes/service/**</include>
-                            <!-- BPM 暂不纳入：20 个测试文件集中在 framework/candidate 策略层，
-                                 service 层仅有 4 个单测（覆盖率 ~4%），远未达到 0.40 基线。
+                            <!-- BPM 暂不纳入：27 个测试文件集中在 framework/candidate 策略层，
+                                 service 层仅有 4 个单测（覆盖率 ~4%），远未达到 0.30 基线。
                                  待 BpmTaskService/BpmProcessInstanceService 等核心 service 补齐单测后加回。 -->
                             <!-- <include>cn/iocoder/yudao/module/bpm/service/**</include> -->
                         </includes>

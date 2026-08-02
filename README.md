@@ -16,12 +16,12 @@
 
 | 指标 | 数值 |
 |------|------|
-| Java 源文件 | 7,320+ |
-| Controller | 615+ |
-| 业务模块 | 15 个（8 大业务域 + 3 AI 模块 + 系统基础设施） |
-| Flyway 迁移脚本 | 71 个 |
-| SQL 文件 | 214 个 |
-| 单元测试文件 | 286 个 |
+| Java 源文件 | 7,318 |
+| Controller | 614 |
+| 业务模块 | 25 个（8 大业务域 + 3 AI 模块 + 系统基础设施 + Mall/MP/IoT/IM 等） |
+| Flyway 迁移脚本 | 76 个 |
+| SQL 文件 | 248 个 |
+| 单元测试文件 | 383 个 |
 | 框架 Starter | 14 个 |
 
 ## 🏗️ 技术架构
@@ -95,14 +95,14 @@
 | K8s 部署 | Helm Chart（11 模板）、ArgoCD GitOps、金丝雀发布 |
 | CI/CD | Jenkins Pipeline（测试→安全扫描→SonarQube→构建→部署/回滚） |
 | 安全 | OWASP Dependency-Check（CVSS≥7 高危阻断；需配置 NVD API Key，未配置时 CI 跳过并告警）、CycloneDX SBOM、pre-commit 密钥扫描、security-check.sh 部署前检查 |
-| 质量门禁 | JaCoCo 覆盖率报告（基线 30%、目标 60%，分阶段提升；门禁规划中，当前仅生成报告不阻断构建）、JUnit + Mockito 单元测试 |
+| 质量门禁 | JaCoCo 覆盖率门禁（当前基线 30%，WMS/MES 已纳入阻断，BPM 暂排除待补齐单测；目标分阶段提升至 60%→80%）+ 7 道 Python 脚本门禁（错误码唯一性/PreAuthorize 全仓/WMS 严格/电子签名/裸抛/事务原子性/错误码基线）、JUnit + Mockito 单元测试 |
 | 监控 | Prometheus + Grafana（4 Dashboard）+ Loki 日志 + Jaeger 链路追踪 + AlertManager 告警 |
 | 压测 | JMeter（yudao-load-test.jmx）+ Gatling（YudaoLoadTest.scala） |
 | 灾备 | 备份脚本、异地容灾、disaster-recovery-drill.sh 演练脚本 |
 
 ## 🗄️ 数据库版本管理
 
-采用 Flyway 管理 71 个迁移脚本（V1-V71），覆盖：
+采用 Flyway 管理 76 个迁移脚本（V1-V76），覆盖：
 
 - V1 基线 → V6 期间结转 → V8 TOTP → V9 操作日志哈希链
 - ERP：多币种/预算/合并/固定资产/总账/采购询价/VMI/CPFR/MRP/信用管理
@@ -118,24 +118,29 @@
 
 | 模块 | 测试文件数 |
 |------|-----------|
-| MES | 26 |
-| System | 38 |
-| IoT | 49 |
-| Mall | 31 |
+| MES | 46 |
+| System | 40 |
+| AI | 35 |
+| BPM | 27 |
 | Infra | 26 |
-| BPM | 20 |
+| WMS | 26 |
+| IoT | 51 |
 | IM | 21 |
-| Framework | 20 |
-| Pay | 14 |
-| WMS | 11 |
+| Framework | 22 |
+| Pay | 15 |
+| Trade | 15 |
+| Promotion | 13 |
 | Member | 8 |
-| QMS | 3 |
+| Product | 7 |
+| QMS | 6 |
+| ERP | 6 |
+| CRM | 5 |
 | TMS | 4 |
-| HR | 3 |
 | OA | 3 |
-| CRM | 3 |
-| AI | 3 |
-| **合计** | **286** |
+| HR | 3 |
+| Report | 2 |
+| AI-RAG | 2 |
+| **合计** | **383** |
 
 ## 📁 项目结构
 
@@ -237,6 +242,11 @@ mvn spring-boot:run
 - 部署前安全检查脚本（6 项检查）
 - Docker 非 root 用户运行（UID/GID 1000）
 - K8s Secret 占位符 + securityContext
+- QMS 电子签名（21 CFR Part 11）：8 个管控点（审批/驳回/关闭）全量覆盖，CI 门禁防回归
+- 全仓 @PreAuthorize 扫描门禁：124 个 GAP 存量基线冻结，CRITICAL=0 匿名可达
+- 裸抛异常统一门禁：74 处 RuntimeException → ServiceException(ErrorCode)，CI 防回归
+- 事务原子性门禁：12 处多写操作补 @Transactional，CI 防回归
+- 错误码唯一性门禁：140 处冲突去重，2036 个定义 0 冲突
 
 ## 📄 开源协议
 
