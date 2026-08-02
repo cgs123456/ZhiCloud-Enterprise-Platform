@@ -116,6 +116,13 @@ public class AiKnowledgeDocumentServiceImpl implements AiKnowledgeDocumentServic
     }
 
     @Override
+    // 原子性修复：文档更新与「删除旧切片」两步写操作此前无事务，中途异常会出现
+    // 「文档 segmentMaxTokens 已改但旧切片未删」或「旧切片已删但文档未更新」，导致检索结果与文档设置不符。
+    // 与同类的 deleteKnowledgeDocument 保持一致（该方法已有事务）。
+    // 说明：第 3 步的 createKnowledgeSegmentBySplitContentAsync 为 @Async 独立线程与独立事务，
+    // 其入参 content 由调用方直接传入、不回读本事务未提交的数据，因此不存在脏读；
+    // 该异步重建本身的失败补偿由切片服务自身负责，不在本次事务边界内。
+    @Transactional(rollbackFor = Exception.class)
     public void updateKnowledgeDocument(AiKnowledgeDocumentUpdateReqVO reqVO) {
         // 1. 校验文档是否存在
         AiKnowledgeDocumentDO oldDocument = validateKnowledgeDocumentExists(reqVO.getId());
@@ -136,6 +143,9 @@ public class AiKnowledgeDocumentServiceImpl implements AiKnowledgeDocumentServic
     }
 
     @Override
+    // 原子性修复：状态更新与切片增删两步无事务。禁用文档时若切片删除失败，
+    // 文档已标记为「禁用」但切片仍留在向量检索范围内，形成「已下线文档仍被 RAG 召回」的数据泄露风险。
+    @Transactional(rollbackFor = Exception.class)
     public void updateKnowledgeDocumentStatus(AiKnowledgeDocumentUpdateStatusReqVO reqVO) {
         // 1. 校验存在
         AiKnowledgeDocumentDO document = validateKnowledgeDocumentExists(reqVO.getId());

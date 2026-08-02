@@ -10,6 +10,7 @@ import cn.iocoder.yudao.module.product.service.sku.ProductSkuService;
 import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.Collection;
@@ -51,6 +52,9 @@ public class ProductPropertyValueServiceImpl implements ProductPropertyValueServ
     }
 
     @Override
+    // 原子性修复：更新属性值后需同步刷新 SKU 上冗余存储的属性名，两步无事务。
+    // 若 SKU 同步失败，属性值表已改名但 SKU 仍显示旧名称，前台商品规格展示错乱且无自愈路径。
+    @Transactional(rollbackFor = Exception.class)
     public void updatePropertyValue(ProductPropertyValueSaveReqVO updateReqVO) {
         validatePropertyValueExists(updateReqVO.getId());
         // 校验名字唯一

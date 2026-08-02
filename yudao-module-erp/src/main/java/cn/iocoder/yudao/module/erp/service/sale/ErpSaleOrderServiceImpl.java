@@ -282,6 +282,10 @@ public class ErpSaleOrderServiceImpl implements ErpSaleOrderService {
     }
 
     @Override
+    // 原子性修复：循环内逐项 updateById，若中途抛 SALE_ORDER_ITEM_OUT_FAIL_PRODUCT_EXCEED，
+    // 已更新的订单项不回滚且订单头 outCount 不写入 => 订单头与订单项出库数撕裂。
+    // 现有调用方 ErpSaleOutServiceImpl 已开启事务，此处 REQUIRED 复用外层事务，属防御性加固。
+    @Transactional(rollbackFor = Exception.class)
     public void updateSaleOrderOutCount(Long id, Map<Long, BigDecimal> outCountMap) {
         List<ErpSaleOrderItemDO> orderItems = saleOrderItemMapper.selectListByOrderId(id);
         // 1. 更新每个销售订单项
@@ -304,6 +308,8 @@ public class ErpSaleOrderServiceImpl implements ErpSaleOrderService {
     }
 
     @Override
+    // 原子性修复：同 updateSaleOrderOutCount，避免订单项 returnCount 与订单头 returnCount 撕裂。
+    @Transactional(rollbackFor = Exception.class)
     public void updateSaleOrderReturnCount(Long orderId, Map<Long, BigDecimal> returnCountMap) {
         List<ErpSaleOrderItemDO> orderItems = saleOrderItemMapper.selectListByOrderId(orderId);
         // 1. 更新每个销售订单项

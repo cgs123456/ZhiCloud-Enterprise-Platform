@@ -167,6 +167,10 @@ public class DiscountActivityServiceImpl implements DiscountActivityService {
     }
 
     @Override
+    // 资损风险修复：活动状态与活动商品状态两表联动更新，此前无事务。
+    // 若第 2 步失败，活动显示「已关闭」但商品仍挂着「生效中」的限时折扣，
+    // 用户下单时继续按折扣价成交，属直接资损，且运营在后台看到的是「已关闭」故不会察觉。
+    @Transactional(rollbackFor = Exception.class)
     public void closeDiscountActivity(Long id) {
         // 校验存在
         DiscountActivityDO activity = validateDiscountActivityExists(id);
@@ -182,6 +186,9 @@ public class DiscountActivityServiceImpl implements DiscountActivityService {
     }
 
     @Override
+    // 原子性修复：删除活动与删除活动商品两步无事务，
+    // 中途失败会残留孤儿 discount_product 记录，且因主活动已删除无法再从后台清理。
+    @Transactional(rollbackFor = Exception.class)
     public void deleteDiscountActivity(Long id) {
         // 校验存在
         DiscountActivityDO activity = validateDiscountActivityExists(id);

@@ -317,6 +317,14 @@ public class BpmModelServiceImpl implements BpmModelService {
     }
 
     @Override
+    // 原子性修复：与姊妹方法 deleteModel 保持一致（deleteModel 已有事务，本方法此前遗漏）。
+    // 三段清理（运行实例 / 历史实例 / 待办任务）跨 4 个 Flowable Service、共 6 处写操作，
+    // 中途异常会残留「运行时已删但历史仍在」「历史已删但抄送记录仍在」的孤儿数据，
+    // 导致流程管理台查询报错且无法自愈。
+    // 权衡说明：Flowable 与业务共用同一数据源与事务管理器，故本注解可覆盖上述全部写操作。
+    // 若单个模型的流程实例量级达到万级，应改为分批异步清理以避免长事务锁住 ACT_RU_*/ACT_HI_* 表，
+    // 当前作为管理员低频操作先保证正确性。
+    @Transactional(rollbackFor = Exception.class)
     public void cleanModel(Long userId, String id) {
         // 1. 校验流程模型存在
         Model model = validateModelManager(id, userId);

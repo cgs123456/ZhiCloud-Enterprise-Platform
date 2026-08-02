@@ -239,6 +239,11 @@ public class ImPrivateMessageServiceImpl implements ImPrivateMessageService {
     }
 
     @Override
+    // 原子性修复：第 2 步把消息回执翻成 DONE、第 3 步推进 im_conversation_read 读位置，两者此前无事务。
+    // 读位置是「唯一权威」，若第 3 步失败则回执已 DONE 但读位置未前进 =>
+    // 对方 UI 显示「已读」而本端未读数不清零，两个真相源长期分叉且不会自愈。
+    // 说明：第 4 步 WebSocket 通知为 @Async 且位于 advanced 判定之后，内容由入参直接携带，不回读未提交数据。
+    @Transactional(rollbackFor = Exception.class)
     public void readPrivateMessages(Long userId, Long receiverId, Long messageId) {
         // 1. 全局开关校验
         if (BooleanUtil.isFalse(imProperties.getMessage().isPrivateReadEnabled())) {

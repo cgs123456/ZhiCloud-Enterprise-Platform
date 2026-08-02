@@ -78,6 +78,12 @@ public class KeFuMessageServiceImpl implements KeFuMessageService {
     }
 
     @Override
+    // 原子性修复：与同文件 updateKeFuMessageReadStatus 保持一致（该方法已有事务，本方法遗漏）。
+    // 三处写操作：getOrCreateConversation（可能新建会话）→ 插入消息 → 更新会话的最后一条消息冗余字段。
+    // 若最后一步失败，消息已入库但会话列表仍显示旧的「最后消息」，客服端不感知新消息而用户以为已送达。
+    // 说明：后续 sendAsyncMessageToAdmin / sendAsyncMessageToMember 为 @Async 独立线程，
+    // 推送内容由入参 message 直接携带、不回读本事务未提交的数据，故不纳入事务边界、也不存在脏读。
+    @Transactional(rollbackFor = Exception.class)
     public Long sendKefuMessage(AppKeFuMessageSendReqVO sendReqVO) {
         // 1.1 设置会话编号
         KeFuMessageDO kefuMessage = BeanUtils.toBean(sendReqVO, KeFuMessageDO.class);

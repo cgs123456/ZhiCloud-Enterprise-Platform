@@ -255,7 +255,15 @@ public class AiragRagServiceImpl implements AiragRagService {
             vectorStore.delete(chunkIds);
             log.info("[deleteDocument][向量库删除完成，documentId={}, tenantId={}, chunkCount={}]", documentId, tenantId, chunkCount);
         } catch (Exception e) {
-            log.warn("[deleteDocument][向量库删除失败，documentId={}, tenantId={}，原因={}]", documentId, tenantId, e.getMessage());
+            // 一致性修复：此处原先仅 log.warn 吞掉异常，导致「向量没删掉但调用方以为删成功」，
+            // 上层随即删除文档 DB 记录 => 文档在后台消失、向量却永久残留在检索库里，
+            // 表现为「已删除的文档仍被 RAG 召回」，既是数据残留也是合规风险，且此后再无入口可清理
+            //（因为清理逻辑依赖 DB 里的 chunkCount，记录一删就彻底失去线索）。
+            // 改为向上抛出：调用方据此保留 DB 记录，用户可重试；chunkId 由 documentId 确定性生成，
+            // 重复删除幂等，因此重试路径最终一定收敛。
+            log.error("[deleteDocument][向量库删除失败，documentId={}, tenantId={}，原因={}]",
+                    documentId, tenantId, e.getMessage(), e);
+            throw exception(RAG_VECTOR_DELETE_FAIL);
         }
     }
 

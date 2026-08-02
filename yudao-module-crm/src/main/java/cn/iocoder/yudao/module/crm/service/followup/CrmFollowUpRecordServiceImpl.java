@@ -21,6 +21,7 @@ import cn.iocoder.yudao.module.crm.service.permission.CrmPermissionService;
 import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.Collection;
@@ -62,6 +63,10 @@ public class CrmFollowUpRecordServiceImpl implements CrmFollowUpRecordService {
     private CrmCustomerService customerService;
 
     @Override
+    // 原子性修复：本方法最多写入 8 个目标（跟进记录 + 客户/商机/线索/联系人/合同 之一 + contactIds/businessIds 的 nextTime），
+    // 且由 Controller 直接调用、外层无事务。缺少事务时若中途异常，会出现「跟进记录已插入但业务对象跟进时间未更新」
+    // 或「联系人 nextTime 已更新但商机未更新」的脏数据，且无任何补偿机制。
+    @Transactional(rollbackFor = Exception.class)
     @CrmPermission(bizTypeValue = "#createReqVO.bizType", bizId = "#createReqVO.bizId", level = CrmPermissionLevelEnum.WRITE)
     public Long createFollowUpRecord(CrmFollowUpRecordSaveReqVO createReqVO) {
         // 1. 创建更进记录

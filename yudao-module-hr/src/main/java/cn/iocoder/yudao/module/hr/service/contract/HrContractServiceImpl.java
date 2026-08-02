@@ -10,6 +10,7 @@ import cn.iocoder.yudao.module.hr.dal.mysql.contract.HrContractMapper;
 import cn.iocoder.yudao.module.hr.enums.contract.HrContractStatusEnum;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.time.LocalDate;
@@ -84,7 +85,14 @@ public class HrContractServiceImpl implements HrContractService {
         return contractMapper.selectPage(pageReqVO);
     }
 
+    /**
+     * 续签合同：将旧合同置为「已续签」并插入新合同。
+     *
+     * <p>两次写操作必须同事务——否则旧合同已改状态而新合同插入失败时，
+     * 员工会出现「无有效合同」的脏数据且无法自动修复。
+     */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Long renewContract(HrContractRenewReqVO reqVO) {
         HrContractDO oldContract = validateContractExists(reqVO.getId());
         HrContractDO updateOld = new HrContractDO();

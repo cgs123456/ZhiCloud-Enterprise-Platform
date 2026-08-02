@@ -74,6 +74,10 @@ public class ProductPropertyServiceImpl implements ProductPropertyService {
     }
 
     @Override
+    // 原子性修复：与同文件 updateProperty 保持一致（该方法已有事务，本方法遗漏）。
+    // 先删属性再删属性值，若属性值删除失败，属性已消失但属性值成为孤儿数据，
+    // 且因属性已不存在，孤儿属性值再也无法通过界面清理。
+    @Transactional(rollbackFor = Exception.class)
     public void deleteProperty(Long id) {
         // 校验存在
         validatePropertyExists(id);

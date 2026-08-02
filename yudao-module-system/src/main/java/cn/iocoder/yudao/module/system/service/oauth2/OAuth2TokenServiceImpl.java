@@ -156,6 +156,11 @@ public class OAuth2TokenServiceImpl implements OAuth2TokenService {
     }
 
     @Override
+    // 原子性修复：与上方 removeAccessToken(String) 重载保持一致（该重载已有事务，此批量重载此前遗漏）。
+    // 循环内对每个令牌先删 DB 再删 Redis，若中途异常会出现「部分令牌已撤销、部分仍有效」的半成功状态；
+    // 本方法被 updateUserStatus / 修改密码 / 强制下线 等安全路径调用，半成功即等于「以为已踢下线但实际仍可访问」。
+    // 注意：Redis 删除不受事务管理，回滚方向为「Redis 已清、DB 保留」——令牌校验以 Redis 为准，属 fail-safe 方向。
+    @Transactional(rollbackFor = Exception.class)
     public void removeAccessToken(Long userId, Integer userType) {
         List<OAuth2AccessTokenDO> accessTokens = oauth2AccessTokenMapper.selectListByUserIdAndUserType(userId, userType);
         if (CollUtil.isEmpty(accessTokens)) {

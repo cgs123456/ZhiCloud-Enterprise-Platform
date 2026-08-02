@@ -27,6 +27,7 @@ public interface ErrorCodeConstants {
     ErrorCode RAG_EMBEDDING_FAIL = new ErrorCode(1_041_002_001, "向量生成失败");
     ErrorCode RAG_RETRIEVE_FAIL = new ErrorCode(1_041_002_002, "向量检索失败");
     ErrorCode RAG_CHAT_ERROR = new ErrorCode(1_041_002_003, "RAG 对话生成异常");
+    ErrorCode RAG_VECTOR_DELETE_FAIL = new ErrorCode(1_041_002_004, "向量库删除失败，文档未被删除，请稍后重试");
 
     // ========== RAG 评估 1-041-003-000 ==========
     ErrorCode RAG_EVALUATION_LLM_UNAVAILABLE = new ErrorCode(1_041_003_000, "RAG 评估无可用 LLM（ChatClient 与 AiModelService 均未注入）");

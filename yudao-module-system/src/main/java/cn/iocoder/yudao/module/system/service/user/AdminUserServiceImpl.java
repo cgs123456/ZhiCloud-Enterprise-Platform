@@ -253,6 +253,10 @@ public class AdminUserServiceImpl implements AdminUserService {
     }
 
     @Override
+    // 安全 + 原子性修复：禁用用户时先改 status 再撤销令牌，两步无事务。
+    // 若撤销令牌抛异常，用户在 DB 中已是「禁用」但持有的 access token 仍然有效，
+    // 形成一个「已封禁账号仍可继续调用接口」的越权窗口，且无任何补偿或告警。
+    @Transactional(rollbackFor = Exception.class)
     public void updateUserStatus(Long id, Integer status) {
         // 校验用户存在
         validateUserExists(id);

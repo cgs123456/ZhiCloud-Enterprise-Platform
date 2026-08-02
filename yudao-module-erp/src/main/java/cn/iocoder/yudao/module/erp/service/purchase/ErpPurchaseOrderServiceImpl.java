@@ -224,6 +224,11 @@ public class ErpPurchaseOrderServiceImpl implements ErpPurchaseOrderService {
     }
 
     @Override
+    // 原子性修复：循环内逐项 updateById，若中途抛 PURCHASE_ORDER_ITEM_IN_FAIL_PRODUCT_EXCEED，
+    // 已更新的订单项不会回滚，且第 2 步的订单头 inCount 不会写入 => 订单头与订单项入库数长期不一致。
+    // 当前调用方 ErpPurchaseInServiceImpl 均已开启事务，此处为 REQUIRED 传播（复用外层事务），
+    // 属防御性加固：保证该方法被任何新调用方直接调用时仍具备原子性。
+    @Transactional(rollbackFor = Exception.class)
     public void updatePurchaseOrderInCount(Long id, Map<Long, BigDecimal> inCountMap) {
         List<ErpPurchaseOrderItemDO> orderItems = purchaseOrderItemMapper.selectListByOrderId(id);
         // 1. 更新每个采购订单项
@@ -244,6 +249,8 @@ public class ErpPurchaseOrderServiceImpl implements ErpPurchaseOrderService {
     }
 
     @Override
+    // 原子性修复：同 updatePurchaseOrderInCount，避免订单项 returnCount 与订单头 returnCount 撕裂。
+    @Transactional(rollbackFor = Exception.class)
     public void updatePurchaseOrderReturnCount(Long orderId, Map<Long, BigDecimal> returnCountMap) {
         List<ErpPurchaseOrderItemDO> orderItems = purchaseOrderItemMapper.selectListByOrderId(orderId);
         // 1. 更新每个采购订单项

@@ -73,6 +73,12 @@ public class MpMessageServiceImpl implements MpMessageService {
 
     @Override
     @SneakyThrows
+    // @tx-ignore 本方法有意不加 @Transactional，加了反而有害：
+    // 方法体内含最长 3×5=15 秒的 ThreadUtil.sleep 轮询、weixinService.getUserService().userInfo() 微信 API 调用，
+    // 以及 downloadMessageMedia() 媒体文件下载。若包在事务里，单条消息就会占用一个数据库连接 15 秒以上，
+    // 公众号消息高峰时会迅速耗尽连接池并拖垮整个应用（长事务 > 数据不一致）。
+    // 语义上两处写入也相互独立：saveUser 补建粉丝档案本身即有价值，不应因后续消息落库失败而回滚。
+    // 正确的加固方向是把「粉丝补建」与「消息落库」拆成两个独立短事务，此处保持现状并显式豁免。
     public void receiveMessage(WxMpService weixinService, String appId, WxMpXmlMessage wxMessage) {
         // 获得关联信息
         MpAccountDO account = mpAccountService.getAccountFromCache(appId);

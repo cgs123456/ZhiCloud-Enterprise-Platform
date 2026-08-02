@@ -55,6 +55,25 @@ jobs:
     # 脚本会把全部豁免项打印到 CI 日志，防止悄悄累积。
     - name: Bare-Throw Exception Gate
       run: python3 scripts/check_bare_throws.py
+    # 事务原子性回归门禁：扫描「单个方法写入 >= 2 个不同 Mapper/Service 却未标注事务注解」的 ServiceImpl 方法。
+    # 这类方法中途异常会留下半提交脏数据（部分表已写、部分未写），且大多无自愈路径。
+    # 全量修复已在本次提交完成（12 处），当前基线为 0，任何回归都将失败。
+    #
+    # 脚本要点（踩过的坑，勿回退）：
+    #   1) 事务注解不止 @Transactional——多数据源用 @DSTransactional，分布式用 @GlobalTransactional，
+    #      三者都要认，否则大量误报；
+    #   2) 必须按括号配平向上回溯完整注解块，否则 @LogRecord(...) 这类跨行注解会挡住上方的 @Transactional；
+    #   3) 确有不该加事务的方法（内含 sleep / 外部 HTTP / 文件下载，包事务会长时间占用数据库连接），
+    #      在方法上方注释写 `// @tx-ignore <理由>` 显式豁免——理由留在代码里可被 review，不做脚本白名单。
+    - name: Transaction Atomicity Gate
+      run: |
+        python3 scripts/scan_tx.py \
+          yudao-module-crm yudao-module-erp yudao-module-wms yudao-module-mes \
+          yudao-module-qms yudao-module-tms yudao-module-bpm yudao-module-oa \
+          yudao-module-hr yudao-module-ai yudao-module-ai-rag yudao-module-system \
+          yudao-module-infra yudao-module-mall yudao-module-member yudao-module-pay \
+          yudao-module-mp yudao-module-im yudao-module-iot yudao-module-report \
+          yudao-module-datalake
     - name: Build with Maven
       run: mvn -B verify --file pom.xml
     - name: Security Check (deploy gate)
