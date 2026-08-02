@@ -1,0 +1,107 @@
+# Prometheus 告警规则 —— ZhiCloud-Enterprise-Platform (yudao-server)
+#
+# 指标来源：Spring Boot Actuator + Micrometer Prometheus
+#   (management.endpoints.web.exposure.include 已含 prometheus；/actuator/prometheus 可抓取)
+#
+# 用法（在 Prometheus 部署侧）：
+#   prometheus.yml:
+#     rule_files:
+#       - /etc/prometheus/alert.rules.yml
+#     scrape_configs:
+#       - job_name: 'yudao-server'
+#         metrics_path: /actuator/prometheus
+#         static_configs:
+#           - targets: ['yudao-server:8080']
+#   并配置 Alertmanager 接收告警（routing + receiver）。
+#
+# 指标名均为 Micrometer 默认导出名；如自定义了 meter 名称请相应调整 expr。
+---
+groups:
+  # ---------------- JVM / 运行时 ----------------
+  - name: jvm
+    rules:
+      - alert: JvmHeapUsageHigh
+        # 堆内存整体使用率 = 已用/最大。超过 85% 持续 5 分钟预警（避免因短促 GC 抖动误报）。
+        expr: sum(jvm_memory_used_bytes{area="heap"}) / sum(jvm_memory_max_bytes{area="heap"}) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          component: jvm
+        annotations:
+          summary: "JVM 堆内存使用率过高 ({{ $labels.instance }})"
+          description: "堆内存使用率持续 5 分钟超过 85%（当前约 {{ printf \"%.1f\" (mul (div (index .Value) 1) 100) }}%）。请检查是否存在内存泄漏或需上调容器堆上限（-XX:MaxRAMPercentage）。"
+
+      - alert: JvmCpuUsageHigh
+        expr: system_cpu_usage > 0.80
+        for: 10m
+        labels:
+          severity: warning
+          component: jvm
+        annotations:
+          summary: "系统 CPU 使用率过高 ({{ $labels.instance }})"
+          description: "CPU 使用率持续 10 分钟超过 80%（当前 {{ printf \"%.1f\" (mul (index .Value) 100) }}%）。请排查高 CPU 线程或扩缩容。"
+
+      - alert: JvmGcOverheadHigh
+        # GC 暂停时间占比（每秒 GC 耗时秒数）。>0.3 表示 GC 开销过大、可能频繁 Full GC。
+        expr: rate(jvm_gc_pause_seconds_sum[5m]) > 0.3
+        for: 5m
+        labels:
+          severity: warning
+          component: jvm
+        annotations:
+          summary: "JVM GC 开销过高 ({{ $labels.instance }})"
+          description: "近 5 分钟 GC 暂停时间占比 > 30%（当前 {{ printf \"%.2f\" (index .Value) }}）。可能存在内存压力或对象频繁创建。"
+
+      - alert: JvmThreadCountHigh
+        expr: jvm_threads_live_threads > 500
+        for: 10m
+        labels:
+          severity: warning
+          component: jvm
+        annotations:
+          summary: "JVM 活跃线程数过高 ({{ $labels.instance }})"
+          description: "活跃线程数持续 10 分钟超过 500（当前 {{ printf \"%.0f\" (index .Value) }}）。请排查线程池泄漏或异步任务堆积。"
+
+  # ---------------- HTTP / 接口质量 ----------------
+  - name: http
+    rules:
+      - alert: Http5xxErrorRateHigh
+        # 5xx 请求占比 = 5xx QPS / 总 QPS。>5% 持续 5 分钟预警。
+        expr: |
+          sum by (instance) (rate(http_server_requests_seconds_count{status=~"5.."}[5m]))
+          /
+          sum by (instance) (rate(http_server_requests_seconds_count[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          component: http
+        annotations:
+          summary: "HTTP 5xx 错误率过高 ({{ $labels.instance }})"
+          description: "近 5 分钟 5xx 错误率超过 5%（当前 {{ printf \"%.2f\" (mul (index .Value) 100) }}%）。请排查服务端异常/下游依赖故障。"
+
+      - alert: HttpLatencyP95High
+        # P95 响应时延（基于 histogram_quantile）。>1s 持续 5 分钟预警（可按业务调整阈值）。
+        expr: |
+          histogram_quantile(0.95,
+            sum by (le, instance) (rate(http_server_requests_seconds_bucket[5m]))
+          ) > 1
+        for: 5m
+        labels:
+          severity: warning
+          component: http
+        annotations:
+          summary: "HTTP P95 时延过高 ({{ $labels.instance }})"
+          description: "近 5 分钟 P95 响应时延超过 1s（当前 {{ printf \"%.2f\" (index .Value) }}s）。请排查慢 SQL、慢接口或下游依赖。"
+
+  # ---------------- 实例存活 ----------------
+  - name: instance
+    rules:
+      - alert: InstanceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: instance
+        annotations:
+          summary: "应用实例不可达 ({{ $labels.instance }})"
+          description: "Prometheus 已持续 1 分钟无法抓取 {{ $labels.instance }}（up={{ $value }}）。请检查进程是否宕机、健康检查 /actuator/health 是否异常或网络隔离。"

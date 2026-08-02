@@ -12,11 +12,11 @@
         </encoder>
     </appender>
 
-    <!-- 文件 Appender -->
+    <!-- 文件 Appender：JSON 结构化输出（供 ELK/Loki/Vector 等采集管道消费） -->
     <!-- 参考 Spring Boot 的 file-appender.xml 编写 -->
     <appender name="FILE"  class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>${FILE_LOG_PATTERN}</pattern>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <!-- 默认已包含 MDC（traceId/tenantId/userId 等），此处无需额外配置 -->
         </encoder>
         <!-- 日志文件名 -->
         <file>${LOG_FILE}</file>
@@ -34,10 +34,24 @@
         <appender-ref ref="FILE"/>
     </appender>
 
-    <root level="INFO">
-        <appender-ref ref="STDOUT"/>
-        <!-- 本地环境下，如果不想【FILE】打印日志，可以注释掉本行 -->
-        <appender-ref ref="ASYNC"/>
-    </root>
+    <!-- 控制台 JSON（生产环境：stdout 被容器日志采集器收集，须为结构化） -->
+    <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+    </appender>
+
+    <!-- 非生产：文本控制台（便于本地/docker logs 阅读） + JSON 文件 -->
+    <springProfile name="!prod">
+        <root level="INFO">
+            <appender-ref ref="STDOUT"/>
+            <appender-ref ref="ASYNC"/>
+        </root>
+    </springProfile>
+    <!-- 生产：JSON 控制台(stdout 采集) + JSON 文件 -->
+    <springProfile name="prod">
+        <root level="INFO">
+            <appender-ref ref="JSON_CONSOLE"/>
+            <appender-ref ref="ASYNC"/>
+        </root>
+    </springProfile>
 
 </configuration>

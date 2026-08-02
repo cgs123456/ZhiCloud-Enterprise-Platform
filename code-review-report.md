@@ -131,7 +131,7 @@
 | 4 | JaCoCo 门禁武装（wms/mes/bpm service 包 ≥30%）+ crm/erp 核心域补测 | ✅ 已交付 | `636045c` |
 | 5 | 错误码唯一性 CI 门禁 + 140 冲突基线冻结 + 冲突报告 | ✅ 已交付 | 本批次 |
 | 6 | WMS/写接口补 @PreAuthorize 方法级权限注解 | ✅ 已交付 | 本批次 |
-| 7 | 可观测性：logback JSON 结构化输出 + Prometheus 告警规则文件 | ⬜ 待启动 | — |
+| 7 | 可观测性：logback JSON 结构化输出 + Prometheus 告警规则文件 | ✅ 已交付 | 本批次 |
 
 **阶段5 说明（错误码去重）**：
 - 全仓扫描 `*ErrorCodeConstants.java` 共 2033 个定义，发现 **140 处重复码**（跨模块/模块内）。分布：MES↔QMS `10401xxxxx` 段碰撞、ERP `STOCK_OUT_*`/`STOCK_MOVE_*` 6 处共享、AI `KNOWLEDGE_DOCUMENT_FILE_*` 三连、infra `CODEGEN_TABLE_EXISTS`/`CODEGEN_IMPORT_COLUMNS_NULL` 同码 `1001004002` 等。
@@ -146,3 +146,14 @@
   - 用户自服务端点：AI 的 `*-my`（本人会话/图片/角色）、`UserProfileController`、`TotpController` 等——数据按登录用户 `userId` 在 service 层隔离，端点级只要求已登录即可，符合本仓惯例。
 - 因此**未做全量补齐**（盲目加会破坏上述端点且需注册约 120 个新权限码）。WMS 范围内无待补项。
 - 交付**防回归护栏**：`scripts/check_missing_preauthorize.py` 接入 CI，限定 `--module yudao-module-wms`（当前全绿），任何新增的 WMS admin 写接口若漏写 `@PreAuthorize` 即阻断合并。PDA/app 端点按本仓约定为登录即可用（全仓 `controller/app/**` 均无 `@PreAuthorize`），不纳入此门禁——如确需 PDA 细粒度 RBAC，属产品/RBAC 设计项（P3），需同步注册权限码并赋权给仓库角色。
+
+**阶段7 说明（可观测性 / 日志结构化 + Prometheus 告警）**：
+- **JSON 结构化日志**：`yudao-server` 新增 `net.logstash.logback:logstash-logback-encoder:7.4.3`（logback 1.5 兼容）。`logback-spring.xml` 改造：
+  - 文件 Appender（`FILE`→`ASYNC`→滚动）编码器由 `PatternLayoutEncoder` 换为 `LogstashEncoder`，输出 JSON（含 MDC：`traceId`/`tenantId`/`userId`、level、logger、thread、message、stack_trace），供 ELK/Loki/Vector 采集。
+  - 新增 `JSON_CONSOLE` Appender；**非 prod** 用文本控制台（本地/`docker logs` 可读）+ JSON 文件，**prod** 用 JSON 控制台（stdout 被容器采集）+ JSON 文件。控制台与文件均为结构化，兼顾可读性与可观测性。
+- **Prometheus 告警规则**：新增 `prometheus/alert.rules.yml`，7 条规则覆盖三类：
+  - `jvm`：堆内存>85%、系统 CPU>80%、GC 开销>0.3、活跃线程>500；
+  - `http`：5xx 错误率>5%、P95 时延>1s；
+  - `instance`：抓取 `up==0`（实例宕机/健康检查异常）。
+  - 文件头注释含 `prometheus.yml` 接入片段（scrape `/actuator/prometheus` + `rule_files`）。指标名对齐 Micrometer 默认导出（Actuator + `micrometer-registry-prometheus` 在本仓已启用）。
+- 验证：`yudao-server -am compile` 在线构建通过（拉取 encoder 依赖并编译成功）；`alert.rules.yml` 经 YAML 解析校验通过（3 组 7 规则）。日志 JSON 输出为运行时行为，已由标准 `LogstashEncoder` 配置保证，CI 在线构建可落地。

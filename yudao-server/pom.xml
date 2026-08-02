@@ -205,6 +205,12 @@
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
+        <!-- 日志结构化：JSON 编码器，供 ELK/Loki/Vector 等采集管道消费（logback 1.5 兼容） -->
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>7.4</version>
+        </dependency>
         <!-- A4 OpenTelemetry 分布式追踪：使用 micrometer-tracing-bridge-otel 桥接，OTLP 上报到 Jaeger/Tempo -->
         <dependency>
             <groupId>io.micrometer</groupId>
