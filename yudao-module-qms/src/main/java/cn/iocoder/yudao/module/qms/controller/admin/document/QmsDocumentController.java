@@ -5,6 +5,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.qms.controller.admin.document.vo.*;
 import cn.iocoder.yudao.module.qms.dal.dataobject.document.QmsDocumentDO;
+import cn.iocoder.yudao.module.qms.framework.electronicsignature.ElectronicSignature;
 import cn.iocoder.yudao.module.qms.service.document.QmsDocumentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -84,6 +85,7 @@ public class QmsDocumentController {
     @PutMapping("/approve")
     @Operation(summary = "审核通过并发布", description = "仅在状态为「待审」时允许，发布后 version + 1")
     @PreAuthorize("@ss.hasPermission('qms:document:approve')")
+    @ElectronicSignature(meaning = "质量文件审核批准并发布", requireReason = true)
     public CommonResult<Boolean> approveDocument(@RequestParam("id") Long id,
                                                  @RequestParam(value = "fileUrl", required = false) String fileUrl) {
         documentService.approveDocument(id, fileUrl);
@@ -93,6 +95,7 @@ public class QmsDocumentController {
     @PutMapping("/reject")
     @Operation(summary = "审核驳回", description = "仅在状态为「待审」时允许，驳回后流转回「草稿」")
     @PreAuthorize("@ss.hasPermission('qms:document:approve')")
+    @ElectronicSignature(meaning = "质量文件审核驳回", requireReason = true)
     public CommonResult<Boolean> rejectDocument(@Valid @RequestBody QmsDocumentRejectReqVO reqVO) {
         documentService.rejectDocument(reqVO.getId(), reqVO.getReason());
         return success(true);

@@ -65,6 +65,10 @@ public interface ErrorCodeConstants {
     ErrorCode ELECTRONIC_SIGNATURE_REASON_REQUIRED = new ErrorCode(1_040_109_003, "当前操作需要填写电子签名理由");
     // 认证服务不可用时必须 fail-closed（21 CFR Part 11：签名不可绕过），禁止降级放行
     ErrorCode ELECTRONIC_SIGNATURE_AUTH_SERVICE_UNAVAILABLE = new ErrorCode(1_044_000_050, "电子签名认证服务不可用，操作已拒绝");
+    // 21 CFR Part 11 §11.200(a)(1)：签名必须唯一归属于签署人本人。
+    // 若只校验「凭据有效」而不校验「凭据属于当前会话用户」，则 A 登录后用 B 的账号密码即可通过，
+    // 而日志记录的却是 A，构成签名抵赖（repudiation）与责任错配。
+    ErrorCode ELECTRONIC_SIGNATURE_USER_MISMATCH = new ErrorCode(1_044_000_051, "电子签名账号与当前登录用户不一致，操作已拒绝");
 
     // ========== QMS 计量器具台账（1-040-600-000） ==========
     ErrorCode INSTRUMENT_NOT_EXISTS = new ErrorCode(1_044_000_033, "计量器具不存在");

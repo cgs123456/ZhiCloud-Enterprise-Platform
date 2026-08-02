@@ -7,6 +7,7 @@ import cn.iocoder.yudao.module.qms.controller.admin.eightd.vo.EightDReportPageRe
 import cn.iocoder.yudao.module.qms.controller.admin.eightd.vo.EightDReportRespVO;
 import cn.iocoder.yudao.module.qms.controller.admin.eightd.vo.EightDReportSaveReqVO;
 import cn.iocoder.yudao.module.qms.dal.dataobject.eightd.EightDReportDO;
+import cn.iocoder.yudao.module.qms.framework.electronicsignature.ElectronicSignature;
 import cn.iocoder.yudao.module.qms.service.eightd.EightDReportService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -87,6 +88,7 @@ public class EightDReportController {
     @Operation(summary = "关闭 8D 报告", description = "关闭 8D 报告，流转为 D8 团队表彰/关闭")
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
     @PreAuthorize("@ss.hasPermission('qms:eight-d:update')")
+    @ElectronicSignature(meaning = "8D 报告关闭", requireReason = true)
     public CommonResult<Boolean> closeEightDReport(@RequestParam("id") Long id) {
         eightDReportService.closeEightDReport(id);
         return success(true);

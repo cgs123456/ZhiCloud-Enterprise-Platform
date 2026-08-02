@@ -35,15 +35,30 @@ jobs:
     # 任何重复（含历史遗留）都将失败，作为防回归护栏。
     - name: Error Code Uniqueness Gate
       run: python3 scripts/check_error_codes.py
-    # WMS 写接口方法级鉴权护栏：扫描 yudao-module-wms 全部 Controller（含 controller/app 下的 PDA 端点），
-    # 若存在写操作(POST/PUT/DELETE)缺 @PreAuthorize、或被 @PermitAll 放行为匿名可访问，即失败。
+    # 写接口方法级鉴权护栏：扫描 Controller（含 controller/app 下的 PDA/移动端端点），
+    # 若写操作(POST/PUT/PATCH/DELETE)缺 @PreAuthorize、或被 @PermitAll 放行为匿名可访问，即失败。
     #
     # 必须带 --include-app：早期该门禁默认跳过 controller/app，恰好漏掉了
-    # WmsPda{Pick,Inventory,Receipt}Controller 的类级 @PermitAll（PDA 全量接口匿名可达 + pickerUserId 越权），
+    # WmsPda{Pick,Inventory,Receipt}Controller 与 MesProPdaFeedbackController 的 @PermitAll
+    # （PDA 全量接口匿名可达 + pickerUserId/feedbackUserId 越权），
     # 这个盲区就是阻断级漏洞长期未被发现的直接原因。
-    # 确需匿名的接口（如 PDA 设备登录）登记在 scripts/permitall-allowlist.txt。
-    - name: WMS @PreAuthorize / @PermitAll Gate
+    # 确需匿名的接口（登录入口/第三方回调/无副作用计数）登记在 scripts/permitall-allowlist.txt。
+    #
+    # 两道门禁，职责不同，都要保留：
+    #   1) 全仓门禁：[CRITICAL]（匿名可写）零容忍；[GAP]（缺 @PreAuthorize 但仍需登录）
+    #      是 124 个历史存量，用 --max-gaps 棘轮卡住只降不升，清理后按脚本提示下调基线。
+    #      只扫 WMS 是不够的——历史上全仓一度有 51 个匿名写接口在门禁视野之外。
+    #   2) WMS 严格门禁：WMS 已完成整改，[GAP] 必须保持 0，不吃全仓基线的豁免。
+    - name: Full-Repo @PreAuthorize / @PermitAll Gate
+      run: python3 scripts/check_missing_preauthorize.py --include-app --max-gaps 124
+    - name: WMS Strict @PreAuthorize Gate (zero tolerance)
       run: python3 scripts/check_missing_preauthorize.py --module yudao-module-wms --include-app
+    # 电子签名管控点存活门禁（21 CFR Part 11）。
+    # 历史教训：@ElectronicSignature 注解 + 切面实现得非常完整（fail-closed、审计留痕俱全），
+    # 但全仓使用次数是 0——切面从未被触发，是一段死代码，Part 11 管控点在运行时根本不存在。
+    # 「实现正确」与「已经接线」是两件事，人工评审只会检查前者，故必须由门禁盯住后者。
+    - name: Electronic Signature Control Point Gate
+      run: python3 scripts/check_electronic_signature.py
     # 裸抛异常回归门禁：扫描 cn/iocoder/yudao 包内是否残留
     # throw new RuntimeException / IllegalStateException（绕过 ErrorCode 体系）。
     # 全量转换已在本次提交完成（scripts/convert_bare_throws.py，74 处），

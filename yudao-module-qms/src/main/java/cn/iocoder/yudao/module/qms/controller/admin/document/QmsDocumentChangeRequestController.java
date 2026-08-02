@@ -5,6 +5,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.qms.controller.admin.document.vo.*;
 import cn.iocoder.yudao.module.qms.dal.dataobject.document.QmsDocumentChangeRequestDO;
+import cn.iocoder.yudao.module.qms.framework.electronicsignature.ElectronicSignature;
 import cn.iocoder.yudao.module.qms.service.document.QmsDocumentChangeRequestService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -78,6 +79,7 @@ public class QmsDocumentChangeRequestController {
     @Operation(summary = "审核通过变更申请", description = "通过后自动创建新版本文档（修订/新增）或将原文档置为已作废（作废）")
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
     @PreAuthorize("@ss.hasPermission('qms:document:approve')")
+    @ElectronicSignature(meaning = "文件变更申请批准", requireReason = true)
     public CommonResult<Boolean> approveChangeRequest(@RequestParam("id") Long id) {
         changeRequestService.approveChangeRequest(id);
         return success(true);

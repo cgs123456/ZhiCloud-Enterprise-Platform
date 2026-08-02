@@ -5,6 +5,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.qms.controller.admin.audit.vo.*;
 import cn.iocoder.yudao.module.qms.dal.dataobject.audit.QmsAuditNonconformityDO;
+import cn.iocoder.yudao.module.qms.framework.electronicsignature.ElectronicSignature;
 import cn.iocoder.yudao.module.qms.service.audit.QmsAuditNonconformityService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -85,6 +86,7 @@ public class QmsAuditNonconformityController {
     @PutMapping("/verify")
     @Operation(summary = "验证整改效果", description = "仅在状态为「已整改」时允许，流转为「已验证」")
     @PreAuthorize("@ss.hasPermission('qms:audit:verify')")
+    @ElectronicSignature(meaning = "审核不符合项整改验证", requireReason = true)
     public CommonResult<Boolean> verifyNonconformity(@Valid @RequestBody QmsAuditNonconformityVerifyReqVO reqVO) {
         nonconformityService.verifyNonconformity(reqVO);
         return success(true);
@@ -94,6 +96,7 @@ public class QmsAuditNonconformityController {
     @Operation(summary = "关闭不符合项", description = "仅在状态为「已验证」时允许，流转为「已关闭」")
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
     @PreAuthorize("@ss.hasPermission('qms:audit:close')")
+    @ElectronicSignature(meaning = "审核不符合项关闭", requireReason = true)
     public CommonResult<Boolean> closeNonconformity(@RequestParam("id") Long id) {
         nonconformityService.closeNonconformity(id);
         return success(true);

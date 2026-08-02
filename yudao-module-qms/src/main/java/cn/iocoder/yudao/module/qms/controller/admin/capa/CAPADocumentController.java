@@ -9,6 +9,7 @@ import cn.iocoder.yudao.module.qms.controller.admin.capa.vo.CAPADocumentSaveReqV
 import cn.iocoder.yudao.module.qms.controller.admin.capa.vo.CAPAStageTransitionReqVO;
 import cn.iocoder.yudao.module.qms.controller.admin.capa.vo.CAPAVerificationReqVO;
 import cn.iocoder.yudao.module.qms.dal.dataobject.capa.CAPADocumentDO;
+import cn.iocoder.yudao.module.qms.framework.electronicsignature.ElectronicSignature;
 import cn.iocoder.yudao.module.qms.service.capa.CAPADocumentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -75,6 +76,7 @@ public class CAPADocumentController {
     @Operation(summary = "关闭 CAPA 文档", description = "仅在阶段为「有效性验证」且验证结果为「通过」时允许关闭")
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
     @PreAuthorize("@ss.hasPermission('qms:capa:close')")
+    @ElectronicSignature(meaning = "CAPA 纠正预防措施关闭", requireReason = true)
     public CommonResult<Boolean> closeCAPADocument(@RequestParam("id") Long id) {
         capaDocumentService.closeCAPADocument(id);
         return success(true);

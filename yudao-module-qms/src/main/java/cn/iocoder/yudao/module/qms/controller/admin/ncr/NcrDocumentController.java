@@ -6,6 +6,7 @@ import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.qms.controller.admin.ncr.vo.*;
 import cn.iocoder.yudao.module.qms.dal.dataobject.ncr.NcrDocumentDO;
 import cn.iocoder.yudao.module.qms.dal.dataobject.ncr.NcrMrbRecordDO;
+import cn.iocoder.yudao.module.qms.framework.electronicsignature.ElectronicSignature;
 import cn.iocoder.yudao.module.qms.service.ncr.NcrDocumentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -96,6 +97,7 @@ public class NcrDocumentController {
     @Operation(summary = "关闭 NCR 报告", description = "仅在状态为「已处置」时允许，关闭后流转为「已关闭」")
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
     @PreAuthorize("@ss.hasPermission('qms:ncr:close')")
+    @ElectronicSignature(meaning = "不合格品报告关闭", requireReason = true)
     public CommonResult<Boolean> closeNcrDocument(@RequestParam("id") Long id) {
         ncrDocumentService.closeNcrDocument(id);
         return success(true);

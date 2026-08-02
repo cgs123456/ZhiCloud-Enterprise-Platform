@@ -24,13 +24,14 @@ import cn.iocoder.yudao.module.mes.service.pro.route.MesProRouteService;
 import cn.iocoder.yudao.module.mes.service.pro.task.MesProTaskService;
 import cn.iocoder.yudao.module.mes.service.pro.workorder.MesProWorkOrderService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
-import jakarta.annotation.security.PermitAll;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import static cn.iocoder.yudao.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -45,8 +46,13 @@ import static cn.iocoder.yudao.module.mes.enums.ErrorCodeConstants.PRO_PDA_FEEDB
 /**
  * MES PDA / 工位机报工接口
  *
- * <p>面向 PDA 工位机的简化报工流程，跳过审批直接完成；接口加 {@code @PermitAll}，
- * 由 App 端 token 认证。
+ * <p>面向 PDA 工位机的简化报工流程，跳过审批直接完成。
+ *
+ * <p><b>鉴权说明</b>：本类接口此前统一标注 {@code @PermitAll}，注释声称「由 App 端 token 认证」——
+ * 但 {@code @PermitAll} 的语义恰恰是<b>跳过</b>登录态校验，注释与实现相反，
+ * 实际效果是报工、扫工单、扫设备三个接口对未认证请求完全开放：
+ * 攻击者可匿名灌入伪造报工数据污染产量/工时统计，或枚举全部工单号与工艺路线。
+ * 现已全部改为 {@code @PreAuthorize} 权限校验（权限码见 V76 迁移脚本）。
  *
  * @author 芋道源码
  */
@@ -73,7 +79,7 @@ public class MesProPdaFeedbackController {
 
     @PostMapping("/scan-work-order")
     @Operation(summary = "扫描工单二维码，返回工单信息+当前工序列表")
-    @PermitAll
+    @PreAuthorize("@ss.hasPermission('mes:pda:scan')")
     public CommonResult<MesPdaWorkOrderRespVO> scanWorkOrder(@Valid @RequestBody MesPdaScanWorkOrderReqVO reqVO) {
         // 1. 查询工单
         MesProWorkOrderDO workOrder = workOrderService.getWorkOrder(reqVO.getWorkOrderNo());
@@ -132,23 +138,30 @@ public class MesProPdaFeedbackController {
 
     @PostMapping("/submit-feedback")
     @Operation(summary = "PDA 端提交报工（跳过审批直接完成）")
-    @PermitAll
+    @PreAuthorize("@ss.hasPermission('mes:pda:feedback')")
     public CommonResult<Long> submitFeedback(@Valid @RequestBody MesPdaFeedbackSubmitReqVO reqVO) {
         return success(feedbackService.pdaSubmitFeedback(reqVO));
     }
 
+    /**
+     * 查询「当前登录用户」的报工记录。
+     *
+     * <p>此前该接口是 {@code @PermitAll} + 从请求参数读取 {@code feedbackUserId}，
+     * 等于匿名越权（IDOR）：任何人遍历自增 ID 即可读取全厂人员的报工明细
+     * （含工时、产量、不良数，可反推绩效与产能）。
+     * 现改为从登录态推导用户身份，请求参数不再参与查询。
+     */
     @GetMapping("/my-feedback-list")
     @Operation(summary = "查询当前用户的报工记录")
-    @Parameter(name = "feedbackUserId", description = "报工用户编号", required = true, example = "1")
-    @PermitAll
-    public CommonResult<List<MesProFeedbackRespVO>> myFeedbackList(@RequestParam("feedbackUserId") Long feedbackUserId) {
-        List<MesProFeedbackDO> list = feedbackService.getFeedbackListByUser(feedbackUserId);
+    @PreAuthorize("@ss.hasPermission('mes:pda:feedback')")
+    public CommonResult<List<MesProFeedbackRespVO>> myFeedbackList() {
+        List<MesProFeedbackDO> list = feedbackService.getFeedbackListByUser(getLoginUserId());
         return success(BeanUtils.toBean(list, MesProFeedbackRespVO.class));
     }
 
     @PostMapping("/scan-machinery")
     @Operation(summary = "扫描设备二维码，返回设备状态+当前工单")
-    @PermitAll
+    @PreAuthorize("@ss.hasPermission('mes:pda:scan')")
     public CommonResult<MesPdaMachineryRespVO> scanMachinery(@Valid @RequestBody MesPdaScanMachineryReqVO reqVO) {
         // 1. 查询设备
         MesDvMachineryDO machinery = machineryMapper.selectByCode(reqVO.getMachineryCode());
