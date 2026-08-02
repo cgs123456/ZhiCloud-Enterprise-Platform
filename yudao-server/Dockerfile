@@ -33,7 +33,9 @@ COPY --from=builder /workspace/yudao-server/target/yudao-server.jar app.jar
 ## 设置 TZ 时区
 ENV TZ=Asia/Shanghai
 ## 设置 JAVA_OPTS 环境变量，可通过 docker run -e "JAVA_OPTS=" 进行覆盖
-ENV JAVA_OPTS="-Xms512m -Xmx512m -Djava.security.egd=file:/dev/./urandom"
+## 使用容器感知的内存比例（而非固定 -Xmx512m），避免大导出/高并发场景因堆上限过低而 OOM；
+## 同时保留初始堆比例，缩短冷启动后的 GC 抖动。
+ENV JAVA_OPTS="-XX:InitialRAMPercentage=25 -XX:MaxRAMPercentage=75 -Djava.security.egd=file:/dev/./urandom"
 
 ## 应用参数
 ENV ARGS=""

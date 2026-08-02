@@ -2,6 +2,8 @@ package cn.iocoder.yudao.framework.excel.core.util;
 
 import cn.idev.excel.FastExcelFactory;
 import cn.idev.excel.converters.longconverter.LongStringConverter;
+import cn.iocoder.yudao.framework.common.exception.ServiceException;
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
 import cn.iocoder.yudao.framework.common.util.http.HttpUtils;
 import cn.iocoder.yudao.framework.excel.core.handler.ColumnWidthMatchStyleStrategy;
 import cn.iocoder.yudao.framework.excel.core.handler.SelectSheetWriteHandler;
@@ -20,6 +22,13 @@ import java.util.List;
 public class ExcelUtils {
 
     /**
+     * 单次导出行数硬上限（与 {@code PageSizeNoneLimitInnerInterceptor#MAX_PAGE_SIZE_NONE} 保持一致）。
+     * 超过此量时直接报错，避免超大列表在应用内存堆积导致 OOM；
+     * 超大数据量导出应改用异步导出任务中心，而非一次性写出。
+     */
+    public static final int MAX_EXPORT_ROWS = 100_000;
+
+    /**
      * 将列表以 Excel 响应给前端
      *
      * @param response  响应
@@ -32,6 +41,11 @@ public class ExcelUtils {
      */
     public static <T> void write(HttpServletResponse response, String filename, String sheetName,
                                  Class<T> head, List<T> data) throws IOException {
+        // 安全护栏：防止超大列表导出导致 OOM。超过上限时明确报错，引导调用方缩小查询范围或改用异步导出。
+        if (data != null && data.size() > MAX_EXPORT_ROWS) {
+            throw new ServiceException(GlobalErrorCodeConstants.BAD_REQUEST.getCode(),
+                    "导出数据量过大（上限 " + MAX_EXPORT_ROWS + " 行），请缩小查询范围或改用异步导出任务中心");
+        }
         // 输出 Excel
         FastExcelFactory.write(response.getOutputStream(), head)
                 .autoCloseStream(false) // 不要自动关闭，交给 Servlet 自己处理
