@@ -30,6 +30,11 @@ jobs:
         java-version: ${{ matrix.java }}
         distribution: 'temurin'
         cache: maven
+    # 错误码唯一性门禁：fast-fail 在 mvn verify 之前，避免重复码悄悄合入。
+    # baseline 冻结了已知的 140 处历史冲突（去重依赖 U-6 前端是否硬编码错误码），
+    # 仅对「新增」重复码失败；待去重完成后将 baseline 清空并升级为全量严格检查。
+    - name: Error Code Uniqueness Gate
+      run: python3 scripts/check_error_codes.py --baseline scripts/error_code_conflicts_baseline.txt
     - name: Build with Maven
       run: mvn -B verify --file pom.xml
     - name: Security Check (deploy gate)

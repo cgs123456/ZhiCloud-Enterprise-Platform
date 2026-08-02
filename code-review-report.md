@@ -116,3 +116,25 @@
 ---
 
 *数据来源：本仓静态代码/配置扫描 + 公开资料（RuoYi/JeecgBoot 官方文档、Odoo 技术概览与权限/多公司指南、Salesforce vs Odoo 对比）。对标结论基于公开文档共性归纳，非逐功能逐行比对。*
+
+---
+
+## 附录：分阶段修复执行进度（截至 2026-08-02）
+
+执行策略：按本报告「修复方案」分阶段推进，每阶段完成后 review 确认功能与质量正常，再进入下一阶段。可工程化加固项（护栏/门禁/补测/注解/可观测）全部落地；产品级功能（HR 薪酬考勤、营销自动化、条码/IoT、可视化流程设计器、客户门户）属于 P3 路线图，不臆造。
+
+| 阶段 | 内容 | 状态 | 提交 |
+|---|---|---|---|
+| 1 | AI/BPM 生产 DDL（15+8 表）+ 生成器脚本 | ✅ 已交付 | `5299aab` |
+| 2 | Flyway 幂等迁移 V73/V74（CREATE TABLE IF NOT EXISTS + 租户隔离） | ✅ 已交付 | `5299aab` |
+| 3 | 导出/性能护栏：分页上限拦截器 + ExcelUtils 10万行硬上限 + Dockerfile 容器感知堆 | ✅ 已交付 | `5299aab` |
+| 4 | JaCoCo 门禁武装（wms/mes/bpm service 包 ≥30%）+ crm/erp 核心域补测 | ✅ 已交付 | `636045c` |
+| 5 | 错误码唯一性 CI 门禁 + 140 冲突基线冻结 + 冲突报告 | ✅ 已交付 | 本批次 |
+| 6 | WMS/写接口补 @PreAuthorize 方法级权限注解 | 🔄 进行中 | — |
+| 7 | 可观测性：logback JSON 结构化输出 + Prometheus 告警规则文件 | ⬜ 待启动 | — |
+
+**阶段5 说明（错误码去重）**：
+- 全仓扫描 `*ErrorCodeConstants.java` 共 2033 个定义，发现 **140 处重复码**（跨模块/模块内）。分布：MES↔QMS `10401xxxxx` 段碰撞、ERP `STOCK_OUT_*`/`STOCK_MOVE_*` 6 处共享、AI `KNOWLEDGE_DOCUMENT_FILE_*` 三连、infra `CODEGEN_TABLE_EXISTS`/`CODEGEN_IMPORT_COLUMNS_NULL` 同码 `1001004002` 等。
+- 实际重编号（renumber）**刻意暂缓**：取决于 U-6（前端是否硬编码错误码）。若前端按数字码匹配提示文案，盲目重排会破坏既有交互。故本阶段交付**防回归门禁**而非一次性重排。
+- 门禁机制：`scripts/check_error_codes.py --baseline scripts/error_code_conflicts_baseline.txt`，CI 在 `mvn verify` 前 fast-fail；baseline 冻结已知 140 处，仅对「新增」重复码失败。待 U-6 确认且去重完成后，清空 baseline 即升级为全量严格检查。
+- 完整冲突清单见 `scripts/error_code_conflicts_report.txt`。
