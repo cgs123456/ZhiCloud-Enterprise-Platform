@@ -52,8 +52,8 @@ public interface ErrorCodeConstants {
     ErrorCode RECEIVABLE_PLAN_EXISTS_RECEIVABLE = new ErrorCode(1_020_006_001, "回款计划已经有对应的回款，不能使用");
 
     // ========== 客户管理 1_020_006_000 ==========
-    ErrorCode CUSTOMER_NOT_EXISTS = new ErrorCode(1_020_006_000, "客户不存在");
-    ErrorCode CUSTOMER_OWNER_EXISTS = new ErrorCode(1_020_006_001, "客户【{}】已存在所属负责人");
+    ErrorCode CUSTOMER_NOT_EXISTS = new ErrorCode(1_020_000_006, "客户不存在");
+    ErrorCode CUSTOMER_OWNER_EXISTS = new ErrorCode(1_020_000_007, "客户【{}】已存在所属负责人");
     ErrorCode CUSTOMER_LOCKED = new ErrorCode(1_020_006_002, "客户【{}】状态已锁定");
     ErrorCode CUSTOMER_ALREADY_DEAL = new ErrorCode(1_020_006_003, "客户已交易");
     ErrorCode CUSTOMER_IN_POOL = new ErrorCode(1_020_006_004, "客户【{}】放入公海失败，原因：已经是公海客户");
@@ -96,7 +96,7 @@ public interface ErrorCodeConstants {
     ErrorCode BUSINESS_STATUS_TYPE_NOT_EXISTS = new ErrorCode(1_020_010_000, "商机状态组不存在");
     ErrorCode BUSINESS_STATUS_TYPE_NAME_EXISTS = new ErrorCode(1_020_010_001, "商机状态组的名称已存在");
     ErrorCode BUSINESS_STATUS_UPDATE_FAIL_USED = new ErrorCode(1_020_010_002, "已经被使用的商机状态组，无法进行更新");
-    ErrorCode BUSINESS_STATUS_DELETE_FAIL_USED = new ErrorCode(1_020_010_002, "已经被使用的商机状态组，无法进行删除");
+    ErrorCode BUSINESS_STATUS_DELETE_FAIL_USED = new ErrorCode(1_020_000_008, "已经被使用的商机状态组，无法进行删除");
     ErrorCode BUSINESS_STATUS_NOT_EXISTS = new ErrorCode(1_020_010_003, "商机状态不存在");
     ErrorCode BUSINESS_STATUS_LIST_EMPTY = new ErrorCode(1_020_010_004, "商机状态列表为空，无法设置默认状态");
 

@@ -75,8 +75,8 @@ public interface ErrorCodeConstants {
     ErrorCode SENSITIVE_WORD_DUPLICATED = new ErrorCode(1_040_700_001, "敏感词 '{}' 已存在");
 
     // ========== 表情包 (1-040-800-000) ==========
-    ErrorCode FACE_PACK_NOT_EXISTS = new ErrorCode(1_040_800_000, "表情包不存在");
-    ErrorCode FACE_PACK_HAS_ITEMS = new ErrorCode(1_040_800_001, "表情包下还有表情，无法删除");
+    ErrorCode FACE_PACK_NOT_EXISTS = new ErrorCode(1_043_000_000, "表情包不存在");
+    ErrorCode FACE_PACK_HAS_ITEMS = new ErrorCode(1_043_000_001, "表情包下还有表情，无法删除");
     ErrorCode FACE_PACK_ITEM_NOT_EXISTS = new ErrorCode(1_040_800_002, "表情不存在");
     ErrorCode FACE_USER_ITEM_NOT_EXISTS = new ErrorCode(1_040_800_010, "个人表情不存在");
     ErrorCode FACE_USER_ITEM_NOT_OWN = new ErrorCode(1_040_800_011, "不能操作他人的表情");
@@ -92,9 +92,9 @@ public interface ErrorCodeConstants {
     ErrorCode IM_CHANNEL_MESSAGE_NOT_EXISTS = new ErrorCode(1_040_810_020, "频道消息不存在");
 
     // ========== 实时通话 (1-040-900-000) ==========
-    ErrorCode RTC_NOT_ENABLED = new ErrorCode(1_040_900_000, "通话功能未开启");
-    ErrorCode RTC_SESSION_NOT_EXISTS = new ErrorCode(1_040_900_001, "通话已结束");
-    ErrorCode RTC_PEER_BUSY = new ErrorCode(1_040_900_002, "对方正在通话中");
+    ErrorCode RTC_NOT_ENABLED = new ErrorCode(1_043_000_002, "通话功能未开启");
+    ErrorCode RTC_SESSION_NOT_EXISTS = new ErrorCode(1_043_000_003, "通话已结束");
+    ErrorCode RTC_PEER_BUSY = new ErrorCode(1_043_000_004, "对方正在通话中");
     ErrorCode RTC_SELF_BUSY = new ErrorCode(1_040_900_003, "您正在通话中");
     ErrorCode RTC_NOT_PARTICIPANT = new ErrorCode(1_040_900_004, "您不在该通话中");
     ErrorCode RTC_INVITE_SELF = new ErrorCode(1_040_900_005, "不能呼叫自己");

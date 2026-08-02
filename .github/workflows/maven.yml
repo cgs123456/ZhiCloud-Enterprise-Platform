@@ -31,10 +31,10 @@ jobs:
         distribution: 'temurin'
         cache: maven
     # 错误码唯一性门禁：fast-fail 在 mvn verify 之前，避免重复码悄悄合入。
-    # baseline 冻结了已知的 140 处历史冲突（去重依赖 U-6 前端是否硬编码错误码），
-    # 仅对「新增」重复码失败；待去重完成后将 baseline 清空并升级为全量严格检查。
+    # 全量严格检查——全仓错误码已通过 scripts/renumber_error_codes.py 去重（140 处历史冲突归零），
+    # 任何重复（含历史遗留）都将失败，作为防回归护栏。
     - name: Error Code Uniqueness Gate
-      run: python3 scripts/check_error_codes.py --baseline scripts/error_code_conflicts_baseline.txt
+      run: python3 scripts/check_error_codes.py
     # WMS 写接口方法级鉴权护栏：扫描 yudao-module-wms 的 admin Controller，
     # 若存在写操作(POST/PUT/DELETE)缺 @PreAuthorize 即失败，防止回归。
     # 范围刻意限定 WMS admin（当前 0 缺口，全绿）；PDA/app 端点按本仓约定为

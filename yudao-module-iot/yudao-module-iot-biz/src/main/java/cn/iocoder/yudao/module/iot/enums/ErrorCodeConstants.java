@@ -10,21 +10,21 @@ import cn.iocoder.yudao.framework.common.exception.ErrorCode;
 public interface ErrorCodeConstants {
 
     // ========== 产品相关 1-050-001-000 ============
-    ErrorCode PRODUCT_NOT_EXISTS = new ErrorCode(1_050_001_000, "产品不存在");
-    ErrorCode PRODUCT_KEY_EXISTS = new ErrorCode(1_050_001_001, "产品标识已经存在");
-    ErrorCode PRODUCT_STATUS_NOT_DELETE = new ErrorCode(1_050_001_002, "产品状是发布状态，不允许删除");
-    ErrorCode PRODUCT_STATUS_NOT_ALLOW_THING_MODEL = new ErrorCode(1_050_001_003, "产品状是发布状态，不允许操作物模型");
+    ErrorCode PRODUCT_NOT_EXISTS = new ErrorCode(1_045_000_000, "产品不存在");
+    ErrorCode PRODUCT_KEY_EXISTS = new ErrorCode(1_045_000_001, "产品标识已经存在");
+    ErrorCode PRODUCT_STATUS_NOT_DELETE = new ErrorCode(1_045_000_002, "产品状是发布状态，不允许删除");
+    ErrorCode PRODUCT_STATUS_NOT_ALLOW_THING_MODEL = new ErrorCode(1_045_000_003, "产品状是发布状态，不允许操作物模型");
     ErrorCode PRODUCT_DELETE_FAIL_HAS_DEVICE = new ErrorCode(1_050_001_004, "产品下存在设备，不允许删除");
 
     // ========== 产品物模型 1-050-002-000 ============
-    ErrorCode THING_MODEL_NOT_EXISTS = new ErrorCode(1_050_002_000, "产品物模型不存在");
-    ErrorCode THING_MODEL_EXISTS_BY_PRODUCT_KEY = new ErrorCode(1_050_002_001, "ProductKey 对应的产品物模型已存在");
+    ErrorCode THING_MODEL_NOT_EXISTS = new ErrorCode(1_045_000_004, "产品物模型不存在");
+    ErrorCode THING_MODEL_EXISTS_BY_PRODUCT_KEY = new ErrorCode(1_045_000_005, "ProductKey 对应的产品物模型已存在");
     ErrorCode THING_MODEL_IDENTIFIER_EXISTS = new ErrorCode(1_050_002_002, "存在重复的功能标识符。");
     ErrorCode THING_MODEL_NAME_EXISTS = new ErrorCode(1_050_002_003, "存在重复的功能名称。");
-    ErrorCode THING_MODEL_IDENTIFIER_INVALID = new ErrorCode(1_050_002_003, "产品物模型标识无效");
+    ErrorCode THING_MODEL_IDENTIFIER_INVALID = new ErrorCode(1_045_000_015, "产品物模型标识无效");
 
     // ========== 设备 1-050-003-000 ============
-    ErrorCode DEVICE_NOT_EXISTS = new ErrorCode(1_050_003_000, "设备不存在");
+    ErrorCode DEVICE_NOT_EXISTS = new ErrorCode(1_045_000_006, "设备不存在");
     ErrorCode DEVICE_NAME_EXISTS = new ErrorCode(1_050_003_001, "设备名称在同一产品下必须唯一");
     ErrorCode DEVICE_GATEWAY_HAS_SUB = new ErrorCode(1_050_003_002, "网关设备存在已绑定的子设备，不允许删除");
     ErrorCode DEVICE_KEY_EXISTS = new ErrorCode(1_050_003_003, "设备标识已经存在");
@@ -48,24 +48,24 @@ public interface ErrorCodeConstants {
     ErrorCode DEVICE_REGISTER_ALREADY_EXISTS = new ErrorCode(1_050_003_212, "设备已存在，不允许重复注册");
 
     // ========== 产品分类 1-050-004-000 ==========
-    ErrorCode PRODUCT_CATEGORY_NOT_EXISTS = new ErrorCode(1_050_004_000, "产品分类不存在");
+    ErrorCode PRODUCT_CATEGORY_NOT_EXISTS = new ErrorCode(1_045_000_007, "产品分类不存在");
 
     // ========== 设备分组 1-050-005-000 ==========
-    ErrorCode DEVICE_GROUP_NOT_EXISTS = new ErrorCode(1_050_005_000, "设备分组不存在");
+    ErrorCode DEVICE_GROUP_NOT_EXISTS = new ErrorCode(1_045_000_008, "设备分组不存在");
     ErrorCode DEVICE_GROUP_DELETE_FAIL_DEVICE_EXISTS = new ErrorCode(1_050_005_001, "设备分组下存在设备，不允许删除");
 
     // ========== 设备 Modbus 配置 1-050-006-000 ==========
-    ErrorCode DEVICE_MODBUS_CONFIG_NOT_EXISTS = new ErrorCode(1_050_006_000, "设备 Modbus 连接配置不存在");
-    ErrorCode DEVICE_MODBUS_CONFIG_EXISTS = new ErrorCode(1_050_006_001, "设备 Modbus 连接配置已存在");
+    ErrorCode DEVICE_MODBUS_CONFIG_NOT_EXISTS = new ErrorCode(1_045_000_009, "设备 Modbus 连接配置不存在");
+    ErrorCode DEVICE_MODBUS_CONFIG_EXISTS = new ErrorCode(1_045_000_010, "设备 Modbus 连接配置已存在");
 
     // ========== 设备 Modbus 点位 1-050-007-000 ==========
-    ErrorCode DEVICE_MODBUS_POINT_NOT_EXISTS = new ErrorCode(1_050_007_000, "设备 Modbus 点位配置不存在");
-    ErrorCode DEVICE_MODBUS_POINT_EXISTS = new ErrorCode(1_050_007_001, "设备 Modbus 点位配置已存在");
+    ErrorCode DEVICE_MODBUS_POINT_NOT_EXISTS = new ErrorCode(1_045_000_011, "设备 Modbus 点位配置不存在");
+    ErrorCode DEVICE_MODBUS_POINT_EXISTS = new ErrorCode(1_045_000_012, "设备 Modbus 点位配置已存在");
 
     // ========== OTA 固件相关 1-050-008-000 ==========
 
-    ErrorCode OTA_FIRMWARE_NOT_EXISTS = new ErrorCode(1_050_008_000, "固件信息不存在");
-    ErrorCode OTA_FIRMWARE_PRODUCT_VERSION_DUPLICATE = new ErrorCode(1_050_008_001, "产品版本号重复");
+    ErrorCode OTA_FIRMWARE_NOT_EXISTS = new ErrorCode(1_045_000_013, "固件信息不存在");
+    ErrorCode OTA_FIRMWARE_PRODUCT_VERSION_DUPLICATE = new ErrorCode(1_045_000_014, "产品版本号重复");
 
     // ========== OTA 升级任务相关 1-050-008-100 ==========
 
@@ -73,7 +73,7 @@ public interface ErrorCodeConstants {
     ErrorCode OTA_TASK_CREATE_FAIL_NAME_DUPLICATE = new ErrorCode(1_050_008_101, "创建 OTA 任务失败，原因：任务名称重复");
     ErrorCode OTA_TASK_CREATE_FAIL_DEVICE_FIRMWARE_EXISTS = new ErrorCode(1_050_008_102,
             "创建 OTA 任务失败，原因：设备({})已经是该固件版本");
-    ErrorCode OTA_TASK_CREATE_FAIL_DEVICE_OTA_IN_PROCESS = new ErrorCode(1_050_008_102,
+    ErrorCode OTA_TASK_CREATE_FAIL_DEVICE_OTA_IN_PROCESS = new ErrorCode(1_045_000_016,
             "创建 OTA 任务失败，原因：设备({})已经在升级中...");
     ErrorCode OTA_TASK_CREATE_FAIL_DEVICE_EMPTY = new ErrorCode(1_050_008_103, "创建 OTA 任务失败，原因：没有可升级的设备");
     ErrorCode OTA_TASK_CANCEL_FAIL_STATUS_END = new ErrorCode(1_050_008_104, "取消 OTA 任务失败，原因：任务状态不是进行中");

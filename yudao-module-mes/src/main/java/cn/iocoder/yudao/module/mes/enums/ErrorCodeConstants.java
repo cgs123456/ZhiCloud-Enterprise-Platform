@@ -151,14 +151,14 @@ public interface ErrorCodeConstants {
     ErrorCode CAL_HOLIDAY_NOT_EXISTS = new ErrorCode(1_040_203_000, "假期设置不存在");
 
     // ========== MES 设备管理-设备类型（1-040-300-000） ==========
-    ErrorCode DV_MACHINERY_TYPE_NOT_EXISTS = new ErrorCode(1_040_300_000, "设备类型不存在");
+    ErrorCode DV_MACHINERY_TYPE_NOT_EXISTS = new ErrorCode(1_046_000_000, "设备类型不存在");
     ErrorCode DV_MACHINERY_TYPE_EXITS_CHILDREN = new ErrorCode(1_040_300_001, "存在子类型，无法删除");
-    ErrorCode DV_MACHINERY_TYPE_PARENT_NOT_EXITS = new ErrorCode(1_040_300_002, "父级类型不存在");
-    ErrorCode DV_MACHINERY_TYPE_PARENT_ERROR = new ErrorCode(1_040_300_003, "不能设置自己为父类型");
-    ErrorCode DV_MACHINERY_TYPE_NAME_DUPLICATE = new ErrorCode(1_040_300_004, "同一父类型下已存在该名称");
-    ErrorCode DV_MACHINERY_TYPE_CODE_DUPLICATE = new ErrorCode(1_040_300_005, "设备类型编码已存在");
+    ErrorCode DV_MACHINERY_TYPE_PARENT_NOT_EXITS = new ErrorCode(1_046_000_001, "父级类型不存在");
+    ErrorCode DV_MACHINERY_TYPE_PARENT_ERROR = new ErrorCode(1_046_000_002, "不能设置自己为父类型");
+    ErrorCode DV_MACHINERY_TYPE_NAME_DUPLICATE = new ErrorCode(1_046_000_003, "同一父类型下已存在该名称");
+    ErrorCode DV_MACHINERY_TYPE_CODE_DUPLICATE = new ErrorCode(1_046_000_004, "设备类型编码已存在");
     ErrorCode DV_MACHINERY_TYPE_PARENT_IS_CHILD = new ErrorCode(1_040_300_006, "不能设置自己的子类型为父类型");
-    ErrorCode DV_MACHINERY_TYPE_HAS_MACHINERY = new ErrorCode(1_040_300_007, "该类型下存在设备，无法删除");
+    ErrorCode DV_MACHINERY_TYPE_HAS_MACHINERY = new ErrorCode(1_046_000_005, "该类型下存在设备，无法删除");
 
     // ========== MES 设备管理-设备台账（1-040-301-000） ==========
     ErrorCode DV_MACHINERY_NOT_EXISTS = new ErrorCode(1_040_301_000, "设备不存在");
@@ -230,11 +230,11 @@ public interface ErrorCodeConstants {
     ErrorCode DV_SCADA_IOT_MODULE_NOT_ENABLED = new ErrorCode(1_040_308_004, "IoT 模块未启用，SCADA 实时数据不可用");
 
     // ========== MES 工具管理-工具类型（1-040-400-000） ==========
-    ErrorCode TM_TOOL_TYPE_NOT_EXISTS = new ErrorCode(1_040_400_000, "工具类型不存在");
-    ErrorCode TM_TOOL_TYPE_CODE_DUPLICATE = new ErrorCode(1_040_400_001, "工具类型编码已存在");
-    ErrorCode TM_TOOL_TYPE_NAME_DUPLICATE = new ErrorCode(1_040_400_002, "工具类型名称已存在");
-    ErrorCode TM_TOOL_TYPE_HAS_TOOL = new ErrorCode(1_040_400_003, "该工具类型下存在工具，无法删除");
-    ErrorCode TM_TOOL_TYPE_HAS_WORKSTATION_TOOL = new ErrorCode(1_040_400_004, "该工具类型已被工作站工装资源引用，无法删除");
+    ErrorCode TM_TOOL_TYPE_NOT_EXISTS = new ErrorCode(1_046_000_006, "工具类型不存在");
+    ErrorCode TM_TOOL_TYPE_CODE_DUPLICATE = new ErrorCode(1_046_000_007, "工具类型编码已存在");
+    ErrorCode TM_TOOL_TYPE_NAME_DUPLICATE = new ErrorCode(1_046_000_008, "工具类型名称已存在");
+    ErrorCode TM_TOOL_TYPE_HAS_TOOL = new ErrorCode(1_046_000_009, "该工具类型下存在工具，无法删除");
+    ErrorCode TM_TOOL_TYPE_HAS_WORKSTATION_TOOL = new ErrorCode(1_046_000_010, "该工具类型已被工作站工装资源引用，无法删除");
 
     // ========== MES 工具管理-工具台账（1-040-401-000） ==========
     ErrorCode TM_TOOL_NOT_EXISTS = new ErrorCode(1_040_401_000, "工具不存在");
@@ -243,10 +243,10 @@ public interface ErrorCodeConstants {
 
     // ========== MES 生产管理-工序（1-040-500-000） ==========
     ErrorCode PRO_PROCESS_NOT_EXISTS = new ErrorCode(1_040_500_000, "工序不存在");
-    ErrorCode PRO_PROCESS_CODE_EXISTS = new ErrorCode(1_040_500_001, "工序编码已存在");
+    ErrorCode PRO_PROCESS_CODE_EXISTS = new ErrorCode(1_046_000_011, "工序编码已存在");
     ErrorCode PRO_PROCESS_NAME_EXISTS = new ErrorCode(1_040_500_002, "工序名称已存在");
-    ErrorCode PRO_PROCESS_USED_BY_ROUTE = new ErrorCode(1_040_500_003, "工序已被工艺路线引用，无法删除");
-    ErrorCode PRO_PROCESS_IS_DISABLE = new ErrorCode(1_040_500_004, "工序已禁用");
+    ErrorCode PRO_PROCESS_USED_BY_ROUTE = new ErrorCode(1_046_000_012, "工序已被工艺路线引用，无法删除");
+    ErrorCode PRO_PROCESS_IS_DISABLE = new ErrorCode(1_046_000_013, "工序已禁用");
     // ========== MES 生产管理-工序内容（1-040-500-100） ==========
     ErrorCode PRO_PROCESS_CONTENT_NOT_EXISTS = new ErrorCode(1_040_500_100, "工序内容不存在");
 
@@ -342,9 +342,9 @@ public interface ErrorCodeConstants {
 
     // ========== MES 生产管理-MRP 物料需求计划（1-040-510-000） ==========
     ErrorCode PRO_MRP_PLAN_NOT_EXISTS = new ErrorCode(1_040_510_000, "MRP 计划不存在");
-    ErrorCode PRO_MRP_PLAN_WORK_ORDER_EMPTY = new ErrorCode(1_040_510_001, "MRP 计算的生产工单不能为空");
-    ErrorCode PRO_MRP_PLAN_NOT_DRAFT = new ErrorCode(1_040_510_002, "只有草稿状态的 MRP 计划才能执行计算");
-    ErrorCode PRO_MRP_PLAN_NOT_CALCULATED = new ErrorCode(1_040_510_003, "只有已计算状态的 MRP 计划才能确认");
+    ErrorCode PRO_MRP_PLAN_WORK_ORDER_EMPTY = new ErrorCode(1_046_000_015, "MRP 计算的生产工单不能为空");
+    ErrorCode PRO_MRP_PLAN_NOT_DRAFT = new ErrorCode(1_046_000_016, "只有草稿状态的 MRP 计划才能执行计算");
+    ErrorCode PRO_MRP_PLAN_NOT_CALCULATED = new ErrorCode(1_046_000_017, "只有已计算状态的 MRP 计划才能确认");
 
     // ========== MES 生产管理-返工工单（1-040-511-000） ==========
     // 注：原任务建议使用 1-040-700-000 段，但该段已被 WM_WAREHOUSE 占用，故改用 PRO 子域内 1-040-511-000 段以避免冲突
@@ -370,7 +370,7 @@ public interface ErrorCodeConstants {
 
     // ========== MES 质量管理-质检方案（1-040-600-000） ==========
     ErrorCode QC_TEMPLATE_NOT_EXISTS = new ErrorCode(1_040_600_000, "质检方案不存在");
-    ErrorCode QC_TEMPLATE_CODE_DUPLICATE = new ErrorCode(1_040_600_001, "质检方案编号已存在");
+    ErrorCode QC_TEMPLATE_CODE_DUPLICATE = new ErrorCode(1_046_000_014, "质检方案编号已存在");
     // ========== MES 质量管理-质检方案检测指标项（1-040-600-100） ==========
     ErrorCode QC_TEMPLATE_INDICATOR_NOT_EXISTS = new ErrorCode(1_040_600_100, "质检方案检测指标项不存在");
     // ========== MES 质量管理-质检方案产品关联（1-040-600-200） ==========
@@ -447,8 +447,8 @@ public interface ErrorCodeConstants {
     ErrorCode QC_RQC_LINE_NOT_EXISTS = new ErrorCode(1_040_608_100, "退货检验行不存在");
 
     // ========== MES 仓库管理-仓库（1-040-700-000） ==========
-    ErrorCode WM_WAREHOUSE_NOT_EXISTS = new ErrorCode(1_040_700_000, "仓库不存在");
-    ErrorCode WM_WAREHOUSE_CODE_DUPLICATE = new ErrorCode(1_040_700_001, "仓库编码已存在");
+    ErrorCode WM_WAREHOUSE_NOT_EXISTS = new ErrorCode(1_046_000_018, "仓库不存在");
+    ErrorCode WM_WAREHOUSE_CODE_DUPLICATE = new ErrorCode(1_046_000_019, "仓库编码已存在");
     ErrorCode WM_WAREHOUSE_NAME_DUPLICATE = new ErrorCode(1_040_700_002, "仓库名称已存在");
     ErrorCode WM_WAREHOUSE_HAS_LOCATION = new ErrorCode(1_040_700_003, "仓库下存在库区，无法删除");
     ErrorCode WM_WAREHOUSE_HAS_WORKSTATION = new ErrorCode(1_040_700_004, "仓库已被工作站引用，无法删除");
@@ -586,19 +586,19 @@ public interface ErrorCodeConstants {
     ErrorCode WM_TRANSFER_DETAIL_MIXED_GOODS = new ErrorCode(1_040_710_202, "同一目标仓位下已存在其他物料的明细，不允许混货");
 
     // ========== MES 仓库管理-生产退料单（1-040-711-000） ==========
-    ErrorCode WM_RETURN_ISSUE_NOT_EXISTS = new ErrorCode(1_040_710_000, "生产退料单不存在");
-    ErrorCode WM_RETURN_ISSUE_STATUS_INVALID = new ErrorCode(1_040_710_001, "生产退料单状态不正确，无法执行该操作");
-    ErrorCode WM_RETURN_ISSUE_NOT_PREPARE = new ErrorCode(1_040_710_002, "只有草稿状态的退料单才可操作");
-    ErrorCode WM_RETURN_ISSUE_NOT_CONFIRMED = new ErrorCode(1_040_710_003, "只有待检验状态的退料单才可提交");
-    ErrorCode WM_RETURN_ISSUE_NOT_APPROVING = new ErrorCode(1_040_710_004, "只有待上架状态的退料单才可入库上架");
-    ErrorCode WM_RETURN_ISSUE_NOT_APPROVED = new ErrorCode(1_040_710_005, "只有待执行退料状态的退料单才可完成");
-    ErrorCode WM_RETURN_ISSUE_NO_LINE = new ErrorCode(1_040_710_006, "生产退料单至少需要一条行数据");
-    ErrorCode WM_RETURN_ISSUE_DETAIL_QUANTITY_MISMATCH = new ErrorCode(1_040_710_007, "退料单行数量与明细数量不一致");
-    ErrorCode WM_RETURN_ISSUE_CANCEL_NOT_ALLOWED = new ErrorCode(1_040_710_008, "生产退料单已完成或已取消，无法取消");
-    ErrorCode WM_RETURN_ISSUE_LINE_NOT_EXISTS = new ErrorCode(1_040_710_100, "生产退料单行不存在");
-    ErrorCode WM_RETURN_ISSUE_DETAIL_NOT_EXISTS = new ErrorCode(1_040_710_200, "生产退料单明细不存在");
-    ErrorCode WM_RETURN_ISSUE_DETAIL_QUANTITY_INVALID = new ErrorCode(1_040_710_201, "退料明细数量必须大于0");
-    ErrorCode WM_RETURN_ISSUE_DETAIL_QUANTITY_EXCEED = new ErrorCode(1_040_710_202, "退料明细总数量不能超过退料单行数量");
+    ErrorCode WM_RETURN_ISSUE_NOT_EXISTS = new ErrorCode(1_046_000_021, "生产退料单不存在");
+    ErrorCode WM_RETURN_ISSUE_STATUS_INVALID = new ErrorCode(1_046_000_022, "生产退料单状态不正确，无法执行该操作");
+    ErrorCode WM_RETURN_ISSUE_NOT_PREPARE = new ErrorCode(1_046_000_023, "只有草稿状态的退料单才可操作");
+    ErrorCode WM_RETURN_ISSUE_NOT_CONFIRMED = new ErrorCode(1_046_000_024, "只有待检验状态的退料单才可提交");
+    ErrorCode WM_RETURN_ISSUE_NOT_APPROVING = new ErrorCode(1_046_000_025, "只有待上架状态的退料单才可入库上架");
+    ErrorCode WM_RETURN_ISSUE_NOT_APPROVED = new ErrorCode(1_046_000_026, "只有待执行退料状态的退料单才可完成");
+    ErrorCode WM_RETURN_ISSUE_NO_LINE = new ErrorCode(1_046_000_027, "生产退料单至少需要一条行数据");
+    ErrorCode WM_RETURN_ISSUE_DETAIL_QUANTITY_MISMATCH = new ErrorCode(1_046_000_028, "退料单行数量与明细数量不一致");
+    ErrorCode WM_RETURN_ISSUE_CANCEL_NOT_ALLOWED = new ErrorCode(1_046_000_029, "生产退料单已完成或已取消，无法取消");
+    ErrorCode WM_RETURN_ISSUE_LINE_NOT_EXISTS = new ErrorCode(1_046_000_030, "生产退料单行不存在");
+    ErrorCode WM_RETURN_ISSUE_DETAIL_NOT_EXISTS = new ErrorCode(1_046_000_031, "生产退料单明细不存在");
+    ErrorCode WM_RETURN_ISSUE_DETAIL_QUANTITY_INVALID = new ErrorCode(1_046_000_032, "退料明细数量必须大于0");
+    ErrorCode WM_RETURN_ISSUE_DETAIL_QUANTITY_EXCEED = new ErrorCode(1_046_000_033, "退料明细总数量不能超过退料单行数量");
     ErrorCode WM_RETURN_ISSUE_CODE_DUPLICATE = new ErrorCode(1_040_710_203, "退料单编码已存在");
     ErrorCode WM_RETURN_ISSUE_DETAIL_LINE_NOT_MATCH = new ErrorCode(1_040_710_204, "退料明细不属于指定的退料单");
     ErrorCode WM_RETURN_ISSUE_DETAIL_ITEM_MISMATCH = new ErrorCode(1_040_710_205, "退料明细的物料与退料单行的物料不一致");
@@ -641,16 +641,16 @@ public interface ErrorCodeConstants {
     ErrorCode WM_OUTSOURCE_RECEIPT_DETAIL_NOT_EXISTS = new ErrorCode(1_040_713_200, "外协入库明细不存在");
 
     // ========== MES 仓库管理-销售退货单（1-040-713-000） ==========
-    ErrorCode WM_RETURN_SALES_NOT_EXISTS = new ErrorCode(1_040_713_000, "销售退货单不存在");
-    ErrorCode WM_RETURN_SALES_CODE_DUPLICATE = new ErrorCode(1_040_713_001, "销售退货单编码已存在");
-    ErrorCode WM_RETURN_SALES_STATUS_NOT_PREPARE = new ErrorCode(1_040_713_002, "只有草稿状态才允许此操作");
-    ErrorCode WM_RETURN_SALES_STATUS_NOT_APPROVING = new ErrorCode(1_040_713_003, "只有待执行状态才允许执行退货");
-    ErrorCode WM_RETURN_SALES_STATUS_NOT_APPROVED = new ErrorCode(1_040_713_004, "只有待上架状态才允许执行上架");
-    ErrorCode WM_RETURN_SALES_NO_LINE = new ErrorCode(1_040_713_005, "销售退货单至少需要一条行数据");
-    ErrorCode WM_RETURN_SALES_DETAIL_QUANTITY_MISMATCH = new ErrorCode(1_040_713_006, "销售退货单行数量与明细数量不一致");
+    ErrorCode WM_RETURN_SALES_NOT_EXISTS = new ErrorCode(1_046_000_034, "销售退货单不存在");
+    ErrorCode WM_RETURN_SALES_CODE_DUPLICATE = new ErrorCode(1_046_000_035, "销售退货单编码已存在");
+    ErrorCode WM_RETURN_SALES_STATUS_NOT_PREPARE = new ErrorCode(1_046_000_036, "只有草稿状态才允许此操作");
+    ErrorCode WM_RETURN_SALES_STATUS_NOT_APPROVING = new ErrorCode(1_046_000_037, "只有待执行状态才允许执行退货");
+    ErrorCode WM_RETURN_SALES_STATUS_NOT_APPROVED = new ErrorCode(1_046_000_038, "只有待上架状态才允许执行上架");
+    ErrorCode WM_RETURN_SALES_NO_LINE = new ErrorCode(1_046_000_039, "销售退货单至少需要一条行数据");
+    ErrorCode WM_RETURN_SALES_DETAIL_QUANTITY_MISMATCH = new ErrorCode(1_046_000_040, "销售退货单行数量与明细数量不一致");
     ErrorCode WM_RETURN_SALES_CANCEL_NOT_ALLOWED = new ErrorCode(1_040_713_007, "销售退货单已完成或已取消，无法取消");
-    ErrorCode WM_RETURN_SALES_LINE_NOT_EXISTS = new ErrorCode(1_040_713_100, "销售退货单行不存在");
-    ErrorCode WM_RETURN_SALES_DETAIL_NOT_EXISTS = new ErrorCode(1_040_713_200, "销售退货单明细不存在");
+    ErrorCode WM_RETURN_SALES_LINE_NOT_EXISTS = new ErrorCode(1_046_000_041, "销售退货单行不存在");
+    ErrorCode WM_RETURN_SALES_DETAIL_NOT_EXISTS = new ErrorCode(1_046_000_042, "销售退货单明细不存在");
     ErrorCode WM_RETURN_SALES_DETAIL_QUANTITY_EXCEED = new ErrorCode(1_040_713_201, "上架明细总数量不能超过退货行数量");
 
     // ========== MES 仓库管理-盘点方案/任务/结果（1-040-714-100） ==========
@@ -811,6 +811,6 @@ public interface ErrorCodeConstants {
     ErrorCode PRO_PDA_FEEDBACK_MACHINERY_NOT_EXISTS = new ErrorCode(1_040_506_104, "设备编码不存在：{}");
 
     // ========== MES 能源消耗（1-040-507-000） ==========
-    ErrorCode MES_ENERGY_CONSUMPTION_NOT_EXISTS = new ErrorCode(1_040_507_000, "能源消耗记录不存在");
+    ErrorCode MES_ENERGY_CONSUMPTION_NOT_EXISTS = new ErrorCode(1_046_000_020, "能源消耗记录不存在");
 
 }

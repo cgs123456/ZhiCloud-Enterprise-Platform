@@ -129,15 +129,15 @@
 | 2 | Flyway 幂等迁移 V73/V74（CREATE TABLE IF NOT EXISTS + 租户隔离） | ✅ 已交付 | `5299aab` |
 | 3 | 导出/性能护栏：分页上限拦截器 + ExcelUtils 10万行硬上限 + Dockerfile 容器感知堆 | ✅ 已交付 | `5299aab` |
 | 4 | JaCoCo 门禁武装（wms/mes/bpm service 包 ≥30%）+ crm/erp 核心域补测 | ✅ 已交付 | `636045c` |
-| 5 | 错误码唯一性 CI 门禁 + 140 冲突基线冻结 + 冲突报告 | ✅ 已交付 | 本批次 |
+| 5 | 错误码唯一性 CI 门禁 + 140 冲突去重（全量重排）+ 门禁收紧为严格 | ✅ 已交付 | 本批次 |
 | 6 | WMS/写接口补 @PreAuthorize 方法级权限注解 | ✅ 已交付 | 本批次 |
 | 7 | 可观测性：logback JSON 结构化输出 + Prometheus 告警规则文件 | ✅ 已交付 | 本批次 |
 
 **阶段5 说明（错误码去重）**：
 - 全仓扫描 `*ErrorCodeConstants.java` 共 2033 个定义，发现 **140 处重复码**（跨模块/模块内）。分布：MES↔QMS `10401xxxxx` 段碰撞、ERP `STOCK_OUT_*`/`STOCK_MOVE_*` 6 处共享、AI `KNOWLEDGE_DOCUMENT_FILE_*` 三连、infra `CODEGEN_TABLE_EXISTS`/`CODEGEN_IMPORT_COLUMNS_NULL` 同码 `1001004002` 等。
-- 实际重编号（renumber）**刻意暂缓**：取决于 U-6（前端是否硬编码错误码）。若前端按数字码匹配提示文案，盲目重排会破坏既有交互。故本阶段交付**防回归门禁**而非一次性重排。
-- 门禁机制：`scripts/check_error_codes.py --baseline scripts/error_code_conflicts_baseline.txt`，CI 在 `mvn verify` 前 fast-fail；baseline 冻结已知 140 处，仅对「新增」重复码失败。待 U-6 确认且去重完成后，清空 baseline 即升级为全量严格检查。
-- 完整冲突清单见 `scripts/error_code_conflicts_report.txt`。
+- U-6 已核查：前端（`yudao-ui` 仅占位脚手架、零硬编码码值）与全仓调用方均按**常量名**引用错误码，唯一按数字字面量断言的测试（`1_050_003_007`）不在冲突列表、不受影响。故用户确认采用**全量重排**策略。
+- 去重执行：`scripts/renumber_error_codes.py` 按精确行号替换数字字面量（常量名不变，调用方零改动）。结果：**149 个常量跨 11 个文件被重排为全局唯一值**，跨模块碰撞模块分配全新空闲前缀（im→43、qms→44、iot→45、mes→46、tms→47），其余模块内冲突在原前缀段内找空闲号。重排后经 `check_error_codes.py` 严格检查（无 baseline）**0 冲突**（共 2033 个定义）。
+- 门禁收紧：`.github/workflows/maven.yml` 的错误码门禁由 `--baseline` 冻结模式升级为**全量严格检查**（任何重复即阻断合并），并随本批次提交；原 `error_code_conflicts_baseline.txt` / `error_code_conflicts_report.txt` 已清理（冲突已归零，不再需要）。
 
 **阶段6 说明（WMS/写接口 @PreAuthorize）**：
 - 经 `scripts/check_missing_preauthorize.py` 精确扫描（修正了注解顺序导致的误报后）：**WMS 模块 admin Controller 共 34 个，写接口(POST/PUT/DELETE) 0 缺口**——全部已带 `@PreAuthorize("@ss.hasPermission('wms:<resource>:<action>')")`。原报告「WMS 写接口缺 @PreAuthorize」属误报（同阶段1 已纠偏的 P0 误报一致）。
