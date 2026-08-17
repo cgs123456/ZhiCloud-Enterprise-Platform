@@ -61,5 +61,9 @@ public class MultiAgentExecutionLogDO extends BaseDO {
      * 执行耗时（毫秒）
      */
     private Long durationMs;
+    /**
+     * 全链路追踪 ID（跨 Worker / Supervisor 排查用，写入 MDC）
+     */
+    private String traceId;
 
 }

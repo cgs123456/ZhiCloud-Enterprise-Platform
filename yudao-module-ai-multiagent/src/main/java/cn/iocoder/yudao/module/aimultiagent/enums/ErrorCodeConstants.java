@@ -15,6 +15,7 @@ public interface ErrorCodeConstants {
     ErrorCode TOPOLOGY_NOT_EXISTS = new ErrorCode(1_042_000_000, "多 Agent 拓扑不存在");
     ErrorCode TOPOLOGY_DISABLE = new ErrorCode(1_042_000_001, "多 Agent 拓扑({})已禁用");
     ErrorCode TOPOLOGY_WORKER_CONFIG_INVALID = new ErrorCode(1_042_000_002, "Worker 配置 JSON 格式不合法");
+    ErrorCode TOPOLOGY_WORKER_NOT_REGISTERED = new ErrorCode(1_042_000_003, "Worker({})未在注册中心找到，请检查拓扑配置");
 
     // ========== 执行日志 1-042-001-000 ==========
     ErrorCode EXECUTION_LOG_NOT_EXISTS = new ErrorCode(1_042_001_000, "执行日志不存在");

@@ -1,18 +1,27 @@
 package cn.iocoder.yudao.module.aimultiagent.service.topology;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.aimultiagent.controller.admin.topology.vo.MultiAgentTopologyPageReqVO;
 import cn.iocoder.yudao.module.aimultiagent.controller.admin.topology.vo.MultiAgentTopologySaveReqVO;
 import cn.iocoder.yudao.module.aimultiagent.dal.dataobject.MultiAgentTopologyDO;
 import cn.iocoder.yudao.module.aimultiagent.dal.mysql.MultiAgentTopologyMapper;
+import cn.iocoder.yudao.module.aimultiagent.model.AgentTopology;
+import cn.iocoder.yudao.module.aimultiagent.service.agent.WorkerAgentRegistry;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.aimultiagent.enums.ErrorCodeConstants.TOPOLOGY_NOT_EXISTS;
+import static cn.iocoder.yudao.module.aimultiagent.enums.ErrorCodeConstants.TOPOLOGY_WORKER_CONFIG_INVALID;
+import static cn.iocoder.yudao.module.aimultiagent.enums.ErrorCodeConstants.TOPOLOGY_WORKER_NOT_REGISTERED;
 
 /**
  * 多 Agent 拓扑配置 Service 实现类
@@ -26,9 +35,18 @@ public class MultiAgentTopologyServiceImpl implements MultiAgentTopologyService 
     @Resource
     private MultiAgentTopologyMapper topologyMapper;
 
+    @Resource
+    private WorkerAgentRegistry workerAgentRegistry;
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     @Override
     public Long createTopology(MultiAgentTopologySaveReqVO createReqVO) {
+        // 0. 校验 Worker 配置（含引用注册中心的存在性），失败即报错，避免运行时才暴露
+        validateWorkerConfig(createReqVO.getWorkerConfig());
         MultiAgentTopologyDO topology = BeanUtils.toBean(createReqVO, MultiAgentTopologyDO.class);
+        // 配置 schema 版本默认 v1
+        topology.setVersion(StrUtil.blankToDefault(topology.getVersion(), "v1"));
         topologyMapper.insert(topology);
         return topology.getId();
     }
@@ -37,8 +55,11 @@ public class MultiAgentTopologyServiceImpl implements MultiAgentTopologyService 
     public void updateTopology(MultiAgentTopologySaveReqVO updateReqVO) {
         // 1. 校验存在
         validateTopologyExists(updateReqVO.getId());
-        // 2. 更新
+        // 2. 校验 Worker 配置（含引用注册中心的存在性）
+        validateWorkerConfig(updateReqVO.getWorkerConfig());
+        // 3. 更新
         MultiAgentTopologyDO topology = BeanUtils.toBean(updateReqVO, MultiAgentTopologyDO.class);
+        topology.setVersion(StrUtil.blankToDefault(topology.getVersion(), "v1"));
         topologyMapper.updateById(topology);
     }
 
@@ -69,6 +90,34 @@ public class MultiAgentTopologyServiceImpl implements MultiAgentTopologyService 
             throw exception(TOPOLOGY_NOT_EXISTS);
         }
         return topology;
+    }
+
+    /**
+     * 校验 Worker 配置 JSON：解析结构、每项 name 非空、且引用的 Worker 在注册中心存在。
+     * 允许为空（表示空 workers），仅做非空时的结构与引用校验，使配置错误在保存时即暴露，而非运行时。
+     */
+    private void validateWorkerConfig(String workerConfigJson) {
+        if (StrUtil.isBlank(workerConfigJson)) {
+            return;
+        }
+        List<AgentTopology.WorkerConfig> workers;
+        try {
+            workers = OBJECT_MAPPER.readValue(workerConfigJson,
+                    OBJECT_MAPPER.getTypeFactory().constructCollectionType(List.class, AgentTopology.WorkerConfig.class));
+        } catch (Exception e) {
+            throw exception(TOPOLOGY_WORKER_CONFIG_INVALID);
+        }
+        if (CollUtil.isEmpty(workers)) {
+            return;
+        }
+        for (AgentTopology.WorkerConfig worker : workers) {
+            if (StrUtil.isBlank(worker.getName())) {
+                throw exception(TOPOLOGY_WORKER_CONFIG_INVALID);
+            }
+            if (workerAgentRegistry.getWorker(worker.getName()) == null) {
+                throw exception(TOPOLOGY_WORKER_NOT_REGISTERED, worker.getName());
+            }
+        }
     }
 
 }

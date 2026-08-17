@@ -49,5 +49,9 @@ public class MultiAgentTopologyDO extends BaseDO {
      * 状态（0启用 1停用）
      */
     private Integer status;
+    /**
+     * 配置 schema 版本（如 v1）
+     */
+    private String version;
 
 }

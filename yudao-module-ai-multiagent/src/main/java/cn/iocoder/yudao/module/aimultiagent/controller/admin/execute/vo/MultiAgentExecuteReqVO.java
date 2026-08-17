@@ -17,7 +17,4 @@ public class MultiAgentExecuteReqVO {
     @NotEmpty(message = "用户输入不能为空")
     private String userInput;
 
-    @Schema(description = "租户 ID", example = "1")
-    private Long tenantId;
-
 }

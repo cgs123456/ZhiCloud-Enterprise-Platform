@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.iocoder.yudao.module.aimultiagent.config.ChatClientHelper;
 import cn.iocoder.yudao.module.aimultiagent.model.AgentResult;
 import cn.iocoder.yudao.module.aimultiagent.model.AgentTask;
+import cn.iocoder.yudao.module.aimultiagent.service.llm.LlmGateway;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -31,8 +32,8 @@ public class DefaultReportWorker extends AbstractWorkerAgent {
 
     private final WorkerAgentRegistry registry;
 
-    public DefaultReportWorker(ChatClientHelper chatClientHelper, WorkerAgentRegistry registry) {
-        super(chatClientHelper);
+    public DefaultReportWorker(ChatClientHelper chatClientHelper, WorkerAgentRegistry registry, LlmGateway llmGateway) {
+        super(chatClientHelper, llmGateway);
         this.registry = registry;
     }
 
@@ -99,16 +100,6 @@ public class DefaultReportWorker extends AbstractWorkerAgent {
             task.getParameters().forEach((k, v) -> message.append("- ").append(k).append(": ").append(v).append("\n"));
         }
         return message.toString();
-    }
-
-    /**
-     * 粗略估算 Token 数（4 字符 ≈ 1 token）
-     */
-    private int estimateTokens(String text) {
-        if (StrUtil.isBlank(text)) {
-            return 0;
-        }
-        return text.length() / 4;
     }
 
 }

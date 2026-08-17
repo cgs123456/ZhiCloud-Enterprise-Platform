@@ -46,6 +46,18 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- WMS / QMS 业务模块：WorkerToolExecutor 真实调用收货单、商户、库存、发货单、质检单 -->
+        <dependency>
+            <groupId>cn.iocoder.boot</groupId>
+            <artifactId>yudao-module-wms</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.iocoder.boot</groupId>
+            <artifactId>yudao-module-qms</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
         <!-- 业务组件 -->
         <dependency>
             <groupId>cn.iocoder.boot</groupId>
@@ -72,6 +84,19 @@
         <dependency>
             <groupId>org.springframework.modulith</groupId>
             <artifactId>spring-modulith-core</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- LLM 调用重试（瞬时失败指数退避），版本由 spring-boot BOM 管理 -->
+        <dependency>
+            <groupId>org.springframework.retry</groupId>
+            <artifactId>spring-retry</artifactId>
+        </dependency>
+
+        <!-- 可观测性指标（Micrometer）；runtime 由 yudao-server 的 Actuator 提供，标记 optional 避免强制传递 -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-core</artifactId>
             <optional>true</optional>
         </dependency>
     </dependencies>

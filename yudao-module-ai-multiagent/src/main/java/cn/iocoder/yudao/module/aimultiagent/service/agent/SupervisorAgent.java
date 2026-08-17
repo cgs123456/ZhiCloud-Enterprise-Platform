@@ -2,14 +2,14 @@ package cn.iocoder.yudao.module.aimultiagent.service.agent;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.iocoder.yudao.module.aimultiagent.config.ChatClientHelper;
 import cn.iocoder.yudao.module.aimultiagent.model.AgentResult;
 import cn.iocoder.yudao.module.aimultiagent.model.AgentTask;
 import cn.iocoder.yudao.module.aimultiagent.model.AgentTopology;
+import cn.iocoder.yudao.module.aimultiagent.service.llm.LlmGateway;
+import cn.iocoder.yudao.module.aimultiagent.service.llm.PromptInjectionGuard;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -19,9 +19,12 @@ import java.util.List;
 /**
  * Supervisor Agent 实现
  *
- * 负责任务拆解（planTasks）和结果汇总（summarize）：
+ * <p>负责任务拆解（planTasks）和结果汇总（summarize）：
  *  1. {@link #planTasks} — 构造系统提示词，让 LLM 输出 JSON 格式的任务列表，解析为 {@link AgentTask}；
  *  2. {@link #summarize} — 构造包含所有 Worker 结果的上下文，让 LLM 生成最终答案。
+ *
+ * <p>LLM 调用统一经 {@link LlmGateway}（注入防护 / 重试 / 限流 / 熔断 / 指标）；
+ * 汇总上下文中不受信任的 worker 输出 / 用户输入经 {@link PromptInjectionGuard} 包裹为惰性数据块。
  *
  * @author yudao
  */
@@ -31,16 +34,16 @@ public class SupervisorAgent {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    private final ChatClientHelper chatClientHelper;
+    private final LlmGateway llmGateway;
 
-    public SupervisorAgent(ChatClientHelper chatClientHelper) {
-        this.chatClientHelper = chatClientHelper;
+    public SupervisorAgent(LlmGateway llmGateway) {
+        this.llmGateway = llmGateway;
     }
 
     /**
      * 任务拆解
      *
-     * 构造系统提示词，让 LLM 基于 {@link AgentTopology} 中的 Worker 列表，
+     * <p>构造系统提示词，让 LLM 基于 {@link AgentTopology} 中的 Worker 列表，
      * 将用户输入拆解为 JSON 格式的任务列表，并解析为 {@link AgentTask}。
      *
      * @param userInput 用户输入
@@ -52,7 +55,7 @@ public class SupervisorAgent {
         String systemPrompt = buildPlanSystemPrompt(topology);
 
         // 2. 调用 LLM
-        String llmOutput = callLlm(systemPrompt, userInput);
+        String llmOutput = llmGateway.call(systemPrompt, userInput, "supervisor");
 
         // 3. 解析 JSON 任务列表
         return parseTasks(llmOutput);
@@ -61,7 +64,7 @@ public class SupervisorAgent {
     /**
      * 结果汇总
      *
-     * 构造包含所有 Worker 结果的上下文，让 LLM 生成最终答案。
+     * <p>构造包含所有 Worker 结果的上下文，让 LLM 生成最终答案。
      *
      * @param userInput 用户原始输入
      * @param results   Worker 执行结果列表
@@ -73,7 +76,7 @@ public class SupervisorAgent {
         String context = buildSummarizeContext(userInput, results);
 
         // 2. 调用 LLM 生成最终答案
-        return callLlm(systemPrompt, context);
+        return llmGateway.call(systemPrompt, context, "supervisor");
     }
 
     // ==================== 内部方法 ====================
@@ -119,10 +122,13 @@ public class SupervisorAgent {
 
     /**
      * 构造结果汇总上下文
+     *
+     * <p>不受信任的 worker 输出 / 用户输入经 {@link PromptInjectionGuard} 包裹为惰性数据块，防范 Prompt 注入。
      */
     private String buildSummarizeContext(String userInput, List<AgentResult> results) {
         StringBuilder context = new StringBuilder();
-        context.append("【用户原始输入】\n").append(userInput).append("\n\n");
+        context.append("【用户原始输入】\n")
+                .append(PromptInjectionGuard.wrapExternalData("user_input", userInput)).append("\n\n");
         context.append("【Worker 执行结果】\n");
         if (CollUtil.isEmpty(results)) {
             context.append("（无 Worker 执行结果）\n");
@@ -131,10 +137,12 @@ public class SupervisorAgent {
                 context.append(StrUtil.format("--- 任务 {} ---\n", result.getTaskId()));
                 if (result.isSuccess()) {
                     context.append("状态: 成功\n");
-                    context.append("输出: ").append(StrUtil.blankToDefault(result.getOutput(), "(空)")).append("\n\n");
+                    context.append("输出: ").append(PromptInjectionGuard.wrapExternalData(
+                            "worker_output:" + result.getTaskId(), StrUtil.blankToDefault(result.getOutput(), "(空)"))).append("\n\n");
                 } else {
                     context.append("状态: 失败\n");
-                    context.append("错误: ").append(StrUtil.blankToDefault(result.getErrorMsg(), "(未知错误)")).append("\n\n");
+                    context.append("错误: ").append(PromptInjectionGuard.wrapExternalData(
+                            "worker_error:" + result.getTaskId(), StrUtil.blankToDefault(result.getErrorMsg(), "(未知错误)"))).append("\n\n");
                 }
             }
         }
@@ -172,18 +180,6 @@ public class SupervisorAgent {
             fallbackList.add(fallback);
             return fallbackList;
         }
-    }
-
-    /**
-     * 调用 LLM
-     */
-    private String callLlm(String systemPrompt, String userMessage) {
-        ChatClient chatClient = chatClientHelper.getChatClient();
-        return chatClient.prompt()
-                .system(systemPrompt)
-                .user(userMessage)
-                .call()
-                .content();
     }
 
 }

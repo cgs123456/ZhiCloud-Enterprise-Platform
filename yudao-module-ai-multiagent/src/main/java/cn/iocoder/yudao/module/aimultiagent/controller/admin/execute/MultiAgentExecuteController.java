@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.aimultiagent.controller.admin.execute;
 
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
+import cn.iocoder.yudao.framework.tenant.core.context.TenantContextHolder;
 import cn.iocoder.yudao.module.aimultiagent.controller.admin.execute.vo.MultiAgentExecuteLogRespVO;
 import cn.iocoder.yudao.module.aimultiagent.controller.admin.execute.vo.MultiAgentExecuteReqVO;
 import cn.iocoder.yudao.module.aimultiagent.dal.dataobject.MultiAgentExecutionLogDO;
@@ -34,8 +35,9 @@ public class MultiAgentExecuteController {
     @Operation(summary = "执行多 Agent 编排")
     @PreAuthorize("@ss.hasPermission('aimultiagent:execute:run')")
     public CommonResult<MultiAgentExecuteLogRespVO> execute(@Valid @RequestBody MultiAgentExecuteReqVO reqVO) {
+        // 租户 ID 一律取自服务端登录上下文（TenantContextHolder），禁止信任请求体传入的 tenantId，防止越权（IDOR）
         MultiAgentExecutionLogDO logDO = executeService.execute(reqVO.getTopologyId(),
-                reqVO.getUserInput(), reqVO.getTenantId());
+                reqVO.getUserInput(), TenantContextHolder.getRequiredTenantId());
         return success(BeanUtils.toBean(logDO, MultiAgentExecuteLogRespVO.class));
     }
 

@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.aimultiagent.controller.admin.react;
 
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
+import cn.iocoder.yudao.module.aimultiagent.config.MultiAgentProperties;
 import cn.iocoder.yudao.module.aimultiagent.controller.admin.react.vo.ReActRunReqVO;
 import cn.iocoder.yudao.module.aimultiagent.service.react.ReActAgent;
 import cn.iocoder.yudao.module.aimultiagent.service.react.ReActResult;
@@ -9,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,13 +37,19 @@ public class ReActAgentController {
     @Resource
     private ReActAgent reActAgent;
 
+    @Autowired(required = false)
+    private MultiAgentProperties properties;
+
     @PostMapping("/run")
     @Operation(summary = "执行 ReAct Agent", description = "基于 Thought → Action → Observation 循环执行任务")
     @PreAuthorize("@ss.hasPermission('aimultiagent:react:run')")
     public CommonResult<ReActResult> run(@Valid @RequestBody ReActRunReqVO reqVO) {
-        int maxSteps = reqVO.getMaxSteps() != null ? reqVO.getMaxSteps() : 10;
-        int maxTokenBudget = reqVO.getMaxTokenBudget() != null ? reqVO.getMaxTokenBudget() : 4000;
-        int timeoutSeconds = reqVO.getTimeoutSeconds() != null ? reqVO.getTimeoutSeconds() : 60;
+        int maxSteps = reqVO.getMaxSteps() != null ? reqVO.getMaxSteps()
+                : (properties != null ? properties.getReact().getMaxSteps() : 10);
+        int maxTokenBudget = reqVO.getMaxTokenBudget() != null ? reqVO.getMaxTokenBudget()
+                : (properties != null ? properties.getReact().getMaxTokenBudget() : 4000);
+        int timeoutSeconds = reqVO.getTimeoutSeconds() != null ? reqVO.getTimeoutSeconds()
+                : (properties != null ? properties.getReact().getTimeoutSeconds() : 60);
         ReActResult result = reActAgent.run(reqVO.getUserInput(), maxSteps, maxTokenBudget, timeoutSeconds);
         return success(result);
     }

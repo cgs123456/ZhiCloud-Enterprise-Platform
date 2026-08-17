@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.aimultiagent.service.agent;
 import cn.hutool.core.util.StrUtil;
 import cn.iocoder.yudao.module.aimultiagent.config.ChatClientHelper;
 import cn.iocoder.yudao.module.aimultiagent.model.AgentResult;
+import cn.iocoder.yudao.module.aimultiagent.service.llm.LlmGateway;
 import cn.iocoder.yudao.module.aimultiagent.model.AgentTask;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -31,10 +32,13 @@ public class ProcurementWorker extends AbstractWorkerAgent {
                     "回答应包含：供应商评估、采购策略、价格谈判要点、风险识别与控制措施。回答请使用中文。";
 
     private final WorkerAgentRegistry registry;
+    private final WorkerToolExecutor workerToolExecutor;
 
-    public ProcurementWorker(ChatClientHelper chatClientHelper, WorkerAgentRegistry registry) {
-        super(chatClientHelper);
+    public ProcurementWorker(ChatClientHelper chatClientHelper, WorkerAgentRegistry registry,
+                             WorkerToolExecutor workerToolExecutor, LlmGateway llmGateway) {
+        super(chatClientHelper, llmGateway);
         this.registry = registry;
+        this.workerToolExecutor = workerToolExecutor;
     }
 
     @PostConstruct
@@ -61,11 +65,11 @@ public class ProcurementWorker extends AbstractWorkerAgent {
     public AgentResult execute(AgentTask task, Long tenantId) {
         long startTime = System.currentTimeMillis();
         try {
-            String userMessage = buildUserMessage(task);
-            String output = callLlm(DEFAULT_SYSTEM_PROMPT, userMessage);
+            RealToolResult ctx = buildPromptWithRealTools(task, tenantId, workerToolExecutor, "采购");
+            String output = callLlm(DEFAULT_SYSTEM_PROMPT, ctx.prompt);
             return AgentResult.builder()
                     .taskId(task.getTaskId())
-                    .success(true)
+                    .success(!ctx.allFailed)
                     .output(output)
                     .tokensUsed(estimateTokens(output))
                     .durationMs(System.currentTimeMillis() - startTime)
@@ -79,20 +83,6 @@ public class ProcurementWorker extends AbstractWorkerAgent {
                     .durationMs(System.currentTimeMillis() - startTime)
                     .build();
         }
-    }
-
-    private String buildUserMessage(AgentTask task) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("请完成以下采购任务：\n").append(task.getDescription());
-        if (task.getParameters() != null && !task.getParameters().isEmpty()) {
-            sb.append("\n\n【任务参数】\n");
-            task.getParameters().forEach((k, v) -> sb.append("- ").append(k).append(": ").append(v).append("\n"));
-        }
-        return sb.toString();
-    }
-
-    private int estimateTokens(String text) {
-        return StrUtil.isBlank(text) ? 0 : text.length() / 4;
     }
 
 }

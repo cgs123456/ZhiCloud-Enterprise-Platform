@@ -3,6 +3,8 @@ package cn.iocoder.yudao.module.aimultiagent.service.react;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.iocoder.yudao.module.aimultiagent.config.ChatClientHelper;
+import cn.iocoder.yudao.module.aimultiagent.config.MultiAgentProperties;
+import cn.iocoder.yudao.module.aimultiagent.service.llm.LlmGateway;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -81,6 +83,12 @@ public class ReActAgent {
     @Autowired(required = false)
     private ChatClientHelper chatClientHelper;
 
+    @Autowired
+    private LlmGateway llmGateway;
+
+    @Autowired(required = false)
+    private MultiAgentProperties properties;
+
     /**
      * Spring AI 自动注册的 ToolCallbackProvider（如 MethodToolCallbackProvider）
      */
@@ -100,7 +108,10 @@ public class ReActAgent {
      * @return 执行结果
      */
     public ReActResult run(String userInput) {
-        return run(userInput, DEFAULT_MAX_STEPS, DEFAULT_MAX_TOKEN_BUDGET, DEFAULT_TIMEOUT_SECONDS);
+        int maxSteps = properties != null ? properties.getReact().getMaxSteps() : DEFAULT_MAX_STEPS;
+        int maxTokenBudget = properties != null ? properties.getReact().getMaxTokenBudget() : DEFAULT_MAX_TOKEN_BUDGET;
+        int timeoutSeconds = properties != null ? properties.getReact().getTimeoutSeconds() : DEFAULT_TIMEOUT_SECONDS;
+        return run(userInput, maxSteps, maxTokenBudget, timeoutSeconds);
     }
 
     /**
@@ -148,16 +159,16 @@ public class ReActAgent {
                 return ReActResult.failure("Token 预算超限（已消耗 " + totalTokenUsage + " > 上限 " + maxTokenBudget + "）",
                         steps, totalTokenUsage);
             }
-            // 4.3 调用 LLM 进行思考
+            // 4.3 调用 LLM 进行思考（经 LlmGateway：注入防护 + 重试 + 限流 + 熔断 + 指标）
             String llmOutput;
             try {
-                llmOutput = callLlm(client, systemPrompt, scratchpad.toString());
+                llmOutput = llmGateway.call(client, systemPrompt, scratchpad.toString(), "react", timeoutSeconds);
             } catch (Exception e) {
                 log.error("[run][LLM 调用失败，step={}]", stepIndex, e);
                 return ReActResult.failure("LLM 调用失败：" + StrUtil.sub(e.getMessage(), 0, 200),
                         steps, totalTokenUsage);
             }
-            int stepTokens = estimateTokens(llmOutput);
+            int stepTokens = llmGateway.estimateTokens(llmOutput);
             totalTokenUsage += stepTokens;
             // 4.4 解析 LLM 输出为 JSON
             ParsedAction parsed;
@@ -327,17 +338,6 @@ public class ReActAgent {
     }
 
     /**
-     * 调用 LLM
-     */
-    private String callLlm(ChatClient client, String systemPrompt, String userMessage) {
-        return client.prompt()
-                .system(systemPrompt)
-                .user(userMessage)
-                .call()
-                .content();
-    }
-
-    /**
      * 解析 LLM 输出为 ParsedAction
      */
     private ParsedAction parseLlmOutput(String llmOutput) {
@@ -426,16 +426,6 @@ public class ReActAgent {
             log.error("[executeTool][工具调用失败，action={}, input={}]", action, StrUtil.sub(input, 0, 100), e);
             return "工具调用失败：" + StrUtil.sub(e.getMessage(), 0, 200);
         }
-    }
-
-    /**
-     * 粗略估算 Token 数（4 字符 ≈ 1 token）
-     */
-    private int estimateTokens(String text) {
-        if (StrUtil.isBlank(text)) {
-            return 0;
-        }
-        return text.length() / 4;
     }
 
     /**

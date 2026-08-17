@@ -21,6 +21,11 @@ public class AgentTopology {
     private String supervisorSystemPrompt;
 
     /**
+     * 配置 schema 版本（如 v1），用于拓扑配置向前兼容校验
+     */
+    private String version;
+
+    /**
      * Worker 配置列表
      */
     private List<WorkerConfig> workers;
