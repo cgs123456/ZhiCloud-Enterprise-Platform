@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.airag.config;
 
 import cn.iocoder.yudao.module.airag.service.RerankerService;
 import cn.iocoder.yudao.module.airag.service.RerankerServiceImpl;
+import cn.iocoder.yudao.module.airag.service.rag.Bm25LexicalRetriever;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.transformers.TransformersEmbeddingModel;
@@ -108,6 +109,23 @@ public class AiragConfiguration {
                 .vectorTableName(DEFAULT_VECTOR_TABLE_NAME)
                 .initializeSchema(true)
                 .build();
+    }
+
+    /**
+     * 创建 BM25 词法检索器 Bean（混合召回的词法路径）。
+     *
+     * <p>仅当 {@code yudao.airag.enabled=true}（向量底表可用）时创建，
+     * 直接复用 PgVectorStore 底表 {@code airag_vector_store} 的 chunk 文本做 Okapi BM25 召回，
+     * 与向量语义路径相互独立，最终由 {@code AiragRagServiceImpl} 做 RRF 融合。
+     *
+     * @param jdbcTemplate Spring 自动注入的 JdbcTemplate
+     * @return Bm25LexicalRetriever 实例
+     */
+    @Bean
+    @ConditionalOnProperty(prefix = "yudao.airag", name = "enabled", havingValue = "true")
+    public Bm25LexicalRetriever bm25LexicalRetriever(JdbcTemplate jdbcTemplate) {
+        log.info("[bm25LexicalRetriever][初始化 BM25 词法检索器，table={}]", DEFAULT_VECTOR_TABLE_NAME);
+        return new Bm25LexicalRetriever(jdbcTemplate, DEFAULT_VECTOR_TABLE_NAME);
     }
 
     /**

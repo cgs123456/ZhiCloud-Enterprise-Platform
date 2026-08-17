@@ -18,7 +18,6 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.reader.tika.TikaDocumentReader;
-import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.ai.vectorstore.filter.Filter;
@@ -39,7 +38,7 @@ import static cn.iocoder.yudao.module.airag.enums.ErrorCodeConstants.*;
 /**
  * AI RAG 核心 Service 实现类
  *
- * 基于 Spring AI 实现：Tika 文档解析 + TokenTextSplitter 分块 + PgVectorStore 向量存储 + ChatClient 回答生成。
+ * 基于 Spring AI 实现：Tika 文档解析 + 语义分块 + PgVectorStore 向量存储（BM25 + 向量双路召回）+ Cross-Encoder 重排 + ChatClient 回答生成。
  *
  * 向量库相关 Bean 通过 {@code yudao.airag.enabled=true} 控制，未启用时相关方法会抛出明确异常。
  *
@@ -64,6 +63,31 @@ public class AiragRagServiceImpl implements AiragRagService {
      * 相似度阈值
      */
     private static final double SEARCH_SIMILARITY_THRESHOLD = 0.5;
+
+    /**
+     * 向量语义路径召回 topK
+     */
+    private static final int VECTOR_TOP_K = 10;
+    /**
+     * BM25 词法路径召回 topK
+     */
+    private static final int BM25_TOP_K = 10;
+    /**
+     * RRF 融合后保留的候选数（送重排前）
+     */
+    private static final int FUSE_TOP_K = 8;
+    /**
+     * RRF 常数 k
+     */
+    private static final int RRF_K = 60;
+    /**
+     * 语义分块：单块目标字符数上限
+     */
+    private static final int CHUNK_MAX_CHARS = 2000;
+    /**
+     * 语义分块：相邻块重叠字符数（上下文衔接）
+     */
+    private static final int CHUNK_OVERLAP_CHARS = 200;
 
     /**
      * 文档分块 ID 前缀，用于向量库删除时按 documentId 定位
@@ -99,6 +123,16 @@ public class AiragRagServiceImpl implements AiragRagService {
     @Autowired(required = false)
     private RerankerService rerankerService;
 
+    /**
+     * 可选 BM25 词法检索器（混合召回的词法路径）。
+     *
+     * <p>由 {@link cn.iocoder.yudao.module.airag.config.AiragConfiguration} 条件加载，
+     * 仅当 {@code yudao.airag.enabled=true}（向量底表可用）时存在；未启用时为 null，
+     * 检索退化为纯向量单路。
+     */
+    @Autowired(required = false)
+    private Bm25LexicalRetriever bm25Retriever;
+
     @Override
     public void importDocument(Long knowledgeId, Long documentId) {
         // 1. 校验向量库可用
@@ -129,9 +163,8 @@ public class AiragRagServiceImpl implements AiragRagService {
                 throw exception(DOCUMENT_FILE_READ_FAIL);
             }
 
-            // 6. TokenTextSplitter 分块
-            TokenTextSplitter splitter = new TokenTextSplitter();
-            List<Document> chunks = splitter.apply(rawDocuments);
+            // 6. 语义分块（按段落 / 标题边界切分，按字符预算合并并保留重叠）
+            List<Document> chunks = semanticChunk(rawDocuments);
             if (CollUtil.isEmpty(chunks)) {
                 throw exception(DOCUMENT_FILE_READ_FAIL);
             }
@@ -189,7 +222,7 @@ public class AiragRagServiceImpl implements AiragRagService {
         // 2. 校验知识库存在（DB 层多租户隔离已拦截跨租户访问）
         knowledgeService.validateKnowledgeExists(knowledgeId);
 
-        // 3. 向量检索（P0-2 修复：必须同时按 knowledge_id + tenant_id 复合过滤，防止跨租户数据泄漏）
+        // 3. 向量语义路径（P0-2 修复：必须同时按 knowledge_id + tenant_id 复合过滤，防止跨租户数据泄漏）
         //    向量库（PgVectorStore）不受 MyBatis Plus 多租户拦截器保护，必须在应用层显式过滤
         Long tenantId = TenantContextHolder.getRequiredTenantId();
         FilterExpressionBuilder builder = new FilterExpressionBuilder();
@@ -199,14 +232,18 @@ public class AiragRagServiceImpl implements AiragRagService {
         ).build();
         SearchRequest request = SearchRequest.builder()
                 .query(question)
-                .topK(SEARCH_TOP_K)
+                .topK(VECTOR_TOP_K)
                 .similarityThreshold(SEARCH_SIMILARITY_THRESHOLD)
                 .filterExpression(filter)
                 .build();
-        List<Document> documents = vectorStore.similaritySearch(request);
-        log.info("[chat][向量检索完成，knowledgeId={}, tenantId={}, 命中 {} 条]", knowledgeId, tenantId, CollUtil.size(documents));
+        List<Document> vectorDocs = vectorStore.similaritySearch(request);
+        log.info("[chat][向量检索完成，knowledgeId={}, tenantId={}, 命中 {} 条]", knowledgeId, tenantId, CollUtil.size(vectorDocs));
 
-        // 可选重排序：若启用了 Reranker（yudao.airag.reranker.enabled=true），对召回结果二次排序以提升注入上下文精度
+        // 4. BM25 词法路径（与向量路径独立）+ RRF 融合，构成「BM25 + 向量双路召回」
+        List<Document> documents = fuseHybrid(question, knowledgeId, tenantId, vectorDocs);
+        log.info("[chat][双路召回融合后 {} 条]", CollUtil.size(documents));
+
+        // 5. 可选重排序：若启用了 Reranker，对融合结果二次排序以提升注入上下文精度
         if (rerankerService != null && CollUtil.isNotEmpty(documents)) {
             documents = rerankerService.rerank(question, documents, SEARCH_TOP_K);
             log.info("[chat][已执行 Reranker 重排序，重排后 {} 条]", CollUtil.size(documents));
@@ -265,6 +302,100 @@ public class AiragRagServiceImpl implements AiragRagService {
                     documentId, tenantId, e.getMessage(), e);
             throw exception(RAG_VECTOR_DELETE_FAIL);
         }
+    }
+
+    /**
+     * 语义 / 结构感知分块：先按段落 / 标题等自然边界切分，再按字符预算合并并保留重叠。
+     *
+     * <p>相比纯 TokenTextSplitter 的等距硬切，本方法尊重文档语义边界（段落、空行），
+     * 避免将一个完整语义单元从中间截断，提升后续 Embedding 与召回质量。
+     */
+    private List<Document> semanticChunk(List<Document> rawDocuments) {
+        StringBuilder sb = new StringBuilder();
+        for (Document d : rawDocuments) {
+            if (d.getText() != null) {
+                sb.append(d.getText()).append("\n\n");
+            }
+        }
+        String text = sb.toString();
+        // 按空行 / 标题边界切分为段落块
+        String[] blocks = text.split("\\n\\s*\\n");
+        List<String> paragraphs = new ArrayList<>();
+        for (String b : blocks) {
+            String trimmed = b.trim();
+            if (!trimmed.isEmpty()) {
+                paragraphs.add(trimmed);
+            }
+        }
+        List<Document> chunks = new ArrayList<>();
+        if (paragraphs.isEmpty()) {
+            if (!text.trim().isEmpty()) {
+                chunks.add(new Document(text.trim()));
+            }
+            return chunks;
+        }
+        StringBuilder cur = new StringBuilder();
+        for (String p : paragraphs) {
+            if (cur.length() > 0 && cur.length() + p.length() + 2 > CHUNK_MAX_CHARS) {
+                chunks.add(new Document(cur.toString().trim()));
+                // 重叠：保留尾部若干字符作为上下文衔接
+                String curStr = cur.toString();
+                int start = Math.max(0, curStr.length() - CHUNK_OVERLAP_CHARS);
+                cur = new StringBuilder(curStr.substring(start).trim());
+            }
+            if (cur.length() > 0) {
+                cur.append("\n\n");
+            }
+            cur.append(p);
+        }
+        if (cur.length() > 0) {
+            chunks.add(new Document(cur.toString().trim()));
+        }
+        return chunks;
+    }
+
+    /**
+     * 双路召回融合：向量语义路径 + BM25 词法路径，使用 Reciprocal Rank Fusion（RRF）合并。
+     *
+     * <p>RRF 仅依赖各路径的排名、无需对向量相似度与 BM25 分数做归一化，
+     * 对异构分数天然鲁棒；融合后再统一送 Cross-Encoder 重排。
+     */
+    private List<Document> fuseHybrid(String question, Long knowledgeId, Long tenantId, List<Document> vectorDocs) {
+        Map<String, Double> rrf = new HashMap<>();
+        Map<String, Document> byId = new HashMap<>();
+
+        int rank = 1;
+        for (Document d : vectorDocs) {
+            accumulateRrf(rrf, byId, d, rank++);
+        }
+
+        if (bm25Retriever != null) {
+            try {
+                List<Document> bm25Docs = bm25Retriever.retrieve(question, knowledgeId, tenantId, BM25_TOP_K);
+                rank = 1;
+                for (Document d : bm25Docs) {
+                    accumulateRrf(rrf, byId, d, rank++);
+                }
+                log.info("[chat][BM25 词法路径命中 {} 条]", CollUtil.size(bm25Docs));
+            } catch (Exception e) {
+                log.warn("[chat][BM25 词法路径异常，已忽略，knowledgeId={}]", knowledgeId, e);
+            }
+        }
+
+        return rrf.entrySet().stream()
+                .sorted((a, b) -> Double.compare(b.getValue(), a.getValue()))
+                .limit(FUSE_TOP_K)
+                .map(e -> byId.get(e.getKey()))
+                .toList();
+    }
+
+    private void accumulateRrf(Map<String, Double> rrf, Map<String, Document> byId, Document doc, int rank) {
+        String id = doc.getId();
+        if (id == null) {
+            id = "doc_" + byId.size();
+        }
+        byId.putIfAbsent(id, doc);
+        rrf.merge(id, 1.0 / (RRF_K + rank), Double::sum);
     }
 
     /**
