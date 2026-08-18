@@ -49,6 +49,10 @@ CREATE TABLE IF NOT EXISTS qms_inspection_order (
     tenant_id BIGINT DEFAULT 0 COMMENT '租户 ID'
 ) COMMENT='QMS 检验单表';
 
+-- ========== P2 乐观锁版本号 ==========
+ALTER TABLE qms_inspection_order
+    ADD COLUMN version BIGINT NOT NULL DEFAULT 0 COMMENT '乐观锁版本号（P2 @Version 并发保护）';
+
 -- ----------------------------
 -- 检验记录表
 -- ----------------------------

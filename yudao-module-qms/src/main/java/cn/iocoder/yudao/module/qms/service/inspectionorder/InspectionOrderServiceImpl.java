@@ -71,7 +71,14 @@ public class InspectionOrderServiceImpl implements InspectionOrderService {
         if (inspectionOrder.getBizId() == null) {
             inspectionOrder.setBizId(createReqVO.getWorkOrderId());
         }
-        // 4. 插入
+        // 4. 幂等（P2 幂等键）：同一业务单据（bizType+bizId）已存在检验单时直接返回已有单据，
+        //    避免上游事件（如工单完工）重复触发创建重复检验单。
+        //    注：不采用全局 (biz_type, biz_id) 唯一索引，以保留合法的「复检/重新检验」能力。
+        InspectionOrderDO existing = inspectionOrderMapper.selectLatestByBiz(inspectionOrder.getBizType(), inspectionOrder.getBizId());
+        if (existing != null) {
+            return existing.getId();
+        }
+        // 5. 插入
         inspectionOrderMapper.insert(inspectionOrder);
         // 返回
         return inspectionOrder.getId();
@@ -80,11 +87,13 @@ public class InspectionOrderServiceImpl implements InspectionOrderService {
     @Override
     public void updateInspectionOrder(InspectionOrderSaveReqVO updateReqVO) {
         // 校验存在
-        validateInspectionOrderExists(updateReqVO.getId());
+        InspectionOrderDO oldOrder = validateInspectionOrderExists(updateReqVO.getId());
         // 更新
         InspectionOrderDO updateObj = BeanUtils.toBean(updateReqVO, InspectionOrderDO.class);
         // 禁止通过通用更新修改状态，状态变更必须走 submitInspection 等状态流转方法
         updateObj.setStatus(null);
+        // P2 @Version 乐观锁：携带已有版本号，避免并发覆盖
+        updateObj.setVersion(oldOrder.getVersion());
         inspectionOrderMapper.updateById(updateObj);
     }
 
@@ -164,6 +173,7 @@ public class InspectionOrderServiceImpl implements InspectionOrderService {
         InspectionOrderDO updateObj = new InspectionOrderDO();
         updateObj.setId(orderId);
         updateObj.setStatus(orderStatus);
+        updateObj.setVersion(order.getVersion());
         updateObj.setInspectTime(LocalDateTime.now());
         inspectionOrderMapper.updateById(updateObj);
     }

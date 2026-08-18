@@ -6,6 +6,7 @@ import cn.iocoder.yudao.module.qms.enums.qms.InspectionTypeEnum;
 import com.baomidou.mybatisplus.annotation.KeySequence;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.Version;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -30,6 +31,11 @@ public class InspectionOrderDO extends TenantBaseDO {
      */
     @TableId
     private Long id;
+    /**
+     * 乐观锁版本号（P2：@Version 并发保护）
+     */
+    @Version
+    private Long version;
     /**
      * 检验单号
      */

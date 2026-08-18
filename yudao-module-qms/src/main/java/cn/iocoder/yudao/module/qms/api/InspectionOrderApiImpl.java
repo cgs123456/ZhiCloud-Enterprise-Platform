@@ -26,4 +26,11 @@ public class InspectionOrderApiImpl implements InspectionOrderApi {
         return order != null && InspectionOrderStatusEnum.PASSED.getStatus().equals(order.getStatus());
     }
 
+    @Override
+    public boolean hasFailedInspection(String bizType, Long bizId) {
+        InspectionOrderDO order = inspectionOrderMapper.selectLatestByBiz(bizType, bizId);
+        // 宽松语义：仅当存在检验单且状态为「检验不通过」时拦截
+        return order != null && InspectionOrderStatusEnum.FAILED.getStatus().equals(order.getStatus());
+    }
+
 }
