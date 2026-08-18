@@ -8,6 +8,8 @@ import cn.iocoder.yudao.module.mes.controller.admin.wm.materialstock.vo.MesWmMat
 import cn.iocoder.yudao.module.mes.dal.dataobject.wm.materialstock.MesWmMaterialStockDO;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Update;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -69,21 +71,23 @@ public interface MesWmMaterialStockMapper extends BaseMapperX<MesWmMaterialStock
 
     /**
      * 增量更新库存数量
+     * <p>
+     * 使用 {@code #{count}} 参数绑定，避免 BigDecimal 拼接产生的科学计数法（如 1E+3）导致 SQL 异常。
+     * 当 checkFlag 为 true 且为扣减（count &lt; 0）时，通过 {@code AND quantity &gt;= abs(count)} 在数据库层原子校验防负库存。
      *
-     * @param id        库存记录编号
-     * @param count     变动数量（正数=增加，负数=扣减）
-     * @param checkFlag 是否校验库存充足（为 true 时扣减不允许变为负数）
-     * @return 影响行数
+     * @return 影响行数（0 表示库存不足被 CAS 拦截）
      */
     default int updateQuantity(Long id, BigDecimal count, boolean checkFlag) {
-        LambdaUpdateWrapper<MesWmMaterialStockDO> updateWrapper = new LambdaUpdateWrapper<MesWmMaterialStockDO>()
-                .eq(MesWmMaterialStockDO::getId, id)
-                .setSql("quantity = quantity + " + count);
-        if (checkFlag && count.compareTo(BigDecimal.ZERO) < 0) {
-            updateWrapper.ge(MesWmMaterialStockDO::getQuantity, count.abs()); // CAS 防负库存
-        }
-        return update(null, updateWrapper);
+        return updateQuantityInternal(id, count, checkFlag, count.abs());
     }
+
+    @Update("<script>"
+            + "UPDATE mes_wm_material_stock SET quantity = quantity + #{count} "
+            + "WHERE id = #{id} "
+            + "<if test='checkFlag and count != null and count.signum() &lt; 0'>AND quantity &gt;= #{absCount}</if>"
+            + "</script>")
+    int updateQuantityInternal(@Param("id") Long id, @Param("count") BigDecimal count,
+                               @Param("checkFlag") boolean checkFlag, @Param("absCount") BigDecimal absCount);
 
     default MesWmMaterialStockDO selectByCompositeKey(Long itemId, Long warehouseId, Long locationId,
                                                        Long areaId, Long batchId) {

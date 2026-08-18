@@ -10,9 +10,11 @@ import cn.iocoder.yudao.module.mes.dal.dataobject.wm.productissue.MesWmProductIs
 import cn.iocoder.yudao.module.mes.dal.dataobject.wm.warehouse.MesWmWarehouseAreaDO;
 import cn.iocoder.yudao.module.mes.dal.dataobject.wm.warehouse.MesWmWarehouseDO;
 import cn.iocoder.yudao.module.mes.dal.dataobject.wm.warehouse.MesWmWarehouseLocationDO;
+import cn.iocoder.yudao.module.mes.dal.mysql.wm.productissue.MesWmProductIssueDetailMapper;
 import cn.iocoder.yudao.module.mes.dal.mysql.wm.productissue.MesWmProductIssueMapper;
 import cn.iocoder.yudao.module.mes.enums.wm.MesWmProductIssueStatusEnum;
 import cn.iocoder.yudao.module.mes.service.md.workstation.MesMdWorkstationService;
+import cn.iocoder.yudao.module.mes.service.pro.workorder.MesProWorkOrderBomService;
 import cn.iocoder.yudao.module.mes.service.pro.workorder.MesProWorkOrderService;
 import cn.iocoder.yudao.module.mes.service.wm.transaction.MesWmTransactionService;
 import cn.iocoder.yudao.module.mes.service.wm.transaction.dto.MesWmTransactionSaveReqDTO;
@@ -53,6 +55,10 @@ public class MesWmProductIssueServiceImplTest extends BaseDbUnitTest {
     @MockitoBean
     private MesProWorkOrderService workOrderService;
     @MockitoBean
+    private MesProWorkOrderBomService workOrderBomService;
+    @MockitoBean
+    private MesWmProductIssueDetailMapper issueDetailMapper;
+    @MockitoBean
     private MesWmTransactionService wmTransactionService;
     @MockitoBean
     private MesWmWarehouseService warehouseService;
@@ -83,6 +89,8 @@ public class MesWmProductIssueServiceImplTest extends BaseDbUnitTest {
                 .thenReturn(new MesWmWarehouseAreaDO().setId(13L));
         // 库存事务默认返回一个 ID
         when(wmTransactionService.createTransaction(any(MesWmTransactionSaveReqDTO.class))).thenReturn(9527L);
+        // 工单 BOM 默认空列表：发料 BOM 累计上限校验提前返回，不拦截正常领料
+        when(workOrderBomService.getWorkOrderBomListByWorkOrderId(anyLong())).thenReturn(Collections.emptyList());
     }
 
     // ==================== 构造数据 ====================

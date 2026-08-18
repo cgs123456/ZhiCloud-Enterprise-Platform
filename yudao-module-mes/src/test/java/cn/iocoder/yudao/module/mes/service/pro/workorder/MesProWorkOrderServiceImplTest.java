@@ -370,10 +370,21 @@ public class MesProWorkOrderServiceImplTest extends BaseDbUnitTest {
     @Test
     public void testUpdateProducedQuantity_success() {
         when(workOrderMapper.selectById(100L)).thenReturn(buildWorkOrder());
+        when(workOrderMapper.updateProducedQuantity(eq(100L), any(BigDecimal.class))).thenReturn(1);
 
         workOrderService.updateProducedQuantity(100L, new BigDecimal("5"));
 
         verify(workOrderMapper).updateProducedQuantity(eq(100L), any(BigDecimal.class));
+    }
+
+    @Test
+    public void testUpdateProducedQuantity_overProduced() {
+        when(workOrderMapper.selectById(100L)).thenReturn(buildWorkOrder());
+        // Mapper 层 CAS 拦截超产：影响行数为 0
+        when(workOrderMapper.updateProducedQuantity(eq(100L), any(BigDecimal.class))).thenReturn(0);
+
+        assertServiceException(() -> workOrderService.updateProducedQuantity(100L, new BigDecimal("999")),
+                PRO_WORK_ORDER_OVER_PRODUCED);
     }
 
     @Test

@@ -276,6 +276,10 @@ public interface ErrorCodeConstants {
     ErrorCode PRO_WORK_ORDER_NOT_CONFIRMED = new ErrorCode(1_040_502_003, "只有已确认状态的工单才能执行此操作");
     ErrorCode PRO_WORK_ORDER_HAS_CHILDREN = new ErrorCode(1_040_502_004, "存在子工单，无法删除");
     ErrorCode PRO_WORK_ORDER_PRODUCT_MISMATCH = new ErrorCode(1_040_502_005, "当前产品物料与生产工单产品不一致");
+    ErrorCode PRO_WORK_ORDER_NOT_DISPATCHED = new ErrorCode(1_040_502_006, "只有已确认状态的工单才能派工");
+    ErrorCode PRO_WORK_ORDER_NOT_REPORTING = new ErrorCode(1_040_502_007, "只有已派工或报工中状态的工单才能开工/完工");
+    ErrorCode PRO_WORK_ORDER_NOT_CLOSED = new ErrorCode(1_040_502_008, "只有已完成状态的工单才能关闭");
+    ErrorCode PRO_WORK_ORDER_OVER_PRODUCED = new ErrorCode(1_040_502_009, "报工累计产量已超过工单计划产量，禁止超产");
     ErrorCode PRO_WORK_ORDER_BOM_NOT_EXISTS = new ErrorCode(1_040_502_100, "生产工单BOM不存在");
     ErrorCode PRO_KITTING_ANALYSIS_WORK_ORDER_BOM_EMPTY = new ErrorCode(1_040_502_200, "生产工单BOM为空，无法执行齐套分析");
 
@@ -558,6 +562,7 @@ public interface ErrorCodeConstants {
     ErrorCode WM_PRODUCT_ISSUE_DETAIL_ITEM_MISMATCH = new ErrorCode(1_040_708_201, "拣货明细的物料与领料单行的物料不一致");
     ErrorCode WM_PRODUCT_ISSUE_DETAIL_LINE_NOT_MATCH = new ErrorCode(1_040_708_202, "拣货明细不属于指定的领料出库单");
     ErrorCode WM_PRODUCT_ISSUE_NO_DETAIL = new ErrorCode(1_040_708_203, "领料出库单没有拣货明细，无法执行领出");
+    ErrorCode WM_PRODUCT_ISSUE_BOM_QUANTITY_EXCEED = new ErrorCode(1_040_708_204, "领料累计数量超过工单 BOM 应发数量（物料编号：{}）");
 
     // ========== MES 仓库管理-生产入库单（1-040-709-000） ==========
     ErrorCode WM_PRODUCT_PRODUCE_NOT_EXISTS = new ErrorCode(1_040_709_000, "生产入库单不存在");

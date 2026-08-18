@@ -176,20 +176,67 @@ public class MesProWorkOrderServiceImpl implements MesProWorkOrderService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void finishWorkOrder(Long id) {
-        // 1. 校验存在 + 只有已确认状态才能完成
+    public void dispatchWorkOrder(Long id) {
+        // 1. 校验存在 + 只有已确认状态才能派工
         MesProWorkOrderDO workOrder = validateWorkOrderExists(id);
         if (ObjUtil.notEqual(workOrder.getStatus(), MesProWorkOrderStatusEnum.CONFIRMED.getStatus())) {
             throw exception(PRO_WORK_ORDER_NOT_CONFIRMED);
         }
 
-        // 2. 级联完成所有关联任务
+        // 2. 更新工单状态为已派工
+        workOrderMapper.updateById(new MesProWorkOrderDO().setId(id)
+                .setStatus(MesProWorkOrderStatusEnum.DISPATCHED.getStatus()));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void startWorkOrder(Long id) {
+        // 1. 校验存在 + 只有已派工状态才能开工
+        MesProWorkOrderDO workOrder = validateWorkOrderExists(id);
+        if (ObjUtil.notEqual(workOrder.getStatus(), MesProWorkOrderStatusEnum.DISPATCHED.getStatus())) {
+            throw exception(PRO_WORK_ORDER_NOT_DISPATCHED);
+        }
+
+        // 2. 更新工单状态为报工中
+        workOrderMapper.updateById(new MesProWorkOrderDO().setId(id)
+                .setStatus(MesProWorkOrderStatusEnum.REPORTING.getStatus()));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void finishWorkOrder(Long id) {
+        // 1. 校验存在
+        MesProWorkOrderDO workOrder = validateWorkOrderExists(id);
+        // 2. 状态机：放行 CONFIRMED / DISPATCHED / REPORTING，拦截 PREPARE / CANCELED / FINISHED / CLOSED
+        //    原实现仅允许 CONFIRMED，导致已派工(DISPATCHED)或报工中(REPORTING)的工单被永久卡死无法完工
+        if (ObjUtil.equal(workOrder.getStatus(), MesProWorkOrderStatusEnum.PREPARE.getStatus())
+                || ObjUtil.equal(workOrder.getStatus(), MesProWorkOrderStatusEnum.CANCELED.getStatus())
+                || ObjUtil.equal(workOrder.getStatus(), MesProWorkOrderStatusEnum.FINISHED.getStatus())
+                || ObjUtil.equal(workOrder.getStatus(), MesProWorkOrderStatusEnum.CLOSED.getStatus())) {
+            throw exception(PRO_WORK_ORDER_NOT_CONFIRMED);
+        }
+
+        // 3. 级联完成所有关联任务
         taskService.finishTaskByOrderId(id);
 
-        // 3. 更新工单状态为已完成
+        // 4. 更新工单状态为已完成
         workOrderMapper.updateById(new MesProWorkOrderDO().setId(id)
                 .setStatus(MesProWorkOrderStatusEnum.FINISHED.getStatus())
                 .setFinishDate(LocalDateTime.now()));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void closeWorkOrder(Long id) {
+        // 1. 校验存在 + 只有已完成状态才能关闭
+        MesProWorkOrderDO workOrder = validateWorkOrderExists(id);
+        if (ObjUtil.notEqual(workOrder.getStatus(), MesProWorkOrderStatusEnum.FINISHED.getStatus())) {
+            throw exception(PRO_WORK_ORDER_NOT_CLOSED);
+        }
+
+        // 2. 更新工单状态为已关闭
+        workOrderMapper.updateById(new MesProWorkOrderDO().setId(id)
+                .setStatus(MesProWorkOrderStatusEnum.CLOSED.getStatus()));
     }
 
     @Override
@@ -241,8 +288,11 @@ public class MesProWorkOrderServiceImpl implements MesProWorkOrderService {
     public void updateProducedQuantity(Long id, BigDecimal incrQuantityProduced) {
         // 校验工单存在
         validateWorkOrderExists(id);
-        // 更新数量
-        workOrderMapper.updateProducedQuantity(id, incrQuantityProduced);
+        // 更新数量（Mapper 层 CAS 拦截超产：影响行数为 0 表示累计产量超过计划产量）
+        int updatedRows = workOrderMapper.updateProducedQuantity(id, incrQuantityProduced);
+        if (updatedRows == 0) {
+            throw exception(PRO_WORK_ORDER_OVER_PRODUCED);
+        }
     }
 
     @Override

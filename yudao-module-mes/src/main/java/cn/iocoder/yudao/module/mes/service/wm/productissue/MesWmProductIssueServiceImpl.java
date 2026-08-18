@@ -12,11 +12,14 @@ import cn.iocoder.yudao.module.mes.dal.dataobject.wm.productissue.MesWmProductIs
 import cn.iocoder.yudao.module.mes.dal.dataobject.wm.productissue.MesWmProductIssueDO;
 import cn.iocoder.yudao.module.mes.dal.dataobject.wm.productissue.MesWmProductIssueLineDO;
 import cn.iocoder.yudao.module.mes.dal.mysql.wm.productissue.MesWmProductIssueMapper;
+import cn.iocoder.yudao.module.mes.dal.dataobject.pro.workorder.MesProWorkOrderBomDO;
+import cn.iocoder.yudao.module.mes.dal.mysql.wm.productissue.MesWmProductIssueDetailMapper;
 import cn.iocoder.yudao.module.mes.enums.MesBizTypeConstants;
 import cn.iocoder.yudao.module.mes.enums.wm.MesWmProductIssueStatusEnum;
 import cn.iocoder.yudao.module.mes.enums.wm.MesWmTransactionTypeEnum;
 import cn.iocoder.yudao.module.mes.service.md.workstation.MesMdWorkstationService;
 import cn.iocoder.yudao.module.mes.service.pro.workorder.MesProWorkOrderService;
+import cn.iocoder.yudao.module.mes.service.pro.workorder.MesProWorkOrderBomService;
 import cn.iocoder.yudao.module.mes.service.wm.transaction.MesWmTransactionService;
 import cn.iocoder.yudao.module.mes.service.wm.transaction.dto.MesWmTransactionSaveReqDTO;
 import cn.iocoder.yudao.module.mes.service.wm.warehouse.MesWmWarehouseAreaService;
@@ -33,6 +36,8 @@ import org.springframework.validation.annotation.Validated;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.mes.enums.ErrorCodeConstants.*;
@@ -55,6 +60,10 @@ public class MesWmProductIssueServiceImpl implements MesWmProductIssueService {
     private MesMdWorkstationService workstationService;
     @Resource
     private MesProWorkOrderService workOrderService;
+    @Resource
+    private MesProWorkOrderBomService workOrderBomService;
+    @Resource
+    private MesWmProductIssueDetailMapper issueDetailMapper;
     @Resource
     private MesWmTransactionService wmTransactionService;
     @Resource
@@ -166,6 +175,9 @@ public class MesWmProductIssueServiceImpl implements MesWmProductIssueService {
             throw exception(WM_PRODUCT_ISSUE_DETAIL_QUANTITY_MISMATCH);
         }
 
+        // 2.1 发料 BOM 累计上限校验：本次发料 + 历史已发 不得超过工单 BOM 应发总量
+        validateIssueNotExceedBom(issue);
+
         // 2. 遍历所有明细，创建库存事务（扣减库存 + 记录流水）
         createTransactionList(issue);
 
@@ -201,6 +213,47 @@ public class MesWmProductIssueServiceImpl implements MesWmProductIssueService {
                     .setBizType(MesBizTypeConstants.WM_ISSUE).setBizId(issue.getId())
                     .setBizCode(issue.getCode()).setBizLineId(detail.getLineId())
                     .setRelatedTransactionId(outTransactionId)); // 关联出库事务
+        }
+    }
+
+    /**
+     * 发料 BOM 累计上限校验
+     * <p>
+     * 工单 BOM 的 {@code quantity} 已在生成时乘以工单计划产量（见 MesProWorkOrderBomServiceImpl#generateWorkOrderBom），
+     * 即为该物料的「应发总量」。累计已发数量来自历史「已完成」领料单的明细。
+     * 当「历史已发 + 本次待发」超过应发总量时抛出 {@link ErrorCodeConstants#WM_PRODUCT_ISSUE_BOM_QUANTITY_EXCEED}。
+     * <p>
+     * 兼容策略：工单无 BOM（如非生产领料）时跳过校验，避免误拦截。
+     */
+    private void validateIssueNotExceedBom(MesWmProductIssueDO issue) {
+        Long workOrderId = issue.getWorkOrderId();
+        if (workOrderId == null) {
+            return;
+        }
+        // 1. 工单 BOM 应发总量（按物料聚合）
+        List<MesProWorkOrderBomDO> bomList = workOrderBomService.getWorkOrderBomListByWorkOrderId(workOrderId);
+        if (CollUtil.isEmpty(bomList)) {
+            return;
+        }
+        Map<Long, BigDecimal> requiredMap = bomList.stream()
+                .collect(Collectors.toMap(MesProWorkOrderBomDO::getItemId, MesProWorkOrderBomDO::getQuantity, BigDecimal::add));
+        // 2. 历史已发（已完成领料单）
+        Map<Long, BigDecimal> issuedMap = issueDetailMapper
+                .selectIssuedQuantityByWorkOrderId(workOrderId, MesWmProductIssueStatusEnum.FINISHED.getStatus())
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> ((Number) row.get("item_id")).longValue(),
+                        row -> (BigDecimal) row.get("issued_quantity"),
+                        BigDecimal::add));
+        // 3. 本次待发明细校验
+        List<MesWmProductIssueDetailDO> details = issueDetailService.getProductIssueDetailListByIssueId(issue.getId());
+        for (MesWmProductIssueDetailDO detail : details) {
+            BigDecimal required = requiredMap.getOrDefault(detail.getItemId(), BigDecimal.ZERO);
+            BigDecimal issued = issuedMap.getOrDefault(detail.getItemId(), BigDecimal.ZERO);
+            BigDecimal afterIssue = issued.add(detail.getQuantity());
+            if (afterIssue.compareTo(required) > 0) {
+                throw exception(WM_PRODUCT_ISSUE_BOM_QUANTITY_EXCEED, detail.getItemId());
+            }
         }
     }
 

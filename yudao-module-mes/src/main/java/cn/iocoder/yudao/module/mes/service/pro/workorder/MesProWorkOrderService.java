@@ -115,6 +115,27 @@ public interface MesProWorkOrderService {
     void finishWorkOrder(Long id);
 
     /**
+     * 派工（已确认 → 已派工）
+     *
+     * @param id 编号
+     */
+    void dispatchWorkOrder(Long id);
+
+    /**
+     * 开工（已派工 → 报工中）
+     *
+     * @param id 编号
+     */
+    void startWorkOrder(Long id);
+
+    /**
+     * 关闭工单（已完成 → 已关闭）
+     *
+     * @param id 编号
+     */
+    void closeWorkOrder(Long id);
+
+    /**
      * 取消工单
      *
      * @param id 编号
