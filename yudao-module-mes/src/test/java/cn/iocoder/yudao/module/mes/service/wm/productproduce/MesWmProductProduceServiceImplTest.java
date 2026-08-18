@@ -18,6 +18,7 @@ import cn.iocoder.yudao.module.mes.service.wm.transaction.MesWmTransactionServic
 import cn.iocoder.yudao.module.mes.service.wm.warehouse.MesWmWarehouseAreaService;
 import cn.iocoder.yudao.module.mes.service.wm.warehouse.MesWmWarehouseLocationService;
 import cn.iocoder.yudao.module.mes.service.wm.warehouse.MesWmWarehouseService;
+import cn.iocoder.yudao.module.qms.api.InspectionOrderApi;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -62,6 +63,8 @@ public class MesWmProductProduceServiceImplTest extends BaseDbUnitTest {
     private MesWmWarehouseLocationService locationService;
     @MockitoBean
     private MesWmWarehouseAreaService areaService;
+    @MockitoBean
+    private InspectionOrderApi inspectionOrderApi;
 
     @Test
     public void testSplitPendingAndFinishProduce_withUnqualified() {
