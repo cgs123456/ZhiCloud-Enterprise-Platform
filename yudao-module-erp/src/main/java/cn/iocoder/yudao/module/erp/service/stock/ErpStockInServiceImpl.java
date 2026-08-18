@@ -144,6 +144,12 @@ public class ErpStockInServiceImpl implements ErpStockInService {
         // 1.2 校验仓库存在
         warehouseService.validWarehouseList(convertSet(
                 list, ErpStockInSaveReqVO.Item::getWarehouseId));
+        // 1.3 校验入库数量必须为正数（防御性：VO @DecimalMin 已在入口拦截，此处兜底防止绕过）
+        for (ErpStockInSaveReqVO.Item item : list) {
+            if (item.getCount() == null || item.getCount().compareTo(BigDecimal.ZERO) <= 0) {
+                throw exception(STOCK_IN_ITEM_COUNT_ERROR);
+            }
+        }
         // 2. 转化为 ErpStockInItemDO 列表
         return convertList(list, o -> BeanUtils.toBean(o, ErpStockInItemDO.class, item -> item
                 .setProductUnitId(productMap.get(item.getProductId()).getUnitId())

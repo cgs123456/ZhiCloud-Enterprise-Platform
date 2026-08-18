@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.erp.controller.admin.stock.vo.in;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -54,6 +55,7 @@ public class ErpStockInSaveReqVO {
 
         @Schema(description = "产品数量", requiredMode = Schema.RequiredMode.REQUIRED, example = "100.00")
         @NotNull(message = "产品数量不能为空")
+        @DecimalMin(value = "0", inclusive = false, message = "产品数量必须大于 0")
         private BigDecimal count;
 
         @Schema(description = "备注", example = "随便")
