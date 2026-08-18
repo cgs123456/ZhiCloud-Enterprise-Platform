@@ -32,4 +32,19 @@ public interface InspectionOrderMapper extends BaseMapperX<InspectionOrderDO> {
         return selectOne(InspectionOrderDO::getOrderNo, orderNo);
     }
 
+    /**
+     * 查询指定业务关联的最新检验单（用于入库前质检卡点）
+     *
+     * @param bizType 业务类型（枚举 {@link cn.iocoder.yudao.module.qms.enums.qms.InspectionBizTypeEnum}）
+     * @param bizId   业务单据 ID
+     * @return 最新检验单，无则 null
+     */
+    default InspectionOrderDO selectLatestByBiz(String bizType, Long bizId) {
+        return selectOne(new LambdaQueryWrapperX<InspectionOrderDO>()
+                .eqIfPresent(InspectionOrderDO::getBizType, bizType)
+                .eqIfPresent(InspectionOrderDO::getBizId, bizId)
+                .orderByDesc(InspectionOrderDO::getId)
+                .last("LIMIT 1"));
+    }
+
 }

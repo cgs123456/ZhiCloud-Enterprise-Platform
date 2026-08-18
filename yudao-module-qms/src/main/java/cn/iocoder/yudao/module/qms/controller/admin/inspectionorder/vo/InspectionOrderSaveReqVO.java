@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.qms.controller.admin.inspectionorder.vo;
 
 import cn.iocoder.yudao.framework.common.validation.InEnum;
+import cn.iocoder.yudao.module.qms.enums.qms.InspectionBizTypeEnum;
 import cn.iocoder.yudao.module.qms.enums.qms.InspectionTypeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
@@ -45,6 +46,19 @@ public class InspectionOrderSaveReqVO {
 
     @Schema(description = "状态", example = "10")
     private Integer status;
+
+    @Schema(description = "AQL 接收数 Ac（缺陷数 <= Ac 判合格）", example = "1")
+    private Integer acceptanceQuantity;
+
+    @Schema(description = "AQL 拒收数 Re（缺陷数 >= Re 判不合格）", example = "2")
+    private Integer rejectQuantity;
+
+    @Schema(description = "业务类型", example = "PURCHASE_IN")
+    @InEnum(InspectionBizTypeEnum.class)
+    private String bizType;
+
+    @Schema(description = "业务单据 ID", example = "2048")
+    private Long bizId;
 
     @Schema(description = "备注", example = "随便")
     private String remark;

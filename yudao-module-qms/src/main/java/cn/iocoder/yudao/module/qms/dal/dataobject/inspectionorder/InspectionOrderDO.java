@@ -71,6 +71,24 @@ public class InspectionOrderDO extends TenantBaseDO {
      */
     private Integer status;
     /**
+     * AQL 接收数 Ac（缺陷数 <= Ac 判合格）
+     */
+    private Integer acceptanceQuantity;
+    /**
+     * AQL 拒收数 Re（缺陷数 >= Re 判不合格）
+     */
+    private Integer rejectQuantity;
+    /**
+     * 业务类型
+     *
+     * 枚举 {@link cn.iocoder.yudao.module.qms.enums.qms.InspectionBizTypeEnum}
+     */
+    private String bizType;
+    /**
+     * 业务单据 ID（与 {@link #bizType} 共同定位关联业务）
+     */
+    private Long bizId;
+    /**
      * 备注
      */
     private String remark;

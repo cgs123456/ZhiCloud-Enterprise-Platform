@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.qms.controller.admin.inspectionrecord.vo;
 
 import cn.iocoder.yudao.framework.common.validation.InEnum;
 import cn.iocoder.yudao.module.qms.enums.qms.InspectionResultEnum;
+import cn.iocoder.yudao.module.qms.enums.qms.InspectionSeverityEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -30,6 +31,11 @@ public class InspectionRecordSaveReqVO {
     @NotNull(message = "检验结果不能为空")
     @InEnum(InspectionResultEnum.class)
     private Integer result;
+
+    @Schema(description = "缺陷严重度", requiredMode = Schema.RequiredMode.REQUIRED, example = "20")
+    @NotNull(message = "缺陷严重度不能为空")
+    @InEnum(InspectionSeverityEnum.class)
+    private Integer severity;
 
     @Schema(description = "检验员", example = "芋头")
     private String inspector;

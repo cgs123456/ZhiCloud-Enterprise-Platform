@@ -127,3 +127,15 @@ CREATE TABLE IF NOT EXISTS qms_eight_d_report (
     deleted BIT(1) DEFAULT 0 COMMENT '是否删除',
     tenant_id BIGINT DEFAULT 0 COMMENT '租户 ID'
 ) COMMENT='QMS 8D 报告表';
+
+-- ======================== QMS 检验单 AQL 判定增强（与 V60 迁移保持一致） ========================
+ALTER TABLE qms_inspection_record
+    ADD COLUMN severity TINYINT NOT NULL DEFAULT 30 COMMENT '缺陷严重度：10-致命(CRITICAL)/20-严重(MAJOR)/30-轻微(MINOR)';
+
+ALTER TABLE qms_inspection_order
+    ADD COLUMN acceptance_quantity INT DEFAULT NULL COMMENT 'AQL 接收数 Ac（缺陷数 <= Ac 判合格）',
+    ADD COLUMN reject_quantity INT DEFAULT NULL COMMENT 'AQL 拒收数 Re（缺陷数 >= Re 判不合格）',
+    ADD COLUMN biz_type VARCHAR(32) DEFAULT NULL COMMENT '业务类型（PURCHASE_IN/PRODUCTION_OUT/STOCK_COUNT/OTHER）',
+    ADD COLUMN biz_id BIGINT DEFAULT NULL COMMENT '业务单据 ID';
+
+CREATE INDEX idx_qms_inspection_order_biz ON qms_inspection_order (biz_type, biz_id);

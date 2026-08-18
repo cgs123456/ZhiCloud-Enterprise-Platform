@@ -8,6 +8,7 @@ import cn.iocoder.yudao.module.qms.dal.mysql.inspectionorder.InspectionOrderMapp
 import cn.iocoder.yudao.module.qms.dal.mysql.inspectionrecord.InspectionRecordMapper;
 import cn.iocoder.yudao.module.qms.enums.qms.InspectionOrderStatusEnum;
 import cn.iocoder.yudao.module.qms.enums.qms.InspectionResultEnum;
+import cn.iocoder.yudao.module.qms.enums.qms.InspectionSeverityEnum;
 import cn.iocoder.yudao.module.qms.enums.qms.InspectionTypeEnum;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Import;
@@ -73,66 +74,99 @@ public class InspectionOrderServiceImplTest extends BaseDbUnitTest {
 
     @Test
     public void test_submitInspection_majorityFail() {
-        // 准备数据：插入一条待检验状态的检验单
+        // 准备数据：插入一条待检验状态的检验单（未配置 AQL，fail-closed）
         InspectionOrderDO order = randomPojo(InspectionOrderDO.class, o -> {
             o.setStatus(InspectionOrderStatusEnum.PENDING.getStatus());
+            o.setAcceptanceQuantity(null); // 未配置 Ac：任何非致命缺陷即拒收
         });
         inspectionOrderMapper.insert(order);
 
-        // 构造检验记录：3条中2条不合格（不合格率 66.7% > 50% 阈值）
+        // 构造检验记录：3条中2条不合格（严重度 MAJOR）
         InspectionRecordSaveReqVO passRecord = new InspectionRecordSaveReqVO();
         passRecord.setOrderId(order.getId());
         passRecord.setItemId(randomLongId());
         passRecord.setResult(InspectionResultEnum.PASS.getResult());
+        passRecord.setSeverity(InspectionSeverityEnum.MAJOR.getSeverity());
 
         InspectionRecordSaveReqVO failRecord1 = new InspectionRecordSaveReqVO();
         failRecord1.setOrderId(order.getId());
         failRecord1.setItemId(randomLongId());
         failRecord1.setResult(InspectionResultEnum.FAIL.getResult());
+        failRecord1.setSeverity(InspectionSeverityEnum.MAJOR.getSeverity());
 
         InspectionRecordSaveReqVO failRecord2 = new InspectionRecordSaveReqVO();
         failRecord2.setOrderId(order.getId());
         failRecord2.setItemId(randomLongId());
         failRecord2.setResult(InspectionResultEnum.FAIL.getResult());
+        failRecord2.setSeverity(InspectionSeverityEnum.MAJOR.getSeverity());
 
         // 调用
         inspectionOrderService.submitInspection(order.getId(), List.of(passRecord, failRecord1, failRecord2));
 
-        // 断言：不合格率 > 50%，检验单状态应为"检验不通过"
+        // 断言：存在不合格记录且未配置 AQL，检验单状态应为"检验不通过"
         InspectionOrderDO updatedOrder = inspectionOrderMapper.selectById(order.getId());
         assertEquals(InspectionOrderStatusEnum.FAILED.getStatus(), updatedOrder.getStatus());
     }
 
     @Test
     public void test_submitInspection_minorityFail() {
-        // 准备数据：插入一条待检验状态的检验单
+        // 准备数据：插入一条待检验状态的检验单（配置 AQL：Ac=1, Re=2）
         InspectionOrderDO order = randomPojo(InspectionOrderDO.class, o -> {
             o.setStatus(InspectionOrderStatusEnum.PENDING.getStatus());
+            o.setAcceptanceQuantity(1); // Ac=1：缺陷数 <= 1 判合格
+            o.setRejectQuantity(2);     // Re=2
         });
         inspectionOrderMapper.insert(order);
 
-        // 构造检验记录：3条中1条不合格（不合格率 33.3% < 50% 阈值）
+        // 构造检验记录：3条中1条不合格（严重度 MINOR）
         InspectionRecordSaveReqVO passRecord1 = new InspectionRecordSaveReqVO();
         passRecord1.setOrderId(order.getId());
         passRecord1.setItemId(randomLongId());
         passRecord1.setResult(InspectionResultEnum.PASS.getResult());
+        passRecord1.setSeverity(InspectionSeverityEnum.MINOR.getSeverity());
 
         InspectionRecordSaveReqVO passRecord2 = new InspectionRecordSaveReqVO();
         passRecord2.setOrderId(order.getId());
         passRecord2.setItemId(randomLongId());
         passRecord2.setResult(InspectionResultEnum.PASS.getResult());
+        passRecord2.setSeverity(InspectionSeverityEnum.MINOR.getSeverity());
 
         InspectionRecordSaveReqVO failRecord = new InspectionRecordSaveReqVO();
         failRecord.setOrderId(order.getId());
         failRecord.setItemId(randomLongId());
         failRecord.setResult(InspectionResultEnum.FAIL.getResult());
+        failRecord.setSeverity(InspectionSeverityEnum.MINOR.getSeverity());
 
         // 调用
         inspectionOrderService.submitInspection(order.getId(), List.of(passRecord1, passRecord2, failRecord));
 
-        // 断言：不合格率 < 50%，检验单状态应为"检验通过"
+        // 断言：缺陷数 1 <= Ac(1)，按 AQL 判合格
         InspectionOrderDO updatedOrder = inspectionOrderMapper.selectById(order.getId());
         assertEquals(InspectionOrderStatusEnum.PASSED.getStatus(), updatedOrder.getStatus());
+    }
+
+    @Test
+    public void test_submitInspection_criticalVeto() {
+        // 准备数据：插入一条待检验状态的检验单（配置宽松 AQL：Ac=5，单条缺陷本应合格）
+        InspectionOrderDO order = randomPojo(InspectionOrderDO.class, o -> {
+            o.setStatus(InspectionOrderStatusEnum.PENDING.getStatus());
+            o.setAcceptanceQuantity(5); // Ac=5：按 AQL 本应合格
+        });
+        inspectionOrderMapper.insert(order);
+
+        // 构造检验记录：仅 1 条致命缺陷（CRITICAL）
+        InspectionRecordSaveReqVO criticalFail = new InspectionRecordSaveReqVO();
+        criticalFail.setOrderId(order.getId());
+        criticalFail.setItemId(randomLongId());
+        criticalFail.setResult(InspectionResultEnum.FAIL.getResult());
+        criticalFail.setSeverity(InspectionSeverityEnum.CRITICAL.getSeverity());
+
+        // 调用
+        inspectionOrderService.submitInspection(order.getId(), List.of(criticalFail));
+
+        // 断言：致命缺陷一票否决，整单"检验不通过"（即使 AQL 宽松）
+        InspectionOrderDO updatedOrder = inspectionOrderMapper.selectById(order.getId());
+        assertEquals(InspectionOrderStatusEnum.FAILED.getStatus(), updatedOrder.getStatus());
     }
 
     @Test

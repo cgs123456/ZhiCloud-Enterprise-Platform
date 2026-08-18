@@ -11,8 +11,10 @@ import cn.iocoder.yudao.module.qms.dal.dataobject.inspectionorder.InspectionOrde
 import cn.iocoder.yudao.module.qms.dal.dataobject.inspectionrecord.InspectionRecordDO;
 import cn.iocoder.yudao.module.qms.dal.mysql.inspectionorder.InspectionOrderMapper;
 import cn.iocoder.yudao.module.qms.dal.mysql.inspectionrecord.InspectionRecordMapper;
+import cn.iocoder.yudao.module.qms.enums.qms.InspectionBizTypeEnum;
 import cn.iocoder.yudao.module.qms.enums.qms.InspectionOrderStatusEnum;
 import cn.iocoder.yudao.module.qms.enums.qms.InspectionResultEnum;
+import cn.iocoder.yudao.module.qms.enums.qms.InspectionSeverityEnum;
 import cn.iocoder.yudao.module.qms.enums.qms.InspectionTypeEnum;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -34,19 +36,6 @@ import static cn.iocoder.yudao.module.qms.enums.ErrorCodeConstants.INSPECTION_OR
 @Service
 @Validated
 public class InspectionOrderServiceImpl implements InspectionOrderService {
-
-    /**
-     * 简化抽样判定：不合格率阈值（不合格记录占比超过此值则整单 FAIL）
-     *
-     * <p>完整版应基于抽样方案（Ac/Re）与缺陷等级（CRITICAL/MAJOR/MINOR）判定：
-     * <ul>
-     *   <li>致命缺陷（severity=CRITICAL）且 FAIL → 整单 FAIL（一票否决）</li>
-     *   <li>统计严重缺陷（MAJOR）和轻微缺陷（MINOR）的不合格数</li>
-     *   <li>若不合格数 >= 接收数 Ac → 整单 FAIL；否则 PASS</li>
-     * </ul>
-     * 待 InspectionRecordDO 增加 severity 字段、InspectionOrderDO 增加 Ac/Re 字段后启用完整判定。
-     */
-    private static final double FAIL_RATE_THRESHOLD = 0.5;
 
     @Resource
     private InspectionOrderMapper inspectionOrderMapper;
@@ -75,7 +64,14 @@ public class InspectionOrderServiceImpl implements InspectionOrderService {
         if (inspectionOrder.getStatus() == null) {
             inspectionOrder.setStatus(InspectionOrderStatusEnum.PENDING.getStatus());
         }
-        // 3. 插入
+        // 3. 业务关联：默认绑定成品工单，支撑入库前质检卡点 isQualified 查询
+        if (inspectionOrder.getBizType() == null) {
+            inspectionOrder.setBizType(InspectionBizTypeEnum.PRODUCTION_OUT.getBizType());
+        }
+        if (inspectionOrder.getBizId() == null) {
+            inspectionOrder.setBizId(createReqVO.getWorkOrderId());
+        }
+        // 4. 插入
         inspectionOrderMapper.insert(inspectionOrder);
         // 返回
         return inspectionOrder.getId();
@@ -138,22 +134,30 @@ public class InspectionOrderServiceImpl implements InspectionOrderService {
             });
             inspectionRecordMapper.insertBatch(recordDOs);
         }
-        // 5. 自动计算检验结果（抽样判定）
-        // 完整判定逻辑（待支持 severity 字段后启用）：
-        //   1) 致命缺陷（severity=CRITICAL）且 FAIL → 整单 FAIL（一票否决）
-        //   2) 统计严重缺陷（MAJOR）和轻微缺陷（MINOR）的不合格数
-        //   3) 若不合格数 >= 接收数 Ac → 整单 FAIL；否则 PASS
-        // 当前简化实现：由于 InspectionRecordDO 暂无 severity 字段、InspectionOrderDO 暂无 Ac/Re 字段，
-        //   采用基于不合格比例的统计判定：不合格（FAIL）记录数占比超过 FAIL_RATE_THRESHOLD 时整单 FAIL；否则 PASS
+        // 5. 基于 AQL（Ac/Re）与缺陷严重度的抽样判定
+        //    - 致命缺陷（CRITICAL）且 FAIL → 整单 FAIL（一票否决）
+        //    - 统计 MAJOR/MINOR 不合格数：未配置 Ac/Re 时 fail-closed（任何非致命缺陷即不合格）；
+        //      配置后按 Ac/Re 判定：缺陷数 > Ac 判不合格（即 >= Re）
+        //    说明：判定采用整数计数，避免原 double 比例判定引入的浮点误差与「半数不良仍合格」错误
         Integer orderStatus = InspectionOrderStatusEnum.PASSED.getStatus();
         if (CollUtil.isNotEmpty(records)) {
-            long totalCount = records.size();
-            long failCount = records.stream()
-                    .filter(record -> InspectionResultEnum.FAIL.getResult().equals(record.getResult()))
+            long criticalFailCount = records.stream()
+                    .filter(record -> InspectionResultEnum.FAIL.getResult().equals(record.getResult())
+                            && InspectionSeverityEnum.CRITICAL.getSeverity().equals(record.getSeverity()))
                     .count();
-            double failRate = (double) failCount / totalCount;
-            if (failRate > FAIL_RATE_THRESHOLD) {
+            long majorMinorFailCount = records.stream()
+                    .filter(record -> InspectionResultEnum.FAIL.getResult().equals(record.getResult())
+                            && !InspectionSeverityEnum.CRITICAL.getSeverity().equals(record.getSeverity()))
+                    .count();
+            if (criticalFailCount > 0) {
+                // 致命缺陷一票否决
                 orderStatus = InspectionOrderStatusEnum.FAILED.getStatus();
+            } else if (majorMinorFailCount > 0) {
+                // 非致命缺陷按 AQL Ac/Re 判定；未配置则 fail-closed（拒收）
+                int acceptanceQuantity = order.getAcceptanceQuantity() == null ? 0 : order.getAcceptanceQuantity();
+                if (majorMinorFailCount > acceptanceQuantity) {
+                    orderStatus = InspectionOrderStatusEnum.FAILED.getStatus();
+                }
             }
         }
         // 6. 更新检验单状态与检验时间

@@ -52,6 +52,13 @@ public class InspectionRecordDO extends TenantBaseDO {
      */
     private Integer result;
     /**
+     * 缺陷严重度
+     *
+     * 枚举 {@link cn.iocoder.yudao.module.qms.enums.qms.InspectionSeverityEnum}
+     * 10-致命(CRITICAL) 20-严重(MAJOR) 30-轻微(MINOR)
+     */
+    private Integer severity;
+    /**
      * 检验员
      */
     private String inspector;

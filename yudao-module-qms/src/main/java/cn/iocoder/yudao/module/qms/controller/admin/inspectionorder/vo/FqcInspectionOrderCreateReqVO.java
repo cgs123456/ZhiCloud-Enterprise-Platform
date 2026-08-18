@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.qms.controller.admin.inspectionorder.vo;
 
+import cn.iocoder.yudao.framework.common.validation.InEnum;
+import cn.iocoder.yudao.module.qms.enums.qms.InspectionBizTypeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -25,6 +27,13 @@ public class FqcInspectionOrderCreateReqVO {
 
     @Schema(description = "批次号", example = "BATCH001")
     private String batchNo;
+
+    @Schema(description = "业务类型（默认 PRODUCTION_OUT）", example = "PRODUCTION_OUT")
+    @InEnum(InspectionBizTypeEnum.class)
+    private String bizType;
+
+    @Schema(description = "业务单据 ID（默认取成品工单 ID）", example = "2048")
+    private Long bizId;
 
     @Schema(description = "检验员", example = "芋头")
     private String inspector;
