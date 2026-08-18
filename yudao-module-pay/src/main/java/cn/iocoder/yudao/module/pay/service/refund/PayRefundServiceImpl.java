@@ -163,7 +163,9 @@ public class PayRefundServiceImpl implements PayRefundService {
         }
 
         // 校验金额，退款金额不能大于原定的金额
-        if (reqDTO.getPrice() + order.getRefundPrice() > order.getPrice()) {
+        // 注意：refundPrice 可能为 null（首笔退款），拆箱前先兜底为 0，避免 NPE
+        int alreadyRefunded = order.getRefundPrice() == null ? 0 : order.getRefundPrice();
+        if (reqDTO.getPrice() + alreadyRefunded > order.getPrice()) {
             throw exception(REFUND_PRICE_EXCEED);
         }
         // 是否有退款中的订单
