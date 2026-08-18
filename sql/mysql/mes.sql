@@ -1253,6 +1253,10 @@ CREATE TABLE IF NOT EXISTS mes_pro_work_order (
     KEY idx_product_id (product_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='MES 生产工单';
 
+-- ========== P2 乐观锁版本号 ==========
+ALTER TABLE mes_pro_work_order
+    ADD COLUMN version BIGINT NOT NULL DEFAULT 0 COMMENT '乐观锁版本号（P2 @Version 并发保护）';
+
 -- ----------------------------
 -- MES 生产工单 BOM（mes_pro_work_order_bom）
 -- ----------------------------

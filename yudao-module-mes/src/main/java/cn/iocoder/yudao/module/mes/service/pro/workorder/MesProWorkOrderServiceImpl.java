@@ -96,6 +96,7 @@ public class MesProWorkOrderServiceImpl implements MesProWorkOrderService {
 
         // 3. 更新
         MesProWorkOrderDO updateObj = BeanUtils.toBean(updateReqVO, MesProWorkOrderDO.class);
+        updateObj.setVersion(oldWorkOrder.getVersion());
         workOrderMapper.updateById(updateObj);
     }
 
@@ -171,7 +172,8 @@ public class MesProWorkOrderServiceImpl implements MesProWorkOrderService {
 
         // 2. 更新状态为已确认
         workOrderMapper.updateById(new MesProWorkOrderDO().setId(id)
-                .setStatus(MesProWorkOrderStatusEnum.CONFIRMED.getStatus()));
+                .setStatus(MesProWorkOrderStatusEnum.CONFIRMED.getStatus())
+                .setVersion(workOrder.getVersion()));
     }
 
     @Override
@@ -185,7 +187,8 @@ public class MesProWorkOrderServiceImpl implements MesProWorkOrderService {
 
         // 2. 更新工单状态为已派工
         workOrderMapper.updateById(new MesProWorkOrderDO().setId(id)
-                .setStatus(MesProWorkOrderStatusEnum.DISPATCHED.getStatus()));
+                .setStatus(MesProWorkOrderStatusEnum.DISPATCHED.getStatus())
+                .setVersion(workOrder.getVersion()));
     }
 
     @Override
@@ -199,7 +202,8 @@ public class MesProWorkOrderServiceImpl implements MesProWorkOrderService {
 
         // 2. 更新工单状态为报工中
         workOrderMapper.updateById(new MesProWorkOrderDO().setId(id)
-                .setStatus(MesProWorkOrderStatusEnum.REPORTING.getStatus()));
+                .setStatus(MesProWorkOrderStatusEnum.REPORTING.getStatus())
+                .setVersion(workOrder.getVersion()));
     }
 
     @Override
@@ -222,7 +226,8 @@ public class MesProWorkOrderServiceImpl implements MesProWorkOrderService {
         // 4. 更新工单状态为已完成
         workOrderMapper.updateById(new MesProWorkOrderDO().setId(id)
                 .setStatus(MesProWorkOrderStatusEnum.FINISHED.getStatus())
-                .setFinishDate(LocalDateTime.now()));
+                .setFinishDate(LocalDateTime.now())
+                .setVersion(workOrder.getVersion()));
     }
 
     @Override
@@ -236,7 +241,8 @@ public class MesProWorkOrderServiceImpl implements MesProWorkOrderService {
 
         // 2. 更新工单状态为已关闭
         workOrderMapper.updateById(new MesProWorkOrderDO().setId(id)
-                .setStatus(MesProWorkOrderStatusEnum.CLOSED.getStatus()));
+                .setStatus(MesProWorkOrderStatusEnum.CLOSED.getStatus())
+                .setVersion(workOrder.getVersion()));
     }
 
     @Override
@@ -254,7 +260,8 @@ public class MesProWorkOrderServiceImpl implements MesProWorkOrderService {
         // 3. 更新工单状态为已取消
         workOrderMapper.updateById(new MesProWorkOrderDO().setId(id)
                 .setStatus(MesProWorkOrderStatusEnum.CANCELED.getStatus())
-                .setCancelDate(LocalDateTime.now()));
+                .setCancelDate(LocalDateTime.now())
+                .setVersion(workOrder.getVersion()));
     }
 
     // ==================== 校验方法 ====================

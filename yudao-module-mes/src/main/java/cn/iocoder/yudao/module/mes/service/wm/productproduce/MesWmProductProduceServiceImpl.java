@@ -26,6 +26,8 @@ import cn.iocoder.yudao.module.mes.service.wm.transaction.dto.MesWmTransactionSa
 import cn.iocoder.yudao.module.mes.service.wm.warehouse.MesWmWarehouseAreaService;
 import cn.iocoder.yudao.module.mes.service.wm.warehouse.MesWmWarehouseLocationService;
 import cn.iocoder.yudao.module.mes.service.wm.warehouse.MesWmWarehouseService;
+import cn.iocoder.yudao.module.qms.api.InspectionOrderApi;
+import cn.iocoder.yudao.module.qms.enums.qms.InspectionBizTypeEnum;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,12 +67,19 @@ public class MesWmProductProduceServiceImpl implements MesWmProductProduceServic
     private MesWmWarehouseLocationService locationService;
     @Resource
     private MesWmWarehouseAreaService areaService;
+    @Resource
+    private InspectionOrderApi inspectionOrderApi;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void finishProductProduce(Long id) {
         // 1.1 校验存在 + 草稿状态
-        validateProductProduceExistsAndPrepare(id);
+        MesWmProductProduceDO produce = validateProductProduceExistsAndPrepare(id);
+        // 1.1.1 质检卡点（P0-3）：若关联工单的 QMS 终检明确判废，禁止完工入库（宽松语义，无检验单不拦截）
+        if (produce.getWorkOrderId() != null
+                && inspectionOrderApi.hasFailedInspection(InspectionBizTypeEnum.PRODUCTION_OUT.getBizType(), produce.getWorkOrderId())) {
+            throw exception(WM_PRODUCT_PRODUCE_QC_FAILED);
+        }
         // 1.2 校验至少有一条行
         List<MesWmProductProduceLineDO> lines = productProduceLineService.getProductProduceLineListByProduceId(id);
         if (CollUtil.isEmpty(lines)) {
