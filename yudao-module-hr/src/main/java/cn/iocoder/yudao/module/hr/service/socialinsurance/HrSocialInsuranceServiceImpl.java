@@ -9,6 +9,7 @@ import cn.iocoder.yudao.module.hr.dal.dataobject.socialinsurance.HrSocialInsuran
 import cn.iocoder.yudao.module.hr.dal.mysql.socialinsurance.HrSocialInsuranceBaseMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
@@ -37,6 +38,7 @@ public class HrSocialInsuranceServiceImpl implements HrSocialInsuranceService {
     private HrSocialInsuranceBaseMapper socialInsuranceBaseMapper;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Long createSocialInsurance(HrSocialInsuranceSaveReqVO createReqVO) {
         validateUnique(createReqVO.getEmployeeId(), createReqVO.getYear(), null);
         HrSocialInsuranceBaseDO socialInsurance = BeanUtils.toBean(createReqVO, HrSocialInsuranceBaseDO.class);
@@ -90,6 +92,7 @@ public class HrSocialInsuranceServiceImpl implements HrSocialInsuranceService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateSocialInsurance(HrSocialInsuranceSaveReqVO updateReqVO) {
         validateExists(updateReqVO.getId());
         validateUnique(updateReqVO.getEmployeeId(), updateReqVO.getYear(), updateReqVO.getId());
@@ -98,6 +101,7 @@ public class HrSocialInsuranceServiceImpl implements HrSocialInsuranceService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteSocialInsurance(Long id) {
         validateExists(id);
         socialInsuranceBaseMapper.deleteById(id);
@@ -122,6 +126,7 @@ public class HrSocialInsuranceServiceImpl implements HrSocialInsuranceService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Long adjustBase(HrSocialInsuranceSaveReqVO reqVO) {
         // 旧记录状态变更为已调整
         Integer year = reqVO.getYear() != null ? reqVO.getYear() : LocalDate.now().getYear();

@@ -12,6 +12,7 @@ import cn.iocoder.yudao.module.mes.service.wm.warehouse.MesWmWarehouseAreaServic
 import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
@@ -41,6 +42,7 @@ public class MesWmOutsourceIssueDetailServiceImpl implements MesWmOutsourceIssue
     @Resource
     private MesWmMaterialStockService materialStockService;
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Long createOutsourceIssueDetail(MesWmOutsourceIssueDetailSaveReqVO createReqVO) {
         // 校验数据
@@ -52,6 +54,7 @@ public class MesWmOutsourceIssueDetailServiceImpl implements MesWmOutsourceIssue
         return detail.getId();
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateOutsourceIssueDetail(MesWmOutsourceIssueDetailSaveReqVO updateReqVO) {
         // 校验存在
@@ -64,6 +67,7 @@ public class MesWmOutsourceIssueDetailServiceImpl implements MesWmOutsourceIssue
         outsourceIssueDetailMapper.updateById(updateObj);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void deleteOutsourceIssueDetail(Long id) {
         // 校验存在

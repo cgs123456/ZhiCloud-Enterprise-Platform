@@ -13,6 +13,7 @@ import cn.iocoder.yudao.module.mes.dal.mysql.qc.indicator.MesQcIndicatorMapper;
 import cn.iocoder.yudao.module.mes.enums.qc.MesQcResultValueTypeEnum;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.Collection;
@@ -36,6 +37,7 @@ public class MesQcIndicatorServiceImpl implements MesQcIndicatorService {
     @Resource
     private MesQcIndicatorMapper indicatorMapper;
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Long createIndicator(MesQcIndicatorSaveReqVO createReqVO) {
         // 校验相关参数
@@ -47,6 +49,7 @@ public class MesQcIndicatorServiceImpl implements MesQcIndicatorService {
         return indicator.getId();
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateIndicator(MesQcIndicatorSaveReqVO updateReqVO) {
         // 校验存在
@@ -59,6 +62,7 @@ public class MesQcIndicatorServiceImpl implements MesQcIndicatorService {
         indicatorMapper.updateById(updateObj);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void deleteIndicator(Long id) {
         // 校验存在

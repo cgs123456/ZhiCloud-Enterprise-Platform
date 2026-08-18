@@ -8,6 +8,7 @@ import cn.iocoder.yudao.module.hr.dal.dataobject.recruitment.HrJobPostingDO;
 import cn.iocoder.yudao.module.hr.dal.mysql.recruitment.HrJobPostingMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.time.LocalDate;
@@ -23,6 +24,7 @@ public class HrJobPostingServiceImpl implements HrJobPostingService {
     private HrJobPostingMapper jobPostingMapper;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Long createJobPosting(HrJobPostingSaveReqVO createReqVO) {
         HrJobPostingDO jobPosting = BeanUtils.toBean(createReqVO, HrJobPostingDO.class);
         if (jobPosting.getStatus() == null) {
@@ -33,6 +35,7 @@ public class HrJobPostingServiceImpl implements HrJobPostingService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateJobPosting(HrJobPostingSaveReqVO updateReqVO) {
         validateExists(updateReqVO.getId());
         HrJobPostingDO updateObj = BeanUtils.toBean(updateReqVO, HrJobPostingDO.class);
@@ -40,6 +43,7 @@ public class HrJobPostingServiceImpl implements HrJobPostingService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteJobPosting(Long id) {
         validateExists(id);
         jobPostingMapper.deleteById(id);
@@ -64,6 +68,7 @@ public class HrJobPostingServiceImpl implements HrJobPostingService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void publishJobPosting(Long id) {
         validateExists(id);
         HrJobPostingDO updateObj = new HrJobPostingDO();
@@ -74,6 +79,7 @@ public class HrJobPostingServiceImpl implements HrJobPostingService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void closeJobPosting(Long id) {
         validateExists(id);
         HrJobPostingDO updateObj = new HrJobPostingDO();

@@ -10,6 +10,7 @@ import cn.iocoder.yudao.module.mes.dal.mysql.dv.machinery.MesDvMachineryTypeMapp
 import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.*;
@@ -33,6 +34,7 @@ public class MesDvMachineryTypeServiceImpl implements MesDvMachineryTypeService 
     @Lazy // 延迟加载，避免循环依赖
     private MesDvMachineryService machineryService;
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Long createMachineryType(MesDvMachineryTypeSaveReqVO createReqVO) {
         // 校验
@@ -44,6 +46,7 @@ public class MesDvMachineryTypeServiceImpl implements MesDvMachineryTypeService 
         return machineryType.getId();
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateMachineryType(MesDvMachineryTypeSaveReqVO updateReqVO) {
         // 校验
@@ -54,6 +57,7 @@ public class MesDvMachineryTypeServiceImpl implements MesDvMachineryTypeService 
         machineryTypeMapper.updateById(updateObj);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void deleteMachineryType(Long id) {
         // 1.1 校验存在

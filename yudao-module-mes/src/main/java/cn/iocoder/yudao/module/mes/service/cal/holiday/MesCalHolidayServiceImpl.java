@@ -6,6 +6,7 @@ import cn.iocoder.yudao.module.mes.dal.dataobject.cal.holiday.MesCalHolidayDO;
 import cn.iocoder.yudao.module.mes.dal.mysql.cal.holiday.MesCalHolidayMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.time.LocalDateTime;
@@ -23,6 +24,7 @@ public class MesCalHolidayServiceImpl implements MesCalHolidayService {
     @Resource
     private MesCalHolidayMapper holidayMapper;
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Long saveHoliday(MesCalHolidaySaveReqVO saveReqVO) {
         // Upsert 逻辑：如果该日期已有记录，则更新

@@ -15,6 +15,7 @@ import cn.iocoder.yudao.module.wms.service.inventory.dto.WmsInventoryChangeReqDT
 import cn.iocoder.yudao.module.wms.service.md.item.WmsItemSkuService;
 import cn.iocoder.yudao.module.wms.service.md.merchant.WmsMerchantService;
 import cn.iocoder.yudao.module.wms.service.md.warehouse.WmsWarehouseService;
+import cn.iocoder.yudao.module.qms.api.InspectionOrderApi;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -56,6 +57,8 @@ public class WmsReceiptOrderServiceImplTest extends BaseDbUnitTest {
     private WmsItemSkuService itemSkuService;
     @MockitoBean
     private WmsInventoryService inventoryService;
+    @MockitoBean
+    private InspectionOrderApi inspectionOrderApi;
 
     @Test
     public void testCreateReceiptOrder_calculateTotal() {

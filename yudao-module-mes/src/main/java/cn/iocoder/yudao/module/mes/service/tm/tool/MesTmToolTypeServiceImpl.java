@@ -11,6 +11,7 @@ import cn.iocoder.yudao.module.mes.service.md.workstation.MesMdWorkstationToolSe
 import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import cn.hutool.core.util.ObjUtil;
@@ -41,6 +42,7 @@ public class MesTmToolTypeServiceImpl implements MesTmToolTypeService {
     @Lazy
     private MesMdWorkstationToolService workstationToolService;
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Long createToolType(MesTmToolTypeSaveReqVO createReqVO) {
         // 校验数据
@@ -52,6 +54,7 @@ public class MesTmToolTypeServiceImpl implements MesTmToolTypeService {
         return toolType.getId();
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateToolType(MesTmToolTypeSaveReqVO updateReqVO) {
         // 校验存在
@@ -71,6 +74,7 @@ public class MesTmToolTypeServiceImpl implements MesTmToolTypeService {
         validateToolTypeNameUnique(id, saveReqVO.getName());
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void deleteToolType(Long id) {
         // 校验存在

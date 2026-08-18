@@ -11,6 +11,7 @@ import cn.iocoder.yudao.module.hr.dal.mysql.employee.HrEmployeeMapper;
 import cn.iocoder.yudao.module.hr.enums.employee.HrEmployeeStatusEnum;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.Collection;
@@ -32,6 +33,7 @@ public class HrEmployeeServiceImpl implements HrEmployeeService {
     private HrEmployeeMapper employeeMapper;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Long createEmployee(HrEmployeeSaveReqVO createReqVO) {
         // 校验工号唯一
         validateEmpNoUnique(null, createReqVO.getEmpNo());
@@ -42,6 +44,7 @@ public class HrEmployeeServiceImpl implements HrEmployeeService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateEmployee(HrEmployeeSaveReqVO updateReqVO) {
         // 校验存在
         validateEmployeeExists(updateReqVO.getId());
@@ -53,6 +56,7 @@ public class HrEmployeeServiceImpl implements HrEmployeeService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteEmployee(Long id) {
         // 校验存在
         validateEmployeeExists(id);
@@ -95,6 +99,7 @@ public class HrEmployeeServiceImpl implements HrEmployeeService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void resignEmployee(HrEmployeeResignReqVO reqVO) {
         // 校验存在
         HrEmployeeDO employee = validateEmployeeExists4Update(reqVO.getId());
@@ -111,6 +116,7 @@ public class HrEmployeeServiceImpl implements HrEmployeeService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void transferEmployee(HrEmployeeTransferReqVO reqVO) {
         // 校验存在
         HrEmployeeDO employee = validateEmployeeExists4Update(reqVO.getId());

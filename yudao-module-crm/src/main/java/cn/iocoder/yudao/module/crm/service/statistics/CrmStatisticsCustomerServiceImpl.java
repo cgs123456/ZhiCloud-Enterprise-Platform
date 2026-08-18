@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -264,9 +265,11 @@ public class CrmStatisticsCustomerServiceImpl implements CrmStatisticsCustomerSe
         // 3. 按照日期间隔，合并统计数据
         List<LocalDateTime[]> timeRanges = LocalDateTimeUtils.getDateRangeList(reqVO.getTimes()[0], reqVO.getTimes()[1], reqVO.getInterval());
         return convertList(timeRanges, times -> {
-            Double customerDealCycle = customerDealCycleList.stream()
+            BigDecimal customerDealCycle = customerDealCycleList.stream()
                     .filter(vo -> LocalDateTimeUtils.isBetween(times[0], times[1], vo.getTime()))
-                    .mapToDouble(CrmStatisticsCustomerDealCycleByDateRespVO::getCustomerDealCycle).sum();
+                    .map(CrmStatisticsCustomerDealCycleByDateRespVO::getCustomerDealCycle)
+                    .filter(Objects::nonNull)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
             return new CrmStatisticsCustomerDealCycleByDateRespVO()
                     .setTime(LocalDateTimeUtils.formatDateRange(times[0], times[1], reqVO.getInterval()))
                     .setCustomerDealCycle(customerDealCycle);
@@ -287,8 +290,10 @@ public class CrmStatisticsCustomerServiceImpl implements CrmStatisticsCustomerSe
 
         // 3.1 按照用户，合并统计数据
         List<CrmStatisticsCustomerDealCycleByUserRespVO> summaryList = convertList(reqVO.getUserIds(), userId -> {
-            Double customerDealCycle = customerDealCycleList.stream().filter(vo -> userId.equals(vo.getOwnerUserId()))
-                    .mapToDouble(CrmStatisticsCustomerDealCycleByUserRespVO::getCustomerDealCycle).sum();
+            BigDecimal customerDealCycle = customerDealCycleList.stream().filter(vo -> userId.equals(vo.getOwnerUserId()))
+                    .map(CrmStatisticsCustomerDealCycleByUserRespVO::getCustomerDealCycle)
+                    .filter(Objects::nonNull)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
             Integer customerDealCount = customerDealCountList.stream().filter(vo -> userId.equals(vo.getOwnerUserId()))
                     .mapToInt(CrmStatisticsCustomerSummaryByUserRespVO::getCustomerDealCount).sum();
             return (CrmStatisticsCustomerDealCycleByUserRespVO) new CrmStatisticsCustomerDealCycleByUserRespVO()

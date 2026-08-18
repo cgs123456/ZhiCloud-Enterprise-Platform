@@ -13,6 +13,7 @@ import cn.iocoder.yudao.module.mes.dal.mysql.qc.template.MesQcTemplateItemMapper
 import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
@@ -39,6 +40,7 @@ public class MesQcTemplateItemServiceImpl implements MesQcTemplateItemService {
     @Lazy
     private MesQcTemplateService templateService;
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Long createTemplateItem(MesQcTemplateItemSaveReqVO createReqVO) {
         // 校验保存参数
@@ -50,6 +52,7 @@ public class MesQcTemplateItemServiceImpl implements MesQcTemplateItemService {
         return item.getId();
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateTemplateItem(MesQcTemplateItemSaveReqVO updateReqVO) {
         // 校验保存参数
@@ -71,6 +74,7 @@ public class MesQcTemplateItemServiceImpl implements MesQcTemplateItemService {
         validateTemplateItemNotDuplicate(saveReqVO.getId(), saveReqVO.getTemplateId(), saveReqVO.getItemId());
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void deleteTemplateItem(Long id) {
         // 校验存在
