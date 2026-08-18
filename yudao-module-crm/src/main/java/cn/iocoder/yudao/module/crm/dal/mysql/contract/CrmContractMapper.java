@@ -113,4 +113,14 @@ public interface CrmContractMapper extends BaseMapperX<CrmContractDO> {
                 .eq(CrmContractDO::getOwnerUserId, ownerUserId));
     }
 
+    /**
+     * P2 TOCTOU 修复：带 FOR UPDATE 锁查询合同，防止并发超收
+     *
+     * @param id 合同 ID
+     * @return 锁定的合同实体，不存在则返回 null
+     */
+    default CrmContractDO selectByIdForUpdate(Long id) {
+        return selectOneForUpdate(CrmContractDO::getId, id);
+    }
+
 }

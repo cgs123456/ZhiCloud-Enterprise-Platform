@@ -16,6 +16,7 @@ import cn.iocoder.yudao.module.crm.controller.admin.receivable.vo.receivable.Crm
 import cn.iocoder.yudao.module.crm.dal.dataobject.contract.CrmContractDO;
 import cn.iocoder.yudao.module.crm.dal.dataobject.receivable.CrmReceivableDO;
 import cn.iocoder.yudao.module.crm.dal.dataobject.receivable.CrmReceivablePlanDO;
+import cn.iocoder.yudao.module.crm.dal.mysql.contract.CrmContractMapper;
 import cn.iocoder.yudao.module.crm.dal.mysql.receivable.CrmReceivableMapper;
 import cn.iocoder.yudao.module.crm.dal.redis.no.CrmNoRedisDAO;
 import cn.iocoder.yudao.module.crm.enums.common.CrmAuditStatusEnum;
@@ -61,6 +62,9 @@ public class CrmReceivableServiceImpl implements CrmReceivableService {
 
     @Resource
     private CrmReceivableMapper receivableMapper;
+
+    @Resource
+    private CrmContractMapper contractMapper;
 
     @Resource
     private CrmNoRedisDAO noRedisDAO;
@@ -116,8 +120,12 @@ public class CrmReceivableServiceImpl implements CrmReceivableService {
     }
 
     private void validateReceivablePriceExceedsLimit(CrmReceivableSaveReqVO reqVO) {
-        // 1. 计算剩余可退款金额，不包括 reqVO 自身
-        CrmContractDO contract = contractService.validateContract(reqVO.getContractId());
+        // P2 TOCTOU 修复：使用 FOR UPDATE 锁合同行，防止并发超收
+        // 在同一事务内先锁定合同，再计算剩余可回款金额，确保原子性
+        CrmContractDO contract = contractMapper.selectByIdForUpdate(reqVO.getContractId());
+        if (contract == null) {
+            throw exception(CONTRACT_NOT_EXISTS);
+        }
         List<CrmReceivableDO> receivables = receivableMapper.selectListByContractIdAndStatus(reqVO.getContractId(),
                 Arrays.asList(CrmAuditStatusEnum.APPROVE.getStatus(), CrmAuditStatusEnum.PROCESS.getStatus()));
         if (reqVO.getId() != null) {
