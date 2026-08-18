@@ -461,7 +461,8 @@ CREATE TABLE IF NOT EXISTS "crm_receivable" (
     "updater" varchar(64) DEFAULT '',
     "update_time" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deleted" bit NOT NULL DEFAULT FALSE,
-    PRIMARY KEY ("id")
+    PRIMARY KEY ("id"),
+    UNIQUE KEY "uk_contract_no" ("contract_id", "no")
 );
 
 CREATE TABLE IF NOT EXISTS "crm_receivable_plan" (

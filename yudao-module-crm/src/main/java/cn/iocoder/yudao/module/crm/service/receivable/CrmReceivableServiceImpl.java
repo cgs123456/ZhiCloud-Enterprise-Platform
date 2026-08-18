@@ -33,6 +33,7 @@ import com.mzt.logapi.starter.annotation.LogRecord;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -100,7 +101,15 @@ public class CrmReceivableServiceImpl implements CrmReceivableService {
         // 2.1 插入回款
         CrmReceivableDO receivable = BeanUtils.toBean(createReqVO, CrmReceivableDO.class)
                 .setNo(no).setAuditStatus(CrmAuditStatusEnum.DRAFT.getStatus());
-        receivableMapper.insert(receivable);
+        try {
+            receivableMapper.insert(receivable);
+        } catch (DuplicateKeyException e) {
+            // V78 uk_contract_no 唯一索引并发兜底：捕获并发重复提交，返回已有 id
+            CrmReceivableDO existing = receivableMapper.selectOne(CrmReceivableDO::getContractId, receivable.getContractId());
+            log.warn("[createReceivable][并发重复提交合同={} 返回已有id={}]", receivable.getContractId(),
+                    existing != null ? existing.getId() : "unknown");
+            return existing != null ? existing.getId() : receivable.getId();
+        }
         // 2.2
 
         // 3. 创建数据权限
