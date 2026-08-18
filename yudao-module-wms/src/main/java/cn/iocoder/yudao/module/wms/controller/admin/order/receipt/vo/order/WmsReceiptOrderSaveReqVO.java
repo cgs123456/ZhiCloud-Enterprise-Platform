@@ -38,6 +38,13 @@ public class WmsReceiptOrderSaveReqVO {
     @Size(max = 64, message = "业务单号长度不能超过 64 个字符")
     private String bizOrderNo;
 
+    @Schema(description = "质检关联业务 ID（可选）；填写后入库完成前须 QMS 检验通过，否则拒绝入库", example = "1024")
+    private Long qcBizId;
+
+    @Schema(description = "质检业务类型（InspectionBizTypeEnum），默认 PURCHASE_IN", example = "PURCHASE_IN")
+    @Size(max = 32, message = "质检业务类型长度不能超过 32 个字符")
+    private String qcBizType;
+
     @Schema(description = "供应商编号", example = "1024")
     private Long merchantId;
 

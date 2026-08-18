@@ -24,6 +24,13 @@
             <version>${revision}</version>
         </dependency>
 
+        <!-- 业务组件：跨模块消费 QMS 质检结论（P0-3 入库卡点，仅依赖 api 包，禁止 import dal/service） -->
+        <dependency>
+            <groupId>cn.iocoder.boot</groupId>
+            <artifactId>yudao-module-qms</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
         <!-- 业务组件 -->
 
         <!-- Web 相关 -->

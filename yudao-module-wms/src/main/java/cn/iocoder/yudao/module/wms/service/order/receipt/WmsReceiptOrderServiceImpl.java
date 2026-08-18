@@ -18,6 +18,8 @@ import cn.iocoder.yudao.module.wms.service.inventory.WmsInventoryService;
 import cn.iocoder.yudao.module.wms.service.inventory.dto.WmsInventoryChangeReqDTO;
 import cn.iocoder.yudao.module.wms.service.md.merchant.WmsMerchantService;
 import cn.iocoder.yudao.module.wms.service.md.warehouse.WmsWarehouseService;
+import cn.iocoder.yudao.module.qms.api.InspectionOrderApi;
+import cn.iocoder.yudao.module.qms.enums.qms.InspectionBizTypeEnum;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,6 +51,8 @@ public class WmsReceiptOrderServiceImpl implements WmsReceiptOrderService {
     private WmsMerchantService merchantService;
     @Resource
     private WmsInventoryService inventoryService;
+    @Resource
+    private InspectionOrderApi inspectionOrderApi;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -116,7 +120,10 @@ public class WmsReceiptOrderServiceImpl implements WmsReceiptOrderService {
             throw exception(RECEIPT_ORDER_STATUS_NOT_PREPARE);
         }
 
-        // 3. 写入库存
+        // 3. 质检卡点（P0-3）：若入库单关联质检业务，必须 QMS 检验通过方可入库
+        checkQualityGate(order);
+
+        // 4. 写入库存
         createInventory(order, details);
     }
 
@@ -219,6 +226,25 @@ public class WmsReceiptOrderServiceImpl implements WmsReceiptOrderService {
             throw exception(RECEIPT_ORDER_STATUS_NOT_PREPARE);
         }
         return order;
+    }
+
+    /**
+     * 入库质检卡点（P0-3 质量合规红线）。
+     *
+     * <p>仅当入库单显式关联质检业务（qcBizId 非空）时强制：调用 QMS {@code InspectionOrderApi.isQualified}
+     * 校验最新检验单是否为「检验通过」，不合格（含无检验单）一律拒绝入库（fail-closed）。
+     * 未关联质检业务的既有手工入库不受影响。
+     *
+     * @param order 入库单
+     */
+    private void checkQualityGate(WmsReceiptOrderDO order) {
+        if (order.getQcBizId() == null) {
+            return;
+        }
+        String bizType = ObjectUtil.defaultIfNull(order.getQcBizType(), InspectionBizTypeEnum.PURCHASE_IN.getBizType());
+        if (!inspectionOrderApi.isQualified(bizType, order.getQcBizId())) {
+            throw exception(RECEIPT_ORDER_QC_NOT_QUALIFIED, order.getQcBizId());
+        }
     }
 
     /**

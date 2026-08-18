@@ -173,6 +173,10 @@ CREATE TABLE IF NOT EXISTS wms_inventory (
     KEY idx_tenant_id (tenant_id)
 ) COMMENT='WMS 库存余额表';
 
+-- ========== P2 乐观锁版本号 ==========
+ALTER TABLE wms_inventory
+    ADD COLUMN version BIGINT NOT NULL DEFAULT 0 COMMENT '乐观锁版本号（P2 @Version 并发保护）';
+
 -- ----------------------------
 -- 库存流水表
 -- ----------------------------
@@ -230,6 +234,11 @@ CREATE TABLE IF NOT EXISTS wms_receipt_order (
     KEY idx_merchant_id (merchant_id),
     KEY idx_tenant_id (tenant_id)
 ) COMMENT='WMS 入库单表';
+
+-- ========== P0-3 入库质检卡点：入库单关联 QMS 检验单 ==========
+ALTER TABLE wms_receipt_order
+    ADD COLUMN qc_biz_id BIGINT DEFAULT NULL COMMENT '质检关联业务 ID（可选，关联 QMS 检验单 biz_id）',
+    ADD COLUMN qc_biz_type VARCHAR(32) DEFAULT 'PURCHASE_IN' COMMENT '质检业务类型（InspectionBizTypeEnum）';
 
 -- ----------------------------
 -- 入库单明细表

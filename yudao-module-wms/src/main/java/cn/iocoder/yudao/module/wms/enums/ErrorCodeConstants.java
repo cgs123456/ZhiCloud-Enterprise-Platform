@@ -70,6 +70,8 @@ public interface ErrorCodeConstants {
     ErrorCode RECEIPT_ORDER_DETAIL_REQUIRED = new ErrorCode(1_060_200_003, "入库单至少包含一条明细");
     ErrorCode RECEIPT_ORDER_STATUS_NOT_DELETABLE = new ErrorCode(1_060_200_005, "入库单状态不是草稿或已作废，不能删除");
     ErrorCode RECEIPT_ORDER_DETAIL_NOT_EXISTS = new ErrorCode(1_060_200_007, "入库单明细不存在");
+    ErrorCode RECEIPT_ORDER_QC_NOT_QUALIFIED = new ErrorCode(1_060_200_008,
+            "入库单已关联质检业务（qcBizId={}），但对应 QMS 检验单未通过，禁止入库");
 
     // ========== WMS 出库单 1-060-201-000 ==========
     ErrorCode SHIPMENT_ORDER_NOT_EXISTS = new ErrorCode(1_060_201_000, "出库单不存在");

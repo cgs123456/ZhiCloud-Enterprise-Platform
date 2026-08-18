@@ -6,6 +6,7 @@ import cn.iocoder.yudao.module.wms.dal.dataobject.md.warehouse.WmsWarehouseDO;
 import com.baomidou.mybatisplus.annotation.KeySequence;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.Version;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -30,6 +31,11 @@ public class WmsInventoryDO extends BaseDO {
      */
     @TableId
     private Long id;
+    /**
+     * 乐观锁版本号（P2：@Version 并发保护）
+     */
+    @Version
+    private Long version;
     /**
      * 商品 SKU 编号
      *

@@ -59,6 +59,20 @@ public class WmsReceiptOrderDO extends BaseDO {
      */
     private String bizOrderNo;
     /**
+     * 质检关联业务 ID（可选）
+     *
+     * <p>填写后，入库完成（写库存）前会前置校验 QMS 对应检验单是否为「检验通过」，不合格拒绝入库（fail-closed）。
+     * 不填则不强质检卡点，保持既有手工入库行为。
+     */
+    private Long qcBizId;
+    /**
+     * 质检业务类型
+     *
+     * 枚举 {@link cn.iocoder.yudao.module.qms.enums.qms.InspectionBizTypeEnum#getBizType()}
+     * 默认 {@code PURCHASE_IN}
+     */
+    private String qcBizType;
+    /**
      * 供应商编号
      *
      * 关联 {@link WmsMerchantDO#getId()}
