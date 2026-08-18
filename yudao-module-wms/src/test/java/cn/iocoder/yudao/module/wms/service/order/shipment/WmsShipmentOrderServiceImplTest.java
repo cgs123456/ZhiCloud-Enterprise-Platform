@@ -20,6 +20,7 @@ import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.math.BigDecimal;
@@ -39,6 +40,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @Import({WmsShipmentOrderServiceImpl.class, WmsShipmentOrderDetailServiceImpl.class})
+@TestPropertySource(properties = "wms.shipment.allow-fast-complete=true")
 public class WmsShipmentOrderServiceImplTest extends BaseDbUnitTest {
 
     @Resource

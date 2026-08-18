@@ -97,7 +97,12 @@ public class WmsInventoryServiceImpl implements WmsInventoryService {
             if (beforeQuantity.compareTo(afterQuantity) == 0) {
                 continue;
             }
-            updateInventories.add(new WmsInventoryDO().setId(inventory.getId()).setQuantity(afterQuantity));
+            // 盘点调整 quantity 后，同步可用量 = quantity - 已锁定 - 已冻结，避免可用量长期失真
+            BigDecimal locked = inventory.getLockedQuantity() == null ? BigDecimal.ZERO : inventory.getLockedQuantity();
+            BigDecimal frozen = inventory.getFrozenQuantity() == null ? BigDecimal.ZERO : inventory.getFrozenQuantity();
+            BigDecimal afterAvailable = afterQuantity.subtract(locked).subtract(frozen);
+            updateInventories.add(new WmsInventoryDO().setId(inventory.getId())
+                    .setQuantity(afterQuantity).setAvailableQuantity(afterAvailable));
             histories.add(buildInventoryHistory(reqDTO, item, beforeQuantity, afterQuantity));
         }
 
@@ -358,7 +363,10 @@ public class WmsInventoryServiceImpl implements WmsInventoryService {
     private WmsInventoryDO createCheckInventory(WmsInventoryCheckReqDTO.Item item) {
         WmsInventoryDO inventory = new WmsInventoryDO()
                 .setSkuId(item.getSkuId()).setWarehouseId(item.getWarehouseId())
-                .setQuantity(item.getCheckQuantity());
+                .setQuantity(item.getCheckQuantity())
+                .setAvailableQuantity(BigDecimal.ZERO)
+                .setLockedQuantity(BigDecimal.ZERO)
+                .setFrozenQuantity(BigDecimal.ZERO);
         try {
             inventoryMapper.insert(inventory);
         } catch (DuplicateKeyException ex) {

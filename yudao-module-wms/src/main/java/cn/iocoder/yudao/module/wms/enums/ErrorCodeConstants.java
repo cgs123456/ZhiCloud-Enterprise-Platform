@@ -78,6 +78,8 @@ public interface ErrorCodeConstants {
     ErrorCode SHIPMENT_ORDER_DETAIL_REQUIRED = new ErrorCode(1_060_201_003, "出库单至少包含一条明细");
     ErrorCode SHIPMENT_ORDER_STATUS_NOT_DELETABLE = new ErrorCode(1_060_201_005, "出库单状态不是草稿或已作废，不能删除");
     ErrorCode SHIPMENT_ORDER_DETAIL_NOT_EXISTS = new ErrorCode(1_060_201_007, "出库单明细不存在");
+    ErrorCode SHIPMENT_ORDER_FAST_COMPLETE_DISABLED = new ErrorCode(1_060_201_008,
+            "出库单快捷完成（跳过拣货/复核/打包/发运）已禁用，请走完整状态机流程：开始拣货→完成拣货→复核→打包→发运→完成");
 
     // ========== WMS 移库单 1-060-202-000 ==========
     ErrorCode MOVEMENT_ORDER_NOT_EXISTS = new ErrorCode(1_060_202_000, "移库单不存在");

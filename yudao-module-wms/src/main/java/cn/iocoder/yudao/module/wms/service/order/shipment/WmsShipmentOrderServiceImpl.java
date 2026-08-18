@@ -19,6 +19,7 @@ import cn.iocoder.yudao.module.wms.service.inventory.dto.WmsInventoryChangeReqDT
 import cn.iocoder.yudao.module.wms.service.md.merchant.WmsMerchantService;
 import cn.iocoder.yudao.module.wms.service.md.warehouse.WmsWarehouseService;
 import jakarta.annotation.Resource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -56,6 +57,13 @@ public class WmsShipmentOrderServiceImpl implements WmsShipmentOrderService {
     private WmsMerchantService merchantService;
     @Resource
     private WmsInventoryService inventoryService;
+
+    /**
+     * 是否允许出库单快捷完成（跳过拣货/复核/打包/发运，直接扣库存）。
+     * 默认 false：生产环境必须走完整状态机；仅测试/数据迁移环境可临时开启。
+     */
+    @Value("${wms.shipment.allow-fast-complete:false}")
+    private boolean allowFastComplete;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -112,6 +120,10 @@ public class WmsShipmentOrderServiceImpl implements WmsShipmentOrderService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void completeShipmentOrder(Long id) {
+        // P0-4：下线旁路接口——默认禁用「草稿直接跳完成并扣库存」，避免绕过复核导致账实错乱
+        if (!allowFastComplete) {
+            throw exception(SHIPMENT_ORDER_FAST_COMPLETE_DISABLED);
+        }
         // 兼容接口：草稿 -> 已完成（跳过中间状态，直接扣减库存）
         WmsShipmentOrderDO order = validateShipmentOrderPrepare(id);
         List<WmsShipmentOrderDetailDO> details = shipmentOrderDetailService.validateShipmentOrderDetailListExists(id);
