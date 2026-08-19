@@ -5,6 +5,7 @@ import cn.iocoder.yudao.module.erp.dal.dataobject.product.ErpProductDO;
 import com.baomidou.mybatisplus.annotation.KeySequence;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.Version;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -29,6 +30,14 @@ public class ErpStockDO extends BaseDO {
      */
     @TableId
     private Long id;
+    /**
+     * 乐观锁版本号（P2：@Version 并发保护，与 WMS/QMS/CRM/MES 一致）
+     *
+     * <p>注意：ERP 库存热路径走自定义 CAS（{@code updateCountIncrement}/{@code updateLockedCountIncrement}），
+     * 不经过 MyBatis-Plus 的 updateById，因此本字段当前为防御性兜底；若后续引入 updateById 全量更新将自动生效。
+     */
+    @Version
+    private Long version;
     /**
      * 产品编号
      *
