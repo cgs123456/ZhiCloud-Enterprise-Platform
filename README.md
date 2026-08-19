@@ -16,13 +16,13 @@
 
 | 指标 | 数值 |
 |------|------|
-| Java 源文件 | 6,955（主代码）+ 365（测试） |
+| Java 源文件 | 7,007（主代码）+ 337（测试） |
 | Controller | 615 |
 | 业务模块 | 11 个活跃模块（ERP/MES/WMS/CRM/HR/OA/TMS + AI 三大模块 + 框架基础） |
-| Flyway 迁移脚本 | 82 个 |
-| SQL 文件 | 40 个 |
-| 单元测试文件 | 365 个 |
-| 框架 Starter | 14 个 |
+| Flyway 迁移脚本 | 86 个（V1–V81，部分版本号复用如 V60-V64 多版本共存） |
+| SQL 文件 | 166 个 |
+| 单元测试文件 | 333 个 |
+| 框架 Starter | 16 个（yudao-common + 15 starter 模块） |
 
 ## 🏗️ 技术架构
 
@@ -91,8 +91,8 @@
 | 能力 | 工具/实现 |
 |------|----------|
 | 容器化 | Dockerfile（非 root 用户、HEALTHCHECK、多阶段构建） |
-| 编排 | docker-compose（14 服务：MySQL/Redis/PG/Nacos/MinIO/Trino/Prometheus/Grafana/Loki/Jaeger 等） |
-| K8s 部署 | Helm Chart（11 模板）、ArgoCD GitOps、金丝雀发布 |
+| 编排 | docker-compose（17 服务：MySQL/Redis/PG/Nacos/MinIO/Trino/Prometheus/Grafana/Loki/Jaeger/Alertmanager/Promtail/Server/Nacos/Backup 等） |
+| K8s 部署 | Helm Chart（10 模板文件，不含 values）+ values-dev/prod/staging、ArgoCD GitOps、金丝雀发布 |
 | CI/CD | Jenkins Pipeline（测试→安全扫描→SonarQube→构建→部署/回滚） |
 | 安全 | OWASP Dependency-Check（CVSS≥7 高危阻断；需配置 NVD API Key，未配置时 CI 跳过并告警）、CycloneDX SBOM、pre-commit 密钥扫描、security-check.sh 部署前检查 |
 | 质量门禁 | JaCoCo 覆盖率门禁（当前基线 30%，WMS/MES 已纳入阻断，BPM 暂排除待补齐单测；目标分阶段提升至 60%→80%）+ 7 道 Python 脚本门禁（错误码唯一性/PreAuthorize 全仓/WMS 严格/电子签名/裸抛/事务原子性/错误码基线）、JUnit + Mockito 单元测试 |
@@ -147,7 +147,7 @@
 ```
 yudao/
 ├── yudao-dependencies/          # Maven BOM 依赖版本管理
-├── yudao-framework/             # 14 个 Spring Boot Starter
+├── yudao-framework/             # 16 个 Starter（yudao-common + 15 spring-boot-starter-*）
 │   ├── yudao-common/            # 通用工具、POJO、枚举
 │   ├── starter-web/             # Web 配置、全局异常、Swagger
 │   ├── starter-security/        # 认证鉴权、RBAC、多租户
