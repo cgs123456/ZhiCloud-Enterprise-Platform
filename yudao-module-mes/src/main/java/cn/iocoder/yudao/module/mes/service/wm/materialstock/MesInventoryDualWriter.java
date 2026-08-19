@@ -36,6 +36,7 @@ public class MesInventoryDualWriter implements InventoryDualWriter {
         } catch (Exception e) {
             log.error("[MesInventoryDualWriter] 双写失败 itemId={} wh={} qtyDelta={}",
                     itemId, warehouseId, quantityDelta, e);
+            // @bare-throw-ignore 双写失败须触发父级事务回滚，不能用 ServiceException（会吞掉异常导致双写不一致静默）
             throw new RuntimeException("[MesInventoryDualWriter] 双写 inventory_item 失败，触发事务回滚", e);
         }
     }

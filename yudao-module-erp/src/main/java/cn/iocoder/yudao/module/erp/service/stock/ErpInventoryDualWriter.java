@@ -39,6 +39,7 @@ public class ErpInventoryDualWriter implements InventoryDualWriter {
             } catch (Exception e) {
                 log.error("[ErpInventoryDualWriter] quantity 双写失败 productId={} wh={} delta={}",
                         itemId, warehouseId, quantityDelta, e);
+                // @bare-throw-ignore 双写失败须触发父级事务回滚，不能用 ServiceException（会吞掉异常导致双写不一致静默）
                 throw new RuntimeException("[ErpInventoryDualWriter] 双写 inventory_item quantity 失败，触发事务回滚", e);
             }
         }
@@ -53,6 +54,7 @@ public class ErpInventoryDualWriter implements InventoryDualWriter {
             } catch (Exception e) {
                 log.error("[ErpInventoryDualWriter] lockedCount 双写失败 productId={} wh={} delta={}",
                         itemId, warehouseId, lockedDelta, e);
+                // @bare-throw-ignore 双写失败须触发父级事务回滚，不能用 ServiceException（会吞掉异常导致双写不一致静默）
                 throw new RuntimeException("[ErpInventoryDualWriter] 双写 inventory_item lockedCount 失败，触发事务回滚", e);
             }
         }
