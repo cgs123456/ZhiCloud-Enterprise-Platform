@@ -13,6 +13,7 @@ import jakarta.annotation.Resource;
 import jakarta.annotation.security.PermitAll;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,6 +42,7 @@ public class AppMemberUserController {
 
     @PutMapping("/update")
     @Operation(summary = "修改基本信息")
+    @PreAuthorize("@ss.hasPermission('member:user:update')")
     public CommonResult<Boolean> updateUser(@RequestBody @Valid AppMemberUserUpdateReqVO reqVO) {
         userService.updateUser(getLoginUserId(), reqVO);
         return success(true);
@@ -48,6 +50,7 @@ public class AppMemberUserController {
 
     @PutMapping("/update-mobile")
     @Operation(summary = "修改用户手机")
+    @PreAuthorize("@ss.hasPermission('member:user:update')")
     public CommonResult<Boolean> updateUserMobile(@RequestBody @Valid AppMemberUserUpdateMobileReqVO reqVO) {
         userService.updateUserMobile(getLoginUserId(), reqVO);
         return success(true);
@@ -55,6 +58,7 @@ public class AppMemberUserController {
 
     @PutMapping("/update-mobile-by-weixin")
     @Operation(summary = "基于微信小程序的授权码，修改用户手机")
+    @PreAuthorize("@ss.hasPermission('member:user:update')")
     public CommonResult<Boolean> updateUserMobileByWeixin(@RequestBody @Valid AppMemberUserUpdateMobileByWeixinReqVO reqVO) {
         userService.updateUserMobileByWeixin(getLoginUserId(), reqVO);
         return success(true);
@@ -62,6 +66,7 @@ public class AppMemberUserController {
 
     @PutMapping("/update-password")
     @Operation(summary = "修改用户密码", description = "用户修改密码时使用")
+    @PreAuthorize("@ss.hasPermission('member:user:update')")
     public CommonResult<Boolean> updateUserPassword(@RequestBody @Valid AppMemberUserUpdatePasswordReqVO reqVO) {
         userService.updateUserPassword(getLoginUserId(), reqVO);
         return success(true);

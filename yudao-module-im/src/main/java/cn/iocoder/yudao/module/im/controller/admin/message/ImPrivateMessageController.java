@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,6 +33,7 @@ public class ImPrivateMessageController {
 
     @PostMapping("/send")
     @Operation(summary = "发送私聊消息")
+    @PreAuthorize("@ss.hasPermission('im:private-message:create')")
     public CommonResult<ImPrivateMessageRespVO> sendPrivateMessage(
             @Valid @RequestBody ImPrivateMessageSendReqVO reqVO) {
         ImPrivateMessageDO message = privateMessageService.sendPrivateMessage(getLoginUserId(), reqVO);
@@ -53,6 +55,7 @@ public class ImPrivateMessageController {
     @Operation(summary = "标记私聊消息已读")
     @Parameter(name = "receiverId", description = "接收方用户编号（对方）", required = true, example = "2")
     @Parameter(name = "messageId", description = "已读位置（含），通常是会话内最大消息编号", required = true, example = "100")
+    @PreAuthorize("@ss.hasPermission('im:private-message:update')")
     public CommonResult<Boolean> readPrivateMessages(@RequestParam("receiverId") Long receiverId,
                                                      @RequestParam("messageId") Long messageId) {
         privateMessageService.readPrivateMessages(getLoginUserId(), receiverId, messageId);
@@ -70,6 +73,7 @@ public class ImPrivateMessageController {
     @DeleteMapping("/recall")
     @Operation(summary = "撤回私聊消息")
     @Parameter(name = "id", description = "消息编号", required = true, example = "1")
+    @PreAuthorize("@ss.hasPermission('im:private-message:delete')")
     public CommonResult<ImPrivateMessageRespVO> recallPrivateMessage(@RequestParam("id") Long id) {
         ImPrivateMessageDO message = privateMessageService.recallPrivateMessage(getLoginUserId(), id);
         return success(BeanUtils.toBean(message, ImPrivateMessageRespVO.class));

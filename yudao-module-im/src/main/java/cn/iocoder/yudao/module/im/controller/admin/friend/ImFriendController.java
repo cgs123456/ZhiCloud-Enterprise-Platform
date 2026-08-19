@@ -20,6 +20,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -81,6 +82,7 @@ public class ImFriendController {
             @Parameter(name = "friendUserId", description = "好友的用户编号", required = true, example = "2048"),
             @Parameter(name = "clear", description = "是否级联清理本端相关数据（如私聊会话）")
     })
+    @PreAuthorize("@ss.hasPermission('im:friend:delete')")
     public CommonResult<Boolean> deleteFriend(
             @RequestParam("friendUserId") @NotNull(message = "好友用户编号不能为空") Long friendUserId,
             @RequestParam(value = "clear", required = false) Boolean clear) {
@@ -90,6 +92,7 @@ public class ImFriendController {
 
     @PutMapping("/update")
     @Operation(summary = "更新好友单边属性（备注 / 免打扰 / 联系人置顶）")
+    @PreAuthorize("@ss.hasPermission('im:friend:update')")
     public CommonResult<Boolean> updateFriend(@Valid @RequestBody ImFriendUpdateReqVO reqVO) {
         friendService.updateFriend(getLoginUserId(), reqVO);
         return success(true);
@@ -98,6 +101,7 @@ public class ImFriendController {
     @PutMapping("/block")
     @Operation(summary = "拉黑好友（必须先是好友；单边屏蔽对方私聊消息）")
     @Parameter(name = "friendUserId", description = "好友的用户编号", required = true, example = "2048")
+    @PreAuthorize("@ss.hasPermission('im:friend:update')")
     public CommonResult<Boolean> blockFriend(
             @RequestParam("friendUserId") @NotNull(message = "好友用户编号不能为空") Long friendUserId) {
         friendService.blockFriend(getLoginUserId(), friendUserId);
@@ -107,6 +111,7 @@ public class ImFriendController {
     @PutMapping("/unblock")
     @Operation(summary = "移出黑名单")
     @Parameter(name = "friendUserId", description = "好友的用户编号", required = true, example = "2048")
+    @PreAuthorize("@ss.hasPermission('im:friend:update')")
     public CommonResult<Boolean> unblockFriend(
             @RequestParam("friendUserId") @NotNull(message = "好友用户编号不能为空") Long friendUserId) {
         friendService.unblockFriend(getLoginUserId(), friendUserId);

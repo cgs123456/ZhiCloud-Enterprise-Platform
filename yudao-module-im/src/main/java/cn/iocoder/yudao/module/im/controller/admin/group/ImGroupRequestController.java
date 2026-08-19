@@ -27,6 +27,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -60,6 +61,7 @@ public class ImGroupRequestController {
 
     @PostMapping("/apply")
     @Operation(summary = "申请加群")
+    @PreAuthorize("@ss.hasPermission('im:group-request:create')")
     public CommonResult<Long> applyJoinGroup(@Valid @RequestBody ImGroupRequestApplyReqVO reqVO) {
         ImGroupRequestDO request = groupRequestService.applyJoinGroup(getLoginUserId(), reqVO);
         return success(request != null ? request.getId() : null);
@@ -68,6 +70,7 @@ public class ImGroupRequestController {
     @PutMapping("/agree")
     @Operation(summary = "同意加群申请（群主或管理员）")
     @Parameter(name = "id", description = "申请编号", required = true, example = "1024")
+    @PreAuthorize("@ss.hasPermission('im:group-request:update')")
     public CommonResult<Boolean> agreeGroupRequest(
             @RequestParam("id") @NotNull(message = "申请编号不能为空") Long id) {
         groupRequestService.agreeGroupRequest(getLoginUserId(), id);
@@ -76,6 +79,7 @@ public class ImGroupRequestController {
 
     @PutMapping("/refuse")
     @Operation(summary = "拒绝加群申请（群主或管理员）")
+    @PreAuthorize("@ss.hasPermission('im:group-request:update')")
     public CommonResult<Boolean> refuseGroupRequest(
             @RequestParam("id") @NotNull(message = "申请编号不能为空") Long id,
             @RequestParam(value = "handleContent", required = false)

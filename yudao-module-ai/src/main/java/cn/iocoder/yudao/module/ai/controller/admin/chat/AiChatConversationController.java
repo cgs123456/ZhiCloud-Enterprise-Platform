@@ -42,12 +42,14 @@ public class AiChatConversationController {
 
     @PostMapping("/create-my")
     @Operation(summary = "创建【我的】聊天对话")
+    @PreAuthorize("@ss.hasPermission('ai:chat-conversation:create')")
     public CommonResult<Long> createChatConversationMy(@RequestBody @Valid AiChatConversationCreateMyReqVO createReqVO) {
         return success(chatConversationService.createChatConversationMy(createReqVO, getLoginUserId()));
     }
 
     @PutMapping("/update-my")
     @Operation(summary = "更新【我的】聊天对话")
+    @PreAuthorize("@ss.hasPermission('ai:chat-conversation:update')")
     public CommonResult<Boolean> updateChatConversationMy(@RequestBody @Valid AiChatConversationUpdateMyReqVO updateReqVO) {
         chatConversationService.updateChatConversationMy(updateReqVO, getLoginUserId());
         return success(true);
@@ -76,6 +78,7 @@ public class AiChatConversationController {
     @DeleteMapping("/delete-my")
     @Operation(summary = "删除聊天对话")
     @Parameter(name = "id", required = true, description = "对话编号", example = "1024")
+    @PreAuthorize("@ss.hasPermission('ai:chat-conversation:delete')")
     public CommonResult<Boolean> deleteChatConversationMy(@RequestParam("id") Long id) {
         chatConversationService.deleteChatConversationMy(id, getLoginUserId());
         return success(true);
@@ -83,6 +86,7 @@ public class AiChatConversationController {
 
     @DeleteMapping("/delete-by-unpinned")
     @Operation(summary = "删除未置顶的聊天对话")
+    @PreAuthorize("@ss.hasPermission('ai:chat-conversation:delete')")
     public CommonResult<Boolean> deleteChatConversationMyByUnpinned() {
         chatConversationService.deleteChatConversationMyByUnpinned(getLoginUserId());
         return success(true);

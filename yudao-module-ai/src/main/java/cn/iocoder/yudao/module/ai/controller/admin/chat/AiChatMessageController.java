@@ -58,12 +58,14 @@ public class AiChatMessageController {
 
     @Operation(summary = "发送消息（段式）", description = "一次性返回，响应较慢")
     @PostMapping("/send")
+    @PreAuthorize("@ss.hasPermission('ai:chat-message:create')")
     public CommonResult<AiChatMessageSendRespVO> sendMessage(@Valid @RequestBody AiChatMessageSendReqVO sendReqVO) {
         return success(chatMessageService.sendMessage(sendReqVO, getLoginUserId()));
     }
 
     @Operation(summary = "发送消息（流式）", description = "流式返回，响应较快")
     @PostMapping(value = "/send-stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @PreAuthorize("@ss.hasPermission('ai:chat-message:create')")
     public Flux<CommonResult<AiChatMessageSendRespVO>> sendChatMessageStream(@Valid @RequestBody AiChatMessageSendReqVO sendReqVO) {
         return chatMessageService.sendChatMessageStream(sendReqVO, getLoginUserId());
     }
@@ -114,6 +116,7 @@ public class AiChatMessageController {
     @Operation(summary = "删除消息")
     @DeleteMapping("/delete")
     @Parameter(name = "id", required = true, description = "消息编号", example = "1024")
+    @PreAuthorize("@ss.hasPermission('ai:chat-message:delete')")
     public CommonResult<Boolean> deleteChatMessage(@RequestParam("id") Long id) {
         chatMessageService.deleteChatMessage(id, getLoginUserId());
         return success(true);
@@ -122,6 +125,7 @@ public class AiChatMessageController {
     @Operation(summary = "删除指定对话的消息")
     @DeleteMapping("/delete-by-conversation-id")
     @Parameter(name = "conversationId", required = true, description = "对话编号", example = "1024")
+    @PreAuthorize("@ss.hasPermission('ai:chat-message:delete')")
     public CommonResult<Boolean> deleteChatMessageByConversationId(@RequestParam("conversationId") Long conversationId) {
         chatMessageService.deleteChatMessageByConversationId(conversationId, getLoginUserId());
         return success(true);

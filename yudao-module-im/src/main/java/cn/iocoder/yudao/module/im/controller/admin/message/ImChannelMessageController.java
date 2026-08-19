@@ -14,6 +14,7 @@ import jakarta.annotation.Resource;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.PositiveOrZero;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -66,6 +67,7 @@ public class ImChannelMessageController {
     @Operation(summary = "标记频道消息已读")
     @Parameter(name = "channelId", description = "频道编号", required = true, example = "1")
     @Parameter(name = "messageId", description = "已读到的消息编号", required = true, example = "100")
+    @PreAuthorize("@ss.hasPermission('im:channel-message:update')")
     public CommonResult<Boolean> readChannelMessages(@RequestParam("channelId") Long channelId,
                                                      @RequestParam("messageId") Long messageId) {
         channelMessageService.readChannelMessages(getLoginUserId(), channelId, messageId);

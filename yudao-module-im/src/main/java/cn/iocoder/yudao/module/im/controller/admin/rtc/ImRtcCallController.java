@@ -40,6 +40,7 @@ public class ImRtcCallController {
 
     @PostMapping("/create")
     @Operation(summary = "创建新通话；按 conversationType 区分私聊 / 群聊")
+    @PreAuthorize("@ss.hasPermission('im:rtc-call:create')")
     public CommonResult<ImRtcCallRespVO> createCall(@Valid @RequestBody ImRtcCallCreateReqVO reqVO) {
         Long userId = getLoginUserId();
         ImRtcCallDO call = rtcCallService.createCall(userId, reqVO);
@@ -48,6 +49,7 @@ public class ImRtcCallController {
 
     @PostMapping("/invite")
     @Operation(summary = "通话中追加邀请；仅群通话可用")
+    @PreAuthorize("@ss.hasPermission('im:rtc-call:create')")
     public CommonResult<Boolean> inviteCall(@Valid @RequestBody ImRtcCallInviteReqVO reqVO) {
         rtcCallService.inviteCall(getLoginUserId(), reqVO);
         return success(true);
@@ -56,6 +58,7 @@ public class ImRtcCallController {
     @PostMapping("/join")
     @Operation(summary = "加入已有群通话；用于胶囊条「加入」按钮")
     @Parameter(name = "room", description = "业务通话编号", required = true, example = "f47ac10b58cc4372a567")
+    @PreAuthorize("@ss.hasPermission('im:rtc-call:create')")
     public CommonResult<ImRtcCallRespVO> joinCall(@RequestParam("room") String room) {
         Long userId = getLoginUserId();
         return success(buildCallRespVO(rtcCallService.joinCall(userId, room), userId));
@@ -64,6 +67,7 @@ public class ImRtcCallController {
     @PostMapping("/accept")
     @Operation(summary = "接听通话")
     @Parameter(name = "room", description = "业务通话编号", required = true, example = "f47ac10b58cc4372a567")
+    @PreAuthorize("@ss.hasPermission('im:rtc-call:create')")
     public CommonResult<ImRtcCallRespVO> accept(@RequestParam("room") String room) {
         Long userId = getLoginUserId();
         return success(buildCallRespVO(rtcCallService.acceptCall(userId, room), userId));
@@ -72,6 +76,7 @@ public class ImRtcCallController {
     @PostMapping("/reject")
     @Operation(summary = "拒绝通话")
     @Parameter(name = "room", description = "业务通话编号", required = true, example = "f47ac10b58cc4372a567")
+    @PreAuthorize("@ss.hasPermission('im:rtc-call:create')")
     public CommonResult<Boolean> reject(@RequestParam("room") String room) {
         rtcCallService.rejectCall(getLoginUserId(), room);
         return success(true);
@@ -80,6 +85,7 @@ public class ImRtcCallController {
     @PostMapping("/cancel")
     @Operation(summary = "取消邀请；主叫接通前调用")
     @Parameter(name = "room", description = "业务通话编号", required = true, example = "f47ac10b58cc4372a567")
+    @PreAuthorize("@ss.hasPermission('im:rtc-call:create')")
     public CommonResult<Boolean> cancel(@RequestParam("room") String room) {
         rtcCallService.cancelCall(getLoginUserId(), room);
         return success(true);
@@ -88,6 +94,7 @@ public class ImRtcCallController {
     @PostMapping("/leave")
     @Operation(summary = "离开通话；接通后调用")
     @Parameter(name = "room", description = "业务通话编号", required = true, example = "f47ac10b58cc4372a567")
+    @PreAuthorize("@ss.hasPermission('im:rtc-call:create')")
     public CommonResult<Boolean> leave(@RequestParam("room") String room) {
         rtcCallService.leaveCall(getLoginUserId(), room);
         return success(true);
@@ -96,6 +103,7 @@ public class ImRtcCallController {
     @PostMapping("/no-answer-call-check")
     @Operation(summary = "前端 RUNNING 端 timer 兜底；触发后端立即扫描该 room 的振铃超时（接口静默）")
     @Parameter(name = "room", description = "业务通话编号", required = true, example = "f47ac10b58cc4372a567")
+    @PreAuthorize("@ss.hasPermission('im:rtc-call:create')")
     public CommonResult<Boolean> noAnswerCallCheck(@RequestParam("room") String room) {
         rtcCallService.noAnswerCallCheck(getLoginUserId(), room);
         return success(true);

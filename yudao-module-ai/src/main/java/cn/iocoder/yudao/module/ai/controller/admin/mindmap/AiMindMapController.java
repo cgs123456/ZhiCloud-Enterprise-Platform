@@ -31,6 +31,7 @@ public class AiMindMapController {
 
     @PostMapping(value = "/generate-stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @Operation(summary = "导图生成（流式）", description = "流式返回，响应较快")
+    @PreAuthorize("@ss.hasPermission('ai:mind-map:create')")
     public Flux<CommonResult<String>> generateMindMap(@RequestBody @Valid AiMindMapGenerateReqVO generateReqVO) {
         return mindMapService.generateMindMap(generateReqVO, getLoginUserId());
     }

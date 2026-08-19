@@ -21,6 +21,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -54,6 +55,7 @@ public class ImFriendRequestController {
 
     @PostMapping("/apply")
     @Operation(summary = "发起好友申请")
+    @PreAuthorize("@ss.hasPermission('im:friend-request:create')")
     public CommonResult<Long> applyFriend(@Valid @RequestBody ImFriendRequestApplyReqVO reqVO) {
         ImFriendRequestDO request = friendRequestService.applyFriend(getLoginUserId(), reqVO);
         return success(request != null ? request.getId() : null);
@@ -62,6 +64,7 @@ public class ImFriendRequestController {
     @PutMapping("/agree")
     @Operation(summary = "同意好友申请")
     @Parameter(name = "id", description = "申请编号", required = true, example = "1024")
+    @PreAuthorize("@ss.hasPermission('im:friend-request:update')")
     public CommonResult<Boolean> agreeFriendRequest(
             @RequestParam("id") @NotNull(message = "申请编号不能为空") Long id) {
         friendRequestService.agreeFriendRequest(getLoginUserId(), id);
@@ -70,6 +73,7 @@ public class ImFriendRequestController {
 
     @PutMapping("/refuse")
     @Operation(summary = "拒绝好友申请")
+    @PreAuthorize("@ss.hasPermission('im:friend-request:update')")
     public CommonResult<Boolean> refuseFriendRequest(
             @RequestParam("id") @NotNull(message = "申请编号不能为空") Long id,
             @RequestParam(value = "handleContent", required = false)

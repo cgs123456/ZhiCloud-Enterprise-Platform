@@ -37,6 +37,7 @@ public class AiMusicController {
 
     @PostMapping("/generate")
     @Operation(summary = "音乐生成")
+    @PreAuthorize("@ss.hasPermission('ai:music:create')")
     public CommonResult<List<Long>> generateMusic(@RequestBody @Valid AiSunoGenerateReqVO reqVO) {
         return success(musicService.generateMusic(getLoginUserId(), reqVO));
     }
@@ -44,6 +45,7 @@ public class AiMusicController {
     @Operation(summary = "删除【我的】音乐记录")
     @DeleteMapping("/delete-my")
     @Parameter(name = "id", required = true, description = "音乐编号", example = "1024")
+    @PreAuthorize("@ss.hasPermission('ai:music:delete')")
     public CommonResult<Boolean> deleteMusicMy(@RequestParam("id") Long id) {
         musicService.deleteMusicMy(id, getLoginUserId());
         return success(true);
@@ -63,6 +65,7 @@ public class AiMusicController {
     @PostMapping("/update-my")
     @Operation(summary = "修改【我的】音乐 目前只支持修改标题")
     @Parameter(name = "title", required = true, description = "音乐名称", example = "夜空中最亮的星")
+    @PreAuthorize("@ss.hasPermission('ai:music:update')")
     public CommonResult<Boolean> updateMy(AiMusicUpdateMyReqVO updateReqVO) {
         musicService.updateMyMusic(updateReqVO, getLoginUserId());
         return success(true);

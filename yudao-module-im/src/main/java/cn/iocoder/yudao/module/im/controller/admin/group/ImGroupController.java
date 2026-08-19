@@ -47,6 +47,7 @@ public class ImGroupController {
 
     @PostMapping("/create")
     @Operation(summary = "创建群")
+    @PreAuthorize("@ss.hasPermission('im:group:create')")
     public CommonResult<ImGroupRespVO> createGroup(@Valid @RequestBody ImGroupCreateReqVO createReqVO) {
         ImGroupDO group = groupService.createGroup(createReqVO, getLoginUserId());
         // 新建群必无 pinnedMessages，跳过关联回填
@@ -55,6 +56,7 @@ public class ImGroupController {
 
     @PutMapping("/update")
     @Operation(summary = "更新群")
+    @PreAuthorize("@ss.hasPermission('im:group:update')")
     public CommonResult<ImGroupRespVO> updateGroup(@Valid @RequestBody ImGroupUpdateReqVO updateReqVO) {
         ImGroupDO group = groupService.updateGroup(updateReqVO, getLoginUserId());
         return success(buildGroupRespVO(group, getLoginUserId()));
@@ -63,6 +65,7 @@ public class ImGroupController {
     @DeleteMapping("/dissolve")
     @Operation(summary = "解散群")
     @Parameter(name = "id", description = "群编号", required = true)
+    @PreAuthorize("@ss.hasPermission('im:group:delete')")
     public CommonResult<Boolean> dissolveGroup(@RequestParam("id") Long id) {
         groupService.dissolveGroup(id, getLoginUserId());
         return success(true);
@@ -90,6 +93,7 @@ public class ImGroupController {
 
     @PostMapping("/invite")
     @Operation(summary = "邀请用户加入群")
+    @PreAuthorize("@ss.hasPermission('im:group:create')")
     public CommonResult<Boolean> inviteGroupMember(@Valid @RequestBody ImGroupMemberInviteReqVO inviteReqVO) {
         groupService.inviteGroupMember(getLoginUserId(), inviteReqVO);
         return success(true);
@@ -98,6 +102,7 @@ public class ImGroupController {
     @DeleteMapping("/quit")
     @Operation(summary = "退出群")
     @Parameter(name = "groupId", description = "群编号", required = true)
+    @PreAuthorize("@ss.hasPermission('im:group:delete')")
     public CommonResult<Boolean> quitGroup(@RequestParam("groupId") Long groupId) {
         groupService.quitGroup(groupId, getLoginUserId());
         return success(true);
@@ -105,6 +110,7 @@ public class ImGroupController {
 
     @DeleteMapping("/kicking")
     @Operation(summary = "移除群成员")
+    @PreAuthorize("@ss.hasPermission('im:group:delete')")
     public CommonResult<Boolean> removeGroupMember(@Valid @RequestBody ImGroupMemberRemoveReqVO removeReqVO) {
         groupService.removeGroupMember(getLoginUserId(), removeReqVO);
         return success(true);
@@ -112,6 +118,7 @@ public class ImGroupController {
 
     @PutMapping("/add-admin")
     @Operation(summary = "添加群管理员")
+    @PreAuthorize("@ss.hasPermission('im:group:update')")
     public CommonResult<Boolean> addGroupAdmin(@Valid @RequestBody ImGroupAdminAddReqVO reqVO) {
         groupService.addGroupAdmin(getLoginUserId(), reqVO);
         return success(true);
@@ -119,6 +126,7 @@ public class ImGroupController {
 
     @PutMapping("/remove-admin")
     @Operation(summary = "撤销群管理员")
+    @PreAuthorize("@ss.hasPermission('im:group:update')")
     public CommonResult<Boolean> removeGroupAdmin(@Valid @RequestBody ImGroupAdminRemoveReqVO reqVO) {
         groupService.removeGroupAdmin(getLoginUserId(), reqVO);
         return success(true);
@@ -126,6 +134,7 @@ public class ImGroupController {
 
     @PutMapping("/transfer-owner")
     @Operation(summary = "转让群主")
+    @PreAuthorize("@ss.hasPermission('im:group:update')")
     public CommonResult<Boolean> transferGroupOwner(@Valid @RequestBody ImGroupTransferOwnerReqVO transferReqVO) {
         groupService.transferGroupOwner(getLoginUserId(), transferReqVO);
         return success(true);
@@ -135,6 +144,7 @@ public class ImGroupController {
 
     @PutMapping("/pin-message")
     @Operation(summary = "置顶群消息（群主 / 管理员）")
+    @PreAuthorize("@ss.hasPermission('im:group:update')")
     public CommonResult<Boolean> pinGroupMessage(@Valid @RequestBody ImGroupMessagePinReqVO reqVO) {
         groupService.pinGroupMessage(getLoginUserId(), reqVO.getId(), reqVO.getMessageId());
         return success(true);
@@ -142,6 +152,7 @@ public class ImGroupController {
 
     @PutMapping("/unpin-message")
     @Operation(summary = "取消置顶群消息（群主 / 管理员）")
+    @PreAuthorize("@ss.hasPermission('im:group:update')")
     public CommonResult<Boolean> unpinGroupMessage(@Valid @RequestBody ImGroupMessagePinReqVO reqVO) {
         groupService.unpinGroupMessage(getLoginUserId(), reqVO.getId(), reqVO.getMessageId());
         return success(true);
@@ -151,6 +162,7 @@ public class ImGroupController {
 
     @PutMapping("/mute-all")
     @Operation(summary = "全群禁言 / 取消（群主 / 管理员）")
+    @PreAuthorize("@ss.hasPermission('im:group:update')")
     public CommonResult<Boolean> muteAll(@Valid @RequestBody ImGroupMuteAllReqVO reqVO) {
         groupService.muteAll(getLoginUserId(), reqVO);
         return success(true);
@@ -158,6 +170,7 @@ public class ImGroupController {
 
     @PutMapping("/mute-member")
     @Operation(summary = "禁言成员")
+    @PreAuthorize("@ss.hasPermission('im:group:update')")
     public CommonResult<Boolean> muteMember(@Valid @RequestBody ImGroupMuteMemberReqVO reqVO) {
         groupService.muteMember(getLoginUserId(), reqVO);
         return success(true);
@@ -165,6 +178,7 @@ public class ImGroupController {
 
     @PutMapping("/cancel-mute-member")
     @Operation(summary = "取消成员禁言")
+    @PreAuthorize("@ss.hasPermission('im:group:update')")
     public CommonResult<Boolean> cancelMuteMember(@Valid @RequestBody ImGroupCancelMuteMemberReqVO reqVO) {
         groupService.cancelMuteMember(getLoginUserId(), reqVO);
         return success(true);

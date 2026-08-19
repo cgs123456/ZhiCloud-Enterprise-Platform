@@ -56,12 +56,14 @@ public class AiChatRoleController {
 
     @PostMapping("/create-my")
     @Operation(summary = "创建【我的】聊天角色")
+    @PreAuthorize("@ss.hasPermission('ai:chat-role:create')")
     public CommonResult<Long> createChatRoleMy(@Valid @RequestBody AiChatRoleSaveMyReqVO createReqVO) {
         return success(chatRoleService.createChatRoleMy(createReqVO, getLoginUserId()));
     }
 
     @PutMapping("/update-my")
     @Operation(summary = "更新【我的】聊天角色")
+    @PreAuthorize("@ss.hasPermission('ai:chat-role:update')")
     public CommonResult<Boolean> updateChatRoleMy(@Valid @RequestBody AiChatRoleSaveMyReqVO updateReqVO) {
         chatRoleService.updateChatRoleMy(updateReqVO, getLoginUserId());
         return success(true);
@@ -70,6 +72,7 @@ public class AiChatRoleController {
     @DeleteMapping("/delete-my")
     @Operation(summary = "删除【我的】聊天角色")
     @Parameter(name = "id", description = "编号", required = true)
+    @PreAuthorize("@ss.hasPermission('ai:chat-role:delete')")
     public CommonResult<Boolean> deleteChatRoleMy(@RequestParam("id") Long id) {
         chatRoleService.deleteChatRoleMy(id, getLoginUserId());
         return success(true);

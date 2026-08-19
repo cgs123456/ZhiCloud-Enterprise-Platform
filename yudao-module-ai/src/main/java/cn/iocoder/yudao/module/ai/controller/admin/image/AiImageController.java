@@ -72,6 +72,7 @@ public class AiImageController {
 
     @Operation(summary = "生成图片")
     @PostMapping("/draw")
+    @PreAuthorize("@ss.hasPermission('ai:image:create')")
     public CommonResult<Long> drawImage(@Valid @RequestBody AiImageDrawReqVO drawReqVO) {
         return success(imageService.drawImage(getLoginUserId(), drawReqVO));
     }
@@ -79,6 +80,7 @@ public class AiImageController {
     @Operation(summary = "删除【我的】绘画记录")
     @DeleteMapping("/delete-my")
     @Parameter(name = "id", required = true, description = "绘画编号", example = "1024")
+    @PreAuthorize("@ss.hasPermission('ai:image:delete')")
     public CommonResult<Boolean> deleteImageMy(@RequestParam("id") Long id) {
         imageService.deleteImageMy(id, getLoginUserId());
         return success(true);
@@ -88,6 +90,7 @@ public class AiImageController {
 
     @Operation(summary = "【Midjourney】生成图片")
     @PostMapping("/midjourney/imagine")
+    @PreAuthorize("@ss.hasPermission('ai:image:create')")
     public CommonResult<Long> midjourneyImagine(@Valid @RequestBody AiMidjourneyImagineReqVO reqVO) {
         Long imageId = imageService.midjourneyImagine(getLoginUserId(), reqVO);
         return success(imageId);
@@ -104,6 +107,7 @@ public class AiImageController {
 
     @Operation(summary = "【Midjourney】Action 操作（二次生成图片）", description = "例如说：放大、缩小、U1、U2 等")
     @PostMapping("/midjourney/action")
+    @PreAuthorize("@ss.hasPermission('ai:image:create')")
     public CommonResult<Long> midjourneyAction(@Valid @RequestBody AiMidjourneyActionReqVO reqVO) {
         Long imageId = imageService.midjourneyAction(getLoginUserId(), reqVO);
         return success(imageId);

@@ -37,6 +37,7 @@ public class ImFaceUserItemController {
 
     @PostMapping("/create")
     @Operation(summary = "添加个人表情")
+    @PreAuthorize("@ss.hasPermission('im:face-user-item:create')")
     public CommonResult<Long> createFaceUserItem(@Valid @RequestBody ImFaceUserItemSaveReqVO reqVO) {
         return success(faceUserItemService.createFaceUserItem(getLoginUserId(), reqVO));
     }
@@ -44,6 +45,7 @@ public class ImFaceUserItemController {
     @DeleteMapping("/delete")
     @Operation(summary = "删除个人表情")
     @Parameter(name = "id", description = "编号", required = true, example = "4096")
+    @PreAuthorize("@ss.hasPermission('im:face-user-item:delete')")
     public CommonResult<Boolean> deleteFaceUserItem(@RequestParam("id") Long id) {
         faceUserItemService.deleteFaceUserItem(getLoginUserId(), id);
         return success(true);

@@ -32,6 +32,7 @@ public class ImGroupMessageController {
 
     @PostMapping("/send")
     @Operation(summary = "发送群聊消息")
+    @PreAuthorize("@ss.hasPermission('im:group-message:create')")
     public CommonResult<ImGroupMessageRespVO> sendGroupMessage(@Valid @RequestBody ImGroupMessageSendReqVO reqVO) {
         ImGroupMessageDO message = groupMessageService.sendGroupMessage(getLoginUserId(), reqVO);
         return success(BeanUtils.toBean(message, ImGroupMessageRespVO.class));
@@ -52,6 +53,7 @@ public class ImGroupMessageController {
     @Operation(summary = "标记群聊消息已读")
     @Parameter(name = "groupId", description = "群编号", required = true, example = "1")
     @Parameter(name = "messageId", description = "已读到的消息编号", required = true, example = "100")
+    @PreAuthorize("@ss.hasPermission('im:group-message:update')")
     public CommonResult<Boolean> readGroupMessages(@RequestParam("groupId") Long groupId,
                                                    @RequestParam("messageId") Long messageId) {
         groupMessageService.readGroupMessages(getLoginUserId(), groupId, messageId);
@@ -61,6 +63,7 @@ public class ImGroupMessageController {
     @DeleteMapping("/recall")
     @Operation(summary = "撤回群聊消息")
     @Parameter(name = "id", description = "消息编号", required = true, example = "1")
+    @PreAuthorize("@ss.hasPermission('im:group-message:delete')")
     public CommonResult<ImGroupMessageRespVO> recallGroupMessage(@RequestParam("id") Long id) {
         ImGroupMessageDO message = groupMessageService.recallGroupMessage(getLoginUserId(), id);
         return success(BeanUtils.toBean(message, ImGroupMessageRespVO.class));

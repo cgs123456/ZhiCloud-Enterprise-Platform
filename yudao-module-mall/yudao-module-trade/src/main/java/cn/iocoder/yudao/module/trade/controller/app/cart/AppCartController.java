@@ -31,12 +31,14 @@ public class AppCartController {
 
     @PostMapping("/add")
     @Operation(summary = "添加购物车商品")
+    @PreAuthorize("@ss.hasPermission('trade:cart:create')")
     public CommonResult<Long> addCart(@Valid @RequestBody AppCartAddReqVO addCountReqVO) {
         return success(cartService.addCart(getLoginUserId(), addCountReqVO));
     }
 
     @PutMapping("/update-count")
     @Operation(summary = "更新购物车商品数量")
+    @PreAuthorize("@ss.hasPermission('trade:cart:update')")
     public CommonResult<Boolean> updateCartCount(@Valid @RequestBody AppCartUpdateCountReqVO updateReqVO) {
         cartService.updateCartCount(getLoginUserId(), updateReqVO);
         return success(true);
@@ -44,6 +46,7 @@ public class AppCartController {
 
     @PutMapping("/update-selected")
     @Operation(summary = "更新购物车商品选中")
+    @PreAuthorize("@ss.hasPermission('trade:cart:update')")
     public CommonResult<Boolean> updateCartSelected(@Valid @RequestBody AppCartUpdateSelectedReqVO updateReqVO) {
         cartService.updateCartSelected(getLoginUserId(), updateReqVO);
         return success(true);
@@ -51,6 +54,7 @@ public class AppCartController {
 
     @PutMapping("/reset")
     @Operation(summary = "重置购物车商品")
+    @PreAuthorize("@ss.hasPermission('trade:cart:update')")
     public CommonResult<Boolean> resetCart(@Valid @RequestBody AppCartResetReqVO updateReqVO) {
         cartService.resetCart(getLoginUserId(), updateReqVO);
         return success(true);
@@ -59,6 +63,7 @@ public class AppCartController {
     @DeleteMapping("/delete")
     @Operation(summary = "删除购物车商品")
     @Parameter(name = "ids", description = "购物车商品编号", required = true, example = "1024,2048")
+    @PreAuthorize("@ss.hasPermission('trade:cart:delete')")
     public CommonResult<Boolean> deleteCart(@RequestParam("ids") List<Long> ids) {
         cartService.deleteCart(getLoginUserId(), ids);
         return success(true);
