@@ -196,6 +196,12 @@
             <artifactId>yudao-spring-boot-starter-protection</artifactId>
         </dependency>
 
+        <!-- 共享库存 Starter（P1-4）：统一库存模型与并发三件套保护 -->
+        <dependency>
+            <groupId>cn.iocoder.boot</groupId>
+            <artifactId>yudao-spring-boot-starter-biz-inventory</artifactId>
+        </dependency>
+
         <!-- 监控相关：Spring Boot Actuator + Micrometer Prometheus -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
