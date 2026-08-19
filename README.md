@@ -98,9 +98,11 @@
 | 质量门禁 | JaCoCo 覆盖率门禁（当前基线 30%，WMS/MES 已纳入阻断，BPM 暂排除待补齐单测；目标分阶段提升至 60%→80%）+ 7 道 Python 脚本门禁（错误码唯一性/PreAuthorize 全仓/WMS 严格/电子签名/裸抛/事务原子性/错误码基线）、JUnit + Mockito 单元测试 |
 | 监控 | Prometheus + Grafana（4 Dashboard）+ Loki 日志 + Jaeger 链路追踪 + AlertManager 告警 |
 | 压测 | JMeter（yudao-load-test.jmx）+ Gatling（YudaoLoadTest.scala） |
-| 灾备 | 备份脚本、异地容灾、disaster-recovery-drill.sh 演练脚本 |## 🗄️ 数据库版本管理
+| 灾备 | 备份脚本、异地容灾、disaster-recovery-drill.sh 演练脚本 |
 
-采用 Flyway 管理 76 个迁移脚本（V1-V76），覆盖：
+## 🗄️ 数据库版本管理
+
+采用 Flyway 管理 86 个迁移脚本（V1–V81，部分版本号复用如 V60-V64 多版本共存），覆盖：
 
 - V1 基线 → V6 期间结转 → V8 TOTP → V9 操作日志哈希链
 - ERP：多币种/预算/合并/固定资产/总账/采购询价/VMI/CPFR/MRP/信用管理
@@ -116,29 +118,29 @@
 
 | 模块 | 测试文件数 |
 |------|-----------|
-| MES | 46 |
-| System | 40 |
-| AI | 35 |
-| BPM | 27 |
+| IoT | 52 |
+| MES | 48 |
+| System | 39 |
+| AI | 32 |
+| Framework | 29 |
 | Infra | 26 |
 | WMS | 26 |
-| IoT | 51 |
 | IM | 21 |
-| Framework | 22 |
-| Pay | 15 |
+| BPM | 20 |
 | Trade | 15 |
+| Pay | 14 |
 | Promotion | 13 |
 | Member | 8 |
-| Product | 7 |
+| Product | 5 |
 | QMS | 6 |
-| ERP | 6 |
-| CRM | 5 |
+| ERP | 8 |
+| CRM | 4 |
 | TMS | 4 |
 | OA | 3 |
 | HR | 3 |
 | Report | 2 |
 | AI-RAG | 2 |
-| **合计** | **383** |
+| **合计** | **380** |
 
 ## 📁 项目结构
 
