@@ -311,6 +311,17 @@ spec:
         - protocol: TCP
           port: 48090
   egress:
+    # DNS 解析（kube-dns CoreDNS）：必须放行 UDP+TCP 53，否则 Pod 无法解析服务名
+    - to:
+        - podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # 集群内部依赖（MySQL / Redis / Postgres）
     - to:
         - podSelector:
             matchLabels:
@@ -328,6 +339,7 @@ spec:
           port: 6379
         - protocol: TCP
           port: 5432
+    # 外部 HTTPS / OTel collector（HTTP/4318）
     - to:
         - namespaceSelector: {}
       ports:

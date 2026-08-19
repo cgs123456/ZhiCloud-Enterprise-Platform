@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.wms.service.order.pickstrategy;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.framework.security.core.util.SecurityFrameworkUtils;
 import cn.iocoder.yudao.module.wms.controller.admin.order.pickstrategy.vo.WmsPickTaskPageReqVO;
 import cn.iocoder.yudao.module.wms.dal.dataobject.order.pickstrategy.WmsPickTaskDO;
 import cn.iocoder.yudao.module.wms.dal.mysql.order.pickstrategy.WmsPickTaskMapper;
@@ -16,7 +17,10 @@ import java.util.List;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.wms.enums.ErrorCodeConstants.PICK_TASK_NOT_EXISTS;
+import static cn.iocoder.yudao.module.wms.enums.ErrorCodeConstants.PICK_TASK_NOT_YOURS;
 import static cn.iocoder.yudao.module.wms.enums.ErrorCodeConstants.PICK_TASK_STATUS_NOT_PICKABLE;
+import static cn.iocoder.yudao.module.wms.enums.ErrorCodeConstants.WMS_PICK_QUANTITY_NEGATIVE;
+import static cn.iocoder.yudao.module.wms.enums.ErrorCodeConstants.WMS_PICK_QUANTITY_EXCEEDS;
 
 /**
  * WMS 拣货任务 Service 实现类
@@ -57,12 +61,24 @@ public class WmsPickTaskServiceImpl implements WmsPickTaskService {
         if (task == null) {
             throw exception(PICK_TASK_NOT_EXISTS);
         }
-        // 2. 校验状态可拣（待拣或已拣）
+        // 2. IDOR 防护：任务必须归属当前登录用户（21 CFR Part 11 防抵赖要求）
+        Long loginUserId = SecurityFrameworkUtils.getLoginUserId();
+        if (loginUserId == null || !loginUserId.equals(task.getPickerUserId())) {
+            throw exception(PICK_TASK_NOT_YOURS);
+        }
+        // 3. 校验状态可拣（待拣或已拣）
         if (ObjectUtil.notEqual(task.getStatus(), STATUS_PENDING)
                 && ObjectUtil.notEqual(task.getStatus(), STATUS_PICKED)) {
             throw exception(PICK_TASK_STATUS_NOT_PICKABLE);
         }
-        // 3. 更新已拣数量与状态
+        // 4. 数量非负 + 不超上限（防止数量污染）
+        if (pickedQuantity == null || pickedQuantity.compareTo(BigDecimal.ZERO) < 0) {
+            throw exception(WMS_PICK_QUANTITY_NEGATIVE);
+        }
+        if (task.getQuantity() != null && pickedQuantity.compareTo(task.getQuantity()) > 0) {
+            throw exception(WMS_PICK_QUANTITY_EXCEEDS);
+        }
+        // 5. 更新已拣数量与状态
         WmsPickTaskDO updateObj = new WmsPickTaskDO();
         updateObj.setId(taskId);
         updateObj.setPickedQuantity(pickedQuantity);

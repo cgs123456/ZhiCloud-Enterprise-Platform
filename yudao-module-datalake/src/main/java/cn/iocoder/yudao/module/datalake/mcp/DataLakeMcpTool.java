@@ -88,6 +88,9 @@ public class DataLakeMcpTool {
      * @param sql 待校验的 SQL 语句
      * @return 校验通过返回 true，否则返回 false
      */
+    private static final Pattern CATALOG_REF_PATTERN = Pattern.compile(
+            "\\b\\w+\\.\\w+\\.\\w+\\b", Pattern.CASE_INSENSITIVE);
+
     private boolean validateSelectSql(String sql) {
         if (sql == null || sql.isBlank()) {
             log.warn("[validateSelectSql][SQL 为空，拒绝执行]");
@@ -121,6 +124,12 @@ public class DataLakeMcpTool {
         if (!foundKeywords.isEmpty()) {
             log.warn("[validateSelectSql][SQL 包含禁止关键字 {}，拒绝执行: {}]",
                     foundKeywords, truncateForLog(trimmed));
+            return false;
+        }
+        // 5. 跨 catalog 引用校验：防止 SELECT ... FROM other_catalog.schema.table 越权读取业务库数据
+        if (CATALOG_REF_PATTERN.matcher(trimmed).find()) {
+            log.warn("[validateSelectSql][SQL 包含跨 catalog 引用，拒绝执行: {}]",
+                    truncateForLog(trimmed));
             return false;
         }
         return true;

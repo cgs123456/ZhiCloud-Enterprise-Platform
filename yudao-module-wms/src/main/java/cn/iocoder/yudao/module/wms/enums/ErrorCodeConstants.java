@@ -204,6 +204,9 @@ public interface ErrorCodeConstants {
     ErrorCode PICK_TASK_STATUS_NOT_PICKABLE = new ErrorCode(1_060_207_001, "拣货任务状态不在可拣货状态");
     ErrorCode PICK_TASK_GENERATE_NO_DETAIL = new ErrorCode(1_060_207_002, "出库单无明细，无法生成拣货任务");
     ErrorCode PICK_TASK_SHIPMENT_NOT_PICKABLE = new ErrorCode(1_060_207_003, "出库单不在可拣货状态");
+    ErrorCode PICK_TASK_NOT_YOURS = new ErrorCode(1_060_207_004, "拣货任务归属当前登录用户，无权操作");
+    ErrorCode WMS_PICK_QUANTITY_NEGATIVE = new ErrorCode(1_060_207_005, "拣货数量不能为负数");
+    ErrorCode WMS_PICK_QUANTITY_EXCEEDS = new ErrorCode(1_060_207_006, "拣货数量不能超过应拣数量");
 
     // ========== WMS 批次效期预警 1-060-303-000 ==========
     ErrorCode BATCH_EXPIRY_ALERT_NOT_EXISTS = new ErrorCode(1_060_303_000, "批次效期预警不存在");

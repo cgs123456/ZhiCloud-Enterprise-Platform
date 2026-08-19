@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.wms.service.order.pickstrategy;
 
 import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.framework.security.core.util.SecurityFrameworkUtils;
 import cn.iocoder.yudao.module.wms.controller.admin.order.pickstrategy.vo.WmsPickTaskPageReqVO;
 import cn.iocoder.yudao.module.wms.dal.dataobject.order.pickstrategy.WmsPickTaskDO;
 import cn.iocoder.yudao.module.wms.dal.mysql.order.pickstrategy.WmsPickTaskMapper;
@@ -18,6 +19,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static cn.iocoder.yudao.module.wms.enums.ErrorCodeConstants.PICK_TASK_NOT_EXISTS;
+import static cn.iocoder.yudao.module.wms.enums.ErrorCodeConstants.PICK_TASK_NOT_YOURS;
 import static cn.iocoder.yudao.module.wms.enums.ErrorCodeConstants.PICK_TASK_STATUS_NOT_PICKABLE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -40,42 +42,76 @@ public class WmsPickTaskServiceImplUnitTest {
 
     @Test
     public void testConfirmPick_success() {
-        when(pickTaskMapper.selectById(1L)).thenReturn(WmsPickTaskDO.builder().id(1L).status(10).build());
+        Long mockUserId = 100L;
+        try (var mockStatic = org.mockito.Mockito.mockStatic(SecurityFrameworkUtils.class)) {
+            mockStatic.when(SecurityFrameworkUtils::getLoginUserId).thenReturn(mockUserId);
 
-        pickTaskService.confirmPick(1L, new BigDecimal("5"));
+            when(pickTaskMapper.selectById(1L)).thenReturn(WmsPickTaskDO.builder().id(1L).status(10).pickerUserId(mockUserId).build());
 
-        ArgumentCaptor<WmsPickTaskDO> captor = ArgumentCaptor.forClass(WmsPickTaskDO.class);
-        verify(pickTaskMapper).updateById(captor.capture());
-        assertEquals(20, captor.getValue().getStatus());
-        assertEquals(new BigDecimal("5"), captor.getValue().getPickedQuantity());
-        assertNotNull(captor.getValue().getPickTime());
+            pickTaskService.confirmPick(1L, new BigDecimal("5"));
+
+            ArgumentCaptor<WmsPickTaskDO> captor = ArgumentCaptor.forClass(WmsPickTaskDO.class);
+            verify(pickTaskMapper).updateById(captor.capture());
+            assertEquals(20, captor.getValue().getStatus());
+            assertEquals(new BigDecimal("5"), captor.getValue().getPickedQuantity());
+            assertNotNull(captor.getValue().getPickTime());
+        }
     }
 
     @Test
     public void testConfirmPick_alreadyPickedStillAllowed() {
-        when(pickTaskMapper.selectById(1L)).thenReturn(WmsPickTaskDO.builder().id(1L).status(20).build());
+        Long mockUserId = 100L;
+        try (var mockStatic = org.mockito.Mockito.mockStatic(SecurityFrameworkUtils.class)) {
+            mockStatic.when(SecurityFrameworkUtils::getLoginUserId).thenReturn(mockUserId);
 
-        pickTaskService.confirmPick(1L, new BigDecimal("8"));
+            when(pickTaskMapper.selectById(1L)).thenReturn(WmsPickTaskDO.builder().id(1L).status(20).pickerUserId(mockUserId).build());
 
-        verify(pickTaskMapper).updateById(any(WmsPickTaskDO.class));
+            pickTaskService.confirmPick(1L, new BigDecimal("8"));
+
+            verify(pickTaskMapper).updateById(any(WmsPickTaskDO.class));
+        }
     }
 
     @Test
     public void testConfirmPick_notExists() {
-        when(pickTaskMapper.selectById(404L)).thenReturn(null);
+        try (var mockStatic = org.mockito.Mockito.mockStatic(SecurityFrameworkUtils.class)) {
+            mockStatic.when(SecurityFrameworkUtils::getLoginUserId).thenReturn(100L);
 
-        ServiceException ex = assertThrows(ServiceException.class,
-                () -> pickTaskService.confirmPick(404L, BigDecimal.ONE));
-        assertEquals(PICK_TASK_NOT_EXISTS.getCode(), ex.getCode());
+            when(pickTaskMapper.selectById(404L)).thenReturn(null);
+
+            ServiceException ex = assertThrows(ServiceException.class,
+                    () -> pickTaskService.confirmPick(404L, BigDecimal.ONE));
+            assertEquals(PICK_TASK_NOT_EXISTS.getCode(), ex.getCode());
+        }
     }
 
     @Test
     public void testConfirmPick_statusNotPickable() {
-        when(pickTaskMapper.selectById(1L)).thenReturn(WmsPickTaskDO.builder().id(1L).status(30).build());
+        Long mockUserId = 100L;
+        try (var mockStatic = org.mockito.Mockito.mockStatic(SecurityFrameworkUtils.class)) {
+            mockStatic.when(SecurityFrameworkUtils::getLoginUserId).thenReturn(mockUserId);
 
-        ServiceException ex = assertThrows(ServiceException.class,
-                () -> pickTaskService.confirmPick(1L, BigDecimal.ONE));
-        assertEquals(PICK_TASK_STATUS_NOT_PICKABLE.getCode(), ex.getCode());
+            when(pickTaskMapper.selectById(1L)).thenReturn(WmsPickTaskDO.builder().id(1L).status(30).pickerUserId(mockUserId).build());
+
+            ServiceException ex = assertThrows(ServiceException.class,
+                    () -> pickTaskService.confirmPick(1L, BigDecimal.ONE));
+            assertEquals(PICK_TASK_STATUS_NOT_PICKABLE.getCode(), ex.getCode());
+        }
+    }
+
+    @Test
+    public void testConfirmPick_idorBlocked() {
+        Long mockUserId = 100L;
+        try (var mockStatic = org.mockito.Mockito.mockStatic(SecurityFrameworkUtils.class)) {
+            mockStatic.when(SecurityFrameworkUtils::getLoginUserId).thenReturn(mockUserId);
+
+            // 任务归属其他用户
+            when(pickTaskMapper.selectById(1L)).thenReturn(WmsPickTaskDO.builder().id(1L).status(10).pickerUserId(999L).build());
+
+            ServiceException ex = assertThrows(ServiceException.class,
+                    () -> pickTaskService.confirmPick(1L, BigDecimal.ONE));
+            assertEquals(PICK_TASK_NOT_YOURS.getCode(), ex.getCode());
+        }
     }
 
     @Test

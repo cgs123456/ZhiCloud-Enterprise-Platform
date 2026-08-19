@@ -146,7 +146,7 @@ public class YudaoWebAutoConfiguration {
                 if (trimmed.isEmpty()) {
                     continue;
                 }
-                if ("*".equals(trimmed)) {
+                if (trimmed.contains("*")) {
                     wildcard = true;
                 }
                 config.addAllowedOriginPattern(trimmed);

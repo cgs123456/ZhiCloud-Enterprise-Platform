@@ -122,16 +122,45 @@ yudao.requiredSecret：渲染一个敏感值，并在其为空或仍为占位符
 helm install 不会报错，于是「忘了改密码」会静默进入生产——这类问题只有出事才会被发现。
 现在改为渲染期硬失败，把它前移成部署时的确定性错误。
 
-如需在本地/CI 冒烟环境临时放行，显式设置 secrets.allowInsecureDefaults=true。
+安全约束：
+  - allowInsecureDefaults=true 仅在非 prod profile 下有效；生产部署（spring.profiles.active=prod 或 env.SPRING_PROFILES_ACTIVE=prod）
+    无论此开关为何值，都必须使用真实密钥或 existingSecret。
+  - 开启时渲染显式占位符 "[INSECURE_DEFAULT]" 而非空字符串，避免「密码为空但镜像可运行」的
+    假象；生产环境此路径会被 fail 拦截。
 */}}
 {{- define "yudao.requiredSecret" -}}
 {{- $root := index . 0 -}}
 {{- $key := index . 1 -}}
 {{- $value := index . 2 | default "" -}}
 {{- if or (eq $value "") (hasPrefix "CHANGE_ME" $value) -}}
-{{- if not $root.Values.secrets.allowInsecureDefaults -}}
-{{- fail (printf "secrets.%s 未设置或仍为占位符。请通过 External Secrets / Sealed Secrets / SOPS 注入真实值，或设置 secrets.existingSecret 引用外部 Secret；仅限非生产冒烟可用 --set secrets.allowInsecureDefaults=true 放行。" $key) -}}
+  {{- if not $root.Values.secrets.allowInsecureDefaults -}}
+    {{- fail (printf "secrets.%s 未设置或仍为占位符。请通过 External Secrets / Sealed Secrets / SOPS 注入真实值，或设置 secrets.existingSecret 引用外部 Secret；仅限非生产冒烟可用 --set secrets.allowInsecureDefaults=true 放行。" $key) -}}
+  {{- else -}}
+    {{/* 非 prod profile 临时放行：检测是否为生产环境 */}}
+    {{- $isProd := false -}}
+    {{/* 检测 env.SPRING_PROFILES_ACTIVE（部署配置中使用的变量） */}}
+    {{- $profilesEnv := splitList "," (index $root.Values "env" | default dict | dig "SPRING_PROFILES_ACTIVE" "") -}}
+    {{- range $profilesEnv -}}
+      {{- if eq . "prod" -}}
+        {{- $isProd = true -}}
+      {{- end -}}
+    {{- end -}}
+    {{/* 兜底：检测 .Values.spring.profiles.active（部分 Helm chart 可能使用此路径） */}}
+    {{- if not $isProd -}}
+      {{- $profilesActive := splitList "," (index $root.Values "spring" | default dict | dig "profiles" "active" "") -}}
+      {{- range $profilesActive -}}
+        {{- if eq . "prod" -}}
+          {{- $isProd = true -}}
+        {{- end -}}
+      {{- end -}}
+    {{- end -}}
+    {{- if $isProd -}}
+      {{- fail (printf "secrets.%s：生产环境不允许 allowInsecureDefaults=true，必须注入真实密钥或使用 existingSecret。" $key) -}}
+    {{- end -}}
+    {{/* 渲染显式占位符，带引号以符合 YAML 规范 */}}
+    {{ "[INSECURE_DEFAULT]" | quote }}
+  {{- end -}}
+{{- else -}}
+  {{- $value | quote -}}
 {{- end -}}
-{{- end -}}
-{{- $value | quote -}}
 {{- end -}}
