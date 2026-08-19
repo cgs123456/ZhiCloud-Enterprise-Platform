@@ -16,12 +16,12 @@
 
 | 指标 | 数值 |
 |------|------|
-| Java 源文件 | 7,007（主代码）+ 337（测试） |
+| Java 源文件 | 6,973（主代码）+ 380（测试） |
 | Controller | 615 |
 | 业务模块 | 11 个活跃模块（ERP/MES/WMS/CRM/HR/OA/TMS + AI 三大模块 + 框架基础） |
 | Flyway 迁移脚本 | 86 个（V1–V81，部分版本号复用如 V60-V64 多版本共存） |
-| SQL 文件 | 166 个 |
-| 单元测试文件 | 333 个 |
+| SQL 文件 | 276 个 |
+| 单元测试文件 | 380 个 |
 | 框架 Starter | 16 个（yudao-common + 15 starter 模块） |
 
 ## 🏗️ 技术架构
@@ -91,16 +91,14 @@
 | 能力 | 工具/实现 |
 |------|----------|
 | 容器化 | Dockerfile（非 root 用户、HEALTHCHECK、多阶段构建） |
-| 编排 | docker-compose（17 服务：MySQL/Redis/PG/Nacos/MinIO/Trino/Prometheus/Grafana/Loki/Jaeger/Alertmanager/Promtail/Server/Nacos/Backup 等） |
-| K8s 部署 | Helm Chart（10 模板文件，不含 values）+ values-dev/prod/staging、ArgoCD GitOps、金丝雀发布 |
+| 编排 | docker-compose（14 服务：MySQL/Redis/PG/Nacos/MinIO/Trino/Prometheus/Grafana/Loki/Jaeger/Alertmanager/Promtail/Server/Backup 等） |
+| K8s 部署 | Helm Chart（11 模板文件，不含 values）+ values-dev/prod/staging、ArgoCD GitOps、金丝雀发布 |
 | CI/CD | Jenkins Pipeline（测试→安全扫描→SonarQube→构建→部署/回滚） |
 | 安全 | OWASP Dependency-Check（CVSS≥7 高危阻断；需配置 NVD API Key，未配置时 CI 跳过并告警）、CycloneDX SBOM、pre-commit 密钥扫描、security-check.sh 部署前检查 |
 | 质量门禁 | JaCoCo 覆盖率门禁（当前基线 30%，WMS/MES 已纳入阻断，BPM 暂排除待补齐单测；目标分阶段提升至 60%→80%）+ 7 道 Python 脚本门禁（错误码唯一性/PreAuthorize 全仓/WMS 严格/电子签名/裸抛/事务原子性/错误码基线）、JUnit + Mockito 单元测试 |
 | 监控 | Prometheus + Grafana（4 Dashboard）+ Loki 日志 + Jaeger 链路追踪 + AlertManager 告警 |
 | 压测 | JMeter（yudao-load-test.jmx）+ Gatling（YudaoLoadTest.scala） |
-| 灾备 | 备份脚本、异地容灾、disaster-recovery-drill.sh 演练脚本 |
-
-## 🗄️ 数据库版本管理
+| 灾备 | 备份脚本、异地容灾、disaster-recovery-drill.sh 演练脚本 |## 🗄️ 数据库版本管理
 
 采用 Flyway 管理 76 个迁移脚本（V1-V76），覆盖：
 
@@ -243,10 +241,10 @@ mvn spring-boot:run
 - Docker 非 root 用户运行（UID/GID 1000）
 - K8s Secret 占位符 + securityContext
 - QMS 电子签名（21 CFR Part 11）：8 个管控点（审批/驳回/关闭）全量覆盖，CI 门禁防回归
-- 全仓 @PreAuthorize 扫描门禁：124 个 GAP 存量基线冻结，CRITICAL=0 匿名可达
-- 裸抛异常统一门禁：74 处 RuntimeException → ServiceException(ErrorCode)，CI 防回归
+- 全仓 @PreAuthorize 扫描门禁：GAP 清零（0/615 Controller），CRITICAL=0 匿名可达
+- 裸抛异常统一门禁：0 处裸抛（4 处显式 @bare-throw-ignore 豁免），CI 防回归
 - 事务原子性门禁：12 处多写操作补 @Transactional，CI 防回归
-- 错误码唯一性门禁：140 处冲突去重，2036 个定义 0 冲突
+- 错误码唯一性门禁：140 处冲突去重，2051 个定义 0 冲突
 
 ## 📄 开源协议
 
