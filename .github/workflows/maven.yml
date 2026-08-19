@@ -46,11 +46,11 @@ jobs:
     #
     # 两道门禁，职责不同，都要保留：
     #   1) 全仓门禁：[CRITICAL]（匿名可写）零容忍；[GAP]（缺 @PreAuthorize 但仍需登录）
-    #      是 89 个历史存量，用 --max-gaps 棘轮卡住只降不升，清理后按脚本提示下调基线。
+    #      是 46 个历史存量，用 --max-gaps 棘轮卡住只降不升，清理后按脚本提示下调基线。
     #      只扫 WMS 是不够的——历史上全仓一度有 51 个匿名写接口在门禁视野之外。
     #   2) WMS 严格门禁：WMS 已完成整改，[GAP] 必须保持 0，不吃全仓基线的豁免。
     - name: Full-Repo @PreAuthorize / @PermitAll Gate
-      run: python3 scripts/check_missing_preauthorize.py --include-app --max-gaps 89
+      run: python3 scripts/check_missing_preauthorize.py --include-app --max-gaps 46
     - name: WMS Strict @PreAuthorize Gate (zero tolerance)
       run: python3 scripts/check_missing_preauthorize.py --module yudao-module-wms --include-app
     # 电子签名管控点存活门禁（21 CFR Part 11）。
