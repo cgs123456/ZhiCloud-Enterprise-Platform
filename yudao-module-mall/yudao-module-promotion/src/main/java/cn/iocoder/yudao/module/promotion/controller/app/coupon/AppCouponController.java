@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,6 +41,7 @@ public class AppCouponController {
     @PostMapping("/take")
     @Operation(summary = "领取优惠劵")
     @Parameter(name = "templateId", description = "优惠券模板编号", required = true, example = "1024")
+    @PreAuthorize("@ss.hasPermission('promotion:coupon:take')")
     public CommonResult<Boolean> takeCoupon(@Valid @RequestBody AppCouponTakeReqVO reqVO) {
         // 1. 领取优惠劵
         Long userId = getLoginUserId();

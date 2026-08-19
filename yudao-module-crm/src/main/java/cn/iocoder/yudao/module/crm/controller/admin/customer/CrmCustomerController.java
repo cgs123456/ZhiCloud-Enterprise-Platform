@@ -83,6 +83,7 @@ public class CrmCustomerController {
             @Parameter(name = "id", description = "客户编号", required = true),
             @Parameter(name = "dealStatus", description = "成交状态", required = true)
     })
+    @PreAuthorize("@ss.hasPermission('crm:customer:update')")
     public CommonResult<Boolean> updateCustomerDealStatus(@RequestParam("id") Long id,
                                                           @RequestParam("dealStatus") Boolean dealStatus) {
         customerService.updateCustomerDealStatus(id, dealStatus);

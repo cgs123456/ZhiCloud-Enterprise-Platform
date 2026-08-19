@@ -44,6 +44,7 @@ public class MpOpenController {
     @Operation(summary = "处理消息")
     @PostMapping(value = "/{appId}", produces = "application/xml; charset=UTF-8")
     @TenantIgnore
+    @PermitAll
     public String handleMessage(@PathVariable("appId") String appId,
                                 @RequestBody String content,
                                 MpOpenHandleMessageReqVO reqVO) {

@@ -171,6 +171,7 @@ public class OaDocumentController {
     @PutMapping("/increment-read")
     @Operation(summary = "增加阅读量")
     @Parameter(name = "id", description = "编号", required = true)
+    @PreAuthorize("@ss.hasPermission('oa:document:update')")
     public CommonResult<Boolean> incrementReadCount(@RequestParam("id") Long id) {
         documentService.incrementReadCount(id);
         return success(true);

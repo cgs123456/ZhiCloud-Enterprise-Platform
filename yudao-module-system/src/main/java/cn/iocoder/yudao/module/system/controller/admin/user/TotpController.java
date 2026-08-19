@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,6 +38,7 @@ public class TotpController {
 
     @PostMapping("/enable")
     @Operation(summary = "绑定 TOTP", description = "生成 TOTP 密钥并绑定，返回二维码 URI；用户需立即使用 Authenticator App 扫描二维码")
+    @PreAuthorize("@ss.hasPermission('system:user:update')")
     public CommonResult<TotpEnableRespVO> enableTotp() {
         // 校验 TOTP 功能是否开启
         validateTotpFeatureEnabled();
@@ -61,6 +63,7 @@ public class TotpController {
 
     @PostMapping("/disable")
     @Operation(summary = "解绑 TOTP", description = "需要验证当前 TOTP 验证码后才能解绑")
+    @PreAuthorize("@ss.hasPermission('system:user:update')")
     public CommonResult<Boolean> disableTotp(@Valid @RequestBody TotpDisableReqVO reqVO) {
         // 校验用户是否存在且已启用 TOTP
         AdminUserDO user = userService.getUser(getLoginUserId());

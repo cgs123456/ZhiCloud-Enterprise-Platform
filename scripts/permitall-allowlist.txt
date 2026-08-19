@@ -108,3 +108,9 @@ yudao-module-crm/src/main/java/cn/iocoder/yudao/module/crm/controller/admin/clue
 # ============================================================
 # PDA 设备登录：内部自行校验账号密码后签发令牌，属认证入口
 yudao-module-wms/src/main/java/cn/iocoder/yudao/module/wms/controller/app/pda/WmsPdaController.java#login
+
+# ============================================================
+# 9) 第三方回调 —— 微信公众号
+# ============================================================
+# 微信公众号消息推送回调：由微信服务器推送，靠签名验签
+yudao-module-mp/src/main/java/cn/iocoder/yudao/module/mp/controller/admin/open/MpOpenController.java#handleMessage

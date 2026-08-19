@@ -60,6 +60,7 @@ public class ErpWarehouseController {
             @Parameter(name = "id", description = "编号", required = true),
             @Parameter(name = "status", description = "状态", required = true)
     })
+    @PreAuthorize("@ss.hasPermission('erp:warehouse:update')")
     public CommonResult<Boolean> updateWarehouseDefaultStatus(@RequestParam("id") Long id,
                                                               @RequestParam("defaultStatus") Boolean defaultStatus) {
         warehouseService.updateWarehouseDefaultStatus(id, defaultStatus);

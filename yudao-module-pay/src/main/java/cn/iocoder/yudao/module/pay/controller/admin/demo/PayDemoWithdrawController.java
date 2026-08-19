@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.annotation.security.PermitAll;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,6 +33,7 @@ public class PayDemoWithdrawController {
 
     @PostMapping("/create")
     @Operation(summary = "创建示例提现单")
+    @PreAuthorize("@ss.hasPermission('pay:demo-withdraw:create')")
     public CommonResult<Long> createDemoWithdraw(@Valid @RequestBody PayDemoWithdrawCreateReqVO createReqVO) {
         Long id = demoWithdrawService.createDemoWithdraw(createReqVO);
         return success(id);
@@ -40,6 +42,7 @@ public class PayDemoWithdrawController {
     @PostMapping("/transfer")
     @Operation(summary = "提现单转账")
     @Parameter(name = "id", required = true, description = "提现单编号", example = "1024")
+    @PreAuthorize("@ss.hasPermission('pay:demo-withdraw:update')")
     public CommonResult<Long> transferDemoWithdraw(@RequestParam("id") Long id) {
         Long payTransferId = demoWithdrawService.transferDemoWithdraw(id, getLoginUserId());
         return success(payTransferId);

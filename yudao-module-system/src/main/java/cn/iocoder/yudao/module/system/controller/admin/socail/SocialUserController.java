@@ -37,6 +37,7 @@ public class SocialUserController {
 
     @PostMapping("/bind")
     @Operation(summary = "社交绑定，使用 code 授权码")
+    @PreAuthorize("@ss.hasPermission('system:social-user:update')")
     public CommonResult<Boolean> socialBind(@RequestBody @Valid SocialUserBindReqVO reqVO) {
         socialUserService.bindSocialUser(new SocialUserBindReqDTO().setSocialType(reqVO.getType())
                         .setCode(reqVO.getCode()).setState(reqVO.getState())
@@ -46,6 +47,7 @@ public class SocialUserController {
 
     @DeleteMapping("/unbind")
     @Operation(summary = "取消社交绑定")
+    @PreAuthorize("@ss.hasPermission('system:social-user:update')")
     public CommonResult<Boolean> socialUnbind(@RequestBody SocialUserUnbindReqVO reqVO) {
         socialUserService.unbindSocialUser(getLoginUserId(), UserTypeEnum.ADMIN.getValue(), reqVO.getType(), reqVO.getOpenid());
         return CommonResult.success(true);

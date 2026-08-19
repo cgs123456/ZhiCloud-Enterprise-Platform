@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -39,6 +40,7 @@ public class AppProductBrowseHistoryController {
 
     @DeleteMapping(value = "/delete")
     @Operation(summary = "删除商品浏览记录")
+    @PreAuthorize("@ss.hasPermission('product:browse-history:delete')")
     public CommonResult<Boolean> deleteBrowseHistory(@RequestBody @Valid AppProductBrowseHistoryDeleteReqVO reqVO) {
         productBrowseHistoryService.hideUserBrowseHistory(getLoginUserId(), reqVO.getSpuIds());
         return success(Boolean.TRUE);
@@ -46,6 +48,7 @@ public class AppProductBrowseHistoryController {
 
     @DeleteMapping(value = "/clean")
     @Operation(summary = "清空商品浏览记录")
+    @PreAuthorize("@ss.hasPermission('product:browse-history:delete')")
     public CommonResult<Boolean> deleteBrowseHistory() {
         productBrowseHistoryService.hideUserBrowseHistory(getLoginUserId(), null);
         return success(Boolean.TRUE);

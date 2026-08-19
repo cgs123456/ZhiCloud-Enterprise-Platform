@@ -176,6 +176,7 @@ public class BpmModelController {
     @PutMapping("/update-sort-batch")
     @Operation(summary = "批量修改模型排序")
     @Parameter(name = "ids", description = "编号数组", required = true, example = "1,2,3")
+    @PreAuthorize("@ss.hasPermission('bpm:model:update')")
     public CommonResult<Boolean> updateModelSortBatch(@RequestParam("ids") List<String> ids) {
         modelService.updateModelSortBatch(getLoginUserId(), ids);
         return success(true);

@@ -60,6 +60,7 @@ public class ErpAccountController {
             @Parameter(name = "id", description = "编号", required = true),
             @Parameter(name = "status", description = "状态", required = true)
     })
+    @PreAuthorize("@ss.hasPermission('erp:account:update')")
     public CommonResult<Boolean> updateAccountDefaultStatus(@RequestParam("id") Long id,
                                                               @RequestParam("defaultStatus") Boolean defaultStatus) {
         accountService.updateAccountDefaultStatus(id, defaultStatus);

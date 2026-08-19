@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,12 +49,14 @@ public class AppAfterSaleController {
 
     @PostMapping(value = "/create")
     @Operation(summary = "申请售后")
+    @PreAuthorize("@ss.hasPermission('trade:after-sale:create')")
     public CommonResult<Long> createAfterSale(@Valid @RequestBody AppAfterSaleCreateReqVO createReqVO) {
         return success(afterSaleService.createAfterSale(getLoginUserId(), createReqVO));
     }
 
     @PutMapping(value = "/delivery")
     @Operation(summary = "退回货物")
+    @PreAuthorize("@ss.hasPermission('trade:after-sale:update')")
     public CommonResult<Boolean> deliveryAfterSale(@Valid @RequestBody AppAfterSaleDeliveryReqVO deliveryReqVO) {
         afterSaleService.deliveryAfterSale(getLoginUserId(), deliveryReqVO);
         return success(true);
@@ -62,6 +65,7 @@ public class AppAfterSaleController {
     @DeleteMapping(value = "/cancel")
     @Operation(summary = "取消售后")
     @Parameter(name = "id", description = "售后编号", required = true, example = "1")
+    @PreAuthorize("@ss.hasPermission('trade:after-sale:delete')")
     public CommonResult<Boolean> cancelAfterSale(@RequestParam("id") Long id) {
         afterSaleService.cancelAfterSale(getLoginUserId(), id);
         return success(true);

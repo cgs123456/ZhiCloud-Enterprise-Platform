@@ -28,6 +28,7 @@ import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.annotation.security.PermitAll;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -155,6 +156,7 @@ public class AppBargainRecordController {
 
     @PostMapping("/create")
     @Operation(summary = "创建砍价记录", description = "参与砍价活动")
+    @PreAuthorize("@ss.hasPermission('promotion:bargain-record:create')")
     public CommonResult<Long> createBargainRecord(@RequestBody AppBargainRecordCreateReqVO reqVO) {
         Long recordId = bargainRecordService.createBargainRecord(getLoginUserId(), reqVO);
         return success(recordId);

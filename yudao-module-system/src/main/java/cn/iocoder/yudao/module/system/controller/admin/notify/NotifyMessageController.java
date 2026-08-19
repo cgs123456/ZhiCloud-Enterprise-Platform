@@ -65,6 +65,7 @@ public class NotifyMessageController {
     @PutMapping("/update-read")
     @Operation(summary = "标记站内信为已读")
     @Parameter(name = "ids", description = "编号列表", required = true, example = "1024,2048")
+    @PreAuthorize("@ss.hasPermission('system:notify-message:update')")
     public CommonResult<Boolean> updateNotifyMessageRead(@RequestParam("ids") List<Long> ids) {
         notifyMessageService.updateNotifyMessageRead(ids, getLoginUserId(), UserTypeEnum.ADMIN.getValue());
         return success(Boolean.TRUE);
@@ -72,6 +73,7 @@ public class NotifyMessageController {
 
     @PutMapping("/update-all-read")
     @Operation(summary = "标记所有站内信为已读")
+    @PreAuthorize("@ss.hasPermission('system:notify-message:update')")
     public CommonResult<Boolean> updateAllNotifyMessageRead() {
         notifyMessageService.updateAllNotifyMessageRead(getLoginUserId(), UserTypeEnum.ADMIN.getValue());
         return success(Boolean.TRUE);

@@ -25,6 +25,7 @@ import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -57,6 +58,7 @@ public class CrmPermissionController {
 
     @PostMapping("/create")
     @Operation(summary = "创建数据权限")
+    @PreAuthorize("@ss.hasPermission('crm:permission:create')")
     public CommonResult<Boolean> create(@Valid @RequestBody CrmPermissionSaveReqVO reqVO) {
         permissionService.createPermission(reqVO, getLoginUserId());
         return success(true);
@@ -64,6 +66,7 @@ public class CrmPermissionController {
 
     @PutMapping("/update")
     @Operation(summary = "编辑数据权限")
+    @PreAuthorize("@ss.hasPermission('crm:permission:update')")
     @CrmPermission(bizTypeValue = "#updateReqVO.bizType", bizId = "#updateReqVO.bizId"
             , level = CrmPermissionLevelEnum.OWNER)
     public CommonResult<Boolean> updatePermission(@Valid @RequestBody CrmPermissionUpdateReqVO updateReqVO) {
@@ -74,6 +77,7 @@ public class CrmPermissionController {
     @DeleteMapping("/delete")
     @Operation(summary = "删除数据权限")
     @Parameter(name = "ids", description = "数据权限编号", required = true, example = "1024")
+    @PreAuthorize("@ss.hasPermission('crm:permission:delete')")
     public CommonResult<Boolean> deletePermission(@RequestParam("ids") Collection<Long> ids) {
         permissionService.deletePermissionBatch(ids, getLoginUserId());
         return success(true);
@@ -82,6 +86,7 @@ public class CrmPermissionController {
     @DeleteMapping("/delete-self")
     @Operation(summary = "删除自己的数据权限")
     @Parameter(name = "id", description = "数据权限编号", required = true, example = "1024")
+    @PreAuthorize("@ss.hasPermission('crm:permission:delete')")
     public CommonResult<Boolean> deleteSelfPermission(@RequestParam("id") Long id) {
         permissionService.deleteSelfPermission(id, getLoginUserId());
         return success(true);

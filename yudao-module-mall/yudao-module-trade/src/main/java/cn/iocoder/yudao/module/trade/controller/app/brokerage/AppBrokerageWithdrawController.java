@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -77,6 +78,7 @@ public class AppBrokerageWithdrawController {
 
     @PostMapping("/create")
     @Operation(summary = "创建分销提现")
+    @PreAuthorize("@ss.hasPermission('trade:brokerage-withdraw:create')")
     public CommonResult<Long> createBrokerageWithdraw(@RequestBody @Valid AppBrokerageWithdrawCreateReqVO createReqVO) {
         return success(brokerageWithdrawService.createBrokerageWithdraw(getLoginUserId(), createReqVO));
     }

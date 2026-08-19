@@ -21,6 +21,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -64,6 +65,7 @@ public class UserProfileController {
 
     @PutMapping("/update")
     @Operation(summary = "修改用户个人信息")
+    @PreAuthorize("@ss.hasPermission('system:user:update')")
     public CommonResult<Boolean> updateUserProfile(@Valid @RequestBody UserProfileUpdateReqVO reqVO) {
         userService.updateUserProfile(getLoginUserId(), reqVO);
         return success(true);
@@ -71,6 +73,7 @@ public class UserProfileController {
 
     @PutMapping("/update-password")
     @Operation(summary = "修改用户个人密码")
+    @PreAuthorize("@ss.hasPermission('system:user:update')")
     public CommonResult<Boolean> updateUserProfilePassword(@Valid @RequestBody UserProfileUpdatePasswordReqVO reqVO) {
         userService.updateUserPassword(getLoginUserId(), reqVO);
         return success(true);

@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.annotation.security.PermitAll;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +35,7 @@ public class PayDemoOrderController {
 
     @PostMapping("/create")
     @Operation(summary = "创建示例订单")
+    @PreAuthorize("@ss.hasPermission('pay:demo-order:create')")
     public CommonResult<Long> createDemoOrder(@Valid @RequestBody PayDemoOrderCreateReqVO createReqVO) {
         return success(payDemoOrderService.createDemoOrder(getLoginUserId(), createReqVO));
     }
@@ -57,6 +59,7 @@ public class PayDemoOrderController {
     @PutMapping("/refund")
     @Operation(summary = "发起示例订单的退款")
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
+    @PreAuthorize("@ss.hasPermission('pay:demo-order:update')")
     public CommonResult<Boolean> refundDemoOrder(@RequestParam("id") Long id) {
         payDemoOrderService.refundDemoOrder(id, getClientIP());
         return success(true);
