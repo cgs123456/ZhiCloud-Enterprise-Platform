@@ -24,7 +24,7 @@
             <version>${revision}</version>
         </dependency>
 
-        <!-- ERP 模块：ErpMrpExecutorGatewayImpl 反向调用需要引用 erp 中的 SPI 接口与 ErpMpsPlanDO -->
+        <!-- ERP 模块：ErpMrpExecutorGatewayImpl 反向 SPI 实现需引用 erp.api 包中的 SPI 接口与 ErpMpsPlanDO（P1-3 边界治理：跨模块契约经 erp.api 边界） -->
         <dependency>
             <groupId>cn.iocoder.boot</groupId>
             <artifactId>yudao-module-erp</artifactId>

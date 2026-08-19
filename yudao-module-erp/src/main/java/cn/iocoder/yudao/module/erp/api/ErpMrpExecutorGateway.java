@@ -1,9 +1,13 @@
-package cn.iocoder.yudao.module.erp.service.production.mps.gateway;
+package cn.iocoder.yudao.module.erp.api;
 
 import cn.iocoder.yudao.module.erp.dal.dataobject.production.mps.ErpMpsPlanDO;
 
 /**
- * ERP MPS 下发 MRP 执行器 SPI 网关
+ * ERP MPS 下发 MRP 执行器 SPI 网关（跨模块契约，位于 erp.api 边界包）
+ *
+ * <p>P1-3 模块边界治理：该接口从 service.production.mps.gateway 迁至 erp.api 包，
+ * 作为 yudao-module-erp 对外发布的跨模块契约边界，供 yudao-module-mes 实现，
+ * 与 qms.api.InspectionOrderApi 等既有 api 包范式对齐（跨模块调用须经 api 包，禁止直接 import service 层）。
  *
  * <p>用于解耦 yudao-module-erp 与 yudao-module-mes 模块。
  * erp 模块依赖此接口，mes 模块提供实现（参考 MultiAgentExecutorGateway 模式）。

@@ -23,7 +23,7 @@ import cn.iocoder.yudao.module.erp.enums.production.mps.ErpMpsPlanTypeEnum;
 import cn.iocoder.yudao.module.erp.service.product.ErpProductService;
 import cn.iocoder.yudao.module.erp.service.sale.ErpSaleOrderService;
 import cn.iocoder.yudao.module.erp.service.stock.ErpStockService;
-import cn.iocoder.yudao.module.erp.service.production.mps.gateway.ErpMrpExecutorGateway;
+import cn.iocoder.yudao.module.erp.api.ErpMrpExecutorGateway;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

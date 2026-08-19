@@ -1,7 +1,7 @@
 package cn.iocoder.yudao.module.mes.service.pro.mrp.gateway;
 
 import cn.iocoder.yudao.module.erp.dal.dataobject.production.mps.ErpMpsPlanDO;
-import cn.iocoder.yudao.module.erp.service.production.mps.gateway.ErpMrpExecutorGateway;
+import cn.iocoder.yudao.module.erp.api.ErpMrpExecutorGateway;
 import cn.iocoder.yudao.module.mes.controller.admin.pro.mrp.vo.MesProMrpPlanCreateReqVO;
 import cn.iocoder.yudao.module.mes.service.pro.mrp.MesProMrpService;
 import jakarta.annotation.Resource;
