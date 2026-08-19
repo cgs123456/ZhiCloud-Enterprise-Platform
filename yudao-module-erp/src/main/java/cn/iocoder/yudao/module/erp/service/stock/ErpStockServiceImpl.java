@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.erp.service.stock;
 
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.framework.inventory.service.InventoryDualWriter;
 import cn.iocoder.yudao.module.erp.controller.admin.stock.vo.stock.ErpStockPageReqVO;
 import cn.iocoder.yudao.module.erp.dal.dataobject.product.ErpProductDO;
 import cn.iocoder.yudao.module.erp.dal.dataobject.stock.ErpStockDO;
@@ -9,12 +10,14 @@ import cn.iocoder.yudao.module.erp.dal.mysql.stock.ErpStockMapper;
 import cn.iocoder.yudao.module.erp.service.product.ErpProductService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.erp.enums.ErrorCodeConstants.STOCK_COUNT_NEGATIVE;
@@ -44,6 +47,12 @@ public class ErpStockServiceImpl implements ErpStockService {
 
     @Resource
     private ErpStockMapper stockMapper;
+
+    /**
+     * M2 阶段 B：库存双写写入器（enableDualWrite=true 时生效）
+     */
+    @Autowired(required = false)
+    private List<InventoryDualWriter> dualWriters;
 
     @Override
     public ErpStockDO getStock(Long id) {
@@ -106,6 +115,7 @@ public class ErpStockServiceImpl implements ErpStockService {
         }
 
         // 3. 返回最新库存（基于快照计算，实际值以 DB 为准）
+        triggerDualWrite(productId, warehouseId, count, null);
         return currentCount.add(count);
     }
 
@@ -151,6 +161,7 @@ public class ErpStockServiceImpl implements ErpStockService {
             return false;
         }
         int updateCount = stockMapper.updateLockedCountIncrement(stock.getId(), count);
+        triggerDualWrite(productId, warehouseId, null, count);
         return updateCount > 0;
     }
 
@@ -165,7 +176,18 @@ public class ErpStockServiceImpl implements ErpStockService {
             return true;
         }
         int updateCount = stockMapper.updateLockedCountIncrement(stock.getId(), count.negate());
+        triggerDualWrite(productId, warehouseId, null, count.negate());
         return updateCount > 0;
+    }
+
+    private void triggerDualWrite(Long productId, Long warehouseId, BigDecimal quantityDelta,
+                                  BigDecimal lockedDelta) {
+        if (dualWriters == null || dualWriters.isEmpty()) {
+            return;
+        }
+        for (InventoryDualWriter writer : dualWriters) {
+            writer.dualWrite(productId, warehouseId, null, null, null, null, quantityDelta, lockedDelta);
+        }
     }
 
     @Override

@@ -24,4 +24,11 @@ public class InventoryProperties {
      */
     private Boolean enableSingleSource = false;
 
+    /**
+     * P1-1 阶段 B 双写开关。
+     * <p>与 {@link #enableSingleSource} 联动：两者均为 true 时，业务模块的库存写操作同时落
+     * {@code inventory_item} 真值源（双写）；任一为 false 则仅写业务表，行为与原一致。
+     */
+    private Boolean enableDualWrite = false;
+
 }

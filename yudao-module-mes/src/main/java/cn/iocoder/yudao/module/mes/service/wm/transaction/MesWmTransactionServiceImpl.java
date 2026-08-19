@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.iocoder.yudao.framework.inventory.service.InventoryDualWriter;
 import cn.iocoder.yudao.module.mes.dal.dataobject.md.item.MesMdItemDO;
 import cn.iocoder.yudao.module.mes.dal.dataobject.wm.batch.MesWmBatchDO;
 import cn.iocoder.yudao.module.mes.dal.dataobject.wm.materialstock.MesWmMaterialStockDO;
@@ -21,6 +22,7 @@ import cn.iocoder.yudao.module.mes.service.wm.warehouse.MesWmWarehouseAreaServic
 import cn.iocoder.yudao.module.mes.service.wm.warehouse.MesWmWarehouseLocationService;
 import cn.iocoder.yudao.module.mes.service.wm.warehouse.MesWmWarehouseService;
 import jakarta.annotation.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -54,6 +56,12 @@ public class MesWmTransactionServiceImpl implements MesWmTransactionService {
     private MesWmWarehouseLocationService locationService;
     @Resource
     private MesWmWarehouseAreaService areaService;
+
+    /**
+     * M2 阶段 B：库存双写写入器（enableDualWrite=true 时生效）
+     */
+    @Autowired(required = false)
+    private List<InventoryDualWriter> dualWriters;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -94,7 +102,25 @@ public class MesWmTransactionServiceImpl implements MesWmTransactionService {
                 .materialStockId(materialStock.getId()).relatedTransactionId(reqDTO.getRelatedTransactionId())
                 .build();
         transactionMapper.insert(transaction);
+
+        // M2 阶段 B：双写到共享库存真值源（enableDualWrite=true 时触发）
+        triggerDualWrite(reqDTO.getItemId(), reqDTO.getWarehouseId(), reqDTO.getLocationId(),
+                reqDTO.getAreaId(), reqDTO.getBatchId(), reqDTO.getBatchCode(),
+                reqDTO.getQuantity(), null);
+
         return transaction.getId();
+    }
+
+    private void triggerDualWrite(Long itemId, Long warehouseId, Long locationId,
+                                  Long areaId, Long batchId, String batchCode,
+                                  BigDecimal quantityDelta, BigDecimal lockedDelta) {
+        if (dualWriters == null || dualWriters.isEmpty()) {
+            return;
+        }
+        for (InventoryDualWriter writer : dualWriters) {
+            writer.dualWrite(itemId, warehouseId, locationId, areaId, batchId, batchCode,
+                    quantityDelta, lockedDelta);
+        }
     }
 
     @Override
