@@ -19,6 +19,8 @@ import cn.iocoder.yudao.module.mes.service.md.item.MesMdItemTypeService;
 import cn.iocoder.yudao.module.mes.service.wm.warehouse.MesWmWarehouseAreaService;
 import cn.iocoder.yudao.module.mes.service.wm.warehouse.MesWmWarehouseService;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -34,6 +36,7 @@ import static cn.iocoder.yudao.module.mes.enums.ErrorCodeConstants.*;
 /**
  * MES 库存台账 Service 实现类
  */
+@Slf4j
 @Service
 @Validated
 public class MesWmMaterialStockServiceImpl implements MesWmMaterialStockService {
@@ -155,7 +158,7 @@ public class MesWmMaterialStockServiceImpl implements MesWmMaterialStockService 
             return stock;
         }
 
-        // 2. 不存在则新建
+        // 2. 不存在则新建（并发场景：捕获唯一约束冲突，回查已有记录避免 TooManyResultsException）
         MesMdItemDO item = itemService.validateItemExists(itemId);
         MesWmMaterialStockDO newStock = MesWmMaterialStockDO.builder()
                 .itemId(itemId).itemTypeId(item.getItemTypeId())
@@ -165,7 +168,14 @@ public class MesWmMaterialStockServiceImpl implements MesWmMaterialStockService 
                 .receiptTime(receiptTime != null ? receiptTime : LocalDateTime.now())
                 .frozen(false)
                 .build();
-        materialStockMapper.insert(newStock);
+        try {
+            materialStockMapper.insert(newStock);
+        } catch (DuplicateKeyException e) {
+            MesWmMaterialStockDO existing = materialStockMapper.selectByCompositeKey(
+                    itemId, warehouseId, locationId, areaId, batchId);
+            log.warn("[getOrCreateMaterialStock][并发插入冲突 返回已有id={}]", existing != null ? existing.getId() : "unknown");
+            return existing != null ? existing : newStock;
+        }
         return newStock;
     }
 

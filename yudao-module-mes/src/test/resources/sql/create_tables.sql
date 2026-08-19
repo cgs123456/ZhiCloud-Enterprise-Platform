@@ -723,7 +723,8 @@ CREATE TABLE IF NOT EXISTS "mes_wm_material_stock" (
     "update_time" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deleted" bit NOT NULL DEFAULT FALSE,
     "tenant_id" bigint NOT NULL DEFAULT 0,
-    PRIMARY KEY ("id")
+    PRIMARY KEY ("id"),
+    UNIQUE KEY "uk_item_warehouse_location_area_batch" ("item_id", "warehouse_id", "location_id", "area_id", "batch_id")
 );
 
 -- ----------------------------
