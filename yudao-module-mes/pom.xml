@@ -24,6 +24,12 @@
             <version>${revision}</version>
         </dependency>
 
+        <!-- P1-4 共享库存 Starter：MES 通过 InventoryProjectionReader SPI 向共享真值源暴露库存投影（P1-1 日终对账） -->
+        <dependency>
+            <groupId>cn.iocoder.boot</groupId>
+            <artifactId>yudao-spring-boot-starter-biz-inventory</artifactId>
+        </dependency>
+
         <!-- ERP 模块：ErpMrpExecutorGatewayImpl 反向 SPI 实现需引用 erp.api 包中的 SPI 接口与 ErpMpsPlanDO（P1-3 边界治理：跨模块契约经 erp.api 边界） -->
         <dependency>
             <groupId>cn.iocoder.boot</groupId>
