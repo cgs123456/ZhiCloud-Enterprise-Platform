@@ -12,6 +12,7 @@
 -- ============================================================
 
 DROP PROCEDURE IF EXISTS p_add_index_if_not_exists;
+DELIMITER $$
 CREATE PROCEDURE p_add_index_if_not_exists(
     IN p_table VARCHAR(64),
     IN p_index VARCHAR(64),
@@ -33,9 +34,11 @@ BEGIN
         EXECUTE stmt;
         DEALLOCATE PREPARE stmt;
     END IF;
-END;
+END$$
+DELIMITER ;
 
 DROP PROCEDURE IF EXISTS p_add_unique_if_not_exists;
+DELIMITER $$
 CREATE PROCEDURE p_add_unique_if_not_exists(
     IN p_table VARCHAR(64),
     IN p_index VARCHAR(64),
@@ -57,7 +60,8 @@ BEGIN
         EXECUTE stmt;
         DEALLOCATE PREPARE stmt;
     END IF;
-END;
+END$$
+DELIMITER ;
 
 -- ============================================================
 -- 1. 基础 QMS（qms.sql 4 张）

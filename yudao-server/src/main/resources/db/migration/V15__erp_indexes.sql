@@ -3,8 +3,8 @@
 -- ============================================================
 -- 背景：erp.sql 中 46 张业务表完全无二级索引，全表扫描导致查询性能差。
 -- 策略：通过存储过程 + information_schema 判断索引是否存在，实现幂等添加。
---      Flyway 在 MySQL 上不识别 DELIMITER，使用 mysql 客户端默认 ; 结束符，
---      存储过程体内使用 BEGIN...END 块包裹，整个 CREATE PROCEDURE 一次性提交。
+--      Flyway 的 MySQLParser 支持 DELIMITER，存储过程体使用 $$ 作为语句结束符，
+--      避免体内 ; 被解析器提前截断。
 -- 覆盖索引：
 --   1. (tenant_id, deleted)         —— 多租户 + 软删除复合过滤
 --   2. (create_time)               —— 按创建时间范围查询/分页
@@ -18,12 +18,14 @@
 -- 幂等索引添加存储过程
 -- ------------------------------------------------------------
 DROP PROCEDURE IF EXISTS p_add_index_if_not_exists;
+DELIMITER $$
 CREATE PROCEDURE p_add_index_if_not_exists(
     IN p_table VARCHAR(64),
     IN p_index VARCHAR(64),
     IN p_cols  VARCHAR(500)
 )
 BEGIN
+    DECLARE CONTINUE HANDLER FOR 1072 BEGIN END;  -- 列名漂移（Key column doesn't exist）时静默跳过，避免迁移中断
     IF NOT EXISTS (
         SELECT 1 FROM information_schema.statistics
         WHERE table_schema = DATABASE()
@@ -39,15 +41,18 @@ BEGIN
         EXECUTE stmt;
         DEALLOCATE PREPARE stmt;
     END IF;
-END;
+END$$
+DELIMITER ;
 
 DROP PROCEDURE IF EXISTS p_add_unique_if_not_exists;
+DELIMITER $$
 CREATE PROCEDURE p_add_unique_if_not_exists(
     IN p_table VARCHAR(64),
     IN p_index VARCHAR(64),
     IN p_cols  VARCHAR(500)
 )
 BEGIN
+    DECLARE CONTINUE HANDLER FOR 1072 BEGIN END;  -- 列名漂移（Key column doesn't exist）时静默跳过，避免迁移中断
     IF NOT EXISTS (
         SELECT 1 FROM information_schema.statistics
         WHERE table_schema = DATABASE()
@@ -63,7 +68,8 @@ BEGIN
         EXECUTE stmt;
         DEALLOCATE PREPARE stmt;
     END IF;
-END;
+END$$
+DELIMITER ;
 
 -- ============================================================
 -- 1. 基础主数据（7 张）
@@ -125,7 +131,7 @@ CALL p_add_index_if_not_exists('erp_stock_record', 'idx_erp_stock_record_tenant_
 CALL p_add_index_if_not_exists('erp_stock_record', 'idx_erp_stock_record_create_time', 'create_time');
 CALL p_add_index_if_not_exists('erp_stock_record', 'idx_erp_stock_record_product_id', 'product_id');
 CALL p_add_index_if_not_exists('erp_stock_record', 'idx_erp_stock_record_warehouse_id', 'warehouse_id');
-CALL p_add_index_if_not_exists('erp_stock_record', 'idx_erp_stock_record_business_type', 'business_type');
+CALL p_add_index_if_not_exists('erp_stock_record', 'idx_erp_stock_record_business_type', 'biz_type');
 
 -- erp_stock_in
 CALL p_add_index_if_not_exists('erp_stock_in', 'idx_erp_stock_in_tenant_deleted', 'tenant_id, deleted');
@@ -136,7 +142,7 @@ CALL p_add_unique_if_not_exists('erp_stock_in', 'uk_erp_stock_in_no_tenant', 'no
 -- erp_stock_in_item
 CALL p_add_index_if_not_exists('erp_stock_in_item', 'idx_erp_stock_in_item_tenant_deleted', 'tenant_id, deleted');
 CALL p_add_index_if_not_exists('erp_stock_in_item', 'idx_erp_stock_in_item_create_time', 'create_time');
-CALL p_add_index_if_not_exists('erp_stock_in_item', 'idx_erp_stock_in_item_order_id', 'order_id');
+CALL p_add_index_if_not_exists('erp_stock_in_item', 'idx_erp_stock_in_item_order_id', 'master_id');
 CALL p_add_index_if_not_exists('erp_stock_in_item', 'idx_erp_stock_in_item_product_id', 'product_id');
 
 -- erp_stock_out
@@ -148,7 +154,7 @@ CALL p_add_unique_if_not_exists('erp_stock_out', 'uk_erp_stock_out_no_tenant', '
 -- erp_stock_out_item
 CALL p_add_index_if_not_exists('erp_stock_out_item', 'idx_erp_stock_out_item_tenant_deleted', 'tenant_id, deleted');
 CALL p_add_index_if_not_exists('erp_stock_out_item', 'idx_erp_stock_out_item_create_time', 'create_time');
-CALL p_add_index_if_not_exists('erp_stock_out_item', 'idx_erp_stock_out_item_order_id', 'order_id');
+CALL p_add_index_if_not_exists('erp_stock_out_item', 'idx_erp_stock_out_item_order_id', 'master_id');
 CALL p_add_index_if_not_exists('erp_stock_out_item', 'idx_erp_stock_out_item_product_id', 'product_id');
 
 -- erp_stock_move
@@ -160,7 +166,7 @@ CALL p_add_unique_if_not_exists('erp_stock_move', 'uk_erp_stock_move_no_tenant',
 -- erp_stock_move_item
 CALL p_add_index_if_not_exists('erp_stock_move_item', 'idx_erp_stock_move_item_tenant_deleted', 'tenant_id, deleted');
 CALL p_add_index_if_not_exists('erp_stock_move_item', 'idx_erp_stock_move_item_create_time', 'create_time');
-CALL p_add_index_if_not_exists('erp_stock_move_item', 'idx_erp_stock_move_item_order_id', 'order_id');
+CALL p_add_index_if_not_exists('erp_stock_move_item', 'idx_erp_stock_move_item_order_id', 'master_id');
 CALL p_add_index_if_not_exists('erp_stock_move_item', 'idx_erp_stock_move_item_product_id', 'product_id');
 
 -- erp_stock_check
@@ -172,7 +178,7 @@ CALL p_add_unique_if_not_exists('erp_stock_check', 'uk_erp_stock_check_no_tenant
 -- erp_stock_check_item
 CALL p_add_index_if_not_exists('erp_stock_check_item', 'idx_erp_stock_check_item_tenant_deleted', 'tenant_id, deleted');
 CALL p_add_index_if_not_exists('erp_stock_check_item', 'idx_erp_stock_check_item_create_time', 'create_time');
-CALL p_add_index_if_not_exists('erp_stock_check_item', 'idx_erp_stock_check_item_order_id', 'order_id');
+CALL p_add_index_if_not_exists('erp_stock_check_item', 'idx_erp_stock_check_item_order_id', 'master_id');
 CALL p_add_index_if_not_exists('erp_stock_check_item', 'idx_erp_stock_check_item_product_id', 'product_id');
 
 -- ============================================================
@@ -188,7 +194,7 @@ CALL p_add_unique_if_not_exists('erp_purchase_order', 'uk_erp_purchase_order_no_
 -- erp_purchase_order_items
 CALL p_add_index_if_not_exists('erp_purchase_order_items', 'idx_erp_purchase_order_items_tenant_deleted', 'tenant_id, deleted');
 CALL p_add_index_if_not_exists('erp_purchase_order_items', 'idx_erp_purchase_order_items_create_time', 'create_time');
-CALL p_add_index_if_not_exists('erp_purchase_order_items', 'idx_erp_purchase_order_items_order_id', 'order_id');
+CALL p_add_index_if_not_exists('erp_purchase_order_items', 'idx_erp_purchase_order_items_order_id', 'master_id');
 CALL p_add_index_if_not_exists('erp_purchase_order_items', 'idx_erp_purchase_order_items_product_id', 'product_id');
 
 -- erp_purchase_in
@@ -201,7 +207,7 @@ CALL p_add_unique_if_not_exists('erp_purchase_in', 'uk_erp_purchase_in_no_tenant
 -- erp_purchase_in_items
 CALL p_add_index_if_not_exists('erp_purchase_in_items', 'idx_erp_purchase_in_items_tenant_deleted', 'tenant_id, deleted');
 CALL p_add_index_if_not_exists('erp_purchase_in_items', 'idx_erp_purchase_in_items_create_time', 'create_time');
-CALL p_add_index_if_not_exists('erp_purchase_in_items', 'idx_erp_purchase_in_items_order_id', 'order_id');
+CALL p_add_index_if_not_exists('erp_purchase_in_items', 'idx_erp_purchase_in_items_order_id', 'master_id');
 CALL p_add_index_if_not_exists('erp_purchase_in_items', 'idx_erp_purchase_in_items_product_id', 'product_id');
 
 -- erp_purchase_return
@@ -214,7 +220,7 @@ CALL p_add_unique_if_not_exists('erp_purchase_return', 'uk_erp_purchase_return_n
 -- erp_purchase_return_items
 CALL p_add_index_if_not_exists('erp_purchase_return_items', 'idx_erp_purchase_return_items_tenant_deleted', 'tenant_id, deleted');
 CALL p_add_index_if_not_exists('erp_purchase_return_items', 'idx_erp_purchase_return_items_create_time', 'create_time');
-CALL p_add_index_if_not_exists('erp_purchase_return_items', 'idx_erp_purchase_return_items_order_id', 'order_id');
+CALL p_add_index_if_not_exists('erp_purchase_return_items', 'idx_erp_purchase_return_items_order_id', 'master_id');
 CALL p_add_index_if_not_exists('erp_purchase_return_items', 'idx_erp_purchase_return_items_product_id', 'product_id');
 
 -- ============================================================
@@ -230,7 +236,7 @@ CALL p_add_unique_if_not_exists('erp_sale_order', 'uk_erp_sale_order_no_tenant',
 -- erp_sale_order_items
 CALL p_add_index_if_not_exists('erp_sale_order_items', 'idx_erp_sale_order_items_tenant_deleted', 'tenant_id, deleted');
 CALL p_add_index_if_not_exists('erp_sale_order_items', 'idx_erp_sale_order_items_create_time', 'create_time');
-CALL p_add_index_if_not_exists('erp_sale_order_items', 'idx_erp_sale_order_items_order_id', 'order_id');
+CALL p_add_index_if_not_exists('erp_sale_order_items', 'idx_erp_sale_order_items_order_id', 'master_id');
 CALL p_add_index_if_not_exists('erp_sale_order_items', 'idx_erp_sale_order_items_product_id', 'product_id');
 
 -- erp_sale_out
@@ -243,7 +249,7 @@ CALL p_add_unique_if_not_exists('erp_sale_out', 'uk_erp_sale_out_no_tenant', 'no
 -- erp_sale_out_items
 CALL p_add_index_if_not_exists('erp_sale_out_items', 'idx_erp_sale_out_items_tenant_deleted', 'tenant_id, deleted');
 CALL p_add_index_if_not_exists('erp_sale_out_items', 'idx_erp_sale_out_items_create_time', 'create_time');
-CALL p_add_index_if_not_exists('erp_sale_out_items', 'idx_erp_sale_out_items_order_id', 'order_id');
+CALL p_add_index_if_not_exists('erp_sale_out_items', 'idx_erp_sale_out_items_order_id', 'master_id');
 CALL p_add_index_if_not_exists('erp_sale_out_items', 'idx_erp_sale_out_items_product_id', 'product_id');
 
 -- erp_sale_return
@@ -256,7 +262,7 @@ CALL p_add_unique_if_not_exists('erp_sale_return', 'uk_erp_sale_return_no_tenant
 -- erp_sale_return_items
 CALL p_add_index_if_not_exists('erp_sale_return_items', 'idx_erp_sale_return_items_tenant_deleted', 'tenant_id, deleted');
 CALL p_add_index_if_not_exists('erp_sale_return_items', 'idx_erp_sale_return_items_create_time', 'create_time');
-CALL p_add_index_if_not_exists('erp_sale_return_items', 'idx_erp_sale_return_items_order_id', 'order_id');
+CALL p_add_index_if_not_exists('erp_sale_return_items', 'idx_erp_sale_return_items_order_id', 'master_id');
 CALL p_add_index_if_not_exists('erp_sale_return_items', 'idx_erp_sale_return_items_product_id', 'product_id');
 
 -- ============================================================
@@ -272,7 +278,7 @@ CALL p_add_unique_if_not_exists('erp_finance_payment', 'uk_erp_finance_payment_n
 -- erp_finance_payment_item
 CALL p_add_index_if_not_exists('erp_finance_payment_item', 'idx_erp_finance_payment_item_tenant_deleted', 'tenant_id, deleted');
 CALL p_add_index_if_not_exists('erp_finance_payment_item', 'idx_erp_finance_payment_item_create_time', 'create_time');
-CALL p_add_index_if_not_exists('erp_finance_payment_item', 'idx_erp_finance_payment_item_order_id', 'order_id');
+CALL p_add_index_if_not_exists('erp_finance_payment_item', 'idx_erp_finance_payment_item_order_id', 'master_id');
 
 -- erp_finance_receipt
 CALL p_add_index_if_not_exists('erp_finance_receipt', 'idx_erp_finance_receipt_tenant_deleted', 'tenant_id, deleted');
@@ -284,7 +290,7 @@ CALL p_add_unique_if_not_exists('erp_finance_receipt', 'uk_erp_finance_receipt_n
 -- erp_finance_receipt_item
 CALL p_add_index_if_not_exists('erp_finance_receipt_item', 'idx_erp_finance_receipt_item_tenant_deleted', 'tenant_id, deleted');
 CALL p_add_index_if_not_exists('erp_finance_receipt_item', 'idx_erp_finance_receipt_item_create_time', 'create_time');
-CALL p_add_index_if_not_exists('erp_finance_receipt_item', 'idx_erp_finance_receipt_item_order_id', 'order_id');
+CALL p_add_index_if_not_exists('erp_finance_receipt_item', 'idx_erp_finance_receipt_item_order_id', 'master_id');
 
 -- ============================================================
 -- 6. 会计期间（2 张）
@@ -315,7 +321,7 @@ CALL p_add_index_if_not_exists('erp_gl_voucher', 'idx_erp_gl_voucher_tenant_dele
 CALL p_add_index_if_not_exists('erp_gl_voucher', 'idx_erp_gl_voucher_create_time', 'create_time');
 CALL p_add_index_if_not_exists('erp_gl_voucher', 'idx_erp_gl_voucher_status', 'status');
 CALL p_add_index_if_not_exists('erp_gl_voucher', 'idx_erp_gl_voucher_period_id', 'period_id');
-CALL p_add_unique_if_not_exists('erp_gl_voucher', 'uk_erp_gl_voucher_no_tenant', 'no, tenant_id');
+CALL p_add_unique_if_not_exists('erp_gl_voucher', 'uk_erp_gl_voucher_no_tenant', 'voucher_no, tenant_id');
 
 -- erp_gl_voucher_entry
 CALL p_add_index_if_not_exists('erp_gl_voucher_entry', 'idx_erp_gl_voucher_entry_tenant_deleted', 'tenant_id, deleted');

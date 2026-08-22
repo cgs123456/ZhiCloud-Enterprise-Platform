@@ -107,7 +107,7 @@ public class DeptDataPermissionRule implements DataPermissionRule {
             if (deptDataPermission == null) {
                 log.error("[getExpression][LoginUser({}) 获取数据权限为 null]", JsonUtils.toJsonString(loginUser));
                 throw new NullPointerException(String.format("LoginUser(%d) Table(%s/%s) 未返回数据权限",
-                        loginUser.getId(), tableName, tableAlias.getName()));
+                        loginUser.getId(), tableName, tableAlias == null ? null : tableAlias.getName()));
             }
             // 添加到上下文中，避免重复计算
             loginUser.setContext(CONTEXT_KEY, deptDataPermission);

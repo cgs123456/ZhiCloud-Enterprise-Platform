@@ -7,6 +7,7 @@ import cn.iocoder.yudao.module.crm.enums.receivable.CrmReceivableReturnTypeEnum;
 import com.baomidou.mybatisplus.annotation.KeySequence;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.Version;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -88,5 +89,13 @@ public class CrmReceivablePlanDO extends BaseDO {
      * 备注
      */
     private String remark;
+
+    /**
+     * 乐观锁版本号
+     * 列名 version，与 crm_receivable 等同源实体保持一致；
+     * 迁移脚本 V66__crm_receivable_optimistic_lock.sql 已为 crm_receivable_plan 补全该列。
+     */
+    @Version
+    private Integer version;
 
 }

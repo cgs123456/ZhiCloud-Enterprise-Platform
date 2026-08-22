@@ -701,59 +701,20 @@ CREATE TABLE IF NOT EXISTS erp_period_close (
 ) COMMENT='ERP 期间关闭记录表';
 
 -- ----------------------------
--- 总账科目表
+-- 总账三张表（erp_gl_account / erp_gl_voucher / erp_gl_voucher_entry）
+-- 已由 V7__erp_gl_account_voucher.sql 创建，此处**故意不再定义**。
+--
+-- 原因：本文件曾保留一份过时的简化定义，与 V7 及 Java 实体冲突：
+--   erp_gl_voucher       ：旧 `no` / `voucher_time`，实体是 voucher_no / voucher_date
+--                          （ErpGlVoucherDO.voucherNo / voucherDate）
+--   erp_gl_voucher_entry ：旧 `master_id`，实体是 voucher_id
+--                          （ErpGlVoucherEntryDO.voucherId）
+--   erp_gl_account       ：旧定义缺 type / is_leaf / 期初期末借贷余额等字段
+--
+-- 因为 V7 先执行且这里用的是 CREATE TABLE IF NOT EXISTS，旧定义实际从未生效，
+-- 属于「看着有效、其实静默跳过」的陷阱定义；一旦有人调整版本顺序或单独执行本脚本，
+-- 就会建出与实体不匹配的表。故直接删除，schema 真相源统一为 Java 实体 + V7。
 -- ----------------------------
-CREATE TABLE IF NOT EXISTS erp_gl_account (
-    id BIGINT PRIMARY KEY COMMENT '主键',
-    code VARCHAR(64) NOT NULL COMMENT '科目编码',
-    name VARCHAR(128) NOT NULL COMMENT '科目名称',
-    parent_id BIGINT DEFAULT 0 COMMENT '父科目 ID',
-    level INT DEFAULT 1 COMMENT '科目层级',
-    balance_direction TINYINT NOT NULL COMMENT '余额方向（10 借 20 贷）',
-    status TINYINT DEFAULT 0 COMMENT '状态（0 启用 1 停用）',
-    creator VARCHAR(64) COMMENT '创建者',
-    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    updater VARCHAR(64) COMMENT '更新者',
-    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    deleted BIT(1) DEFAULT 0 COMMENT '是否删除',
-    tenant_id BIGINT DEFAULT 0 COMMENT '租户 ID'
-) COMMENT='ERP 总账科目表';
-
--- ----------------------------
--- 凭证表
--- ----------------------------
-CREATE TABLE IF NOT EXISTS erp_gl_voucher (
-    id BIGINT PRIMARY KEY COMMENT '主键',
-    no VARCHAR(64) NOT NULL COMMENT '凭证号',
-    period_id BIGINT NOT NULL COMMENT '会计期间 ID',
-    voucher_time DATETIME COMMENT '凭证日期',
-    summary VARCHAR(500) COMMENT '摘要',
-    status TINYINT DEFAULT 10 COMMENT '状态（10 草稿 20 已审核 30 已过账）',
-    creator VARCHAR(64) COMMENT '创建者',
-    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    updater VARCHAR(64) COMMENT '更新者',
-    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    deleted BIT(1) DEFAULT 0 COMMENT '是否删除',
-    tenant_id BIGINT DEFAULT 0 COMMENT '租户 ID'
-) COMMENT='ERP 凭证表';
-
--- ----------------------------
--- 凭证分录表
--- ----------------------------
-CREATE TABLE IF NOT EXISTS erp_gl_voucher_entry (
-    id BIGINT PRIMARY KEY COMMENT '主键',
-    master_id BIGINT NOT NULL COMMENT '凭证 ID',
-    account_id BIGINT NOT NULL COMMENT '科目 ID',
-    debit_amount DECIMAL(20,4) DEFAULT 0 COMMENT '借方金额',
-    credit_amount DECIMAL(20,4) DEFAULT 0 COMMENT '贷方金额',
-    summary VARCHAR(500) COMMENT '摘要',
-    creator VARCHAR(64) COMMENT '创建者',
-    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    updater VARCHAR(64) COMMENT '更新者',
-    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    deleted BIT(1) DEFAULT 0 COMMENT '是否删除',
-    tenant_id BIGINT DEFAULT 0 COMMENT '租户 ID'
-) COMMENT='ERP 凭证分录表';
 
 -- ============================================================
 -- 9. 库存批次/序列号管理（2 张）

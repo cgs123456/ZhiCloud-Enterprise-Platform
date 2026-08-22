@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS wms_location (
     update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     deleted TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否删除',
     tenant_id BIGINT NOT NULL DEFAULT 0 COMMENT '租户 ID',
+    PRIMARY KEY (id),
     UNIQUE KEY uk_zone_code (zone_id, code),
     KEY idx_zone_id (zone_id),
     KEY idx_warehouse_id (warehouse_id),
@@ -64,38 +65,60 @@ CREATE TABLE IF NOT EXISTS wms_location (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='WMS 库位表';
 
 -- ----------------------------
--- 3. 字典初始化（INSERT IGNORE，幂等）
+-- 3. 字典初始化
+--
+-- 注意两处易错点：
+--   1) system_dict_type / system_dict_data 在芋道中是「全局字典」，
+--      表结构里**没有 tenant_id 列**，写入时带上会 ERROR 1054 Unknown column。
+--   2) system_dict_type.type 上没有唯一索引（仅 PRIMARY KEY id），
+--      因此 INSERT IGNORE 并不会按 type 去重，重复执行会插出脏数据。
+--      改用 INSERT ... SELECT ... WHERE NOT EXISTS 实现真正幂等。
 -- ----------------------------
 
 -- 库区类型字典
-INSERT IGNORE INTO system_dict_type (name, type, status, creator, create_time, updater, update_time, deleted, tenant_id, remark)
-VALUES ('WMS 库区类型', 'wms_zone_type', 0, 'admin', NOW(), 'admin', NOW(), 0, 0, 'WMS 库区类型字典');
+INSERT INTO system_dict_type (name, type, status, creator, create_time, updater, update_time, deleted, remark)
+SELECT 'WMS 库区类型', 'wms_zone_type', 0, 'admin', NOW(), 'admin', NOW(), 0, 'WMS 库区类型字典'
+WHERE NOT EXISTS (SELECT 1 FROM system_dict_type t WHERE t.type = 'wms_zone_type');
 
-INSERT IGNORE INTO system_dict_data (sort, label, value, dict_type, status, color_type, css_class, remark, creator, create_time, updater, update_time, deleted, tenant_id)
-VALUES
-(1, '存储区', '10', 'wms_zone_type', 0, 'primary', '', '', 'admin', NOW(), 'admin', NOW(), 0, 0),
-(2, '拣货区', '20', 'wms_zone_type', 0, 'success', '', '', 'admin', NOW(), 'admin', NOW(), 0, 0),
-(3, '退货区', '30', 'wms_zone_type', 0, 'warning', '', '', 'admin', NOW(), 'admin', NOW(), 0, 0),
-(4, '不合格品区', '40', 'wms_zone_type', 0, 'danger', '', '', 'admin', NOW(), 'admin', NOW(), 0, 0);
+INSERT INTO system_dict_data (sort, label, value, dict_type, status, color_type, css_class, remark, creator, create_time, updater, update_time, deleted)
+SELECT * FROM (
+    SELECT 1 AS sort, '存储区' AS label, '10' AS value, 'wms_zone_type' AS dict_type, 0 AS status, 'primary' AS color_type, '' AS css_class, '' AS remark, 'admin' AS creator, NOW() AS create_time, 'admin' AS updater, NOW() AS update_time, 0 AS deleted
+    UNION ALL SELECT 2, '拣货区', '20', 'wms_zone_type', 0, 'success', '', '', 'admin', NOW(), 'admin', NOW(), 0
+    UNION ALL SELECT 3, '退货区', '30', 'wms_zone_type', 0, 'warning', '', '', 'admin', NOW(), 'admin', NOW(), 0
+    UNION ALL SELECT 4, '不合格品区', '40', 'wms_zone_type', 0, 'danger', '', '', 'admin', NOW(), 'admin', NOW(), 0
+) src
+WHERE NOT EXISTS (
+    SELECT 1 FROM system_dict_data d WHERE d.dict_type = 'wms_zone_type' AND d.value = src.value
+);
 
 -- 库位类型字典
-INSERT IGNORE INTO system_dict_type (name, type, status, creator, create_time, updater, update_time, deleted, tenant_id, remark)
-VALUES ('WMS 库位类型', 'wms_location_type', 0, 'admin', NOW(), 'admin', NOW(), 0, 0, 'WMS 库位类型字典');
+INSERT INTO system_dict_type (name, type, status, creator, create_time, updater, update_time, deleted, remark)
+SELECT 'WMS 库位类型', 'wms_location_type', 0, 'admin', NOW(), 'admin', NOW(), 0, 'WMS 库位类型字典'
+WHERE NOT EXISTS (SELECT 1 FROM system_dict_type t WHERE t.type = 'wms_location_type');
 
-INSERT IGNORE INTO system_dict_data (sort, label, value, dict_type, status, color_type, css_class, remark, creator, create_time, updater, update_time, deleted, tenant_id)
-VALUES
-(1, '储位', '10', 'wms_location_type', 0, 'primary', '', '', 'admin', NOW(), 'admin', NOW(), 0, 0),
-(2, '拣货位', '20', 'wms_location_type', 0, 'success', '', '', 'admin', NOW(), 'admin', NOW(), 0, 0),
-(3, '收货位', '30', 'wms_location_type', 0, 'info', '', '', 'admin', NOW(), 'admin', NOW(), 0, 0),
-(4, '发货位', '40', 'wms_location_type', 0, 'warning', '', '', 'admin', NOW(), 'admin', NOW(), 0, 0);
+INSERT INTO system_dict_data (sort, label, value, dict_type, status, color_type, css_class, remark, creator, create_time, updater, update_time, deleted)
+SELECT * FROM (
+    SELECT 1 AS sort, '储位' AS label, '10' AS value, 'wms_location_type' AS dict_type, 0 AS status, 'primary' AS color_type, '' AS css_class, '' AS remark, 'admin' AS creator, NOW() AS create_time, 'admin' AS updater, NOW() AS update_time, 0 AS deleted
+    UNION ALL SELECT 2, '拣货位', '20', 'wms_location_type', 0, 'success', '', '', 'admin', NOW(), 'admin', NOW(), 0
+    UNION ALL SELECT 3, '收货位', '30', 'wms_location_type', 0, 'info', '', '', 'admin', NOW(), 'admin', NOW(), 0
+    UNION ALL SELECT 4, '发货位', '40', 'wms_location_type', 0, 'warning', '', '', 'admin', NOW(), 'admin', NOW(), 0
+) src
+WHERE NOT EXISTS (
+    SELECT 1 FROM system_dict_data d WHERE d.dict_type = 'wms_location_type' AND d.value = src.value
+);
 
 -- 库位状态字典
-INSERT IGNORE INTO system_dict_type (name, type, status, creator, create_time, updater, update_time, deleted, tenant_id, remark)
-VALUES ('WMS 库位状态', 'wms_location_status', 0, 'admin', NOW(), 'admin', NOW(), 0, 0, 'WMS 库位状态字典');
+INSERT INTO system_dict_type (name, type, status, creator, create_time, updater, update_time, deleted, remark)
+SELECT 'WMS 库位状态', 'wms_location_status', 0, 'admin', NOW(), 'admin', NOW(), 0, 'WMS 库位状态字典'
+WHERE NOT EXISTS (SELECT 1 FROM system_dict_type t WHERE t.type = 'wms_location_status');
 
-INSERT IGNORE INTO system_dict_data (sort, label, value, dict_type, status, color_type, css_class, remark, creator, create_time, updater, update_time, deleted, tenant_id)
-VALUES
-(1, '空闲', '10', 'wms_location_status', 0, 'success', '', '', 'admin', NOW(), 'admin', NOW(), 0, 0),
-(2, '占用', '20', 'wms_location_status', 0, 'primary', '', '', 'admin', NOW(), 'admin', NOW(), 0, 0),
-(3, '锁定', '30', 'wms_location_status', 0, 'warning', '', '', 'admin', NOW(), 'admin', NOW(), 0, 0),
-(4, '禁用', '40', 'wms_location_status', 0, 'danger', '', '', 'admin', NOW(), 'admin', NOW(), 0, 0);
+INSERT INTO system_dict_data (sort, label, value, dict_type, status, color_type, css_class, remark, creator, create_time, updater, update_time, deleted)
+SELECT * FROM (
+    SELECT 1 AS sort, '空闲' AS label, '10' AS value, 'wms_location_status' AS dict_type, 0 AS status, 'success' AS color_type, '' AS css_class, '' AS remark, 'admin' AS creator, NOW() AS create_time, 'admin' AS updater, NOW() AS update_time, 0 AS deleted
+    UNION ALL SELECT 2, '占用', '20', 'wms_location_status', 0, 'primary', '', '', 'admin', NOW(), 'admin', NOW(), 0
+    UNION ALL SELECT 3, '锁定', '30', 'wms_location_status', 0, 'warning', '', '', 'admin', NOW(), 'admin', NOW(), 0
+    UNION ALL SELECT 4, '禁用', '40', 'wms_location_status', 0, 'danger', '', '', 'admin', NOW(), 'admin', NOW(), 0
+) src
+WHERE NOT EXISTS (
+    SELECT 1 FROM system_dict_data d WHERE d.dict_type = 'wms_location_status' AND d.value = src.value
+);

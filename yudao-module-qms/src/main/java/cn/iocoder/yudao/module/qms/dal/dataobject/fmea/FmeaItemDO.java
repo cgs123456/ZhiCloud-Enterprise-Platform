@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.qms.dal.dataobject.fmea;
 
 import cn.iocoder.yudao.framework.tenant.core.db.TenantBaseDO;
 import com.baomidou.mybatisplus.annotation.KeySequence;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
@@ -34,7 +35,12 @@ public class FmeaItemDO extends TenantBaseDO {
     private Long fmeaId;
     /**
      * 功能
+     *
+     * 落库列名为 item_function：`function` 是 MySQL 8.0 保留字，
+     * 而 MyBatis-Plus 默认不转义标识符，裸用会导致 SQL 语法错误。
+     * Java 字段名保持 function，对外 API 字段名不变。
      */
+    @TableField("item_function")
     private String function;
     /**
      * 失效模式

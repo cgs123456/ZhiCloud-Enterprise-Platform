@@ -15,6 +15,7 @@
 -- 存储过程 1：为所有 mes_* 表添加 (tenant_id, deleted) 复合索引
 -- ------------------------------------------------------------
 DROP PROCEDURE IF EXISTS p_mes_add_tenant_deleted_index;
+DELIMITER $$
 CREATE PROCEDURE p_mes_add_tenant_deleted_index()
 BEGIN
     DECLARE done INT DEFAULT FALSE;
@@ -55,12 +56,14 @@ BEGIN
         END IF;
     END LOOP;
     CLOSE cur;
-END;
+END$$
+DELIMITER ;
 
 -- ------------------------------------------------------------ 
 -- 存储过程 2：为所有 mes_* 表添加 (create_time) 索引
 -- ------------------------------------------------------------
 DROP PROCEDURE IF EXISTS p_mes_add_create_time_index;
+DELIMITER $$
 CREATE PROCEDURE p_mes_add_create_time_index()
 BEGIN
     DECLARE done INT DEFAULT FALSE;
@@ -96,12 +99,14 @@ BEGIN
         END IF;
     END LOOP;
     CLOSE cur;
-END;
+END$$
+DELIMITER ;
 
 -- ------------------------------------------------------------ 
 -- 存储过程 3：为带 status 字段的 mes_* 表添加 (status) 索引
 -- ------------------------------------------------------------
 DROP PROCEDURE IF EXISTS p_mes_add_status_index;
+DELIMITER $$
 CREATE PROCEDURE p_mes_add_status_index()
 BEGIN
     DECLARE done INT DEFAULT FALSE;
@@ -136,13 +141,15 @@ BEGIN
         END IF;
     END LOOP;
     CLOSE cur;
-END;
+END$$
+DELIMITER ;
 
 -- ------------------------------------------------------------ 
 -- 存储过程 4：为带 code 字段的 mes_* 表添加 (code) 索引
 --    （非唯一索引，避免历史脏数据导致建索引失败）
 -- ------------------------------------------------------------
 DROP PROCEDURE IF EXISTS p_mes_add_code_index;
+DELIMITER $$
 CREATE PROCEDURE p_mes_add_code_index()
 BEGIN
     DECLARE done INT DEFAULT FALSE;
@@ -178,7 +185,8 @@ BEGIN
         END IF;
     END LOOP;
     CLOSE cur;
-END;
+END$$
+DELIMITER ;
 
 -- ------------------------------------------------------------ 
 -- 存储过程 5：为带 *_id 外键字段的 mes_* 表添加对应索引
@@ -187,6 +195,7 @@ END;
 --    warehouse_id / line_id / detail_id / parent_id / check_plan_id / sn_id / plan_detail_id
 -- ------------------------------------------------------------
 DROP PROCEDURE IF EXISTS p_mes_add_fk_indexes;
+DELIMITER $$
 CREATE PROCEDURE p_mes_add_fk_indexes()
 BEGIN
     DECLARE done INT DEFAULT FALSE;
@@ -240,7 +249,8 @@ BEGIN
         END IF;
     END LOOP;
     CLOSE cur;
-END;
+END$$
+DELIMITER ;
 
 -- ============================================================
 -- 执行索引补充

@@ -10,12 +10,14 @@
 -- ============================================================
 
 DROP PROCEDURE IF EXISTS p_add_index_if_not_exists;
+DELIMITER $$
 CREATE PROCEDURE p_add_index_if_not_exists(
     IN p_table VARCHAR(64),
     IN p_index VARCHAR(64),
     IN p_cols  VARCHAR(500)
 )
 BEGIN
+    DECLARE CONTINUE HANDLER FOR 1072 BEGIN END;  -- 列名漂移（Key column doesn't exist）时静默跳过，避免迁移中断
     IF NOT EXISTS (
         SELECT 1 FROM information_schema.statistics
         WHERE table_schema = DATABASE()
@@ -31,7 +33,8 @@ BEGIN
         EXECUTE stmt;
         DEALLOCATE PREPARE stmt;
     END IF;
-END;
+END$$
+DELIMITER ;
 
 -- ============================================================
 -- 1. 基础主数据（5 张）
@@ -147,8 +150,8 @@ CALL p_add_index_if_not_exists('wms_wave_order_detail', 'idx_wms_wave_order_deta
 CALL p_add_index_if_not_exists('wms_inventory_batch', 'idx_wms_inventory_batch_tenant_deleted', 'tenant_id, deleted');
 CALL p_add_index_if_not_exists('wms_inventory_batch', 'idx_wms_inventory_batch_create_time', 'create_time');
 CALL p_add_index_if_not_exists('wms_inventory_batch', 'idx_wms_inventory_batch_status', 'status');
-CALL p_add_index_if_not_exists('wms_inventory_batch', 'idx_wms_inventory_batch_sku_id', 'sku_id');
-CALL p_add_index_if_not_exists('wms_inventory_batch', 'idx_wms_inventory_batch_warehouse_id', 'warehouse_id');
+-- wms_inventory_batch 真实外键列为 inventory_id（指向 wms_inventory.id），原 sku_id/warehouse_id 不存在
+CALL p_add_index_if_not_exists('wms_inventory_batch', 'idx_wms_inventory_batch_inventory_id', 'inventory_id');
 CALL p_add_index_if_not_exists('wms_inventory_batch', 'idx_wms_inventory_batch_batch_no', 'batch_no');
 CALL p_add_index_if_not_exists('wms_inventory_batch', 'idx_wms_inventory_batch_expiry_date', 'expiry_date');
 

@@ -11,6 +11,7 @@
 -- ============================================================
 
 DROP PROCEDURE IF EXISTS p_add_index_if_not_exists;
+DELIMITER $$
 CREATE PROCEDURE p_add_index_if_not_exists(
     IN p_table VARCHAR(64),
     IN p_index VARCHAR(64),
@@ -32,7 +33,8 @@ BEGIN
         EXECUTE stmt;
         DEALLOCATE PREPARE stmt;
     END IF;
-END;
+END$$
+DELIMITER ;
 
 -- aimultiagent_topology
 CALL p_add_index_if_not_exists('aimultiagent_topology', 'idx_aimultiagent_topology_tenant_deleted', 'tenant_id, deleted');
