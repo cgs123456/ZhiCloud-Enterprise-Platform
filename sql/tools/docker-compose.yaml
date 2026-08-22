@@ -1,4 +1,4 @@
-name: ruoyi-vue-pro
+name: zhicloud_platform
 
 volumes:
     mysql: { }
@@ -16,7 +16,7 @@ services:
         environment:
             TZ: Asia/Shanghai
             MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}
-            MYSQL_DATABASE: ruoyi-vue-pro
+            MYSQL_DATABASE: zhicloud_platform
         ports:
             - "3306:3306"
         volumes:
@@ -36,14 +36,14 @@ services:
         environment:
             POSTGRES_USER: root
             POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
-            POSTGRES_DB: ruoyi-vue-pro
+            POSTGRES_DB: zhicloud_platform
         ports:
             - "5432:5432"
         volumes:
             - postgres:/var/lib/postgresql/data
             # 注入初始化脚本
             - ../postgresql/quartz.sql:/docker-entrypoint-initdb.d/quartz.sql:ro
-            - ../postgresql/ruoyi-vue-pro.sql:/docker-entrypoint-initdb.d/ruoyi-vue-pro.sql:ro
+            - ../postgresql/zhicloud_platform.sql:/docker-entrypoint-initdb.d/zhicloud_platform.sql:ro
 
     oracle:
         image: gvenzl/oracle-xe:18-slim-faststart
@@ -54,7 +54,7 @@ services:
         ports:
             - "1521:1521"
         volumes:
-            - ../oracle/ruoyi-vue-pro.sql:/tmp/schema.sql:ro
+            - ../oracle/zhicloud_platform.sql:/tmp/schema.sql:ro
             # 创建app用户: ROOT/123456@//localhost/XEPDB1
             - ./oracle/1_create_user.sql:/docker-entrypoint-initdb.d/1_create_user.sql:ro
             - ./oracle/2_create_schema.sh:/docker-entrypoint-initdb.d/2_create_schema.sh:ro
@@ -68,7 +68,7 @@ services:
       ports:
         - "1521:1521"
       volumes:
-        - ../oracle/ruoyi-vue-pro.sql:/tmp/schema.sql:ro
+        - ../oracle/zhicloud_platform.sql:/tmp/schema.sql:ro
         # 创建app用户: ROOT/123456@//localhost/XEPDB1
         - ./oracle/1_create_user.sql:/docker-entrypoint-initdb.d/1_create_user.sql:ro
         - ./oracle/2_create_schema.sh:/docker-entrypoint-initdb.d/2_create_schema.sh:ro
@@ -84,7 +84,7 @@ services:
             - "1433:1433"
         volumes:
             - sqlserver:/var/opt/mssql
-            - ../sqlserver/ruoyi-vue-pro.sql:/tmp/schema.sql:ro
+            - ../sqlserver/zhicloud_platform.sql:/tmp/schema.sql:ro
             # docker compose exec sqlserver bash /tmp/create_schema.sh
             - ./sqlserver/create_schema.sh:/tmp/create_schema.sh:ro
 
@@ -105,7 +105,7 @@ services:
             - "5236:5236"
         volumes:
             - dm8:/opt/dmdbms/data
-            - ../dm/ruoyi-vue-pro-dm8.sql:/tmp/schema.sql:ro
+            - ../dm/zhicloud_platform-dm8.sql:/tmp/schema.sql:ro
 
     kingbase:
         image: kingbase_v009r001c001b0025_single_x86:v1
@@ -118,7 +118,7 @@ services:
             - "54321:54321"
         volumes:
             - kingbase:/home/kingbase/userdata
-            - ../kingbase/ruoyi-vue-pro.sql:/tmp/schema.sql:ro
+            - ../kingbase/zhicloud_platform.sql:/tmp/schema.sql:ro
 
     opengauss:
         image: opengauss/opengauss:5.0.0
@@ -131,7 +131,7 @@ services:
             - "5432:5432"
         volumes:
             - opengauss:/var/lib/opengauss
-            - ../opengauss/ruoyi-vue-pro.sql:/tmp/schema.sql:ro
+            - ../opengauss/zhicloud_platform.sql:/tmp/schema.sql:ro
             # docker compose exec opengauss bash -c '/usr/local/opengauss/bin/gsql -U $GS_USERNAME -W $GS_PASSWORD -d postgres -f /tmp/schema.sql'
 
     highgo:
@@ -144,4 +144,4 @@ services:
         volumes:
             - highgo:/home/highgo/hgdb/data
             - ../highgo/quartz.sql:/tmp/quartz.sql:ro
-            - ../highgo/ruoyi-vue-pro.sql:/tmp/schema.sql:ro
+            - ../highgo/zhicloud_platform.sql:/tmp/schema.sql:ro
