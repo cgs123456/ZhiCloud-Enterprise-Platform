@@ -11,7 +11,7 @@
 ##
 ## 用法：
 ##   ./disaster-recovery-drill.sh
-##   ./disaster-recovery-drill.sh --restore-from /data/backup/yudao/2026-07-29/mysql_ruoyi-vue-pro_20260729_020001.sql.gz
+##   ./disaster-recovery-drill.sh --restore-from /data/backup/yudao/2026-07-29/mysql_zhicloud_platform_20260729_020001.sql.gz
 ##   ./disaster-recovery-drill.sh --dry-run
 ##   ./disaster-recovery-drill.sh --skip-server    # 跳过启动 yudao-server
 ##
@@ -81,7 +81,7 @@ REPORT_FILE="${DRILL_REPORT_DIR}/drill-report-${DRILL_DATE}.md"
 DRILL_MYSQL_CONTAINER="${DRILL_MYSQL_CONTAINER:-yudao-drill-mysql}"
 DRILL_MYSQL_PORT="${DRILL_MYSQL_PORT:-3399}"
 DRILL_MYSQL_ROOT_PASSWORD="${DRILL_MYSQL_ROOT_PASSWORD:-drill_password_changeme}"
-DRILL_MYSQL_DATABASE="${DRILL_MYSQL_DATABASE:-ruoyi-vue-pro}"
+DRILL_MYSQL_DATABASE="${DRILL_MYSQL_DATABASE:-zhicloud_platform}"
 DRILL_SERVER_CONTAINER="${DRILL_SERVER_CONTAINER:-yudao-drill-server}"
 DRILL_SERVER_PORT="${DRILL_SERVER_PORT:-48180}"
 DRILL_SERVER_ACTUATOR_PORT="${DRILL_SERVER_ACTUATOR_PORT:-48190}"

@@ -25,7 +25,7 @@ script/
 | 项目 | 要求 | 说明 |
 | --- | --- | --- |
 | yudao-server | 已启动且健康 | 业务端口 `48080`，管理端口 `48090` |
-| 数据库 | MySQL 8.x，已初始化数据 | 执行 `sql/mysql/ruoyi-vue-pro.sql` |
+| 数据库 | MySQL 8.x，已初始化数据 | 执行 `sql/mysql/zhicloud_platform.sql` |
 | Redis | 6.x 及以上 | 默认 `localhost:6379` |
 | 测试账号 | `admin / admin123` | 租户 ID `1` |
 | JVM | 堆内存建议 `-Xms2g -Xmx2g` | 启动参数见 `yudao-server-startup.out` |

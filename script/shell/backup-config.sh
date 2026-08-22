@@ -12,7 +12,7 @@ MYSQL_HOST=127.0.0.1
 MYSQL_PORT=3306
 MYSQL_USER=root
 MYSQL_PASSWORD="${MYSQL_PASSWORD:?MYSQL_PASSWORD is required}"
-MYSQL_DATABASES="ruoyi-vue-pro"
+MYSQL_DATABASES="zhicloud_platform"
 MYSQL_EXTRA_OPTS="--single-transaction --quick --routines --triggers --events"
 
 # ===== PostgreSQL 配置 =====
@@ -65,7 +65,7 @@ NOTIFY_WEBHOOK="${NOTIFY_WEBHOOK:-}"
 DRILL_MYSQL_CONTAINER=yudao-drill-mysql
 DRILL_MYSQL_PORT=3399
 DRILL_MYSQL_ROOT_PASSWORD=drill_password_changeme
-DRILL_MYSQL_DATABASE=ruoyi-vue-pro
+DRILL_MYSQL_DATABASE=zhicloud_platform
 
 # 临时 yudao-server 配置
 DRILL_SERVER_CONTAINER=yudao-drill-server
