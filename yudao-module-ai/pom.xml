@@ -119,8 +119,9 @@
             <version>${spring-ai.version}</version>
             <exclusions>
                 <exclusion>
+                    <!-- 排除旧版 swagger-annotations:2.0.0，与 jsonschema-module-swagger-2 + springdoc 冲突 -->
                     <groupId>io.swagger.core.v3</groupId>
-                    <artifactId>swagger-annotations-jakarta</artifactId>
+                    <artifactId>swagger-annotations</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -218,8 +219,9 @@
             <version>${spring-ai.version}</version>
             <exclusions>
                 <exclusion>
+                    <!-- 排除旧版 swagger-annotations:2.0.0，与 jsonschema-module-swagger-2 + springdoc 冲突 -->
                     <groupId>io.swagger.core.v3</groupId>
-                    <artifactId>swagger-annotations-jakarta</artifactId>
+                    <artifactId>swagger-annotations</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -255,10 +257,15 @@
                     <groupId>org.codehaus.groovy</groupId>
                     <artifactId>groovy-all</artifactId>
                 </exclusion>
-                <!-- 解决和 logback 的日志冲突 -->
                 <exclusion>
+                    <!-- 解决和 logback 的日志冲突 -->
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-simple</artifactId>
+                </exclusion>
+                <exclusion>
+                    <!-- 排除旧版 swagger-annotations:2.0.0，与 jsonschema-module-swagger-2 + springdoc 冲突 -->
+                    <groupId>io.swagger.core.v3</groupId>
+                    <artifactId>swagger-annotations</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.logging.log4j</groupId>
