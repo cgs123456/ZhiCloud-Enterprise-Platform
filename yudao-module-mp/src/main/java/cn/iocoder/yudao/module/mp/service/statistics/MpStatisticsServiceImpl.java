@@ -37,7 +37,8 @@ public class MpStatisticsServiceImpl implements MpStatisticsService {
             return mpService.getDataCubeService().getUserSummary(
                     DateUtil.date(date[0]), DateUtil.date(date[1]));
         } catch (WxErrorException e) {
-            throw exception(STATISTICS_GET_USER_SUMMARY_FAIL, e.getError().getErrorMsg());
+            String errorMsg = e.getError() != null ? e.getError().getErrorMsg() : "unknown error";
+            throw exception(STATISTICS_GET_USER_SUMMARY_FAIL, errorMsg);
         }
     }
 
@@ -48,7 +49,8 @@ public class MpStatisticsServiceImpl implements MpStatisticsService {
             return mpService.getDataCubeService().getUserCumulate(
                     DateUtil.date(date[0]), DateUtil.date(date[1]));
         } catch (WxErrorException e) {
-            throw exception(STATISTICS_GET_USER_CUMULATE_FAIL, e.getError().getErrorMsg());
+            String errorMsg = e.getError() != null ? e.getError().getErrorMsg() : "unknown error";
+            throw exception(STATISTICS_GET_USER_CUMULATE_FAIL, errorMsg);
         }
     }
 
@@ -59,7 +61,8 @@ public class MpStatisticsServiceImpl implements MpStatisticsService {
             return mpService.getDataCubeService().getUpstreamMsg(
                     DateUtil.date(date[0]), DateUtil.date(date[1]));
         } catch (WxErrorException e) {
-            throw exception(STATISTICS_GET_UPSTREAM_MESSAGE_FAIL, e.getError().getErrorMsg());
+            String errorMsg = e.getError() != null ? e.getError().getErrorMsg() : "unknown error";
+            throw exception(STATISTICS_GET_UPSTREAM_MESSAGE_FAIL, errorMsg);
         }
     }
 
@@ -70,7 +73,8 @@ public class MpStatisticsServiceImpl implements MpStatisticsService {
             return mpService.getDataCubeService().getInterfaceSummary(
                     DateUtil.date(date[0]), DateUtil.date(date[1]));
         } catch (WxErrorException e) {
-            throw exception(STATISTICS_GET_INTERFACE_SUMMARY_FAIL, e.getError().getErrorMsg());
+            String errorMsg = e.getError() != null ? e.getError().getErrorMsg() : "unknown error";
+            throw exception(STATISTICS_GET_INTERFACE_SUMMARY_FAIL, errorMsg);
         }
     }
 

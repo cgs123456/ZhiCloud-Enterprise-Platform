@@ -71,7 +71,8 @@ public class MpMenuServiceImpl implements MpMenuService {
         try {
             mpService.getMenuService().menuCreate(wxMenu);
         } catch (WxErrorException e) {
-            throw exception(MENU_SAVE_FAIL, e.getError().getErrorMsg());
+            String errorMsg = e.getError() != null ? e.getError().getErrorMsg() : "unknown error";
+            throw exception(MENU_SAVE_FAIL, errorMsg);
         }
 
         // 第二步，存储到数据库
@@ -137,7 +138,8 @@ public class MpMenuServiceImpl implements MpMenuService {
         try {
             mpService.getMenuService().menuDelete();
         } catch (WxErrorException e) {
-            throw exception(MENU_DELETE_FAIL, e.getError().getErrorMsg());
+            String errorMsg = e.getError() != null ? e.getError().getErrorMsg() : "unknown error";
+            throw exception(MENU_DELETE_FAIL, errorMsg);
         }
 
         // 第二步，存储到数据库

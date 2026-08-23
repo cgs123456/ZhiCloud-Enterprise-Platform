@@ -208,7 +208,8 @@ public class MpUserServiceImpl implements MpUserService {
                 mpService.getUserTagService().batchTagging(tagId, new String[]{openid});
             }
         } catch (WxErrorException e) {
-            throw exception(USER_UPDATE_TAG_FAIL, e.getError().getErrorMsg());
+            String errorMsg = e.getError() != null ? e.getError().getErrorMsg() : "unknown error";
+            throw exception(USER_UPDATE_TAG_FAIL, errorMsg);
         }
     }
 

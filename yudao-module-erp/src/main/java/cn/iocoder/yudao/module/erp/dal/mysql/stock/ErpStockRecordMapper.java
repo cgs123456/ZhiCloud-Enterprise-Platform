@@ -7,6 +7,10 @@ import cn.iocoder.yudao.module.erp.controller.admin.stock.vo.record.ErpStockReco
 import cn.iocoder.yudao.module.erp.dal.dataobject.stock.ErpStockRecordDO;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
 /**
  * ERP 产品库存明细 Mapper
  *
@@ -23,6 +27,17 @@ public interface ErpStockRecordMapper extends BaseMapperX<ErpStockRecordDO> {
                 .likeIfPresent(ErpStockRecordDO::getBizNo, reqVO.getBizNo())
                 .betweenIfPresent(ErpStockRecordDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(ErpStockRecordDO::getId));
+    }
+
+    /**
+     * 查询指定时间范围内的出库记录（count < 0）
+     * 用于BI分析，避免全表扫描
+     */
+    default List<ErpStockRecordDO> selectOutRecordsBetween(LocalDateTime beginTime, LocalDateTime endTime) {
+        return selectList(new LambdaQueryWrapperX<ErpStockRecordDO>()
+                .lt(ErpStockRecordDO::getCount, BigDecimal.ZERO)
+                .ge(ErpStockRecordDO::getCreateTime, beginTime)
+                .le(ErpStockRecordDO::getCreateTime, endTime));
     }
 
 }

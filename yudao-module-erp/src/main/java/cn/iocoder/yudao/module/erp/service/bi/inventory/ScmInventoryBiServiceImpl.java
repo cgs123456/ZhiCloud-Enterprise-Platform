@@ -44,11 +44,8 @@ public class ScmInventoryBiServiceImpl implements ScmInventoryBiService {
         Map<Long, BigDecimal> productPriceMap = productMapper.selectList(null).stream()
                 .collect(Collectors.toMap(ErpProductDO::getId,
                         p -> p.getPurchasePrice() == null ? BigDecimal.ZERO : p.getPurchasePrice()));
-        // 2. 出库总成本 = 出库记录 |count| * 采购单价
-        List<ErpStockRecordDO> outRecords = stockRecordMapper.selectList(new LambdaQueryWrapperX<ErpStockRecordDO>()
-                .ltIfPresent(ErpStockRecordDO::getCount, BigDecimal.ZERO)
-                .geIfPresent(ErpStockRecordDO::getCreateTime, beginTime)
-                .leIfPresent(ErpStockRecordDO::getCreateTime, endTime));
+        // 2. 出库总成本 = 出库记录 |count| * 采购单价（使用带时间过滤的查询）
+        List<ErpStockRecordDO> outRecords = stockRecordMapper.selectOutRecordsBetween(beginTime, endTime);
         BigDecimal outCostAmount = BigDecimal.ZERO;
         for (ErpStockRecordDO record : outRecords) {
             BigDecimal price = productPriceMap.getOrDefault(record.getProductId(), BigDecimal.ZERO);

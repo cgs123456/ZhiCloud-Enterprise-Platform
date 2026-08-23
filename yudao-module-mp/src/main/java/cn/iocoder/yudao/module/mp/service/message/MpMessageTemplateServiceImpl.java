@@ -66,7 +66,8 @@ public class MpMessageTemplateServiceImpl implements MpMessageTemplateService {
             mpServiceFactory.getRequiredMpService(template.getAppId())
                     .getTemplateMsgService().delPrivateTemplate(template.getTemplateId());
         } catch (WxErrorException e) {
-            throw exception(MESSAGE_TEMPLATE_DELETE_FAIL, e.getError().getErrorMsg());
+            String errorMsg = e.getError() != null ? e.getError().getErrorMsg() : "unknown error";
+            throw exception(MESSAGE_TEMPLATE_DELETE_FAIL, errorMsg);
         }
 
         // 第二步，删除模板到数据库
@@ -102,7 +103,8 @@ public class MpMessageTemplateServiceImpl implements MpMessageTemplateService {
             wxTemplates = mpServiceFactory.getRequiredMpService(accountId)
                     .getTemplateMsgService().getAllPrivateTemplate();
         } catch (WxErrorException e) {
-            throw exception(MESSAGE_TEMPLATE_SYNC_FAIL, e.getError().getErrorMsg());
+            String errorMsg = e.getError() != null ? e.getError().getErrorMsg() : "unknown error";
+            throw exception(MESSAGE_TEMPLATE_SYNC_FAIL, errorMsg);
         }
 
         // 第二步，合并更新回自己的数据库
@@ -144,7 +146,8 @@ public class MpMessageTemplateServiceImpl implements MpMessageTemplateService {
             mpServiceFactory.getRequiredMpService(template.getAppId())
                     .getTemplateMsgService().sendTemplateMsg(templateMessage);
         } catch (WxErrorException e) {
-            throw exception(MESSAGE_TEMPLATE_SEND_FAIL, e.getError().getErrorMsg());
+            String errorMsg = e.getError() != null ? e.getError().getErrorMsg() : "unknown error";
+            throw exception(MESSAGE_TEMPLATE_SEND_FAIL, errorMsg);
         }
 
         // 不用记录 MpMessageDO 记录，因为，微信会主动推送，可见文档 https://developers.weixin.qq.com/doc/service/guide/product/template_message/Template_Message_Interface.html

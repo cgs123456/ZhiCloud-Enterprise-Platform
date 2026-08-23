@@ -104,6 +104,16 @@ public interface WmsInventoryMapper extends BaseMapperX<WmsInventoryDO> {
                 .last("FOR UPDATE"));
     }
 
+    /**
+     * 查询待处理呆滞库存（update_time <= threshold）
+     * 用于定时任务扫描，避免全表扫描后内存过滤
+     */
+    default List<WmsInventoryDO> selectDeadStockCandidates(java.time.LocalDateTime threshold) {
+        return selectList(new LambdaQueryWrapperX<WmsInventoryDO>()
+                .le(WmsInventoryDO::getUpdateTime, threshold)
+                .gt(WmsInventoryDO::getQuantity, BigDecimal.ZERO));
+    }
+
     static void appendDimensionOrder(MPJLambdaWrapperX<WmsInventoryDO> query, String type) {
         if (StrUtil.equals(WmsInventoryPageReqVO.TYPE_WAREHOUSE, type)) {
             query.orderByAsc(WmsInventoryDO::getWarehouseId)

@@ -148,7 +148,8 @@ public class MpMessageServiceImpl implements MpMessageService {
         try {
             mpService.getKefuService().sendKefuMessageWithResponse(wxMessage);
         } catch (WxErrorException e) {
-            throw exception(MESSAGE_SEND_FAIL, e.getError().getErrorMsg());
+            String errorMsg = e.getError() != null ? e.getError().getErrorMsg() : "unknown error";
+            throw exception(MESSAGE_SEND_FAIL, errorMsg);
         }
 
         // 记录消息

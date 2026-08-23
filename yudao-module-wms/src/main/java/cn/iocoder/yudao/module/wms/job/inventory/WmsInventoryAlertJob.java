@@ -170,26 +170,19 @@ public class WmsInventoryAlertJob implements JobHandler {
     /**
      * 3. 扫描呆滞料（最近 90 天未变动的库存）
      *
-     * <p>简化：基于 inventory.update_time 判定，无 last_out_time 字段。
+     * <p>优化：使用 Mapper 层 SQL 过滤，避免全表扫描后内存过滤
      */
     private int scanDeadStock() {
         LocalDateTime threshold = LocalDateTime.now().minusDays(DEAD_STOCK_DAYS);
-        // 全量扫描库存（仅查询 update_time <= threshold 的记录）
-        List<WmsInventoryDO> allInventories = inventoryMapper.selectList();
+        // 使用 Mapper 查询，SQL 层已过滤 update_time <= threshold 且 quantity > 0
+        List<WmsInventoryDO> allInventories = inventoryMapper.selectDeadStockCandidates(threshold);
         if (CollUtil.isEmpty(allInventories)) {
             return 0;
         }
         LocalDateTime now = LocalDateTime.now();
         List<WmsInventoryAlertDO> alerts = new ArrayList<>();
         for (WmsInventoryDO inventory : allInventories) {
-            if (inventory.getUpdateTime() == null
-                    || inventory.getUpdateTime().isAfter(threshold)) {
-                continue;
-            }
             BigDecimal quantity = inventory.getQuantity() == null ? BigDecimal.ZERO : inventory.getQuantity();
-            if (quantity.compareTo(BigDecimal.ZERO) <= 0) {
-                continue;
-            }
             alerts.add(buildAlert(WmsInventoryAlertTypeEnum.DEAD_STOCK, inventory.getWarehouseId(),
                     inventory.getSkuId(), null, quantity, new BigDecimal(DEAD_STOCK_DAYS), now,
                     "库存最近 90 天未变动"));

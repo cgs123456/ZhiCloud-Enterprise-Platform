@@ -55,7 +55,8 @@ public class MpFreePublishController {
             publicationRecords = mpService.getFreePublishService().getPublicationRecords(
                     PageUtils.getStart(reqVO), reqVO.getPageSize());
         } catch (WxErrorException e) {
-            throw exception(FREE_PUBLISH_LIST_FAIL, e.getError().getErrorMsg());
+            String errorMsg = e.getError() != null ? e.getError().getErrorMsg() : "unknown error";
+            throw exception(FREE_PUBLISH_LIST_FAIL, errorMsg);
         }
         // 查询对应的图片地址。目的：解决公众号的图片链接无法在我们后台展示
         setFreePublishThumbUrl(publicationRecords.getItems());
@@ -94,7 +95,8 @@ public class MpFreePublishController {
             String publishId = mpService.getFreePublishService().submit(mediaId);
             return success(publishId);
         } catch (WxErrorException e) {
-            throw exception(FREE_PUBLISH_SUBMIT_FAIL, e.getError().getErrorMsg());
+            String errorMsg = e.getError() != null ? e.getError().getErrorMsg() : "unknown error";
+            throw exception(FREE_PUBLISH_SUBMIT_FAIL, errorMsg);
         }
     }
 
@@ -112,7 +114,8 @@ public class MpFreePublishController {
             mpService.getFreePublishService().deletePushAllArticle(articleId);
             return success(true);
         } catch (WxErrorException e) {
-            throw exception(FREE_PUBLISH_DELETE_FAIL, e.getError().getErrorMsg());
+            String errorMsg = e.getError() != null ? e.getError().getErrorMsg() : "unknown error";
+            throw exception(FREE_PUBLISH_DELETE_FAIL, errorMsg);
         }
     }
 

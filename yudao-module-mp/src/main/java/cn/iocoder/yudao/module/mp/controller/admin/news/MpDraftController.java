@@ -53,7 +53,8 @@ public class MpDraftController {
         try {
             draftList = mpService.getDraftService().listDraft(PageUtils.getStart(reqVO), reqVO.getPageSize());
         } catch (WxErrorException e) {
-            throw exception(DRAFT_LIST_FAIL, e.getError().getErrorMsg());
+            String errorMsg = e.getError() != null ? e.getError().getErrorMsg() : "unknown error";
+            throw exception(DRAFT_LIST_FAIL, errorMsg);
         }
         // 查询对应的图片地址。目的：解决公众号的图片链接无法在我们后台展示
         setDraftThumbUrl(draftList.getItems());
@@ -89,7 +90,8 @@ public class MpDraftController {
             String mediaId = mpService.getDraftService().addDraft(draft);
             return success(mediaId);
         } catch (WxErrorException e) {
-            throw exception(DRAFT_CREATE_FAIL, e.getError().getErrorMsg());
+            String errorMsg = e.getError() != null ? e.getError().getErrorMsg() : "unknown error";
+            throw exception(DRAFT_CREATE_FAIL, errorMsg);
         }
     }
 
@@ -111,7 +113,8 @@ public class MpDraftController {
             }
             return success(true);
         } catch (WxErrorException e) {
-            throw exception(DRAFT_UPDATE_FAIL, e.getError().getErrorMsg());
+            String errorMsg = e.getError() != null ? e.getError().getErrorMsg() : "unknown error";
+            throw exception(DRAFT_UPDATE_FAIL, errorMsg);
         }
     }
 
@@ -129,7 +132,8 @@ public class MpDraftController {
             mpService.getDraftService().delDraft(mediaId);
             return success(true);
         } catch (WxErrorException e) {
-            throw exception(DRAFT_DELETE_FAIL, e.getError().getErrorMsg());
+            String errorMsg = e.getError() != null ? e.getError().getErrorMsg() : "unknown error";
+            throw exception(DRAFT_DELETE_FAIL, errorMsg);
         }
     }
 

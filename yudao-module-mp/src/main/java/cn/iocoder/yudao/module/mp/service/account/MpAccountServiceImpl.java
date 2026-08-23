@@ -205,7 +205,8 @@ public class MpAccountServiceImpl implements MpAccountService {
             WxMpQrCodeTicket qrCodeTicket = mpService.getQrcodeService().qrCodeCreateLastTicket("default");
             qrCodeUrl = mpService.getQrcodeService().qrCodePictureUrl(qrCodeTicket.getTicket());
         } catch (WxErrorException e) {
-            throw exception(ErrorCodeConstants.ACCOUNT_GENERATE_QR_CODE_FAIL, e.getError().getErrorMsg());
+            String errorMsg = e.getError() != null ? e.getError().getErrorMsg() : "unknown error";
+            throw exception(ErrorCodeConstants.ACCOUNT_GENERATE_QR_CODE_FAIL, errorMsg);
         }
 
         // 保存二维码
@@ -222,7 +223,8 @@ public class MpAccountServiceImpl implements MpAccountService {
         try {
             mpService.clearQuota(account.getAppId());
         } catch (WxErrorException e) {
-            throw exception(ErrorCodeConstants.ACCOUNT_CLEAR_QUOTA_FAIL, e.getError().getErrorMsg());
+            String errorMsg = e.getError() != null ? e.getError().getErrorMsg() : "unknown error";
+            throw exception(ErrorCodeConstants.ACCOUNT_CLEAR_QUOTA_FAIL, errorMsg);
         }
     }
 

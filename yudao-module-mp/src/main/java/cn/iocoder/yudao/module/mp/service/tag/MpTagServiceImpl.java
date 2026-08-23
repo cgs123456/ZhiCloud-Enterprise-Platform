@@ -60,7 +60,8 @@ public class MpTagServiceImpl implements MpTagService {
         try {
             wxTag = mpService.getUserTagService().tagCreate(createReqVO.getName());
         } catch (WxErrorException e) {
-            throw exception(TAG_CREATE_FAIL, e.getError().getErrorMsg());
+            String errorMsg = e.getError() != null ? e.getError().getErrorMsg() : "unknown error";
+            throw exception(TAG_CREATE_FAIL, errorMsg);
         }
 
         // 第二步，新增标签到数据库
@@ -79,7 +80,8 @@ public class MpTagServiceImpl implements MpTagService {
         try {
             mpService.getUserTagService().tagUpdate(tag.getTagId(), updateReqVO.getName());
         } catch (WxErrorException e) {
-            throw exception(TAG_UPDATE_FAIL, e.getError().getErrorMsg());
+            String errorMsg = e.getError() != null ? e.getError().getErrorMsg() : "unknown error";
+            throw exception(TAG_UPDATE_FAIL, errorMsg);
         }
 
         // 第二步，更新标签到数据库
@@ -96,7 +98,8 @@ public class MpTagServiceImpl implements MpTagService {
         try {
             mpService.getUserTagService().tagDelete(tag.getTagId());
         } catch (WxErrorException e) {
-            throw exception(TAG_DELETE_FAIL, e.getError().getErrorMsg());
+            String errorMsg = e.getError() != null ? e.getError().getErrorMsg() : "unknown error";
+            throw exception(TAG_DELETE_FAIL, errorMsg);
         }
 
         // 第二步，删除标签到数据库
@@ -137,7 +140,8 @@ public class MpTagServiceImpl implements MpTagService {
         try {
             wxTags = mpService.getUserTagService().tagGet();
         } catch (WxErrorException e) {
-            throw exception(TAG_GET_FAIL, e.getError().getErrorMsg());
+            String errorMsg = e.getError() != null ? e.getError().getErrorMsg() : "unknown error";
+            throw exception(TAG_GET_FAIL, errorMsg);
         }
 
         // 第二步，合并更新回自己的数据库；由于标签只有 100 个，所以直接 for 循环操作

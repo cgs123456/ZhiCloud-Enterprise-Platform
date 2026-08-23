@@ -98,7 +98,8 @@ public class MpMaterialServiceImpl implements MpMaterialService {
             mediaId = ObjUtil.defaultIfNull(result.getMediaId(), result.getThumbMediaId());
             url = uploadFile(mediaId, file);
         } catch (WxErrorException e) {
-            throw exception(MATERIAL_UPLOAD_FAIL, e.getError().getErrorMsg());
+            String errorMsg = e.getError() != null ? e.getError().getErrorMsg() : "unknown error";
+            throw exception(MATERIAL_UPLOAD_FAIL, errorMsg);
         } finally {
             FileUtil.del(file);
         }
@@ -131,7 +132,8 @@ public class MpMaterialServiceImpl implements MpMaterialService {
             mediaId = ObjUtil.defaultIfNull(result.getMediaId(), result.getMediaId());
             url = uploadFile(mediaId, file);
         } catch (WxErrorException e) {
-            throw exception(MATERIAL_UPLOAD_FAIL, e.getError().getErrorMsg());
+            String errorMsg = e.getError() != null ? e.getError().getErrorMsg() : "unknown error";
+            throw exception(MATERIAL_UPLOAD_FAIL, errorMsg);
         } finally {
             FileUtil.del(file);
         }
@@ -155,7 +157,8 @@ public class MpMaterialServiceImpl implements MpMaterialService {
             // 上传到公众号
             return mpService.getMaterialService().mediaImgUpload(file).getUrl();
         } catch (WxErrorException e) {
-            throw exception(MATERIAL_IMAGE_UPLOAD_FAIL, e.getError().getErrorMsg());
+            String errorMsg = e.getError() != null ? e.getError().getErrorMsg() : "unknown error";
+            throw exception(MATERIAL_IMAGE_UPLOAD_FAIL, errorMsg);
         } finally {
             FileUtil.del(file);
         }
@@ -184,7 +187,8 @@ public class MpMaterialServiceImpl implements MpMaterialService {
             try {
                 mpService.getMaterialService().materialDelete(material.getMediaId());
             } catch (WxErrorException e) {
-                throw exception(MATERIAL_DELETE_FAIL, e.getError().getErrorMsg());
+                String errorMsg = e.getError() != null ? e.getError().getErrorMsg() : "unknown error";
+            throw exception(MATERIAL_DELETE_FAIL, errorMsg);
             }
         }
 
