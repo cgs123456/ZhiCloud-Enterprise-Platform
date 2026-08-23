@@ -262,9 +262,7 @@ public class MesProMrpServiceImplTest extends BaseDbUnitTest {
     public void testCalculateMrp_stockCoversRequirement() {
         when(mrpPlanMapper.selectById(PLAN_ID)).thenReturn(buildPlan(MesProMrpPlanStatusEnum.DRAFT.getStatus()));
         mockWorkOrders(buildWorkOrder(1L, "10"));
-        when(materialStockService.getMaterialStockList(any(MesWmMaterialStockListReqVO.class)))
-                .thenReturn(Collections.singletonList(MesWmMaterialStockDO.builder().id(1L).itemId(1L)
-                        .quantity(new BigDecimal("50")).build()));
+        when(materialStockService.batchGetStockQuantity(any())).thenReturn(Map.of(1L, new BigDecimal("50")));
 
         List<MesProMrpResultDO> results = mrpService.calculateMrp(PLAN_ID);
         assertEquals(1, results.size());
@@ -278,10 +276,7 @@ public class MesProMrpServiceImplTest extends BaseDbUnitTest {
     public void testCalculateMrp_stockWithNullQuantity() {
         when(mrpPlanMapper.selectById(PLAN_ID)).thenReturn(buildPlan(MesProMrpPlanStatusEnum.DRAFT.getStatus()));
         mockWorkOrders(buildWorkOrder(1L, "100"));
-        when(materialStockService.getMaterialStockList(any(MesWmMaterialStockListReqVO.class)))
-                .thenReturn(Arrays.asList(
-                        MesWmMaterialStockDO.builder().id(1L).itemId(1L).quantity(null).build(),
-                        MesWmMaterialStockDO.builder().id(2L).itemId(1L).quantity(new BigDecimal("30")).build()));
+        when(materialStockService.batchGetStockQuantity(any())).thenReturn(Map.of(1L, new BigDecimal("30")));
 
         List<MesProMrpResultDO> results = mrpService.calculateMrp(PLAN_ID);
         assertEquals(1, results.size());

@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -150,7 +151,16 @@ public class ScmPurchaseBiServiceImpl implements ScmPurchaseBiService {
         // 3. 加载供应商名称
         Map<Long, String> supplierNameMap = supplierMapper.selectList(null).stream()
                 .collect(Collectors.toMap(ErpSupplierDO::getId, ErpSupplierDO::getName));
-        // 4. 计算各供应商绩效
+        // 4. 预加载所有关联订单（避免N+1查询）
+        Set<Long> allOrderIds = inList.stream()
+                .map(ErpPurchaseInDO::getOrderId)
+                .filter(id -> id != null)
+                .collect(Collectors.toSet());
+        Map<Long, ErpPurchaseOrderDO> allOrdersMap = allOrderIds.isEmpty()
+                ? Map.of()
+                : purchaseOrderMapper.selectByIds(new ArrayList<>(allOrderIds)).stream()
+                .collect(Collectors.toMap(ErpPurchaseOrderDO::getId, o -> o));
+        // 5. 计算各供应商绩效
         List<ScmBiSupplierScoreRespVO> result = new ArrayList<>();
         inBySupplier.forEach((supplierId, ins) -> {
             int onTime = 0;
@@ -159,7 +169,7 @@ public class ScmPurchaseBiServiceImpl implements ScmPurchaseBiService {
                     continue;
                 }
                 ErpPurchaseOrderDO order = in.getOrderId() == null ? null
-                        : purchaseOrderMapper.selectById(in.getOrderId());
+                        : allOrdersMap.get(in.getOrderId());
                 if (order == null || order.getOrderTime() == null) {
                     continue;
                 }

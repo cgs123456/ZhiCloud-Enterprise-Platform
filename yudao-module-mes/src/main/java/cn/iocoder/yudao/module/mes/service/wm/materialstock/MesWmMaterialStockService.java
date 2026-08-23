@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * MES 库存台账 Service 接口
@@ -111,6 +112,14 @@ public interface MesWmMaterialStockService {
      */
     MesWmMaterialStockDO getOrCreateMaterialStock(Long itemId, Long warehouseId, Long locationId, Long areaId,
                                                   Long batchId, String batchCode, Long vendorId, LocalDateTime receiptTime);
+
+    /**
+     * 批量查询多个物料的库存总量（用于MRP计算等批量场景）
+     *
+     * @param itemIds 物料编号集合
+     * @return 物料ID -> 库存总量 Map
+     */
+    Map<Long, BigDecimal> batchGetStockQuantity(Collection<Long> itemIds);
 
     /**
      * 更新库存数量

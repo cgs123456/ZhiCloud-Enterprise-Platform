@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjUtil;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.framework.common.util.collection.SetUtils;
 import cn.iocoder.yudao.module.mes.controller.admin.wm.materialstock.vo.MesWmMaterialStockFreezeReqVO;
 import cn.iocoder.yudao.module.mes.controller.admin.wm.materialstock.vo.MesWmMaterialStockListReqVO;
@@ -240,6 +241,26 @@ public class MesWmMaterialStockServiceImpl implements MesWmMaterialStockService 
             throw exception(WM_MATERIAL_STOCK_INSUFFICIENT);
         }
         return stock;
+    }
+
+    @Override
+    public java.util.Map<Long, BigDecimal> batchGetStockQuantity(java.util.Collection<Long> itemIds) {
+        if (cn.hutool.core.collection.CollUtil.isEmpty(itemIds)) {
+            return new java.util.HashMap<>();
+        }
+        List<MesWmMaterialStockDO> stocks = materialStockMapper.selectList(
+                new LambdaQueryWrapperX<MesWmMaterialStockDO>()
+                        .in(MesWmMaterialStockDO::getItemId, itemIds));
+        if (CollUtil.isEmpty(stocks)) {
+            return new java.util.HashMap<>();
+        }
+        Map<Long, BigDecimal> result = new HashMap<>();
+        for (MesWmMaterialStockDO stock : stocks) {
+            Long itemId = stock.getItemId();
+            BigDecimal qty = stock.getQuantity() == null ? BigDecimal.ZERO : stock.getQuantity();
+            result.merge(itemId, qty, BigDecimal::add);
+        }
+        return result;
     }
 
 }

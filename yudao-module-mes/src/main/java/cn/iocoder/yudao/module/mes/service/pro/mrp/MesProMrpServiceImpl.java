@@ -39,6 +39,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.mes.enums.ErrorCodeConstants.PRO_MRP_PLAN_NOT_DRAFT;
@@ -128,15 +129,17 @@ public class MesProMrpServiceImpl implements MesProMrpService {
             return item == null || item.getLowLevelCode() == null ? Integer.MAX_VALUE : item.getLowLevelCode();
         }));
 
-        // 6. 计算净需求并生成结果
+        // 6. 批量查询所有物料库存（避免N+1）
+        List<Long> allItemIds = sortedEntries.stream().map(Map.Entry::getKey).collect(Collectors.toList());
+        Map<Long, BigDecimal> stockQtyMap = materialStockService.batchGetStockQuantity(allItemIds);
         LocalDateTime planBaseDate = plan.getPlanDate() != null ? plan.getPlanDate() : LocalDateTime.now();
         List<MesProMrpResultDO> results = new ArrayList<>();
         for (Map.Entry<Long, BigDecimal> entry : sortedEntries) {
             Long itemId = entry.getKey();
             BigDecimal requirementQty = entry.getValue();
             MesMdItemDO item = itemMap.get(itemId);
-            // 查询库存
-            BigDecimal stockQty = getStockQuantity(itemId);
+            // 从缓存Map获取库存（避免循环内查询）
+            BigDecimal stockQty = stockQtyMap.getOrDefault(itemId, BigDecimal.ZERO);
             // P0-11：净需求 = 需求量 - (库存 - 安全库存)
             BigDecimal safetyStock = (item != null && item.getSafetyStock() != null)
                     ? item.getSafetyStock() : BigDecimal.ZERO;
