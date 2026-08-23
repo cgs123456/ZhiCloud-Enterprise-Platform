@@ -65,12 +65,16 @@ public class IotRabbitMQDataRuleAction
 
     @Override
     protected void closeProducer(Channel channel) throws Exception {
-        if (channel.isOpen()) {
-            channel.close();
-        }
-        Connection connection = channel.getConnection();
-        if (connection.isOpen()) {
-            connection.close();
+        Connection connection = null;
+        try {
+            if (channel.isOpen()) {
+                channel.close();
+            }
+        } finally {
+            connection = channel.getConnection();
+            if (connection != null && connection.isOpen()) {
+                connection.close();
+            }
         }
     }
 
