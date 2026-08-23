@@ -8,15 +8,6 @@
       :inline="true"
       label-width="68px"
     >
-      <el-form-item label="SN 码" prop="snCode">
-        <el-input
-          v-model="queryParams.snCode"
-          placeholder="请输入 SN 码"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
       <el-form-item label="物料ID" prop="itemId">
         <el-input
           v-model="queryParams.itemId"
@@ -60,23 +51,25 @@
         <el-button
           type="success"
           plain
-          @click="handleExport"
+          @click="handleExportGroup"
           :loading="exportLoading"
           v-hasPermi="['mes:wm-sn:export']"
         >
-          <Icon icon="ep:download" class="mr-5px" /> 导出
+          <Icon icon="ep:download" class="mr-5px" /> 导出分组
         </el-button>
       </el-form-item>
     </el-form>
   </ContentWrap>
 
-  <!-- 列表 -->
+  <!-- 分组列表 -->
   <ContentWrap>
     <el-table v-loading="loading" :data="list" stripe>
-      <el-table-column label="SN 码" align="center" prop="snCode" min-width="180" />
+      <el-table-column label="批次 UUID" align="center" prop="uuid" min-width="220" show-overflow-tooltip />
+      <el-table-column label="SN 数量" align="center" prop="count" width="100" />
       <el-table-column label="物料编码" align="center" prop="itemCode" min-width="120" />
       <el-table-column label="物料名称" align="center" prop="itemName" min-width="150" />
       <el-table-column label="规格型号" align="center" prop="specification" min-width="120" />
+      <el-table-column label="单位" align="center" prop="unitName" width="80" />
       <el-table-column label="批次号" align="center" prop="batchCode" min-width="120" />
       <el-table-column
         label="生成时间"
@@ -85,12 +78,28 @@
         :formatter="dateFormatter"
         width="180px"
       />
-      <el-table-column label="操作" align="center" width="120" fixed="right">
+      <el-table-column label="操作" align="center" width="200" fixed="right">
         <template #default="scope">
           <el-button
             link
+            type="primary"
+            @click="openDetailDialog(scope.row.uuid)"
+            v-hasPermi="['mes:wm-sn:query']"
+          >
+            明细
+          </el-button>
+          <el-button
+            link
+            type="success"
+            @click="handleExportDetail(scope.row.uuid)"
+            v-hasPermi="['mes:wm-sn:export']"
+          >
+            导出明细
+          </el-button>
+          <el-button
+            link
             type="danger"
-            @click="handleDelete(scope.row.id)"
+            @click="handleDelete(scope.row.uuid)"
             v-hasPermi="['mes:wm-sn:delete']"
           >
             删除
@@ -116,8 +125,8 @@
       <el-form-item label="批次号" prop="batchCode">
         <el-input v-model="formData.batchCode" placeholder="请输入批次号" maxlength="100" />
       </el-form-item>
-      <el-form-item label="生成数量" prop="snNum">
-        <el-input-number v-model="formData.snNum" :min="1" :max="1000" />
+      <el-form-item label="生成数量" prop="count">
+        <el-input-number v-model="formData.count" :min="1" :max="1000" />
       </el-form-item>
     </el-form>
     <template #footer>
@@ -125,24 +134,41 @@
       <el-button type="primary" @click="submitForm" :loading="formLoading">确定</el-button>
     </template>
   </el-dialog>
+
+  <!-- 批次明细对话框 -->
+  <el-dialog :title="'SN 码明细'" v-model="detailDialogVisible" width="800px">
+    <el-table v-loading="detailLoading" :data="detailList" stripe max-height="480">
+      <el-table-column label="SN 码" align="center" prop="code" min-width="180" />
+      <el-table-column label="物料编码" align="center" prop="itemCode" min-width="120" />
+      <el-table-column label="物料名称" align="center" prop="itemName" min-width="150" />
+      <el-table-column label="规格型号" align="center" prop="specification" min-width="120" />
+      <el-table-column label="单位" align="center" prop="unitName" width="80" />
+      <el-table-column label="批次号" align="center" prop="batchCode" min-width="120" />
+      <el-table-column
+        label="生成时间"
+        align="center"
+        prop="createTime"
+        :formatter="dateFormatter"
+        width="180px"
+      />
+    </el-table>
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
 import { dateFormatter } from '@/utils/formatTime'
-import { WmSnApi, WmSnVO, WmSnGenerateVO } from '@/api/mes/wm/sn'
+import { WmSnApi, WmSnVO, WmSnGroupVO, WmSnGenerateVO } from '@/api/mes/wm/sn'
 
 defineOptions({ name: 'MesWmSn' })
 
 const message = useMessage()
-const { t } = useI18n()
 
 const loading = ref(true)
-const list = ref<WmSnVO[]>([])
+const list = ref<WmSnGroupVO[]>([])
 const total = ref(0)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  snCode: undefined,
   itemId: undefined,
   batchCode: undefined,
   createTime: []
@@ -150,11 +176,11 @@ const queryParams = reactive({
 const queryFormRef = ref()
 const exportLoading = ref(false)
 
-/** 查询列表 */
+/** 查询分组列表 */
 const getList = async () => {
   loading.value = true
   try {
-    const data = await WmSnApi.getSnPage(queryParams)
+    const data = await WmSnApi.getSnGroupPage(queryParams)
     list.value = data.list
     total.value = data.total
   } finally {
@@ -181,11 +207,11 @@ const formData = ref<WmSnGenerateVO>({
   itemId: undefined,
   batchCode: undefined,
   workOrderId: undefined,
-  snNum: 100
+  count: 100
 })
 const formRules = reactive({
   itemId: [{ required: true, message: '物料不能为空', trigger: 'change' }],
-  snNum: [{ required: true, message: '生成数量不能为空', trigger: 'blur' }]
+  count: [{ required: true, message: '生成数量不能为空', trigger: 'blur' }]
 })
 const formRef = ref()
 
@@ -201,7 +227,7 @@ const resetForm = () => {
     itemId: undefined,
     batchCode: undefined,
     workOrderId: undefined,
-    snNum: 100
+    count: 100
   }
   formRef.value?.resetFields()
 }
@@ -220,26 +246,46 @@ const submitForm = async () => {
   }
 }
 
-/** 删除按钮操作 */
-const handleDelete = async (id: number) => {
+/** 打开批次明细对话框 */
+const detailDialogVisible = ref(false)
+const detailLoading = ref(false)
+const detailList = ref<WmSnVO[]>([])
+
+const openDetailDialog = async (uuid: string) => {
+  detailDialogVisible.value = true
+  detailLoading.value = true
+  try {
+    detailList.value = await WmSnApi.getSnListByUuid(uuid)
+  } finally {
+    detailLoading.value = false
+  }
+}
+
+/** 删除批次按钮操作（按批次 UUID 删除整批 SN 码） */
+const handleDelete = async (uuid: string) => {
   try {
     await message.delConfirm()
-    await WmSnApi.deleteSnBatch(String(id))
+    await WmSnApi.deleteSnBatch(uuid)
     message.success('删除成功')
     await getList()
   } catch {}
 }
 
-/** 导出按钮操作 */
-const handleExport = async () => {
+/** 导出 SN 码分组 Excel */
+const handleExportGroup = async () => {
   try {
     await message.exportConfirm()
     exportLoading.value = true
-    await WmSnApi.exportSnExcel(queryParams)
+    await WmSnApi.exportSnGroupExcel(queryParams)
   } catch {
   } finally {
     exportLoading.value = false
   }
+}
+
+/** 导出批次明细 Excel */
+const handleExportDetail = async (uuid: string) => {
+  await WmSnApi.exportSnExcel(uuid)
 }
 
 onMounted(() => {

@@ -26,26 +26,26 @@ export interface WmProductRecptDetailVO {
 export const WmProductRecptDetailApi = {
   // 查询产品收货单明细详情
   getProductRecptDetail: async (id: number) => {
-    return await request.get({ url: '/mes/wm/product-recpt-detail/get?id=' + id })
+    return await request.get({ url: '/mes/wm/product-receipt-detail/get?id=' + id })
   },
 
   // 查询产品收货单明细列表（按行编号）
   getProductRecptDetailListByLineId: async (lineId: number) => {
-    return await request.get({ url: '/mes/wm/product-recpt-detail/list-by-line?lineId=' + lineId })
+    return await request.get({ url: '/mes/wm/product-receipt-detail/list-by-line?lineId=' + lineId })
   },
 
   // 新增产品收货单明细
   createProductRecptDetail: async (data: WmProductRecptDetailVO) => {
-    return await request.post({ url: '/mes/wm/product-recpt-detail/create', data })
+    return await request.post({ url: '/mes/wm/product-receipt-detail/create', data })
   },
 
   // 修改产品收货单明细
   updateProductRecptDetail: async (data: WmProductRecptDetailVO) => {
-    return await request.put({ url: '/mes/wm/product-recpt-detail/update', data })
+    return await request.put({ url: '/mes/wm/product-receipt-detail/update', data })
   },
 
   // 删除产品收货单明细
   deleteProductRecptDetail: async (id: number) => {
-    return await request.delete({ url: '/mes/wm/product-recpt-detail/delete?id=' + id })
+    return await request.delete({ url: '/mes/wm/product-receipt-detail/delete?id=' + id })
   }
 }

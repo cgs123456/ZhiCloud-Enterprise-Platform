@@ -17,6 +17,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.IntStream;
 
 /**
@@ -32,6 +33,11 @@ public class ApiAccessLogInterceptor implements HandlerInterceptor {
     public static final String ATTRIBUTE_HANDLER_METHOD = "HANDLER_METHOD";
 
     private static final String ATTRIBUTE_STOP_WATCH = "ApiAccessLogInterceptor.StopWatch";
+
+    /**
+     * Controller 方法源码位置缓存：避免非 prod 环境每个请求都重复读取源码文件（磁盘 I/O 在请求热路径上）
+     */
+    private static final Map<Method, Optional<Integer>> HANDLER_POSITION_CACHE = new ConcurrentHashMap<>();
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
@@ -82,19 +88,21 @@ public class ApiAccessLogInterceptor implements HandlerInterceptor {
         Method method = handlerMethod.getMethod();
         Class<?> clazz = method.getDeclaringClass();
         try {
-            // 获取 method 的 lineNumber
-            List<String> clazzContents = FileUtil.readUtf8Lines(
-                    ResourceUtil.getResource(null, clazz).getPath().replace("/target/classes/", "/src/main/java/")
-                            + clazz.getSimpleName() + ".java");
-            Optional<Integer> lineNumber = IntStream.range(0, clazzContents.size())
-                    .filter(i -> clazzContents.get(i).contains(" " + method.getName() + "(")) // 简单匹配，不考虑方法重名
-                    .mapToObj(i -> i + 1) // 行号从 1 开始
-                    .findFirst();
+            // 获取 method 的 lineNumber（带缓存：同一方法只会读取一次源码文件）
+            Optional<Integer> lineNumber = HANDLER_POSITION_CACHE.computeIfAbsent(method, key -> {
+                List<String> clazzContents = FileUtil.readUtf8Lines(
+                        ResourceUtil.getResource(null, clazz).getPath().replace("/target/classes/", "/src/main/java/")
+                                + clazz.getSimpleName() + ".java");
+                return IntStream.range(0, clazzContents.size())
+                        .filter(i -> clazzContents.get(i).contains(" " + method.getName() + "(")) // 简单匹配，不考虑方法重名
+                        .mapToObj(i -> i + 1) // 行号从 1 开始
+                        .findFirst();
+            });
             if (!lineNumber.isPresent()) {
                 return;
             }
             // 打印结果
-            System.out.printf("\tController 方法路径：%s(%s.java:%d)\n", clazz.getName(), clazz.getSimpleName(), lineNumber.get());
+            log.info("\tController 方法路径：{}({}.java:{})", clazz.getName(), clazz.getSimpleName(), lineNumber.get());
         } catch (Exception ignore) {
             // 忽略异常。原因：仅仅打印，非重要逻辑
         }

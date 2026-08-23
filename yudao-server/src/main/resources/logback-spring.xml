@@ -6,7 +6,7 @@
     <property name="FILE_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{traceId:-}] [%X{tenantId:-}] %-5level %logger{50}:%L - %msg%n"/>
 
     <!-- 控制台 Appender -->
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">　　　　　
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <pattern>${CONSOLE_LOG_PATTERN}</pattern>
         </encoder>
@@ -18,11 +18,11 @@
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
             <!-- 默认已包含 MDC（traceId/tenantId/userId 等），此处无需额外配置 -->
         </encoder>
-        <!-- 日志文件名 -->
-        <file>${LOG_FILE}</file>
+        <!-- 日志文件名（LOG_FILE 由 Spring Boot 的 logging.file.name 注入；未配置时使用默认路径，避免产生 LOG_FILE_IS_UNDEFINED 垃圾文件） -->
+        <file>${LOG_FILE:-./logs/zhicloud.log}</file>
         <!-- 滚动策略：基于【每天 + 大小】创建日志文件 -->
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_FILE}.%d{yyyy-MM-dd}.%i.log</fileNamePattern> <!-- 日志文件输出的文件名 -->
+            <fileNamePattern>${LOG_FILE:-./logs/zhicloud.log}.%d{yyyy-MM-dd}.%i.log</fileNamePattern> <!-- 日志文件输出的文件名 -->
             <maxHistory>30</maxHistory> <!-- 日志文件的保留天数 -->
             <maxFileSize>10MB</maxFileSize> <!-- 日志文件，到达多少容量，进行滚动 -->
         </rollingPolicy>

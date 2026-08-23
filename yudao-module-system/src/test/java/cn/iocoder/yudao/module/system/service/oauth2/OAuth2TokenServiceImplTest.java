@@ -1,6 +1,5 @@
 package cn.iocoder.yudao.module.system.service.oauth2;
 
-import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.iocoder.yudao.framework.common.enums.UserTypeEnum;
 import cn.iocoder.yudao.framework.common.exception.ErrorCode;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
@@ -310,8 +309,8 @@ public class OAuth2TokenServiceImplTest extends BaseDbAndRedisUnitTest {
         oauth2AccessTokenMapper.insert(cloneIgnoreId(dbAccessToken, o -> o.setUserType(2)));
         // 测试 userType 不匹配
         oauth2AccessTokenMapper.insert(cloneIgnoreId(dbAccessToken, o -> o.setClientId("it_client")));
-        // 测试 expireTime 不匹配
-        oauth2AccessTokenMapper.insert(cloneIgnoreId(dbAccessToken, o -> o.setExpiresTime(LocalDateTimeUtil.now())));
+        // 测试 expireTime 不匹配（必须明确早于当前时间：Windows 时钟精度约 15ms，若使用 now() 可能因精度舍入未被判定为已过期，导致偶发多查到一条）
+        oauth2AccessTokenMapper.insert(cloneIgnoreId(dbAccessToken, o -> o.setExpiresTime(LocalDateTime.now().minusDays(1))));
         // 准备参数
         OAuth2AccessTokenPageReqVO reqVO = new OAuth2AccessTokenPageReqVO();
         reqVO.setUserId(10L);

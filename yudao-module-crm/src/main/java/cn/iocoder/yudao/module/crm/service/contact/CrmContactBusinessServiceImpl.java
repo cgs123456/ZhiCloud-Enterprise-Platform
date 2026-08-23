@@ -18,6 +18,9 @@ import org.springframework.validation.annotation.Validated;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.crm.enums.ErrorCodeConstants.BUSINESS_NOT_EXISTS;
@@ -51,9 +54,11 @@ public class CrmContactBusinessServiceImpl implements CrmContactBusinessService 
         }
         // 遍历处理，考虑到一般数量不会太多，代码处理简单
         List<CrmContactBusinessDO> saveDOList = new ArrayList<>();
+        // 批量校验商机存在性 + 关联判重，避免循环内逐条查询（N+1）
+        Map<Long, CrmBusinessDO> businessMap = businessService.getBusinessList(createReqVO.getBusinessIds())
+                .stream().collect(Collectors.toMap(CrmBusinessDO::getId, Function.identity()));
         createReqVO.getBusinessIds().forEach(businessId -> {
-            CrmBusinessDO business = businessService.getBusiness(businessId);
-            if (business == null) {
+            if (!businessMap.containsKey(businessId)) {
                 throw exception(BUSINESS_NOT_EXISTS);
             }
             // 关联判重
@@ -77,9 +82,11 @@ public class CrmContactBusinessServiceImpl implements CrmContactBusinessService 
         }
         // 遍历处理，考虑到一般数量不会太多，代码处理简单
         List<CrmContactBusinessDO> saveDOList = new ArrayList<>();
+        // 批量校验联系人存在性 + 关联判重，避免循环内逐条查询（N+1）
+        Map<Long, CrmContactDO> contactMap = contactService.getContactList(createReqVO.getContactIds())
+                .stream().collect(Collectors.toMap(CrmContactDO::getId, Function.identity()));
         createReqVO.getContactIds().forEach(contactId -> {
-            CrmContactDO contact = contactService.getContact(contactId);
-            if (contact == null) {
+            if (!contactMap.containsKey(contactId)) {
                 throw exception(CONTACT_NOT_EXISTS);
             }
             // 关联判重

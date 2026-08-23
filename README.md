@@ -248,6 +248,28 @@ mvn spring-boot:run
 - 事务原子性门禁：12 处多写操作补 @Transactional，CI 防回归
 - 错误码唯一性门禁：140 处冲突去重，2051 个定义 0 冲突
 
+## 📝 更新记录
+
+### 2026-08-24 代码质量与前后端契约修复
+
+**后端**
+
+| 级别 | 修复内容 |
+|------|----------|
+| 性能 | CRM 联系人-商机关联创建：循环单条查询（N+1）改为批量查询校验（`CrmContactBusinessServiceImpl`） |
+| 性能 | API 访问日志拦截器：非 prod 环境每个请求重复读取 Controller 源文件，改为按 Method 缓存；`System.out.printf` 改为 `log.info`（携带 traceId，可落文件） |
+| 健壮性 | logback `${LOG_FILE}` 增加默认值 `./logs/zhicloud.log`，未配置时不再产生 `LOG_FILE_IS_UNDEFINED` 垃圾文件 |
+| 测试 | 修复 `OAuth2TokenServiceImplTest.testGetAccessTokenPage` Windows 时钟精度（~15ms）导致的偶发失败（flaky）：过期时间改用明确过去的时间 |
+
+**前端（yudao-ui-admin-vue3 MES 片段）**
+
+- 产品收货单 API 全部 URL 对齐后端实际路径 `/mes/wm/product-receipt*`（原为不存在的 `product-recpt`），执行入库端点对齐为 `/finish`
+- SN 码管理重构为与后端一致的"批次分组"模型：分页走 `/group-page`、明细对话框走 `/list-by-uuid`、删除/导出按批次 UUID 操作、生成字段 `snNum` → `count`
+
+**工程清理**
+
+- 删除仓库根目录及 iot/pay 模块下的 Windows 设备名残留文件 `nul` 与 `LOG_FILE_IS_UNDEFINED`
+
 ## 📄 开源协议
 
 MIT License，个人与企业可 100% 免费使用。
