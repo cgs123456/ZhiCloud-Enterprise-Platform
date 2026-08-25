@@ -22,7 +22,7 @@
 | Flyway 迁移脚本 | 88 个（V1–V82，含 V51.1 小版本补齐 CRM 核心表；部分版本号复用如 V60-V64 多版本共存） |
 | SQL 文件 | 276 个 |
 | 单元测试文件 | 380 个 |
-| 框架 Starter | 16 个（yudao-common + 15 starter 模块） |
+| 框架 Starter | 16 个（zhicloud-common + 15 starter 模块） |
 
 ## 🏗️ 技术架构
 
@@ -74,7 +74,7 @@
 
 | 模块 | 核心能力 |
 |------|----------|
-| **AI-RAG** 检索增强生成 | Tika 文档解析 + TokenTextSplitter 分块 + PgVector 向量存储 + BM25+向量混合检索 + ONNX Cross-Encoder 重排（可选，`yudao.airag.reranker.enabled` 开关；模型文件缺失时自动降级为 TF-IDF `SimpleReranker`，不影响主链路）+ RAG 评估体系 |
+| **AI-RAG** 检索增强生成 | Tika 文档解析 + TokenTextSplitter 分块 + PgVector 向量存储 + BM25+向量混合检索 + ONNX Cross-Encoder 重排（可选，`zhicloud.airag.reranker.enabled` 开关；模型文件缺失时自动降级为 TF-IDF `SimpleReranker`，不影响主链路）+ RAG 评估体系 |
 | **AI-MultiAgent** 多智能体 | ReAct（Reasoning+Acting）循环编排、Supervisor+Worker 拓扑、Spring AI ChatClient + @Tool 自动收集、步数/Token/超时熔断 |
 | **DataLake** 数据湖仓 | Apache Iceberg + Trino 冷数据归档、MCP 工具暴露（datalake_list_tables/query_table/get_archive_status）、SQL 注入 4 重白名单防护 |
 
@@ -97,7 +97,7 @@
 | 安全 | OWASP Dependency-Check（CVSS≥7 高危阻断；需配置 NVD API Key，未配置时 CI 跳过并告警）、CycloneDX SBOM、pre-commit 密钥扫描、security-check.sh 部署前检查 |
 | 质量门禁 | JaCoCo 覆盖率门禁（当前基线 30%，WMS/MES 已纳入阻断，BPM 暂排除待补齐单测；目标分阶段提升至 60%→80%）+ 7 道 Python 脚本门禁（错误码唯一性/PreAuthorize 全仓/WMS 严格/电子签名/裸抛/事务原子性/错误码基线）、JUnit + Mockito 单元测试 |
 | 监控 | Prometheus + Grafana（4 Dashboard）+ Loki 日志 + Jaeger 链路追踪 + AlertManager 告警 |
-| 压测 | JMeter（yudao-load-test.jmx）+ Gatling（YudaoLoadTest.scala） |
+| 压测 | JMeter（zhicloud-load-test.jmx）+ Gatling（ZhiCloudLoadTest.scala） |
 | 灾备 | 备份脚本、异地容灾、disaster-recovery-drill.sh 演练脚本 |
 
 ## 🗄️ 数据库版本管理
@@ -145,10 +145,10 @@
 ## 📁 项目结构
 
 ```
-yudao/
-├── yudao-dependencies/          # Maven BOM 依赖版本管理
-├── yudao-framework/             # 16 个 Starter（yudao-common + 15 spring-boot-starter-*）
-│   ├── yudao-common/            # 通用工具、POJO、枚举
+zhicloud/
+├── zhicloud-dependencies/          # Maven BOM 依赖版本管理
+├── zhicloud-framework/             # 16 个 Starter（zhicloud-common + 15 spring-boot-starter-*）
+│   ├── zhicloud-common/            # 通用工具、POJO、枚举
 │   ├── starter-web/             # Web 配置、全局异常、Swagger
 │   ├── starter-security/        # 认证鉴权、RBAC、多租户
 │   ├── starter-mybatis/         # MyBatis Plus、数据权限、分页
@@ -163,22 +163,22 @@ yudao/
 │   ├── starter-monitor/         # 监控
 │   ├── starter-protection/      # 限流、幂等
 │   └── starter-websocket/       # WebSocket
-├── yudao-server/                # 启动模块（配置、Flyway 脚本）
-├── yudao-module-system/         # 系统管理
-├── yudao-module-infra/          # 基础设施
-├── yudao-module-bpm/            # 工作流（Flowable 8.0）
-├── yudao-module-erp/            # ERP（71 controller，DDD 试点）
-├── yudao-module-mes/            # MES（148 controller，8 子域）
-├── yudao-module-wms/            # WMS（38 controller）
-├── yudao-module-qms/            # QMS（28 controller，IATF 16949 对标）
-├── yudao-module-crm/            # CRM（32 controller）
-├── yudao-module-hr/             # HR（13 controller）
-├── yudao-module-oa/             # OA（12 controller）
-├── yudao-module-tms/            # TMS（9 controller）
-├── yudao-module-ai/             # AI 大模型平台
-├── yudao-module-ai-rag/         # RAG 检索增强生成
-├── yudao-module-ai-multiagent/  # 多智能体编排
-├── yudao-module-datalake/       # 数据湖仓（Iceberg + Trino）
+├── zhicloud-server/                # 启动模块（配置、Flyway 脚本）
+├── zhicloud-module-system/         # 系统管理
+├── zhicloud-module-infra/          # 基础设施
+├── zhicloud-module-bpm/            # 工作流（Flowable 8.0）
+├── zhicloud-module-erp/            # ERP（71 controller，DDD 试点）
+├── zhicloud-module-mes/            # MES（148 controller，8 子域）
+├── zhicloud-module-wms/            # WMS（38 controller）
+├── zhicloud-module-qms/            # QMS（28 controller，IATF 16949 对标）
+├── zhicloud-module-crm/            # CRM（32 controller）
+├── zhicloud-module-hr/             # HR（13 controller）
+├── zhicloud-module-oa/             # OA（12 controller）
+├── zhicloud-module-tms/            # TMS（9 controller）
+├── zhicloud-module-ai/             # AI 大模型平台
+├── zhicloud-module-ai-rag/         # RAG 检索增强生成
+├── zhicloud-module-ai-multiagent/  # 多智能体编排
+├── zhicloud-module-datalake/       # 数据湖仓（Iceberg + Trino）
 ├── deploy/                      # ArgoCD + Helm Chart
 ├── k8s/                         # K8s 部署（含金丝雀）
 ├── script/                      # Docker/Jenkins/JMeter/Gatling/安全/灾备
@@ -207,7 +207,7 @@ cd ../..
 mvn clean compile -T 1C
 
 # 3. 启动应用
-cd yudao-server
+cd zhicloud-server
 mvn spring-boot:run
 ```
 
@@ -220,8 +220,8 @@ mvn spring-boot:run
 | `server.port` | 应用端口 | 48080 |
 | `spring.threads.virtual.enabled` | 虚拟线程 | true |
 | `spring.flyway.enabled` | Flyway 版本管理 | true |
-| `yudao.airag.enabled` | RAG 模块 | true |
-| `yudao.datalake.enabled` | 数据湖仓 | false |
+| `zhicloud.airag.enabled` | RAG 模块 | true |
+| `zhicloud.datalake.enabled` | 数据湖仓 | false |
 | `management.server.port` | 管理端口 | 48090 |
 
 ## 📈 性能特性
@@ -250,6 +250,45 @@ mvn spring-boot:run
 
 ## 📝 更新记录
 
+### 2026-08-26 QMS 质量管理模块全栈交付 + 代码质量零错误达标
+
+**后端**
+
+| 级别 | 修复内容 |
+|------|----------|
+| 新功能 | QMS 质量管理模块全栈交付：28 Controller 覆盖 IQC/IPQC/OQC、FMEA、8D、CAPA、SPC、MSA、NCR、SCAR、质量追溯、电子签名、审核、检验、供应商质量、培训、质量成本、计量器具、MSA、8D、客诉 |
+| 基础设施 | Flyway 迁移脚本冲突解决：V83/V84 版本号冲突（V83 重复定义），重复文件清理，V84 幂等索引安全通过 |
+| 基础设施 | `zhicloud-extracted` 旧解包产物更新：V83/V84 迁移文件同步，后端启动 Flyway 正式接管 schema version 84 |
+| 缺陷修复 | QMS 缺表（`qms_audit_nonconformity` 等 7 表、`airag_knowledge/document`、`hr_attendance` 等）全部补齐 |
+| 缺陷修复 | `application-local.yaml` ALIPAY 占位符 `client-id: xx` 导致 OAuth2 Bean 创建失败，清理无用配置 |
+| 缺陷修复 | MES `qms_instrument` 缺表导致 500，执行 `qms_instrument.sql` 补齐 |
+| 缺陷修复 | SN 码模块 API 导入方式修正（命名空间导入改解构导入）、`itemId` 类型可选化 |
+| 缺陷修复 | MES 产品收货单 API 命名对齐（Receipt→Recpt）、缺失方法对齐、`checkProductReceiptQuantity` 校验块移除 |
+| 稳定性 | 服务进程反复被杀问题根因定位：工具超时清理进程树，改用 WMI 方式启动长驻服务（Redis/后端/前端） |
+
+**前端（zhicloud-ui-admin-vue3）**
+
+| 级别 | 修复内容 |
+|------|----------|
+| 体验 | 首页「萌新必读」宣传外链区删除、GitHub 推广卡片/假公告/假统计/假图表清理，重写为简洁工作台 |
+| 体验 | 登录页「萌新必读」宣传外链删除、用户下拉菜单「文档」外链删除 |
+| 清理 | 数据库侧边栏外链菜单 3 条软删（智云官网/平台文档/微服务文档） |
+| 清理 | 无引用文件删除：`Index2.vue` 演示页、`DocAlert` 组件 |
+| 类型安全 | **vue-tsc 全项目 0 错误**（从 175+ 修至 0），含 MES/AI/BPM/CRM/FMS/IoT 既有遗留问题全部修复 |
+| API 对齐 | MES 产品收货单/明细/行/行列表 API 命名对齐（Receipt→Recpt）、方法名对齐、缺失方法 `checkProductReceiptQuantity` 移除 |
+| 类型修复 | SN 码模块命名空间导入改解构导入、`itemId` 可选化、类型引用修正 |
+| 规范 | MES/系统/AI/BPM/CRM/FMS/IoT 等模块遗留 TS 错误（ElMessage/ElMessageBox 缺失导入、undefined→number、API 导出名不匹配）全部修复 |
+
+**基础设施**
+
+| 级别 | 修复内容 |
+|------|----------|
+| 稳定性 | 服务进程反复被杀根因定位：工具超时清理进程树，改用 WMI 方式启动长驻服务（Redis/后端/前端），服务稳定运行 |
+| 构建 | `zhicloud-extracted` 旧解包产物更新：完整重新打包解包，Flyway V83/V84 迁移文件同步到解包目录 |
+| 类型安全 | **vue-tsc 全项目 0 错误（rc=0）**，从 175+ 遗留错误修复至零 |
+
+---
+
 ### 2026-08-24 代码质量与前后端契约修复
 
 **后端**
@@ -261,7 +300,7 @@ mvn spring-boot:run
 | 健壮性 | logback `${LOG_FILE}` 增加默认值 `./logs/zhicloud.log`，未配置时不再产生 `LOG_FILE_IS_UNDEFINED` 垃圾文件 |
 | 测试 | 修复 `OAuth2TokenServiceImplTest.testGetAccessTokenPage` Windows 时钟精度（~15ms）导致的偶发失败（flaky）：过期时间改用明确过去的时间 |
 
-**前端（yudao-ui-admin-vue3 MES 片段）**
+**前端（zhicloud-ui-admin-vue3 MES 片段）**
 
 - 产品收货单 API 全部 URL 对齐后端实际路径 `/mes/wm/product-receipt*`（原为不存在的 `product-recpt`），执行入库端点对齐为 `/finish`
 - SN 码管理重构为与后端一致的"批次分组"模型：分页走 `/group-page`、明细对话框走 `/list-by-uuid`、删除/导出按批次 UUID 操作、生成字段 `snNum` → `count`
