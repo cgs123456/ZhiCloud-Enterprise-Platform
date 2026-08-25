@@ -1,4 +1,4 @@
--- ======================== yudao-module-ai 生产建表脚本（自动生成，上线前需在真实 MySQL 冒烟验证） ========================
+-- ======================== zhicloud-module-ai 生产建表脚本（自动生成，上线前需在真实 MySQL 冒烟验证） ========================
 
 CREATE TABLE IF NOT EXISTS ai_api_key (
     id BIGINT NOT NULL AUTO_INCREMENT COMMENT '编号',

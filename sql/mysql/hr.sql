@@ -1,5 +1,5 @@
 -- ======================== 人力资源管理系统（HR）建表脚本 ========================
--- 作者：yudao
+-- 作者：zhicloud
 -- 说明：覆盖员工档案（hr_employee）/ 部门（hr_department）/ 职位（hr_position）/
 --      考勤（hr_attendance）/ 薪资（hr_salary）/ 绩效（hr_performance）
 -- 规范：InnoDB / utf8mb4 / utf8mb4_unicode_ci；主键 BIGINT（应用层雪花ID）；

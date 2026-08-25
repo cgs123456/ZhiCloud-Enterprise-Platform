@@ -8,7 +8,7 @@
 
 ## 0. 总体结论（TL;DR）
 
-智云不是"玩具 Demo"，而是基于 yudao/ruoyi-vue-pro 做了**实质性扩展**的企业级 fork：已具备总账+财务报表、租户感知 RAG、RAGAS 式评估、Helm/ArgoCD/Canary 部署、SBOM 与依赖扫描、质量门禁。但其"广度达标、深度不足、闭环缺失、生产工程薄弱"的特征明显——**距离"可全面上线（尤其政企/金融/regulated 多租户规模化）"存在结构性差距**；作为中小客户 MVP / 内部系统 / 作品集则具备较强基础。
+智云不是"玩具 Demo"，而是基于 zhicloud/ruoyi-vue-pro 做了**实质性扩展**的企业级 fork：已具备总账+财务报表、租户感知 RAG、RAGAS 式评估、Helm/ArgoCD/Canary 部署、SBOM 与依赖扫描、质量门禁。但其"广度达标、深度不足、闭环缺失、生产工程薄弱"的特征明显——**距离"可全面上线（尤其政企/金融/regulated 多租户规模化）"存在结构性差距**；作为中小客户 MVP / 内部系统 / 作品集则具备较强基础。
 
 **已验证的平台亮点（加分项，作品集可强调）**
 - 工程化：CI 含错误码唯一性门禁、`WMS @PreAuthorize` 门禁、裸抛异常门禁、**事务原子性门禁**、`mvn verify` 全量测试、security-check.sh、OWASP 依赖扫描、CycloneDX SBOM。四道自研静态门禁均由本次复查中发现的真实缺陷驱动补齐，并以「基线为 0 + 显式豁免需写明理由」的方式防回归。
@@ -130,7 +130,7 @@
 ## 2. 对标差距表（功能模块 ｜ 行业常见做法 ｜ 本项目现状 ｜ 差距与优先级）
 
 > 行业做法引用见各模块来源（Salesforce/HubSpot、ERPNext/Odoo/用友/金蝶、Manhattan/富勒、Siemens Opcenter/黑湖、ETQ/盖勒普、RAGAS/NeMo Guardrails、BPMN/DMN、泛微/北森 等）。
-> **本项目现状已按本 fork 实测修正**（ERP/AI-RAG 远超上游 yudao 基线）。
+> **本项目现状已按本 fork 实测修正**（ERP/AI-RAG 远超上游 zhicloud 基线）。
 
 | 功能模块 | 行业常见做法（成熟产品） | 本项目现状（实测） | 差距与优先级 |
 |---|---|---|---|
@@ -199,4 +199,4 @@
 2. **AI-RAG「无评估/无租户过滤」不成立**：实测 `RagAdvisor.java:256` 显式 `builder.eq("tenant_id", tenantId)` 在向量查询层强制过滤（含 P0-2 安全修复注释）；`RagEvaluationResult` 含 faithfulness/answerRelevancy/contextPrecision/contextRecall/overallScore，`RagEvaluationServiceImpl` 实现四项 RAGAS 指标；AI-RAG 控制器普遍有 `@PreAuthorize`。缺口收窄为：混合检索+rerank、语义分块、引用溯源粒度、摄入工程(增量/删除传播)、可观测成本。
 3. **MyBatis `${}` 注入风险不成立**：全仓 `${}` 均为枚举常量 OGNL 引用 `${@XxxEnum@CONSTANT}`，无用户可控输入进入 SQL，注入风险低。
 
-> 说明：上述修正表明本 fork 对上游 yudao 做了**超出预期的纵深扩展**，对标表"本项目现状"列已据此调整；未逐项改写的行（WMS/MES/QMS/TMS/OA-HR/BPM）仍以行业基线对照本 fork 实测代码判断，建议上线前由专项审计逐模块代码级确认。
+> 说明：上述修正表明本 fork 对上游 zhicloud 做了**超出预期的纵深扩展**，对标表"本项目现状"列已据此调整；未逐项改写的行（WMS/MES/QMS/TMS/OA-HR/BPM）仍以行业基线对照本 fork 实测代码判断，建议上线前由专项审计逐模块代码级确认。

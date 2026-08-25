@@ -1,5 +1,5 @@
 -- ======================================================================
--- yudao-module-ai-rag 建表脚本（PostgreSQL + pgvector）
+-- zhicloud-module-ai-rag 建表脚本（PostgreSQL + pgvector）
 --
 -- 说明：
 --   1. 本脚本用于本地化 RAG 模块，需在 PostgreSQL 12+ 上执行
@@ -7,7 +7,7 @@
 --   3. 知识库表（airag_knowledge）、文档表（airag_document）由本脚本创建
 --   4. 向量存储表（airag_vector_store）由 Spring AI PgVectorStore 通过
 --      initializeSchema=true 自动创建，本脚本仅作声明，不重复建表
---   5. 字段命名与 yudao 框架 BaseDO 保持一致（creator/create_time/updater/update_time/deleted/tenant_id）
+--   5. 字段命名与 zhicloud 框架 BaseDO 保持一致（creator/create_time/updater/update_time/deleted/tenant_id）
 -- ======================================================================
 
 -- 启用 pgvector 扩展
@@ -93,6 +93,9 @@ CREATE INDEX IF NOT EXISTS idx_airag_document_tenant_id    ON airag_document (te
 -- 表结构由 PgVectorStore 默认定义（id UUID, content TEXT, metadata JSON, embedding vector）。
 -- 这里仅作声明，不手动建表，避免与 Spring AI 版本不兼容。
 --
+-- HNSW 索引由 Spring AI 启动时自动创建（PgVectorStore 配置 PgIndexType.HNSW），
+-- 此脚本仅手动建表场景使用。
+--
 -- 如需手动建表，可参考以下 SQL（需与 PgVectorStore 配置的 dimensions 保持一致）：
 --
 -- CREATE TABLE IF NOT EXISTS airag_vector_store (
@@ -101,6 +104,6 @@ CREATE INDEX IF NOT EXISTS idx_airag_document_tenant_id    ON airag_document (te
 --     metadata  JSON,
 --     embedding vector(768)
 -- );
--- CREATE INDEX IF NOT EXISTS idx_airag_vector_store_embedding
+-- CREATE INDEX IF NOT EXISTS airag_vector_store_embedding_index
 --     ON airag_vector_store USING hnsw (embedding vector_cosine_ops);
 -- ----------------------------------------------------------------------

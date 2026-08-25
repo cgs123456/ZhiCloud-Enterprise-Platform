@@ -1,0 +1,4 @@
+  File "C:\Users\Administrator\AppData\Local\Temp\opencode\fix_redis.py", line 41
+    _ s = _s.socket(); _s.settimeout(2)
+      ^
+SyntaxError: invalid syntax

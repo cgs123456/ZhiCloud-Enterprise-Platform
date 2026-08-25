@@ -1,0 +1,199 @@
+# ============================================================
+# zhicloud-server Canary 灰度发布 manifest（独立版本化、可 review）
+# ------------------------------------------------------------
+# 设计参考：script/jenkins/Jenkinsfile 中 stage('灰度发布（Canary）') 阶段逻辑
+#   - 独立 canary=true 标签，避免被主 Service zhicloud-server 直接命中
+#   - 使用与主 Deployment 相同的镜像、ConfigMap、Secret 引用
+#   - SPRING_PROFILES_ACTIVE=prod
+#   - 副本数可配（默认 1），资源限制略低于主 Deployment
+#   - 通过 Nginx Ingress Canary 注解按权重切流（默认 10%）
+# ------------------------------------------------------------
+# 使用方式：
+#   1) 启动灰度：
+#        kubectl apply -f zhicloud-server-canary.yaml
+#   2) 调整流量比例（修改 canary-weight 后再次 apply，或用 kubectl annotate 实时调整）：
+#        kubectl annotate ingress zhicloud-server-canary nginx.ingress.kubernetes.io/canary-weight=20 --overwrite
+#   3) 观察灰度 Pod 健康状态：
+#        kubectl get pods -l app=zhicloud-server,canary=true -w
+#        kubectl exec -it <canary-pod> -- wget -qO- http://127.0.0.1:48090/actuator/health
+#   4) 验证通过，全量切流：
+#        kubectl set image deployment/zhicloud-server zhicloud-server=<IMAGE>
+#        kubectl rollout status deployment/zhicloud-server --timeout=300s
+#   5) 清理灰度资源：
+#        kubectl delete -f zhicloud-server-canary.yaml
+# ------------------------------------------------------------
+# 注意：
+#   - 镜像 tag 请按实际发布版本替换 image 字段（默认与主 Deployment 对齐）
+#   - 资源 limits 略低于主 Deployment（主：2CPU/2Gi，Canary：1CPU/1Gi）以节省灰度资源
+#   - ConfigMap/Secret 复用主 Deployment 的 zhicloud-server-config / zhicloud-server-secret
+# ============================================================
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zhicloud-server-canary
+  namespace: default
+  labels:
+    app: zhicloud-server
+    component: backend
+    canary: "true"
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: zhicloud-server
+      canary: "true"
+  template:
+    metadata:
+      labels:
+        app: zhicloud-server
+        component: backend
+        canary: "true"
+    spec:
+      # Pod 级 securityContext：与主 Deployment 一致，非 root 运行 + fsGroup 归属
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+      containers:
+        - name: zhicloud-server
+          image: zhicloud-server:2026.06.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 48080
+              protocol: TCP
+            - name: actuator
+              containerPort: 48090
+              protocol: TCP
+          # 复用主 Deployment 的 ConfigMap 与 Secret，保证配置一致
+          envFrom:
+            - configMapRef:
+                name: zhicloud-server-config
+            - secretRef:
+                name: zhicloud-server-secret
+          env:
+            # 显式声明 prod profile，覆盖 ConfigMap 默认值，保证灰度 Pod 运行在生产模式
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: TZ
+              value: "Asia/Shanghai"
+          # 资源限制略低于主 Deployment（主：requests 500m/1Gi, limits 2000m/2Gi）
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+          # 启动探针：灰度 Pod 同样可能慢启动（Flyway/Flowable），startupProbe 通过前不触发 liveness
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 48090
+            periodSeconds: 10
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 48090
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 48090
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          # 优雅停机：preStop sleep 10s 等待 Service 摘流量
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - "sleep 10"
+          # 容器级 securityContext：runAsUser 已上移到 Pod 级，此处仅保留容器加固项
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+      terminationGracePeriodSeconds: 60
+
+# ============================================================
+# Canary Service：ClusterIP，selector 仅匹配 canary=true
+# 用于 Ingress Canary 流量转发目标（与主 Service zhicloud-server 隔离）
+# ============================================================
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zhicloud-server-canary
+  namespace: default
+  labels:
+    app: zhicloud-server
+    canary: "true"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 48080
+      targetPort: 48080
+      protocol: TCP
+    - name: actuator
+      port: 48090
+      targetPort: 48090
+      protocol: TCP
+  selector:
+    app: zhicloud-server
+    canary: "true"
+
+# ============================================================
+# Canary Ingress：Nginx Ingress Canary 注解实现按权重切流
+# ------------------------------------------------------------
+# 工作原理：与主 Ingress zhicloud-server 共用相同 host/path，通过以下注解区分：
+#   - nginx.ingress.kubernetes.io/canary: "true"           标记为 Canary Ingress
+#   - nginx.ingress.kubernetes.io/canary-weight: "10"      按权重切流（10% 流量到 Canary）
+#   - nginx.ingress.kubernetes.io/canary-by-header: X-Canary  （可选）按 Header 强制走 Canary
+# ------------------------------------------------------------
+# 默认以注释形式提供，需要切流时取消注释并 apply：
+#   - 默认 canary-weight=10（10% 流量），可按需调整
+#   - 验证通过后，更新主 Deployment 镜像并 delete 本 Canary Ingress
+# ============================================================
+---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: zhicloud-server-canary
+#   namespace: default
+#   labels:
+#     app: zhicloud-server
+#     canary: "true"
+#   annotations:
+#     nginx.ingress.kubernetes.io/canary: "true"
+#     nginx.ingress.kubernetes.io/canary-weight: "10"
+#     # nginx.ingress.kubernetes.io/canary-by-header: "X-Canary"
+#     # nginx.ingress.kubernetes.io/canary-by-header-value: "true"
+# spec:
+#   ingressClassName: nginx
+#   rules:
+#     - host: api.zhicloud.example.com
+#       http:
+#         paths:
+#           - path: /
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: zhicloud-server-canary
+#                 port:
+#                   number: 48080

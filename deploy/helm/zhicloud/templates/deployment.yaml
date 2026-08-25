@@ -1,0 +1,130 @@
+{{/*
+============================================================
+zhicloud-server Deployment 模板
+- 通过 envFrom 引用 ConfigMap 与 Secret 注入环境变量
+- 通过 env 覆盖 profile/TZ
+- 含 readiness/liveness 探针（指向 actuator/health）
+- 含 lifecycle preStop 调用 actuator/shutdown 实现优雅停机
+- securityContext 强制 nonroot 运行
+*/}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "zhicloud.fullname" . }}
+  namespace: {{ include "zhicloud.namespace" . }}
+  labels:
+    {{- include "zhicloud.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.hpa.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "zhicloud.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "zhicloud.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        # 注入 ConfigMap/Secret 哈希，内容变更时自动滚动更新
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      # 优雅停机：保证 preStop + Spring graceful 总时长不超过该值
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      serviceAccountName: {{ include "zhicloud.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automount }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      # Pod 级安全上下文
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: zhicloud-server
+          image: {{ include "zhicloud.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: {{ .Values.service.portName }}
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+            - name: {{ .Values.service.actuatorPortName }}
+              containerPort: {{ .Values.service.actuatorPort }}
+              protocol: TCP
+          # envFrom：批量注入 ConfigMap/Secret 中的环境变量
+          envFrom:
+            - configMapRef:
+                name: {{ include "zhicloud.fullname" . }}-config
+            - secretRef:
+                name: {{ include "zhicloud.secretName" . }}
+          # env：覆盖关键变量（优先级高于 envFrom）
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: {{ .Values.env.SPRING_PROFILES_ACTIVE | quote }}
+            - name: TZ
+              value: {{ .Values.env.TZ | quote }}
+            - name: JAVA_OPTS
+              value: {{ .Values.env.JAVA_OPTS | quote }}
+          # 健康检查
+          {{- if .Values.probes.readiness.enabled }}
+          readinessProbe:
+            {{- toYaml .Values.probes.readiness | nindent 12 }}
+          {{- end }}
+          {{- if .Values.probes.liveness.enabled }}
+          livenessProbe:
+            {{- toYaml .Values.probes.liveness | nindent 12 }}
+          {{- end }}
+          # 资源配额
+          {{- include "zhicloud.resources" . | nindent 10 }}
+          # 优雅停机：preStop 先等待流量摘除（Service endpoint 同步），再由
+          # server.shutdown=graceful 处理进行中请求。不再调用 /actuator/shutdown——
+          # 该端点默认未暴露（exposure 列表无 shutdown），curl 必然失败，此前等于只有 sleep 5。
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - "sleep 10"
+          # 容器级安全上下文
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          # 额外卷挂载（如 tmp 可写目录）
+          {{- with .Values.extraVolumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      # 额外卷
+      {{- with .Values.extraVolumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      # 调度策略
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.topologySpreadConstraints.enabled }}
+      topologySpreadConstraints:
+        - maxSkew: {{ .Values.topologySpreadConstraints.maxSkew }}
+          topologyKey: {{ .Values.topologySpreadConstraints.topologyKey }}
+          whenUnsatisfiable: {{ .Values.topologySpreadConstraints.whenUnsatisfiable }}
+          labelSelector:
+            matchLabels:
+              {{- include "zhicloud.selectorLabels" . | nindent 14 }}
+      {{- end }}

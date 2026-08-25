@@ -9,7 +9,7 @@ import os
 import re
 import sys
 
-# 写操作方法名（MyBatis-Plus BaseMapper + yudao 扩展）
+# 写操作方法名（MyBatis-Plus BaseMapper + zhicloud 扩展）
 WRITE_METHODS = (
     "insert", "insertBatch", "insertOrUpdate",
     "update", "updateById", "updateBatch",

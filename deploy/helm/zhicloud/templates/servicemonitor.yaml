@@ -1,0 +1,31 @@
+{{/*
+============================================================
+zhicloud-server ServiceMonitor 模板（Prometheus Operator CRD）
+当 values.monitoring.serviceMonitor.enabled=true 时创建，
+抓取 actuator 48090 端口的 /actuator/prometheus 端点。
+注意：需集群已安装 Prometheus Operator（提供 ServiceMonitor CRD），
+默认关闭（enabled=false），避免无 CRD 环境下 Helm 渲染失败。
+*/}}
+{{- if .Values.monitoring.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "zhicloud.fullname" . }}
+  namespace: {{ include "zhicloud.namespace" . }}
+  labels:
+    {{- include "zhicloud.labels" . | nindent 4 }}
+    {{- with .Values.monitoring.serviceMonitor.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  # 选择 zhicloud-server Service（actuator 命名端口）
+  selector:
+    matchLabels:
+      {{- include "zhicloud.selectorLabels" . | nindent 6 }}
+  endpoints:
+    - port: {{ .Values.service.actuatorPortName }}
+      path: /actuator/prometheus
+      interval: {{ .Values.monitoring.serviceMonitor.interval }}
+      scrapeTimeout: {{ .Values.monitoring.serviceMonitor.scrapeTimeout }}
+      scheme: http
+{{- end }}

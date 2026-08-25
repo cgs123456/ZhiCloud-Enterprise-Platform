@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-# 为某个 yudao 业务模块生成【生产环境 MySQL】建表 DDL，并同时输出两份：
+# 为某个 zhicloud 业务模块生成【生产环境 MySQL】建表 DDL，并同时输出两份：
 #   1) sql/mysql/<short>.sql                       —— 参考/手工基线脚本
-#   2) yudao-server/.../db/migration/V<ver>__<short>_ddl.sql —— Flyway 增量迁移（自动纳管）
+#   2) zhicloud-server/.../db/migration/V<ver>__<short>_ddl.sql —— Flyway 增量迁移（自动纳管）
 # 风格对齐本仓 Flyway 迁移（V38/V58）：CREATE TABLE IF NOT EXISTS、tenant_id 恒存在、
 #   deleted TINYINT(1)、creator/updater DEFAULT ''、tenant 维度唯一索引、ENGINE=InnoDB utf8mb4。
 # 注：列长/索引为基于字段类型的启发式默认值，上线前需在真实 MySQL 上做建表冒烟验证。
 import os, re, glob, sys, argparse
 
-REPO = r"D:/Desktop/yudao"
-MIG_DIR = os.path.join(REPO, "yudao-server", "src", "main", "resources", "db", "migration")
+REPO = r"D:/Desktop/zhicloud"
+MIG_DIR = os.path.join(REPO, "zhicloud-server", "src", "main", "resources", "db", "migration")
 TYPE_MAP = {
     "Long": "BIGINT", "long": "BIGINT",
     "Integer": "INT", "int": "INT",
@@ -111,11 +111,11 @@ def emit(table, fields):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("module", help="模块目录名，如 yudao-module-ai")
+    ap.add_argument("module", help="模块目录名，如 zhicloud-module-ai")
     ap.add_argument("--ver", required=True, help="Flyway 版本号，如 73")
     args = ap.parse_args()
     module = args.module
-    short = module.replace("yudao-module-", "")
+    short = module.replace("zhicloud-module-", "")
     base_dir = os.path.join(REPO, module, "src", "main", "java")
     ref_path = os.path.join(REPO, "sql", "mysql", f"{short}.sql")
     fly_path = os.path.join(MIG_DIR, f"V{args.ver}__{short}_ddl.sql")

@@ -52,14 +52,14 @@ jobs:
     - name: Full-Repo @PreAuthorize / @PermitAll Gate
       run: python3 scripts/check_missing_preauthorize.py --include-app --max-gaps 0
     - name: WMS Strict @PreAuthorize Gate (zero tolerance)
-      run: python3 scripts/check_missing_preauthorize.py --module yudao-module-wms --include-app
+      run: python3 scripts/check_missing_preauthorize.py --module zhicloud-module-wms --include-app
     # 电子签名管控点存活门禁（21 CFR Part 11）。
     # 历史教训：@ElectronicSignature 注解 + 切面实现得非常完整（fail-closed、审计留痕俱全），
     # 但全仓使用次数是 0——切面从未被触发，是一段死代码，Part 11 管控点在运行时根本不存在。
     # 「实现正确」与「已经接线」是两件事，人工评审只会检查前者，故必须由门禁盯住后者。
     - name: Electronic Signature Control Point Gate
       run: python3 scripts/check_electronic_signature.py
-    # 裸抛异常回归门禁：扫描 cn/iocoder/yudao 包内是否残留
+    # 裸抛异常回归门禁：扫描 cn/zhicloud/zhicloud 包内是否残留
     # throw new RuntimeException / IllegalStateException（绕过 ErrorCode 体系）。
     # 全量转换已在本次提交完成（scripts/convert_bare_throws.py，74 处），
     # 任何回归都将失败，作为防回归护栏。
@@ -83,12 +83,12 @@ jobs:
     - name: Transaction Atomicity Gate
       run: |
         python3 scripts/scan_tx.py \
-          yudao-module-crm yudao-module-erp yudao-module-wms yudao-module-mes \
-          yudao-module-qms yudao-module-tms yudao-module-bpm yudao-module-oa \
-          yudao-module-hr yudao-module-ai yudao-module-ai-rag yudao-module-system \
-          yudao-module-infra yudao-module-mall yudao-module-member yudao-module-pay \
-          yudao-module-mp yudao-module-im yudao-module-iot yudao-module-report \
-          yudao-module-datalake
+          zhicloud-module-crm zhicloud-module-erp zhicloud-module-wms zhicloud-module-mes \
+          zhicloud-module-qms zhicloud-module-tms zhicloud-module-bpm zhicloud-module-oa \
+          zhicloud-module-hr zhicloud-module-ai zhicloud-module-ai-rag zhicloud-module-system \
+          zhicloud-module-infra zhicloud-module-mall zhicloud-module-member zhicloud-module-pay \
+          zhicloud-module-mp zhicloud-module-im zhicloud-module-iot zhicloud-module-report \
+          zhicloud-module-datalake
     - name: Build with Maven
       run: mvn -B verify --file pom.xml
     - name: Security Check (deploy gate)

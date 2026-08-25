@@ -1,0 +1,3 @@
+cn.zhicloud.framework.mq.redis.config.ZhiCloudRedisMQProducerAutoConfiguration
+cn.zhicloud.framework.mq.redis.config.ZhiCloudRedisMQConsumerAutoConfiguration
+cn.zhicloud.framework.mq.rabbitmq.config.ZhiCloudRabbitMQAutoConfiguration

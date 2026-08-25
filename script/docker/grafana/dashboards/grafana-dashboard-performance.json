@@ -12,7 +12,7 @@
       }
     ]
   },
-  "description": "芋道源码 yudao 性能压测监控看板（TPS / 响应时间 / 错误率 / 线程 / CPU / 内存 / Druid 连接池）",
+  "description": "智云 zhicloud 性能压测监控看板（TPS / 响应时间 / 错误率 / 线程 / CPU / 内存 / Druid 连接池）",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -801,7 +801,7 @@
   "schemaVersion": 38,
   "style": "dark",
   "tags": [
-    "yudao",
+    "zhicloud",
     "performance",
     "load-test"
   ],
@@ -810,8 +810,8 @@
       {
         "current": {
           "selected": false,
-          "text": "yudao-server",
-          "value": "yudao-server"
+          "text": "zhicloud-server",
+          "value": "zhicloud-server"
         },
         "datasource": "Prometheus",
         "definition": "label_values(application)",
@@ -839,8 +839,8 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "Yudao 性能压测监控看板",
-  "uid": "yudao-performance",
+  "title": "ZhiCloud 性能压测监控看板",
+  "uid": "zhicloud-performance",
   "version": 1,
   "weekStart": ""
 }

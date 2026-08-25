@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # ======================================================================
-# 下载 BGE-base-zh-v1.5 ONNX 模型到 yudao-server 资源目录
+# 下载 BGE-base-zh-v1.5 ONNX 模型到 zhicloud-server 资源目录
 #
-# 用途：为 yudao-module-ai-rag 模块准备本地化 Embedding 模型
+# 用途：为 zhicloud-module-ai-rag 模块准备本地化 Embedding 模型
 #
 # 使用方法：
 #   bash scripts/download-bge-model.sh
@@ -13,7 +13,7 @@
 #
 # 模型说明：
 #   - 模型：BAAI/bge-base-zh-v1.5（中文，768 维，~390MB）
-#   - 用途：yudao-module-ai-rag 的本地 Embedding（ONNX Runtime 嵌入应用）
+#   - 用途：zhicloud-module-ai-rag 的本地 Embedding（ONNX Runtime 嵌入应用）
 #   - 维度：768（需与 AiragConfiguration.DEFAULT_VECTOR_DIMENSION 对齐）
 #
 # 启用 RAG 模块步骤：
@@ -21,21 +21,21 @@
 #   2. 执行 sql/postgresql/airag_pgvector.sql 建表
 #   3. 运行本脚本下载模型
 #   4. 在 AiragConfiguration 中新增 airagEmbeddingModel Bean（参考 EMBEDDING_DECISION.md）
-#   5. 配置 yudao.airag.enabled=true
+#   5. 配置 zhicloud.airag.enabled=true
 #
 # 参考链接：
 #   - 模型主页：https://huggingface.co/BAAI/bge-base-zh-v1.5
-#   - 选型决策：yudao-module-ai-rag/EMBEDDING_DECISION.md
+#   - 选型决策：zhicloud-module-ai-rag/EMBEDDING_DECISION.md
 # ======================================================================
 set -e
 
 # ---------------- 配置 ----------------
 MODEL_REPO="BAAI/bge-base-zh-v1.5"
 BASE_URL="https://huggingface.co/${MODEL_REPO}/resolve/main"
-# 目标目录：yudao-server/src/main/resources/airag/bge-base-zh/
+# 目标目录：zhicloud-server/src/main/resources/airag/bge-base-zh/
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-TARGET_DIR="${PROJECT_ROOT}/yudao-server/src/main/resources/airag/bge-base-zh"
+TARGET_DIR="${PROJECT_ROOT}/zhicloud-server/src/main/resources/airag/bge-base-zh"
 
 # 需要下载的文件列表
 FILES=(
@@ -158,8 +158,8 @@ main() {
     log "下载完成！"
     log "下一步操作："
     log "  1. 在 AiragConfiguration 中新增 airagEmbeddingModel Bean（参考 EMBEDDING_DECISION.md §4.2 方式 A）"
-    log "  2. 补充 spring-ai-transformers 依赖（如未在 yudao-module-ai 中引入）"
-    log "  3. 配置 yudao.airag.enabled=true 启用 RAG 模块"
+    log "  2. 补充 spring-ai-transformers 依赖（如未在 zhicloud-module-ai 中引入）"
+    log "  3. 配置 zhicloud.airag.enabled=true 启用 RAG 模块"
     log "  4. 执行 sql/postgresql/airag_pgvector.sql 建表（如未执行）"
 }
 

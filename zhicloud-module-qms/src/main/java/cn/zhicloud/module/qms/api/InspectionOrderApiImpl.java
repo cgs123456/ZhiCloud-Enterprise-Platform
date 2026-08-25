@@ -1,0 +1,36 @@
+package cn.zhicloud.module.qms.api;
+
+import cn.zhicloud.module.qms.dal.dataobject.inspectionorder.InspectionOrderDO;
+import cn.zhicloud.module.qms.dal.mysql.inspectionorder.InspectionOrderMapper;
+import cn.zhicloud.module.qms.enums.qms.InspectionOrderStatusEnum;
+import jakarta.annotation.Resource;
+import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
+
+/**
+ * QMS 检验单 API 实现
+ *
+ * @author 智云
+ */
+@Service
+@Validated
+public class InspectionOrderApiImpl implements InspectionOrderApi {
+
+    @Resource
+    private InspectionOrderMapper inspectionOrderMapper;
+
+    @Override
+    public boolean isQualified(String bizType, Long bizId) {
+        InspectionOrderDO order = inspectionOrderMapper.selectLatestByBiz(bizType, bizId);
+        // fail-closed：无检验单或非「检验通过」状态，一律不得放行入库
+        return order != null && InspectionOrderStatusEnum.PASSED.getStatus().equals(order.getStatus());
+    }
+
+    @Override
+    public boolean hasFailedInspection(String bizType, Long bizId) {
+        InspectionOrderDO order = inspectionOrderMapper.selectLatestByBiz(bizType, bizId);
+        // 宽松语义：仅当存在检验单且状态为「检验不通过」时拦截
+        return order != null && InspectionOrderStatusEnum.FAILED.getStatus().equals(order.getStatus());
+    }
+
+}

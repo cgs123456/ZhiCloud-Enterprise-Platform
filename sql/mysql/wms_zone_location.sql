@@ -1,5 +1,5 @@
 -- ======================== 仓储管理系统（WMS）库区/库位建表脚本 ========================
--- 作者：yudao
+-- 作者：zhicloud
 -- 说明：WMS 库位三级建模（仓库 Warehouse → 库区 Zone → 库位 Location）
 -- 规范：InnoDB / utf8mb4 / utf8mb4_unicode_ci；主键 BIGINT（应用层雪花ID）；
 --      统一含 tenant_id/creator/create_time/updater/update_time/deleted 审计字段。

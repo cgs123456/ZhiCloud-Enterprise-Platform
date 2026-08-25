@@ -1,0 +1,3 @@
+cn.zhicloud.framework.security.config.ZhiCloudSecurityAutoConfiguration
+cn.zhicloud.framework.security.config.ZhiCloudWebSecurityConfigurerAdapter
+cn.zhicloud.framework.operatelog.config.ZhiCloudOperateLogConfiguration

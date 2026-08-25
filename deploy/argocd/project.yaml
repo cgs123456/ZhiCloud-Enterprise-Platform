@@ -1,39 +1,39 @@
 # ============================================================
-# yudao-server ArgoCD Project
+# zhicloud-server ArgoCD Project
 # 限制 Application 的目标 namespace 和 cluster，防止误部署
-# - 仅允许部署到 yudao-dev / yudao-staging / yudao-prod 命名空间
+# - 仅允许部署到 zhicloud-dev / zhicloud-staging / zhicloud-prod 命名空间
 # - 仅允许部署到 in-cluster
 # - 允许的资源类型白名单
 # ============================================================
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
-  name: yudao
+  name: zhicloud
   namespace: argocd
   labels:
-    app.kubernetes.io/name: yudao-server
-    app.kubernetes.io/part-of: yudao-gitops
+    app.kubernetes.io/name: zhicloud-server
+    app.kubernetes.io/part-of: zhicloud-gitops
 spec:
   # 项目描述
-  description: yudao-server 单体应用 GitOps 项目（dev/staging/prod 多环境）
+  description: zhicloud-server 单体应用 GitOps 项目（dev/staging/prod 多环境）
 
   # 来源仓库白名单（允许 Application 引用这些仓库）
   sourceRepos:
-    - https://github.com/yudao/yudao-server.git
+    - https://github.com/zhicloud/zhicloud-server.git
     # 私有仓库（如需）
-    # - git@github.com:yudao/yudao-server.git
+    # - git@github.com:zhicloud/zhicloud-server.git
 
   # 目标集群 + namespace 白名单
   destinations:
     # dev 环境
     - server: https://kubernetes.default.svc
-      namespace: yudao-dev
+      namespace: zhicloud-dev
     # staging 环境
     - server: https://kubernetes.default.svc
-      namespace: yudao-staging
+      namespace: zhicloud-staging
     # prod 环境
     - server: https://kubernetes.default.svc
-      namespace: yudao-prod
+      namespace: zhicloud-prod
     # ArgoCD 自身（用于 Hook Job 落地）
     - server: https://kubernetes.default.svc
       namespace: argocd
@@ -85,9 +85,9 @@ spec:
       schedule: '0 9 * * 1-5'
       duration: 12h
       applications:
-        - yudao-server-prod
+        - zhicloud-server-prod
       namespaces:
-        - yudao-prod
+        - zhicloud-prod
       clusters:
         - https://kubernetes.default.svc
       manualSync: true
@@ -97,6 +97,6 @@ spec:
     - name: ci-deployer
       description: CI/CD 流水线部署角色
       policies:
-        - p, proj:yudao:ci-deployer, applications, sync, yudao/*, allow
+        - p, proj:zhicloud:ci-deployer, applications, sync, zhicloud/*, allow
       groups:
-        - yudao-ci
+        - zhicloud-ci

@@ -1,9 +1,9 @@
 #!/bin/bash
 ##==================================================================
-## yudao-server 部署前安全检查脚本
+## zhicloud-server 部署前安全检查脚本
 ## 检查项：
 ##   1. SQL 中是否存在 BCrypt strength=4 的弱哈希（$2a$04$）
-##   2. SQL 中是否存在默认账号（admin/yudao/yuanma/test）使用默认密码
+##   2. SQL 中是否存在默认账号（admin/zhicloud/yuanma/test）使用默认密码
 ##   3. application.yaml 是否存在硬编码敏感默认值
 ##   4. application-prod.yaml 是否覆盖了所有敏感配置
 ##   5. Dockerfile 是否使用 nonroot 用户
@@ -20,10 +20,10 @@ set -uo pipefail
 # ===== 默认配置 =====
 PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 SQL_DIR="${PROJECT_ROOT}/sql/mysql"
-APP_YAML="${PROJECT_ROOT}/yudao-server/src/main/resources/application.yaml"
-APP_PROD_YAML="${PROJECT_ROOT}/yudao-server/src/main/resources/application-prod.yaml"
-DOCKERFILE="${PROJECT_ROOT}/yudao-server/Dockerfile"
-K8S_YAML="${PROJECT_ROOT}/k8s/yudao-server.yaml"
+APP_YAML="${PROJECT_ROOT}/zhicloud-server/src/main/resources/application.yaml"
+APP_PROD_YAML="${PROJECT_ROOT}/zhicloud-server/src/main/resources/application-prod.yaml"
+DOCKERFILE="${PROJECT_ROOT}/zhicloud-server/Dockerfile"
+K8S_YAML="${PROJECT_ROOT}/k8s/zhicloud-server.yaml"
 FAIL_ON_WARN=false
 WARN_COUNT=0
 CRITICAL_COUNT=0
@@ -75,8 +75,8 @@ if [ -d "${SQL_DIR}" ]; then
         echo "  受影响文件："
         grep -rlE '\$2a\$04\$' "${SQL_DIR}" 2>/dev/null | sed 's/^/    - /'
         echo "  修复建议："
-        echo "    部署后立即通过 admin 后台重置所有默认账号密码（admin/yudao/yuanma/test 等）"
-        echo "    或执行 SQL: UPDATE system_users SET password = '<新\$2a\$10\$哈希>' WHERE username IN ('admin','yudao','yuanma','test');"
+        echo "    部署后立即通过 admin 后台重置所有默认账号密码（admin/zhicloud/yuanma/test 等）"
+        echo "    或执行 SQL: UPDATE system_users SET password = '<新\$2a\$10\$哈希>' WHERE username IN ('admin','zhicloud','yuanma','test');"
     else
         info "未发现 BCrypt strength=4 弱哈希"
     fi
@@ -88,9 +88,9 @@ fi
 echo ""
 echo "===== 2. 检查默认账号风险 ====="
 if [ -d "${SQL_DIR}" ]; then
-    DEFAULT_USER_COUNT=$(grep -rE "INSERT INTO \`system_users\`.*'admin'|INSERT INTO \`system_users\`.*'yudao'|INSERT INTO \`system_users\`.*'yuanma'|INSERT INTO \`system_users\`.*'test'" "${SQL_DIR}" 2>/dev/null | wc -l || echo 0)
+    DEFAULT_USER_COUNT=$(grep -rE "INSERT INTO \`system_users\`.*'admin'|INSERT INTO \`system_users\`.*'zhicloud'|INSERT INTO \`system_users\`.*'yuanma'|INSERT INTO \`system_users\`.*'test'" "${SQL_DIR}" 2>/dev/null | wc -l || echo 0)
     if [ "${DEFAULT_USER_COUNT}" -gt 0 ]; then
-        info "发现 ${DEFAULT_USER_COUNT} 个默认账号插入语句（admin/yudao/yuanma/test），生产部署后必须修改默认密码"
+        info "发现 ${DEFAULT_USER_COUNT} 个默认账号插入语句（admin/zhicloud/yuanma/test），生产部署后必须修改默认密码"
         echo "  修复建议："
         echo "    1. 部署完成后立即登录 admin 后台重置密码"
         echo "    2. 禁用或删除不必要的内置账号"
@@ -133,7 +133,7 @@ if [ -f "${APP_PROD_YAML}" ]; then
     if grep -q "xss:" "${APP_PROD_YAML}" && grep -A1 "xss:" "${APP_PROD_YAML}" | grep -q "enable: true"; then
         info "生产环境 XSS 防护已启用"
     else
-        critical "生产环境未启用 XSS 防护（yudao.xss.enable: true）"
+        critical "生产环境未启用 XSS 防护（zhicloud.xss.enable: true）"
     fi
     if grep -q "swagger-ui:" "${APP_PROD_YAML}" && grep -A1 "swagger-ui:" "${APP_PROD_YAML}" | grep -q "enabled: false"; then
         info "生产环境 Swagger UI 已关闭"
@@ -148,7 +148,7 @@ fi
 echo ""
 echo "===== 5. 检查 Dockerfile 安全性 ====="
 if [ -f "${DOCKERFILE}" ]; then
-    if grep -qE "^USER\s+(nonroot|yudao|[0-9]+)" "${DOCKERFILE}"; then
+    if grep -qE "^USER\s+(nonroot|zhicloud|[0-9]+)" "${DOCKERFILE}"; then
         info "Dockerfile 已配置非 root 用户"
     else
         critical "Dockerfile 未配置非 root 用户（USER 指令）"

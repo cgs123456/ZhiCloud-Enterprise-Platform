@@ -1,4 +1,4 @@
-# Prometheus 告警规则 —— ZhiCloud-Enterprise-Platform (yudao-server)
+# Prometheus 告警规则 —— ZhiCloud-Enterprise-Platform (zhicloud-server)
 #
 # 指标来源：Spring Boot Actuator + Micrometer Prometheus
 #   (management.endpoints.web.exposure.include 已含 prometheus；/actuator/prometheus 可抓取)
@@ -8,10 +8,10 @@
 #     rule_files:
 #       - /etc/prometheus/alert.rules.yml
 #     scrape_configs:
-#       - job_name: 'yudao-server'
+#       - job_name: 'zhicloud-server'
 #         metrics_path: /actuator/prometheus
 #         static_configs:
-#           - targets: ['yudao-server:8080']
+#           - targets: ['zhicloud-server:48090']   # 业务端口 48080，metrics 端口 48090（Service 已暴露 actuator）
 #   并配置 Alertmanager 接收告警（routing + receiver）。
 #
 # 指标名均为 Micrometer 默认导出名；如自定义了 meter 名称请相应调整 expr。

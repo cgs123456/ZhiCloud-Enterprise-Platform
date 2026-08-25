@@ -1,13 +1,13 @@
-# yudao-server GitOps 部署说明（ArgoCD）
+# zhicloud-server GitOps 部署说明（ArgoCD）
 
-本文档说明 yudao-server 通过 ArgoCD + Helm 实现的 GitOps 部署流程，包括变更提交、回滚、Sync Hook 机制等。
+本文档说明 zhicloud-server 通过 ArgoCD + Helm 实现的 GitOps 部署流程，包括变更提交、回滚、Sync Hook 机制等。
 
 ## 目录结构
 
 ```
 deploy/
 ├── helm/
-│   └── yudao/                      # Helm Chart
+│   └── zhicloud/                      # Helm Chart
 │       ├── Chart.yaml              # Chart 元信息（version=1.0.0, appVersion=2026.06.0）
 │       ├── values.yaml             # 默认配置
 │       ├── values-dev.yaml         # DEV 环境覆盖（单副本 + 低资源）
@@ -34,16 +34,16 @@ deploy/
 
 | 环境 | namespace | values 文件 | 副本数 | 资源（CPU/内存）| HPA | Ingress Host |
 |------|-----------|-------------|--------|-----------------|-----|---------------|
-| DEV | yudao-dev | values-dev.yaml | 1 | 100m/256Mi - 500m/1Gi | 关闭 | api-dev.yudao.example.com |
-| STAGING | yudao-staging | values-staging.yaml | 2 | 250m/512Mi - 1000m/2Gi | 2~5 | api-staging.yudao.example.com |
-| PROD | yudao-prod | values-prod.yaml | 3 | 500m/1Gi - 2000m/4Gi | 3~15 | api.yudao.example.com |
+| DEV | zhicloud-dev | values-dev.yaml | 1 | 100m/256Mi - 500m/1Gi | 关闭 | api-dev.zhicloud.example.com |
+| STAGING | zhicloud-staging | values-staging.yaml | 2 | 250m/512Mi - 1000m/2Gi | 2~5 | api-staging.zhicloud.example.com |
+| PROD | zhicloud-prod | values-prod.yaml | 3 | 500m/1Gi - 2000m/4Gi | 3~15 | api.zhicloud.example.com |
 
 ## 部署架构
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │                        Git 仓库（真相源）                     │
-│  deploy/helm/yudao/  +  deploy/argocd/                       │
+│  deploy/helm/zhicloud/  +  deploy/argocd/                       │
 └───────────────────────────┬──────────────────────────────────┘
                             │ ArgoCD 轮询/推送
                             ▼
@@ -56,7 +56,7 @@ deploy/
                             ▼
 ┌──────────────────────────────────────────────────────────────┐
 │                    Kubernetes 集群（in-cluster）             │
-│  yudao-dev / yudao-staging / yudao-prod namespace            │
+│  zhicloud-dev / zhicloud-staging / zhicloud-prod namespace            │
 │  每个 namespace 内：Deployment + Service + HPA + Ingress      │
 │                   + ConfigMap + Secret + ServiceAccount      │
 │                   + PDB + Job（迁移）                          │
@@ -71,26 +71,26 @@ deploy/
 
 ```bash
 # 修改 values 配置
-vim deploy/helm/yudao/values-prod.yaml
+vim deploy/helm/zhicloud/values-prod.yaml
 
 # 修改镜像版本
-vim deploy/helm/yudao/Chart.yaml   # 修改 appVersion
+vim deploy/helm/zhicloud/Chart.yaml   # 修改 appVersion
 
 # 提交并推送
 git add deploy/
-git commit -m "chore(deploy): bump yudao-server to 2026.06.1"
+git commit -m "chore(deploy): bump zhicloud-server to 2026.06.1"
 git push origin main
 ```
 
 ArgoCD 默认每 3 分钟轮询 Git，检测到变更后自动触发 Sync。如需立即同步，可在 ArgoCD UI 点击 `Refresh` 或执行：
 
 ```bash
-argocd app sync yudao-server-prod
+argocd app sync zhicloud-server-prod
 ```
 
 ### 2. Sync Hook 机制
 
-ArgoCD Sync 流程分三阶段，yudao 利用 PreSync 执行数据库迁移：
+ArgoCD Sync 流程分三阶段，zhicloud 利用 PreSync 执行数据库迁移：
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
@@ -122,9 +122,9 @@ git push origin main
 
 # 方法二：ArgoCD 历史回滚（快速，但需手动同步 Git）
 # 查看历史
-argocd app history yudao-server-prod
+argocd app history zhicloud-server-prod
 # 回滚到指定版本（REVISION 为历史 ID）
-argocd app rollback yudao-server-prod <REVISION>
+argocd app rollback zhicloud-server-prod <REVISION>
 # 注意：回滚后 selfHeal 会尝试同步回 Git HEAD，需同步更新 Git
 ```
 
@@ -144,7 +144,7 @@ argocd app rollback yudao-server-prod <REVISION>
 
 ```bash
 # 创建加密 SealedSecret
-echo -n 'real-password' | kubectl create secret generic yudao-prod-secret \
+echo -n 'real-password' | kubectl create secret generic zhicloud-prod-secret \
   --dry-run=client --from-file=MASTER_DATASOURCE_PASSWORD=/dev/stdin -o yaml | \
   kubeseal --controller-namespace=kube-system -o yaml > sealed-secret.yaml
 
@@ -159,27 +159,27 @@ echo -n 'real-password' | kubectl create secret generic yudao-prod-secret \
 cd deploy/helm
 
 # 渲染 prod 配置
-helm template yudao-prod ./yudao -f ./yudao/values-prod.yaml -n yudao-prod
+helm template zhicloud-prod ./zhicloud -f ./zhicloud/values-prod.yaml -n zhicloud-prod
 
 # Lint 检查
-helm lint ./yudao -f ./yudao/values-prod.yaml
+helm lint ./zhicloud -f ./zhicloud/values-prod.yaml
 ```
 
 ### 部署到集群
 
 ```bash
 # 手动部署（绕过 ArgoCD，仅调试用）
-helm install yudao-prod ./deploy/helm/yudao \
-  -f ./deploy/helm/yudao/values-prod.yaml \
-  -n yudao-prod --create-namespace
+helm install zhicloud-prod ./deploy/helm/zhicloud \
+  -f ./deploy/helm/zhicloud/values-prod.yaml \
+  -n zhicloud-prod --create-namespace
 
 # 升级
-helm upgrade yudao-prod ./deploy/helm/yudao \
-  -f ./deploy/helm/yudao/values-prod.yaml \
-  -n yudao-prod
+helm upgrade zhicloud-prod ./deploy/helm/zhicloud \
+  -f ./deploy/helm/zhicloud/values-prod.yaml \
+  -n zhicloud-prod
 
 # 卸载
-helm uninstall yudao-prod -n yudao-prod
+helm uninstall zhicloud-prod -n zhicloud-prod
 ```
 
 ### ArgoCD 部署
@@ -198,7 +198,7 @@ argocd app list
 
 ## 与原生 K8s yaml 的关系
 
-`k8s/yudao-server.yaml` 为原生 K8s 清单（保留作为参考），Helm Chart 在 `deploy/helm/yudao/` 提供等价且参数化能力：
+`k8s/zhicloud-server.yaml` 为原生 K8s 清单（保留作为参考），Helm Chart 在 `deploy/helm/zhicloud/` 提供等价且参数化能力：
 
 | 原生 yaml 资源 | Helm Chart 对应模板 |
 |----------------|---------------------|

@@ -1,0 +1,4 @@
+cn.zhicloud.framework.idempotent.config.ZhiCloudIdempotentConfiguration
+cn.zhicloud.framework.lock4j.config.ZhiCloudLock4jConfiguration
+cn.zhicloud.framework.ratelimiter.config.ZhiCloudRateLimiterConfiguration
+cn.zhicloud.framework.signature.config.ZhiCloudApiSignatureAutoConfiguration

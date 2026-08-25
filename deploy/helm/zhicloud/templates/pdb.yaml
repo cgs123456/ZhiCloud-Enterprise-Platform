@@ -1,0 +1,21 @@
+{{/*
+============================================================
+zhicloud-server PodDisruptionBudget 模板
+保证自愿驱逐（节点维护/排空）期间至少保留 N 个可用副本
+- 与原生 k8s/zhicloud-server.yaml 对齐
+- 默认 minAvailable=1
+*/}}
+{{- if .Values.pdb.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "zhicloud.fullname" . }}-pdb
+  namespace: {{ include "zhicloud.namespace" . }}
+  labels:
+    {{- include "zhicloud.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "zhicloud.selectorLabels" . | nindent 6 }}
+{{- end }}

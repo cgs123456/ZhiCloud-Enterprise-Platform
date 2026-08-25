@@ -1,17 +1,17 @@
-# Yudao 性能压测脚本
+# ZhiCloud 性能压测脚本
 
-芋道源码（yudao）项目的性能压测方案，提供 **JMeter** 与 **Gatling** 两种实现。
+智云（zhicloud）项目的性能压测方案，提供 **JMeter** 与 **Gatling** 两种实现。
 
 ## 目录结构
 
 ```
 script/
 ├── jmeter/
-│   ├── yudao-load-test.jmx      # JMeter 测试计划
+│   ├── zhicloud-load-test.jmx      # JMeter 测试计划
 │   └── README.md                # 本文件
 ├── gatling/
-│   └── src/test/scala/yudao/
-│       └── YudaoLoadTest.scala  # Gatling 压测脚本
+│   └── src/test/scala/zhicloud/
+│       └── ZhiCloudLoadTest.scala  # Gatling 压测脚本
 └── docker/
     └── grafana/
         └── dashboards/
@@ -24,15 +24,15 @@ script/
 
 | 项目 | 要求 | 说明 |
 | --- | --- | --- |
-| yudao-server | 已启动且健康 | 业务端口 `48080`，管理端口 `48090` |
+| zhicloud-server | 已启动且健康 | 业务端口 `48080`，管理端口 `48090` |
 | 数据库 | MySQL 8.x，已初始化数据 | 执行 `sql/mysql/zhicloud_platform.sql` |
 | Redis | 6.x 及以上 | 默认 `localhost:6379` |
 | 测试账号 | `admin / admin123` | 租户 ID `1` |
-| JVM | 堆内存建议 `-Xms2g -Xmx2g` | 启动参数见 `yudao-server-startup.out` |
+| JVM | 堆内存建议 `-Xms2g -Xmx2g` | 启动参数见 `zhicloud-server-startup.out` |
 
 ### 2. 监控就绪
 
-- Prometheus 已采集 yudao-server 的 `48090` actuator 指标
+- Prometheus 已采集 zhicloud-server 的 `48090` actuator 指标
 - Grafana 已导入 `grafana-dashboard-performance.json` 看板
 - 数据库、Redis、宿主机 CPU/内存监控就绪
 
@@ -57,10 +57,10 @@ script/
 
 ```bash
 # Windows
-jmeter -t script/jmeter/yudao-load-test.jmx
+jmeter -t script/jmeter/zhicloud-load-test.jmx
 
 # Linux / macOS
-jmeter -t script/jmeter/yudao-load-test.jmx
+jmeter -t script/jmeter/zhicloud-load-test.jmx
 ```
 
 > ⚠️ GUI 模式会消耗额外资源，**正式压测请使用非 GUI 模式**。
@@ -68,9 +68,9 @@ jmeter -t script/jmeter/yudao-load-test.jmx
 ### 非 GUI 模式（正式压测）
 
 ```bash
-jmeter -n -t script/jmeter/yudao-load-test.jmx \
-  -l result/yudao-result.jtl \
-  -e -o result/yudao-report \
+jmeter -n -t script/jmeter/zhicloud-load-test.jmx \
+  -l result/zhicloud-result.jtl \
+  -e -o result/zhicloud-report \
   -JHOST=localhost -JPORT=48080 -JTENANT_ID=1
 ```
 
@@ -92,14 +92,14 @@ jmeter -n -t script/jmeter/yudao-load-test.jmx \
 jmeter-server
 
 # master 端执行
-jmeter -n -t yudao-load-test.jmx -R 192.168.1.101,192.168.1.102 \
-  -l result/yudao-result.jtl -e -o result/yudao-report
+jmeter -n -t zhicloud-load-test.jmx -R 192.168.1.101,192.168.1.102 \
+  -l result/zhicloud-result.jtl -e -o result/zhicloud-report
 ```
 
 ### 生成 HTML 报告（基于已有结果文件）
 
 ```bash
-jmeter -g result/yudao-result.jtl -o result/yudao-report
+jmeter -g result/zhicloud-result.jtl -o result/zhicloud-report
 ```
 
 ---
@@ -123,13 +123,13 @@ jmeter -g result/yudao-result.jtl -o result/yudao-report
 
 ```bash
 # 方式一：Maven 运行指定 Simulation
-mvn gatling:test -Dgatling.simulationClass=yudao.YudaoLoadTest
+mvn gatling:test -Dgatling.simulationClass=zhicloud.ZhiCloudLoadTest
 
 # 方式二：仅编译，不执行
 mvn test-compile
 
 # 方式三：Gatling CLI 直接运行
-gatling.sh -sf script/gatling/src/test/scala -rs yudao.YudaoLoadTest
+gatling.sh -sf script/gatling/src/test/scala -rs zhicloud.ZhiCloudLoadTest
 ```
 
 报告默认输出到 `target/gatling/` 目录，打开 `index.html` 即可查看。
@@ -215,7 +215,7 @@ gatling.sh -sf script/gatling/src/test/scala -rs yudao.YudaoLoadTest
 
 每次压测完成后，建议归档以下内容：
 
-1. JMeter HTML 报告目录（`result/yudao-report/`）
+1. JMeter HTML 报告目录（`result/zhicloud-report/`）
 2. Gatling 报告目录（`target/gatling/`）
 3. Grafana 看板截图（压测期间快照）
 4. 服务器 CPU/内存/GC 监控截图

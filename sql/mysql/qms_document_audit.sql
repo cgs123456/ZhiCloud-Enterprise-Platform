@@ -1,5 +1,5 @@
 -- ======================== QMS 文档控制 + 审核管理建表脚本 ========================
--- 作者：yudao
+-- 作者：zhicloud
 -- 说明：覆盖受控文档管理（document/distribute/change_request）+ 审核管理（plan/auditor/report/nonconformity）
 -- 依赖：qms.sql 基础表
 -- 规范：InnoDB / utf8mb4 / utf8mb4_unicode_ci；主键 BIGINT（应用层雪花ID）；

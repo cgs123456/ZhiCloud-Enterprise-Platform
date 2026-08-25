@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-裸抛异常回归门禁：扫描 src/main 下 cn/iocoder/yudao/** 包内是否残留
+裸抛异常回归门禁：扫描 src/main 下 cn/zhicloud/zhicloud/** 包内是否残留
     throw new RuntimeException(...)
     throw new IllegalStateException(...)
 若存在则失败（退出码 1），输出位置清单，防止绕过 ErrorCode 体系。
@@ -27,7 +27,7 @@ import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PKG_PREFIX = 'cn/iocoder/yudao/'
+PKG_PREFIX = 'cn/zhicloud/zhicloud/'
 THROW_RE = re.compile(r'throw\s+new\s+(RuntimeException|IllegalStateException)\s*\(', re.DOTALL)
 IGNORE_MARK = '@bare-throw-ignore'
 # 豁免标记允许写在 throw 所在行，或其上方最多 3 行内（留出写多行理由的空间）
@@ -100,7 +100,7 @@ def main():
             print(f'  {rel}:{ln}')
 
     if not hits:
-        print('[OK] 未发现裸抛 RuntimeException/IllegalStateException（cn/iocoder/yudao 包）。')
+        print('[OK] 未发现裸抛 RuntimeException/IllegalStateException（cn/zhicloud/zhicloud 包）。')
         return 0
 
     print(f'[FAIL] 发现 {len(hits)} 处裸抛异常（需统一为 ServiceException）：')

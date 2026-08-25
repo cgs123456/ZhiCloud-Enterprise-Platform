@@ -16,101 +16,101 @@
 # ============================================================
 # 1) 认证入口 —— system 后台
 # ============================================================
-yudao-module-system/src/main/java/cn/iocoder/yudao/module/system/controller/admin/auth/AuthController.java#login
-yudao-module-system/src/main/java/cn/iocoder/yudao/module/system/controller/admin/auth/AuthController.java#loginByTotp
-yudao-module-system/src/main/java/cn/iocoder/yudao/module/system/controller/admin/auth/AuthController.java#logout
-yudao-module-system/src/main/java/cn/iocoder/yudao/module/system/controller/admin/auth/AuthController.java#refreshToken
-yudao-module-system/src/main/java/cn/iocoder/yudao/module/system/controller/admin/auth/AuthController.java#register
-yudao-module-system/src/main/java/cn/iocoder/yudao/module/system/controller/admin/auth/AuthController.java#smsLogin
-yudao-module-system/src/main/java/cn/iocoder/yudao/module/system/controller/admin/auth/AuthController.java#sendLoginSmsCode
-yudao-module-system/src/main/java/cn/iocoder/yudao/module/system/controller/admin/auth/AuthController.java#resetPassword
-yudao-module-system/src/main/java/cn/iocoder/yudao/module/system/controller/admin/auth/AuthController.java#socialQuickLogin
+zhicloud-module-system/src/main/java/cn/zhicloud/zhicloud/module/system/controller/admin/auth/AuthController.java#login
+zhicloud-module-system/src/main/java/cn/zhicloud/zhicloud/module/system/controller/admin/auth/AuthController.java#loginByTotp
+zhicloud-module-system/src/main/java/cn/zhicloud/zhicloud/module/system/controller/admin/auth/AuthController.java#logout
+zhicloud-module-system/src/main/java/cn/zhicloud/zhicloud/module/system/controller/admin/auth/AuthController.java#refreshToken
+zhicloud-module-system/src/main/java/cn/zhicloud/zhicloud/module/system/controller/admin/auth/AuthController.java#register
+zhicloud-module-system/src/main/java/cn/zhicloud/zhicloud/module/system/controller/admin/auth/AuthController.java#smsLogin
+zhicloud-module-system/src/main/java/cn/zhicloud/zhicloud/module/system/controller/admin/auth/AuthController.java#sendLoginSmsCode
+zhicloud-module-system/src/main/java/cn/zhicloud/zhicloud/module/system/controller/admin/auth/AuthController.java#resetPassword
+zhicloud-module-system/src/main/java/cn/zhicloud/zhicloud/module/system/controller/admin/auth/AuthController.java#socialQuickLogin
 # 图形验证码：登录前置步骤，本身不落业务数据
-yudao-module-system/src/main/java/cn/iocoder/yudao/module/system/controller/admin/captcha/CaptchaController.java#get
-yudao-module-system/src/main/java/cn/iocoder/yudao/module/system/controller/admin/captcha/CaptchaController.java#check
+zhicloud-module-system/src/main/java/cn/zhicloud/zhicloud/module/system/controller/admin/captcha/CaptchaController.java#get
+zhicloud-module-system/src/main/java/cn/zhicloud/zhicloud/module/system/controller/admin/captcha/CaptchaController.java#check
 # OAuth2 令牌端点：按 RFC 6749，客户端用 Basic 认证携带 client_id/secret，不走会话
-yudao-module-system/src/main/java/cn/iocoder/yudao/module/system/controller/admin/oauth2/OAuth2OpenController.java#postAccessToken
-yudao-module-system/src/main/java/cn/iocoder/yudao/module/system/controller/admin/oauth2/OAuth2OpenController.java#revokeToken
-yudao-module-system/src/main/java/cn/iocoder/yudao/module/system/controller/admin/oauth2/OAuth2OpenController.java#checkToken
+zhicloud-module-system/src/main/java/cn/zhicloud/zhicloud/module/system/controller/admin/oauth2/OAuth2OpenController.java#postAccessToken
+zhicloud-module-system/src/main/java/cn/zhicloud/zhicloud/module/system/controller/admin/oauth2/OAuth2OpenController.java#revokeToken
+zhicloud-module-system/src/main/java/cn/zhicloud/zhicloud/module/system/controller/admin/oauth2/OAuth2OpenController.java#checkToken
 
 # ============================================================
 # 2) 认证入口 —— member 会员端 App
 # ============================================================
-yudao-module-member/src/main/java/cn/iocoder/yudao/module/member/controller/app/auth/AppAuthController.java#login
-yudao-module-member/src/main/java/cn/iocoder/yudao/module/member/controller/app/auth/AppAuthController.java#logout
-yudao-module-member/src/main/java/cn/iocoder/yudao/module/member/controller/app/auth/AppAuthController.java#refreshToken
-yudao-module-member/src/main/java/cn/iocoder/yudao/module/member/controller/app/auth/AppAuthController.java#smsLogin
-yudao-module-member/src/main/java/cn/iocoder/yudao/module/member/controller/app/auth/AppAuthController.java#sendSmsCode
-yudao-module-member/src/main/java/cn/iocoder/yudao/module/member/controller/app/auth/AppAuthController.java#validateSmsCode
-yudao-module-member/src/main/java/cn/iocoder/yudao/module/member/controller/app/auth/AppAuthController.java#socialLogin
-yudao-module-member/src/main/java/cn/iocoder/yudao/module/member/controller/app/auth/AppAuthController.java#weixinMiniAppLogin
-yudao-module-member/src/main/java/cn/iocoder/yudao/module/member/controller/app/auth/AppAuthController.java#createWeixinMpJsapiSignature
+zhicloud-module-member/src/main/java/cn/zhicloud/zhicloud/module/member/controller/app/auth/AppAuthController.java#login
+zhicloud-module-member/src/main/java/cn/zhicloud/zhicloud/module/member/controller/app/auth/AppAuthController.java#logout
+zhicloud-module-member/src/main/java/cn/zhicloud/zhicloud/module/member/controller/app/auth/AppAuthController.java#refreshToken
+zhicloud-module-member/src/main/java/cn/zhicloud/zhicloud/module/member/controller/app/auth/AppAuthController.java#smsLogin
+zhicloud-module-member/src/main/java/cn/zhicloud/zhicloud/module/member/controller/app/auth/AppAuthController.java#sendSmsCode
+zhicloud-module-member/src/main/java/cn/zhicloud/zhicloud/module/member/controller/app/auth/AppAuthController.java#validateSmsCode
+zhicloud-module-member/src/main/java/cn/zhicloud/zhicloud/module/member/controller/app/auth/AppAuthController.java#socialLogin
+zhicloud-module-member/src/main/java/cn/zhicloud/zhicloud/module/member/controller/app/auth/AppAuthController.java#weixinMiniAppLogin
+zhicloud-module-member/src/main/java/cn/zhicloud/zhicloud/module/member/controller/app/auth/AppAuthController.java#createWeixinMpJsapiSignature
 # 社交账号绑定/小程序码：属于登录链路的一部分，绑定时用户尚未建立本系统会话
-yudao-module-member/src/main/java/cn/iocoder/yudao/module/member/controller/app/social/AppSocialUserController.java#socialBind
-yudao-module-member/src/main/java/cn/iocoder/yudao/module/member/controller/app/social/AppSocialUserController.java#getWxaQrcode
+zhicloud-module-member/src/main/java/cn/zhicloud/zhicloud/module/member/controller/app/social/AppSocialUserController.java#socialBind
+zhicloud-module-member/src/main/java/cn/zhicloud/zhicloud/module/member/controller/app/social/AppSocialUserController.java#getWxaQrcode
 # 手机验证码找回密码：用户此时无法登录，故必须匿名
-yudao-module-member/src/main/java/cn/iocoder/yudao/module/member/controller/app/user/AppMemberUserController.java#resetUserPassword
+zhicloud-module-member/src/main/java/cn/zhicloud/zhicloud/module/member/controller/app/user/AppMemberUserController.java#resetUserPassword
 
 # ============================================================
 # 3) 第三方回调 —— 支付渠道（微信/支付宝异步通知，靠渠道签名验签）
 # ============================================================
-yudao-module-pay/src/main/java/cn/iocoder/yudao/module/pay/controller/admin/notify/PayNotifyController.java#notifyOrder
-yudao-module-pay/src/main/java/cn/iocoder/yudao/module/pay/controller/admin/notify/PayNotifyController.java#notifyRefund
-yudao-module-pay/src/main/java/cn/iocoder/yudao/module/pay/controller/admin/notify/PayNotifyController.java#notifyTransfer
+zhicloud-module-pay/src/main/java/cn/zhicloud/zhicloud/module/pay/controller/admin/notify/PayNotifyController.java#notifyOrder
+zhicloud-module-pay/src/main/java/cn/zhicloud/zhicloud/module/pay/controller/admin/notify/PayNotifyController.java#notifyRefund
+zhicloud-module-pay/src/main/java/cn/zhicloud/zhicloud/module/pay/controller/admin/notify/PayNotifyController.java#notifyTransfer
 # 钱包充值回调：由 pay 模块内部回调触发
-yudao-module-pay/src/main/java/cn/iocoder/yudao/module/pay/controller/admin/wallet/PayWalletRechargeController.java#updateWalletRechargerPaid
-yudao-module-pay/src/main/java/cn/iocoder/yudao/module/pay/controller/admin/wallet/PayWalletRechargeController.java#updateWalletRechargeRefunded
+zhicloud-module-pay/src/main/java/cn/zhicloud/zhicloud/module/pay/controller/admin/wallet/PayWalletRechargeController.java#updateWalletRechargerPaid
+zhicloud-module-pay/src/main/java/cn/zhicloud/zhicloud/module/pay/controller/admin/wallet/PayWalletRechargeController.java#updateWalletRechargeRefunded
 # 支付模块自带 Demo 示例（非生产业务；如需彻底消除风险应在生产构建中排除该包）
-yudao-module-pay/src/main/java/cn/iocoder/yudao/module/pay/controller/admin/demo/PayDemoOrderController.java#updateDemoOrderPaid
-yudao-module-pay/src/main/java/cn/iocoder/yudao/module/pay/controller/admin/demo/PayDemoOrderController.java#updateDemoOrderRefunded
-yudao-module-pay/src/main/java/cn/iocoder/yudao/module/pay/controller/admin/demo/PayDemoWithdrawController.java#updateDemoWithdrawTransferred
+zhicloud-module-pay/src/main/java/cn/zhicloud/zhicloud/module/pay/controller/admin/demo/PayDemoOrderController.java#updateDemoOrderPaid
+zhicloud-module-pay/src/main/java/cn/zhicloud/zhicloud/module/pay/controller/admin/demo/PayDemoOrderController.java#updateDemoOrderRefunded
+zhicloud-module-pay/src/main/java/cn/zhicloud/zhicloud/module/pay/controller/admin/demo/PayDemoWithdrawController.java#updateDemoWithdrawTransferred
 
 # ============================================================
 # 4) 第三方回调 —— 短信状态回执（阿里云/腾讯云/华为/七牛，靠各云厂商签名）
 # ============================================================
-yudao-module-system/src/main/java/cn/iocoder/yudao/module/system/controller/admin/sms/SmsCallbackController.java#receiveAliyunSmsStatus
-yudao-module-system/src/main/java/cn/iocoder/yudao/module/system/controller/admin/sms/SmsCallbackController.java#receiveTencentSmsStatus
-yudao-module-system/src/main/java/cn/iocoder/yudao/module/system/controller/admin/sms/SmsCallbackController.java#receiveHuaweiSmsStatus
-yudao-module-system/src/main/java/cn/iocoder/yudao/module/system/controller/admin/sms/SmsCallbackController.java#receiveQiniuSmsStatus
+zhicloud-module-system/src/main/java/cn/zhicloud/zhicloud/module/system/controller/admin/sms/SmsCallbackController.java#receiveAliyunSmsStatus
+zhicloud-module-system/src/main/java/cn/zhicloud/zhicloud/module/system/controller/admin/sms/SmsCallbackController.java#receiveTencentSmsStatus
+zhicloud-module-system/src/main/java/cn/zhicloud/zhicloud/module/system/controller/admin/sms/SmsCallbackController.java#receiveHuaweiSmsStatus
+zhicloud-module-system/src/main/java/cn/zhicloud/zhicloud/module/system/controller/admin/sms/SmsCallbackController.java#receiveQiniuSmsStatus
 
 # ============================================================
 # 5) 第三方回调 —— 其他外部系统 Webhook
 # ============================================================
 # Midjourney 绘图完成回调
-yudao-module-ai/src/main/java/cn/iocoder/yudao/module/ai/controller/admin/image/AiImageController.java#midjourneyNotify
+zhicloud-module-ai/src/main/java/cn/zhicloud/zhicloud/module/ai/controller/admin/image/AiImageController.java#midjourneyNotify
 # LiveKit 房间事件 Webhook（LiveKit 侧带签名头）
-yudao-module-im/src/main/java/cn/iocoder/yudao/module/im/controller/admin/rtc/ImRtcLiveKitController.java#webhook
+zhicloud-module-im/src/main/java/cn/zhicloud/zhicloud/module/im/controller/admin/rtc/ImRtcLiveKitController.java#webhook
 # 交易侧的支付/退款/佣金回调
-yudao-module-mall/yudao-module-trade/src/main/java/cn/iocoder/yudao/module/trade/controller/app/order/AppTradeOrderController.java#updateOrderPaid
-yudao-module-mall/yudao-module-trade/src/main/java/cn/iocoder/yudao/module/trade/controller/admin/aftersale/AfterSaleController.java#updateAfterSaleRefunded
-yudao-module-mall/yudao-module-trade/src/main/java/cn/iocoder/yudao/module/trade/controller/admin/brokerage/BrokerageWithdrawController.java#updateBrokerageWithdrawTransferred
+zhicloud-module-mall/zhicloud-module-trade/src/main/java/cn/zhicloud/zhicloud/module/trade/controller/app/order/AppTradeOrderController.java#updateOrderPaid
+zhicloud-module-mall/zhicloud-module-trade/src/main/java/cn/zhicloud/zhicloud/module/trade/controller/admin/aftersale/AfterSaleController.java#updateAfterSaleRefunded
+zhicloud-module-mall/zhicloud-module-trade/src/main/java/cn/zhicloud/zhicloud/module/trade/controller/admin/brokerage/BrokerageWithdrawController.java#updateBrokerageWithdrawTransferred
 
 # ============================================================
 # 6) 无副作用计数接口（被刷仅导致浏览量不准，不涉及业务数据）
 # ============================================================
-yudao-module-mall/yudao-module-promotion/src/main/java/cn/iocoder/yudao/module/promotion/controller/app/article/AppArticleController.java#addBrowseCount
-yudao-module-mall/yudao-module-promotion/src/main/java/cn/iocoder/yudao/module/promotion/controller/app/banner/AppBannerController.java#addBrowseCount
+zhicloud-module-mall/zhicloud-module-promotion/src/main/java/cn/zhicloud/zhicloud/module/promotion/controller/app/article/AppArticleController.java#addBrowseCount
+zhicloud-module-mall/zhicloud-module-promotion/src/main/java/cn/zhicloud/zhicloud/module/promotion/controller/app/banner/AppBannerController.java#addBrowseCount
 
 # ============================================================
 # 7) 待整改项（已登记以建立 0 基线，但风险未消除，须专项处理）
 # ============================================================
 # 【风险】匿名文件上传：无认证即可写入对象存储，存在被当作免费图床 / 上传恶意文件的风险。
-# 上游 yudao 的默认设计如此（供 App 端头像上传等场景）。
+# 上游 zhicloud 的默认设计如此（供 App 端头像上传等场景）。
 # 待办：改为登录后可用，或增加文件类型白名单 + 单 IP 限流 + 容量配额。
-yudao-module-infra/src/main/java/cn/iocoder/yudao/module/infra/controller/app/file/AppFileController.java#uploadFile
-yudao-module-infra/src/main/java/cn/iocoder/yudao/module/infra/controller/app/file/AppFileController.java#createFile
+zhicloud-module-infra/src/main/java/cn/zhicloud/zhicloud/module/infra/controller/app/file/AppFileController.java#uploadFile
+zhicloud-module-infra/src/main/java/cn/zhicloud/zhicloud/module/infra/controller/app/file/AppFileController.java#createFile
 # 【风险】外部线索接收：官网表单投递入口，当前无签名校验，可被灌垃圾线索。
 # 待办：增加来源签名校验或图形验证码 + 限流。
-yudao-module-crm/src/main/java/cn/iocoder/yudao/module/crm/controller/admin/clue/CrmClueReceiveController.java#receiveExternalClue
+zhicloud-module-crm/src/main/java/cn/zhicloud/zhicloud/module/crm/controller/admin/clue/CrmClueReceiveController.java#receiveExternalClue
 
 # ============================================================
 # 8) 设备登录入口
 # ============================================================
 # PDA 设备登录：内部自行校验账号密码后签发令牌，属认证入口
-yudao-module-wms/src/main/java/cn/iocoder/yudao/module/wms/controller/app/pda/WmsPdaController.java#login
+zhicloud-module-wms/src/main/java/cn/zhicloud/zhicloud/module/wms/controller/app/pda/WmsPdaController.java#login
 
 # ============================================================
 # 9) 第三方回调 —— 微信公众号
 # ============================================================
 # 微信公众号消息推送回调：由微信服务器推送，靠签名验签
-yudao-module-mp/src/main/java/cn/iocoder/yudao/module/mp/controller/admin/open/MpOpenController.java#handleMessage
+zhicloud-module-mp/src/main/java/cn/zhicloud/zhicloud/module/mp/controller/admin/open/MpOpenController.java#handleMessage

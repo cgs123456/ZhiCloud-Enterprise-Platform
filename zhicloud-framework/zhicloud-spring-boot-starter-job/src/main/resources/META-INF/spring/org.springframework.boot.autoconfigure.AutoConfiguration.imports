@@ -1,0 +1,2 @@
+cn.zhicloud.framework.quartz.config.ZhiCloudQuartzAutoConfiguration
+cn.zhicloud.framework.quartz.config.ZhiCloudAsyncAutoConfiguration

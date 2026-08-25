@@ -1,0 +1,38 @@
+spring:
+  main:
+    lazy-initialization: true # 开启懒加载，加快速度
+    banner-mode: off # 单元测试，禁用 Banner
+    allow-bean-definition-overriding: true # 允许 Bean 覆盖，解决 Redis 配置冲突
+
+--- #################### 数据库相关配置 ####################
+
+spring:
+  # 数据源配置项
+  datasource:
+    name: zhicloud_platform
+    url: jdbc:h2:mem:testdb;MODE=MYSQL;DATABASE_TO_UPPER=false;NON_KEYWORDS=value,day
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+    druid:
+      async-init: true
+      initial-size: 1
+  sql:
+    init:
+      schema-locations: classpath:/sql/create_tables.sql
+
+  # Redis 配置
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 16379
+      database: 0
+
+mybatis:
+  lazy-initialization: true
+
+--- #################### 智云相关配置 ####################
+
+zhicloud:
+  info:
+    base-package: cn.zhicloud.module

@@ -1,19 +1,19 @@
 #!/bin/bash
 ##==================================================================
-## yudao 容灾演练脚本
+## zhicloud 容灾演练脚本
 ## 功能：
 ##   1. 模拟主库故障，从备份恢复到备用库（Docker 临时 MySQL 实例）
 ##   2. 验证恢复后的数据完整性（表数量、行数）
-##   3. 启动 yudao-server 连接备用库（spring profile=drill）
+##   3. 启动 zhicloud-server 连接备用库（spring profile=drill）
 ##   4. 测试应用能否连接备用库
 ##   5. 测试关键 API 是否可用
 ##   6. 输出演练报告
 ##
 ## 用法：
 ##   ./disaster-recovery-drill.sh
-##   ./disaster-recovery-drill.sh --restore-from /data/backup/yudao/2026-07-29/mysql_zhicloud_platform_20260729_020001.sql.gz
+##   ./disaster-recovery-drill.sh --restore-from /data/backup/zhicloud/2026-07-29/mysql_zhicloud_platform_20260729_020001.sql.gz
 ##   ./disaster-recovery-drill.sh --dry-run
-##   ./disaster-recovery-drill.sh --skip-server    # 跳过启动 yudao-server
+##   ./disaster-recovery-drill.sh --skip-server    # 跳过启动 zhicloud-server
 ##
 ## 退出码：
 ##   0 - 演练成功
@@ -30,7 +30,7 @@ SKIP_SERVER=false
 RESTORE_FROM=""
 START_TIME=$(date +%s)
 DRILL_DATE=$(date +%Y%m%d_%H%M%S)
-REPORT_TITLE="yudao 容灾演练报告 ${DRILL_DATE}"
+REPORT_TITLE="zhicloud 容灾演练报告 ${DRILL_DATE}"
 
 # ===== 解析命令行参数 =====
 for arg in "$@"; do
@@ -50,7 +50,7 @@ for arg in "$@"; do
         -h|--help)
             echo "用法: $0 [--dry-run] [--skip-server] [--restore-from=FILE] [--config=PATH]"
             echo "  --dry-run          仅打印不执行"
-            echo "  --skip-server      跳过启动 yudao-server"
+            echo "  --skip-server      跳过启动 zhicloud-server"
             echo "  --restore-from=FILE 指定备份文件恢复"
             echo "  --config=PATH      指定配置文件路径"
             exit 0
@@ -71,21 +71,21 @@ fi
 source "${CONFIG_FILE}"
 
 # ===== 准备日志目录 =====
-LOCAL_BACKUP_DIR="${LOCAL_BACKUP_DIR:-/data/backup/yudao}"
+LOCAL_BACKUP_DIR="${LOCAL_BACKUP_DIR:-/data/backup/zhicloud}"
 DRILL_REPORT_DIR="${DRILL_REPORT_DIR:-${SCRIPT_DIR}/../../logs/drill}"
 mkdir -p "${DRILL_REPORT_DIR}"
 LOG_FILE="${DRILL_REPORT_DIR}/drill-${DRILL_DATE}.log"
 REPORT_FILE="${DRILL_REPORT_DIR}/drill-report-${DRILL_DATE}.md"
 
 # 容器/端口默认值
-DRILL_MYSQL_CONTAINER="${DRILL_MYSQL_CONTAINER:-yudao-drill-mysql}"
+DRILL_MYSQL_CONTAINER="${DRILL_MYSQL_CONTAINER:-zhicloud-drill-mysql}"
 DRILL_MYSQL_PORT="${DRILL_MYSQL_PORT:-3399}"
 DRILL_MYSQL_ROOT_PASSWORD="${DRILL_MYSQL_ROOT_PASSWORD:-drill_password_changeme}"
 DRILL_MYSQL_DATABASE="${DRILL_MYSQL_DATABASE:-zhicloud_platform}"
-DRILL_SERVER_CONTAINER="${DRILL_SERVER_CONTAINER:-yudao-drill-server}"
+DRILL_SERVER_CONTAINER="${DRILL_SERVER_CONTAINER:-zhicloud-drill-server}"
 DRILL_SERVER_PORT="${DRILL_SERVER_PORT:-48180}"
 DRILL_SERVER_ACTUATOR_PORT="${DRILL_SERVER_ACTUATOR_PORT:-48190}"
-DRILL_SERVER_JAR="${DRILL_SERVER_JAR:-/data/yudao/yudao-server.jar}"
+DRILL_SERVER_JAR="${DRILL_SERVER_JAR:-/data/zhicloud/zhicloud-server.jar}"
 DRILL_HEALTH_TIMEOUT="${DRILL_HEALTH_TIMEOUT:-180}"
 
 # 演练结果收集
@@ -298,18 +298,18 @@ verify_data() {
     return 0
 }
 
-# ===== 5. 启动 yudao-server 连接临时实例 =====
+# ===== 5. 启动 zhicloud-server 连接临时实例 =====
 start_drill_server() {
     if [ "${SKIP_SERVER}" = true ]; then
-        log_step "STEP 5: 跳过启动 yudao-server（--skip-server）"
+        log_step "STEP 5: 跳过启动 zhicloud-server（--skip-server）"
         record_step "启动服务" "SKIP" "用户跳过"
         return 0
     fi
 
-    log_step "STEP 5: 启动 yudao-server 连接临时实例"
+    log_step "STEP 5: 启动 zhicloud-server 连接临时实例"
 
     if [ ! -f "${DRILL_SERVER_JAR}" ]; then
-        log_warn "yudao-server.jar 不存在: ${DRILL_SERVER_JAR}，跳过服务测试"
+        log_warn "zhicloud-server.jar 不存在: ${DRILL_SERVER_JAR}，跳过服务测试"
         record_step "启动服务" "SKIP" "jar 不存在"
         return 0
     fi
@@ -339,14 +339,14 @@ start_drill_server() {
                 --spring.datasource.dynamic.datasource.master.username=root \
                 --spring.datasource.dynamic.datasource.master.password="${DRILL_MYSQL_ROOT_PASSWORD}" \
                 >/dev/null 2>&1; then
-        log_error "启动 yudao-server 失败"
+        log_error "启动 zhicloud-server 失败"
         record_step "启动服务" "FAIL" "docker run 失败"
         return 1
     fi
 
     # 注意：上面使用了容器名连接，需要确保在同一个 Docker 网络
-    docker network connect yudao-system_yudao-net "${DRILL_SERVER_CONTAINER}" 2>/dev/null || \
-        log_warn "连接到 yudao-net 网络失败（可能是孤立网络）"
+    docker network connect zhicloud-system_zhicloud-net "${DRILL_SERVER_CONTAINER}" 2>/dev/null || \
+        log_warn "连接到 zhicloud-net 网络失败（可能是孤立网络）"
 
     record_step "启动服务" "PASS" "容器=${DRILL_SERVER_CONTAINER} 端口=${DRILL_SERVER_PORT}"
     return 0
@@ -425,7 +425,7 @@ EOF
     # 7.3 系统租户
     local TENANT_STATUS
     TENANT_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 10 \
-        "${BASE_URL}/admin-api/system/tenant/get-id-by-name?name=芋道源码" 2>/dev/null || echo "000")
+        "${BASE_URL}/admin-api/system/tenant/get-id-by-name?name=智云" 2>/dev/null || echo "000")
     log_info "租户接口状态: ${TENANT_STATUS}"
     record_step "API: 租户" "$([ "${TENANT_STATUS}" = "200" ] && echo PASS || echo WARN)" "status=${TENANT_STATUS}"
 

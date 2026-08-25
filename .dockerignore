@@ -1,4 +1,4 @@
-# ==== yudao .dockerignore ====
+# ==== zhicloud .dockerignore ====
 # 构建上下文排除清单，减小镜像体积 + 避免源码/凭证泄露
 
 # ---- 版本控制 ----
@@ -51,7 +51,7 @@ tmp_*.sql
 docs/
 
 # ---- 前端 UI 源码（后端镜像不需要）----
-yudao-ui/
+zhicloud-ui/
 
 # ---- 截图与图片资源 ----
 .image/
@@ -74,4 +74,4 @@ k8s/
 
 # ---- 其他 ----
 dependency-check-suppressions.xml
-yudao-server-startup.out
+zhicloud-server-startup.out

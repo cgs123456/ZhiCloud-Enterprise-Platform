@@ -1,5 +1,5 @@
 -- ======================================================================
--- yudao-module-ai-rag 回滚脚本（PostgreSQL + pgvector）
+-- zhicloud-module-ai-rag 回滚脚本（PostgreSQL + pgvector）
 --
 -- 对应正向脚本：sql/postgresql/airag_pgvector.sql（Task 8）
 -- 对应文档：.trae/specs/upgrade-tech-stack-and-ai-native/rollback-strategy.md SubTask 13.2

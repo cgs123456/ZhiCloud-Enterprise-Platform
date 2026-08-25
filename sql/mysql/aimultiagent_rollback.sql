@@ -1,5 +1,5 @@
 -- ======================================================================
--- yudao-module-ai-multiagent 回滚脚本（MySQL）
+-- zhicloud-module-ai-multiagent 回滚脚本（MySQL）
 --
 -- 对应正向脚本：sql/mysql/aimultiagent.sql（Task 9，待落地）
 -- 对应文档：.trae/specs/upgrade-tech-stack-and-ai-native/rollback-strategy.md SubTask 13.2

@@ -8,27 +8,27 @@
    `
 2. Access Nacos console: http://localhost:8848/nacos
    - Default credentials: nacos / nacos
-3. Activate Nacos config in yudao-server:
+3. Activate Nacos config in zhicloud-server:
    `ash
-   java -jar yudao-server.jar -Dspring.profiles.active=nacos
+   java -jar zhicloud-server.jar -Dspring.profiles.active=nacos
    `
 
 ## Configuration File Naming
 
 | Config File | Scope | Priority |
 |---|---|---|
-| yudao-common.yaml | Shared across all environments | Lowest |
-| yudao-server.yaml | Default (no profile) | Medium |
-| yudao-server-dev.yaml | dev profile | High |
-| yudao-server-prod.yaml | prod profile | High |
+| zhicloud-common.yaml | Shared across all environments | Lowest |
+| zhicloud-server.yaml | Default (no profile) | Medium |
+| zhicloud-server-dev.yaml | dev profile | High |
+| zhicloud-server-prod.yaml | prod profile | High |
 
 Nacos config overrides local application.yaml (same key, higher priority).
 
-## Shared Config Example (yudao-common.yaml)
+## Shared Config Example (zhicloud-common.yaml)
 
 `yaml
 # Shared configuration loaded for all environments
-yudao:
+zhicloud:
   info:
     version: 1.0.0
   web:
@@ -55,8 +55,8 @@ injected via environment variables, NOT stored in Nacos:
 ## Refresh Whitelist
 
 The following config keys support dynamic refresh (see application-nacos.yaml):
-  - yudao.security.xss.enable
-  - yudao.web.cors.allowed-origins
+  - zhicloud.security.xss.enable
+  - zhicloud.web.cors.allowed-origins
   - spring.datasource.dynamic.datasource.master.url
   - spring.redis.host
 

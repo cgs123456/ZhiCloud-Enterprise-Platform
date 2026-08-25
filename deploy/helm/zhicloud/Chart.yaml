@@ -1,0 +1,25 @@
+# ============================================================
+# zhicloud-server Helm Chart 定义文件
+# 描述 Chart 元信息：名称、版本、类型、维护者等
+# ============================================================
+apiVersion: v2
+# Chart 名称，与目录名一致
+name: zhicloud
+# Chart 版本号（SemVer），Chart 自身变更时递增
+version: 1.0.0
+# 应用版本号，对应 zhicloud-server 镜像 tag
+appVersion: "2026.06.0"
+# Chart 类型：application 为标准应用（含 Deployment/Service 等）
+type: application
+# Chart 描述
+description: zhicloud-server 单体应用 Helm Chart（Spring Boot 3.5.16），包含 Deployment/Service/HPA/Ingress/ConfigMap/Secret/ServiceAccount 等资源
+# 关键字，便于在 Helm 仓库中检索
+keywords:
+  - zhicloud
+  - spring-boot
+  - java
+  - erp
+# 维护者信息
+maintainers:
+  - name: zhicloud-team
+    email: dev@zhicloud.example.com

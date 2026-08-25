@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: zhicloud-server
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  cloud:
+    nacos:
+      config:
+        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
+        namespace: ${NACOS_NAMESPACE:}
+        group: ${NACOS_GROUP:DEFAULT_GROUP}
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:nacos}
+        file-extension: yaml
+        # P1 Nacos: shared config (loaded for all environments)
+        shared-configs:
+          - data-id: zhicloud-common.yaml
+            group: DEFAULT_GROUP
+            refresh: true
+        # P1 Nacos: enable config refresh
+        refresh-enabled: true

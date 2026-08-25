@@ -1,0 +1,27 @@
+-- HR 社保申报 DDL
+CREATE TABLE hr_social_insurance_base (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  employee_id BIGINT NOT NULL,
+  year INT NOT NULL,
+  pension_base DECIMAL(20,4) COMMENT '养老基数',
+  medical_base DECIMAL(20,4) COMMENT '医疗基数',
+  unemployment_base DECIMAL(20,4) COMMENT '失业基数',
+  work_injury_base DECIMAL(20,4) COMMENT '工伤基数',
+  maternity_base DECIMAL(20,4) COMMENT '生育基数',
+  housing_fund_base DECIMAL(20,4) COMMENT '公积金基数',
+  personal_pension_rate DECIMAL(5,4) DEFAULT 0.0800 COMMENT '个人养老比例',
+  company_pension_rate DECIMAL(5,4) DEFAULT 0.1600 COMMENT '公司养老比例',
+  personal_medical_rate DECIMAL(5,4) DEFAULT 0.0200 COMMENT '个人医疗比例',
+  company_medical_rate DECIMAL(5,4) DEFAULT 0.0800 COMMENT '公司医疗比例',
+  personal_unemployment_rate DECIMAL(5,4) DEFAULT 0.0050 COMMENT '个人失业比例',
+  company_unemployment_rate DECIMAL(5,4) DEFAULT 0.0050 COMMENT '公司失业比例',
+  company_work_injury_rate DECIMAL(5,4) DEFAULT 0.0020 COMMENT '公司工伤比例',
+  company_maternity_rate DECIMAL(5,4) DEFAULT 0.0080 COMMENT '公司生育比例',
+  personal_housing_fund_rate DECIMAL(5,4) DEFAULT 0.0700 COMMENT '个人公积金比例',
+  company_housing_fund_rate DECIMAL(5,4) DEFAULT 0.0700 COMMENT '公司公积金比例',
+  status TINYINT DEFAULT 0 COMMENT '0 生效 1 已调整 2 已停缴',
+  remark VARCHAR(500),
+  creator VARCHAR(64), create_time DATETIME, updater VARCHAR(64), update_time DATETIME, deleted BIT DEFAULT 0,
+  tenant_id BIGINT DEFAULT 0,
+  UNIQUE KEY uk_emp_year (employee_id, year)
+);

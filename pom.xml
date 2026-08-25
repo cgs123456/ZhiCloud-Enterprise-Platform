@@ -3,40 +3,40 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>cn.iocoder.boot</groupId>
-    <artifactId>yudao</artifactId>
+    <groupId>cn.zhicloud</groupId>
+    <artifactId>zhicloud</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>
     <modules>
-        <module>yudao-dependencies</module>
-        <module>yudao-framework</module>
+        <module>zhicloud-dependencies</module>
+        <module>zhicloud-framework</module>
         <!-- Server 主项目 -->
-        <module>yudao-server</module>
+        <module>zhicloud-server</module>
         <!-- 各种 module 拓展 -->
-        <module>yudao-module-system</module>
-        <module>yudao-module-infra</module>
-<!--        <module>yudao-member</module>-->
-        <module>yudao-module-bpm</module> <!-- 启用：BPM 工作流（Flowable 8.0.0），CRM 依赖 -->
-<!--        <module>yudao-module-report</module>-->
-<!--        <module>yudao-module-mp</module>-->
-<!--        <module>yudao-module-pay</module>-->
-<!--        <module>yudao-module-mall</module>-->
-        <module>yudao-module-crm</module> <!-- B5 启用：CRM 客户关系管理模块（商机/合同/跟进） -->
-        <module>yudao-module-erp</module>
-<!--        <module>yudao-module-iot</module>-->
-        <module>yudao-module-mes</module>
-        <module>yudao-module-wms</module>
-        <module>yudao-module-qms</module> <!-- QMS 质量管理系统模块（IQC/IPQC/OQC/CAPA） -->
-<!--        <module>yudao-module-im</module>-->
+        <module>zhicloud-module-system</module>
+        <module>zhicloud-module-infra</module>
+<!--        <module>zhicloud-member</module>-->
+        <module>zhicloud-module-bpm</module> <!-- 启用：BPM 工作流（Flowable 8.0.0），CRM 依赖 -->
+<!--        <module>zhicloud-module-report</module>-->
+<!--        <module>zhicloud-module-mp</module>-->
+<!--        <module>zhicloud-module-pay</module>-->
+<!--        <module>zhicloud-module-mall</module>-->
+        <module>zhicloud-module-crm</module> <!-- B5 启用：CRM 客户关系管理模块（商机/合同/跟进） -->
+        <module>zhicloud-module-erp</module>
+<!--        <module>zhicloud-module-iot</module>-->
+        <module>zhicloud-module-mes</module>
+        <module>zhicloud-module-wms</module>
+        <module>zhicloud-module-qms</module> <!-- QMS 质量管理系统模块（IQC/IPQC/OQC/CAPA） -->
+<!--        <module>zhicloud-module-im</module>-->
 <!-- 请参考 https://github.com/cgs123456/ZhiCloud-Enterprise-Platform/docs/ai 文档，完成 AI 模块的启动！！！ -->
-        <module>yudao-module-ai</module>
-        <module>yudao-module-ai-rag</module>
-        <module>yudao-module-ai-multiagent</module>
-        <!-- 补充：yudao-server 依赖以下模块，需纳入构建 -->
-        <module>yudao-module-tms</module> <!-- TMS 运输管理（承运商/车辆/司机/运单/跟踪） -->
-        <module>yudao-module-datalake</module> <!-- 数据湖仓（Iceberg + Trino） -->
-        <module>yudao-module-oa</module> <!-- OA 办公自动化（报销/会议室/公文） -->
-        <module>yudao-module-hr</module> <!-- HR 人力资源（员工/部门/考勤/薪资/绩效） -->
+        <module>zhicloud-module-ai</module>
+        <module>zhicloud-module-ai-rag</module>
+        <module>zhicloud-module-ai-multiagent</module>
+        <!-- 补充：zhicloud-server 依赖以下模块，需纳入构建 -->
+        <module>zhicloud-module-tms</module> <!-- TMS 运输管理（承运商/车辆/司机/运单/跟踪） -->
+        <module>zhicloud-module-datalake</module> <!-- 数据湖仓（Iceberg + Trino） -->
+        <module>zhicloud-module-oa</module> <!-- OA 办公自动化（报销/会议室/公文） -->
+        <module>zhicloud-module-hr</module> <!-- HR 人力资源（员工/部门/考勤/薪资/绩效） -->
     </modules>
 
     <name>${project.artifactId}</name>
@@ -66,8 +66,8 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>cn.iocoder.boot</groupId>
-                <artifactId>yudao-dependencies</artifactId>
+                <groupId>cn.zhicloud</groupId>
+                <artifactId>zhicloud-dependencies</artifactId>
                 <version>${revision}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -177,12 +177,12 @@
                             <format>XML</format>
                         </formats>
                         <includes>
-                            <include>cn/iocoder/yudao/module/wms/service/**</include>
-                            <include>cn/iocoder/yudao/module/mes/service/**</include>
+                            <include>cn/zhicloud/zhicloud/module/wms/service/**</include>
+                            <include>cn/zhicloud/zhicloud/module/mes/service/**</include>
                             <!-- BPM 暂不纳入：27 个测试文件集中在 framework/candidate 策略层，
                                  service 层仅有 4 个单测（覆盖率 ~4%），远未达到 0.30 基线。
                                  待 BpmTaskService/BpmProcessInstanceService 等核心 service 补齐单测后加回。 -->
-                            <!-- <include>cn/iocoder/yudao/module/bpm/service/**</include> -->
+                            <!-- <include>cn/zhicloud/zhicloud/module/bpm/service/**</include> -->
                         </includes>
                         <haltOnFailure>true</haltOnFailure>
                         <rules>

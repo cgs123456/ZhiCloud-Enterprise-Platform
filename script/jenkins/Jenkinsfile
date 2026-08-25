@@ -1,6 +1,6 @@
 ﻿#!groovy
 ##==================================================================
-## yudao-server CI/CD 流水线（D3 修复：现代化 Jenkinsfile）
+## zhicloud-server CI/CD 流水线（D3 修复：现代化 Jenkinsfile）
 ## 包含：检出 / 测试 / SonarQube / 镜像构建 / 推送 / K8s 部署 / 回滚 / 通知
 ##==================================================================
 
@@ -27,11 +27,11 @@ pipeline {
         // 镜像仓库地址
         REGISTRY                 = 'docker.io'
         // DockerHub 账号名
-        DOCKERHUB_NAMESPACE      = 'yudao'
+        DOCKERHUB_NAMESPACE      = 'zhicloud'
         // Git 账号名
         GITHUB_ACCOUNT           = 'zhicloud'
         // 应用名称
-        APP_NAME                 = 'yudao-server'
+        APP_NAME                 = 'zhicloud-server'
         // 镜像标签：优先使用入参，否则使用构建号
         IMAGE_TAG                = "${params.TAG_NAME ?: env.BUILD_NUMBER}"
         // 完整镜像名
@@ -76,7 +76,7 @@ pipeline {
         stage('构建镜像') {
             steps {
                 script {
-                    docker.build("${IMAGE_FULL_NAME}", "-f yudao-server/Dockerfile .")
+                    docker.build("${IMAGE_FULL_NAME}", "-f zhicloud-server/Dockerfile .")
                 }
             }
         }

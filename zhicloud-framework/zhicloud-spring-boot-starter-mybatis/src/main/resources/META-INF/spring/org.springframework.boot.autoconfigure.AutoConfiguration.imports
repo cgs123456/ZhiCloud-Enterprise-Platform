@@ -1,0 +1,3 @@
+cn.zhicloud.framework.datasource.config.ZhiCloudDataSourceAutoConfiguration
+cn.zhicloud.framework.mybatis.config.ZhiCloudMybatisAutoConfiguration
+cn.zhicloud.framework.translate.config.ZhiCloudTranslateAutoConfiguration

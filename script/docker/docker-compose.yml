@@ -1,18 +1,18 @@
 ﻿version: "3.8"
 
-name: yudao-system
+name: zhicloud-system
 
 # ====================================================================
-# 芋道 MES/ERP 企业级一键部署栈
+# 智云 MES/ERP 企业级一键部署栈
 # 包含：MySQL 8 + Redis 7 + PostgreSQL 16 + pgvector
-#       + Prometheus + Grafana + Jaeger + yudao-server
+#       + Prometheus + Grafana + Jaeger + zhicloud-server
 # 使用：docker compose up -d
 # ====================================================================
 
 services:
   # ---------------- 业务数据库 ----------------
   mysql:
-    container_name: yudao-mysql
+    container_name: zhicloud-mysql
     image: mysql:8.0
     restart: unless-stopped
     tty: true
@@ -51,11 +51,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-    networks: [yudao-net]
+    networks: [zhicloud-net]
 
   # ---------------- 缓存 ----------------
   redis:
-    container_name: yudao-redis
+    container_name: zhicloud-redis
     image: redis:7-alpine # E1 升级：Redis 6 → 7（多线程 IO、ACL、Function）
     restart: unless-stopped
     ports:
@@ -68,61 +68,61 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    networks: [yudao-net]
+    networks: [zhicloud-net]
 
   # ---------------- 向量数据库（RAG 模块） ----------------
   postgres:
-    container_name: yudao-postgres
-    image: pgvector/pgvector:pg16 # E1 新增：PostgreSQL 16 + pgvector 扩展（供 yudao-module-ai-rag 使用）
+    container_name: zhicloud-postgres
+    image: pgvector/pgvector:pg16 # E1 新增：PostgreSQL 16 + pgvector 扩展（供 zhicloud-module-ai-rag 使用）
     restart: unless-stopped
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-yudao_rag}
-      POSTGRES_USER: ${POSTGRES_USER:-yudao}
+      POSTGRES_DB: ${POSTGRES_DB:-zhicloud_rag}
+      POSTGRES_USER: ${POSTGRES_USER:-zhicloud}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       TZ: Asia/Shanghai
     volumes:
       - postgres:/var/lib/postgresql/data
       - ../../sql/postgresql/airag_pgvector.sql:/docker-entrypoint-initdb.d/01-airag_pgvector.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-yudao} -d ${POSTGRES_DB:-yudao_rag}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-zhicloud} -d ${POSTGRES_DB:-zhicloud_rag}"]
       interval: 10s
       timeout: 5s
       retries: 10
-    networks: [yudao-net]
+    networks: [zhicloud-net]
 
   # ---------------- 备份：异地备份与容灾演练（按需启动） ----------------
   # 启动方式：docker compose --profile backup run --rm backup
   # 或一次性执行：docker compose --profile backup run --rm backup /backup.sh
   backup:
-    container_name: yudao-backup
-    image: yudao-backup:latest  # 自定义镜像，需预装 mysqldump / pg_dump / redis-cli / rsync / aws-cli
+    container_name: zhicloud-backup
+    image: zhicloud-backup:latest  # 自定义镜像，需预装 mysqldump / pg_dump / redis-cli / rsync / aws-cli
     restart: "no"  # 通过 cron 触发，不常驻
     profiles: ["backup"]  # 仅在 docker compose --profile backup up 时启动
     environment:
-      MYSQL_HOST: ${MYSQL_HOST:-yudao-mysql}
+      MYSQL_HOST: ${MYSQL_HOST:-zhicloud-mysql}
       MYSQL_PORT: ${MYSQL_PORT:-3306}
       MYSQL_USER: ${MYSQL_USER:-root}
       MYSQL_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}
       MYSQL_DATABASES: ${MYSQL_DATABASES:-zhicloud_platform}
-      PG_HOST: ${PG_HOST:-yudao-postgres}
+      PG_HOST: ${PG_HOST:-zhicloud-postgres}
       PG_PORT: ${PG_PORT:-5432}
-      PG_USER: ${POSTGRES_USER:-yudao}
+      PG_USER: ${POSTGRES_USER:-zhicloud}
       PG_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
-      PG_DATABASES: ${PG_DATABASES:-yudao_rag}
-      REDIS_HOST: ${REDIS_HOST:-yudao-redis}
+      PG_DATABASES: ${PG_DATABASES:-zhicloud_rag}
+      REDIS_HOST: ${REDIS_HOST:-zhicloud-redis}
       REDIS_PORT: ${REDIS_PORT:-6379}
       REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD is required}
-      LOCAL_BACKUP_DIR: /data/backup/yudao
+      LOCAL_BACKUP_DIR: /data/backup/zhicloud
       LOCAL_RETENTION_DAYS: ${LOCAL_RETENTION_DAYS:-7}
       REMOTE_RSYNC_ENABLED: ${REMOTE_RSYNC_ENABLED:-false}
       REMOTE_RSYNC_HOST: ${REMOTE_RSYNC_HOST:-backup.example.com}
       REMOTE_RSYNC_USER: ${REMOTE_RSYNC_USER:-backup}
-      REMOTE_RSYNC_PATH: ${REMOTE_RSYNC_PATH:-/data/backup/yudao}
+      REMOTE_RSYNC_PATH: ${REMOTE_RSYNC_PATH:-/data/backup/zhicloud}
       REMOTE_RETENTION_DAYS: ${REMOTE_RETENTION_DAYS:-30}
       S3_ENABLED: ${S3_ENABLED:-false}
-      S3_BUCKET: ${S3_BUCKET:-yudao-backup}
+      S3_BUCKET: ${S3_BUCKET:-zhicloud-backup}
       S3_ENDPOINT: ${S3_ENDPOINT:-https://s3.amazonaws.com}
       S3_PREFIX: ${S3_PREFIX:-backup/}
       S3_RETENTION_DAYS: ${S3_RETENTION_DAYS:-30}
@@ -134,8 +134,8 @@ services:
       - ../../script/shell/backup-remote.sh:/backup.sh:ro
       - ../../script/shell/backup-config.sh:/backup-config.sh:ro
       - backup-data:/data/backup
-      - ../../logs:/var/log/yudao-backup
-    networks: [yudao-net]
+      - ../../logs:/var/log/zhicloud-backup
+    networks: [zhicloud-net]
     depends_on:
       mysql:
         condition: service_healthy
@@ -146,7 +146,7 @@ services:
 
   # ---------------- 监控：指标采集 ----------------
   prometheus:
-    container_name: yudao-prometheus
+    container_name: zhicloud-prometheus
     image: prom/prometheus:latest
     restart: unless-stopped
     ports:
@@ -162,11 +162,11 @@ services:
       - prometheus:/prometheus
     depends_on:
       - server
-    networks: [yudao-net]
+    networks: [zhicloud-net]
 
   # ---------------- 监控：可视化看板 ----------------
   grafana:
-    container_name: yudao-grafana
+    container_name: zhicloud-grafana
     image: grafana/grafana:latest
     restart: unless-stopped
     ports:
@@ -180,14 +180,14 @@ services:
       - grafana:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
       - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
-      - ../../.trae/specs/upgrade-tech-stack-and-ai-native/grafana-dashboard-yudao.json:/var/lib/grafana/dashboards/yudao-overview.json:ro
+      - ../../.trae/specs/upgrade-tech-stack-and-ai-native/grafana-dashboard-zhicloud.json:/var/lib/grafana/dashboards/zhicloud-overview.json:ro
     depends_on:
       - prometheus
-    networks: [yudao-net]
+    networks: [zhicloud-net]
 
   # ---------------- 分布式追踪：Jaeger ----------------
   jaeger:
-    container_name: yudao-jaeger
+    container_name: zhicloud-jaeger
     image: jaegertracing/all-in-one:1.60 # E1 新增：OpenTelemetry OTLP 上报端点
     restart: unless-stopped
     ports:
@@ -197,11 +197,11 @@ services:
     environment:
       COLLECTOR_OTLP_ENABLED: "true"
       MEMORY_MAX_TRACES: 50000
-    networks: [yudao-net]
+    networks: [zhicloud-net]
 
   # ---------------- 告警：Alertmanager ----------------
   alertmanager:
-    container_name: yudao-alertmanager
+    container_name: zhicloud-alertmanager
     image: prom/alertmanager:latest
     restart: unless-stopped
     ports:
@@ -216,11 +216,11 @@ services:
       - ./prometheus/alertmanager.yml:/etc/alertmanager/config.tpl.yml:ro
       # 启动入口脚本
       - ./prometheus/alertmanager-entrypoint.sh:/etc/alertmanager/alertmanager-entrypoint.sh:ro
-    networks: [yudao-net]
+    networks: [zhicloud-net]
 
   # ---------------- 日志聚合：Loki ----------------
   loki:
-    container_name: yudao-loki
+    container_name: zhicloud-loki
     image: grafana/loki:2.9.8
     restart: unless-stopped
     ports:
@@ -229,28 +229,28 @@ services:
     volumes:
       - ./loki/loki-config.yml:/etc/loki/loki-config.yml:ro
       - loki:/loki
-    networks: [yudao-net]
+    networks: [zhicloud-net]
 
   # ---------------- 日志采集：Promtail ----------------
   promtail:
-    container_name: yudao-promtail
+    container_name: zhicloud-promtail
     image: grafana/promtail:2.9.8
     restart: unless-stopped
     command: -config.file=/etc/promtail/promtail-config.yml
     volumes:
       - ./loki/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
-      - ../../logs:/var/log/yudao-server:ro
+      - ../../logs:/var/log/zhicloud-server:ro
     depends_on:
       - loki
-    networks: [yudao-net]
+    networks: [zhicloud-net]
 
   # ---------------- 应用服务器 ----------------
   server:
-    container_name: yudao-server
+    container_name: zhicloud-server
     build:
       context: ../../
-      dockerfile: yudao-server/Dockerfile
-    image: yudao-server
+      dockerfile: zhicloud-server/Dockerfile
+    image: zhicloud-server
     restart: unless-stopped
     ports:
       - "48080:48080"
@@ -266,21 +266,21 @@ services:
           -Djava.security.egd=file:/dev/./urandom
         }
       ARGS:
-        --spring.datasource.dynamic.datasource.master.url=${MASTER_DATASOURCE_URL:-jdbc:mysql://yudao-mysql:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true}
+        --spring.datasource.dynamic.datasource.master.url=${MASTER_DATASOURCE_URL:-jdbc:mysql://zhicloud-mysql:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true}
         --spring.datasource.dynamic.datasource.master.username=${MASTER_DATASOURCE_USERNAME:-root}
         --spring.datasource.dynamic.datasource.master.password=${MASTER_DATASOURCE_PASSWORD:?MASTER_DATASOURCE_PASSWORD is required}
-        --spring.datasource.dynamic.datasource.slave.url=${SLAVE_DATASOURCE_URL:-jdbc:mysql://yudao-mysql:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true}
+        --spring.datasource.dynamic.datasource.slave.url=${SLAVE_DATASOURCE_URL:-jdbc:mysql://zhicloud-mysql:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true}
         --spring.datasource.dynamic.datasource.slave.username=${SLAVE_DATASOURCE_USERNAME:-root}
         --spring.datasource.dynamic.datasource.slave.password=${SLAVE_DATASOURCE_PASSWORD:?SLAVE_DATASOURCE_PASSWORD is required}
-        --spring.data.redis.host=${REDIS_HOST:-yudao-redis}
+        --spring.data.redis.host=${REDIS_HOST:-zhicloud-redis}
         --spring.data.redis.port=6379
         --spring.data.redis.password=${REDIS_PASSWORD:?REDIS_PASSWORD is required}
-        --yudao.airag.enabled=true
-        --yudao.airag.datasource.url=jdbc:postgresql://yudao-postgres:5432/${POSTGRES_DB:-yudao_rag}
-        --yudao.airag.datasource.username=${POSTGRES_USER:-yudao}
-        --yudao.airag.datasource.password=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
-        --management.otlp.tracing.endpoint=http://yudao-jaeger:4318/v1/traces
-        --OTEL_EXPORTER_OTLP_ENDPOINT=http://yudao-jaeger:4318/v1/traces
+        --zhicloud.airag.enabled=true
+        --zhicloud.airag.datasource.url=jdbc:postgresql://zhicloud-postgres:5432/${POSTGRES_DB:-zhicloud_rag}
+        --zhicloud.airag.datasource.username=${POSTGRES_USER:-zhicloud}
+        --zhicloud.airag.datasource.password=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+        --management.otlp.tracing.endpoint=http://zhicloud-jaeger:4318/v1/traces
+        --OTEL_EXPORTER_OTLP_ENDPOINT=http://zhicloud-jaeger:4318/v1/traces
     depends_on:
       mysql:
         condition: service_healthy
@@ -294,12 +294,12 @@ services:
       timeout: 10s
       start_period: 60s
       retries: 3
-    networks: [yudao-net]
+    networks: [zhicloud-net]
 
   # ---------------- 配置中心：Nacos ----------------
   nacos:
     image: nacos/nacos-server:v2.4.3
-    container_name: yudao-nacos
+    container_name: zhicloud-nacos
     restart: unless-stopped
     environment:
       - MODE=standalone
@@ -319,25 +319,25 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-    networks: [yudao-net]
+    networks: [zhicloud-net]
 
   # ---------------- 数据湖仓：Trino（Iceberg 查询引擎） ----------------
   # P2-5 数据湖仓基础架构：通过 Trino REST API（/v1/statement）操作 Iceberg 表
-  # 启用方式：yudao.datalake.enabled=true + yudao.datalake.catalog-uri=http://trino:8080
+  # 启用方式：zhicloud.datalake.enabled=true + zhicloud.datalake.catalog-uri=http://trino:8080
   trino:
-    container_name: yudao-trino
+    container_name: zhicloud-trino
     image: trinodb/trino:450
     restart: unless-stopped
     ports:
       - "8080:8080"
     volumes:
       - ./trino/catalog:/etc/trino/catalog:ro
-    networks: [yudao-net]
+    networks: [zhicloud-net]
 
   # ---------------- 数据湖仓：MinIO（S3 兼容存储） ----------------
   # Iceberg 表数据的物理存储后端，替代 AWS S3
   minio:
-    container_name: yudao-minio
+    container_name: zhicloud-minio
     image: minio/minio:latest
     restart: unless-stopped
     command: server /data --console-address ":9001"
@@ -354,10 +354,10 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-    networks: [yudao-net]
+    networks: [zhicloud-net]
 
 networks:
-  yudao-net:
+  zhicloud-net:
     driver: bridge
 
 volumes:

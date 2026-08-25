@@ -1,5 +1,5 @@
 # ============================================================
-# yudao-server ArgoCD ApplicationSet
+# zhicloud-server ArgoCD ApplicationSet
 # 基于 list 生成器，为 dev/staging/prod 三个环境自动创建 Application
 # 每个环境对应一个 Helm values 文件，部署到独立 namespace
 #
@@ -11,43 +11,43 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: yudao-server
+  name: zhicloud-server
   namespace: argocd
   labels:
-    app.kubernetes.io/name: yudao-server
-    app.kubernetes.io/part-of: yudao-gitops
+    app.kubernetes.io/name: zhicloud-server
+    app.kubernetes.io/part-of: zhicloud-gitops
 spec:
   # 生成器：list 生成器，显式枚举三个环境
   generators:
     - list:
         elements:
           - env: dev
-            namespace: yudao-dev
+            namespace: zhicloud-dev
             valuesFile: values-dev.yaml
           - env: staging
-            namespace: yudao-staging
+            namespace: zhicloud-staging
             valuesFile: values-staging.yaml
           - env: prod
-            namespace: yudao-prod
+            namespace: zhicloud-prod
             valuesFile: values-prod.yaml
   template:
     metadata:
-      # Application 名称：yudao-server-<env>
-      name: 'yudao-server-{{env}}'
+      # Application 名称：zhicloud-server-<env>
+      name: 'zhicloud-server-{{env}}'
       labels:
-        app.kubernetes.io/name: yudao-server
+        app.kubernetes.io/name: zhicloud-server
         app.kubernetes.io/environment: '{{env}}'
       annotations:
         # 通知配置（按需启用）
-        notifications.argoproj.io/subscribe.on-deployed.slack: yudao-deploy
+        notifications.argoproj.io/subscribe.on-deployed.slack: zhicloud-deploy
     spec:
-      project: yudao
+      project: zhicloud
       source:
         # Git 仓库地址（部署前必须替换为真实仓库地址，否则 ArgoCD 无法拉取 Chart 模板）
-        repoURL: https://github.com/yudao/yudao-server.git
+        repoURL: https://github.com/zhicloud/zhicloud-server.git
         targetRevision: main
         # Helm Chart 路径
-        path: deploy/helm/yudao
+        path: deploy/helm/zhicloud
         # Helm 部署配置
         helm:
           # values 文件（dev/staging/prod）
@@ -59,9 +59,9 @@ spec:
               value: '{{env}}'
           # Helm 版本
           version: v3
-          # releaseName：yudao-<env>
-          releaseName: 'yudao-{{env}}'
-          # 是否跳过 CRD 安装（yudao 无 CRD）
+          # releaseName：zhicloud-<env>
+          releaseName: 'zhicloud-{{env}}'
+          # 是否跳过 CRD 安装（zhicloud 无 CRD）
           skipCrds: true
       destination:
         # 部署到 in-cluster（同集群内）

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  yudao-server OWASP Dependency-Check 漏洞抑制规则
+  zhicloud-server OWASP Dependency-Check 漏洞抑制规则
   -
   - 用途：对已评估为「可接受风险」或「误报」的 CVE 进行抑制，避免 CI 流水线被阻断
   - 使用：

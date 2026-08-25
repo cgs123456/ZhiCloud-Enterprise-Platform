@@ -8,8 +8,8 @@ Final V80 generator:
 """
 import re, os, glob
 
-BASE = r"D:/Desktop/yudao"
-OUT = f"{BASE}/yudao-server/src/main/resources/db/migration/V82__fix_do_column_mappings.sql"
+BASE = r"D:/Desktop/zhicloud"
+OUT = f"{BASE}/zhicloud-server/src/main/resources/db/migration/V82__fix_do_column_mappings.sql"
 
 def c2u(n):
     s1 = re.sub(r'(.)([A-Z][a-z]+)', r'\1_\2', n)
@@ -18,7 +18,7 @@ def c2u(n):
 # ── 1. Parse DDL (robust: capture until line starting with ')') ─────────────
 def parse_ddl():
     tables = {}
-    for pat in [f"{BASE}/yudao-server/src/main/resources/db/migration/V*.sql", f"{BASE}/sql/mysql/*.sql"]:
+    for pat in [f"{BASE}/zhicloud-server/src/main/resources/db/migration/V*.sql", f"{BASE}/sql/mysql/*.sql"]:
         for fp in sorted(glob.glob(pat)):
             txt = open(fp, encoding="utf-8", errors="ignore").read()
             # CREATE TABLE form
@@ -36,7 +36,7 @@ def parse_ddl():
 def parse_call_sites():
     """Parse CALL p_xxx_add_column('tbl','col',...) sites from migrations."""
     calls = set()
-    for pat in [f"{BASE}/yudao-server/src/main/resources/db/migration/V*.sql", f"{BASE}/sql/mysql/*.sql"]:
+    for pat in [f"{BASE}/zhicloud-server/src/main/resources/db/migration/V*.sql", f"{BASE}/sql/mysql/*.sql"]:
         for fp in sorted(glob.glob(pat)):
             txt = open(fp, encoding="utf-8", errors="ignore").read()
             for m in re.finditer(r"CALL\s+\w*\w*add_column\w*\s*\(\s*'(\w+)'\s*,\s*'(\w+)'", txt, re.IGNORECASE):
@@ -88,7 +88,7 @@ RENAME = {
     # 财务主表：finance_time -> 语义化
     ('erp_finance_payment', 'payment_time'): 'finance_time',
     ('erp_finance_receipt', 'receipt_time'): 'finance_time',
-    # 产品：barcode/spec -> bar_code/standard（与上游 yudao DO 对齐）
+    # 产品：barcode/spec -> bar_code/standard（与上游 zhicloud DO 对齐）
     ('erp_product', 'bar_code'): 'barcode',
     ('erp_product', 'standard'): 'spec',
     # 账户：code/default_flag -> no/default_status
@@ -110,7 +110,7 @@ TYPE_MAP = {'Long':'BIGINT','Integer':'INT','Short':'SMALLINT','Byte':'TINYINT',
 
 missing = {}  # tbl -> list of (field, col, sql_type, java_file)
 
-for mod in ['yudao-module-erp', 'yudao-module-wms', 'yudao-module-crm', 'yudao-module-qms']:
+for mod in ['zhicloud-module-erp', 'zhicloud-module-wms', 'zhicloud-module-crm', 'zhicloud-module-qms']:
     src = f"{BASE}/{mod}/src/main/java"
     for root, dirs, files in os.walk(src):
         for f in files:

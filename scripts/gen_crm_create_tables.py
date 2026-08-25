@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-# Generate H2 create_tables.sql for yudao-module-crm unit tests from DO classes.
+# Generate H2 create_tables.sql for zhicloud-module-crm unit tests from DO classes.
 import os, re, glob
 
-BASE = r"D:/Desktop/yudao/yudao-module-crm/src/main/java"
-OUT = r"D:/Desktop/yudao/yudao-module-crm/src/test/resources/sql/create_tables.sql"
+BASE = r"D:/Desktop/zhicloud/zhicloud-module-crm/src/main/java"
+OUT = r"D:/Desktop/zhicloud/zhicloud-module-crm/src/test/resources/sql/create_tables.sql"
 
 TYPE_MAP = {
     "Long": "bigint", "long": "bigint",

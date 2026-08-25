@@ -11,8 +11,8 @@
     python scripts/check_do_ddl.py <module-dir> <ddl.sql> [<ddl2.sql> ...]
 
 示例：
-    python scripts/check_do_ddl.py yudao-module-wms sql/mysql/wms.sql
-    python scripts/check_do_ddl.py yudao-module-wms yudao-module-wms/src/test/resources/sql/create_tables.sql
+    python scripts/check_do_ddl.py zhicloud-module-wms sql/mysql/wms.sql
+    python scripts/check_do_ddl.py zhicloud-module-wms zhicloud-module-wms/src/test/resources/sql/create_tables.sql
 
 退出码：0 = 一致；1 = 发现缺列。
 """

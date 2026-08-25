@@ -46,7 +46,7 @@
 
 ### 3.3 模块间循环依赖规避
 
-- ERP 已依赖 `yudao-spring-boot-starter-biz-inventory`（M2-A 已登记）。
+- ERP 已依赖 `zhicloud-spring-boot-starter-biz-inventory`（M2-A 已登记）。
 - MES 已依赖同一 Starter（M2-A 已登记）。
 - 两模块双写实现类（`MesInventoryDualWriter` / `ErpInventoryDualWriter`）注册为 `@Component`，**不反向 import 业务 DAL**，仅调 `InventoryService` API。
 
@@ -57,7 +57,7 @@
 ### 4.1 Starter 层（新增 SPI）
 
 ```
-yudao-framework/yudao-spring-boot-starter-biz-inventory/src/main/java/
+zhicloud-framework/zhicloud-spring-boot-starter-biz-inventory/src/main/java/
   inventory/config/
     InventoryProperties.java          # 新增字段：enableDualWrite = false
   inventory/service/
@@ -84,7 +84,7 @@ public interface InventoryDualWriter {
 ### 4.2 MES 模块（新增 Writer）
 
 ```
-yudao-module-mes/src/main/java/cn/iocoder/yudao/module/mes/service/wm/materialstock/
+zhicloud-module-mes/src/main/java/cn/zhicloud/zhicloud/module/mes/service/wm/materialstock/
   MesInventoryDualWriter.java          # 新增
 ```
 
@@ -104,7 +104,7 @@ yudao-module-mes/src/main/java/cn/iocoder/yudao/module/mes/service/wm/materialst
 ### 4.3 ERP 模块（新增 Writer）
 
 ```
-yudao-module-erp/src/main/java/cn/iocoder/yudao/module/erp/service/stock/
+zhicloud-module-erp/src/main/java/cn/zhicloud/zhicloud/module/erp/service/stock/
   ErpInventoryDualWriter.java          # 新增
 ```
 
@@ -122,7 +122,7 @@ yudao-module-erp/src/main/java/cn/iocoder/yudao/module/erp/service/stock/
 
 ```yaml
 # application-unit-test.yaml（测试）
-yudao:
+zhicloud:
   inventory:
     enabled: true
     enableSingleSource: false       # 默认关闭，M2-B 灰度开启

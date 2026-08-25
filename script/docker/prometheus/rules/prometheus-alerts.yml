@@ -1,5 +1,5 @@
 # ======================================================================
-# yudao 升级（JDK21 + Spring Boot 3.5）Prometheus 告警规则
+# zhicloud 升级（JDK21 + Spring Boot 3.5）Prometheus 告警规则
 #
 # 对应文档：rollback-strategy.md SubTask 13.4
 #
@@ -9,7 +9,7 @@
 #        - /etc/prometheus/rules/*.yml
 #   3. Alertmanager 配置 webhook 推送到钉钉/企业微信/邮件
 #
-# 指标来源：yudao-server Actuator 端点 /actuator/prometheus（management.server.port=48090, address=127.0.0.1）
+# 指标来源：zhicloud-server Actuator 端点 /actuator/prometheus（management.server.port=48090, address=127.0.0.1）
 # 标签约定：所有指标携带 application 标签（application=${spring.application.name}）
 # ======================================================================
 
@@ -17,103 +17,103 @@ groups:
   # ------------------------------------------------------------------
   # JVM 启动与运行时告警
   # ------------------------------------------------------------------
-  - name: yudao-upgrade-jvm
+  - name: zhicloud-upgrade-jvm
     interval: 30s
     rules:
       # JVM 启动时间监控（正常）
       # 依赖：应用启动后通过自定义 Gauge/启动耗时指标暴露（如无该指标，可用 process_start_time_seconds 间接判断）
-      - alert: YudaoJvmStartupTimeHigh
+      - alert: ZhiCloudJvmStartupTimeHigh
         expr: |
-          (time() - process_start_time_seconds{application=~"yudao-server.*"}) > 0
+          (time() - process_start_time_seconds{application=~"zhicloud-server.*"}) > 0
           and on(application)
-          (time() - process_start_time_seconds{application=~"yudao-server.*"}) < 30
+          (time() - process_start_time_seconds{application=~"zhicloud-server.*"}) < 30
         for: 0m
         labels:
           severity: info
           upgrade_task: "task13"
         annotations:
-          summary: "yudao JVM 启动时间监控（正常）"
+          summary: "zhicloud JVM 启动时间监控（正常）"
           description: "应用 {{ $labels.application }} 启动耗时 < 30s，符合升级阈值。"
 
       # 启动耗时超过 30s（启动后仍在初始化或启动失败）
-      - alert: YudaoJvmStartupTimeExceeded
+      - alert: ZhiCloudJvmStartupTimeExceeded
         expr: |
-          (time() - process_start_time_seconds{application=~"yudao-server.*"}) > 30
+          (time() - process_start_time_seconds{application=~"zhicloud-server.*"}) > 30
         for: 1m
         labels:
           severity: warning
           upgrade_task: "task13"
         annotations:
-          summary: "yudao JVM 启动时间超阈值（> 30s）"
+          summary: "zhicloud JVM 启动时间超阈值（> 30s）"
           description: "应用 {{ $labels.application }} 启动后 1 分钟仍未完成初始化（耗时 > 30s），请检查启动日志与依赖就绪状态。"
 
       # GC 停顿超阈值告警（ZGC 期望 < 10ms）
-      - alert: YudaoGcPauseHigh
+      - alert: ZhiCloudGcPauseHigh
         expr: |
           histogram_quantile(0.99,
-            sum(rate(jvm_gc_pause_seconds_bucket{application=~"yudao-server.*"}[5m])) by (le, application)
+            sum(rate(jvm_gc_pause_seconds_bucket{application=~"zhicloud-server.*"}[5m])) by (le, application)
           ) > 0.01
         for: 2m
         labels:
           severity: warning
           upgrade_task: "task13"
         annotations:
-          summary: "yudao GC 停顿 P99 超阈值（> 10ms）"
+          summary: "zhicloud GC 停顿 P99 超阈值（> 10ms）"
           description: "应用 {{ $labels.application }} GC 停顿 P99 = {{ $value }}s（阈值 10ms），持续 2 分钟。请确认 ZGC 已启用（-XX:+UseZGC -XX:+ZGenerational）。"
 
       # GC 停顿严重超阈值（P1）
-      - alert: YudaoGcPauseCritical
+      - alert: ZhiCloudGcPauseCritical
         expr: |
           histogram_quantile(0.99,
-            sum(rate(jvm_gc_pause_seconds_bucket{application=~"yudao-server.*"}[5m])) by (le, application)
+            sum(rate(jvm_gc_pause_seconds_bucket{application=~"zhicloud-server.*"}[5m])) by (le, application)
           ) > 0.05
         for: 1m
         labels:
           severity: critical
           upgrade_task: "task13"
         annotations:
-          summary: "yudao GC 停顿严重超阈值（> 50ms）"
+          summary: "zhicloud GC 停顿严重超阈值（> 50ms）"
           description: "应用 {{ $labels.application }} GC 停顿 P99 = {{ $value }}s（阈值 50ms），可能触发灰度回切，请立即排查。"
 
       # JVM 堆内存占用告警（< 2GB 阈值，> 2GB 持续 2min 告警）
-      - alert: YudaoJvmHeapHigh
+      - alert: ZhiCloudJvmHeapHigh
         expr: |
-          sum(jvm_memory_used_bytes{application=~"yudao-server.*", area="heap"}) by (application)
+          sum(jvm_memory_used_bytes{application=~"zhicloud-server.*", area="heap"}) by (application)
           > 2147483648
         for: 2m
         labels:
           severity: warning
           upgrade_task: "task13"
         annotations:
-          summary: "yudao JVM 堆内存超阈值（> 2GB）"
+          summary: "zhicloud JVM 堆内存超阈值（> 2GB）"
           description: "应用 {{ $labels.application }} 堆内存使用 = {{ $value | humanize1024 }}（阈值 2GB），持续 2 分钟。"
 
       # JVM 堆内存严重超阈值（P1，> 2.5GB）
-      - alert: YudaoJvmHeapCritical
+      - alert: ZhiCloudJvmHeapCritical
         expr: |
-          sum(jvm_memory_used_bytes{application=~"yudao-server.*", area="heap"}) by (application)
+          sum(jvm_memory_used_bytes{application=~"zhicloud-server.*", area="heap"}) by (application)
           > 2684354560
         for: 1m
         labels:
           severity: critical
           upgrade_task: "task13"
         annotations:
-          summary: "yudao JVM 堆内存严重超阈值（> 2.5GB）"
+          summary: "zhicloud JVM 堆内存严重超阈值（> 2.5GB）"
           description: "应用 {{ $labels.application }} 堆内存使用 = {{ $value | humanize1024 }}（阈值 2.5GB），存在 OOM 风险，建议触发回切。"
 
   # ------------------------------------------------------------------
   # HTTP 请求与错误率告警
   # ------------------------------------------------------------------
-  - name: yudao-upgrade-http
+  - name: zhicloud-upgrade-http
     interval: 30s
     rules:
       # HTTP 5xx 错误率告警（> 1% 持续 1min 触发回切，P1）
-      - alert: YudaoHttp5xxErrorRateHigh
+      - alert: ZhiCloudHttp5xxErrorRateHigh
         expr: |
           (
-            sum(rate(http_server_requests_seconds_count{application=~"yudao-server.*", status=~"5.."}[1m])) by (application)
+            sum(rate(http_server_requests_seconds_count{application=~"zhicloud-server.*", status=~"5.."}[1m])) by (application)
           /
-            clamp_min(sum(rate(http_server_requests_seconds_count{application=~"yudao-server.*"}[1m])) by (application), 1)
+            clamp_min(sum(rate(http_server_requests_seconds_count{application=~"zhicloud-server.*"}[1m])) by (application), 1)
           ) > 0.01
         for: 1m
         labels:
@@ -121,28 +121,28 @@ groups:
           upgrade_task: "task13"
           rollback_trigger: "true"
         annotations:
-          summary: "yudao HTTP 5xx 错误率超阈值（> 1%）—— 触发灰度回切"
+          summary: "zhicloud HTTP 5xx 错误率超阈值（> 1%）—— 触发灰度回切"
           description: "应用 {{ $labels.application }} 5xx 错误率 = {{ $value | humanizePercentage }}（阈值 1%），持续 1 分钟，应立即将 Green 流量回切到 Blue。"
 
       # 首屏响应 P99 超阈值（> 1s 持续 2min，P2）
-      - alert: YudaoHttpResponseP99High
+      - alert: ZhiCloudHttpResponseP99High
         expr: |
           histogram_quantile(0.99,
-            sum(rate(http_server_requests_seconds_bucket{application=~"yudao-server.*"}[5m])) by (le, application)
+            sum(rate(http_server_requests_seconds_bucket{application=~"zhicloud-server.*"}[5m])) by (le, application)
           ) > 1
         for: 2m
         labels:
           severity: warning
           upgrade_task: "task13"
         annotations:
-          summary: "yudao 首屏响应 P99 超阈值（> 1s）"
+          summary: "zhicloud 首屏响应 P99 超阈值（> 1s）"
           description: "应用 {{ $labels.application }} HTTP P99 = {{ $value }}s（阈值 1s），持续 2 分钟。"
 
       # 首屏响应 P99 严重超阈值（> 2s，P1，触发回切）
-      - alert: YudaoHttpResponseP99Critical
+      - alert: ZhiCloudHttpResponseP99Critical
         expr: |
           histogram_quantile(0.99,
-            sum(rate(http_server_requests_seconds_bucket{application=~"yudao-server.*"}[5m])) by (le, application)
+            sum(rate(http_server_requests_seconds_bucket{application=~"zhicloud-server.*"}[5m])) by (le, application)
           ) > 2
         for: 1m
         labels:
@@ -150,94 +150,94 @@ groups:
           upgrade_task: "task13"
           rollback_trigger: "true"
         annotations:
-          summary: "yudao 首屏响应 P99 严重超阈值（> 2s）—— 触发灰度回切"
+          summary: "zhicloud 首屏响应 P99 严重超阈值（> 2s）—— 触发灰度回切"
           description: "应用 {{ $labels.application }} HTTP P99 = {{ $value }}s（阈值 2s），持续 1 分钟，应回切 Blue。"
 
   # ------------------------------------------------------------------
   # 应用存活与健康检查告警
   # ------------------------------------------------------------------
-  - name: yudao-upgrade-health
+  - name: zhicloud-upgrade-health
     interval: 30s
     rules:
       # 应用 Down（health != UP 或抓取失败）
-      - alert: YudaoAppDown
+      - alert: ZhiCloudAppDown
         expr: |
-          up{job=~"yudao-server.*"} == 0
+          up{job=~"zhicloud-server.*"} == 0
         for: 1m
         labels:
           severity: critical
           upgrade_task: "task13"
           rollback_trigger: "true"
         annotations:
-          summary: "yudao 应用不可达（Prometheus 抓取失败）"
+          summary: "zhicloud 应用不可达（Prometheus 抓取失败）"
           description: "实例 {{ $labels.instance }}（{{ $labels.application }}）连续 1 分钟抓取失败，可能进程崩溃或启动失败，触发回切。"
 
       # Actuator health 状态非 UP（如启用 micrometer health 指标）
-      - alert: YudaoHealthNotUp
+      - alert: ZhiCloudHealthNotUp
         expr: |
-          yudao_health_status{application=~"yudao-server.*", status!="UP"} == 1
+          zhicloud_health_status{application=~"zhicloud-server.*", status!="UP"} == 1
         for: 1m
         labels:
           severity: critical
           upgrade_task: "task13"
           rollback_trigger: "true"
         annotations:
-          summary: "yudao Actuator health 非 UP"
+          summary: "zhicloud Actuator health 非 UP"
           description: "应用 {{ $labels.application }} health 状态 = {{ $labels.status }}，持续 1 分钟，触发回切。"
 
   # ------------------------------------------------------------------
   # Druid 连接池告警（P1-4 可观测性增强）
   # ------------------------------------------------------------------
-  - name: yudao-upgrade-druid
+  - name: zhicloud-upgrade-druid
     interval: 30s
     rules:
       # 连接池使用率过高（活跃连接 / 最大连接 > 80%）
-      - alert: YudaoDruidPoolUsageHigh
+      - alert: ZhiCloudDruidPoolUsageHigh
         expr: |
-          druid_active_connections{application=~"yudao-server.*"}
-          / druid_pool_max{application=~"yudao-server.*"} > 0.8
+          druid_active_connections{application=~"zhicloud-server.*"}
+          / druid_pool_max{application=~"zhicloud-server.*"} > 0.8
         for: 2m
         labels:
           severity: warning
           upgrade_task: "task13_4"
         annotations:
-          summary: "yudao Druid 连接池使用率高（> 80%）"
+          summary: "zhicloud Druid 连接池使用率高（> 80%）"
           description: "数据源 {{ $labels.datasource }} 连接池使用率 = {{ $value | humanizePercentage }}（阈值 80%），持续 2 分钟。可能需要调大 max-active。"
 
       # 连接池使用率严重过高（> 95%，P1）
-      - alert: YudaoDruidPoolUsageCritical
+      - alert: ZhiCloudDruidPoolUsageCritical
         expr: |
-          druid_active_connections{application=~"yudao-server.*"}
-          / druid_pool_max{application=~"yudao-server.*"} > 0.95
+          druid_active_connections{application=~"zhicloud-server.*"}
+          / druid_pool_max{application=~"zhicloud-server.*"} > 0.95
         for: 1m
         labels:
           severity: critical
           upgrade_task: "task13_4"
           rollback_trigger: "true"
         annotations:
-          summary: "yudao Druid 连接池耗尽（> 95%）—— 触发回切"
+          summary: "zhicloud Druid 连接池耗尽（> 95%）—— 触发回切"
           description: "数据源 {{ $labels.datasource }} 连接池使用率 = {{ $value | humanizePercentage }}（阈值 95%），持续 1 分钟，存在连接耗尽风险。"
 
       # 等待获取连接的线程数过多
-      - alert: YudaoDruidQueuedThreadsHigh
+      - alert: ZhiCloudDruidQueuedThreadsHigh
         expr: |
-          druid_queued_threads{application=~"yudao-server.*"} > 5
+          druid_queued_threads{application=~"zhicloud-server.*"} > 5
         for: 1m
         labels:
           severity: warning
           upgrade_task: "task13_4"
         annotations:
-          summary: "yudao Druid 等待获取连接线程数过多（> 5）"
+          summary: "zhicloud Druid 等待获取连接线程数过多（> 5）"
           description: "数据源 {{ $labels.datasource }} 等待线程数 = {{ $value }}，持续 1 分钟。连接池可能成为瓶颈。"
 
       # Druid 累计错误数增长
-      - alert: YudaoDruidErrorCountIncreasing
+      - alert: ZhiCloudDruidErrorCountIncreasing
         expr: |
-          increase(druid_error_count{application=~"yudao-server.*"}[5m]) > 0
+          increase(druid_error_count{application=~"zhicloud-server.*"}[5m]) > 0
         for: 0m
         labels:
           severity: warning
           upgrade_task: "task13_4"
         annotations:
-          summary: "yudao Druid 连接错误数增长"
+          summary: "zhicloud Druid 连接错误数增长"
           description: "数据源 {{ $labels.datasource }} 5 分钟内错误数增加 {{ $value }} 次，请检查数据库状态和网络连通性。"

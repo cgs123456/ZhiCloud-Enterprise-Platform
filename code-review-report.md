@@ -1,6 +1,6 @@
 # ZhiCloud-Enterprise-Platform 代码与架构复查报告
 
-> 复查对象：`D:\Desktop\yudao`（基于 yudao cloud 2026.06.0 的 fork，groupId `cn.iocoder.boot`）
+> 复查对象：`D:\Desktop\zhicloud`（基于 zhicloud cloud 2026.06.0 的 fork，groupId `cn.zhicloud`）
 > 技术栈：Spring Boot 3.5 / JDK 21 / MyBatis-Plus / Spring Security / Spring Modulith / Flyway
 > 复查日期：2026-08-02 | 性质：只读静态分析 + 公开资料对标，未修改代码
 > 严重度口径：**阻塞**（不修复不可上线）/ **高**（上线前必须处理）/ **中**（首个迭代内）/ **低**（技术债登记）
@@ -25,7 +25,7 @@
 
 | 模块 | 问题描述 | 级别 | 影响范围 | 修复建议 |
 |---|---|---|---|---|
-| AI / BPM | 仓库 `sql/mysql/` 内**无 AI（14 张业务表）、BPM（5 张业务表）的生产 DDL**；仅 `ai_prompt_template.sql`(1 表) 与 BPM 的 *测试* SQL 存在。AI 的 chat/message/knowledge 等表、BPM 的 `bpm_process_*`/`bpm_oa_leave` 表全新库部署即缺表。 | **高** | AI、BPM 全功能（含 CRM 合同审批所依赖的 BPM） | 补全 `sql/mysql/ai.sql` 与 `sql/mysql/bpm.sql`；或在部署文档中明确"需导入上游 yudao 的 AI/BPM SQL"并做全新库冒烟验证（U-2） |
+| AI / BPM | 仓库 `sql/mysql/` 内**无 AI（14 张业务表）、BPM（5 张业务表）的生产 DDL**；仅 `ai_prompt_template.sql`(1 表) 与 BPM 的 *测试* SQL 存在。AI 的 chat/message/knowledge 等表、BPM 的 `bpm_process_*`/`bpm_oa_leave` 表全新库部署即缺表。 | **高** | AI、BPM 全功能（含 CRM 合同审批所依赖的 BPM） | 补全 `sql/mysql/ai.sql` 与 `sql/mysql/bpm.sql`；或在部署文档中明确"需导入上游 zhicloud 的 AI/BPM SQL"并做全新库冒烟验证（U-2） |
 | 测试 | 启用范围测试/主代码比 ≈ **200/4864 = 4.1%**；MES(1332→26)、ERP(666→5)、CRM(353→3)、WMS(348→11)、QMS(294→6) 核心业务近乎零覆盖。 | **高** | 全业务正确性无法证明 | 引入 JaCoCo 覆盖率门禁；优先为核心域（crm/erp/wms/mes/bpm）补 `BaseDbUnitTest` 用例，目标核心域 ≥40% 行覆盖 |
 | 数据治理 | **错误码跨模块冲突 102 处**（MES↔QMS 37、OA↔TMS 21、IM↔MES 17、HR↔IOT 15 等）。如 MES 与 QMS 共用前缀 `1_040_100_000`，前端无法按码分流、日志无法定位来源模块。 | **高** | 全部前端报错处理、日志/告警定位 | 按模块重新分配 `ErrorCode` 前缀段；CI 增加"错误码全局唯一"静态检查；改码前先扫前端硬编码码值（U-6） |
 | 性能/导出 | **导出非流式**：`ExcelUtils.write()` 一次性 `doWrite(data)` 全量驻留堆；全仓 **128 个导出接口** + `PAGE_SIZE_NONE=-1` 被用 **146 处**；容器固定 `-Xms512m -Xmx512m`。大表导出易 OOM/长事务。 | **高** | 导出类接口（ERP/MES/WMS 百万行表） | `ExcelUtils` 改分批 `write` 或异步导出（任务中心下载）；`PAGE_SIZE_NONE` 增加行数上限；容器改用 `-XX:MaxRAMPercentage` |
@@ -44,7 +44,7 @@
 
 ### 已闭环（本仓此前修复，本报告确认）
 - TMS/HR/OA 单元测试脚手架补齐、AI 集成测试缺 key 不崩溃、HR 补 `spring-modulith-core`；
-- `yudao-server/application.yaml` 同文档重复 `spring:` 键修复（ModularityTests 通过）；
+- `zhicloud-server/application.yaml` 同文档重复 `spring:` 键修复（ModularityTests 通过）；
 - `script/security/security-check.sh` 的 `$2a` 未转义崩溃修复、`application-prod.yaml` 补 `MYBATIS_ENCRYPTOR_PASSWORD`；
 - CycloneDX 插件锁版本 `2.9.1`（CI SBOM 步骤通过）。
 
@@ -64,7 +64,7 @@
 | AI 能力 | LLM 集成 + RAG + Agent + 向量库 | `ai` + `ai-rag`(pgvector) + `ai-multiagent` 三模块，能力较完整 | **部分达标**：**单测被 `@Disabled` 跳过，AI 链路 CI 未验证**；缺生产 DDL |
 | 可观测性 | Prometheus + Grafana + 告警规则 + 结构化日志 | Actuator/Prometheus/OTLP 已接，日志含 traceId/tenantId | **部分达标**：缺 JSON 日志、缺告警规则 |
 | 部署/CI | CI/CD + SAST/SCA + SBOM + 容器非 root + 健康检查 | GitHub Actions（build+security-check+OWASP+CycloneDX）、Dockerfile 非 root、HEALTHCHECK | **达标**：安全链完整，本次已修复脚本与版本问题 |
-| 代码生成/低代码 | RuoYi/JeecgBoot 前后端一键生成、在线表单 | yudao 上游具备代码生成器（本仓沿用） | **达标/部分**：能力继承自上游 |
+| 代码生成/低代码 | RuoYi/JeecgBoot 前后端一键生成、在线表单 | zhicloud 上游具备代码生成器（本仓沿用） | **达标/部分**：能力继承自上游 |
 | 国际化/多语言 | 多语言、多币种、多税率（Odoo 80+ 国家） | 基础 i18n 机制存在 | **部分达标**：缺多币种/多税率业务覆盖 |
 
 ---
@@ -135,7 +135,7 @@
 
 **阶段5 说明（错误码去重）**：
 - 全仓扫描 `*ErrorCodeConstants.java` 共 2033 个定义，发现 **140 处重复码**（跨模块/模块内）。分布：MES↔QMS `10401xxxxx` 段碰撞、ERP `STOCK_OUT_*`/`STOCK_MOVE_*` 6 处共享、AI `KNOWLEDGE_DOCUMENT_FILE_*` 三连、infra `CODEGEN_TABLE_EXISTS`/`CODEGEN_IMPORT_COLUMNS_NULL` 同码 `1001004002` 等。
-- U-6 已核查：前端（`yudao-ui` 仅占位脚手架、零硬编码码值）与全仓调用方均按**常量名**引用错误码，唯一按数字字面量断言的测试（`1_050_003_007`）不在冲突列表、不受影响。故用户确认采用**全量重排**策略。
+- U-6 已核查：前端（`zhicloud-ui` 仅占位脚手架、零硬编码码值）与全仓调用方均按**常量名**引用错误码，唯一按数字字面量断言的测试（`1_050_003_007`）不在冲突列表、不受影响。故用户确认采用**全量重排**策略。
 - 去重执行：`scripts/renumber_error_codes.py` 按精确行号替换数字字面量（常量名不变，调用方零改动）。结果：**149 个常量跨 11 个文件被重排为全局唯一值**，跨模块碰撞模块分配全新空闲前缀（im→43、qms→44、iot→45、mes→46、tms→47），其余模块内冲突在原前缀段内找空闲号。重排后经 `check_error_codes.py` 严格检查（无 baseline）**0 冲突**（共 2033 个定义）。
 - 门禁收紧：`.github/workflows/maven.yml` 的错误码门禁由 `--baseline` 冻结模式升级为**全量严格检查**（任何重复即阻断合并），并随本批次提交；原 `error_code_conflicts_baseline.txt` / `error_code_conflicts_report.txt` 已清理（冲突已归零，不再需要）。
 
@@ -145,10 +145,10 @@
   - 公开端点：`AuthController`(login/logout/refresh-token/register/sms-login/reset-password/social-login)、`CaptchaController`、`OAuth2OpenController`(/token、/authorize、/check-token)、各类 **webhook/回调**（`PayNotifyController`、`MpOpenController`、`SmsCallbackController`、`ImRtcLiveKitController.webhook`、`AiImageController.midjourneyNotify`）、`DefaultController` 404 处理器——这些必须匿名可访问，加 `@PreAuthorize` 会直接破坏登录/支付/短信回调。
   - 用户自服务端点：AI 的 `*-my`（本人会话/图片/角色）、`UserProfileController`、`TotpController` 等——数据按登录用户 `userId` 在 service 层隔离，端点级只要求已登录即可，符合本仓惯例。
 - 因此**未做全量补齐**（盲目加会破坏上述端点且需注册约 120 个新权限码）。WMS 范围内无待补项。
-- 交付**防回归护栏**：`scripts/check_missing_preauthorize.py` 接入 CI，限定 `--module yudao-module-wms`（当前全绿），任何新增的 WMS admin 写接口若漏写 `@PreAuthorize` 即阻断合并。PDA/app 端点按本仓约定为登录即可用（全仓 `controller/app/**` 均无 `@PreAuthorize`），不纳入此门禁——如确需 PDA 细粒度 RBAC，属产品/RBAC 设计项（P3），需同步注册权限码并赋权给仓库角色。
+- 交付**防回归护栏**：`scripts/check_missing_preauthorize.py` 接入 CI，限定 `--module zhicloud-module-wms`（当前全绿），任何新增的 WMS admin 写接口若漏写 `@PreAuthorize` 即阻断合并。PDA/app 端点按本仓约定为登录即可用（全仓 `controller/app/**` 均无 `@PreAuthorize`），不纳入此门禁——如确需 PDA 细粒度 RBAC，属产品/RBAC 设计项（P3），需同步注册权限码并赋权给仓库角色。
 
 **阶段7 说明（可观测性 / 日志结构化 + Prometheus 告警）**：
-- **JSON 结构化日志**：`yudao-server` 新增 `net.logstash.logback:logstash-logback-encoder:7.4.3`（logback 1.5 兼容）。`logback-spring.xml` 改造：
+- **JSON 结构化日志**：`zhicloud-server` 新增 `net.logstash.logback:logstash-logback-encoder:7.4.3`（logback 1.5 兼容）。`logback-spring.xml` 改造：
   - 文件 Appender（`FILE`→`ASYNC`→滚动）编码器由 `PatternLayoutEncoder` 换为 `LogstashEncoder`，输出 JSON（含 MDC：`traceId`/`tenantId`/`userId`、level、logger、thread、message、stack_trace），供 ELK/Loki/Vector 采集。
   - 新增 `JSON_CONSOLE` Appender；**非 prod** 用文本控制台（本地/`docker logs` 可读）+ JSON 文件，**prod** 用 JSON 控制台（stdout 被容器采集）+ JSON 文件。控制台与文件均为结构化，兼顾可读性与可观测性。
 - **Prometheus 告警规则**：新增 `prometheus/alert.rules.yml`，7 条规则覆盖三类：
@@ -156,7 +156,7 @@
   - `http`：5xx 错误率>5%、P95 时延>1s；
   - `instance`：抓取 `up==0`（实例宕机/健康检查异常）。
   - 文件头注释含 `prometheus.yml` 接入片段（scrape `/actuator/prometheus` + `rule_files`）。指标名对齐 Micrometer 默认导出（Actuator + `micrometer-registry-prometheus` 在本仓已启用）。
-- 验证：`yudao-server -am compile` 在线构建通过（拉取 encoder 依赖并编译成功）；`alert.rules.yml` 经 YAML 解析校验通过（3 组 7 规则）。日志 JSON 输出为运行时行为，已由标准 `LogstashEncoder` 配置保证，CI 在线构建可落地。
+- 验证：`zhicloud-server -am compile` 在线构建通过（拉取 encoder 依赖并编译成功）；`alert.rules.yml` 经 YAML 解析校验通过（3 组 7 规则）。日志 JSON 输出为运行时行为，已由标准 `LogstashEncoder` 配置保证，CI 在线构建可落地。
 
 ---
 
@@ -179,10 +179,10 @@
 
 ### Item 8 交付说明（裸抛统一）
 - `ServiceException` 新增 `ServiceException(ErrorCode, String)` 与 `ServiceException(ErrorCode, String, Throwable)` 两构造函数，复用全局 `GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR(500)`。
-- `scripts/convert_bare_throws.py` 将 `cn/iocoder/yudao/**` 包内全部 `throw new RuntimeException/IllegalStateException`（**74 处，跨 49 文件**）改为 `ServiceException(INTERNAL_SERVER_ERROR, ...)`，保留原始 message 与 cause（字符串/括号感知精确替换）。
+- `scripts/convert_bare_throws.py` 将 `cn/zhicloud/zhicloud/**` 包内全部 `throw new RuntimeException/IllegalStateException`（**74 处，跨 49 文件**）改为 `ServiceException(INTERNAL_SERVER_ERROR, ...)`，保留原始 message 与 cause（字符串/括号感知精确替换）。
 - **排除** `org/springframework`、`org/flowable` 重打包外部类（避免改坏 Spring/Flowable 内部行为），共 4 处不转换。
-- 新增回归门禁 `scripts/check_bare_throws.py` 并接入 `.github/workflows/maven.yml`（Bare-Throw Exception Gate）；扫描到 `cn/iocoder/yudao` 包内残留裸抛即失败。
-- 验收：`python3 scripts/check_bare_throws.py` 退出 0；`grep` 在 `cn/iocoder/yudao` 包内 0 裸抛；全 reactor `mvn compile` BUILD SUCCESS。
+- 新增回归门禁 `scripts/check_bare_throws.py` 并接入 `.github/workflows/maven.yml`（Bare-Throw Exception Gate）；扫描到 `cn/zhicloud/zhicloud` 包内残留裸抛即失败。
+- 验收：`python3 scripts/check_bare_throws.py` 退出 0；`grep` 在 `cn/zhicloud/zhicloud` 包内 0 裸抛；全 reactor `mvn compile` BUILD SUCCESS。
 
 ### Item C 路径（覆盖率 ≥40%）
 当前 JaCoCo `check` 仅覆盖 wms/mes/bpm 的 `**/service/**` 包、`jacoco.minimum=0.30`。满分要求核心业务域 instruction 覆盖 ≥40%：

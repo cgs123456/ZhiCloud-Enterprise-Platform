@@ -2,9 +2,9 @@
 apiVersion: 1
 
 providers:
-  - name: 'yudao-dashboards'
+  - name: 'zhicloud-dashboards'
     orgId: 1
-    folder: 'Yudao'
+    folder: 'ZhiCloud'
     type: file
     disableDeletion: false
     updateIntervalSeconds: 30

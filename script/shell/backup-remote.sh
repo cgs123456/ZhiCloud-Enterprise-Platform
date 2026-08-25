@@ -1,6 +1,6 @@
 #!/bin/bash
 ##==================================================================
-## yudao 异地备份脚本
+## zhicloud 异地备份脚本
 ## 功能：
 ##   1. mysqldump 导出 MySQL（gzip 压缩）
 ##   2. pg_dump 导出 PostgreSQL（gzip 压缩）
@@ -61,7 +61,7 @@ fi
 source "${CONFIG_FILE}"
 
 # ===== 准备目录 =====
-LOCAL_BACKUP_DIR="${LOCAL_BACKUP_DIR:-/data/backup/yudao}"
+LOCAL_BACKUP_DIR="${LOCAL_BACKUP_DIR:-/data/backup/zhicloud}"
 BACKUP_DAY_DIR="${LOCAL_BACKUP_DIR}/${TODAY}"
 LOG_DIR="${LOG_DIR:-${SCRIPT_DIR}/../../logs/backup}"
 LOG_FILE="${LOG_DIR}/backup-${TODAY}.log"
@@ -373,9 +373,9 @@ EOF
 
     # 通知
     if [ "${BACKUP_RESULT_STATUS}" = "SUCCESS" ]; then
-        send_notify "✅ yudao 备份成功" "${BACKUP_RESULT_DETAIL}"
+        send_notify "✅ zhicloud 备份成功" "${BACKUP_RESULT_DETAIL}"
     else
-        send_notify "❌ yudao 备份失败" "${BACKUP_RESULT_DETAIL}"
+        send_notify "❌ zhicloud 备份失败" "${BACKUP_RESULT_DETAIL}"
     fi
 
     # 退出码

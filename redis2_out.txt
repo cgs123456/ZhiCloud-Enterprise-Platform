@@ -1,0 +1,1 @@
+python: can't open file 'D:\\Desktop\\zhicloud\\start_redis2.py': [Errno 2] No such file or directory

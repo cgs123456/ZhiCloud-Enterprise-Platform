@@ -1,24 +1,24 @@
 # Prometheus 配置（E1 Docker Compose 一键部署）
-# 抓取 yudao-server 管理端口 48090 的 /actuator/prometheus 端点
+# 抓取 zhicloud-server 管理端口 48090 的 /actuator/prometheus 端点
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
   external_labels:
-    monitor: 'yudao-monitor'
+    monitor: 'zhicloud-monitor'
 
 rule_files:
   - /etc/prometheus/rules/prometheus-alerts.yml
 
 scrape_configs:
-  # ---------------- yudao-server 业务指标 ----------------
-  - job_name: 'yudao-server'
+  # ---------------- zhicloud-server 业务指标 ----------------
+  - job_name: 'zhicloud-server'
     metrics_path: '/actuator/prometheus'
     # 注意：管理端口绑定 127.0.0.1，容器内需通过 host.docker.internal 访问宿主机
     # 生产环境建议通过 service_name:48090 直接访问（需 management.server.address=0.0.0.0）
     static_configs:
       - targets: ['host.docker.internal:48090']
         labels:
-          service: 'yudao-server'
+          service: 'zhicloud-server'
           env: 'prod'
 
   # ---------------- Prometheus 自监控 ----------------
@@ -29,32 +29,32 @@ scrape_configs:
   # ---------------- MySQL Exporter（可选） ----------------
   - job_name: 'mysql'
     static_configs:
-      - targets: ['yudao-mysql-exporter:9104']
+      - targets: ['zhicloud-mysql-exporter:9104']
     relabel_configs:
       - source_labels: [__address__]
         target_label: instance
-        replacement: 'yudao-mysql'
+        replacement: 'zhicloud-mysql'
 
   # ---------------- Redis Exporter（可选） ----------------
   - job_name: 'redis'
     static_configs:
-      - targets: ['yudao-redis-exporter:9121']
+      - targets: ['zhicloud-redis-exporter:9121']
     relabel_configs:
       - source_labels: [__address__]
         target_label: instance
-        replacement: 'yudao-redis'
+        replacement: 'zhicloud-redis'
 
   # ---------------- PostgreSQL Exporter（可选） ----------------
   - job_name: 'postgres'
     static_configs:
-      - targets: ['yudao-postgres-exporter:9187']
+      - targets: ['zhicloud-postgres-exporter:9187']
     relabel_configs:
       - source_labels: [__address__]
         target_label: instance
-        replacement: 'yudao-postgres'
+        replacement: 'zhicloud-postgres'
 
 # 告警规则（详见 prometheus-alerts.yml）
 alerting:
   alertmanagers:
     - static_configs:
-        - targets: ['yudao-alertmanager:9093']
+        - targets: ['zhicloud-alertmanager:9093']

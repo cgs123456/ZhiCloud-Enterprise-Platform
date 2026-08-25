@@ -1,18 +1,18 @@
 # OAuth2 Resource Server + Keycloak 对接指南
 
-本文档介绍如何通过 Keycloak 作为外部身份提供商（IdP），为 yudao 平台接入 OAuth2 JWT Bearer Token 认证。
+本文档介绍如何通过 Keycloak 作为外部身份提供商（IdP），为 zhicloud 平台接入 OAuth2 JWT Bearer Token 认证。
 
 ## 架构概览
 
 ```
 ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│   前端应用    │────▶│  yudao 后端   │────▶│   Keycloak    │
+│   前端应用    │────▶│  zhicloud 后端   │────▶│   Keycloak    │
 │  (Bearer JWT) │     │ (Resource     │     │  (IdP / OP)   │
 │              │     │   Server)     │     │              │
 └──────────────┘     └──────────────┘     └──────────────┘
                             │
                      ┌──────┴──────┐
-                     │  yudao DB   │
+                     │  zhicloud DB   │
                      │ (权限/用户)  │
                      └─────────────┘
 ```
@@ -20,14 +20,14 @@
 ### 认证流程
 
 1. 用户通过 Keycloak 登录，获取 JWT Access Token
-2. 前端携带 `Authorization: Bearer <jwt>` 请求 yudao 后端
-3. yudao 后端（Resource Server）验证 JWT 签名（通过 JWK Set）
+2. 前端携带 `Authorization: Bearer <jwt>` 请求 zhicloud 后端
+3. zhicloud 后端（Resource Server）验证 JWT 签名（通过 JWK Set）
 4. JWT claims 转换为内部 `LoginUser` 对象，注入 Spring Security 上下文
-5. 权限校验仍走 yudao 数据库（`@ss.hasPermission('xxx')`）
+5. 权限校验仍走 zhicloud 数据库（`@ss.hasPermission('xxx')`）
 
 ### 与自研 Token 的并存策略
 
-yudao 支持自研 Token 和 OAuth2 JWT **同时工作**：
+zhicloud 支持自研 Token 和 OAuth2 JWT **同时工作**：
 
 - **TokenAuthenticationFilter**（自研 Token）：先执行，通过 `OAuth2TokenCommonApi.checkAccessToken` 校验
 - **BearerTokenAuthenticationFilter**（OAuth2 JWT）：若自研 Token 校验失败（返回 null），由 Spring Security OAuth2 接管
@@ -111,17 +111,17 @@ curl http://localhost:8080/health/ready
 
 1. 访问 `http://localhost:8080/admin`，使用管理员账号登录
 2. 点击左上角下拉 → **Create Realm**
-3. Realm name: `yudao`
+3. Realm name: `zhicloud`
 4. Enabled: ON → **Create**
 
 ### 2.2 创建 Client
 
-1. 进入 `yudao` Realm → **Clients** → **Create client**
+1. 进入 `zhicloud` Realm → **Clients** → **Create client**
 2. 配置如下：
 
 | 参数 | 值 | 说明 |
 |------|-----|------|
-| Client ID | `yudao-server` | yudao 后端作为 Resource Server |
+| Client ID | `zhicloud-server` | zhicloud 后端作为 Resource Server |
 | Client type | `OpenID Connect` | |
 | Client authentication | ON | 启用机密客户端 |
 | Authorization | OFF | 不使用 Keycloak 的授权服务 |
@@ -145,7 +145,7 @@ Keycloak 默认在 JWT 中包含 `sub`、`scope`、`realm_access.roles` 等 clai
    - User Attribute: `tenant_id`
    - Token Claim Name: `tenant_id`
    - Claim JSON Type: `long`
-5. 将此 scope 分配给 `yudao-server` Client（**Add to default scope**）
+5. 将此 scope 分配给 `zhicloud-server` Client（**Add to default scope**）
 
 ### 2.4 创建用户
 
@@ -165,44 +165,44 @@ Keycloak 签发的 JWT Access Token 包含以下关键 claims：
 ```json
 {
   "sub": "550e8400-e29b-41d4-a716-446655440000",
-  "iss": "http://keycloak:8080/realms/yudao",
+  "iss": "http://keycloak:8080/realms/zhicloud",
   "exp": 1735689600,
   "iat": 1735686000,
   "scope": "openid profile email",
   "realm_access": {
-    "roles": ["default-roles-yudao", "admin"]
+    "roles": ["default-roles-zhicloud", "admin"]
   },
   "resource_access": {
-    "yudao-server": {
-      "roles": ["yudao-admin"]
+    "zhicloud-server": {
+      "roles": ["zhicloud-admin"]
     }
   }
 }
 ```
 
-### 3.2 yudao claims 映射
+### 3.2 zhicloud claims 映射
 
-| JWT Claim | yudao LoginUser 字段 | 配置项 | 默认值 |
+| JWT Claim | zhicloud LoginUser 字段 | 配置项 | 默认值 |
 |-----------|---------------------|--------|--------|
-| `sub` | `id` | `yudao.security.oauth2.user-id-claim` | `sub` |
-| `tenant_id`（自定义） | `tenantId` | `yudao.security.oauth2.tenant-id-claim` | `tenant_id` |
-| `scope` | `scopes` | `yudao.security.oauth2.authorities-claim` | `scope` |
+| `sub` | `id` | `zhicloud.security.oauth2.user-id-claim` | `sub` |
+| `tenant_id`（自定义） | `tenantId` | `zhicloud.security.oauth2.tenant-id-claim` | `tenant_id` |
+| `scope` | `scopes` | `zhicloud.security.oauth2.authorities-claim` | `scope` |
 
 ### 3.3 权限校验机制
 
 - **身份认证**：通过 JWT 签名验证（JWK Set）
-- **权限校验**：通过 yudao 数据库的 `PermissionCommonApi`（`@ss.hasPermission('xxx')`）
+- **权限校验**：通过 zhicloud 数据库的 `PermissionCommonApi`（`@ss.hasPermission('xxx')`）
 - **Scope 校验**：通过 JWT 中的 scope claim（`@ss.hasScope('xxx')`）
 
-> **注意**：OAuth2 用户必须在 yudao 系统用户表中存在（通过 `sub` 作为用户 ID 关联），否则 `hasPermission` 校验会因找不到用户而失败。
+> **注意**：OAuth2 用户必须在 zhicloud 系统用户表中存在（通过 `sub` 作为用户 ID 关联），否则 `hasPermission` 校验会因找不到用户而失败。
 
 ---
 
-## 四、yudao 配置
+## 四、zhicloud 配置
 
 ### 4.1 添加依赖
 
-在 `yudao-server/pom.xml` 中显式添加（security 模块中为 `optional=true`）：
+在 `zhicloud-server/pom.xml` 中显式添加（security 模块中为 `optional=true`）：
 
 ```xml
 <dependency>
@@ -216,14 +216,14 @@ Keycloak 签发的 JWT Access Token 包含以下关键 claims：
 在 `application-prod.yaml`（或对应环境的配置文件）中：
 
 ```yaml
-yudao:
+zhicloud:
   security:
     oauth2:
       enabled: ${OAUTH2_ENABLED:true}
       # 方式一：直接指定 JWK Set URI
-      jwk-set-uri: ${OAUTH2_JWK_SET_URI:http://keycloak:8080/realms/yudao/protocol/openid-connect/certs}
+      jwk-set-uri: ${OAUTH2_JWK_SET_URI:http://keycloak:8080/realms/zhicloud/protocol/openid-connect/certs}
       # 方式二：通过 OIDC 发现协议（与 jwk-set-uri 二选一）
-      # issuer-uri: ${OAUTH2_ISSUER_URI:http://keycloak:8080/realms/yudao}
+      # issuer-uri: ${OAUTH2_ISSUER_URI:http://keycloak:8080/realms/zhicloud}
       user-id-claim: sub
       tenant-id-claim: tenant_id
       authorities-claim: scope
@@ -233,9 +233,9 @@ yudao:
 
 ```bash
 OAUTH2_ENABLED=true
-OAUTH2_JWK_SET_URI=http://keycloak:8080/realms/yudao/protocol/openid-connect/certs
+OAUTH2_JWK_SET_URI=http://keycloak:8080/realms/zhicloud/protocol/openid-connect/certs
 # 或
-OAUTH2_ISSUER_URI=http://keycloak:8080/realms/yudao
+OAUTH2_ISSUER_URI=http://keycloak:8080/realms/zhicloud
 ```
 
 ---
@@ -246,16 +246,16 @@ OAUTH2_ISSUER_URI=http://keycloak:8080/realms/yudao
 
 ```bash
 # 通过 Keycloak Token 端点获取
-curl -X POST http://localhost:8080/realms/yudao/protocol/openid-connect/token \
+curl -X POST http://localhost:8080/realms/zhicloud/protocol/openid-connect/token \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "grant_type=password" \
-  -d "client_id=yudao-server" \
+  -d "client_id=zhicloud-server" \
   -d "client_secret=<your-client-secret>" \
   -d "username=admin" \
   -d "password=admin"
 ```
 
-### 5.2 携带 JWT 请求 yudao API
+### 5.2 携带 JWT 请求 zhicloud API
 
 ```bash
 curl -H "Authorization: Bearer <jwt-access-token>" \
@@ -267,7 +267,7 @@ curl -H "Authorization: Bearer <jwt-access-token>" \
 | 问题 | 排查方向 |
 |------|---------|
 | 401 Unauthorized | 检查 JWT 是否过期、签名是否有效、JWK Set URI 是否可达 |
-| 403 Forbidden | 检查 yudao 系统用户表中是否存在对应 `sub` 的用户 |
+| 403 Forbidden | 检查 zhicloud 系统用户表中是否存在对应 `sub` 的用户 |
 | JwtDecoder 初始化失败 | 检查 `jwk-set-uri` 或 `issuer-uri` 配置，确保 Keycloak 可达 |
 | tenant_id 为空 | 检查 Keycloak Client Scope 是否配置了 tenant_id mapper |
 

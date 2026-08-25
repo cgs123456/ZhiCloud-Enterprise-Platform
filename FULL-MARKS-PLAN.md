@@ -32,13 +32,13 @@
 1. `ServiceException` 增加两个构造函数，复用全局 `INTERNAL_SERVER_ERROR(500)`：
    - `ServiceException(ErrorCode errorCode, String message)`
    - `ServiceException(ErrorCode errorCode, String message, Throwable cause)`
-2. 将 `*/src/main/java` 下 `cn/iocoder/yudao/**` 包内全部 `throw new RuntimeException(...)` / `throw new IllegalStateException(...)` 转换为 `ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, ...)`，并保留原始 message 与 cause。
-3. **排除范围**（避免改动重打包外部类、引发不可控回归）：路径包含 `org/springframework/`、`org/flowable/`（含 `yudao-sql/.../flowable-patch`）的 `org.*` 重打包类不转换。
-4. 新增 CI 回归门禁 `scripts/check_bare_throws.py`：扫描 `src/main` 残留裸抛（`org/` 与 `yudao-sql` 除外），>0 即失败。
+2. 将 `*/src/main/java` 下 `cn/zhicloud/zhicloud/**` 包内全部 `throw new RuntimeException(...)` / `throw new IllegalStateException(...)` 转换为 `ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, ...)`，并保留原始 message 与 cause。
+3. **排除范围**（避免改动重打包外部类、引发不可控回归）：路径包含 `org/springframework/`、`org/flowable/`（含 `zhicloud-sql/.../flowable-patch`）的 `org.*` 重打包类不转换。
+4. 新增 CI 回归门禁 `scripts/check_bare_throws.py`：扫描 `src/main` 残留裸抛（`org/` 与 `zhicloud-sql` 除外），>0 即失败。
 
 **执行步骤**
 
-1. 编辑 `yudao-framework/yudao-common/.../ServiceException.java` 增加上述两构造函数。
+1. 编辑 `zhicloud-framework/zhicloud-common/.../ServiceException.java` 增加上述两构造函数。
 2. 编写 `scripts/convert_bare_throws.py`（平衡括号 + 字符串字面量感知的精确替换；单参 Throwable→`(code, e.getMessage(), e)`，单参字符串→`(code, msg)`，双参 `(msg, e)`→`(code, msg, e)`；自动补 import）。
 3. 先 `python3 scripts/convert_bare_throws.py --dry-run` 核对数量与 diff，再正式执行。
 4. 编写 `scripts/check_bare_throws.py` 并在 `.github/workflows/maven.yml` 增加步骤。
@@ -47,7 +47,7 @@
 
 **验收标准**
 
-- `grep -rn "throw new RuntimeException\|throw new IllegalStateException" --include=*/src/main/**/*.java` 在 `cn/iocoder/yudao` 包内返回 **0**（排除 org/ 重打包类）。
+- `grep -rn "throw new RuntimeException\|throw new IllegalStateException" --include=*/src/main/**/*.java` 在 `cn/zhicloud/zhicloud` 包内返回 **0**（排除 org/ 重打包类）。
 - `python3 scripts/check_bare_throws.py` 退出码 0。
 - 全 reactor `mvn test-compile` **BUILD SUCCESS**。
 - 现有 `catch (RuntimeException)`（BpmModelController:152）仍正常捕获（ServiceException 是 RuntimeException 子类）。

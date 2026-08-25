@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-将业务代码（cn/iocoder/yudao/** 包）中裸抛的
+将业务代码（cn/zhicloud/zhicloud/** 包）中裸抛的
     throw new RuntimeException(...)
     throw new IllegalStateException(...)
 统一改造为
@@ -9,7 +9,7 @@
 复用全局错误码 500，保留原始 message 与 cause。
 
 设计要点：
-- 仅扫描 */src/main/java 下以 cn/iocoder/yudao/ 开头的包；
+- 仅扫描 */src/main/java 下以 cn/zhicloud/zhicloud/ 开头的包；
   排除 org/springframework、org/flowable 等「重打包外部类」（避免改坏 Spring/Flowable 内部行为）。
 - 括号匹配与参数切分均「字符串字面量感知」，正确处理 "类型(%s)..." 这类含括号的消息。
 - 单参为 Throwable 变量 -> (code, e.getMessage(), e)；单参为字符串 -> (code, msg)；
@@ -28,9 +28,9 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 THROW_RE = re.compile(r'throw\s+new\s+(RuntimeException|IllegalStateException)\s*\(', re.DOTALL)
-PKG_PREFIX = 'cn/iocoder/yudao/'
-SERVICE_EXC_IMPORT = 'import cn.iocoder.yudao.framework.common.exception.ServiceException;'
-GLOBAL_IMPORT = 'import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;'
+PKG_PREFIX = 'cn/zhicloud/zhicloud/'
+SERVICE_EXC_IMPORT = 'import cn.zhicloud.framework.common.exception.ServiceException;'
+GLOBAL_IMPORT = 'import cn.zhicloud.framework.common.exception.enums.GlobalErrorCodeConstants;'
 
 
 def find_matching_paren(s, open_pos):

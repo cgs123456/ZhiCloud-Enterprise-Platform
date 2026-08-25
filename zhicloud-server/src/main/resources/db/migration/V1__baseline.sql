@@ -1,0 +1,12 @@
+﻿-- ============================================================
+-- Flyway Baseline (V1)
+-- ============================================================
+-- 此脚本为占位基线，不执行任何 DDL。
+-- 存量数据库（已通过 sql/mysql/zhicloud_platform.sql 初始化）
+-- baseline-on-migrate=true + baseline-version=1 时，
+-- Flyway 会自动在存量库上建立 flyway_schema_history 表并标记 V1 已应用。
+-- 全新数据库需先手工执行 sql/mysql/zhicloud_platform.sql + quartz.sql 完成基础表初始化。
+-- 后续 V2+ 才是 Flyway 管理的增量迁移。
+-- ============================================================
+-- 占位语句：SELECT 1（MySQL 不允许空脚本）
+SELECT 1;

@@ -5,12 +5,12 @@
 
 ## 根因（Root Cause）
 
-**JaCoCo 覆盖率门禁：`yudao-module-bpm` 模块指令覆盖率仅 0.04 (4%)，远低于门禁阈值 0.40 (40%)**
+**JaCoCo 覆盖率门禁：`zhicloud-module-bpm` 模块指令覆盖率仅 0.04 (4%)，远低于门禁阈值 0.40 (40%)**
 
 ### 验证日志
 ```
-[WARNING] Rule violated for bundle yudao-module-bpm: instructions covered ratio is 0.04, but expected minimum is 0.40
-[ERROR] Failed to execute goal org.jacoco:jacoco-maven-plugin:0.8.12:check (check) on project yudao-module-bpm: Coverage checks have not been met.
+[WARNING] Rule violated for bundle zhicloud-module-bpm: instructions covered ratio is 0.04, but expected minimum is 0.40
+[ERROR] Failed to execute goal org.jacoco:jacoco-maven-plugin:0.8.12:check (check) on project zhicloud-module-bpm: Coverage checks have not been met.
 ```
 
 ### CI 流程分析
@@ -34,9 +34,9 @@
 
 ```xml
 <includes>
-  <include>cn/iocoder/yudao/module/wms/service/**</include>
-  <include>cn/iocoder/yudao/module/mes/service/**</include>
-  <include>cn/iocoder/yudao/module/bpm/service/**</include>
+  <include>cn/zhicloud/zhicloud/module/wms/service/**</include>
+  <include>cn/zhicloud/zhicloud/module/mes/service/**</include>
+  <include>cn/zhicloud/zhicloud/module/bpm/service/**</include>
 </includes>
 <!-- ... -->
 <rules>

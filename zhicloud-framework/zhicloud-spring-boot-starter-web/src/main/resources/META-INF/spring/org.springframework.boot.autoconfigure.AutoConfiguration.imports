@@ -1,0 +1,7 @@
+cn.zhicloud.framework.apilog.config.ZhiCloudApiLogAutoConfiguration
+cn.zhicloud.framework.jackson.config.ZhiCloudJacksonAutoConfiguration
+cn.zhicloud.framework.swagger.config.ZhiCloudSwaggerAutoConfiguration
+cn.zhicloud.framework.web.config.ZhiCloudWebAutoConfiguration
+cn.zhicloud.framework.xss.config.ZhiCloudXssAutoConfiguration
+cn.zhicloud.framework.banner.config.ZhiCloudBannerAutoConfiguration
+cn.zhicloud.framework.encrypt.config.ZhiCloudApiEncryptAutoConfiguration

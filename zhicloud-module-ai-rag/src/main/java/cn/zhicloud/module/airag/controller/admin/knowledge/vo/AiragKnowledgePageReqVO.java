@@ -1,0 +1,29 @@
+package cn.zhicloud.module.airag.controller.admin.knowledge.vo;
+
+import cn.zhicloud.framework.common.enums.CommonStatusEnum;
+import cn.zhicloud.framework.common.pojo.PageParam;
+import cn.zhicloud.framework.common.validation.InEnum;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.time.LocalDateTime;
+
+import static cn.zhicloud.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND;
+
+@Schema(description = "管理后台 - AI RAG 知识库分页 Request VO")
+@Data
+public class AiragKnowledgePageReqVO extends PageParam {
+
+    @Schema(description = "知识库名称", example = "芋艿")
+    private String name;
+
+    @Schema(description = "状态（0开启 1停用）", example = "0")
+    @InEnum(CommonStatusEnum.class)
+    private Integer status;
+
+    @Schema(description = "创建时间")
+    @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    private LocalDateTime[] createTime;
+
+}

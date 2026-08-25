@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 通用工具：为某个 yudao 业务模块生成单元测试用的 H2 DDL。
+# 通用工具：为某个 zhicloud 业务模块生成单元测试用的 H2 DDL。
 # 扫描 <module>/src/main/java 下所有带 @TableName 的 DO 类，
 # 生成：
 #   <module>/src/test/resources/sql/create_tables.sql  (H2 建表)
@@ -9,7 +9,7 @@
 # List/Map 字段经 TypeHandler 存 varchar(1024)。
 import os, re, glob, sys, argparse
 
-REPO = r"D:/Desktop/yudao"
+REPO = r"D:/Desktop/zhicloud"
 TYPE_MAP = {
     "Long": "bigint", "long": "bigint",
     "Integer": "int", "int": "int",
@@ -97,7 +97,7 @@ def emit(table, base, fields):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("module", help="模块目录名，如 yudao-module-tms")
+    ap.add_argument("module", help="模块目录名，如 zhicloud-module-tms")
     args = ap.parse_args()
     module = args.module
     base_dir = os.path.join(REPO, module, "src", "main", "java")

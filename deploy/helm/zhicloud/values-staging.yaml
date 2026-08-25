@@ -1,0 +1,60 @@
+# ============================================================
+# zhicloud-server Helm Chart - STAGING 环境覆盖配置
+# 用途：预发布环境，配置介于 dev 与 prod 之间，贴近生产验证
+# 使用：helm install zhicloud ./zhicloud -f values-staging.yaml -n zhicloud-staging
+# ============================================================
+
+# 预发布环境 2 副本
+replicaCount: 2
+
+# 镜像：staging 使用 RC tag
+image:
+  tag: "2026.06.0-rc"
+
+# HPA 配置（与默认一致，验证自动伸缩）
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+
+# 资源配额（中等）
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 2Gi
+
+# Ingress：预发布域名
+ingress:
+  enabled: true
+  host: "api-staging.zhicloud.example.com"
+  tls:
+    enabled: true
+    secretName: "zhicloud-staging-tls-secret"
+
+# 环境变量：staging profile
+env:
+  SPRING_PROFILES_ACTIVE: "staging"
+  MASTER_DATASOURCE_URL: "jdbc:mysql://zhicloud-mysql-staging:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true"
+  SLAVE_DATASOURCE_URL: "jdbc:mysql://zhicloud-mysql-staging:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true"
+  REDIS_HOST: "zhicloud-redis-staging"
+  ZHICLOUD_AIRAG_DATASOURCE_URL: "jdbc:postgresql://zhicloud-postgres-staging:5432/zhicloud_rag"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://zhicloud-jaeger-staging:4318/v1/traces"
+  MANAGEMENT_OTLP_TRACING_ENDPOINT: "http://zhicloud-jaeger-staging:4318/v1/traces"
+
+# 启用迁移 Job（预发布环境验证迁移）
+migration:
+  enabled: true
+
+# 优雅停机
+terminationGracePeriodSeconds: 30
+
+# 拓扑分布：预发布环境开启跨节点打散
+topologySpreadConstraints:
+  enabled: true
+  maxSkew: 1
+  topologyKey: kubernetes.io/hostname
+  whenUnsatisfiable: ScheduleAnyway

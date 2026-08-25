@@ -1,5 +1,5 @@
 -- ======================== QMS 计量器具管理建表脚本 ========================
--- 作者：yudao
+-- 作者：zhicloud
 -- 说明：覆盖计量器具台账（qms_instrument）+ 校准记录（qms_instrument_calibration）
 -- 依赖：qms.sql 基础表
 -- 规范：InnoDB / utf8mb4 / utf8mb4_unicode_ci；主键 BIGINT（应用层雪花ID）；

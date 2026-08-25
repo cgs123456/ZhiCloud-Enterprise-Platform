@@ -1,0 +1,187 @@
+--- #################### 生产环境覆盖配置 ####################
+---
+## 生产环境专用配置：覆盖 application.yaml 和 application-local.yaml 中的开发默认值
+## 启用方式：SPRING_PROFILES_ACTIVE=prod 或 --spring.profiles.active=prod
+## 所有敏感配置必须通过环境变量注入，不提供默认值
+##
+## 环境变量清单（必须配置）：
+##   MASTER_DATASOURCE_URL          主库 JDBC URL
+##   MASTER_DATASOURCE_USERNAME     主库用户名
+##   MASTER_DATASOURCE_PASSWORD     主库密码
+##   SLAVE_DATASOURCE_URL           从库 JDBC URL（可选）
+##   SLAVE_DATASOURCE_USERNAME      从库用户名（可选）
+##   SLAVE_DATASOURCE_PASSWORD      从库密码（可选）
+##   REDIS_PASSWORD                 Redis 密码
+##   MYBATIS_ENCRYPTOR_PASSWORD     MyBatis Plus 加密秘钥
+##   API_ENCRYPT_REQUEST_KEY        API 请求加密秘钥（启用时必填）
+##   API_ENCRYPT_RESPONSE_KEY       API 响应加密秘钥（启用时必填）
+##   KD_NIAO_API_KEY                快递鸟 API Key（启用物流时必填）
+##   KD_NIAO_BUSINESS_ID            快递鸟 Business ID（启用物流时必填）
+##   KD100_KEY                      快递 100 Key（启用物流时必填）
+##   KD100_CUSTOMER                 快递 100 Customer（启用物流时必填）
+##   WX_MP_APP_ID / WX_MP_SECRET    微信公众号
+##   WX_MINIAPP_APPID / WX_MINIAPP_SECRET  微信小程序
+##   DINGTALK_CLIENT_ID / DINGTALK_CLIENT_SECRET  钉钉
+##   WECHAT_ENTERPRISE_CLIENT_ID / WECHAT_ENTERPRISE_CLIENT_SECRET  企业微信
+##   TENCENT_LBS_KEY                腾讯地图 Key
+##   DRUID_USERNAME / DRUID_PASSWORD  Druid 监控页认证
+
+server:
+  port: 48080
+
+--- #################### 数据源配置 ####################
+spring:
+  datasource:
+    druid:
+      stat-view-servlet:
+        enabled: ${DRUID_ENABLED:false} # 生产环境默认关闭 Druid 监控页，需要时通过环境变量显式启用
+        allow: 127.0.0.1
+        url-pattern: /druid/*
+        login-username: ${DRUID_USERNAME:}
+        login-password: ${DRUID_PASSWORD:}
+      filter:
+        stat:
+          enabled: true
+          log-slow-sql: true
+          slow-sql-millis: 500
+          merge-sql: true
+        wall:
+          config:
+            multi-statement-allow: false
+    dynamic:
+      druid:
+        initial-size: 10
+        min-idle: 10
+        max-active: 100
+        max-wait: 10000
+        # 连接池健壮性配置：定期心跳检测，剔除失效连接，避免拿到已被数据库/防火墙断开的连接
+        validation-query: "SELECT 1" # 检测连接是否有效的心跳 SQL
+        test-while-idle: true # 借出连接前，若空闲超时则先校验有效性
+        test-on-borrow: false # 不在每次借出时都校验（性能考虑，依赖 test-while-idle）
+        keep-alive: true # 对空闲连接发送心跳，防止被防火墙静默断开
+        min-evictable-idle-time-millis: 60000 # 连接最小空闲存活时间（1 分钟），超过可被回收
+        time-between-eviction-runs-millis: 60000 # 检测线程执行间隔（1 分钟）
+      primary: master
+      datasource:
+        master:
+          url: ${MASTER_DATASOURCE_URL}
+          username: ${MASTER_DATASOURCE_USERNAME}
+          password: ${MASTER_DATASOURCE_PASSWORD}
+        slave: # SLAVE 未配置时回退主库，读写分离需显式配置 SLAVE_DATASOURCE_URL
+          lazy: true
+          url: ${SLAVE_DATASOURCE_URL:${MASTER_DATASOURCE_URL}}
+          username: ${SLAVE_DATASOURCE_USERNAME:${MASTER_DATASOURCE_USERNAME}}
+          password: ${SLAVE_DATASOURCE_PASSWORD:${MASTER_DATASOURCE_PASSWORD}}
+
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      database: ${REDIS_DB:0}
+      password: ${REDIS_PASSWORD}
+      timeout: 5000 # 连接/命令超时（毫秒），避免 Redis 故障时业务线程长时间阻塞
+
+--- #################### 监控配置 ####################
+management:
+  server:
+    port: 48090 # 显式重申管理端口，避免被主配置覆盖
+    # 安全加固说明：不再绑定 127.0.0.1（K8s kubelet 探针需要从 Pod IP 访问），生产环境建议用 NetworkPolicy 限制 48090 入站来源
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics,tracing # 生产环境收敛端点，不暴露 beans/configprops/loggers/modulith
+  endpoint:
+    health:
+      show-details: when_authorized # 生产环境不显示健康检查详情
+  tracing:
+    sampling:
+      probability: 0.1 # 生产环境采样率降至 0.1，降低开销
+
+--- #################### Flowable 配置 ####################
+flowable:
+  database-schema-update: false # 生产环境禁止自动 DDL，使用官方 SQL 脚本管理 schema
+  db-history-used: true
+  check-process-definitions: false
+  history-level: audit
+
+--- #################### 智云相关配置 ####################
+zhicloud:
+  web:
+    cors:
+      allowed-origins: ${CORS_ALLOWED_ORIGINS:https://localhost} # 生产环境 CORS 白名单，逗号分隔
+  xss:
+    enable: true # 生产环境必须启用 XSS 防护
+  captcha:
+    enable: true # 生产环境启用验证码
+  security:
+    mock-enable: false # 生产环境关闭 mock
+    # OAuth2 Resource Server（对接外部 IdP 如 Keycloak/Auth0，默认关闭）
+    # 启用前需在 pom.xml 显式添加 spring-boot-starter-oauth2-resource-server 依赖（security 模块中为 optional）
+    # 详见 docs/oauth2-keycloak-guide.md
+    oauth2:
+      enabled: ${OAUTH2_ENABLED:false} # 默认关闭，按需启用
+      jwk-set-uri: ${OAUTH2_JWK_SET_URI:} # Keycloak JWK Set URI，如 http://keycloak:8080/realms/zhicloud/protocol/openid-connect/certs
+      issuer-uri: ${OAUTH2_ISSUER_URI:} # Keycloak Issuer URI，如 http://keycloak:8080/realms/zhicloud（与 jwk-set-uri 二选一）
+      user-id-claim: sub # JWT 中用户 ID 的字段名
+      tenant-id-claim: tenant_id # JWT 中租户 ID 的字段名
+      authorities-claim: scope # JWT 中权限列表的字段名
+  access-log:
+    enable: true # 生产环境启用访问日志
+  demo: false
+  swagger:
+    title: 智云快速开发平台
+    description: 生产环境 API 文档
+  # P2-5 数据湖仓模块（Iceberg + Trino），默认关闭，部署 Trino + MinIO 后通过 DATALAKE_ENABLED=true 启用
+  datalake:
+    enabled: ${DATALAKE_ENABLED:false}
+    catalog-uri: ${DATALAKE_CATALOG_URI:http://trino:8080}
+    warehouse-path: ${DATALAKE_WAREHOUSE_PATH:s3://zhicloud-warehouse}
+    retention-days: ${DATALAKE_RETENTION_DAYS:365}
+    archive-tables:
+      - mes_pro_work_order      # 归档历史工单
+      - wms_inventory_log       # 归档库存流水
+      - erp_gl_voucher          # 归档历史凭证
+
+--- #################### 日志配置 ####################
+logging:
+  file:
+    name: ${LOG_FILE:/var/log/zhicloud-server/application.log}
+  level:
+    cn.zhicloud.module: info # 生产环境日志降为 info
+    cn.zhicloud.module.*.dal.mysql: info # 显式覆盖 local/dev 中的 debug 配置，生产环境不打印 SQL
+    root: info
+
+--- #################### Spring Boot Admin 配置 ####################
+spring:
+  boot:
+    admin:
+      client:
+        url: ${SBA_SERVER_URL:http://127.0.0.1:48080/admin}
+        instance:
+          service-host-type: IP
+        username: ${SBA_USERNAME}
+        password: ${SBA_PASSWORD}
+      context-path: /admin
+      frame-ancestors: "'self'"
+
+--- #################### 接口文档配置 ####################
+springdoc:
+  api-docs:
+    enabled: false # 生产环境关闭 API 文档
+  swagger-ui:
+    enabled: false # 生产环境关闭 Swagger UI
+
+knife4j:
+  enable: false # 生产环境关闭 Knife4j
+
+--- #################### 验证码相关配置 ####################
+aj:
+  captcha:
+    type: blockPuzzle # 生产环境使用滑块拼图验证码
+    req-frequency-limit-enable: true # 生产环境开启接口请求频率限制
+
+--- #################### MyBatis 字段加解密配置 ####################
+# 生产环境强制要求通过环境变量注入 MyBatis-Plus 字段加解密秘钥（与 application.yaml 对齐，prod profile 显式覆盖）
+mybatis-plus:
+  encryptor:
+    password: ${MYBATIS_ENCRYPTOR_PASSWORD:?required}

@@ -14,7 +14,7 @@
 
 用法：
     python3 scripts/check_missing_preauthorize.py --include-app            # 全仓（CI 用法）
-    python3 scripts/check_missing_preauthorize.py --module yudao-module-wms --include-app
+    python3 scripts/check_missing_preauthorize.py --module zhicloud-module-wms --include-app
 
 注意：`--include-app` 必须开启，否则 controller/app 下的 PDA / 移动端接口不会被扫描——
       历史上正是这个盲区让 WmsPda*Controller 的类级 @PermitAll 长期未被发现。
@@ -177,7 +177,7 @@ def method_block_bounds(lines, i, class_start):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--module', default=None, help='限定模块目录名，如 yudao-module-wms；空=全仓')
+    ap.add_argument('--module', default=None, help='限定模块目录名，如 zhicloud-module-wms；空=全仓')
     ap.add_argument('--include-app', action='store_true', help='是否纳入 controller/app (PDA/移动端)')
     ap.add_argument('--root', default=ROOT)
     # 棘轮基线：[CRITICAL]（@PermitAll 匿名写）永远零容忍，与本参数无关；

@@ -4,7 +4,7 @@
       {"builtIn": 1, "datasource": "-- Grafana --", "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}
     ]
   },
-  "description": "芋道源码 yudao HTTP 请求监控看板（QPS / 响应时间 / 错误率 / 状态码分布）",
+  "description": "智云 zhicloud HTTP 请求监控看板（QPS / 响应时间 / 错误率 / 状态码分布）",
   "editable": true,
   "graphTooltip": 1,
   "id": null,
@@ -136,11 +136,11 @@
   "refresh": "10s",
   "schemaVersion": 38,
   "style": "dark",
-  "tags": ["yudao", "http"],
+  "tags": ["zhicloud", "http"],
   "templating": {
     "list": [
       {
-        "current": {"selected": false, "text": "yudao-server", "value": "yudao-server"},
+        "current": {"selected": false, "text": "zhicloud-server", "value": "zhicloud-server"},
         "datasource": "Prometheus",
         "definition": "label_values(application)",
         "hide": 0,
@@ -161,8 +161,8 @@
   "time": {"from": "now-30m", "to": "now"},
   "timepicker": {},
   "timezone": "browser",
-  "title": "Yudao HTTP 请求监控看板",
-  "uid": "yudao-http",
+  "title": "ZhiCloud HTTP 请求监控看板",
+  "uid": "zhicloud-http",
   "version": 1,
   "weekStart": ""
 }

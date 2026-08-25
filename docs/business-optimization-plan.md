@@ -128,7 +128,7 @@
 - 依据：DDD 上下文映射（G4）；招聘要求 DDD。
 
 **P1-4 共享库存能力 starter**
-- 建议：把"库存 get-or-create + 负库存校验"抽为 `yudao-spring-boot-starter-biz-inventory`，消除三处重复且语义不一致的实现（`ErpStockServiceImpl.java:79-93`、`WmsInventoryServiceImpl.java:299-322`、`MesWmMaterialStockServiceImpl.java:149-170`）。
+- 建议：把"库存 get-or-create + 负库存校验"抽为 `zhicloud-spring-boot-starter-biz-inventory`，消除三处重复且语义不一致的实现（`ErpStockServiceImpl.java:79-93`、`WmsInventoryServiceImpl.java:299-322`、`MesWmMaterialStockServiceImpl.java:149-170`）。
 - 依据：DRY + 标杆一致性。
 
 ### P2 — 工程纪律（贯穿业务改造）

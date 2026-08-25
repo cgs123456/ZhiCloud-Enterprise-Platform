@@ -4,7 +4,7 @@
 电子签名管控点存活门禁（21 CFR Part 11）
 
 背景（这个脚本存在的原因）：
-    yudao-module-qms 里 @ElectronicSignature 注解 + ElectronicSignatureAspect 切面
+    zhicloud-module-qms 里 @ElectronicSignature 注解 + ElectronicSignatureAspect 切面
     实现得很完整——fail-closed、审计留痕、理由校验一应俱全，代码评审也挑不出毛病。
     但全仓 grep 下来，这个注解的<实际使用次数是 0>：切面从未被触发，
     是一段彻头彻尾的死代码。也就是说 21 CFR Part 11 要求的电子签名管控点
@@ -30,7 +30,7 @@ import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-QMS_SRC = os.path.join('yudao-module-qms', 'src', 'main', 'java')
+QMS_SRC = os.path.join('zhicloud-module-qms', 'src', 'main', 'java')
 
 ANNOTATION_RE = re.compile(r'@ElectronicSignature\s*\(')
 # 注解定义文件本身不算「使用」

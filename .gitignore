@@ -50,7 +50,7 @@ rebel.xml
 
 application-my.yaml
 
-/yudao-ui-app/unpackage/
+/zhicloud-ui-app/unpackage/
 .DS_Store
 **/.DS_Store
 
@@ -75,9 +75,9 @@ actuator/
 .trae/tmp/
 
 ### BGE ONNX 模型文件（体积大，按需下载）
-yudao-server/src/main/resources/airag/bge-base-zh/
-yudao-server/src/main/resources/airag/bge-small-zh/
-yudao-server/src/main/resources/airag/bge-large-zh/
+zhicloud-server/src/main/resources/airag/bge-base-zh/
+zhicloud-server/src/main/resources/airag/bge-small-zh/
+zhicloud-server/src/main/resources/airag/bge-large-zh/
 
 ### IDE 运行时输出
 *.iml

@@ -1,7 +1,7 @@
 # P1 库存架构一致性迁移方案（P1-1 / P1-2 / P1-4）
 
 > 文档类型：架构迁移方案（仅规划，不含代码实现）
-> 适用范围：yudao 多模块库存一致性治理
+> 适用范围：zhicloud 多模块库存一致性治理
 > 基线日期：2026-08-19
 > 配套状态：P2 工程纪律已收口（@Version 五模块、DB CAS、DuplicateKeyException、@Transactional、H2 schema、CI 基线）；P1-3 模块边界治理已完成（`erp.api.ErpMrpExecutorGateway` 反向 SPI 收口）
 
@@ -13,9 +13,9 @@
 
 | 真值源 | 模块 | 表 | 并发保护现状 |
 |--------|------|----|--------------|
-| ERP 库存 | `yudao-module-erp` | `erp_stock` | `updateCountIncrement` / `updateLockedCountIncrement` DB CAS + `ErpStockDO.@Version`（V80，防御性兜底） |
-| WMS 库存 | `yudao-module-wms` | `wms_inventory` | `WmsInventoryDO.@Version`（乐观锁）+ 写路径 DA CAS |
-| MES 物料库存 | `yudao-module-mes` | `mes_wm_material_stock` | `(item,warehouse,location,area,batch)` 唯一索引 + `getOrCreateMaterialStock` 的 `DuplicateKeyException` 兜底（V79）+ `MesProWorkOrderDO.@Version` |
+| ERP 库存 | `zhicloud-module-erp` | `erp_stock` | `updateCountIncrement` / `updateLockedCountIncrement` DB CAS + `ErpStockDO.@Version`（V80，防御性兜底） |
+| WMS 库存 | `zhicloud-module-wms` | `wms_inventory` | `WmsInventoryDO.@Version`（乐观锁）+ 写路径 DA CAS |
+| MES 物料库存 | `zhicloud-module-mes` | `mes_wm_material_stock` | `(item,warehouse,location,area,batch)` 唯一索引 + `getOrCreateMaterialStock` 的 `DuplicateKeyException` 兜底（V79）+ `MesProWorkOrderDO.@Version` |
 
 **核心矛盾**：三套库存各自维护库存数量、锁定数量、CAS 逻辑与并发保护，缺乏统一抽象。跨模块调用目前为**同步调用**（WMS `InventoryApi` 只读、MES→ERP `erp.api` SPI、MES→QMS / WMS→QMS `api`），无事件驱动的最终一致机制。
 
@@ -30,9 +30,9 @@
 
 ```
                  ┌──────────────────────── 跨模块契约（api 包）────────────────────────┐
- yudao-module-erp │  erp.api.ErpMrpExecutorGateway  (SPI, ERP 定义/MES 实现)             │
- yudao-module-wms │  wms.api.InventoryApi            (只读: getAvailableQuantity/isSufficient) │
- yudao-module-qms │  qms.api.InspectionOrderApi      (MES/WMS 消费)                       │
+ zhicloud-module-erp │  erp.api.ErpMrpExecutorGateway  (SPI, ERP 定义/MES 实现)             │
+ zhicloud-module-wms │  wms.api.InventoryApi            (只读: getAvailableQuantity/isSufficient) │
+ zhicloud-module-qms │  qms.api.InspectionOrderApi      (MES/WMS 消费)                       │
                  └──────────────────────────────────────────────────────────────────────┘
    库存三真值源:  erp_stock  ──┐
                  wms_inventory ─┼─ 各自独立写、各自 CAS、各自 @Version
@@ -42,17 +42,17 @@
 ```
 
 **关键代码锚点（迁移时直接复用/改造）**：
-- `yudao-module-wms/api/InventoryApi.java` —— 已有只读契约，升级为共享 Starter 的对外 API 雏形。
-- `yudao-module-wms/dal/dataobject/inventory/WmsInventoryDO.java` —— `WmsInventoryDO.@Version`（乐观锁范式）。
-- `yudao-module-erp/service/stock/ErpStockServiceImpl.java` —— `updateCountIncrement` / `updateLockedCountIncrement` 的 DB CAS 范式。
-- `yudao-module-mes/service/wm/materialstock/MesWmMaterialStockServiceImpl.java` —— `getOrCreateMaterialStock` + `(item,warehouse,location,area,batch)` 复合唯一键（P1-4 复合键的直接来源）。
-- `yudao-module-erp/api/ErpMrpExecutorGateway.java` —— 已完成边界收口的 SPI 范例。
+- `zhicloud-module-wms/api/InventoryApi.java` —— 已有只读契约，升级为共享 Starter 的对外 API 雏形。
+- `zhicloud-module-wms/dal/dataobject/inventory/WmsInventoryDO.java` —— `WmsInventoryDO.@Version`（乐观锁范式）。
+- `zhicloud-module-erp/service/stock/ErpStockServiceImpl.java` —— `updateCountIncrement` / `updateLockedCountIncrement` 的 DB CAS 范式。
+- `zhicloud-module-mes/service/wm/materialstock/MesWmMaterialStockServiceImpl.java` —— `getOrCreateMaterialStock` + `(item,warehouse,location,area,batch)` 复合唯一键（P1-4 复合键的直接来源）。
+- `zhicloud-module-erp/api/ErpMrpExecutorGateway.java` —— 已完成边界收口的 SPI 范例。
 
 ---
 
 ## 3. P1-4 共享库存 Starter（基础，先行）
 
-**新增模块**：`yudao-spring-boot-starter-biz-inventory`（对齐 `yudao-spring-boot-starter-mybatis` 命名约定）。
+**新增模块**：`zhicloud-spring-boot-starter-biz-inventory`（对齐 `zhicloud-spring-boot-starter-mybatis` 命名约定）。
 
 ### 3.1 契约与模型
 - `InventoryItemDO`：以 MES 的 `(item_id, warehouse_id, location_id, area_id, batch_id)` 复合唯一键为**规范键**（WMS 用 `(sku_id, warehouse_id)`，ERP 用 `(product_id, warehouse_id)`；需做键映射适配层）。
@@ -64,7 +64,7 @@
 - `lockedCount` 锁定数量原语统一纳入 Starter（替代 WMS/ERP 各自 ad-hoc 的 `lockedCount`）。
 
 ### 3.2 落地步骤
-1. 建 `yudao-spring-boot-starter-biz-inventory` 模块，仅依赖 `yudao-spring-boot-starter-mybatis` + framework。
+1. 建 `zhicloud-spring-boot-starter-biz-inventory` 模块，仅依赖 `zhicloud-spring-boot-starter-mybatis` + framework。
 2. 迁入 `InventoryApi` + `InventoryItemDO` + `InventoryService`（含三件套并发保护）+ `InventoryMapper`（复合唯一索引 DDL 由 Starter 的 `db/migration` 提供）。
 3. 提供自动配置 `InventoryAutoConfiguration`（按 `InventoryProperties` 开关，默认启用）。
 4. **验收**：Starter 单测覆盖 add/deduct/reserve/release 在并发下的正确性（复用现有 WMS/ERP/MES 测试范式）。
