@@ -1,82 +1,82 @@
 # @PermitAll 允许名单 - 合法的匿名访问接口
-# 格式：Controller全限定名#方法名
+# 格式：相对文件路径#方法名
 # 更新于 2026-08-26
 
 # ===== 会员模块 - App 端认证接口 =====
-cn.zhicloud.module.member.controller.app.user.AppMemberUserController#resetUserPassword
-cn.zhicloud.module.member.controller.app.auth.AppAuthController#login
-cn.zhicloud.module.member.controller.app.auth.AppAuthController#logout
-cn.zhicloud.module.member.controller.app.auth.AppAuthController#refreshToken
-cn.zhicloud.module.member.controller.app.auth.AppAuthController#smsLogin
-cn.zhicloud.module.member.controller.app.auth.AppAuthController#sendSmsCode
-cn.zhicloud.module.member.controller.app.auth.AppAuthController#validateSmsCode
-cn.zhicloud.module.member.controller.app.auth.AppAuthController#socialLogin
-cn.zhicloud.module.member.controller.app.auth.AppAuthController#weixinMiniAppLogin
-cn.zhicloud.module.member.controller.app.auth.AppAuthController#createWeixinMpJsapiSignature
-cn.zhicloud.module.member.controller.app.social.AppSocialUserController#socialBind
-cn.zhicloud.module.member.controller.app.social.AppSocialUserController#getWxaQrcode
+zhicloud-module-member/src/main/java/cn/zhicloud/module/member/controller/app/user/AppMemberUserController.java#resetUserPassword
+zhicloud-module-member/src/main/java/cn/zhicloud/module/member/controller/app/auth/AppAuthController.java#login
+zhicloud-module-member/src/main/java/cn/zhicloud/module/member/controller/app/auth/AppAuthController.java#logout
+zhicloud-module-member/src/main/java/cn/zhicloud/module/member/controller/app/auth/AppAuthController.java#refreshToken
+zhicloud-module-member/src/main/java/cn/zhicloud/module/member/controller/app/auth/AppAuthController.java#smsLogin
+zhicloud-module-member/src/main/java/cn/zhicloud/module/member/controller/app/auth/AppAuthController.java#sendSmsCode
+zhicloud-module-member/src/main/java/cn/zhicloud/module/member/controller/app/auth/AppAuthController.java#validateSmsCode
+zhicloud-module-member/src/main/java/cn/zhicloud/module/member/controller/app/auth/AppAuthController.java#socialLogin
+zhicloud-module-member/src/main/java/cn/zhicloud/module/member/controller/app/auth/AppAuthController.java#weixinMiniAppLogin
+zhicloud-module-member/src/main/java/cn/zhicloud/module/member/controller/app/auth/AppAuthController.java#createWeixinMpJsapiSignature
+zhicloud-module-member/src/main/java/cn/zhicloud/module/member/controller/app/social/AppSocialUserController.java#socialBind
+zhicloud-module-member/src/main/java/cn/zhicloud/module/member/controller/app/social/AppSocialUserController.java#getWxaQrcode
 
 # ===== 系统模块 - 认证接口 =====
-cn.zhicloud.module.system.controller.admin.oauth2.OAuth2OpenController#postAccessToken
-cn.zhicloud.module.system.controller.admin.oauth2.OAuth2OpenController#revokeToken
-cn.zhicloud.module.system.controller.admin.oauth2.OAuth2OpenController#checkToken
-cn.zhicloud.module.system.controller.admin.auth.AuthController#login
-cn.zhicloud.module.system.controller.admin.auth.AuthController#loginByTotp
-cn.zhicloud.module.system.controller.admin.auth.AuthController#logout
-cn.zhicloud.module.system.controller.admin.auth.AuthController#refreshToken
-cn.zhicloud.module.system.controller.admin.auth.AuthController#register
-cn.zhicloud.module.system.controller.admin.auth.AuthController#smsLogin
-cn.zhicloud.module.system.controller.admin.auth.AuthController#sendLoginSmsCode
-cn.zhicloud.module.system.controller.admin.auth.AuthController#resetPassword
-cn.zhicloud.module.system.controller.admin.auth.AuthController#socialQuickLogin
+zhicloud-module-system/src/main/java/cn/zhicloud/module/system/controller/admin/oauth2/OAuth2OpenController.java#postAccessToken
+zhicloud-module-system/src/main/java/cn/zhicloud/module/system/controller/admin/oauth2/OAuth2OpenController.java#revokeToken
+zhicloud-module-system/src/main/java/cn/zhicloud/module/system/controller/admin/oauth2/OAuth2OpenController.java#checkToken
+zhicloud-module-system/src/main/java/cn/zhicloud/module/system/controller/admin/auth/AuthController.java#login
+zhicloud-module-system/src/main/java/cn/zhicloud/module/system/controller/admin/auth/AuthController.java#loginByTotp
+zhicloud-module-system/src/main/java/cn/zhicloud/module/system/controller/admin/auth/AuthController.java#logout
+zhicloud-module-system/src/main/java/cn/zhicloud/module/system/controller/admin/auth/AuthController.java#refreshToken
+zhicloud-module-system/src/main/java/cn/zhicloud/module/system/controller/admin/auth/AuthController.java#register
+zhicloud-module-system/src/main/java/cn/zhicloud/module/system/controller/admin/auth/AuthController.java#smsLogin
+zhicloud-module-system/src/main/java/cn/zhicloud/module/system/controller/admin/auth/AuthController.java#sendLoginSmsCode
+zhicloud-module-system/src/main/java/cn/zhicloud/module/system/controller/admin/auth/AuthController.java#resetPassword
+zhicloud-module-system/src/main/java/cn/zhicloud/module/system/controller/admin/auth/AuthController.java#socialQuickLogin
 
 # ===== 系统模块 - 短信回调 =====
-cn.zhicloud.module.system.controller.admin.sms.SmsCallbackController#receiveAliyunSmsStatus
-cn.zhicloud.module.system.controller.admin.sms.SmsCallbackController#receiveTencentSmsStatus
-cn.zhicloud.module.system.controller.admin.sms.SmsCallbackController#receiveHuaweiSmsStatus
-cn.zhicloud.module.system.controller.admin.sms.SmsCallbackController#receiveQiniuSmsStatus
+zhicloud-module-system/src/main/java/cn/zhicloud/module/system/controller/admin/sms/SmsCallbackController.java#receiveAliyunSmsStatus
+zhicloud-module-system/src/main/java/cn/zhicloud/module/system/controller/admin/sms/SmsCallbackController.java#receiveTencentSmsStatus
+zhicloud-module-system/src/main/java/cn/zhicloud/module/system/controller/admin/sms/SmsCallbackController.java#receiveHuaweiSmsStatus
+zhicloud-module-system/src/main/java/cn/zhicloud/module/system/controller/admin/sms/SmsCallbackController.java#receiveQiniuSmsStatus
 
 # ===== 系统模块 - 验证码 =====
-cn.zhicloud.module.system.controller.admin.captcha.CaptchaController#get
-cn.zhicloud.module.system.controller.admin.captcha.CaptchaController#check
+zhicloud-module-system/src/main/java/cn/zhicloud/module/system/controller/admin/captcha/CaptchaController.java#get
+zhicloud-module-system/src/main/java/cn/zhicloud/module/system/controller/admin/captcha/CaptchaController.java#check
 
 # ===== 微信公众号 =====
-cn.zhicloud.module.mp.controller.admin.open.MpOpenController#handleMessage
+zhicloud-module-mp/src/main/java/cn/zhicloud/module/mp/controller/admin/open/MpOpenController.java#handleMessage
 
 # ===== 支付模块 - 回调通知 =====
-cn.zhicloud.module.pay.controller.admin.notify.PayNotifyController#notifyOrder
-cn.zhicloud.module.pay.controller.admin.notify.PayNotifyController#notifyRefund
-cn.zhicloud.module.pay.controller.admin.notify.PayNotifyController#notifyTransfer
-cn.zhicloud.module.pay.controller.admin.demo.PayDemoOrderController#updateDemoOrderPaid
-cn.zhicloud.module.pay.controller.admin.demo.PayDemoOrderController#updateDemoOrderRefunded
-cn.zhicloud.module.pay.controller.admin.demo.PayDemoWithdrawController#updateDemoWithdrawTransferred
-cn.zhicloud.module.pay.controller.admin.wallet.PayWalletRechargeController#updateWalletRechargerPaid
-cn.zhicloud.module.pay.controller.admin.wallet.PayWalletRechargeController#updateWalletRechargeRefunded
+zhicloud-module-pay/src/main/java/cn/zhicloud/module/pay/controller/admin/notify/PayNotifyController.java#notifyOrder
+zhicloud-module-pay/src/main/java/cn/zhicloud/module/pay/controller/admin/notify/PayNotifyController.java#notifyRefund
+zhicloud-module-pay/src/main/java/cn/zhicloud/module/pay/controller/admin/notify/PayNotifyController.java#notifyTransfer
+zhicloud-module-pay/src/main/java/cn/zhicloud/module/pay/controller/admin/demo/PayDemoOrderController.java#updateDemoOrderPaid
+zhicloud-module-pay/src/main/java/cn/zhicloud/module/pay/controller/admin/demo/PayDemoOrderController.java#updateDemoOrderRefunded
+zhicloud-module-pay/src/main/java/cn/zhicloud/module/pay/controller/admin/demo/PayDemoWithdrawController.java#updateDemoWithdrawTransferred
+zhicloud-module-pay/src/main/java/cn/zhicloud/module/pay/controller/admin/wallet/PayWalletRechargeController.java#updateWalletRechargerPaid
+zhicloud-module-pay/src/main/java/cn/zhicloud/module/pay/controller/admin/wallet/PayWalletRechargeController.java#updateWalletRechargeRefunded
 
 # ===== AI 模块 - 回调 =====
-cn.zhicloud.module.ai.controller.admin.image.AiImageController#midjourneyNotify
+zhicloud-module-ai/src/main/java/cn/zhicloud/module/ai/controller/admin/image/AiImageController.java#midjourneyNotify
 
 # ===== IM 模块 - Webhook =====
-cn.zhicloud.module.im.controller.admin.rtc.ImRtcLiveKitController#webhook
+zhicloud-module-im/src/main/java/cn/zhicloud/module/im/controller/admin/rtc/ImRtcLiveKitController.java#webhook
 
 # ===== WMS - PDA 登录 =====
-cn.zhicloud.module.wms.controller.app.pda.WmsPdaController#login
+zhicloud-module-wms/src/main/java/cn/zhicloud/module/wms/controller/app/pda/WmsPdaController.java#login
 
 # ===== 商城/交易 - 回调 =====
-cn.zhicloud.module.trade.controller.app.order.AppTradeOrderController#updateOrderPaid
-cn.zhicloud.module.trade.controller.admin.aftersale.AfterSaleController#updateAfterSaleRefunded
-cn.zhicloud.module.trade.controller.admin.brokerage.BrokerageWithdrawController#updateBrokerageWithdrawTransferred
+zhicloud-module-trade/src/main/java/cn/zhicloud/module/trade/controller/app/order/AppTradeOrderController.java#updateOrderPaid
+zhicloud-module-trade/src/main/java/cn/zhicloud/module/trade/controller/admin/aftersale/AfterSaleController.java#updateAfterSaleRefunded
+zhicloud-module-trade/src/main/java/cn/zhicloud/module/trade/controller/admin/brokerage/BrokerageWithdrawController.java#updateBrokerageWithdrawTransferred
 
 # ===== 商城/营销 - 埋点 =====
-cn.zhicloud.module.promotion.controller.app.banner.AppBannerController#addBrowseCount
-cn.zhicloud.module.promotion.controller.app.article.AppArticleController#addBrowseCount
+zhicloud-module-promotion/src/main/java/cn/zhicloud/module/promotion/controller/app/banner/AppBannerController.java#addBrowseCount
+zhicloud-module-promotion/src/main/java/cn/zhicloud/module/promotion/controller/app/article/AppArticleController.java#addBrowseCount
 
 # ===== CRM - 线索接收 =====
-cn.zhicloud.module.crm.controller.admin.clue.CrmClueReceiveController#receiveExternalClue
+zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/controller/admin/clue/CrmClueReceiveController.java#receiveExternalClue
 
 # ===== 基础设施 - 文件上传 =====
-cn.zhicloud.module.infra.controller.app.file.AppFileController#uploadFile
-cn.zhicloud.module.infra.controller.app.file.AppFileController#createFile
+zhicloud-module-infra/src/main/java/cn/zhicloud/module/infra/controller/app/file/AppFileController.java#uploadFile
+zhicloud-module-infra/src/main/java/cn/zhicloud/module/infra/controller/app/file/AppFileController.java#createFile
 
 # ===== WMS - PDA 登录 =====
-cn.zhicloud.module.wms.controller.app.pda.WmsPdaController#login
+zhicloud-module-wms/src/main/java/cn/zhicloud/module/wms/controller/app/pda/WmsPdaController.java#login
