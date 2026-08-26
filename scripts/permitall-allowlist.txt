@@ -63,13 +63,13 @@ zhicloud-module-im/src/main/java/cn/zhicloud/module/im/controller/admin/rtc/ImRt
 zhicloud-module-wms/src/main/java/cn/zhicloud/module/wms/controller/app/pda/WmsPdaController.java#login
 
 # ===== 商城/交易 - 回调 =====
-zhicloud-module-trade/src/main/java/cn/zhicloud/module/trade/controller/app/order/AppTradeOrderController.java#updateOrderPaid
-zhicloud-module-trade/src/main/java/cn/zhicloud/module/trade/controller/admin/aftersale/AfterSaleController.java#updateAfterSaleRefunded
-zhicloud-module-trade/src/main/java/cn/zhicloud/module/trade/controller/admin/brokerage/BrokerageWithdrawController.java#updateBrokerageWithdrawTransferred
+zhicloud-module-mall/zhicloud-module-trade/src/main/java/cn/zhicloud/module/trade/controller/app/order/AppTradeOrderController.java#updateOrderPaid
+zhicloud-module-mall/zhicloud-module-trade/src/main/java/cn/zhicloud/module/trade/controller/admin/aftersale/AfterSaleController.java#updateAfterSaleRefunded
+zhicloud-module-mall/zhicloud-module-trade/src/main/java/cn/zhicloud/module/trade/controller/admin/brokerage/BrokerageWithdrawController.java#updateBrokerageWithdrawTransferred
 
 # ===== 商城/营销 - 埋点 =====
-zhicloud-module-promotion/src/main/java/cn/zhicloud/module/promotion/controller/app/banner/AppBannerController.java#addBrowseCount
-zhicloud-module-promotion/src/main/java/cn/zhicloud/module/promotion/controller/app/article/AppArticleController.java#addBrowseCount
+zhicloud-module-mall/zhicloud-module-promotion/src/main/java/cn/zhicloud/module/promotion/controller/app/banner/AppBannerController.java#addBrowseCount
+zhicloud-module-mall/zhicloud-module-promotion/src/main/java/cn/zhicloud/module/promotion/controller/app/article/AppArticleController.java#addBrowseCount
 
 # ===== CRM - 线索接收 =====
 zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/controller/admin/clue/CrmClueReceiveController.java#receiveExternalClue
