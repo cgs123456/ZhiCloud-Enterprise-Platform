@@ -113,7 +113,8 @@ public class MesMdEcnOrderServiceImplTest extends BaseDbUnitTest {
         MesMdEcnOrderSaveReqVO reqVO = buildSaveReq()
                 .setItems(Arrays.asList(buildItemSaveReq(), buildItemSaveReq().setChangeItem(20)));
         assertEquals(100L, ecnOrderService.createEcnOrder(reqVO));
-        verify(ecnOrderItemMapper, times(2)).insert(any(MesMdEcnOrderItemDO.class));
+        verify(ecnOrderItemMapper).insertBatch(argThat(list -> list != null && list.size() == 2));
+        verify(ecnOrderItemMapper, never()).insert(any(MesMdEcnOrderItemDO.class));
     }
 
     @Test
@@ -160,7 +161,8 @@ public class MesMdEcnOrderServiceImplTest extends BaseDbUnitTest {
         ecnOrderService.updateEcnOrder(reqVO);
         verify(ecnOrderMapper).updateById(any(MesMdEcnOrderDO.class));
         verify(ecnOrderItemMapper).deleteByEcnOrderId(100L);
-        verify(ecnOrderItemMapper).insert(any(MesMdEcnOrderItemDO.class));
+        verify(ecnOrderItemMapper).insertBatch(argThat(list -> list != null && list.size() == 1));
+        verify(ecnOrderItemMapper, never()).insert(any(MesMdEcnOrderItemDO.class));
     }
 
     @Test
