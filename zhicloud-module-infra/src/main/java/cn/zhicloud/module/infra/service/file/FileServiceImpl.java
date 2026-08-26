@@ -240,7 +240,7 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public FileDO getFileByConfigIdAndPath(Long configId, String path) {
-        return fileMapper.selectLatestByConfigIdAndPath(configId, path);
+        return fileMapper.selectLatestByConfigIdAndPathNoOrder(configId, path);
     }
 
 }

@@ -30,4 +30,5 @@ public interface FileMapper extends BaseMapperX<FileDO> {
                 .orderByAsc(FileDO::getId));
     }
 
+    FileDO selectLatestByConfigIdAndPathNoOrder(Long configId, String path);
 }
