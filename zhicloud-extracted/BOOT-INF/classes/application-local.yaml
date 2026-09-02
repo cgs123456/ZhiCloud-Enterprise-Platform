@@ -216,11 +216,15 @@ zhicloud:
   captcha:
     enable: false # 本地环境，暂时关闭图片验证码，方便登录等接口的测试；
   security:
-    mock-enable: true
+    # P0 安全修复：服务一旦经内网穿透暴露到公网，mock 登录等同于"免密登录"，必须关闭。
+    # 本地需要免密调试时再改回 true（或在启动命令追加 --zhicloud.security.mock-enable=true）。
+    mock-enable: false
     mock-secret: ${MOCK_SECRET:test-only-for-local} # P0 安全修复：mock 模式密钥，仅 local 环境使用，生产环境必须关闭 mock-enable
   web:
     cors:
-      allowed-origins: http://localhost:48080,http://127.0.0.1:48080 # P1 安全修复：CORS 白名单，避免默认 * + allowCredentials 的安全风险
+      # P1 安全修复：CORS 白名单，避免默认 * + allowCredentials 的安全风险。
+      # 末尾两项为 HSK 内网穿透分配的公网域名（前端站点 / 后端隧道），随隧道重建会变化，需同步更新。
+      allowed-origins: http://localhost:48080,http://127.0.0.1:48080,https://704031d6ff61.hz-1.aicp.space,https://ys7mrp.gicp.fun
   pay:
     order-notify-url: https://yutou.mynatapp.cc/admin-api/pay/notify/order # 支付渠道的【支付】回调地址
     refund-notify-url: https://yutou.mynatapp.cc/admin-api/pay/notify/refund # 支付渠道的【退款】回调地址
