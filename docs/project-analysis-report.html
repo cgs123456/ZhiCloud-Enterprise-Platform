@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智云·企业数字化平台 — 项目深度分析报告</title>
+<style>
+  :root{
+    --bg:#ffffff; --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb;
+    --card:#f8fafc; --brand:#1e3a8a; --brand2:#1d4ed8; --gold:#b8860b;
+    --ok:#047857; --warn:#b45309; --bad:#b91c1c; --soft:#eff6ff; --soft2:#fefce8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.65;font-size:14px}
+  header{background:linear-gradient(135deg,#1e3a8a,#1d4ed8);color:#fff;padding:30px 40px}
+  header h1{margin:0 0 6px;font-size:24px;letter-spacing:.5px}
+  header .sub{opacity:.9;font-size:13px}
+  header .tag{display:inline-block;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
+    padding:2px 10px;border-radius:20px;font-size:12px;margin:8px 6px 0 0}
+  .wrap{padding:24px 40px 60px;max-width:1180px;margin:0 auto}
+  .grid{display:grid;gap:14px}
+  .metrics{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:22px 0}
+  .m{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+  .m .n{font-size:22px;font-weight:700;color:var(--brand)}
+  .m .l{font-size:12px;color:var(--muted);margin-top:2px}
+  h2{font-size:19px;border-left:4px solid var(--gold);padding-left:12px;margin:34px 0 14px;color:var(--brand)}
+  h3{font-size:15px;margin:18px 0 8px;color:var(--brand2)}
+  p{margin:8px 0}
+  table{border-collapse:collapse;width:100%;margin:10px 0;font-size:13px}
+  th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+  th{background:var(--soft);color:var(--brand);font-weight:600}
+  tr:nth-child(even) td{background:#fcfcfd}
+  code{background:#f1f5f9;padding:1px 6px;border-radius:4px;font-size:12px;font-family:"SFMono-Regular",Consolas,monospace}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:12px 0}
+  .pill{display:inline-block;font-size:11px;padding:1px 8px;border-radius:12px;font-weight:600}
+  .p-ok{background:#dcfce7;color:var(--ok)} .p-warn{background:#fef3c7;color:var(--warn)}
+  .p-bad{background:#fee2e2;color:var(--bad)} .p-info{background:#dbeafe;color:var(--brand2)}
+  .note{background:var(--soft2);border:1px solid #fde68a;border-left:4px solid var(--gold);
+    padding:12px 16px;border-radius:8px;margin:12px 0;font-size:13px}
+  .risk-high{color:var(--bad);font-weight:700} .risk-mid{color:var(--warn);font-weight:700}
+  .risk-low{color:var(--ok);font-weight:700}
+  details{border:1px solid var(--line);border-radius:10px;margin:14px 0;background:#fff;overflow:hidden}
+  details>summary{cursor:pointer;padding:13px 18px;font-weight:600;color:var(--brand);
+    background:var(--soft);font-size:15px;list-style:none}
+  details>summary::-webkit-details-marker{display:none}
+  details>summary:before{content:"▸ ";color:var(--gold)}
+  details[open]>summary:before{content:"▾ "}
+  details .body{padding:6px 20px 18px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:820px){.two{grid-template-columns:1fr}.wrap{padding:18px}}
+  svg{width:100%;height:auto;display:block}
+  .foot{color:var(--muted);font-size:12px;border-top:1px solid var(--line);margin-top:40px;padding-top:16px}
+  a{color:var(--brand2)}
+</style>
+</head>
+<body>
+<header>
+  <h1>智云·企业数字化平台（ZhiCloud Enterprise Platform）</h1>
+  <div class="sub">项目深度分析报告 · 基于源码实证扫描（2026-09-01）</div>
+  <div>
+    <span class="tag">JDK 21</span><span class="tag">Spring Boot 3.5.16</span>
+    <span class="tag">Spring Modulith 模块化单体</span><span class="tag">ERP/MES/WMS/QMS/CRM/HR/OA/TMS 八大域</span>
+    <span class="tag">AI 三件套（RAG / Multi-Agent / DataLake）</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="card">
+    <strong>一句话定位：</strong>面向制造/供应链/贸易企业的<strong>企业级全栈数字化底座</strong>——以一套模块化单体后端 + Vue3 管理后台，覆盖从采购、生产、仓储、质量到销售、人力、办公、运输的全经营链路，并内置大模型（RAG 检索增强、多智能体编排、数据湖仓）能力，让业务系统"原生可对话、可编排、可追溯"。
+  </div>
+
+  <div class="grid metrics">
+    <div class="m"><div class="n">~4,900</div><div class="l">后端主代码 Java 文件（启用模块）</div></div>
+    <div class="m"><div class="n">~615</div><div class="l">Controller（全模块）</div></div>
+    <div class="m"><div class="n">16</div><div class="l">激活业务/系统模块</div></div>
+    <div class="m"><div class="n">91</div><div class="l">Flyway 迁移脚本</div></div>
+    <div class="m"><div class="n">500+</div><div class="l">数据库表（含多库初始化脚本）</div></div>
+    <div class="m"><div class="n">1,710</div><div class="l">前端 Vue 页面</div></div>
+    <div class="m"><div class="n">494</div><div class="l">前端 API 封装文件</div></div>
+    <div class="m"><div class="n">380</div><div class="l">单元测试（后端）</div></div>
+    <div class="m"><div class="n">7</div><div class="l">CI 质量门禁（Python 脚本）</div></div>
+    <div class="m"><div class="n">0</div><div class="l">@PreAuthorize 缺口 / 裸抛 / 错误码冲突</div></div>
+  </div>
+
+  <h2>目录</h2>
+  <div class="card" style="font-size:13px">
+    <a href="#t1">① 技术栈全景</a> ｜ <a href="#t2">② 架构与分层</a> ｜ <a href="#t3">③ 库存一致性架构（P1 迁移）</a> ｜
+    <a href="#t4">④ AI 能力深度剖析</a> ｜ <a href="#t5">⑤ 前后端一致性</a> ｜ <a href="#t6">⑥ 工程质量与 CI 门禁</a> ｜
+    <a href="#t7">⑦ 文档 vs 代码 不一致清单</a> ｜ <a href="#t8">⑧ 待办与决策阻塞</a> ｜ <a href="#t9">⑨ 结论与建议</a>
+  </div>
+
+  <!-- ① -->
+  <details open id="t1">
+    <summary>① 技术栈全景</summary>
+    <div class="body">
+      <h3>后端</h3>
+      <table>
+        <tr><th>层</th><th>选型</th><th>版本/说明</th></tr>
+        <tr><td>语言/框架</td><td>JDK 21 + Spring Boot</td><td>21 (Temurin 21.0.11) / 3.5.16；虚拟线程已启用</td></tr>
+        <tr><td>架构范式</td><td>Spring Modulith</td><td>1.3.5，模块化单体（@ApplicationModule）</td></tr>
+        <tr><td>安全</td><td>Spring Security 6</td><td>RBAC 按钮级、SaaS 多租户、OAuth2 SSO、TOTP</td></tr>
+        <tr><td>ORM</td><td>MyBatis Plus</td><td>3.5.16（@TableName DO + Mapper）</td></tr>
+        <tr><td>分布式</td><td>Redisson</td><td>4.6.1 分布式锁/限流/缓存</td></tr>
+        <tr><td>工作流</td><td>Flowable</td><td>8.0.0 BPMN 设计器 + 会签/或签</td></tr>
+        <tr><td>AI</td><td>Spring AI</td><td>声明 1.1.8；ChatClient/ Tool/ ChatMemory</td></tr>
+        <tr><td>构建</td><td>Maven</td><td>多模块 reactor，flatten + JaCoCo + OWASP</td></tr>
+      </table>
+      <h3>前端（zhicloud-ui-admin-vue3）</h3>
+      <table>
+        <tr><th>能力</th><th>选型</th><th>声明版本</th></tr>
+        <tr><td>框架</td><td>Vue 3 + Vite</td><td>3.5.34 / 8.1.4</td></tr>
+        <tr><td>UI</td><td>Element Plus</td><td>2.13.7</td></tr>
+        <tr><td>状态/路由</td><td>Pinia + vue-router</td><td>3.0.4 / 5.0.6</td></tr>
+        <tr><td>语言</td><td>TypeScript + vue-tsc</td><td>6.0.3 / 3.2.8（全项目 0 错误）</td></tr>
+        <tr><td>图表/可视化</td><td>ECharts + markmap + bpmn-js</td><td>6.0 / 0.18 / 18.16</td></tr>
+        <tr><td>其他</td><td>axios / form-create / wangeditor / unocss / vue-i18n</td><td>国际化 + 低代码表单 + 富文本</td></tr>
+      </table>
+      <div class="note">前端声明版本号（Vite 8、TypeScript 6、vue-router 5、Element Plus 2.13）明显超前于社区当前稳定线，属项目自定版本口径，建议在对外介绍时统一以「Vue 3 + Vite + Element Plus + TS」表述业务栈，避免追问版本细节。</div>
+      <h3>中间件与 DevOps</h3>
+      <table>
+        <tr><th>类别</th><th>组件</th></tr>
+        <tr><td>存储</td><td>MySQL 8.0（主）/ Redis 7（缓存锁限流）/ PostgreSQL+pgvector 16（RAG 向量）/ MinIO（对象）/ Nacos 2.4.3（配置中心）</td></tr>
+        <tr><td>湖仓</td><td>Apache Iceberg + Trino 450（冷数据归档，经 Trino REST）</td></tr>
+        <tr><td>交付</td><td>docker-compose（14 服务）/ Helm + ArgoCD（金丝雀）/ Jenkins / JMeter+Gatling</td></tr>
+        <tr><td>可观测</td><td>Prometheus + Grafana(4 Dashboard) + Loki + Jaeger + AlertManager</td></tr>
+        <tr><td>安全</td><td>OWASP Dependency-Check(CVSS≥7 阻断) + CycloneDX SBOM + pre-commit 密钥扫描</td></tr>
+      </table>
+    </div>
+  </details>
+
+  <!-- ② -->
+  <details open id="t2">
+    <summary>② 架构与分层</summary>
+    <div class="body">
+      <p>采用<strong>模块化单体（Modulith）</strong>：一个 reactor 内分 <code>framework（16 个 starter）</code> → <code>各业务 module</code> → <code>server 启动模块</code>。模块间<strong>禁止直接 import service</strong>，一律走 <code>*.api</code> 包定义契约（普通接口或反向 SPI）。</p>
+      <svg viewBox="0 0 680 250" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif" font-size="11">
+        <rect x="0" y="0" width="680" height="250" fill="#fff"/>
+        <rect x="14" y="20" width="220" height="60" rx="8" fill="#1e3a8a"/><text x="124" y="46" fill="#fff" text-anchor="middle" font-weight="700">zhicloud-framework</text><text x="124" y="64" fill="#cbd5e1" text-anchor="middle">16 个 spring-boot-starter</text>
+        <rect x="250" y="20" width="416" height="60" rx="8" fill="#1d4ed8"/><text x="458" y="46" fill="#fff" text-anchor="middle" font-weight="700">业务/系统模块（16 个）</text><text x="458" y="64" fill="#cbd5e1" text-anchor="middle">system/infra/bpm · erp/mes/wms/qms/crm/hr/oa/tms · ai/ai-rag/ai-multiagent/datalake</text>
+        <rect x="14" y="100" width="652" height="46" rx="8" fill="#b8860b"/><text x="337" y="120" fill="#fff" text-anchor="middle" font-weight="700">契约边界 *.api 包</text><text x="337" y="138" fill="#fef3c7" text-anchor="middle">跨模块只读 API / 反向 SPI（如 erp.api.ErpMrpExecutorGateway）</text>
+        <rect x="14" y="170" width="652" height="56" rx="8" fill="#047857"/><text x="337" y="194" fill="#fff" text-anchor="middle" font-weight="700">zhicloud-server（启动模块）</text><text x="337" y="212" fill="#d1fae5" text-anchor="middle">装配全部模块 · Flyway 91 脚本 · application.yaml · 端口 48080 / 管理 48090</text>
+        <line x1="124" y1="80" x2="124" y2="100" stroke="#94a3b8" stroke-width="2"/>
+        <line x1="458" y1="80" x2="458" y2="100" stroke="#94a3b8" stroke-width="2"/>
+        <line x1="337" y1="146" x2="337" y2="170" stroke="#94a3b8" stroke-width="2"/>
+      </svg>
+      <div class="two">
+        <div class="card">
+          <h3>分层约定（单模块内）</h3>
+          <ul style="margin:4px 0">
+            <li><code>controller/*</code> — REST 入口，写接口须带 <code>@PreAuthorize</code></li>
+            <li><code>service/*</code> — 业务（Impl 类），JaCoCo 门禁覆盖对象</li>
+            <li><code>dal/dataobject/*</code> — MyBatis Plus DO（<code>@TableName</code>）</li>
+            <li><code>dal/mysql/*</code> — Mapper</li>
+            <li><code>enums/*</code> — 错误码与枚举（集中治理）</li>
+            <li><code>api/*</code> — 对外契约（模块边界纪律）</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>规模分布（源码文件数 Top）</h3>
+          <table style="margin:4px 0">
+            <tr><th>模块</th><th>java</th><th>Ctrl</th><th>测试</th></tr>
+            <tr><td>MES</td><td>1334</td><td>148</td><td>48</td></tr>
+            <tr><td>ERP</td><td>668</td><td>70</td><td>8</td></tr>
+            <tr><td>CRM</td><td>353</td><td>32</td><td>4</td></tr>
+            <tr><td>WMS</td><td>350</td><td>38</td><td>26</td></tr>
+            <tr><td>QMS</td><td>298</td><td>28</td><td>6</td></tr>
+            <tr><td>AI</td><td>248</td><td>18</td><td>32</td></tr>
+            <tr><td>framework</td><td>370</td><td>0</td><td>19</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="note"><strong>架构亮点：</strong>跨模块强边界（api 包）+ 并发"三件套"（复合唯一键 <code>DuplicateKeyException</code> 兜底 / DB 层 CAS / <code>@Version</code> 乐观锁）已是全仓纪律，并在 P2 阶段收口。这是面试时值得讲的工程化亮点。</div>
+    </div>
+  </details>
+
+  <!-- ③ -->
+  <details id="t3">
+    <summary>③ 库存一致性架构（P1 迁移方案 · 当前核心架构工作）</summary>
+    <div class="body">
+      <p>这是项目当前最关键的架构演进议题，已形成正式方案文档 <code>docs/P1-inventory-architecture-migration-plan.md</code>。核心矛盾：<strong>库存存在三份真值源、各自写、各自 CAS、各自 @Version</strong>。</p>
+      <table>
+        <tr><th>真值源</th><th>表</th><th>并发保护现状</th></tr>
+        <tr><td>ERP 库存</td><td><code>erp_stock</code></td><td>DB CAS（<code>updateCountIncrement</code>）+ <code>@Version</code></td></tr>
+        <tr><td>WMS 库存</td><td><code>wms_inventory</code></td><td><code>@Version</code> + 写路径 DA CAS（语义最完整）</td></tr>
+        <tr><td>MES 物料库存</td><td><code>mes_wm_material_stock</code></td><td>复合唯一键 + <code>DuplicateKeyException</code> 兜底 + <code>@Version</code></td></tr>
+      </table>
+      <h3>三阶段迁移路线</h3>
+      <table>
+        <tr><th>里程碑</th><th>内容</th><th>状态</th></tr>
+        <tr><td>M0 基线</td><td>P2 工程纪律 + P1-3 模块边界治理（<code>ErpMrpExecutorGateway</code> SPI 收口）</td><td><span class="pill p-ok">已完成</span></td></tr>
+        <tr><td>M1 P1-4</td><td>共享库存 Starter：统一 <code>InventoryApi/DO/Service</code> + 并发三件套 + 单测</td><td><span class="pill p-ok">已完成</span>（memory 记录 2858a5a+96bc2cb）</td></tr>
+        <tr><td>M2 P1-1</td><td>阶段A 双写+投影：WMS 为唯一真值，ERP/MES 退化为只读投影 + 日终对账 Job</td><td><span class="pill p-info">双写路径已落地</span>（1efdf6f，待去双写）</td></tr>
+        <tr><td>M3 P1-2</td><td>Outbox/Saga 事件化：<code>biz_event_outbox</code> + 进程内 Relay + 单链路 Saga（零新基础设施）</td><td><span class="pill p-warn">方案待启动</span></td></tr>
+        <tr><td>M4</td><td>去双写、下线旧表、扩展 Saga、可选接入 MQ</td><td><span class="pill p-warn">待 M2/M3 稳定</span></td></tr>
+      </table>
+      <div class="note"><strong>面试/价值口径：</strong>讲这个项目时，库存一致性可作为一个"真实架构决策"案例——从三真值源、双写漂移风险，到抽共享 Starter、Feature Flag 灰度、事务发件箱做最终一致。比堆技术名词有说服力。</div>
+    </div>
+  </details>
+
+  <!-- ④ -->
+  <details id="t4">
+    <summary>④ AI 能力深度剖析（RAG / Multi-Agent / DataLake）</summary>
+    <div class="body">
+      <div class="note">本节为源码实证（Explore 代理逐类核对）。标注 <code>文件:行号</code>。多处发现 README 与实际实现不符，详见第 ⑦ 章。</div>
+
+      <h3>4.1 AI 主模块（248 java / 18 Controller）</h3>
+      <ul>
+        <li><strong>模型厂商：</strong><code>AiPlatformEnum</code> 定义 21 个平台（国内 12 + 国外 9），由 <code>AiModelFactoryImpl.getOrCreateChatModel()</code> 按平台 switch 构建并带缓存。</li>
+        <li><strong>核心对话链路：</strong><code>AiChatMessageServiceImpl</code> 用裸 <code>ChatModel.call()/StreamingChatModel.stream()</code>，<strong>未使用 ChatClient</strong>。ChatClient 仅出现在 chatmemory/nl2sql/predictive/workflow 等 6 个 service。</li>
+        <li><strong>Tool 调用：</strong>18 个 <code>@Tool</code> 方法（Wms/Mes/Erp/Qms 业务工具 + PersonService），经 <code>AiAutoConfiguration.toolCallbacks()</code> 汇聚；<code>ToolAccessInterceptor</code> 做黑名单/白名单/二次确认。</li>
+        <li><strong>多轮会话：两条独立链路</strong>——归档链路落表 <code>ai_chat_conversation</code>/<code>ai_chat_message</code>；ChatMemory 链路存<strong> Redis</strong>（短期 20 条、压缩阈值 30、TTL 7 天），且<strong>未实现 Spring AI 的 ChatMemory 接口</strong>。</li>
+        <li><strong>MCP：</strong>引了 starter 但 <code>mcp.server.enabled=false</code>、<code>client.enabled=false</code>——<strong>协议未开启，实际生效的是进程内 <code>ToolCallbacks.from()</code> 直调</strong>。</li>
+      </ul>
+
+      <h3>4.2 AI-RAG（42 java / 4 Controller）</h3>
+      <ul>
+        <li><strong>链路：</strong>Tika 解析 → 自写 <code>semanticChunk()</code> 分块（非 TokenTextSplitter）→ BGE-base-zh ONNX 向量化 → <strong>PgVector（维度 768，表 <code>airag_vector_store</code>）</strong> → 检索 → RRF 融合 → 重排 → 生成 + 引用溯源。</li>
+        <li><strong>混合检索：</strong>向量 topK=10 + BM25 topK=10，<strong>RRF（K=60）</strong> 融合（<code>fuseHybrid()</code>）。BM25 用 Okapi（K1=1.5, B=0.75），CJK 按字切分。</li>
+        <li><strong>Reranker：</strong>ONNX Cross-Encoder（DJL + ONNX Runtime），缺失时降级 <code>SimpleReranker</code>（TF-IDF）。开关 <code>zhicloud.airag.reranker.enabled</code>，<code>fallback-to-simple</code> 默认 true。</li>
+        <li><strong>评估：</strong><code>RagEvaluationServiceImpl</code> 提供 Faithfulness / AnswerRelevancy / ContextPrecision / ContextRecall，<strong>四项均由 LLM 打分</strong>，落表 <code>ai_rag_evaluation_log</code>。</li>
+      </ul>
+
+      <h3>4.3 AI-MultiAgent（41 java / 3 Controller）</h3>
+      <ul>
+        <li><strong>ReAct 主循环：</strong><code>ReActAgent.run()</code>，结构化 <code>ReActStep{thought,action,actionInput,observation,tokensUsed}</code>，scratchpad 累积 Thought/Action/Observation，LLM 须返回严格 JSON；终止 action=<code>"Final Answer"</code>。</li>
+        <li><strong>Supervisor + Worker：</strong><code>SupervisorAgent</code> 规划任务 + 汇总；<code>AbstractWorkerAgent</code> 基类 + 4 个角色（report-writer / sales / procurement / production）；<code>WorkerAgentRegistry</code> 注册；<code>MultiAgentExecuteServiceImpl</code> 编排并做拓扑白名单防越权。</li>
+        <li><strong>熔断参数（<code>MultiAgentProperties</code>）：</strong>步数 10 / Token 4000 / 超时 60s / 调用深度 5 / 限流 5 QPS / 重试 3 次 / 熔断器失败阈值 5。</li>
+      </ul>
+
+      <h3>4.4 DataLake（11 java）</h3>
+      <ul>
+        <li><strong>接入：</strong>经 Spring <code>RestClient</code> 调 Trino REST <code>/v1/statement</code>（Trino 不在编译期依赖内），分页上限 100。</li>
+        <li><strong>3 个 MCP 工具：</strong><code>datalake_list_tables</code> / <code>datalake_query_table</code> / <code>datalake_get_archive_status</code>（后者为占位，返回 PENDING）。</li>
+        <li><strong>SQL 注入防护：</strong>实际为 <strong>5 重</strong>（非空 / 危险字符正则 / 前缀白名单 SELECT|WITH / 18 个禁用关键字 / 点分标识符逐段校验），README 称"4 重"。</li>
+      </ul>
+    </div>
+  </details>
+
+  <!-- ⑤ -->
+  <details id="t5">
+    <summary>⑤ 前后端一致性</summary>
+    <div class="body">
+      <h3>模块矩阵（后端启用 vs 前端页面）</h3>
+      <table>
+        <tr><th>业务域</th><th>后端</th><th>前端 view</th><th>前端 api</th><th>结论</th></tr>
+        <tr><td>系统/基础设施/BPM</td><td>✓</td><td>system/infra/bpm</td><td>✓</td><td><span class="pill p-ok">对齐</span></td></tr>
+        <tr><td>ERP/MES/WMS/QMS/CRM</td><td>✓</td><td>erp/mes/wms/qms/crm</td><td>✓</td><td><span class="pill p-ok">对齐</span></td></tr>
+        <tr><td>AI 三件套</td><td>✓</td><td>ai(69)</td><td>ai</td><td><span class="pill p-ok">对齐</span></td></tr>
+        <tr><td>HR</td><td>✓(zhicloud-module-hr)</td><td>hrm(198)</td><td>hrm</td><td><span class="pill p-ok">对齐</span>（命名 hrm）</td></tr>
+        <tr><td>OA</td><td><span class="pill p-info">已启用</span></td><td><span class="risk-high">无</span></td><td><span class="risk-high">无</span></td><td><span class="pill p-bad">前端缺模块</span></td></tr>
+        <tr><td>TMS</td><td><span class="pill p-info">已启用</span></td><td><span class="risk-high">无</span></td><td><span class="risk-high">无</span></td><td><span class="pill p-bad">前端缺模块</span></td></tr>
+        <tr><td>DataLake</td><td><span class="pill p-info">已启用</span></td><td><span class="risk-high">无</span></td><td><span class="risk-high">无</span></td><td><span class="pill p-bad">前端缺模块</span></td></tr>
+        <tr><td>FMS/IoT/IM/Mall/Member/MP/Pay/Report</td><td><span class="pill p-warn">pom 注释禁用</span></td><td>有完整页面</td><td>有</td><td><span class="pill p-warn">前端超前/遗留</span></td></tr>
+      </table>
+      <div class="note"><strong>关键发现（建议核实）：</strong>后端激活的 <code>oa / tms / datalake</code> 三个模块，前端 <code>src/views</code> 与 <code>src/api</code> 均<strong>无对应目录</strong>——即后端已带业务、前端尚未配套页面。反之 FMS/IoT/IM/Mall 等后端已禁用模块，前端仍保留完整页面（偏"前端先行/历史遗留"）。这对外介绍"八大业务域全栈打通"时需口径一致：明确哪些域已前后端闭环。</div>
+      <h3>契约修复历史（来自 README 更新记录）</h3>
+      <ul>
+        <li>2026-08-24：MES 产品收货单 API 路径 <code>/product-recpt</code> → 后端实际 <code>/product-receipt</code>，执行端点对齐 <code>/finish</code>；SN 码重构为"批次分组"模型。</li>
+        <li>2026-08-26：前端 <strong>vue-tsc 全项目 0 错误</strong>（从 175+ 修至 0）；清理外链/假统计/演示页（<code>Index2.vue</code>、<code>DocAlert</code>）。</li>
+        <li>约定：前端请求经 axios 封装（<code>src/config/axios</code>），按模块分子目录（494 个 api 文件），与后端 <code>/zhicloud-module-*/controller</code> 的 URL 前缀一一对应。</li>
+      </ul>
+    </div>
+  </details>
+
+  <!-- ⑥ -->
+  <details id="t6">
+    <summary>⑥ 工程质量与 CI 门禁</summary>
+    <div class="body">
+      <p>后端通过 7 道 Python 脚本门禁守护（<code>scripts/*.py</code>），硬指标已达标：</p>
+      <table>
+        <tr><th>门禁</th><th>脚本</th><th>目标</th><th>状态</th></tr>
+        <tr><td>错误码唯一性</td><td>check_error_codes.py</td><td>0 冲突</td><td><span class="pill p-ok">2051 定义 0 冲突</span></td></tr>
+        <tr><td>@PreAuthorize 全仓</td><td>check_missing_preauthorize.py</td><td>写接口 100%</td><td><span class="pill p-ok">GAP 清零(0/615)</span></td></tr>
+        <tr><td>电子签名</td><td>check_electronic_signature.py</td><td>QMS 8 管控点</td><td><span class="pill p-ok">全覆盖</span></td></tr>
+        <tr><td>裸抛异常</td><td>check_bare_throws.py</td><td>0 处裸抛</td><td><span class="pill p-ok">0（4 处豁免）</span></td></tr>
+        <tr><td>事务原子性</td><td>scan_tx.py</td><td>多写补 @Transactional</td><td><span class="pill p-ok">12 处已补</span></td></tr>
+        <tr><td>错误码基线</td><td>renumber_error_codes.py</td><td>基线不回归</td><td><span class="pill p-ok">已收口</span></td></tr>
+        <tr><td>单测覆盖率</td><td>JaCoCo check</td><td>service 包 ≥0.30</td><td><span class="pill p-warn">WMS/MES 达标，BPM 暂排除</span></td></tr>
+      </table>
+      <div class="two">
+        <div class="card">
+          <h3>已落地的工程纪律</h3>
+          <ul style="margin:4px 0">
+            <li>虚拟线程（Loom）已启用，已修复 Druid pinning</li>
+            <li>Flyway 91 脚本幂等（information_schema 判存在）</li>
+            <li>操作日志哈希链 + TOTP 两步验证</li>
+            <li>OWASP CVSS≥7 高危阻断（需 NVD Key）</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>待提升</h3>
+          <ul style="margin:4px 0">
+            <li>核心域覆盖率基线仅 0.30，目标 0.40→0.60→0.80</li>
+            <li>ERP/CRM/QMS/TMS/HR/OA 单测偏少（4~8 文件）</li>
+            <li>BPM service 层覆盖率 ~4%，门禁暂未纳入</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <!-- ⑦ -->
+  <details id="t7">
+    <summary>⑦ 文档 vs 代码 不一致清单（10 项 · 源码实证）</summary>
+    <div class="body">
+      <p>下列不一致来自对 AI 三模块的逐类核对，对外介绍或面试时需特别注意，避免被追问击穿。</p>
+      <table>
+        <tr><th>#</th><th>严重度</th><th>README 说法</th><th>代码实际</th></tr>
+        <tr><td>1</td><td class="risk-mid">中</td><td>"TokenTextSplitter 分块"</td><td>AI-RAG 用自写 <code>semanticChunk()</code>（空行切段+2000 字符预算+200 重叠），无 TokenTextSplitter；接口 Javadoc 与 Impl 自相矛盾</td></tr>
+        <tr><td>2</td><td class="risk-mid">中</td><td>混合检索+重排为主能力</td><td>存在<strong>两条不等价路径</strong>：主链路走 BM25+RRF+Rerank；<code>RagAdvisor</code> 路径只有纯向量单路，无 BM25/重排</td></tr>
+        <tr><td>3</td><td class="risk-low">低</td><td>"SQL 注入 4 重防护"</td><td>实际 <strong>5 重</strong>（点多分标识符逐段校验未被记载）</td></tr>
+        <tr><td>4</td><td class="risk-high">高</td><td><code>zhicloud.airag.enabled</code> 默认 true</td><td>application.yaml 检索不到 <code>airag:</code> 段，<code>@ConditionalOnProperty(havingValue)</code> 未设 matchIfMissing → <strong>默认关闭</strong>，RAG/Reranker 实际不生效</td></tr>
+        <tr><td>5</td><td class="risk-mid">中</td><td>MCP 工具经协议暴露</td><td><code>mcp.server/client/annotation-scanner</code> 全 false，生效的是进程内 <code>ToolCallbacks.from()</code> 直调</td></tr>
+        <tr><td>6</td><td class="risk-high">高</td><td>暗示主对话走 Advisor 链</td><td>主对话 <code>AiChatMessageServiceImpl</code> 用裸 <code>ChatModel.call()</code>，<strong>RagAdvisor/PromptInjection/PiiMask 在主链路均不生效</strong></td></tr>
+        <tr><td>7</td><td class="risk-mid">中</td><td>引用溯源可用</td><td>BM25 路径 Document 不带 metadata，中文场景命中率高 → <strong>引用溯源大面积退化为 "-"</strong></td></tr>
+        <tr><td>8</td><td class="risk-low">低</td><td>Spring AI 1.1.8</td><td>dependencies BOM 中未检索到 spring-ai 版本声明，建议定稿前复核</td></tr>
+        <tr><td>9</td><td class="risk-low">低</td><td>未说明占位</td><td><code>datalake_get_archive_status</code> 自述占位，返回 PENDING</td></tr>
+        <tr><td>10</td><td class="risk-low">低</td><td>未说明</td><td><code>WeatherQueryToolFunction</code> 返回随机 mock 数据，属演示代码，不应计入生产工具能力</td></tr>
+      </table>
+      <div class="note"><strong>影响评估：</strong>#4 与 #6 是两处"功能声明但默认不生效"的硬伤，直接影响"AI 能力开箱即用"的对外口径；#2/#7 是检索质量退化的真实风险。其余为文档措辞偏差。建议在对外介绍时，将 AI-RAG 表述为"需显式开启配置后生效"，而非默认开启。</div>
+    </div>
+  </details>
+
+  <!-- ⑧ -->
+  <details id="t8">
+    <summary>⑧ 待办与用户决策阻塞项</summary>
+    <div class="body">
+      <p>来自 <code>FULL-MARKS-PLAN.md</code> 的追踪状态：</p>
+      <table>
+        <tr><th>项</th><th>内容</th><th>状态</th></tr>
+        <tr><td>Phase 1–7</td><td>架构/安全/多租户/鉴权/覆盖率/错误码/写接口护栏/可观测性</td><td><span class="pill p-ok">✅ 已完成并推送</span></td></tr>
+        <tr><td>Item 8</td><td>裸抛统一为 <code>ServiceException(ErrorCode)</code></td><td><span class="pill p-ok">门禁守护</span>（CI 持续）</td></tr>
+        <tr><td>Item C</td><td>核心域覆盖率 ≥40%</td><td><span class="pill p-warn">⏳ 待补测</span></td></tr>
+        <tr><td>U-2</td><td>AI+BPM 缺表：全新库部署验证</td><td><span class="pill p-bad">⛔ 需用户决策</span></td></tr>
+        <tr><td>U-7</td><td>48 张剩余缺表对应模块：永久下线 or 启用</td><td><span class="pill p-bad">⛔ 需用户决策</span></td></tr>
+        <tr><td>U-10</td><td>Redis 拓扑：哨兵/集群 or 单点降级</td><td><span class="pill p-bad">⛔ 需用户决策</span></td></tr>
+      </table>
+    </div>
+  </details>
+
+  <!-- ⑨ -->
+  <details open id="t9">
+    <summary>⑨ 结论与建议</summary>
+    <div class="body">
+      <h3>总体判断</h3>
+      <p>这是一个<strong>工程纪律相当扎实的企业级平台</strong>：模块化边界清晰、并发三件套统一、7 道 CI 门禁把安全/鉴权/错误码/事务/裸抛都防住了回归，前端类型安全达到 0 错误。业务覆盖广度（八大域 + AI 三件套）在国内开源/自研平台中属于第一梯队。</p>
+      <h3>对外介绍的三条建议</h3>
+      <ol>
+        <li><strong>业务价值优先：</strong>用"从采购到交付全链路打通 + 原生 AI 对话/编排"开场，技术名词（Spring Modulith、RRF、ReAct）一句话带过，被追问再展开。</li>
+        <li><strong>AI 模块口径收敛：</strong>RAG/Multi-Agent 表述为"需配置开启后生效的能力"，不要说默认开箱即用（规避 #4/#6 不一致）。</li>
+        <li><strong>八大域对齐前端：</strong>对外讲"全栈打通"时，明确 OA/TMS/DataLake 前端页面尚未配套、FMS/IoT 等后端已禁用——避免被问"这个模块前端在哪"。</li>
+      </ol>
+      <h3>工程侧建议（按性价比排序）</h3>
+      <ol>
+        <li><span class="risk-high">高</span> 修复 #4：补 <code>application.yaml</code> 的 <code>zhicloud.airag.enabled</code> 段，或把 <code>@ConditionalOnProperty</code> 改为 <code>matchIfMissing=true</code>，让 RAG 真能默认跑起来。</li>
+        <li><span class="risk-high">高</span> 修复 #6：评估把主对话链路迁移到 ChatClient，使 RagAdvisor/PromptInjection/PiiMask 在主链路生效（安全与溯源收益大）。</li>
+        <li><span class="risk-mid">中</span> 修复 #7：给 BM25 路径的 Document 补 metadata，恢复引用溯源；或明确文档声明"混合检索下引用溯源仅向量路径可用"。</li>
+        <li><span class="risk-mid">中</span> 校正 README 第 4/6/7 章与代码偏差（分块实现、MCP 实际状态、防护重数）。</li>
+        <li><span class="risk-low">低</span> 推进 Item C 覆盖率至 0.40、补齐 ERP/CRM/QMS/TMS 单测；决策 U-2/U-7/U-10。</li>
+      </ol>
+    </div>
+  </details>
+
+  <div class="foot">
+    本报告由 WorkBuddy 基于 D:\Desktop\zhicloud（后端）与 D:\Desktop\zhicloud-ui-admin-vue3（前端）的源码实证扫描生成，数据截至 2026-09-01。
+    模块规模、门禁状态、文档-代码不一致均附文件/行号证据；部分统计（如数据库表数）含多库初始化脚本，属量级估计。
+  </div>
+</div>
+</body>
+</html>
