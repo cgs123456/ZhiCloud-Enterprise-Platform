@@ -9,3 +9,13 @@ auto-*.d.ts
 .history
 output/
 .playwright-cli/
+# 本地构建/预览日志（体积大、无版本价值）
+*.log
+vite-output.txt
+# npm 产物（本仓用 pnpm，以 pnpm-lock.yaml 为准）
+package-lock.json
+# HSK 隧道本地状态与资源映射（随隧道重建变化）
+.hsk/
+tunnel-frontend.json
+# 品牌素材备份目录（原文件已入 public/，备份不入仓）
+brand-backup/
