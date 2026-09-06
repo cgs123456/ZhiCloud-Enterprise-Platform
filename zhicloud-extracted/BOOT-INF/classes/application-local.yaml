@@ -224,7 +224,7 @@ zhicloud:
     cors:
       # P1 安全修复：CORS 白名单，避免默认 * + allowCredentials 的安全风险。
       # 末尾两项为 HSK 内网穿透分配的公网域名（前端站点 / 后端隧道），随隧道重建会变化，需同步更新。
-      allowed-origins: http://localhost:48080,http://127.0.0.1:48080,https://704031d6ff61.hz-1.aicp.space,https://ys7mrp.gicp.fun
+      allowed-origins: http://localhost,http://127.0.0.1,http://localhost:48080,http://127.0.0.1:48080,https://f9979cc73c50.hz-1.aicp.space,https://12do07.gicp.fun
   pay:
     order-notify-url: https://yutou.mynatapp.cc/admin-api/pay/notify/order # 支付渠道的【支付】回调地址
     refund-notify-url: https://yutou.mynatapp.cc/admin-api/pay/notify/refund # 支付渠道的【退款】回调地址

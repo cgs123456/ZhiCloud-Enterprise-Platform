@@ -5,11 +5,13 @@ import cn.zhicloud.framework.tenant.core.context.TenantContextHolder;
 import cn.zhicloud.framework.tenant.core.job.TenantJob;
 import cn.zhicloud.module.system.dal.dataobject.user.AdminUserDO;
 import cn.zhicloud.module.system.dal.mysql.user.AdminUserMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import jakarta.annotation.Resource;
 import java.util.List;
 
+@Slf4j
 @Component
 public class DemoJob implements JobHandler {
 
@@ -19,7 +21,7 @@ public class DemoJob implements JobHandler {
     @Override
     @TenantJob // 标记多租户
     public String execute(String param) {
-        System.out.println("当前租户：" + TenantContextHolder.getTenantId());
+        log.info("当前租户：{}", TenantContextHolder.getTenantId());
         List<AdminUserDO> users = adminUserMapper.selectList();
         return "用户数量：" + users.size();
     }
