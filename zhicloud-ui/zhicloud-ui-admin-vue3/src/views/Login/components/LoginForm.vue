@@ -313,7 +313,8 @@ watch(
 )
 onMounted(() => {
   getLoginFormCache()
-  getTenantByWebsite()
+  // 域名未绑定租户/请求被去重中止时保持默认租户，不抛未处理异常
+  getTenantByWebsite().catch(() => {})
 })
 </script>
 

@@ -1,6 +1,7 @@
 package cn.zhicloud.module.mes.job;
 
 import cn.zhicloud.framework.common.enums.CommonStatusEnum;
+import cn.zhicloud.framework.tenant.core.job.TenantJob;
 import cn.zhicloud.module.mes.dal.dataobject.dv.oeerecord.MesDvOeeRecordDO;
 import cn.zhicloud.module.mes.dal.dataobject.dv.scada.MesDvScadaConfigDO;
 import cn.zhicloud.module.mes.dal.mysql.dv.oeerecord.MesDvOeeRecordMapper;
@@ -49,6 +50,7 @@ public class MesDvOeeRealtimeAggregateJob {
      * 每分钟执行一次（cron：每分钟第 0 秒）
      */
     @Scheduled(cron = "0 * * * * ?")
+    @TenantJob // 多租户逐个执行，否则定时线程无租户上下文会导致 NPE
     public void aggregate() {
         // 1. 查询所有启用的 SCADA 配置（分页全量）
         cn.zhicloud.module.mes.controller.admin.dv.scada.vo.MesDvScadaConfigPageReqVO pageReqVO =

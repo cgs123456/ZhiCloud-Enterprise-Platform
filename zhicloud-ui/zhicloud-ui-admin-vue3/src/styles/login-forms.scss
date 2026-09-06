@@ -19,26 +19,33 @@ $zinc-base-800: #27272a;
 $zinc-base-900: #18181b;
 $zinc-base-950: #0f0f11;
 
+/* CSS 自定义属性：供下方 var(--*) 引用（SCSS 变量编译期生效，运行时需 CSS 变量） */
+:root {
+  --accent-primary: #{$accent-primary};
+  --accent-primary-dark: #{$accent-primary-dark};
+  --accent-secondary: #{$accent-secondary};
+  --accent-secondary-dark: #{$accent-secondary-dark};
+  --accent-tertiary: #{$accent-tertiary};
+  --accent-tertiary-dark: #{$accent-tertiary-dark};
+  --zinc-50: #{$zinc-base-50};
+  --zinc-100: #{$zinc-base-100};
+  --zinc-200: #{$zinc-base-200};
+  --zinc-300: #{$zinc-base-300};
+  --zinc-400: #{$zinc-base-400};
+  --zinc-500: #{$zinc-base-500};
+  --zinc-600: #{$zinc-base-600};
+  --zinc-700: #{$zinc-base-700};
+  --zinc-800: #{$zinc-base-800};
+  --zinc-900: #{$zinc-base-900};
+  --zinc-950: #{$zinc-base-950};
+}
+
 /* Typography */
 $font-display: 'Geist', 'Outfit', system-ui, sans-serif;
 $font-body: 'Geist', system-ui, -apple-system, 'BlinkMacSystemFont', sans-serif;
 
-/* Headings */
-.h1 { font-size: 3rem; font-weight: 800; line-height: 1.1; }
-.h2 { font-size: 2.25rem; font-weight: 700; line-height: 1.2; }
-.h3 { font-size: 1.5rem; font-weight: 600; line-height: 1.3; }
-.h4 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; }
-.text-body { font-size: 1rem; line-height: 1.6; }
-.text-sm { font-size: 0.875rem; }
-.text-xs { font-size: 0.75rem; }
-
-/* Layout & Spacing */
-.max-w-7xl { max-width: 1400px; margin-left: auto; margin-right: auto; }
-.px-4 { padding-left: 1rem; padding-right: 1rem; }
-.px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
-.py-8 { padding-top: 2rem; padding-bottom: 2rem; }
-.py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
-.py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+/* 注意：通用工具类（标题字号、正文字号、内外边距、最大宽度）由 Tailwind/UnoCSS 提供，
+   此处不再重复定义，避免同名冲突导致全站样式串扰。以下仅保留登录专属规则。 */
 
 /* Form Input */
 .el-input__inner {

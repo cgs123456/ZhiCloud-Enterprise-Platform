@@ -1,5 +1,6 @@
 package cn.zhicloud.module.mes.job;
 
+import cn.zhicloud.framework.tenant.core.job.TenantJob;
 import cn.zhicloud.module.mes.service.dv.scada.MesDvDeviceDataCollectorService;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
@@ -35,6 +36,7 @@ public class MesDvDeviceDataCollectJob {
      * 每 30 秒触发一次采集
      */
     @Scheduled(cron = "0/30 * * * * ?")
+    @TenantJob // 多租户逐个执行，否则定时线程无租户上下文会导致 NPE
     public void collect() {
         try {
             int count = collectorService.collectAll();

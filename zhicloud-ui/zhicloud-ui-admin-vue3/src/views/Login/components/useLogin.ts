@@ -11,12 +11,6 @@ export enum LoginStateEnum {
 
 const currentState = ref(LoginStateEnum.LOGIN)
 
-// ===== 统一验证码状态（登录/注册表单共享）=====
-export const captchaState = ref({
-  enable: import.meta.env.VITE_APP_CAPTCHA_ENABLE === 'true',
-  type: 'blockPuzzle' // blockPuzzle 滑块 clickWord 点击文字 pictureWord 文字验证码
-})
-
 export function useLoginState() {
   function setLoginState(state: LoginStateEnum) {
     currentState.value = state

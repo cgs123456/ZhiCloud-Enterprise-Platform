@@ -1,5 +1,6 @@
 package cn.zhicloud.module.mes.job;
 
+import cn.zhicloud.framework.tenant.core.job.TenantJob;
 import cn.zhicloud.module.mes.service.pro.piecework.MesProPieceworkSummaryDTO;
 import cn.zhicloud.module.mes.service.pro.piecework.MesProPieceworkSummaryService;
 import jakarta.annotation.Resource;
@@ -34,6 +35,7 @@ public class MesProPieceworkSummaryJob {
      * 每月 28-31 日 23:00 触发，仅当当天为当月最后一天时执行汇总
      */
     @Scheduled(cron = "0 0 23 28-31 * ?")
+    @TenantJob // 多租户逐个执行，否则定时线程无租户上下文会导致 NPE
     public void summary() {
         LocalDate today = LocalDate.now();
         if (!isLastDayOfMonth(today)) {
