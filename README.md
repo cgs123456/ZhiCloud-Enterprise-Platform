@@ -179,6 +179,8 @@ zhicloud/
 ├── zhicloud-module-ai-rag/         # RAG 检索增强生成
 ├── zhicloud-module-ai-multiagent/  # 多智能体编排
 ├── zhicloud-module-datalake/       # 数据湖仓（Iceberg + Trino）
+├── zhicloud-ui/                    # 前端 monorepo 目录（Vue3 管理后台）
+│   └── zhicloud-ui-admin-vue3/     # 管理后台前端（Vite dev 端口 80，代理后端 48080）
 ├── deploy/                      # ArgoCD + Helm Chart
 ├── k8s/                         # K8s 部署（含金丝雀）
 ├── script/                      # Docker/Jenkins/JMeter/Gatling/安全/灾备
@@ -212,6 +214,16 @@ mvn spring-boot:run
 ```
 
 访问 `http://localhost:48080`，默认账号 `admin` / `admin123`
+
+### Windows 本地开发（计划任务方式）
+
+```cmd
+schtasks /run /tn ZhiCloudBackend    # 后端约 5 分钟就绪（:48080）
+schtasks /run /tn ZhiCloudFrontend   # 前端约 1 分钟就绪（:80）
+```
+
+浏览器打开 `http://localhost/`，租户`智云` / 账号 `admin` / 密码 `admin123` 登录。
+日志分别见 `server.log`、`frontend.log`；停止服务用任务管理器结束 `java.exe` / 对应 `node.exe` 进程。
 
 ### 关键配置
 
