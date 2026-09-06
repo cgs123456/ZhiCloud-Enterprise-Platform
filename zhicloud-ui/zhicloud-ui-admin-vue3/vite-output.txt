@@ -1,0 +1,169 @@
+npm warn Unknown user config "sass_binary_site". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> zhicloud-ui-admin-vue3@2026.07-snapshot dev
+> vite --mode env.local
+
+
+  [32m[1mVITE[22m v8.1.4[39m  [42m [1menv.local[22m [49m  [2mready in [0m[1m7875[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m80[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://172.24.144.1:[1m80[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://169.254.108.185:[1m80[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://169.254.206.244:[1m80[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.1.84:[1m80[22m/[39m
+[2m14:59:41[22m [31m[1m[vite][22m[39m [31mInternal server error: [sass] expected "{".
+   ╷
+47 │ ].join(', ');
+   │             ^
+   ╵
+  src\styles\login-forms.scss 47:13  @use
+  src\styles\index.scss 5:1          root stylesheet[39m
+  Plugin: [35mvite:css[39m
+  File: [36mD:/Desktop/zhicloud-ui-admin-vue3/src/styles/index.scss[39m:47:13
+[33m  [sass] expected "{".
+     ╷
+  47 │ ].join(', ');
+     │             ^
+     ╵
+    src\styles\login-forms.scss 47:13  @use
+    src\styles\index.scss 5:1          root stylesheet[39m
+      at Object.wrapException (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:2311:47)
+      at SpanScanner.error$3$length$position (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:87463:15)
+      at SpanScanner._fail$1 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:87602:12)
+      at SpanScanner.expectChar$2$name (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:87544:12)
+      at SpanScanner.expectChar$1 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:87547:19)
+      at ScssParser0.children$1 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:119592:10)
+      at ScssParser0._stylesheet0$_withChildren$1$3 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:128115:39)
+      at ScssParser0._stylesheet0$_withChildren$3 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:128120:19)
+      at ScssParser0._stylesheet0$_withStyleRuleChildren$1$3 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:124432:20)
+      at ScssParser0._stylesheet0$_styleRule$2 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:124422:22)
+      at ScssParser0._stylesheet0$_styleRule$0 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:124426:19)
+      at ScssParser0._stylesheet0$_variableDeclarationOrStyleRule$0 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:124239:22)
+      at ScssParser0._stylesheet0$_statement$1$root (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:124175:211)
+      at StylesheetParser_parse__closure0.call$0 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:128184:17)
+      at ScssParser0.statements$1 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:119655:30)
+      at StylesheetParser_parse_closure0.call$0 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:128170:23)
+      at ScssParser0.wrapSpanFormatException$1$1 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:118232:25)
+      at ScssParser0.wrapSpanFormatException$1 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:118289:19)
+      at ScssParser0.parse$0 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:124139:19)
+      at Object.Stylesheet_Stylesheet$parse0 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:32202:64)
+      at D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:98871:38
+      at _wrapJsFunctionForAsync_closure.$protected (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:4982:15)
+      at _wrapJsFunctionForAsync_closure.call$2 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:38787:12)
+      at _awaitOnObject_closure.call$1 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:38775:32)
+      at StaticClosure._rootRunUnary (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:5406:18)
+      at _CustomZone.runUnary$2$2 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:40242:39)
+      at _Future__propagateToListeners_handleValueCallback.call$0 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:39276:51)
+      at Object._Future__propagateToListeners (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:5192:93)
+      at _Future._completeWithValue$1 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:39139:9)
+      at _AsyncAwaitCompleter.complete$1 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:38762:14)
+      at Object._asyncReturn (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:4954:17)
+      at D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:87980:24
+      at _wrapJsFunctionForAsync_closure.$protected (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:4982:15)
+      at _wrapJsFunctionForAsync_closure.call$2 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:38787:12)
+      at _awaitOnObject_closure.call$1 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:38775:32)
+      at StaticClosure._rootRunUnary (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:5406:18)
+      at _CustomZone.runUnary$2$2 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:40242:39)
+      at _Future__propagateToListeners_handleValueCallback.call$0 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:39276:51)
+      at Object._Future__propagateToListeners (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:5192:93)
+      at _Future._complete$1 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:39131:11)
+      at _SyncCompleter.complete$1 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:38976:10)
+      at promiseToFuture_closure1.call$1 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:45674:22)
+      at Object.Primitives_applyFunction (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:2187:30)
+      at Object.Function_apply (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:6430:16)
+      at _callDartFunctionFast (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:8246:16)
+      at D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:8224:18
+[2m14:59:41[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: [sass] expected "{".
+   ╷
+47 │ ].join(', ');
+   │             ^
+   ╵
+  src\styles\login-forms.scss 47:13  @use
+  src\styles\index.scss 5:1          root stylesheet
+  Plugin: [35mvite:css[39m
+  File: [36mD:/Desktop/zhicloud-ui-admin-vue3/src/styles/index.scss[39m:47:13
+[33m  [sass] expected "{".
+     ╷
+  47 │ ].join(', ');
+     │             ^
+     ╵
+    src\styles\login-forms.scss 47:13  @use
+    src\styles\index.scss 5:1          root stylesheet[39m
+[2m15:18:57[22m [31m[1m[vite][22m[39m [31mInternal server error: [sass] expected "{".
+   ╷
+23 │ .font-display: ['Geist', 'Outfit', 'system-ui', 'sans-serif'].join(', ');
+   │                                                                         ^
+   ╵
+  src\styles\login-forms.scss 23:73  @use
+  src\styles\index.scss 5:1          root stylesheet[39m
+  Plugin: [35mvite:css[39m
+  File: [36mD:/Desktop/zhicloud-ui-admin-vue3/src/styles/index.scss[39m:23:73
+[33m  [sass] expected "{".
+     ╷
+  23 │ .font-display: ['Geist', 'Outfit', 'system-ui', 'sans-serif'].join(', ');
+     │                                                                         ^
+     ╵
+    src\styles\login-forms.scss 23:73  @use
+    src\styles\index.scss 5:1          root stylesheet[39m
+      at Object.wrapException (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:2311:47)
+      at SpanScanner.error$3$length$position (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:87463:15)
+      at SpanScanner._fail$1 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:87602:12)
+      at SpanScanner.expectChar$2$name (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:87544:12)
+      at SpanScanner.expectChar$1 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:87547:19)
+      at ScssParser0.children$1 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:119592:10)
+      at ScssParser0._stylesheet0$_withChildren$1$3 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:128115:39)
+      at ScssParser0._stylesheet0$_withChildren$3 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:128120:19)
+      at ScssParser0._stylesheet0$_withStyleRuleChildren$1$3 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:124432:20)
+      at ScssParser0._stylesheet0$_styleRule$2 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:124422:22)
+      at ScssParser0._stylesheet0$_styleRule$0 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:124426:19)
+      at ScssParser0._stylesheet0$_variableDeclarationOrStyleRule$0 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:124239:22)
+      at ScssParser0._stylesheet0$_statement$1$root (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:124175:211)
+      at StylesheetParser_parse__closure0.call$0 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:128184:17)
+      at ScssParser0.statements$1 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:119655:30)
+      at StylesheetParser_parse_closure0.call$0 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:128170:23)
+      at ScssParser0.wrapSpanFormatException$1$1 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:118232:25)
+      at ScssParser0.wrapSpanFormatException$1 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:118289:19)
+      at ScssParser0.parse$0 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:124139:19)
+      at Object.Stylesheet_Stylesheet$parse0 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:32202:64)
+      at D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:98871:38
+      at _wrapJsFunctionForAsync_closure.$protected (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:4982:15)
+      at _wrapJsFunctionForAsync_closure.call$2 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:38787:12)
+      at _awaitOnObject_closure.call$1 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:38775:32)
+      at StaticClosure._rootRunUnary (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:5406:18)
+      at _CustomZone.runUnary$2$2 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:40242:39)
+      at _Future__propagateToListeners_handleValueCallback.call$0 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:39276:51)
+      at Object._Future__propagateToListeners (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:5192:93)
+      at _Future._completeWithValue$1 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:39139:9)
+      at _AsyncAwaitCompleter.complete$1 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:38762:14)
+      at Object._asyncReturn (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:4954:17)
+      at D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:87980:24
+      at _wrapJsFunctionForAsync_closure.$protected (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:4982:15)
+      at _wrapJsFunctionForAsync_closure.call$2 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:38787:12)
+      at _awaitOnObject_closure.call$1 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:38775:32)
+      at StaticClosure._rootRunUnary (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:5406:18)
+      at _CustomZone.runUnary$2$2 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:40242:39)
+      at _Future__propagateToListeners_handleValueCallback.call$0 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:39276:51)
+      at Object._Future__propagateToListeners (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:5192:93)
+      at _Future._complete$1 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:39131:11)
+      at _SyncCompleter.complete$1 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:38976:10)
+      at promiseToFuture_closure1.call$1 (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:45674:22)
+      at Object.Primitives_applyFunction (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:2187:30)
+      at Object.Function_apply (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:6430:16)
+      at _callDartFunctionFast (D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:8246:16)
+      at D:\Desktop\zhicloud-ui-admin-vue3\node_modules\sass\sass.dart.js:8224:18
+[2m15:18:57[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: [sass] expected "{".
+   ╷
+23 │ .font-display: ['Geist', 'Outfit', 'system-ui', 'sans-serif'].join(', ');
+   │                                                                         ^
+   ╵
+  src\styles\login-forms.scss 23:73  @use
+  src\styles\index.scss 5:1          root stylesheet
+  Plugin: [35mvite:css[39m
+  File: [36mD:/Desktop/zhicloud-ui-admin-vue3/src/styles/index.scss[39m:23:73
+[33m  [sass] expected "{".
+     ╷
+  23 │ .font-display: ['Geist', 'Outfit', 'system-ui', 'sans-serif'].join(', ');
+     │                                                                         ^
+     ╵
+    src\styles\login-forms.scss 23:73  @use
+    src\styles\index.scss 5:1          root stylesheet[39m

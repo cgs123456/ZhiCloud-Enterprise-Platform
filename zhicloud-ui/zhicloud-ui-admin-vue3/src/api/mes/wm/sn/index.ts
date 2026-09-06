@@ -31,7 +31,7 @@ export interface WmSnGroupVO {
 
 // MES SN 码生成 VO（对应后端 MesWmSnGenerateReqVO）
 export interface WmSnGenerateVO {
-  itemId: number
+  itemId?: number
   batchCode?: string
   workOrderId?: number
   count: number

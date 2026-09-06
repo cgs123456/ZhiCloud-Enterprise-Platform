@@ -1,0 +1,44 @@
+@use './var.css';
+@use './FormCreate/index.scss';
+@use './theme.scss';
+@use 'element-plus/theme-chalk/dark/css-vars.css';
+
+.reset-margin [class*='el-icon'] + span {
+  margin-left: 2px !important;
+}
+
+// 解决抽屉弹出时，body宽度变化的问题
+.el-popup-parent--hidden {
+  width: 100% !important;
+}
+
+// 解决表格内容超过表格总宽度后，横向滚动条前端顶不到表格边缘的问题
+.el-scrollbar__bar {
+  display: flex;
+  justify-content: flex-start;
+}
+
+/* nprogress 适配 element-plus 的主题色（纯主色，不加霓虹 glow） */
+#nprogress {
+  & .bar {
+    background-color: var(--el-color-primary) !important;
+  }
+
+  & .spinner-icon {
+    border-top-color: var(--el-color-primary);
+    border-left-color: var(--el-color-primary);
+  }
+}
+
+/* 低动效偏好（prefers-reduced-motion）：关闭装饰性动画与过渡 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+

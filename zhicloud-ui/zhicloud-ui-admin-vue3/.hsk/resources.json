@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "resources": [
+    {
+      "id": "tunnel-127.0.0.1-48082",
+      "type": "tunnel",
+      "localIp": "127.0.0.1",
+      "localPort": 48082,
+      "publicUrl": null,
+      "pid": 11996,
+      "binary": "hsk-cli-windows-amd64-v0.4.6.exe",
+      "detached": true,
+      "logFile": "C:\\Users\\Administrator\\.hsk\\logs\\tunnel-127.0.0.1-48082-2026-09-02T03-36-31-745Z.log",
+      "status": "running",
+      "createdAt": "2026-09-02T03:36:31.759Z",
+      "lastCheckedAt": "2026-09-02T03:36:31.759Z"
+    },
+    {
+      "id": "host-1788330427930986913",
+      "type": "host",
+      "filePath": "D:\\Desktop\\zhicloud-ui-admin-vue3\\dist-prod",
+      "publicUrl": "https://sd9j1a.gicp.fun?verify_code=3755",
+      "resourceId": "1788330427930986913",
+      "fileName": "dist-prod",
+      "status": "active",
+      "createdAt": "2026-09-02T06:27:16.405Z",
+      "lastCheckedAt": "2026-09-02T06:27:16.410Z"
+    },
+    {
+      "id": "tunnel-127.0.0.1-48110",
+      "type": "tunnel",
+      "localIp": "127.0.0.1",
+      "localPort": 48110,
+      "publicUrl": null,
+      "pid": 4744,
+      "binary": "hsk-cli-windows-amd64-v0.4.6.exe",
+      "detached": true,
+      "logFile": "C:\\Users\\Administrator\\.hsk\\logs\\tunnel-127.0.0.1-48110-2026-09-03T05-15-00-681Z.log",
+      "status": "running",
+      "createdAt": "2026-09-03T05:15:00.714Z",
+      "lastCheckedAt": "2026-09-03T05:15:00.714Z"
+    },
+    {
+      "id": "host-1788333049266620054",
+      "type": "host",
+      "filePath": "D:\\Desktop\\zhicloud-ui-admin-vue3\\dist-prod",
+      "publicUrl": "https://i3bzfx.gicp.fun?verify_code=7350",
+      "resourceId": "1788333049266620054",
+      "fileName": "dist-prod",
+      "status": "active",
+      "createdAt": "2026-09-02T07:10:57.661Z",
+      "lastCheckedAt": "2026-09-02T07:10:57.665Z"
+    },
+    {
+      "id": "host-1788408708887191325",
+      "type": "host",
+      "filePath": "D:\\Desktop\\zhicloud-ui-admin-vue3\\dist-prod",
+      "publicUrl": "https://loephg.gicp.fun?verify_code=5451",
+      "resourceId": "1788408708887191325",
+      "fileName": "dist-prod",
+      "status": "active",
+      "createdAt": "2026-09-03T04:12:07.868Z",
+      "lastCheckedAt": "2026-09-03T04:12:07.869Z"
+    },
+    {
+      "id": "host-1788410680598183701",
+      "type": "host",
+      "filePath": "D:\\Desktop\\zhicloud-ui-admin-vue3\\dist-prod",
+      "publicUrl": "https://jk7sv1.gicp.fun?verify_code=1003",
+      "resourceId": "1788410680598183701",
+      "fileName": "dist-prod",
+      "status": "active",
+      "createdAt": "2026-09-03T04:44:43.811Z",
+      "lastCheckedAt": "2026-09-03T04:44:43.812Z"
+    },
+    {
+      "id": "host-1788412808227062646",
+      "type": "host",
+      "filePath": "D:\\Desktop\\zhicloud-ui-admin-vue3\\dist-prod",
+      "publicUrl": "https://12do07.gicp.fun?verify_code=6223",
+      "resourceId": "1788412808227062646",
+      "fileName": "dist-prod",
+      "status": "active",
+      "createdAt": "2026-09-03T05:20:10.601Z",
+      "lastCheckedAt": "2026-09-03T05:20:10.601Z"
+    }
+  ]
+}
