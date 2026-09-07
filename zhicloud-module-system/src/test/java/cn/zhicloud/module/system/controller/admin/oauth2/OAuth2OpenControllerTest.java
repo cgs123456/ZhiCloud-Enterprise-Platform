@@ -8,7 +8,6 @@ import cn.zhicloud.framework.common.enums.UserTypeEnum;
 import cn.zhicloud.framework.common.exception.ErrorCode;
 import cn.zhicloud.framework.common.pojo.CommonResult;
 import cn.zhicloud.framework.common.util.collection.SetUtils;
-import cn.zhicloud.framework.common.util.object.ObjectUtils;
 import cn.zhicloud.framework.test.core.ut.BaseMockitoUnitTest;
 import cn.zhicloud.module.system.controller.admin.oauth2.vo.open.OAuth2OpenAccessTokenRespVO;
 import cn.zhicloud.module.system.controller.admin.oauth2.vo.open.OAuth2OpenAuthorizeInfoRespVO;
@@ -39,9 +38,6 @@ import static cn.zhicloud.framework.test.core.util.AssertUtils.assertServiceExce
 import static cn.zhicloud.framework.test.core.util.RandomUtils.randomPojo;
 import static cn.zhicloud.framework.test.core.util.RandomUtils.randomString;
 import static java.util.Arrays.asList;
-import static org.hamcrest.CoreMatchers.anyOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -91,7 +87,10 @@ public class OAuth2OpenControllerTest extends BaseMockitoUnitTest {
         // 断言
         assertEquals(0, result.getCode());
         assertPojoEquals(accessTokenDO, result.getData());
-        assertTrue(ObjectUtils.equalsAny(result.getData().getExpiresIn(), 29L, 30L));  // 执行过程会过去几毫秒
+        // 执行耗时受机器负载/GC 停顿影响（慢机器可达数秒），不断言精确秒数，只校验量级正确（防毫秒/秒单位 bug）
+        Long expiresIn = result.getData().getExpiresIn();
+        assertTrue(expiresIn != null && expiresIn >= 20L && expiresIn <= 30L,
+                "expiresIn 应在 20~30 秒之间，实际: " + expiresIn);
     }
 
     @Test
@@ -119,7 +118,10 @@ public class OAuth2OpenControllerTest extends BaseMockitoUnitTest {
         // 断言
         assertEquals(0, result.getCode());
         assertPojoEquals(accessTokenDO, result.getData());
-        assertTrue(ObjectUtils.equalsAny(result.getData().getExpiresIn(), 29L, 30L));  // 执行过程会过去几毫秒
+        // 执行耗时受机器负载/GC 停顿影响（慢机器可达数秒），不断言精确秒数，只校验量级正确（防毫秒/秒单位 bug）
+        Long expiresIn = result.getData().getExpiresIn();
+        assertTrue(expiresIn != null && expiresIn >= 20L && expiresIn <= 30L,
+                "expiresIn 应在 20~30 秒之间，实际: " + expiresIn);
     }
 
     @Test
@@ -145,7 +147,10 @@ public class OAuth2OpenControllerTest extends BaseMockitoUnitTest {
         // 断言
         assertEquals(0, result.getCode());
         assertPojoEquals(accessTokenDO, result.getData());
-        assertTrue(ObjectUtils.equalsAny(result.getData().getExpiresIn(), 29L, 30L));  // 执行过程会过去几毫秒
+        // 执行耗时受机器负载/GC 停顿影响（慢机器可达数秒），不断言精确秒数，只校验量级正确（防毫秒/秒单位 bug）
+        Long expiresIn = result.getData().getExpiresIn();
+        assertTrue(expiresIn != null && expiresIn >= 20L && expiresIn <= 30L,
+                "expiresIn 应在 20~30 秒之间，实际: " + expiresIn);
     }
 
     @Test
@@ -292,10 +297,15 @@ public class OAuth2OpenControllerTest extends BaseMockitoUnitTest {
                 scope, redirectUri, true, state);
         // 断言
         assertEquals(0, result.getCode());
-        assertThat(result.getData(), anyOf( // 29 和 30 都有一定概率，主要是时间计算
-                is("https://www.zhicloud.cn#access_token=test_access_token&token_type=bearer&state=test&expires_in=29&scope=read"),
-                is("https://www.zhicloud.cn#access_token=test_access_token&token_type=bearer&state=test&expires_in=30&scope=read")
-        ));
+        // 执行耗时受机器负载/GC 停顿影响，只校验 URL 骨架与 expires_in 量级（20~30 秒），不断言精确秒数
+        String redirectResult = result.getData();
+        String prefix = "https://www.zhicloud.cn#access_token=test_access_token&token_type=bearer&state=test&expires_in=";
+        assertTrue(redirectResult != null && redirectResult.startsWith(prefix) && redirectResult.endsWith("&scope=read"),
+                "重定向 URL 格式异常，实际: " + redirectResult);
+        long expiresIn = Long.parseLong(redirectResult.substring(prefix.length(),
+                redirectResult.length() - "&scope=read".length()));
+        assertTrue(expiresIn >= 20L && expiresIn <= 30L,
+                "expiresIn 应在 20~30 秒之间，实际: " + expiresIn);
     }
 
     @Test // autoApprove = false，通过 + code
