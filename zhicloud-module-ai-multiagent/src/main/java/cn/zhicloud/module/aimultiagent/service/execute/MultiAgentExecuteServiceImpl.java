@@ -13,6 +13,7 @@ import cn.zhicloud.module.aimultiagent.dal.mysql.MultiAgentCheckpointMapper;
 import cn.zhicloud.module.aimultiagent.dal.mysql.MultiAgentExecutionLogMapper;
 import cn.zhicloud.module.aimultiagent.dal.mysql.MultiAgentTopologyMapper;
 import cn.zhicloud.module.aimultiagent.model.AgentResult;
+import cn.zhicloud.module.aimultiagent.model.AgentSseEvent;
 import cn.zhicloud.module.aimultiagent.model.AgentTask;
 import cn.zhicloud.module.aimultiagent.model.AgentTopology;
 import cn.zhicloud.module.aimultiagent.service.agent.AbstractWorkerAgent;
@@ -29,8 +30,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.zhicloud.module.aimultiagent.enums.ErrorCodeConstants.*;
@@ -103,10 +107,23 @@ public class MultiAgentExecuteServiceImpl implements MultiAgentExecuteService {
     @Resource
     private MultiAgentProperties properties;
 
-    // @tx-ignore 本方法含分钟级 LLM 调用（plan/dispatch/summarize），包事务会长时间占用数据库连接；
-    // 各写入均为追加式单行（执行日志 + 检查点），失败可独立重试，无需原子性，因此不加 @Transactional。
     @Override
     public MultiAgentExecutionLogDO execute(Long topologyId, String userInput, Long tenantId) {
+        return executeInternal(topologyId, userInput, tenantId, null);
+    }
+
+    @Override
+    public void executeWithSse(Long topologyId, String userInput, Long tenantId,
+                               Consumer<AgentSseEvent> eventConsumer) {
+        // 终止事件（final/error/circuit_breaker）必达其一，由调用方据此关闭 SSE 连接；
+        // 未预期的抛出由调用方转为连接异常关闭。
+        executeInternal(topologyId, userInput, tenantId, eventConsumer);
+    }
+
+    // @tx-ignore 本方法含分钟级 LLM 调用（plan/dispatch/summarize），包事务会长时间占用数据库连接；
+    // 各写入均为追加式单行（执行日志 + 检查点），失败可独立重试，无需原子性，因此不加 @Transactional。
+    private MultiAgentExecutionLogDO executeInternal(Long topologyId, String userInput, Long tenantId,
+                                                     Consumer<AgentSseEvent> eventConsumer) {
         long startTime = System.currentTimeMillis();
 
         // 全链路 traceId：写入 MDC 供所有 Worker 日志携带，并在 finally 清理
@@ -154,12 +171,16 @@ public class MultiAgentExecuteServiceImpl implements MultiAgentExecuteService {
             // 4.1 检查点：拆解完成（保存任务定义，供 resume 复用，避免重拆导致任务漂移）
             MultiAgentCheckpointDO planCheckpoint =
                     writeCheckpoint(logDO.getId(), topologyId, TYPE_PLAN_COMPLETED, null, null, toJson(tasks));
+            emit(eventConsumer, AgentSseEvent.TYPE_PLAN_COMPLETED, -1, tasks.size(), null,
+                    StrUtil.format("{{\"taskCount\":{}}}", tasks.size()));
 
             // 5. 调用深度熔断检查
             int maxDepth = topology.getMaxDepth() != null ? topology.getMaxDepth() : properties.getSupervisor().getMaxDepthDefault();
             if (tasks.size() > maxDepth) {
                 String errorMsg = StrUtil.format("任务数({})超过最大调用深度({})", tasks.size(), maxDepth);
                 log.warn("[execute][深度熔断，{}]", errorMsg);
+                emit(eventConsumer, AgentSseEvent.TYPE_CIRCUIT_BREAKER, -1, tasks.size(), null,
+                        eventMessage(errorMsg));
                 return finishWithCircuitBreaker(logDO, errorMsg, null, startTime);
             }
 
@@ -168,7 +189,8 @@ public class MultiAgentExecuteServiceImpl implements MultiAgentExecuteService {
             acquireFlowLease(planCheckpoint.getId(), leaseToken);
             List<AgentResult> results;
             try {
-                results = dispatchTasksWithCheckpoints(tasks, tenantId, topology, logDO.getId(), topologyId);
+                results = dispatchTasksWithCheckpoints(tasks, tenantId, topology, logDO.getId(), topologyId,
+                        eventConsumer);
             } finally {
                 releaseFlowLease(planCheckpoint.getId(), leaseToken);
             }
@@ -181,6 +203,8 @@ public class MultiAgentExecuteServiceImpl implements MultiAgentExecuteService {
             if (totalTokens > maxTokenBudget) {
                 String errorMsg = StrUtil.format("Token 消耗({})超过预算上限({})", totalTokens, maxTokenBudget);
                 log.warn("[execute][Token 熔断，{}]", errorMsg);
+                emit(eventConsumer, AgentSseEvent.TYPE_CIRCUIT_BREAKER, tasks.size(), tasks.size(), null,
+                        eventMessage(errorMsg));
                 return finishWithCircuitBreaker(logDO, errorMsg, results, startTime);
             }
 
@@ -193,6 +217,10 @@ public class MultiAgentExecuteServiceImpl implements MultiAgentExecuteService {
                 logDO.setDurationMs(System.currentTimeMillis() - startTime);
                 log.warn("[execute][编排未成功，topologyId={}, allFailed={}, tasks={}]",
                         topologyId, allFailed, tasks.size());
+                Map<String, Object> failData = new HashMap<>();
+                failData.put("message", logDO.getFinalAnswer());
+                failData.put("executionLogId", logDO.getId());
+                emit(eventConsumer, AgentSseEvent.TYPE_ERROR, tasks.size(), tasks.size(), null, toJson(failData));
             } else {
                 String finalAnswer = supervisorAgent.summarize(userInput, results);
                 logDO.setFinalAnswer(finalAnswer);
@@ -200,6 +228,12 @@ public class MultiAgentExecuteServiceImpl implements MultiAgentExecuteService {
                 logDO.setDurationMs(System.currentTimeMillis() - startTime);
                 log.info("[execute][编排执行成功，topologyId={}, tasks={}, tokens={}, duration={}ms]",
                         topologyId, tasks.size(), totalTokens, logDO.getDurationMs());
+                Map<String, Object> finalData = new HashMap<>();
+                finalData.put("status", STATUS_SUCCESS);
+                finalData.put("totalTokens", totalTokens);
+                finalData.put("finalAnswer", finalAnswer);
+                finalData.put("executionLogId", logDO.getId());
+                emit(eventConsumer, AgentSseEvent.TYPE_FINAL, tasks.size(), tasks.size(), null, toJson(finalData));
             }
             // 8.1 检查点：汇总完成
             writeCheckpoint(logDO.getId(), topologyId, TYPE_SUMMARIZE_DONE, null, null, null);
@@ -208,6 +242,10 @@ public class MultiAgentExecuteServiceImpl implements MultiAgentExecuteService {
             logDO.setStatus(STATUS_FAILED);
             logDO.setErrorMsg(StrUtil.sub(e.getMessage(), 0, 500));
             logDO.setDurationMs(System.currentTimeMillis() - startTime);
+            Map<String, Object> errorData = new HashMap<>();
+            errorData.put("message", logDO.getErrorMsg());
+            errorData.put("executionLogId", logDO.getId());
+            emit(eventConsumer, AgentSseEvent.TYPE_ERROR, -1, -1, null, toJson(errorData));
         } finally {
             // 8.2 记录编排执行指标（成功 = status 为 SUCCESS）
             boolean ok = logDO.getStatus() != null && logDO.getStatus() == STATUS_SUCCESS;
@@ -354,17 +392,48 @@ public class MultiAgentExecuteServiceImpl implements MultiAgentExecuteService {
      */
     private List<AgentResult> dispatchTasksWithCheckpoints(List<AgentTask> tasks, Long tenantId,
                                                            AgentTopology topology, Long executionLogId,
-                                                           Long topologyId) {
+                                                           Long topologyId,
+                                                           Consumer<AgentSseEvent> eventConsumer) {
         List<String> allowedWorkers = allowedWorkerNames(topology);
         List<AgentResult> results = new ArrayList<>();
         for (int i = 0; i < tasks.size(); i++) {
             AgentTask task = tasks.get(i);
+            emit(eventConsumer, AgentSseEvent.TYPE_WORKER_STARTED, i, tasks.size(),
+                    task.getAssignedWorker(), null);
             AgentResult result = executeTask(task, tenantId, allowedWorkers);
             results.add(result);
             writeCheckpoint(executionLogId, topologyId, TYPE_WORKER_DONE,
                     task.getAssignedWorker(), i, toJson(results));
+            Map<String, Object> doneData = new HashMap<>();
+            doneData.put("success", result.isSuccess());
+            emit(eventConsumer, AgentSseEvent.TYPE_WORKER_DONE, i, tasks.size(),
+                    task.getAssignedWorker(), toJson(doneData));
         }
         return results;
+    }
+
+    /**
+     * 发送 SSE 事件（consumer 为空表示同步模式，直接跳过；发送失败仅记录，不中断主流程）
+     */
+    private void emit(Consumer<AgentSseEvent> eventConsumer, String type, int taskIndex, int totalTasks,
+                      String workerName, String data) {
+        if (eventConsumer == null) {
+            return;
+        }
+        try {
+            eventConsumer.accept(AgentSseEvent.of(type, taskIndex, totalTasks, workerName, data));
+        } catch (Exception e) {
+            log.debug("[emit][SSE 事件发送失败，type={}]", type, e);
+        }
+    }
+
+    /**
+     * 构造 {"message": ...} 事件数据（Jackson 转义，避免手工拼 JSON 注入问题）
+     */
+    private String eventMessage(String message) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("message", message);
+        return toJson(data);
     }
 
     /**

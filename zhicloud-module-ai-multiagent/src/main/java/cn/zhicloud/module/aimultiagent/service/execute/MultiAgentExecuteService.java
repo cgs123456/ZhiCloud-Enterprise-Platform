@@ -2,8 +2,10 @@ package cn.zhicloud.module.aimultiagent.service.execute;
 
 import cn.zhicloud.module.aimultiagent.dal.dataobject.MultiAgentCheckpointDO;
 import cn.zhicloud.module.aimultiagent.dal.dataobject.MultiAgentExecutionLogDO;
+import cn.zhicloud.module.aimultiagent.model.AgentSseEvent;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * 多 Agent 编排执行 Service 接口
@@ -30,6 +32,21 @@ public interface MultiAgentExecuteService {
      * @return 执行日志（包含最终答案、Token 消耗、执行状态等）
      */
     MultiAgentExecutionLogDO execute(Long topologyId, String userInput, Long tenantId);
+
+    /**
+     * 执行多 Agent 编排（SSE 实时推送版本）
+     *
+     * <p>与 {@link #execute(Long, String, Long)} 共用同一套分步执行骨架，
+     * 区别仅在于关键节点通过 {@code eventConsumer} 对外推送进度事件。
+     * 调用方应在收到终止事件（final/error/circuit_breaker）后关闭 SSE 连接。
+     *
+     * @param topologyId    拓扑 ID
+     * @param userInput     用户输入
+     * @param tenantId      租户 ID
+     * @param eventConsumer 进度事件消费者（不可为空）
+     */
+    void executeWithSse(Long topologyId, String userInput, Long tenantId,
+                        Consumer<AgentSseEvent> eventConsumer);
 
     /**
      * 从检查点恢复中断的编排执行
