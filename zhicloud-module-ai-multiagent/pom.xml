@@ -99,6 +99,13 @@
             <artifactId>micrometer-core</artifactId>
             <optional>true</optional>
         </dependency>
+
+        <!-- Test 测试相关（单元测试：CheckpointResumePlanner 纯函数，无需 Spring 上下文） -->
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>

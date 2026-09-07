@@ -31,4 +31,10 @@ public interface ErrorCodeConstants {
     ErrorCode EXECUTE_SUPERVISOR_SUMMARIZE_FAIL = new ErrorCode(1_042_002_007, "Supervisor 结果汇总失败");
     ErrorCode EXECUTE_WORKER_FAIL = new ErrorCode(1_042_002_008, "Worker({})执行失败：{}");
 
+    // ========== 检查点恢复 1-042-003-000 ==========
+    ErrorCode CHECKPOINT_NOT_EXISTS = new ErrorCode(1_042_003_000, "执行检查点不存在");
+    ErrorCode CHECKPOINT_RESUME_NOTHING = new ErrorCode(1_042_003_001, "该执行无需恢复（已完成或无可恢复的检查点）");
+    ErrorCode CHECKPOINT_STATE_CORRUPT = new ErrorCode(1_042_003_002, "检查点状态损坏，无法恢复");
+    ErrorCode CHECKPOINT_LEASE_CONFLICT = new ErrorCode(1_042_003_003, "任务正在被其他执行者处理，请稍后重试");
+
 }

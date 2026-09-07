@@ -1,5 +1,6 @@
 package cn.zhicloud.module.aimultiagent.service.execute;
 
+import cn.zhicloud.module.aimultiagent.dal.dataobject.MultiAgentCheckpointDO;
 import cn.zhicloud.module.aimultiagent.dal.dataobject.MultiAgentExecutionLogDO;
 
 import java.util.List;
@@ -29,6 +30,31 @@ public interface MultiAgentExecuteService {
      * @return 执行日志（包含最终答案、Token 消耗、执行状态等）
      */
     MultiAgentExecutionLogDO execute(Long topologyId, String userInput, Long tenantId);
+
+    /**
+     * 从检查点恢复中断的编排执行
+     *
+     * <p>恢复语义：
+     * <ul>
+     *   <li>仅有 PLAN_COMPLETED 检查点 → 从第 0 个任务开始执行</li>
+     *   <li>最新为 WORKER_DONE → 复用已完成结果，从下一任务继续</li>
+     *   <li>已是 SUMMARIZE_DONE / 日志已成功 → 直接返回，不再执行</li>
+     *   <li>无检查点 → 抛错（无可恢复内容）</li>
+     * </ul>
+     *
+     * @param executionLogId 执行日志编号
+     * @param tenantId       租户 ID
+     * @return 恢复后的执行日志
+     */
+    MultiAgentExecutionLogDO resume(Long executionLogId, Long tenantId);
+
+    /**
+     * 查询某次执行的检查点列表（按写入顺序）
+     *
+     * @param executionLogId 执行日志编号
+     * @return 检查点列表
+     */
+    List<MultiAgentCheckpointDO> getCheckpoints(Long executionLogId);
 
     /**
      * 查询执行日志
