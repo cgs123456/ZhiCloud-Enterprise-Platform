@@ -41,6 +41,17 @@ public class MultiAgentExecuteController {
         return success(BeanUtils.toBean(logDO, MultiAgentExecuteLogRespVO.class));
     }
 
+    @PostMapping("/resume")
+    @Operation(summary = "从检查点恢复中断的编排执行")
+    @Parameter(name = "executionLogId", description = "执行日志编号", required = true, example = "1024")
+    @PreAuthorize("@ss.hasPermission('aimultiagent:execute:run')")
+    public CommonResult<MultiAgentExecuteLogRespVO> resume(@RequestParam("executionLogId") Long executionLogId) {
+        // 租户 ID 一律取自服务端登录上下文，禁止信任请求体传入
+        MultiAgentExecutionLogDO logDO = executeService.resume(executionLogId,
+                TenantContextHolder.getRequiredTenantId());
+        return success(BeanUtils.toBean(logDO, MultiAgentExecuteLogRespVO.class));
+    }
+
     @GetMapping("/log")
     @Operation(summary = "查询执行日志")
     @Parameter(name = "id", description = "日志编号", required = true, example = "1024")
