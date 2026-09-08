@@ -36,4 +36,10 @@ public interface ErrorCodeConstants {
     ErrorCode RAG_EVALUATION_GROUND_TRUTH_EMPTY = new ErrorCode(1_041_003_002, "RAG 评估上下文召回率需要标准答案（groundTruth）");
     ErrorCode RAG_EVALUATION_SCORE_PARSE_FAIL = new ErrorCode(1_041_003_003, "RAG 评估 LLM 评分解析失败：{}");
 
+    // ========== 评估数据集与批量评估 1-041-004-000 ==========
+    ErrorCode EVAL_DATASET_NOT_EXISTS = new ErrorCode(1_041_004_000, "评估数据集不存在");
+    ErrorCode EVAL_DATASET_EMPTY = new ErrorCode(1_041_004_001, "评估数据集没有题目，请先导入问题");
+    ErrorCode EVAL_REPORT_NOT_EXISTS = new ErrorCode(1_041_004_002, "评估报告不存在");
+    ErrorCode EVAL_BATCH_ALREADY_RUNNING = new ErrorCode(1_041_004_003, "该数据集已有正在执行的批量评估，请稍后再试");
+
 }
