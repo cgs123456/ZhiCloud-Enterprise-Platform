@@ -20,6 +20,7 @@ import cn.zhicloud.module.aimultiagent.service.agent.AbstractWorkerAgent;
 import cn.zhicloud.module.aimultiagent.service.agent.SupervisorAgent;
 import cn.zhicloud.module.aimultiagent.service.agent.WorkerAgentRegistry;
 import cn.zhicloud.module.aimultiagent.service.metrics.MultiAgentMetrics;
+import cn.zhicloud.module.aimultiagent.service.trace.MultiAgentSpanService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
@@ -106,6 +107,8 @@ public class MultiAgentExecuteServiceImpl implements MultiAgentExecuteService {
     private MultiAgentMetrics metrics;
     @Resource
     private MultiAgentProperties properties;
+    @Resource
+    private MultiAgentSpanService spanService;
 
     @Override
     public MultiAgentExecutionLogDO execute(Long topologyId, String userInput, Long tenantId) {
@@ -164,8 +167,22 @@ public class MultiAgentExecuteServiceImpl implements MultiAgentExecuteService {
             // 3. 解析拓扑配置为 AgentTopology
             AgentTopology topology = parseTopology(topologyDO);
 
-            // 4. Supervisor 任务拆解
-            List<AgentTask> tasks = supervisorAgent.planTasks(userInput, topology);
+            // 4. Supervisor 任务拆解（P2-D 轨迹埋点：PLAN Span）
+            long planStart = System.currentTimeMillis();
+            Long planSpanId = spanService.startSpan(logDO.getId(), traceId,
+                    MultiAgentSpanService.SPAN_PLAN, null, null, null);
+            List<AgentTask> tasks;
+            try {
+                tasks = supervisorAgent.planTasks(userInput, topology);
+            } catch (Exception e) {
+                spanService.finishSpan(planSpanId, false, null,
+                        System.currentTimeMillis() - planStart,
+                        StrUtil.sub(e.getMessage(), 0, 500), null);
+                throw e;
+            }
+            spanService.finishSpan(planSpanId, true, null,
+                    System.currentTimeMillis() - planStart,
+                    null, StrUtil.format("任务数：{}", tasks.size()));
             logDO.setActualDepth(tasks.size());
             logDO.setSupervisorPlan(toJson(tasks));
             // 4.1 检查点：拆解完成（保存任务定义，供 resume 复用，避免重拆导致任务漂移）
@@ -190,7 +207,7 @@ public class MultiAgentExecuteServiceImpl implements MultiAgentExecuteService {
             List<AgentResult> results;
             try {
                 results = dispatchTasksWithCheckpoints(tasks, tenantId, topology, logDO.getId(), topologyId,
-                        eventConsumer);
+                        traceId, eventConsumer);
             } finally {
                 releaseFlowLease(planCheckpoint.getId(), leaseToken);
             }
@@ -222,7 +239,22 @@ public class MultiAgentExecuteServiceImpl implements MultiAgentExecuteService {
                 failData.put("executionLogId", logDO.getId());
                 emit(eventConsumer, AgentSseEvent.TYPE_ERROR, tasks.size(), tasks.size(), null, toJson(failData));
             } else {
-                String finalAnswer = supervisorAgent.summarize(userInput, results);
+                // P2-D 轨迹埋点：SUMMARIZE Span
+                long sumStart = System.currentTimeMillis();
+                Long sumSpanId = spanService.startSpan(logDO.getId(), traceId,
+                        MultiAgentSpanService.SPAN_SUMMARIZE, null, null, null);
+                String finalAnswer;
+                try {
+                    finalAnswer = supervisorAgent.summarize(userInput, results);
+                } catch (Exception e) {
+                    spanService.finishSpan(sumSpanId, false, null,
+                            System.currentTimeMillis() - sumStart,
+                            StrUtil.sub(e.getMessage(), 0, 500), null);
+                    throw e;
+                }
+                spanService.finishSpan(sumSpanId, true, null,
+                        System.currentTimeMillis() - sumStart,
+                        null, StrUtil.sub(finalAnswer, 0, 500));
                 logDO.setFinalAnswer(finalAnswer);
                 logDO.setStatus(STATUS_SUCCESS);
                 logDO.setDurationMs(System.currentTimeMillis() - startTime);
@@ -334,8 +366,15 @@ public class MultiAgentExecuteServiceImpl implements MultiAgentExecuteService {
                 int base = tasks.size() - remaining.size();
                 for (int i = 0; i < remaining.size(); i++) {
                     AgentTask task = remaining.get(i);
+                    // P2-D 轨迹埋点：resume 补跑的任务同样记录 WORKER Span
+                    Long spanId = spanService.startSpan(logDO.getId(), traceId,
+                            MultiAgentSpanService.SPAN_WORKER, task.getAssignedWorker(),
+                            base + i, task.getTaskId());
                     AgentResult result = executeTask(task, tenantId,
                             allowedWorkerNames(topology));
+                    spanService.finishSpan(spanId, result.isSuccess(), result.getTokensUsed(),
+                            result.getDurationMs(), StrUtil.sub(result.getErrorMsg(), 0, 500),
+                            StrUtil.sub(result.getOutput(), 0, 500));
                     results.add(result);
                     writeCheckpoint(logDO.getId(), logDO.getTopologyId(), TYPE_WORKER_DONE,
                             task.getAssignedWorker(), base + i, toJson(results));
@@ -353,7 +392,22 @@ public class MultiAgentExecuteServiceImpl implements MultiAgentExecuteService {
                         : "（无 Worker 执行结果，未生成汇总）");
                 logDO.setStatus(STATUS_FAILED);
             } else {
-                logDO.setFinalAnswer(supervisorAgent.summarize(logDO.getUserInput(), results));
+                long sumStart = System.currentTimeMillis();
+                Long sumSpanId = spanService.startSpan(logDO.getId(), traceId,
+                        MultiAgentSpanService.SPAN_SUMMARIZE, null, null, null);
+                String resumedAnswer;
+                try {
+                    resumedAnswer = supervisorAgent.summarize(logDO.getUserInput(), results);
+                } catch (Exception e) {
+                    spanService.finishSpan(sumSpanId, false, null,
+                            System.currentTimeMillis() - sumStart,
+                            StrUtil.sub(e.getMessage(), 0, 500), null);
+                    throw e;
+                }
+                spanService.finishSpan(sumSpanId, true, null,
+                        System.currentTimeMillis() - sumStart,
+                        null, StrUtil.sub(resumedAnswer, 0, 500));
+                logDO.setFinalAnswer(resumedAnswer);
                 logDO.setStatus(STATUS_SUCCESS);
             }
             logDO.setDurationMs(System.currentTimeMillis() - startTime);
@@ -392,7 +446,7 @@ public class MultiAgentExecuteServiceImpl implements MultiAgentExecuteService {
      */
     private List<AgentResult> dispatchTasksWithCheckpoints(List<AgentTask> tasks, Long tenantId,
                                                            AgentTopology topology, Long executionLogId,
-                                                           Long topologyId,
+                                                           Long topologyId, String traceId,
                                                            Consumer<AgentSseEvent> eventConsumer) {
         List<String> allowedWorkers = allowedWorkerNames(topology);
         List<AgentResult> results = new ArrayList<>();
@@ -400,7 +454,13 @@ public class MultiAgentExecuteServiceImpl implements MultiAgentExecuteService {
             AgentTask task = tasks.get(i);
             emit(eventConsumer, AgentSseEvent.TYPE_WORKER_STARTED, i, tasks.size(),
                     task.getAssignedWorker(), null);
+            // P2-D 轨迹埋点：WORKER Span（executeTask 内部吞异常转失败结果，finish 必达）
+            Long spanId = spanService.startSpan(executionLogId, traceId,
+                    MultiAgentSpanService.SPAN_WORKER, task.getAssignedWorker(), i, task.getTaskId());
             AgentResult result = executeTask(task, tenantId, allowedWorkers);
+            spanService.finishSpan(spanId, result.isSuccess(), result.getTokensUsed(),
+                    result.getDurationMs(), StrUtil.sub(result.getErrorMsg(), 0, 500),
+                    StrUtil.sub(result.getOutput(), 0, 500));
             results.add(result);
             writeCheckpoint(executionLogId, topologyId, TYPE_WORKER_DONE,
                     task.getAssignedWorker(), i, toJson(results));

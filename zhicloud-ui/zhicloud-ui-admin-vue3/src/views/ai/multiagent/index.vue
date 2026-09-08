@@ -75,11 +75,54 @@
       <div v-if="totalTokens != null" class="mt-5px text-12px">Token 消耗：{{ totalTokens }}</div>
     </el-alert>
     <el-alert v-if="errorMsg" :title="errorMsg" type="error" :closable="false" show-icon />
+    <div v-if="lastExecutionLogId != null" class="mt-10px">
+      <el-button size="small" :loading="traceLoading" @click="loadTrace">
+        <Icon icon="ep:histogram" class="mr-5px" /> 查看执行轨迹
+      </el-button>
+    </div>
+  </ContentWrap>
+
+  <!-- 执行轨迹（P2-D 持久化 Span 时间线） -->
+  <ContentWrap v-if="trace">
+    <div class="mb-10px text-14px font-600">执行轨迹 #{{ trace.executionLogId }}</div>
+    <el-descriptions :column="4" border size="small" class="mb-10px">
+      <el-descriptions-item label="Span 总数">{{ trace.summary?.spanCount }}</el-descriptions-item>
+      <el-descriptions-item label="成功">{{ trace.summary?.successCount }}</el-descriptions-item>
+      <el-descriptions-item label="失败">{{ trace.summary?.failedCount }}</el-descriptions-item>
+      <el-descriptions-item label="Token">{{ trace.summary?.totalTokens }}</el-descriptions-item>
+      <el-descriptions-item label="耗时加和">{{ formatMs(trace.summary?.totalDurationMs) }}</el-descriptions-item>
+      <el-descriptions-item label="墙钟跨度">{{ formatMs(trace.summary?.wallDurationMs) }}</el-descriptions-item>
+    </el-descriptions>
+    <el-timeline>
+      <el-timeline-item
+        v-for="span in trace.spans ?? []"
+        :key="span.id"
+        :type="spanStatusType(span)"
+        :timestamp="formatSpanTime(span)"
+        placement="top"
+      >
+        <div class="flex items-center gap-8px">
+          <span class="font-600">{{ spanTitle(span) }}</span>
+          <el-tag size="small" :type="spanStatusType(span)">{{ spanStatusText(span) }}</el-tag>
+          <span v-if="span.durationMs != null" class="text-12px text-gray-500">{{ formatMs(span.durationMs) }}</span>
+          <span v-if="span.tokens != null" class="text-12px text-gray-500">{{ span.tokens }} tokens</span>
+        </div>
+        <div v-if="span.errorMsg" class="mt-5px text-12px text-red-500">{{ span.errorMsg }}</div>
+        <div v-if="span.outputExcerpt" class="mt-5px text-12px text-gray-500 whitespace-pre-wrap">{{ span.outputExcerpt }}</div>
+      </el-timeline-item>
+    </el-timeline>
   </ContentWrap>
 </template>
 
 <script lang="ts" setup>
-import { MultiAgentExecuteApi, MultiAgentTopologyApi, type AgentSseEventVO } from '@/api/aimultiagent/execute'
+import {
+  MultiAgentExecuteApi,
+  MultiAgentTopologyApi,
+  MultiAgentTraceApi,
+  type AgentSseEventVO,
+  type MultiAgentSpanVO,
+  type MultiAgentTraceVO
+} from '@/api/aimultiagent/execute'
 
 defineOptions({ name: 'AiMultiAgentExecute' })
 
@@ -97,6 +140,8 @@ const finalAnswer = ref('')
 const errorMsg = ref('')
 const totalTokens = ref<number | null>(null)
 const lastExecutionLogId = ref<number | null>(null)
+const trace = ref<MultiAgentTraceVO | null>(null)
+const traceLoading = ref(false)
 let ctrl: AbortController | null = null
 
 /** 加载拓扑下拉列表（分页接口返回 PageResult，取 list） */
@@ -153,10 +198,12 @@ const handleRun = async () => {
           totalTokens.value = inner.totalTokens ?? null
           lastExecutionLogId.value = inner.executionLogId ?? null
           running.value = false
+          loadTrace().catch(() => {})
         } else if (payload.type === 'error' || payload.type === 'circuit_breaker') {
           errorMsg.value = inner.message ?? '执行失败'
           lastExecutionLogId.value = inner.executionLogId ?? null
           running.value = false
+          loadTrace().catch(() => {})
         }
       },
       (err: any) => {
@@ -199,11 +246,15 @@ const handleResume = async () => {
   try {
     const data: any = await MultiAgentExecuteApi.resume(lastExecutionLogId.value)
     finalAnswer.value = data?.finalAnswer ?? ''
+    if (data?.id != null) {
+      lastExecutionLogId.value = data.id
+    }
     if (data?.status !== 1) {
       errorMsg.value = data?.errorMsg ?? '恢复后仍未成功'
     } else {
       totalTokens.value = data?.totalTokens ?? null
     }
+    loadTrace().catch(() => {})
   } catch {
     errorMsg.value = '恢复失败：无可恢复的检查点或状态已损坏'
   } finally {
@@ -216,9 +267,60 @@ const resetRun = (keepLogId = false) => {
   finalAnswer.value = ''
   errorMsg.value = ''
   totalTokens.value = null
+  trace.value = null
   if (!keepLogId) {
     lastExecutionLogId.value = null
   }
+}
+
+/** 加载持久化执行轨迹（P2-D） */
+const loadTrace = async () => {
+  if (lastExecutionLogId.value == null) {
+    return
+  }
+  traceLoading.value = true
+  try {
+    const data: any = await MultiAgentTraceApi.getTrace(lastExecutionLogId.value)
+    trace.value = data ?? null
+  } finally {
+    traceLoading.value = false
+  }
+}
+
+/** 轨迹 Span 标题 */
+const spanTitle = (span: MultiAgentSpanVO): string => {
+  if (span.spanType === 'PLAN') return '任务拆解'
+  if (span.spanType === 'SUMMARIZE') return '结果汇总'
+  return `Worker：${span.workerName ?? ''}（任务 ${(span.taskIndex ?? 0) + 1}）`
+}
+
+/** 轨迹 Span 状态样式 */
+const spanStatusType = (span: MultiAgentSpanVO) => {
+  if (span.status === 1) return 'success'
+  if (span.status === 2) return 'danger'
+  return 'warning'
+}
+
+/** 轨迹 Span 状态文案 */
+const spanStatusText = (span: MultiAgentSpanVO): string => {
+  if (span.status === 1) return '成功'
+  if (span.status === 2) return '失败'
+  return '运行中'
+}
+
+/** 轨迹 Span 时间 */
+const formatSpanTime = (span: MultiAgentSpanVO): string => {
+  if (!span.startTime) return ''
+  const start = new Date(span.startTime).toLocaleTimeString()
+  if (!span.endTime) return start
+  return `${start} ~ ${new Date(span.endTime).toLocaleTimeString()}`
+}
+
+/** 毫秒格式化 */
+const formatMs = (ms?: number | null): string => {
+  if (ms == null) return '-'
+  if (ms < 1000) return `${ms}ms`
+  return `${(ms / 1000).toFixed(1)}s`
 }
 
 const eventType = (evt: AgentSseEventVO) => {

@@ -95,6 +95,52 @@ export const MultiAgentExecuteApi = {
   }
 }
 
+// 执行轨迹 Span
+export interface MultiAgentSpanVO {
+  id: number
+  executionLogId: number
+  spanType: string // PLAN / WORKER / SUMMARIZE
+  workerName?: string
+  taskIndex?: number
+  taskId?: string
+  status: number // 0运行中 1成功 2失败
+  tokens?: number
+  durationMs?: number
+  startTime?: string
+  endTime?: string
+  errorMsg?: string
+  outputExcerpt?: string
+}
+
+// 执行轨迹汇总
+export interface MultiAgentTraceSummaryVO {
+  spanCount: number
+  successCount: number
+  failedCount: number
+  runningCount: number
+  totalTokens: number
+  totalDurationMs: number
+  wallDurationMs?: number
+}
+
+// 执行轨迹详情
+export interface MultiAgentTraceVO {
+  executionLogId: number
+  traceId?: string
+  spans: MultiAgentSpanVO[]
+  summary: MultiAgentTraceSummaryVO
+}
+
+// 多 Agent 执行轨迹（P2-D 持久化链路追踪）
+export const MultiAgentTraceApi = {
+  // 查询某次执行的完整轨迹（Span 列表 + 汇总）
+  getTrace: async (executionLogId: number) => {
+    return await request.get({
+      url: `/aimultiagent/trace/spans?executionLogId=${executionLogId}`
+    })
+  }
+}
+
 // 多 Agent 拓扑配置（执行页下拉选择用）
 export const MultiAgentTopologyApi = {
   // 分页查询拓扑
