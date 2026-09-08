@@ -37,4 +37,11 @@ public interface ErrorCodeConstants {
     ErrorCode CHECKPOINT_STATE_CORRUPT = new ErrorCode(1_042_003_002, "检查点状态损坏，无法恢复");
     ErrorCode CHECKPOINT_LEASE_CONFLICT = new ErrorCode(1_042_003_003, "任务正在被其他执行者处理，请稍后重试");
 
+    // ========== 技能目录 1-042-004-000 ==========
+    ErrorCode SKILL_GROUP_NOT_EXISTS = new ErrorCode(1_042_004_000, "技能分组不存在");
+    ErrorCode SKILL_NOT_EXISTS = new ErrorCode(1_042_004_001, "技能不存在");
+    ErrorCode SKILL_CODE_DUPLICATE = new ErrorCode(1_042_004_002, "技能编码({})已存在");
+    ErrorCode SKILL_URL_BLOCKED = new ErrorCode(1_042_004_003, "技能配置地址不安全（SSRF 防护），已拒绝保存：{}");
+    ErrorCode SKILL_CONFIG_INVALID = new ErrorCode(1_042_004_004, "技能配置 JSON 格式不合法");
+
 }

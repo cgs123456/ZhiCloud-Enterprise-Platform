@@ -3,6 +3,7 @@ package cn.zhicloud.module.aimultiagent.service.agent;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.zhicloud.module.aimultiagent.config.ChatClientHelper;
+import cn.zhicloud.module.aimultiagent.enums.SkillCategory;
 import cn.zhicloud.module.aimultiagent.model.AgentResult;
 import cn.zhicloud.module.aimultiagent.model.AgentTask;
 import cn.zhicloud.module.aimultiagent.service.llm.LlmGateway;
@@ -42,6 +43,37 @@ public abstract class AbstractWorkerAgent {
         this.llmGateway = llmGateway;
     }
 
+    /** 所属技能分类（Level-1 大类） */
+    private SkillCategory skillCategory = SkillCategory.WMS;
+
+    /**
+     * 获取该 Worker 支持的工具名称列表。
+     * 子类必须重写此方法，返回由 WorkerToolExecutor 支持的工具名称列表。
+     *
+     * @return 工具名称列表
+     */
+    public abstract List<String> getSupportedTools();
+
+    /**
+     * 获取该 Worker 所属的技能分类（Level-1 大类）。
+     * 返回 null 表示未分类或默认分类。
+     *
+     * @return 技能分类枚举，或 null
+     */
+    public SkillCategory getSkillCategory() {
+        return skillCategory;
+    }
+
+    /**
+     * 设置该 Worker 所属的技能分类（Level-1 大类）。
+     * 由工厂或注入时在 {@code @PostConstruct} 中调用。
+     *
+     * @param skillCategory 技能分类
+     */
+    protected void setSkillCategory(SkillCategory skillCategory) {
+        this.skillCategory = skillCategory;
+    }
+
     /**
      * Worker 名称（唯一标识，用于拓扑配置中的 assignedWorker 匹配）
      */
@@ -51,11 +83,6 @@ public abstract class AbstractWorkerAgent {
      * Worker 描述（供 Supervisor 选择 Worker 时参考）
      */
     public abstract String getDescription();
-
-    /**
-     * Worker 支持的工具列表
-     */
-    public abstract List<String> getSupportedTools();
 
     /**
      * 执行任务

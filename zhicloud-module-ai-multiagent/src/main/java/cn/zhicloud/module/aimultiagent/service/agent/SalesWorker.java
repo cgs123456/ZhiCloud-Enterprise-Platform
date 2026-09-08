@@ -2,6 +2,7 @@ package cn.zhicloud.module.aimultiagent.service.agent;
 
 import cn.hutool.core.util.StrUtil;
 import cn.zhicloud.module.aimultiagent.config.ChatClientHelper;
+import cn.zhicloud.module.aimultiagent.enums.SkillCategory;
 import cn.zhicloud.module.aimultiagent.model.AgentResult;
 import cn.zhicloud.module.aimultiagent.model.AgentTask;
 import cn.zhicloud.module.aimultiagent.service.llm.LlmGateway;
@@ -44,6 +45,7 @@ public class SalesWorker extends AbstractWorkerAgent {
     @PostConstruct
     public void init() {
         registry.register(this);
+        this.setSkillCategory(SkillCategory.SALES);
     }
 
     @Override
