@@ -98,3 +98,8 @@ docs/stage*-fix-report.md
 scripts/mvn.sh
 scripts/probe/
 scripts/fix_flyway_mysql_compat.py
+
+# Python bytecode caches under scripts/
+__pycache__/
+*.pyc
+
