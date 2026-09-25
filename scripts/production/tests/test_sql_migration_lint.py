@@ -16,8 +16,8 @@ sys.path.insert(0, str(PRODUCTION_DIR))
 
 import sql_migration_lint as lint  # noqa: E402
 
-MIGRATIONS_DIR = (PRODUCTION_DIR.parents[1].parent
-                  / "script" / "enterprise-platform-upgrade" / "migrations")
+MIGRATIONS_DIR = (PRODUCTION_DIR.parents[1]
+                  / "zhicloud-server" / "src" / "main" / "resources" / "db" / "migration")
 
 
 class DelimiterRuleTest(unittest.TestCase):
@@ -86,8 +86,14 @@ class RealMigrationsTest(unittest.TestCase):
     def test_shipped_migrations_are_clean(self):
         if not MIGRATIONS_DIR.is_dir():
             self.skipTest(f"迁移目录不存在: {MIGRATIONS_DIR}")
-        files = sorted(MIGRATIONS_DIR.glob("V9*.sql"))
-        self.assertEqual(len(files), 3, f"预期 3 个迁移文件，实际 {len(files)}")
+        expected_names = [
+            "V90__fix_erp_bill_master_columns.sql",
+            "V91__unblock_erp_phantom_not_null_columns.sql",
+            "V92__ensure_id_auto_increment.sql",
+        ]
+        files = [MIGRATIONS_DIR / name for name in expected_names]
+        missing = [str(path) for path in files if not path.is_file()]
+        self.assertEqual(missing, [], f"交付迁移文件缺失: {missing}")
         report = lint.lint_paths(files)
         self.assertEqual(report["status"], "passed",
                          f"迁移 lint 失败: {report['files']}")

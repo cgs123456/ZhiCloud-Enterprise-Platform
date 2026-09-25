@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "contract_start_version": 90,
+  "purpose": "Reviewed V90-V92 migration bytes; execution evidence remains MySQL shadow-run only.",
+  "migrations": [
+    {
+      "version": 90,
+      "file": "V90__fix_erp_bill_master_columns.sql",
+      "sha256": "2422b76d1206269706489b701f27602004eba3db4c92944444b4da8f90e243a4",
+      "verification_file": "V90_verify.sql",
+      "verification_sha256": "30bbba71a4b7e6c4c8e60d9254f345ffdf33678f0118b2de8a448093b73a59fa"
+    },
+    {
+      "version": 91,
+      "file": "V91__unblock_erp_phantom_not_null_columns.sql",
+      "sha256": "0728d164a999b119c81e35acae8dcbca676754a6dc4913459c3246e9894da82a",
+      "verification_file": "V91_verify.sql",
+      "verification_sha256": "d46c736f3edc6fbc16ca906e1f1b79ee4561a8c57b87215bd786c460c164ef88"
+    },
+    {
+      "version": 92,
+      "file": "V92__ensure_id_auto_increment.sql",
+      "sha256": "f61b111b02ffda36efa0b9c0cf0f0e90a9f72288a1133532cab41ecdce69434b",
+      "verification_file": "V92_verify.sql",
+      "verification_sha256": "6188e37c2fd20a7cb0512949a44f2bbd93a0075692aa1eeeb962f0ec697a58a3"
+    }
+  ]
+}

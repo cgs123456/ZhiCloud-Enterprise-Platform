@@ -86,6 +86,10 @@ jobs:
           zhicloud-module-infra zhicloud-module-mall zhicloud-module-member zhicloud-module-pay \
           zhicloud-module-mp zhicloud-module-im zhicloud-module-iot zhicloud-module-report \
           zhicloud-module-datalake
+    # 迁移契约门禁：V90+ 已审核迁移的字节哈希、版本唯一性、验证 SQL 与 R1-R5 lint
+    # 必须全部通过。该门禁只证明文本契约，不替代真实 MySQL 影子库/预生产执行。
+    - name: Migration Contract and Lint Gate
+      run: python3 scripts/production/check_migration_contract.py
     - name: Build with Maven
       shell: bash
       run: |
