@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "contract_start_version": 90,
-  "purpose": "Reviewed V90-V96 migration bytes; execution evidence remains MySQL shadow-run only.",
+  "purpose": "Reviewed V90-V97 migration bytes; execution evidence remains MySQL shadow-run only.",
   "migrations": [
     {
       "version": 90,
@@ -51,6 +51,13 @@
       "sha256": "829b0a945aafe865d608c57d69150baa9cf965827987f3c048100958b413f14a",
       "verification_file": "V96_verify.sql",
       "verification_sha256": "a0b5e87ccd1f59424b0b38b7f450c4c0e5ca2a4ebb166aaaab514746edc6e943"
+    },
+    {
+      "version": 97,
+      "file": "V97__erp_return_posting_rule_seed.sql",
+      "sha256": "69f0eea862cb79f1f02056446f89f962da418319ff208cb9fd824dd42dca79b7",
+      "verification_file": "V97_verify.sql",
+      "verification_sha256": "61ca074d519a7c153dc8d79c79b19d7c988329d36361cfbf98972553aeac10ed"
     }
   ]
 }

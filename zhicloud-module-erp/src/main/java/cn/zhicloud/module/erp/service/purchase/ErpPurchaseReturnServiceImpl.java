@@ -18,6 +18,9 @@ import cn.zhicloud.module.erp.enums.ErpAuditStatus;
 import cn.zhicloud.module.erp.enums.stock.ErpStockRecordBizTypeEnum;
 import cn.zhicloud.module.erp.service.finance.ErpAccountService;
 import cn.zhicloud.module.erp.service.product.ErpProductService;
+import cn.zhicloud.module.erp.service.accounting.ErpAccountingEventService;
+import cn.zhicloud.module.erp.service.accounting.bo.ErpAccountingEventCreateReqBO;
+import cn.zhicloud.module.erp.service.accounting.bo.ErpAccountingEventReverseReqBO;
 import cn.zhicloud.module.erp.service.stock.ErpStockRecordService;
 import cn.zhicloud.module.erp.service.stock.bo.ErpStockRecordCreateReqBO;
 import jakarta.annotation.Resource;
@@ -27,6 +30,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -65,6 +70,9 @@ public class ErpPurchaseReturnServiceImpl implements ErpPurchaseReturnService {
     private ErpAccountService accountService;
     @Resource
     private ErpStockRecordService stockRecordService;
+
+    @Resource
+    private ErpAccountingEventService accountingEventService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -194,6 +202,14 @@ public class ErpPurchaseReturnServiceImpl implements ErpPurchaseReturnService {
         mergedCountMap.forEach((key, count) -> stockRecordService.createStockRecord(new ErpStockRecordCreateReqBO(
                 key.get(0), key.get(1), count,
                 bizType, id, firstItemIdMap.get(key), purchaseReturn.getNo())));
+
+        // 4. 审核通过时生成采购退货与红字发票会计事件；事件与库存流水处于同一事务。
+        // 反审核只对已审核退货单生成冲销事件，避免从未过账的退货单在驳回时被误冲销。
+        if (approve) {
+            accountingEventService.postEvent(buildPurchaseReturnEvent(purchaseReturn));
+        } else if (ErpAuditStatus.APPROVE.getStatus().equals(purchaseReturn.getStatus())) {
+            accountingEventService.reverseEvent(buildPurchaseReturnReversalRequest(purchaseReturn));
+        }
     }
 
     @Override
@@ -270,6 +286,60 @@ public class ErpPurchaseReturnServiceImpl implements ErpPurchaseReturnService {
             updatePurchaseOrderReturnCount(purchaseReturn.getOrderId());
         });
 
+    }
+
+    /**
+     * 构造采购退货会计事件。
+     *
+     * <p>退货事件不设置 reversalOfEventId：退货单只关联采购订单，不能稳定定位唯一入库事件，
+     * 且部分退货不应把整张入库暂估事件标记为已冲销。红字效果由 ERP_PURCHASE_RETURN_POSTED 规则产生，
+     * 整单作废场景由反审核的冲销事件处理。采购退货不涉及成本结转，成本金额为 0。</p>
+     */
+    private ErpAccountingEventCreateReqBO buildPurchaseReturnEvent(ErpPurchaseReturnDO purchaseReturn) {
+        LocalDate eventDate = purchaseReturn.getReturnTime() == null
+                ? LocalDate.now() : purchaseReturn.getReturnTime().toLocalDate();
+        BigDecimal amountWithTax = defaultZero(purchaseReturn.getTotalPrice());
+        BigDecimal taxAmount = defaultZero(purchaseReturn.getTotalTaxPrice());
+        BigDecimal amountWithoutTax = amountWithTax.subtract(taxAmount);
+        return ErpAccountingEventCreateReqBO.builder()
+                .eventType("PURCHASE_RETURN_POSTED")
+                .sourceDocType("PURCHASE_RETURN")
+                .sourceDocId(purchaseReturn.getId())
+                .sourceDocNo(purchaseReturn.getNo())
+                .sourceDocLineId(0L)
+                .sourceRevision(1)
+                .eventDate(eventDate)
+                .accountingDate(eventDate)
+                .amountWithoutTax(amountWithoutTax)
+                .taxAmount(taxAmount)
+                .amountWithTax(amountWithTax)
+                .costAmount(BigDecimal.ZERO)
+                .currency(null)
+                .exchangeRate(BigDecimal.ONE)
+                .reversalOfEventId(0L)
+                .occurredAt(purchaseReturn.getReturnTime() == null
+                        ? LocalDateTime.now() : purchaseReturn.getReturnTime())
+                .build();
+    }
+
+    private ErpAccountingEventReverseReqBO buildPurchaseReturnReversalRequest(ErpPurchaseReturnDO purchaseReturn) {
+        LocalDate eventDate = purchaseReturn.getReturnTime() == null
+                ? LocalDate.now() : purchaseReturn.getReturnTime().toLocalDate();
+        return ErpAccountingEventReverseReqBO.builder()
+                .eventType("PURCHASE_RETURN_POSTED")
+                .sourceDocType("PURCHASE_RETURN")
+                .sourceDocId(purchaseReturn.getId())
+                .sourceDocLineId(0L)
+                .sourceRevision(1)
+                .eventDate(eventDate)
+                // 冲销记在当前会计期，不回写原会计期
+                .accountingDate(LocalDate.now())
+                .occurredAt(LocalDateTime.now())
+                .build();
+    }
+
+    private static BigDecimal defaultZero(BigDecimal value) {
+        return value == null ? BigDecimal.ZERO : value;
     }
 
     private ErpPurchaseReturnDO validatePurchaseReturnExists(Long id) {

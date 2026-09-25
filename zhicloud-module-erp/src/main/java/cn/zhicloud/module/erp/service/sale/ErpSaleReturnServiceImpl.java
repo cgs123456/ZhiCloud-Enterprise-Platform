@@ -18,6 +18,9 @@ import cn.zhicloud.module.erp.enums.ErpAuditStatus;
 import cn.zhicloud.module.erp.enums.stock.ErpStockRecordBizTypeEnum;
 import cn.zhicloud.module.erp.service.finance.ErpAccountService;
 import cn.zhicloud.module.erp.service.product.ErpProductService;
+import cn.zhicloud.module.erp.service.accounting.ErpAccountingEventService;
+import cn.zhicloud.module.erp.service.accounting.bo.ErpAccountingEventCreateReqBO;
+import cn.zhicloud.module.erp.service.accounting.bo.ErpAccountingEventReverseReqBO;
 import cn.zhicloud.module.erp.service.stock.ErpStockRecordService;
 import cn.zhicloud.module.erp.service.stock.bo.ErpStockRecordCreateReqBO;
 import cn.zhicloud.module.system.api.user.AdminUserApi;
@@ -28,6 +31,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -66,6 +71,9 @@ public class ErpSaleReturnServiceImpl implements ErpSaleReturnService {
     private ErpAccountService accountService;
     @Resource
     private ErpStockRecordService stockRecordService;
+
+    @Resource
+    private ErpAccountingEventService accountingEventService;
 
     @Resource
     private AdminUserApi adminUserApi;
@@ -206,6 +214,14 @@ public class ErpSaleReturnServiceImpl implements ErpSaleReturnService {
         mergedCountMap.forEach((key, count) -> stockRecordService.createStockRecord(new ErpStockRecordCreateReqBO(
                 key.get(0), key.get(1), count,
                 bizType, id, firstItemIdMap.get(key), saleReturn.getNo())));
+
+        // 4. 审核通过时生成销售退货与红字发票会计事件；事件与库存流水处于同一事务。
+        // 反审核只对已审核退货单生成冲销事件，避免从未过账的退货单在驳回时被误冲销。
+        if (approve) {
+            accountingEventService.postEvent(buildSaleReturnEvent(saleReturn, saleReturnItems));
+        } else if (ErpAuditStatus.APPROVE.getStatus().equals(saleReturn.getStatus())) {
+            accountingEventService.reverseEvent(buildSaleReturnReversalRequest(saleReturn));
+        }
     }
 
     @Override
@@ -282,6 +298,84 @@ public class ErpSaleReturnServiceImpl implements ErpSaleReturnService {
             updateSaleOrderReturnCount(saleReturn.getOrderId());
         });
 
+    }
+
+    /**
+     * 构造销售退货会计事件。
+     *
+     * <p>退货事件不设置 reversalOfEventId：退货单只关联销售订单，不能稳定定位唯一出库事件，
+     * 且部分退货不应把整张出库事件标记为已冲销。红字效果由 ERP_SALES_RETURN_POSTED 规则产生，
+     * 整单作废场景由反审核的冲销事件处理。</p>
+     */
+    private ErpAccountingEventCreateReqBO buildSaleReturnEvent(ErpSaleReturnDO saleReturn,
+                                                               List<ErpSaleReturnItemDO> saleReturnItems) {
+        LocalDate eventDate = saleReturn.getReturnTime() == null
+                ? LocalDate.now() : saleReturn.getReturnTime().toLocalDate();
+        BigDecimal amountWithTax = defaultZero(saleReturn.getTotalPrice());
+        BigDecimal taxAmount = defaultZero(saleReturn.getTotalTaxPrice());
+        // 折扣和其他费用会改变价税合计，当前单据不单独拆分其税额影响，先以最终价税合计倒算不含税金额
+        BigDecimal amountWithoutTax = amountWithTax.subtract(taxAmount);
+        return ErpAccountingEventCreateReqBO.builder()
+                .eventType("SALES_RETURN_POSTED")
+                .sourceDocType("SALE_RETURN")
+                .sourceDocId(saleReturn.getId())
+                .sourceDocNo(saleReturn.getNo())
+                .sourceDocLineId(0L)
+                .sourceRevision(1)
+                .eventDate(eventDate)
+                .accountingDate(eventDate)
+                .amountWithoutTax(amountWithoutTax)
+                .taxAmount(taxAmount)
+                .amountWithTax(amountWithTax)
+                .costAmount(calculateStandardCost(saleReturnItems))
+                .currency(null)
+                .exchangeRate(BigDecimal.ONE)
+                .reversalOfEventId(0L)
+                .occurredAt(saleReturn.getReturnTime() == null ? LocalDateTime.now() : saleReturn.getReturnTime())
+                .build();
+    }
+
+    private ErpAccountingEventReverseReqBO buildSaleReturnReversalRequest(ErpSaleReturnDO saleReturn) {
+        LocalDate eventDate = saleReturn.getReturnTime() == null
+                ? LocalDate.now() : saleReturn.getReturnTime().toLocalDate();
+        return ErpAccountingEventReverseReqBO.builder()
+                .eventType("SALES_RETURN_POSTED")
+                .sourceDocType("SALE_RETURN")
+                .sourceDocId(saleReturn.getId())
+                .sourceDocLineId(0L)
+                .sourceRevision(1)
+                .eventDate(eventDate)
+                // 冲销记在当前会计期，不回写原会计期
+                .accountingDate(LocalDate.now())
+                .occurredAt(LocalDateTime.now())
+                .build();
+    }
+
+    /**
+     * 按产品采购价计算退货成本。
+     *
+     * <p>这是标准成本占位实现：项目当前没有存货计价（移动加权平均或批次成本）底座，
+     * 只能用产品主数据的采购价近似。上线前必须替换为存货计价结果。</p>
+     */
+    private BigDecimal calculateStandardCost(List<ErpSaleReturnItemDO> saleReturnItems) {
+        if (CollUtil.isEmpty(saleReturnItems)) {
+            return BigDecimal.ZERO;
+        }
+        BigDecimal cost = BigDecimal.ZERO;
+        for (ErpSaleReturnItemDO item : saleReturnItems) {
+            BigDecimal count = defaultZero(item.getCount());
+            if (count.compareTo(BigDecimal.ZERO) == 0 || item.getProductId() == null) {
+                continue;
+            }
+            ErpProductDO product = productService.getProduct(item.getProductId());
+            BigDecimal unitCost = product == null ? BigDecimal.ZERO : defaultZero(product.getPurchasePrice());
+            cost = cost.add(count.multiply(unitCost));
+        }
+        return cost;
+    }
+
+    private static BigDecimal defaultZero(BigDecimal value) {
+        return value == null ? BigDecimal.ZERO : value;
     }
 
     private ErpSaleReturnDO validateSaleReturnExists(Long id) {
