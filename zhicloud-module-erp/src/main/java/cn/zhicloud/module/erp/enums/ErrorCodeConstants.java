@@ -230,6 +230,21 @@ ErrorCode PURCHASE_ORDER_ITEM_RETURN_FAIL_IN_EXCEED = new ErrorCode(1_030_101_00
     ErrorCode GL_VOUCHER_ACCOUNT_NOT_LEAF = new ErrorCode(1_030_702_010, "分录({})所选科目({})不是末级科目");
     ErrorCode GL_VOUCHER_PERIOD_CLOSED = new ErrorCode(1_030_702_011, "会计期间({})已关账，不允许录入凭证");
 
+    // ========== ERP 会计事件 1-030-711-000 ==========
+    ErrorCode ACCOUNTING_EVENT_REQUEST_INVALID = new ErrorCode(1_030_711_000, "会计事件请求无效：{}");
+    ErrorCode ACCOUNTING_EVENT_AMOUNT_MISMATCH = new ErrorCode(1_030_711_001, "会计事件金额不一致：不含税({}) + 税额({}) != 价税合计({})");
+    ErrorCode ACCOUNTING_EVENT_ALREADY_PROCESSING = new ErrorCode(1_030_711_002, "会计事件({})正在处理中，暂无法返回凭证");
+    ErrorCode ACCOUNTING_RULE_NOT_FOUND = new ErrorCode(1_030_711_003, "未找到事件类型({})的有效过账规则");
+    ErrorCode ACCOUNTING_RULE_AMBIGUOUS = new ErrorCode(1_030_711_004, "事件类型({})在生效时间({})存在多条过账规则");
+    ErrorCode ACCOUNTING_RULE_CONDITION_UNSUPPORTED = new ErrorCode(1_030_711_005, "过账规则({})包含尚未支持的条件表达式");
+    ErrorCode ACCOUNTING_RULE_LINE_INVALID = new ErrorCode(1_030_711_006, "过账规则分录无效：{}");
+    ErrorCode ACCOUNTING_RULE_AMOUNT_EXPRESSION_INVALID = new ErrorCode(1_030_711_007, "金额表达式({})无效");
+    ErrorCode ACCOUNTING_RULE_ACCOUNT_NOT_FOUND = new ErrorCode(1_030_711_008, "过账规则科目({})不存在");
+    ErrorCode ACCOUNTING_RULE_NOT_BALANCED = new ErrorCode(1_030_711_009, "过账规则借贷不平衡：借方({})，贷方({})");
+    ErrorCode ACCOUNTING_VOUCHER_CREATE_FAILED = new ErrorCode(1_030_711_010, "会计凭证生成失败：{}");
+    ErrorCode ACCOUNTING_EVENT_NOT_FOUND = new ErrorCode(1_030_711_011, "未找到可冲销的会计事件：{}");
+    ErrorCode ACCOUNTING_EVENT_NOT_POSTED = new ErrorCode(1_030_711_012, "会计事件({})尚未过账，不能生成冲销事件");
+
     // ========== ERP 库存批次 1-030-405-000 ==========
     ErrorCode STOCK_BATCH_NOT_EXISTS = new ErrorCode(1_030_405_000, "库存批次不存在");
     ErrorCode STOCK_BATCH_NO_DUPLICATE = new ErrorCode(1_030_405_001, "批次号已存在：{}");

@@ -29,6 +29,18 @@ public class ErpGlVoucherPageReqVO extends PageParam {
     @Schema(description = "会计期间编号", example = "1024")
     private Long periodId;
 
+    @Schema(description = "来源会计事件 ID", example = "1024")
+    private Long sourceEventId;
+
+    @Schema(description = "来源单据类型", example = "PURCHASE_RECEIPT")
+    private String sourceDocType;
+
+    @Schema(description = "来源单据 ID", example = "2048")
+    private Long sourceDocId;
+
+    @Schema(description = "来源单据编号", example = "CGRK-202607-001")
+    private String sourceDocNo;
+
     @Schema(description = "凭证日期起")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate voucherDateStart;

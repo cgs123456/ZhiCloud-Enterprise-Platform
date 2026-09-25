@@ -5,14 +5,20 @@ import cn.zhicloud.framework.common.util.object.BeanUtils;
 import cn.zhicloud.module.erp.controller.admin.finance.vo.glvoucher.ErpGlVoucherEntryReqVO;
 import cn.zhicloud.module.erp.controller.admin.finance.vo.glvoucher.ErpGlVoucherPageReqVO;
 import cn.zhicloud.module.erp.controller.admin.finance.vo.glvoucher.ErpGlVoucherSaveReqVO;
+import cn.zhicloud.module.erp.dal.dataobject.accounting.ErpAccountingEventDO;
+import cn.zhicloud.module.erp.dal.dataobject.accounting.ErpAccountingPostingDO;
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpGlAccountDO;
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpGlVoucherDO;
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpGlVoucherEntryDO;
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpPeriodDO;
+import cn.zhicloud.module.erp.dal.mysql.accounting.ErpAccountingEventMapper;
+import cn.zhicloud.module.erp.dal.mysql.accounting.ErpAccountingPostingMapper;
 import cn.zhicloud.module.erp.dal.mysql.finance.ErpGlAccountMapper;
 import cn.zhicloud.module.erp.dal.mysql.finance.ErpGlVoucherEntryMapper;
 import cn.zhicloud.module.erp.dal.mysql.finance.ErpGlVoucherMapper;
 import cn.zhicloud.framework.security.core.util.SecurityFrameworkUtils;
+import cn.zhicloud.module.erp.enums.accounting.ErpAccountingEventStatusEnum;
+import cn.zhicloud.module.erp.enums.accounting.ErpAccountingPostingStatusEnum;
 import cn.zhicloud.module.erp.enums.finance.ErpGlVoucherStatusEnum;
 import cn.zhicloud.module.erp.enums.finance.ErpPeriodStatusEnum;
 import jakarta.annotation.Resource;
@@ -58,6 +64,10 @@ public class ErpGlVoucherServiceImpl implements ErpGlVoucherService {
     private ErpGlAccountMapper glAccountMapper;
     @Resource
     private ErpPeriodService periodService;
+    @Resource
+    private ErpAccountingPostingMapper accountingPostingMapper;
+    @Resource
+    private ErpAccountingEventMapper accountingEventMapper;
 
     // ==================== 凭证 CRUD ====================
 
@@ -230,7 +240,24 @@ public class ErpGlVoucherServiceImpl implements ErpGlVoucherService {
                     entry.getCreditAmount() == null ? BigDecimal.ZERO : entry.getCreditAmount(),
                     true);
         }
+        markAccountingResultsPosted(id, update.getApprovedTime());
         log.info("[approveGlVoucher][凭证({})审核成功，更新了 {} 个科目余额]", existing.getVoucherNo(), entries.size());
+    }
+
+    private void markAccountingResultsPosted(Long voucherId, LocalDateTime postedAt) {
+        for (ErpAccountingPostingDO posting : accountingPostingMapper.selectListByVoucherId(voucherId)) {
+            if (!ErpAccountingPostingStatusEnum.POSTED.getStatus().equals(posting.getStatus())) {
+                posting.setStatus(ErpAccountingPostingStatusEnum.POSTED.getStatus());
+                posting.setPostedAt(postedAt);
+                accountingPostingMapper.updateById(posting);
+            }
+            ErpAccountingEventDO event = accountingEventMapper.selectByEventId(posting.getEventId());
+            if (event != null && !ErpAccountingEventStatusEnum.POSTED.getStatus().equals(event.getStatus())) {
+                event.setStatus(ErpAccountingEventStatusEnum.POSTED.getStatus());
+                event.setPostedAt(postedAt);
+                accountingEventMapper.updateById(event);
+            }
+        }
     }
 
     @Override

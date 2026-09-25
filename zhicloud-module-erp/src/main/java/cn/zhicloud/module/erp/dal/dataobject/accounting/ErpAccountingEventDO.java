@@ -1,0 +1,64 @@
+package cn.zhicloud.module.erp.dal.dataobject.accounting;
+
+import cn.zhicloud.framework.tenant.core.db.TenantBaseDO;
+import com.baomidou.mybatisplus.annotation.KeySequence;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.*;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+/**
+ * ERP 会计事件 DO。
+ *
+ * <p>业务单据与总账之间的追加式事实记录。会计事件不得通过软删除改写，
+ * 冲销必须新增 reversal_of_event_id 指向原事件的独立事件。
+ *
+ * @author 智云
+ */
+@TableName("erp_accounting_event")
+@KeySequence("erp_accounting_event_seq")
+@Data
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ErpAccountingEventDO extends TenantBaseDO {
+
+    @TableId
+    private Long id;
+    private String eventId;
+    private String eventType;
+    private String sourceDocType;
+    private Long sourceDocId;
+    private String sourceDocNo;
+    private Long sourceDocLineId;
+    private Integer sourceRevision;
+    private LocalDate eventDate;
+    private LocalDate accountingDate;
+    private Long periodId;
+    private String periodCode;
+    private BigDecimal amountWithoutTax;
+    private BigDecimal taxAmount;
+    private BigDecimal amountWithTax;
+    /**
+     * 成本金额。用于销售成本结转等需要独立于收入金额记账的场景，不涉及成本的事件为 0。
+     */
+    private BigDecimal costAmount;
+    private String currency;
+    private BigDecimal exchangeRate;
+    private Integer status;
+    private String idempotencyKey;
+    private String ruleSetVersion;
+    private String payloadHash;
+    private Long reversalOfEventId;
+    private Integer retryCount;
+    private LocalDateTime nextRetryTime;
+    private String lastError;
+    private LocalDateTime occurredAt;
+    private LocalDateTime postedAt;
+
+}
