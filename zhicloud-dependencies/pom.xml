@@ -147,6 +147,11 @@
             </dependency>
             <dependency>
                 <groupId>cn.zhicloud</groupId>
+                <artifactId>zhicloud-spring-boot-starter-biz-integration</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.zhicloud</groupId>
                 <artifactId>zhicloud-spring-boot-starter-biz-data-permission</artifactId>
                 <version>${revision}</version>
             </dependency>

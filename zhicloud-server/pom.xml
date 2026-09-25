@@ -202,6 +202,12 @@
             <artifactId>zhicloud-spring-boot-starter-biz-inventory</artifactId>
         </dependency>
 
+        <!-- 可靠集成数据面 Starter（V100）：事务发件箱 + 幂等收件箱 + 单库中继 -->
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-spring-boot-starter-biz-integration</artifactId>
+        </dependency>
+
         <!-- 监控相关：Spring Boot Actuator + Micrometer Prometheus -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
