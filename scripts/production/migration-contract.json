@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "contract_start_version": 90,
-  "purpose": "Reviewed V90-V97 migration bytes; execution evidence remains MySQL shadow-run only.",
+  "purpose": "Reviewed V90-V98 migration bytes; execution evidence remains MySQL shadow-run only.",
   "migrations": [
     {
       "version": 90,
@@ -58,6 +58,13 @@
       "sha256": "69f0eea862cb79f1f02056446f89f962da418319ff208cb9fd824dd42dca79b7",
       "verification_file": "V97_verify.sql",
       "verification_sha256": "61ca074d519a7c153dc8d79c79b19d7c988329d36361cfbf98972553aeac10ed"
+    },
+    {
+      "version": 98,
+      "file": "V98__reconcile_duplicate_table_ddl.sql",
+      "sha256": "79bc347097c3a2d16842e2e0c71ff651617053ac72d0f58646a48c4b6c85c90e",
+      "verification_file": "V98_verify.sql",
+      "verification_sha256": "747f2f78fcd4fdfb0c44a71553580be1d5b79fc5d6c732fbbb0e8c5324c2888e"
     }
   ]
 }

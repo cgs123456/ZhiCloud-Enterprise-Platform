@@ -1,0 +1,331 @@
+{
+  "schema_version": 1,
+  "purpose": "11 张表被两个迁移 CREATE TABLE 重复创建；登记权威定义与收敛迁移，防止新增重复建表不被发现。",
+  "contract_note": "修改任一迁移的 CREATE TABLE 都必须同步更新本清单，否则门禁失败。",
+  "tables": [
+    {
+      "table": "ai_nl2sql_query_history",
+      "creating_migrations": [
+        "V38__ai_nl2sql_history.sql",
+        "V73__ai_ddl.sql"
+      ],
+      "definitions_identical": false,
+      "canonical_migration": "V38__ai_nl2sql_history.sql",
+      "reconciled_by": "V98__reconcile_duplicate_table_ddl.sql",
+      "expected_columns": [
+        "id",
+        "natural_language",
+        "sql",
+        "data_source",
+        "status",
+        "row_count",
+        "error_msg",
+        "cost_ms",
+        "creator",
+        "create_time",
+        "updater",
+        "update_time",
+        "deleted",
+        "tenant_id"
+      ],
+      "note": "两份定义不一致，V98 按权威定义补列并加宽类型"
+    },
+    {
+      "table": "aimultiagent_execution_log",
+      "creating_migrations": [
+        "V3__aimultiagent_init.sql",
+        "V14__aimultiagent_ddl.sql"
+      ],
+      "definitions_identical": true,
+      "canonical_migration": "V3__aimultiagent_init.sql",
+      "reconciled_by": "V98__reconcile_duplicate_table_ddl.sql",
+      "expected_columns": [
+        "id",
+        "topology_id",
+        "user_input",
+        "supervisor_plan",
+        "worker_results",
+        "final_answer",
+        "total_tokens",
+        "actual_depth",
+        "status",
+        "error_msg",
+        "duration_ms",
+        "creator",
+        "create_time",
+        "updater",
+        "update_time",
+        "deleted",
+        "tenant_id"
+      ],
+      "note": "两份定义逐字节相同，无需补列；登记用于防止再次重复建表"
+    },
+    {
+      "table": "aimultiagent_topology",
+      "creating_migrations": [
+        "V3__aimultiagent_init.sql",
+        "V14__aimultiagent_ddl.sql"
+      ],
+      "definitions_identical": true,
+      "canonical_migration": "V3__aimultiagent_init.sql",
+      "reconciled_by": "V98__reconcile_duplicate_table_ddl.sql",
+      "expected_columns": [
+        "id",
+        "name",
+        "description",
+        "supervisor_system_prompt",
+        "worker_config",
+        "max_depth",
+        "max_token_budget",
+        "status",
+        "creator",
+        "create_time",
+        "updater",
+        "update_time",
+        "deleted",
+        "tenant_id"
+      ],
+      "note": "两份定义逐字节相同，无需补列；登记用于防止再次重复建表"
+    },
+    {
+      "table": "erp_period",
+      "creating_migrations": [
+        "V6__erp_period_close.sql",
+        "V10__erp_ddl.sql"
+      ],
+      "definitions_identical": false,
+      "canonical_migration": "V6__erp_period_close.sql",
+      "reconciled_by": "V98__reconcile_duplicate_table_ddl.sql",
+      "expected_columns": [
+        "id",
+        "year",
+        "month",
+        "code",
+        "start_date",
+        "end_date",
+        "status",
+        "closed_by",
+        "closed_time",
+        "remark",
+        "creator",
+        "create_time",
+        "updater",
+        "update_time",
+        "deleted",
+        "tenant_id",
+        "name",
+        "start_time",
+        "end_time"
+      ],
+      "note": "两份定义不一致，V98 按权威定义补列并加宽类型"
+    },
+    {
+      "table": "erp_period_close",
+      "creating_migrations": [
+        "V6__erp_period_close.sql",
+        "V10__erp_ddl.sql"
+      ],
+      "definitions_identical": false,
+      "canonical_migration": "V6__erp_period_close.sql",
+      "reconciled_by": "V98__reconcile_duplicate_table_ddl.sql",
+      "expected_columns": [
+        "id",
+        "period_id",
+        "period_code",
+        "type",
+        "executed_by",
+        "executed_time",
+        "process_status",
+        "summary",
+        "adjustment_amount",
+        "remark",
+        "creator",
+        "create_time",
+        "updater",
+        "update_time",
+        "deleted",
+        "tenant_id",
+        "close_time",
+        "close_user"
+      ],
+      "note": "两份定义不一致，V98 按权威定义补列并加宽类型"
+    },
+    {
+      "table": "qms_capa_document",
+      "creating_migrations": [
+        "V2__qms_init.sql",
+        "V13__qms_ddl.sql"
+      ],
+      "definitions_identical": true,
+      "canonical_migration": "V2__qms_init.sql",
+      "reconciled_by": "V98__reconcile_duplicate_table_ddl.sql",
+      "expected_columns": [
+        "id",
+        "capa_no",
+        "source",
+        "problem",
+        "cause",
+        "root_cause_analysis",
+        "corrective_action",
+        "preventive_action",
+        "responsible_person",
+        "due_date",
+        "close_date",
+        "status",
+        "remark",
+        "creator",
+        "create_time",
+        "updater",
+        "update_time",
+        "deleted",
+        "tenant_id"
+      ],
+      "note": "两份定义逐字节相同，无需补列；登记用于防止再次重复建表"
+    },
+    {
+      "table": "qms_inspection_item",
+      "creating_migrations": [
+        "V2__qms_init.sql",
+        "V13__qms_ddl.sql"
+      ],
+      "definitions_identical": true,
+      "canonical_migration": "V2__qms_init.sql",
+      "reconciled_by": "V98__reconcile_duplicate_table_ddl.sql",
+      "expected_columns": [
+        "id",
+        "code",
+        "name",
+        "type",
+        "method",
+        "standard",
+        "target",
+        "upper_limit",
+        "lower_limit",
+        "unit",
+        "remark",
+        "status",
+        "creator",
+        "create_time",
+        "updater",
+        "update_time",
+        "deleted",
+        "tenant_id"
+      ],
+      "note": "两份定义逐字节相同，无需补列；登记用于防止再次重复建表"
+    },
+    {
+      "table": "qms_inspection_order",
+      "creating_migrations": [
+        "V2__qms_init.sql",
+        "V13__qms_ddl.sql"
+      ],
+      "definitions_identical": true,
+      "canonical_migration": "V2__qms_init.sql",
+      "reconciled_by": "V98__reconcile_duplicate_table_ddl.sql",
+      "expected_columns": [
+        "id",
+        "order_no",
+        "type",
+        "supplier_id",
+        "batch_no",
+        "work_order_id",
+        "product_id",
+        "inspector",
+        "inspect_time",
+        "status",
+        "remark",
+        "creator",
+        "create_time",
+        "updater",
+        "update_time",
+        "deleted",
+        "tenant_id"
+      ],
+      "note": "两份定义逐字节相同，无需补列；登记用于防止再次重复建表"
+    },
+    {
+      "table": "qms_inspection_record",
+      "creating_migrations": [
+        "V2__qms_init.sql",
+        "V13__qms_ddl.sql"
+      ],
+      "definitions_identical": true,
+      "canonical_migration": "V2__qms_init.sql",
+      "reconciled_by": "V98__reconcile_duplicate_table_ddl.sql",
+      "expected_columns": [
+        "id",
+        "order_id",
+        "item_id",
+        "measured_value",
+        "result",
+        "inspector",
+        "inspect_time",
+        "remark",
+        "creator",
+        "create_time",
+        "updater",
+        "update_time",
+        "deleted",
+        "tenant_id"
+      ],
+      "note": "两份定义逐字节相同，无需补列；登记用于防止再次重复建表"
+    },
+    {
+      "table": "wms_wave_order",
+      "creating_migrations": [
+        "V4__wms_wave_init.sql",
+        "V11__wms_ddl.sql"
+      ],
+      "definitions_identical": true,
+      "canonical_migration": "V4__wms_wave_init.sql",
+      "reconciled_by": "V98__reconcile_duplicate_table_ddl.sql",
+      "expected_columns": [
+        "id",
+        "no",
+        "warehouse_id",
+        "strategy",
+        "order_time",
+        "status",
+        "picker",
+        "remark",
+        "shipment_count",
+        "sku_count",
+        "total_quantity",
+        "total_price",
+        "creator",
+        "create_time",
+        "updater",
+        "update_time",
+        "deleted",
+        "tenant_id"
+      ],
+      "note": "两份定义逐字节相同，无需补列；登记用于防止再次重复建表"
+    },
+    {
+      "table": "wms_wave_order_detail",
+      "creating_migrations": [
+        "V4__wms_wave_init.sql",
+        "V11__wms_ddl.sql"
+      ],
+      "definitions_identical": true,
+      "canonical_migration": "V4__wms_wave_init.sql",
+      "reconciled_by": "V98__reconcile_duplicate_table_ddl.sql",
+      "expected_columns": [
+        "id",
+        "wave_order_id",
+        "shipment_order_id",
+        "sku_id",
+        "pick_quantity",
+        "picked_quantity",
+        "remark",
+        "creator",
+        "create_time",
+        "updater",
+        "update_time",
+        "deleted",
+        "tenant_id"
+      ],
+      "note": "两份定义逐字节相同，无需补列；登记用于防止再次重复建表"
+    }
+  ]
+}

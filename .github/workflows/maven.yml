@@ -90,6 +90,11 @@ jobs:
     # 必须全部通过。该门禁只证明文本契约，不替代真实 MySQL 影子库/预生产执行。
     - name: Migration Contract and Lint Gate
       run: python3 scripts/production/check_migration_contract.py
+    # 重复建表收敛门禁：扫描全部 Flyway 迁移中的重复 CREATE TABLE，与 duplicate_ddl_allowlist.json 比对。
+    # 未登记的重复建表、白名单失效、缺少收敛迁移（V98）均会失败。
+    # 该门禁为静态检查（不连库），不替代 information_schema 真机结构比对与预生产执行。
+    - name: Duplicate DDL Convergence Gate
+      run: python3 scripts/production/check_duplicate_ddl.py
     - name: Build with Maven
       shell: bash
       run: |
