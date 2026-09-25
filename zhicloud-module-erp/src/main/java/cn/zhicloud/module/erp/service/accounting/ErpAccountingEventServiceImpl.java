@@ -118,8 +118,10 @@ public class ErpAccountingEventServiceImpl implements ErpAccountingEventService 
         validateReverseRequest(request);
         Long sourceDocLineId = defaultZero(request.getSourceDocLineId());
         Integer sourceRevision = defaultZero(request.getSourceRevision());
+        Integer sequenceNo = defaultZero(request.getSequenceNo());
         ErpAccountingEventDO original = accountingEventMapper.selectBySource(request.getEventType(),
-                request.getSourceDocType(), request.getSourceDocId(), sourceDocLineId, sourceRevision, 0L);
+                request.getSourceDocType(), request.getSourceDocId(), sourceDocLineId, sourceRevision,
+                sequenceNo, 0L);
         if (original == null || original.getId() == null) {
             throw exception(ACCOUNTING_EVENT_NOT_FOUND,
                     request.getSourceDocType() + ":" + request.getSourceDocId());
@@ -134,6 +136,7 @@ public class ErpAccountingEventServiceImpl implements ErpAccountingEventService 
                 .sourceDocNo(original.getSourceDocNo())
                 .sourceDocLineId(original.getSourceDocLineId())
                 .sourceRevision(original.getSourceRevision())
+                .sequenceNo(original.getSequenceNo())
                 .eventDate(request.getEventDate() == null ? request.getAccountingDate() : request.getEventDate())
                 .accountingDate(request.getAccountingDate())
                 .amountWithoutTax(defaultZero(original.getAmountWithoutTax()).negate())
@@ -204,6 +207,9 @@ public class ErpAccountingEventServiceImpl implements ErpAccountingEventService 
         }
         if (request.getExchangeRate() != null && request.getExchangeRate().compareTo(BigDecimal.ZERO) <= 0) {
             throw exception(ACCOUNTING_EVENT_REQUEST_INVALID, "汇率必须大于 0");
+        }
+        if (request.getSequenceNo() != null && request.getSequenceNo() < 0) {
+            throw exception(ACCOUNTING_EVENT_REQUEST_INVALID, "期次序号不能为负数");
         }
     }
 
@@ -376,6 +382,7 @@ public class ErpAccountingEventServiceImpl implements ErpAccountingEventService 
         event.setSourceDocNo(StrUtil.blankToDefault(request.getSourceDocNo(), ""));
         event.setSourceDocLineId(defaultZero(request.getSourceDocLineId()));
         event.setSourceRevision(defaultZero(request.getSourceRevision()));
+        event.setSequenceNo(defaultZero(request.getSequenceNo()));
         event.setEventDate(request.getEventDate());
         event.setAccountingDate(request.getAccountingDate());
         event.setPeriodId(period.getId());
@@ -450,6 +457,7 @@ public class ErpAccountingEventServiceImpl implements ErpAccountingEventService 
                 request.getEventType(), request.getSourceDocType(), String.valueOf(request.getSourceDocId()),
                 String.valueOf(defaultZero(request.getSourceDocLineId())),
                 String.valueOf(defaultZero(request.getSourceRevision())),
+                String.valueOf(defaultZero(request.getSequenceNo())),
                 String.valueOf(defaultZero(request.getReversalOfEventId()))));
     }
 

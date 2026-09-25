@@ -27,6 +27,10 @@ public class ErpAccountingEventReverseReqBO {
     private Long sourceDocId;
     private Long sourceDocLineId;
     private Integer sourceRevision;
+    /**
+     * 原事件期次序号。为 null 时按 0（主事件）处理。
+     */
+    private Integer sequenceNo;
     private LocalDate eventDate;
     private LocalDate accountingDate;
     private LocalDateTime occurredAt;

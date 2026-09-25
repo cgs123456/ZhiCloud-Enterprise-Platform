@@ -35,6 +35,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -177,7 +178,7 @@ class ErpAccountingEventServiceTest {
                 .setAmountWithTax(new BigDecimal("1130.0000"))
                 .setCurrency("cny").setExchangeRate(BigDecimal.ONE);
         when(accountingEventMapper.selectBySource("PURCHASE_RECEIPT_ACCRUAL", "PURCHASE_IN",
-                99L, 0L, 1, 0L)).thenReturn(original);
+                99L, 0L, 1, 0, 0L)).thenReturn(original);
         when(accountingEventMapper.selectById(100L)).thenReturn(original);
         ErpPostingRuleDO rule = new ErpPostingRuleDO().setId(10L).setRuleCode("PURCHASE_ACCRUAL")
                 .setVersion("v1").setEventType("PURCHASE_RECEIPT_ACCRUAL").setEnabled(true)
@@ -343,7 +344,7 @@ class ErpAccountingEventServiceTest {
         ErpAccountingEventDO original = purchaseReceiptOriginalEvent(
                 ErpAccountingEventStatusEnum.POSTED.getStatus());
         when(accountingEventMapper.selectBySource("PURCHASE_RECEIPT_ACCRUAL", "PURCHASE_IN",
-                99L, 0L, 1, 0L)).thenReturn(original);
+                99L, 0L, 1, 0, 0L)).thenReturn(original);
         when(accountingEventMapper.selectById(100L)).thenReturn(original);
         stubPurchaseAccrualRuleAndAccounts();
         when(periodService.getPeriodByCode("202609")).thenReturn(
@@ -374,7 +375,7 @@ class ErpAccountingEventServiceTest {
     @Test
     void reverseEventRejectsAlreadyReversedOriginalEvent() {
         when(accountingEventMapper.selectBySource("PURCHASE_RECEIPT_ACCRUAL", "PURCHASE_IN",
-                99L, 0L, 1, 0L)).thenReturn(purchaseReceiptOriginalEvent(
+                99L, 0L, 1, 0, 0L)).thenReturn(purchaseReceiptOriginalEvent(
                 ErpAccountingEventStatusEnum.REVERSED.getStatus()));
 
         ServiceException exception = assertThrows(ServiceException.class,
@@ -397,7 +398,7 @@ class ErpAccountingEventServiceTest {
         ErpAccountingEventDO original = purchaseReceiptOriginalEvent(
                 ErpAccountingEventStatusEnum.POSTED.getStatus());
         when(accountingEventMapper.selectBySource("PURCHASE_RECEIPT_ACCRUAL", "PURCHASE_IN",
-                99L, 0L, 1, 0L)).thenReturn(original);
+                99L, 0L, 1, 0, 0L)).thenReturn(original);
         when(accountingEventMapper.selectById(100L)).thenReturn(original);
         stubPurchaseAccrualRuleAndAccounts();
         when(periodService.getPeriodByCode("202610")).thenReturn(
@@ -479,6 +480,93 @@ class ErpAccountingEventServiceTest {
 
     private static ErpPeriodDO period(Long id, String code, int month, Integer status) {
         return new ErpPeriodDO().setId(id).setCode(code).setYear(2026).setMonth(month).setStatus(status);
+    }
+    @Test
+    void postEventKeepsPartialInstallmentsAsIndependentEvents() {
+        stubPurchaseAccrualRuleAndAccounts();
+        when(periodService.getPeriodByCode("202609")).thenReturn(
+                period(202609L, "202609", 9, ErpPeriodStatusEnum.OPEN.getStatus()));
+        when(glVoucherService.createGlVoucher(any())).thenReturn(601L).thenReturn(602L);
+        doAnswer(invocation -> {
+            ErpAccountingEventDO event = invocation.getArgument(0);
+            event.setId(200L + event.getSequenceNo());
+            return 1;
+        }).when(accountingEventMapper).insert(any(ErpAccountingEventDO.class));
+
+        Long firstVoucherId = accountingEventService.postEvent(installmentRequest(1, "600.0000", "78.0000", "678.0000"));
+        Long secondVoucherId = accountingEventService.postEvent(installmentRequest(2, "400.0000", "52.0000", "452.0000"));
+
+        assertEquals(601L, firstVoucherId);
+        assertEquals(602L, secondVoucherId);
+        ArgumentCaptor<ErpAccountingEventDO> eventCaptor = ArgumentCaptor.forClass(ErpAccountingEventDO.class);
+        verify(accountingEventMapper, times(2)).insert(eventCaptor.capture());
+        List<ErpAccountingEventDO> events = eventCaptor.getAllValues();
+        assertEquals(1, events.get(0).getSequenceNo());
+        assertEquals(2, events.get(1).getSequenceNo());
+        assertNotEquals(events.get(0).getIdempotencyKey(), events.get(1).getIdempotencyKey());
+    }
+
+    @Test
+    void postEventRejectsNegativeSequenceNo() {
+        ServiceException exception = assertThrows(ServiceException.class,
+                () -> accountingEventService.postEvent(installmentRequest(-1, "600.0000", "78.0000", "678.0000")));
+
+        assertEquals(ErrorCodeConstants.ACCOUNTING_EVENT_REQUEST_INVALID.getCode(), exception.getCode());
+        verify(accountingEventMapper, never()).insert(any(ErpAccountingEventDO.class));
+    }
+
+    @Test
+    void reverseEventReversesTheSpecifiedInstallmentOnly() {
+        ErpAccountingEventDO installment = purchaseReceiptOriginalEvent(
+                ErpAccountingEventStatusEnum.POSTED.getStatus()).setSequenceNo(2);
+        when(accountingEventMapper.selectBySource("PURCHASE_RECEIPT_ACCRUAL", "PURCHASE_IN",
+                99L, 0L, 1, 2, 0L)).thenReturn(installment);
+        when(accountingEventMapper.selectById(100L)).thenReturn(installment);
+        stubPurchaseAccrualRuleAndAccounts();
+        when(periodService.getPeriodByCode("202609")).thenReturn(
+                period(202609L, "202609", 9, ErpPeriodStatusEnum.OPEN.getStatus()));
+        when(glVoucherService.createGlVoucher(any())).thenReturn(505L);
+        doAnswer(invocation -> {
+            ErpAccountingEventDO event = invocation.getArgument(0);
+            event.setId(400L);
+            return 1;
+        }).when(accountingEventMapper).insert(any(ErpAccountingEventDO.class));
+
+        assertEquals(505L, accountingEventService.reverseEvent(ErpAccountingEventReverseReqBO.builder()
+                .eventType("PURCHASE_RECEIPT_ACCRUAL")
+                .sourceDocType("PURCHASE_IN")
+                .sourceDocId(99L)
+                .sourceDocLineId(0L)
+                .sourceRevision(1)
+                .sequenceNo(2)
+                .accountingDate(LocalDate.of(2026, 9, 26))
+                .occurredAt(LocalDateTime.of(2026, 9, 26, 9, 0))
+                .build()));
+
+        ArgumentCaptor<ErpAccountingEventDO> eventCaptor = ArgumentCaptor.forClass(ErpAccountingEventDO.class);
+        verify(accountingEventMapper).insert(eventCaptor.capture());
+        assertEquals(2, eventCaptor.getValue().getSequenceNo());
+        assertEquals(100L, eventCaptor.getValue().getReversalOfEventId());
+    }
+
+    private static ErpAccountingEventCreateReqBO installmentRequest(Integer sequenceNo, String amountWithoutTax,
+                                                                    String taxAmount, String amountWithTax) {
+        return ErpAccountingEventCreateReqBO.builder()
+                .eventType("PURCHASE_RECEIPT_ACCRUAL")
+                .sourceDocType("PURCHASE_IN")
+                .sourceDocId(99L)
+                .sourceDocNo("PI20260925001")
+                .sourceRevision(1)
+                .eventDate(LocalDate.of(2026, 9, 25))
+                .accountingDate(LocalDate.of(2026, 9, 25))
+                .amountWithoutTax(new BigDecimal(amountWithoutTax))
+                .taxAmount(new BigDecimal(taxAmount))
+                .amountWithTax(new BigDecimal(amountWithTax))
+                .sequenceNo(sequenceNo)
+                .currency("cny")
+                .exchangeRate(BigDecimal.ONE)
+                .occurredAt(LocalDateTime.of(2026, 9, 25, 9, 30))
+                .build();
     }
     private static ErpAccountingEventCreateReqBO salesShipmentRequest() {
         return ErpAccountingEventCreateReqBO.builder()

@@ -32,13 +32,14 @@ public interface ErpAccountingEventMapper extends BaseMapperX<ErpAccountingEvent
      */
     default ErpAccountingEventDO selectBySource(String eventType, String sourceDocType, Long sourceDocId,
                                                  Long sourceDocLineId, Integer sourceRevision,
-                                                 Long reversalOfEventId) {
+                                                 Integer sequenceNo, Long reversalOfEventId) {
         return selectOne(new LambdaQueryWrapperX<ErpAccountingEventDO>()
                 .eq(ErpAccountingEventDO::getEventType, eventType)
                 .eq(ErpAccountingEventDO::getSourceDocType, sourceDocType)
                 .eq(ErpAccountingEventDO::getSourceDocId, sourceDocId)
                 .eq(ErpAccountingEventDO::getSourceDocLineId, sourceDocLineId)
                 .eq(ErpAccountingEventDO::getSourceRevision, sourceRevision)
+                .eq(ErpAccountingEventDO::getSequenceNo, sequenceNo)
                 .eq(ErpAccountingEventDO::getReversalOfEventId, reversalOfEventId));
     }
 

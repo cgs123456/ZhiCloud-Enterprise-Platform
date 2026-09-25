@@ -37,6 +37,10 @@ public class ErpAccountingEventDO extends TenantBaseDO {
     private String sourceDocNo;
     private Long sourceDocLineId;
     private Integer sourceRevision;
+    /**
+     * 期次序号。部分开票/收款/付款从 1 递增；主事件与冲销沿用原事件期次，非分期事件为 0。
+     */
+    private Integer sequenceNo;
     private LocalDate eventDate;
     private LocalDate accountingDate;
     private Long periodId;
