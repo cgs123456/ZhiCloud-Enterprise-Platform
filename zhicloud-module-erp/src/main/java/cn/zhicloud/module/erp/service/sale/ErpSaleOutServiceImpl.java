@@ -165,12 +165,15 @@ public class ErpSaleOutServiceImpl implements ErpSaleOutService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateSaleOutStatus(Long id, Integer status) {
+        if (!ErpAuditStatus.isValid(status)) {
+            throw exception(ERP_AUDIT_STATUS_INVALID, status);
+        }
         boolean approve = ErpAuditStatus.APPROVE.getStatus().equals(status);
         // 1.1 校验存在
         ErpSaleOutDO saleOut = validateSaleOutExists(id);
-        // 1.2 校验状态
-        if (saleOut.getStatus().equals(status)) {
-            throw exception(approve ? SALE_OUT_APPROVE_FAIL : SALE_OUT_PROCESS_FAIL);
+        // 1.2 幂等处理：目标状态与当前状态一致时，返回同一业务结果
+        if (status.equals(saleOut.getStatus())) {
+            return;
         }
         // 1.3 校验已退款
         if (!approve && saleOut.getReceiptPrice().compareTo(BigDecimal.ZERO) > 0) {
@@ -181,6 +184,10 @@ public class ErpSaleOutServiceImpl implements ErpSaleOutService {
         int updateCount = saleOutMapper.updateByIdAndStatus(id, saleOut.getStatus(),
                 new ErpSaleOutDO().setStatus(status));
         if (updateCount == 0) {
+            ErpSaleOutDO latest = saleOutMapper.selectOneForUpdate(ErpSaleOutDO::getId, id);
+            if (latest != null && status.equals(latest.getStatus())) {
+                return;
+            }
             throw exception(approve ? SALE_OUT_APPROVE_FAIL : SALE_OUT_PROCESS_FAIL);
         }
 

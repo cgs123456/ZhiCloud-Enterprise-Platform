@@ -140,18 +140,25 @@ public class ErpFinanceReceiptServiceImpl implements ErpFinanceReceiptService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateFinanceReceiptStatus(Long id, Integer status) {
+        if (!ErpAuditStatus.isValid(status)) {
+            throw exception(ERP_AUDIT_STATUS_INVALID, status);
+        }
         boolean approve = ErpAuditStatus.APPROVE.getStatus().equals(status);
         // 1.1 校验存在
         ErpFinanceReceiptDO receipt = validateFinanceReceiptExists(id);
-        // 1.2 校验状态
-        if (receipt.getStatus().equals(status)) {
-            throw exception(approve ? FINANCE_RECEIPT_APPROVE_FAIL : FINANCE_RECEIPT_PROCESS_FAIL);
+        // 1.2 幂等处理：目标状态与当前状态一致时，返回同一业务结果
+        if (status.equals(receipt.getStatus())) {
+            return;
         }
 
         // 2. 更新状态
         int updateCount = financeReceiptMapper.updateByIdAndStatus(id, receipt.getStatus(),
                 new ErpFinanceReceiptDO().setStatus(status));
         if (updateCount == 0) {
+            ErpFinanceReceiptDO latest = financeReceiptMapper.selectOneForUpdate(ErpFinanceReceiptDO::getId, id);
+            if (latest != null && status.equals(latest.getStatus())) {
+                return;
+            }
             throw exception(approve ? FINANCE_RECEIPT_APPROVE_FAIL : FINANCE_RECEIPT_PROCESS_FAIL);
         }
     }

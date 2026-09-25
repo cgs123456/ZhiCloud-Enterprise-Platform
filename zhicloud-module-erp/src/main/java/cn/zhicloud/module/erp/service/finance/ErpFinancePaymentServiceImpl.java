@@ -140,18 +140,25 @@ public class ErpFinancePaymentServiceImpl implements ErpFinancePaymentService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateFinancePaymentStatus(Long id, Integer status) {
+        if (!ErpAuditStatus.isValid(status)) {
+            throw exception(ERP_AUDIT_STATUS_INVALID, status);
+        }
         boolean approve = ErpAuditStatus.APPROVE.getStatus().equals(status);
         // 1.1 校验存在
         ErpFinancePaymentDO payment = validateFinancePaymentExists(id);
-        // 1.2 校验状态
-        if (payment.getStatus().equals(status)) {
-            throw exception(approve ? FINANCE_PAYMENT_APPROVE_FAIL : FINANCE_PAYMENT_PROCESS_FAIL);
+        // 1.2 幂等处理：目标状态与当前状态一致时，返回同一业务结果
+        if (status.equals(payment.getStatus())) {
+            return;
         }
 
         // 2. 更新状态
         int updateCount = financePaymentMapper.updateByIdAndStatus(id, payment.getStatus(),
                 new ErpFinancePaymentDO().setStatus(status));
         if (updateCount == 0) {
+            ErpFinancePaymentDO latest = financePaymentMapper.selectOneForUpdate(ErpFinancePaymentDO::getId, id);
+            if (latest != null && status.equals(latest.getStatus())) {
+                return;
+            }
             throw exception(approve ? FINANCE_PAYMENT_APPROVE_FAIL : FINANCE_PAYMENT_PROCESS_FAIL);
         }
     }

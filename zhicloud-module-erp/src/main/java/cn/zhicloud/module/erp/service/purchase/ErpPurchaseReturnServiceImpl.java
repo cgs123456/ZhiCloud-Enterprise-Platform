@@ -153,12 +153,15 @@ public class ErpPurchaseReturnServiceImpl implements ErpPurchaseReturnService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updatePurchaseReturnStatus(Long id, Integer status) {
+        if (!ErpAuditStatus.isValid(status)) {
+            throw exception(ERP_AUDIT_STATUS_INVALID, status);
+        }
         boolean approve = ErpAuditStatus.APPROVE.getStatus().equals(status);
         // 1.1 校验存在
         ErpPurchaseReturnDO purchaseReturn = validatePurchaseReturnExists(id);
-        // 1.2 校验状态
-        if (purchaseReturn.getStatus().equals(status)) {
-            throw exception(approve ? PURCHASE_RETURN_APPROVE_FAIL : PURCHASE_RETURN_PROCESS_FAIL);
+        // 1.2 幂等处理：目标状态与当前状态一致时，返回同一业务结果
+        if (status.equals(purchaseReturn.getStatus())) {
+            return;
         }
         // 1.3 校验已退款
         if (!approve && purchaseReturn.getRefundPrice().compareTo(BigDecimal.ZERO) > 0) {
@@ -169,6 +172,10 @@ public class ErpPurchaseReturnServiceImpl implements ErpPurchaseReturnService {
         int updateCount = purchaseReturnMapper.updateByIdAndStatus(id, purchaseReturn.getStatus(),
                 new ErpPurchaseReturnDO().setStatus(status));
         if (updateCount == 0) {
+            ErpPurchaseReturnDO latest = purchaseReturnMapper.selectOneForUpdate(ErpPurchaseReturnDO::getId, id);
+            if (latest != null && status.equals(latest.getStatus())) {
+                return;
+            }
             throw exception(approve ? PURCHASE_RETURN_APPROVE_FAIL : PURCHASE_RETURN_PROCESS_FAIL);
         }
 

@@ -157,12 +157,15 @@ public class ErpPurchaseInServiceImpl implements ErpPurchaseInService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updatePurchaseInStatus(Long id, Integer status) {
+        if (!ErpAuditStatus.isValid(status)) {
+            throw exception(ERP_AUDIT_STATUS_INVALID, status);
+        }
         boolean approve = ErpAuditStatus.APPROVE.getStatus().equals(status);
         // 1.1 校验存在
         ErpPurchaseInDO purchaseIn = validatePurchaseInExists(id);
-        // 1.2 校验状态
-        if (purchaseIn.getStatus().equals(status)) {
-            throw exception(approve ? PURCHASE_IN_APPROVE_FAIL : PURCHASE_IN_PROCESS_FAIL);
+        // 1.2 幂等处理：目标状态与当前状态一致时，返回同一业务结果
+        if (status.equals(purchaseIn.getStatus())) {
+            return;
         }
         // 1.3 校验已付款
         if (!approve && purchaseIn.getPaymentPrice().compareTo(BigDecimal.ZERO) > 0) {
@@ -173,6 +176,10 @@ public class ErpPurchaseInServiceImpl implements ErpPurchaseInService {
         int updateCount = purchaseInMapper.updateByIdAndStatus(id, purchaseIn.getStatus(),
                 new ErpPurchaseInDO().setStatus(status));
         if (updateCount == 0) {
+            ErpPurchaseInDO latest = purchaseInMapper.selectOneForUpdate(ErpPurchaseInDO::getId, id);
+            if (latest != null && status.equals(latest.getStatus())) {
+                return;
+            }
             throw exception(approve ? PURCHASE_IN_APPROVE_FAIL : PURCHASE_IN_PROCESS_FAIL);
         }
 

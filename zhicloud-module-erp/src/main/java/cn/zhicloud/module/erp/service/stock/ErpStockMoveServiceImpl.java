@@ -104,18 +104,25 @@ public class ErpStockMoveServiceImpl implements ErpStockMoveService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateStockMoveStatus(Long id, Integer status) {
+        if (!ErpAuditStatus.isValid(status)) {
+            throw exception(ERP_AUDIT_STATUS_INVALID, status);
+        }
         boolean approve = ErpAuditStatus.APPROVE.getStatus().equals(status);
         // 1.1 校验存在
         ErpStockMoveDO stockMove = validateStockMoveExists(id);
-        // 1.2 校验状态
-        if (stockMove.getStatus().equals(status)) {
-            throw exception(approve ? STOCK_MOVE_APPROVE_FAIL : STOCK_MOVE_PROCESS_FAIL);
+        // 1.2 幂等处理：目标状态与当前状态一致时，返回同一业务结果
+        if (status.equals(stockMove.getStatus())) {
+            return;
         }
 
         // 2. 更新状态
         int updateCount = stockMoveMapper.updateByIdAndStatus(id, stockMove.getStatus(),
                 new ErpStockMoveDO().setStatus(status));
         if (updateCount == 0) {
+            ErpStockMoveDO latest = stockMoveMapper.selectOneForUpdate(ErpStockMoveDO::getId, id);
+            if (latest != null && status.equals(latest.getStatus())) {
+                return;
+            }
             throw exception(approve ? STOCK_MOVE_APPROVE_FAIL : STOCK_MOVE_PROCESS_FAIL);
         }
 

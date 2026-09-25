@@ -162,12 +162,15 @@ public class ErpPurchaseOrderServiceImpl implements ErpPurchaseOrderService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updatePurchaseOrderStatus(Long id, Integer status) {
+        if (!ErpAuditStatus.isValid(status)) {
+            throw exception(ERP_AUDIT_STATUS_INVALID, status);
+        }
         boolean approve = ErpAuditStatus.APPROVE.getStatus().equals(status);
         // 1.1 校验存在
         ErpPurchaseOrderDO purchaseOrder = validatePurchaseOrderExists(id);
-        // 1.2 校验状态
-        if (purchaseOrder.getStatus().equals(status)) {
-            throw exception(approve ? PURCHASE_ORDER_APPROVE_FAIL : PURCHASE_ORDER_PROCESS_FAIL);
+        // 1.2 幂等处理：目标状态与当前状态一致时，返回同一业务结果
+        if (status.equals(purchaseOrder.getStatus())) {
+            return;
         }
         // 1.3 存在采购入单，无法反审核
         if (!approve && purchaseOrder.getInCount().compareTo(BigDecimal.ZERO) > 0) {
@@ -182,6 +185,10 @@ public class ErpPurchaseOrderServiceImpl implements ErpPurchaseOrderService {
         int updateCount = purchaseOrderMapper.updateByIdAndStatus(id, purchaseOrder.getStatus(),
                 new ErpPurchaseOrderDO().setStatus(status));
         if (updateCount == 0) {
+            ErpPurchaseOrderDO latest = purchaseOrderMapper.selectOneForUpdate(ErpPurchaseOrderDO::getId, id);
+            if (latest != null && status.equals(latest.getStatus())) {
+                return;
+            }
             throw exception(approve ? PURCHASE_ORDER_APPROVE_FAIL : PURCHASE_ORDER_PROCESS_FAIL);
         }
     }

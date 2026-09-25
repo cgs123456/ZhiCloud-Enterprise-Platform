@@ -165,12 +165,15 @@ public class ErpSaleReturnServiceImpl implements ErpSaleReturnService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateSaleReturnStatus(Long id, Integer status) {
+        if (!ErpAuditStatus.isValid(status)) {
+            throw exception(ERP_AUDIT_STATUS_INVALID, status);
+        }
         boolean approve = ErpAuditStatus.APPROVE.getStatus().equals(status);
         // 1.1 校验存在
         ErpSaleReturnDO saleReturn = validateSaleReturnExists(id);
-        // 1.2 校验状态
-        if (saleReturn.getStatus().equals(status)) {
-            throw exception(approve ? SALE_RETURN_APPROVE_FAIL : SALE_RETURN_PROCESS_FAIL);
+        // 1.2 幂等处理：目标状态与当前状态一致时，返回同一业务结果
+        if (status.equals(saleReturn.getStatus())) {
+            return;
         }
         // 1.3 校验已退款
         if (!approve && saleReturn.getRefundPrice().compareTo(BigDecimal.ZERO) > 0) {
@@ -181,6 +184,10 @@ public class ErpSaleReturnServiceImpl implements ErpSaleReturnService {
         int updateCount = saleReturnMapper.updateByIdAndStatus(id, saleReturn.getStatus(),
                 new ErpSaleReturnDO().setStatus(status));
         if (updateCount == 0) {
+            ErpSaleReturnDO latest = saleReturnMapper.selectOneForUpdate(ErpSaleReturnDO::getId, id);
+            if (latest != null && status.equals(latest.getStatus())) {
+                return;
+            }
             throw exception(approve ? SALE_RETURN_APPROVE_FAIL : SALE_RETURN_PROCESS_FAIL);
         }
 
