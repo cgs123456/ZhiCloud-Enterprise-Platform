@@ -20,6 +20,7 @@ import cn.zhicloud.module.erp.dal.mysql.finance.ErpGlAccountMapper;
 import cn.zhicloud.module.erp.enums.accounting.ErpAccountingEventStatusEnum;
 import cn.zhicloud.module.erp.enums.accounting.ErpAccountingPostingStatusEnum;
 import cn.zhicloud.module.erp.enums.accounting.ErpPostingEntrySideEnum;
+import cn.zhicloud.module.erp.enums.finance.ErpPeriodStatusEnum;
 import cn.zhicloud.module.erp.service.accounting.bo.ErpAccountingEventCreateReqBO;
 import cn.zhicloud.module.erp.service.accounting.bo.ErpAccountingEventReverseReqBO;
 import cn.zhicloud.module.erp.service.finance.ErpGlVoucherService;
@@ -78,6 +79,7 @@ public class ErpAccountingEventServiceImpl implements ErpAccountingEventService 
     @Transactional(rollbackFor = Exception.class)
     public Long postEvent(ErpAccountingEventCreateReqBO request) {
         validateRequest(request);
+        validateReversalReference(request);
         String idempotencyKey = buildIdempotencyKey(request);
         ErpAccountingEventDO existing = accountingEventMapper.selectByIdempotencyKey(idempotencyKey);
         if (existing != null) {
@@ -125,14 +127,14 @@ public class ErpAccountingEventServiceImpl implements ErpAccountingEventService 
         if (!ErpAccountingEventStatusEnum.POSTED.getStatus().equals(original.getStatus())) {
             throw exception(ACCOUNTING_EVENT_NOT_POSTED, original.getEventId());
         }
-        return postEvent(ErpAccountingEventCreateReqBO.builder()
+        Long voucherId = postEvent(ErpAccountingEventCreateReqBO.builder()
                 .eventType(original.getEventType())
                 .sourceDocType(original.getSourceDocType())
                 .sourceDocId(original.getSourceDocId())
                 .sourceDocNo(original.getSourceDocNo())
                 .sourceDocLineId(original.getSourceDocLineId())
                 .sourceRevision(original.getSourceRevision())
-                .eventDate(request.getEventDate() == null ? original.getEventDate() : request.getEventDate())
+                .eventDate(request.getEventDate() == null ? request.getAccountingDate() : request.getEventDate())
                 .accountingDate(request.getAccountingDate())
                 .amountWithoutTax(defaultZero(original.getAmountWithoutTax()).negate())
                 .taxAmount(defaultZero(original.getTaxAmount()).negate())
@@ -143,6 +145,21 @@ public class ErpAccountingEventServiceImpl implements ErpAccountingEventService 
                 .reversalOfEventId(original.getId())
                 .occurredAt(request.getOccurredAt() == null ? LocalDateTime.now() : request.getOccurredAt())
                 .build());
+        markOriginalReversed(original);
+        return voucherId;
+    }
+
+    /**
+     * 将原事件标记为已冲销。
+     *
+     * <p>冲销不改写原事件金额与日期，仅推进状态，保证对账程序可以区分
+     * 「已过账待冲销」与「已冲销」两类事件，并阻止同一原事件被重复冲销。
+     */
+    private void markOriginalReversed(ErpAccountingEventDO original) {
+        ErpAccountingEventDO update = new ErpAccountingEventDO();
+        update.setId(original.getId());
+        update.setStatus(ErpAccountingEventStatusEnum.REVERSED.getStatus());
+        accountingEventMapper.updateById(update);
     }
 
     private void validateReverseRequest(ErpAccountingEventReverseReqBO request) {
@@ -323,7 +340,30 @@ public class ErpAccountingEventServiceImpl implements ErpAccountingEventService 
         if (period == null) {
             throw exception(PERIOD_NOT_EXISTS);
         }
+        if (!ErpPeriodStatusEnum.OPEN.getStatus().equals(period.getStatus())) {
+            throw exception(GL_VOUCHER_PERIOD_CLOSED, periodCode);
+        }
         return period;
+    }
+
+    /**
+     * 校验红冲/退货事件引用的原事件。
+     *
+     * <p>引用原事件必须存在且已过账，避免出现指向不存在或草稿事件的悬空引用，
+     * 也避免同一原事件被重复红冲后无法被对账程序识别。
+     */
+    private void validateReversalReference(ErpAccountingEventCreateReqBO request) {
+        Long reversalOfEventId = request.getReversalOfEventId();
+        if (reversalOfEventId == null || reversalOfEventId <= 0) {
+            return;
+        }
+        ErpAccountingEventDO original = accountingEventMapper.selectById(reversalOfEventId);
+        if (original == null || original.getId() == null) {
+            throw exception(ACCOUNTING_EVENT_NOT_FOUND, "reversalOfEventId=" + reversalOfEventId);
+        }
+        if (!ErpAccountingEventStatusEnum.POSTED.getStatus().equals(original.getStatus())) {
+            throw exception(ACCOUNTING_EVENT_NOT_POSTED, original.getEventId());
+        }
     }
 
     private ErpAccountingEventDO buildEvent(ErpAccountingEventCreateReqBO request, ErpPostingRuleDO rule,
