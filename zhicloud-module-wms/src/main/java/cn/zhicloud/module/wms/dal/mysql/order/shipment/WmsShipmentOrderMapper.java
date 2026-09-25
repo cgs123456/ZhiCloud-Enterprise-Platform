@@ -40,6 +40,14 @@ public interface WmsShipmentOrderMapper extends BaseMapperX<WmsShipmentOrderDO> 
         return selectOne(WmsShipmentOrderDO::getNo, no);
     }
 
+    /**
+     * 按业务单号查出库单（V101：ERP -> WMS 链路的业务级幂等查重）。
+     * <p>Inbox 唯一键挡的是「同一事件重复投递」，本方法挡的是「不同事件指向同一业务单据」，
+     * 例如人工重放后又来了一条修正事件；两层都要有，缺一层就会建出重复出库单。
+     */
+    default WmsShipmentOrderDO selectByBizOrderNo(String bizOrderNo) {
+        return selectOne(WmsShipmentOrderDO::getBizOrderNo, bizOrderNo);
+    }
     default Long selectCountByMerchantId(Long merchantId) {
         return selectCount(WmsShipmentOrderDO::getMerchantId, merchantId);
     }

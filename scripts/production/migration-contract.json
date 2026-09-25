@@ -79,6 +79,20 @@
       "sha256": "526ea17e03761a4f75914a2d0623df84f64c1d5bc142c90323926a9da4313bf0",
       "verification_file": "V100_verify.sql",
       "verification_sha256": "bee5c0eb631c7aaad0ff4f5b982b5ecb63906fbea1bb2a1d84ebc26e2c07cec5"
+    },
+    {
+      "version": 101,
+      "file": "V101__mdm_cross_ref.sql",
+      "sha256": "6486e17a336de10cb40ddd34a901b68ee04a09f42ef2aed5dd539427346f6e40",
+      "verification_file": "V101_verify.sql",
+      "verification_sha256": "ae5b59d9b167c3f096a0b1850a0e81d7970282576bd4c4257ecc0cfa59fee56d"
+    },
+    {
+      "version": 102,
+      "file": "V102__mdm_cross_ref_seed.sql",
+      "sha256": "b133dcb51dd65b7d558a970de345d7c3eacacc9b533fc245f0116bd8bbfca323",
+      "verification_file": "V102_verify.sql",
+      "verification_sha256": "8be5c7d1e3ffe3e5b723b542c578f466b0b281908a412c6c8b09c2dda3ae1a61"
     }
   ]
 }

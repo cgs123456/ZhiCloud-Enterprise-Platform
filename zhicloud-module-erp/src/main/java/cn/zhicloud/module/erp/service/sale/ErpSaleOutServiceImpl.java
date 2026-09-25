@@ -5,6 +5,10 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.common.util.number.MoneyUtils;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
+import cn.zhicloud.framework.integration.api.EventAppendReq;
+import cn.zhicloud.framework.integration.contract.ErpSaleOutApprovedEvent;
+import cn.zhicloud.framework.integration.contract.IntegrationEventTypes;
+import cn.zhicloud.framework.integration.service.EventOutboxService;
 import cn.zhicloud.module.erp.controller.admin.sale.vo.out.ErpSaleOutPageReqVO;
 import cn.zhicloud.module.erp.controller.admin.sale.vo.out.ErpSaleOutSaveReqVO;
 import cn.zhicloud.module.erp.dal.dataobject.product.ErpProductDO;
@@ -54,6 +58,12 @@ import static cn.zhicloud.module.erp.enums.ErrorCodeConstants.*;
 @Validated
 public class ErpSaleOutServiceImpl implements ErpSaleOutService {
 
+    /**
+     * 跨域事件的默认租户：ERP 主表（含 erp_sale_out）当前没有 tenant_id 列，取不到真实租户，
+     * 统一按 0 登记。接入多租户前不要用本链路承载多租户数据（已在风险清单登记）。
+     */
+    private static final Long DEFAULT_EVENT_TENANT_ID = 0L;
+
     @Resource
     private ErpSaleOutMapper saleOutMapper;
     @Resource
@@ -73,6 +83,13 @@ public class ErpSaleOutServiceImpl implements ErpSaleOutService {
     private ErpStockRecordService stockRecordService;
     @Resource
     private ErpAccountingEventService accountingEventService;
+
+    /**
+     * V101：跨域事件发件箱。审核通过时与业务同事务登记事件（业务回滚则事件一并消失），
+     * 投递由集成 Starter 的中继任务异步完成，本方法不做任何跨模块远程调用。
+     */
+    @Resource
+    private EventOutboxService eventOutboxService;
 
     @Resource
     private AdminUserApi adminUserApi;
@@ -221,6 +238,50 @@ public class ErpSaleOutServiceImpl implements ErpSaleOutService {
         } else if (ErpAuditStatus.APPROVE.getStatus().equals(saleOut.getStatus())) {
             accountingEventService.reverseEvent(buildSaleShipmentReversalRequest(saleOut));
         }
+
+        // 5. 审核通过时登记跨域事件（与库存流水、会计事件同事务）。
+        //    为什么放在事务内而不是提交后：提交后登记会留下「业务成功但事件没登记」的窗口；
+        //    同一事务内登记则随业务回滚一起消失，宁可少发也不要发出未发生的业务事实。
+        //    这里只登记不投递：投递由可靠集成数据面（V100）的中继任务异步完成，失败重试并最终进死信。
+        if (approve) {
+            eventOutboxService.append(buildSaleOutApprovedEventAppendReq(saleOut, saleOutItems));
+        }
+    }
+
+    /**
+     * 构造「ERP 销售出库审核通过」事件的登记请求。
+     *
+     * <p>eventId 由业务主键推导（{@code erp-sale-out-{id}-approved}）而不是随机数：
+     * 同一单据重复触发时得到相同 eventId，消费侧才能靠 event_inbox 唯一键去重。
+     *
+     * <p>tenantId 固定 0：ERP 主表当前没有 tenant_id 列，取不到真实租户；
+     * 接入多租户前不要用本链路承载多租户数据（已在风险清单登记）。
+     */
+    private EventAppendReq buildSaleOutApprovedEventAppendReq(ErpSaleOutDO saleOut,
+                                                            List<ErpSaleOutItemDO> saleOutItems) {
+        ErpSaleOutApprovedEvent event = ErpSaleOutApprovedEvent.builder()
+                .no(saleOut.getNo())
+                .saleOutId(saleOut.getId())
+                .customerId(saleOut.getCustomerId())
+                .outTime(saleOut.getOutTime())
+                .totalPrice(saleOut.getTotalPrice())
+                .items(convertList(saleOutItems, item -> ErpSaleOutApprovedEvent.Item.builder()
+                        .productId(item.getProductId())
+                        .warehouseId(item.getWarehouseId())
+                        .count(item.getCount())
+                        .price(item.getProductPrice())
+                        .build()))
+                .build();
+        return EventAppendReq.builder()
+                .eventId(ErpSaleOutApprovedEvent.eventIdOf(saleOut.getId()))
+                .tenantId(DEFAULT_EVENT_TENANT_ID)
+                .aggregateType(ErpSaleOutApprovedEvent.AGGREGATE_TYPE)
+                .aggregateId(String.valueOf(saleOut.getId()))
+                .eventType(IntegrationEventTypes.ERP_SALE_OUT_APPROVED)
+                .schemaVersion("v1")
+                .payload(event.toJson())
+                .occurredAt(saleOut.getOutTime() == null ? LocalDateTime.now() : saleOut.getOutTime())
+                .build();
     }
 
     private ErpAccountingEventCreateReqBO buildSaleShipmentEvent(ErpSaleOutDO saleOut,

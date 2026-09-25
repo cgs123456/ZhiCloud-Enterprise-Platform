@@ -20,6 +20,11 @@
             <groupId>cn.zhicloud</groupId>
             <artifactId>zhicloud-common</artifactId>
         </dependency>
+        <!-- 事件体（payload）JSON 序列化：契约对象需要 jackson-databind，common 只提供了注解与 API -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
 
         <!-- DB 相关 -->
         <dependency>

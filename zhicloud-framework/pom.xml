@@ -30,6 +30,7 @@
         <module>zhicloud-spring-boot-starter-biz-ip</module>
         <module>zhicloud-spring-boot-starter-biz-inventory</module>
         <module>zhicloud-spring-boot-starter-biz-integration</module>
+        <module>zhicloud-spring-boot-starter-biz-mdm</module>
     </modules>
 
     <artifactId>zhicloud-framework</artifactId>

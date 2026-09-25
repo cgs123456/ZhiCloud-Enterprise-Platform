@@ -1,0 +1,1 @@
+DELETE FROM "mdm_cross_ref";

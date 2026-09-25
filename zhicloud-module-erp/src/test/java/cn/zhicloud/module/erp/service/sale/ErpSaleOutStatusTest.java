@@ -1,5 +1,8 @@
 package cn.zhicloud.module.erp.service.sale;
 
+import cn.zhicloud.framework.integration.api.EventAppendReq;
+import cn.zhicloud.framework.integration.contract.ErpSaleOutApprovedEvent;
+import cn.zhicloud.framework.integration.service.EventOutboxService;
 import cn.zhicloud.module.erp.dal.dataobject.product.ErpProductDO;
 import cn.zhicloud.module.erp.dal.dataobject.sale.ErpSaleOutDO;
 import cn.zhicloud.module.erp.dal.dataobject.sale.ErpSaleOutItemDO;
@@ -26,6 +29,8 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
@@ -35,7 +40,8 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /**
- * 销售出库审核状态行为测试，重点验证收入确认与成本结转事件只生成一次。
+ * 销售出库审核状态行为测试，重点验证收入确认与成本结转事件只生成一次，
+ * 以及 V101 起「审核通过」会在同一事务内向事件发件箱登记一条跨域事件。
  */
 @ExtendWith(MockitoExtension.class)
 class ErpSaleOutStatusTest {
@@ -50,6 +56,8 @@ class ErpSaleOutStatusTest {
     private ErpProductService productService;
     @Mock
     private ErpAccountingEventService accountingEventService;
+    @Mock
+    private EventOutboxService eventOutboxService;
 
     private ErpSaleOutServiceImpl saleOutService;
 
@@ -61,6 +69,7 @@ class ErpSaleOutStatusTest {
         ReflectionTestUtils.setField(saleOutService, "stockRecordService", stockRecordService);
         ReflectionTestUtils.setField(saleOutService, "productService", productService);
         ReflectionTestUtils.setField(saleOutService, "accountingEventService", accountingEventService);
+        ReflectionTestUtils.setField(saleOutService, "eventOutboxService", eventOutboxService);
     }
 
     @Test
@@ -70,7 +79,8 @@ class ErpSaleOutStatusTest {
         assertDoesNotThrow(() -> saleOutService.updateSaleOutStatus(1L, ErpAuditStatus.APPROVE.getStatus()));
 
         verify(saleOutMapper, never()).updateByIdAndStatus(anyLong(), any(), any());
-        verifyNoInteractions(saleOutItemMapper, stockRecordService, productService, accountingEventService);
+        verifyNoInteractions(saleOutItemMapper, stockRecordService, productService, accountingEventService,
+                eventOutboxService);
     }
 
     @Test
@@ -105,6 +115,27 @@ class ErpSaleOutStatusTest {
         assertEquals(new BigDecimal("1500.0000"), event.getCostAmount());
         assertEquals(LocalDate.of(2026, 9, 25), event.getEventDate());
         assertEquals(LocalDate.of(2026, 9, 25), event.getAccountingDate());
+
+        // V101：审核通过必须在同一事务内登记「ERP 销售出库审核通过」事件，且只登记一次。
+        // eventId 必须业务侧可推导（erp-sale-out-{id}-approved），否则消费侧无法靠 Inbox 唯一键去重。
+        ArgumentCaptor<EventAppendReq> outboxCaptor = ArgumentCaptor.forClass(EventAppendReq.class);
+        verify(eventOutboxService).append(outboxCaptor.capture());
+        EventAppendReq appendReq = outboxCaptor.getValue();
+        assertEquals("erp-sale-out-1-approved", appendReq.getEventId());
+        assertEquals("erp.sale-out.approved.v1", appendReq.getEventType());
+        assertEquals("erp_sale_out", appendReq.getAggregateType());
+        assertEquals("1", appendReq.getAggregateId());
+        assertEquals(0L, appendReq.getTenantId());
+        assertEquals(LocalDateTime.of(2026, 9, 25, 10, 0), appendReq.getOccurredAt());
+        assertNotNull(appendReq.getPayload());
+        assertTrue(appendReq.getPayload().contains("SO001"));
+        ErpSaleOutApprovedEvent approvedEvent = ErpSaleOutApprovedEvent.fromJson(appendReq.getPayload());
+        assertEquals("SO001", approvedEvent.getNo());
+        assertEquals(1L, approvedEvent.getSaleOutId());
+        assertEquals(1, approvedEvent.getItems().size());
+        assertEquals(100L, approvedEvent.getItems().get(0).getProductId());
+        assertEquals(200L, approvedEvent.getItems().get(0).getWarehouseId());
+        assertEquals(new BigDecimal("10"), approvedEvent.getItems().get(0).getCount());
     }
 
     @Test
@@ -129,6 +160,8 @@ class ErpSaleOutStatusTest {
         assertEquals(LocalDate.of(2026, 9, 25), reversal.getEventDate());
         assertEquals(LocalDate.now(), reversal.getAccountingDate());
         verify(accountingEventService, never()).postEvent(any(ErpAccountingEventCreateReqBO.class));
+        // V101：反审核不是「审核通过」，不能登记事件；登记了等于告诉 WMS 发生过一次出库。
+        verify(eventOutboxService, never()).append(any(EventAppendReq.class));
     }
 
     private static ErpSaleOutDO saleOut(Integer status) {

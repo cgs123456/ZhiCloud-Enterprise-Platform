@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -29,6 +29,17 @@
             <groupId>cn.zhicloud</groupId>
             <artifactId>zhicloud-module-qms</artifactId>
             <version>${revision}</version>
+        </dependency>
+        <!-- V101 可靠集成数据面 Starter：WMS 作为事件消费者接 erp.sale-out.approved.v1 并生成出库单 -->
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-spring-boot-starter-biz-integration</artifactId>
+        </dependency>
+
+        <!-- V101 主数据跨域映射 Starter：ERP 产品/仓库/客户 -> WMS SKU/仓库/往来单位 -->
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-spring-boot-starter-biz-mdm</artifactId>
         </dependency>
 
         <!-- 业务组件 -->
