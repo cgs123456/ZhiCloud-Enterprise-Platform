@@ -79,12 +79,17 @@ public class ErpAccountingEventServiceImpl implements ErpAccountingEventService 
     @Transactional(rollbackFor = Exception.class)
     public Long postEvent(ErpAccountingEventCreateReqBO request) {
         validateRequest(request);
-        validateReversalReference(request);
+        ErpAccountingEventDO reversalOriginal = validateReversalReference(request);
         String idempotencyKey = buildIdempotencyKey(request);
         ErpAccountingEventDO existing = accountingEventMapper.selectByIdempotencyKey(idempotencyKey);
         if (existing != null) {
             return getExistingVoucherId(existing);
         }
+        // 勾稽守卫必须放在幂等短路之后：反审核再重新审核会命中同一幂等键并直接返回原凭证，
+        // 若先做累计判定，会把「原事件仍存在」误算成第二次占用额度而拒绝重新审核。
+        BigDecimal docTotal = reversalOriginal == null
+                ? resolveDocTotalAmount(request)
+                : inheritDocTotalAmount(request, reversalOriginal);
 
         ErpPostingRuleDO rule = selectPostingRule(request.getEventType());
         List<ErpPostingRuleLineDO> ruleLines = postingRuleLineMapper.selectListByRuleId(rule.getId());
@@ -99,7 +104,7 @@ public class ErpAccountingEventServiceImpl implements ErpAccountingEventService 
         }
 
         ErpPeriodDO period = resolvePeriod(request.getAccountingDate());
-        ErpAccountingEventDO event = buildEvent(request, rule, period, idempotencyKey);
+        ErpAccountingEventDO event = buildEvent(request, rule, period, idempotencyKey, docTotal);
         accountingEventMapper.insert(event);
         if (event.getId() == null) {
             throw exception(ACCOUNTING_VOUCHER_CREATE_FAILED, "会计事件主键生成失败");
@@ -358,10 +363,10 @@ public class ErpAccountingEventServiceImpl implements ErpAccountingEventService 
      * <p>引用原事件必须存在且已过账，避免出现指向不存在或草稿事件的悬空引用，
      * 也避免同一原事件被重复红冲后无法被对账程序识别。
      */
-    private void validateReversalReference(ErpAccountingEventCreateReqBO request) {
+    private ErpAccountingEventDO validateReversalReference(ErpAccountingEventCreateReqBO request) {
         Long reversalOfEventId = request.getReversalOfEventId();
         if (reversalOfEventId == null || reversalOfEventId <= 0) {
-            return;
+            return null;
         }
         ErpAccountingEventDO original = accountingEventMapper.selectById(reversalOfEventId);
         if (original == null || original.getId() == null) {
@@ -370,10 +375,94 @@ public class ErpAccountingEventServiceImpl implements ErpAccountingEventService 
         if (!ErpAccountingEventStatusEnum.POSTED.getStatus().equals(original.getStatus())) {
             throw exception(ACCOUNTING_EVENT_NOT_POSTED, original.getEventId());
         }
+        return original;
+    }
+
+    /**
+     * 解析并校验来源单据勾稽总额（金额上界）。
+     *
+     * <p>规则：同一 {@code (eventType, sourceDocType, sourceDocId)} 下全部事件的
+     * {@code amountWithTax} 带符号求和（含冲销事件），其绝对值不得大于勾稽总额。
+     * 带符号求和让「原事件 + 冲销事件」自动相互抵消，因此已冲销的额度会被释放，
+     * 不需要按状态过滤，也不会把冲销额度重复计入占用。
+     *
+     * <p>基线一致性也是 fail-closed：已落地基线之间、以及本次请求与已落地基线之间
+     * 只要不一致就拒绝过账，不允许两条互相矛盾的上界同时进入审计记录。
+     *
+     * <p>采用 fail-closed：取不到勾稽总额就拒绝过账。唯一键只能防止同一来源重复落事件，
+     * 不能防止同一单据的期次金额累计超额（分批开票 / 分期收款 / 分期付款正是靠期次落地）。
+     * 在没有上界的情况下放行，等于把「超额过账」的风险静默转移给对账环节。
+     *
+     * @return 本次事件应落库的勾稽总额
+     */
+    private BigDecimal resolveDocTotalAmount(ErpAccountingEventCreateReqBO request) {
+        List<ErpAccountingEventDO> existing = accountingEventMapper.selectListForReconciliation(
+                request.getEventType(), request.getSourceDocType(), request.getSourceDocId());
+        List<ErpAccountingEventDO> events = existing == null ? List.of() : existing;
+
+        BigDecimal baselineMin = null;
+        BigDecimal baselineMax = null;
+        for (ErpAccountingEventDO event : events) {
+            BigDecimal candidate = event.getDocTotalAmount();
+            if (candidate == null) {
+                continue;
+            }
+            if (baselineMin == null || candidate.compareTo(baselineMin) < 0) {
+                baselineMin = candidate;
+            }
+            if (baselineMax == null || candidate.compareTo(baselineMax) > 0) {
+                baselineMax = candidate;
+            }
+        }
+        if (baselineMin != null && baselineMax != null && baselineMin.compareTo(baselineMax) != 0) {
+            throw exception(ACCOUNTING_EVENT_DOC_TOTAL_CONFLICT, baselineMin, baselineMax);
+        }
+
+        BigDecimal requested = request.getDocTotalAmount();
+        // 请求基线必须与已落地基线一致：不一致说明单据金额被改动，或调用方用了错误口径。
+        // 立即拒绝，而不是让两条互相矛盾的上界同时留在审计记录里，把矛盾留给对账环节。
+        if (requested != null && baselineMin != null && requested.compareTo(baselineMin) != 0) {
+            throw exception(ACCOUNTING_EVENT_DOC_TOTAL_CONFLICT, baselineMin, requested);
+        }
+        BigDecimal docTotal = requested != null ? requested : baselineMin;
+        if (docTotal == null) {
+            throw exception(ACCOUNTING_EVENT_DOC_TOTAL_MISSING, request.getEventType(),
+                    request.getSourceDocType(), request.getSourceDocId());
+        }
+        if (docTotal.signum() < 0) {
+            throw exception(ACCOUNTING_EVENT_DOC_TOTAL_INVALID, docTotal);
+        }
+
+        BigDecimal signedSum = BigDecimal.ZERO;
+        for (ErpAccountingEventDO event : events) {
+            signedSum = signedSum.add(defaultZero(event.getAmountWithTax()));
+        }
+        BigDecimal nextAbs = signedSum.add(defaultZero(request.getAmountWithTax())).abs();
+        if (nextAbs.compareTo(docTotal) > 0) {
+            throw exception(ACCOUNTING_EVENT_DOC_TOTAL_EXCEEDED, nextAbs, docTotal,
+                    request.getEventType(), request.getSourceDocType(), request.getSourceDocId());
+        }
+        return docTotal;
+    }
+
+    /**
+     * 冲销事件沿用原事件的勾稽总额。
+     *
+     * <p>冲销事件本身是负向事件，会与原事件在带符号求和中相互抵消，因此不单独做
+     * 上界判定；但仍需落库基线，便于对账程序按同一上界复算整条链路。
+     */
+    private BigDecimal inheritDocTotalAmount(ErpAccountingEventCreateReqBO request,
+                                            ErpAccountingEventDO original) {
+        BigDecimal requested = request.getDocTotalAmount();
+        BigDecimal inherited = original.getDocTotalAmount();
+        if (requested != null && inherited != null && requested.compareTo(inherited) != 0) {
+            throw exception(ACCOUNTING_EVENT_DOC_TOTAL_CONFLICT, inherited, requested);
+        }
+        return requested != null ? requested : inherited;
     }
 
     private ErpAccountingEventDO buildEvent(ErpAccountingEventCreateReqBO request, ErpPostingRuleDO rule,
-                                             ErpPeriodDO period, String idempotencyKey) {
+                                             ErpPeriodDO period, String idempotencyKey, BigDecimal docTotal) {
         ErpAccountingEventDO event = new ErpAccountingEventDO();
         event.setEventId(UUID.randomUUID().toString().replace("-", ""));
         event.setEventType(request.getEventType());
@@ -391,6 +480,7 @@ public class ErpAccountingEventServiceImpl implements ErpAccountingEventService 
         event.setTaxAmount(defaultZero(request.getTaxAmount()));
         event.setAmountWithTax(defaultZero(request.getAmountWithTax()));
         event.setCostAmount(defaultZero(request.getCostAmount()));
+        event.setDocTotalAmount(docTotal);
         event.setCurrency(StrUtil.blankToDefault(request.getCurrency(), DEFAULT_CURRENCY).toLowerCase());
         event.setExchangeRate(request.getExchangeRate() == null ? DEFAULT_EXCHANGE_RATE : request.getExchangeRate());
         event.setStatus(ErpAccountingEventStatusEnum.POSTING.getStatus());

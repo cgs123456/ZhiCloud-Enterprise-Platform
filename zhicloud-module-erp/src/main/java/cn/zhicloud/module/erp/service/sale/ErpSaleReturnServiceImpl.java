@@ -327,6 +327,7 @@ public class ErpSaleReturnServiceImpl implements ErpSaleReturnService {
                 .amountWithoutTax(amountWithoutTax)
                 .taxAmount(taxAmount)
                 .amountWithTax(amountWithTax)
+                .docTotalAmount(defaultZero(saleReturn.getTotalPrice()))
                 .costAmount(calculateStandardCost(saleReturnItems))
                 .currency(null)
                 .exchangeRate(BigDecimal.ONE)

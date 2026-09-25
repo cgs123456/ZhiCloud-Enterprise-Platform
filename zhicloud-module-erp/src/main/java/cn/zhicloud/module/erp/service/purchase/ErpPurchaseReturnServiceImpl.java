@@ -313,6 +313,7 @@ public class ErpPurchaseReturnServiceImpl implements ErpPurchaseReturnService {
                 .amountWithoutTax(amountWithoutTax)
                 .taxAmount(taxAmount)
                 .amountWithTax(amountWithTax)
+                .docTotalAmount(defaultZero(purchaseReturn.getTotalPrice()))
                 .costAmount(BigDecimal.ZERO)
                 .currency(null)
                 .exchangeRate(BigDecimal.ONE)

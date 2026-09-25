@@ -194,6 +194,7 @@ public class ErpFinanceReceiptServiceImpl implements ErpFinanceReceiptService {
                 .amountWithoutTax(receiptPrice)
                 .taxAmount(BigDecimal.ZERO)
                 .amountWithTax(receiptPrice)
+                .docTotalAmount(receiptPrice)
                 .costAmount(BigDecimal.ZERO)
                 .currency(null)
                 .exchangeRate(BigDecimal.ONE)

@@ -244,6 +244,14 @@ ErrorCode PURCHASE_ORDER_ITEM_RETURN_FAIL_IN_EXCEED = new ErrorCode(1_030_101_00
     ErrorCode ACCOUNTING_VOUCHER_CREATE_FAILED = new ErrorCode(1_030_711_010, "会计凭证生成失败：{}");
     ErrorCode ACCOUNTING_EVENT_NOT_FOUND = new ErrorCode(1_030_711_011, "未找到可冲销的会计事件：{}");
     ErrorCode ACCOUNTING_EVENT_NOT_POSTED = new ErrorCode(1_030_711_012, "会计事件({})尚未过账，不能生成冲销事件");
+    ErrorCode ACCOUNTING_EVENT_DOC_TOTAL_MISSING = new ErrorCode(1_030_711_013,
+            "会计事件缺少来源单据勾稽总额，无法判定是否超额：事件类型({})，来源单据({}:{})");
+    ErrorCode ACCOUNTING_EVENT_DOC_TOTAL_INVALID = new ErrorCode(1_030_711_014,
+            "来源单据勾稽总额({})不能为负数");
+    ErrorCode ACCOUNTING_EVENT_DOC_TOTAL_CONFLICT = new ErrorCode(1_030_711_015,
+            "来源单据勾稽总额与已落地基线不一致：基线({})，本次({})");
+    ErrorCode ACCOUNTING_EVENT_DOC_TOTAL_EXCEEDED = new ErrorCode(1_030_711_016,
+            "累计过账金额({})超过来源单据勾稽总额({})：事件类型({})，来源单据({}:{})");
 
     // ========== ERP 库存批次 1-030-405-000 ==========
     ErrorCode STOCK_BATCH_NOT_EXISTS = new ErrorCode(1_030_405_000, "库存批次不存在");

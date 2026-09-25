@@ -235,6 +235,7 @@ public class ErpPurchaseInServiceImpl implements ErpPurchaseInService {
                 .amountWithoutTax(amountWithoutTax)
                 .taxAmount(taxAmount)
                 .amountWithTax(amountWithTax)
+                .docTotalAmount(defaultZero(purchaseIn.getTotalPrice()))
                 .currency(null)
                 .exchangeRate(purchaseIn.getExchangeRate() == null
                         ? BigDecimal.ONE : purchaseIn.getExchangeRate())

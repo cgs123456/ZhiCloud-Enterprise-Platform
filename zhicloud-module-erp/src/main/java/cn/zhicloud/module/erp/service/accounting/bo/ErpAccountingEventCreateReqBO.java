@@ -39,6 +39,11 @@ public class ErpAccountingEventCreateReqBO {
      * 成本金额。销售出库成本结转使用，其他事件为 0。
      */
     private BigDecimal costAmount;
+    /**
+     * 来源单据勾稽总额。由调用方（单据服务）传入，作为金额上界判定基线；
+     * 为空时回退到同单据已落地事件的基线，仍取不到则拒绝过账。
+     */
+    private BigDecimal docTotalAmount;
     private String currency;
     private BigDecimal exchangeRate;
     private Long reversalOfEventId;

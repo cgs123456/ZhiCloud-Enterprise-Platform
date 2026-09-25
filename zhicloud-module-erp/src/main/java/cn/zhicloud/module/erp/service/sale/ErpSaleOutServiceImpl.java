@@ -243,6 +243,7 @@ public class ErpSaleOutServiceImpl implements ErpSaleOutService {
                 .amountWithoutTax(amountWithoutTax)
                 .taxAmount(taxAmount)
                 .amountWithTax(amountWithTax)
+                .docTotalAmount(defaultZero(saleOut.getTotalPrice()))
                 .costAmount(calculateStandardCost(saleOutItems))
                 .currency(null)
                 .exchangeRate(BigDecimal.ONE)

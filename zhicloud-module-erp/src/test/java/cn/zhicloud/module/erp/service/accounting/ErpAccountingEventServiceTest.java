@@ -38,9 +38,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -549,8 +551,186 @@ class ErpAccountingEventServiceTest {
         assertEquals(100L, eventCaptor.getValue().getReversalOfEventId());
     }
 
+    @Test
+    void postEventAllowsInstallmentsUpToDocTotal() {
+        stubPurchaseAccrualRuleAndAccounts();
+        when(accountingEventMapper.selectListForReconciliation("PURCHASE_RECEIPT_ACCRUAL", "PURCHASE_IN", 99L))
+                .thenReturn(List.of(postedInstallmentEvent(1, "678.0000", "1130.0000")));
+        when(periodService.getPeriodByCode("202609")).thenReturn(
+                period(202609L, "202609", 9, ErpPeriodStatusEnum.OPEN.getStatus()));
+        when(glVoucherService.createGlVoucher(any())).thenReturn(701L);
+        doAnswer(invocation -> {
+            ErpAccountingEventDO event = invocation.getArgument(0);
+            event.setId(210L);
+            return 1;
+        }).when(accountingEventMapper).insert(any(ErpAccountingEventDO.class));
+
+        Long voucherId = accountingEventService.postEvent(
+                installmentRequest(2, "399.8230", "52.1770", "452.0000"));
+
+        assertEquals(701L, voucherId);
+        ArgumentCaptor<ErpAccountingEventDO> eventCaptor = ArgumentCaptor.forClass(ErpAccountingEventDO.class);
+        verify(accountingEventMapper).insert(eventCaptor.capture());
+        assertEquals(new BigDecimal("1130.0000"), eventCaptor.getValue().getDocTotalAmount());
+    }
+
+    @Test
+    void postEventRejectsInstallmentsExceedingDocTotal() {
+        when(accountingEventMapper.selectListForReconciliation("PURCHASE_RECEIPT_ACCRUAL", "PURCHASE_IN", 99L))
+                .thenReturn(List.of(postedInstallmentEvent(1, "678.0000", "1130.0000")));
+
+        ServiceException exception = assertThrows(ServiceException.class,
+                () -> accountingEventService.postEvent(
+                        installmentRequest(2, "530.9735", "69.0265", "600.0000")));
+
+        assertEquals(ErrorCodeConstants.ACCOUNTING_EVENT_DOC_TOTAL_EXCEEDED.getCode(), exception.getCode());
+        verify(accountingEventMapper, never()).insert(any(ErpAccountingEventDO.class));
+        verify(glVoucherService, never()).createGlVoucher(any());
+    }
+
+    @Test
+    void postEventFailsClosedWhenDocTotalBaselineIsMissing() {
+        when(accountingEventMapper.selectListForReconciliation("PURCHASE_RECEIPT_ACCRUAL", "PURCHASE_IN", 99L))
+                .thenReturn(List.of(postedInstallmentEvent(1, "678.0000", null)));
+
+        ServiceException exception = assertThrows(ServiceException.class,
+                () -> accountingEventService.postEvent(
+                        installmentRequest(1, "600.0000", "78.0000", "678.0000", null)));
+
+        assertEquals(ErrorCodeConstants.ACCOUNTING_EVENT_DOC_TOTAL_MISSING.getCode(), exception.getCode());
+        verify(accountingEventMapper, never()).insert(any(ErpAccountingEventDO.class));
+        verify(glVoucherService, never()).createGlVoucher(any());
+    }
+
+    @Test
+    void postEventRejectsNegativeDocTotalBaseline() {
+        ServiceException exception = assertThrows(ServiceException.class,
+                () -> accountingEventService.postEvent(
+                        installmentRequest(1, "600.0000", "78.0000", "678.0000", "-1.0000")));
+
+        assertEquals(ErrorCodeConstants.ACCOUNTING_EVENT_DOC_TOTAL_INVALID.getCode(), exception.getCode());
+        verify(accountingEventMapper, never()).insert(any(ErpAccountingEventDO.class));
+    }
+
+    @Test
+    void postEventRejectsConflictingDocTotalBaseline() {
+        when(accountingEventMapper.selectListForReconciliation("PURCHASE_RECEIPT_ACCRUAL", "PURCHASE_IN", 99L))
+                .thenReturn(List.of(postedInstallmentEvent(1, "678.0000", "2000.0000")));
+
+        ServiceException exception = assertThrows(ServiceException.class,
+                () -> accountingEventService.postEvent(
+                        installmentRequest(2, "399.8230", "52.1770", "452.0000")));
+
+        assertEquals(ErrorCodeConstants.ACCOUNTING_EVENT_DOC_TOTAL_CONFLICT.getCode(), exception.getCode());
+        verify(accountingEventMapper, never()).insert(any(ErpAccountingEventDO.class));
+        verify(glVoucherService, never()).createGlVoucher(any());
+    }
+
+    @Test
+    void postEventReusesQuotaReleasedByReversalEvent() {
+        stubPurchaseAccrualRuleAndAccounts();
+        // 冲销事件是负向事件，必须计入带符号求和：过滤掉它会让已释放额度无法再次使用。
+        when(accountingEventMapper.selectListForReconciliation("PURCHASE_RECEIPT_ACCRUAL", "PURCHASE_IN", 99L))
+                .thenReturn(List.of(postedInstallmentEvent(1, "678.0000", "1130.0000"),
+                        reversalInstallmentEvent(1, "-678.0000", "1130.0000")));
+        when(periodService.getPeriodByCode("202609")).thenReturn(
+                period(202609L, "202609", 9, ErpPeriodStatusEnum.OPEN.getStatus()));
+        when(glVoucherService.createGlVoucher(any())).thenReturn(702L);
+        doAnswer(invocation -> {
+            ErpAccountingEventDO event = invocation.getArgument(0);
+            event.setId(211L);
+            return 1;
+        }).when(accountingEventMapper).insert(any(ErpAccountingEventDO.class));
+
+        Long voucherId = accountingEventService.postEvent(
+                installmentRequest(2, "530.9735", "69.0265", "600.0000"));
+
+        assertEquals(702L, voucherId);
+        verify(accountingEventMapper).insert(any(ErpAccountingEventDO.class));
+    }
+
+    @Test
+    void repostAfterReversalIsShortCircuitedBeforeDocTotalGuard() {
+        ErpAccountingEventDO original = postedInstallmentEvent(1, "1130.0000", "1130.0000");
+        // lenient：实现正确时勾稽查询不会被调用（幂等短路先返回），
+        // 但一旦守卫被挪到幂等短路之前，这里的数据就会让它算出 1130 + 1130 > 1130 而误拒。
+        lenient().when(accountingEventMapper.selectListForReconciliation(
+                "PURCHASE_RECEIPT_ACCRUAL", "PURCHASE_IN", 99L)).thenReturn(List.of(original));
+        when(accountingEventMapper.selectByIdempotencyKey(anyString())).thenReturn(original);
+        when(accountingPostingMapper.selectListByEventId(original.getEventId()))
+                .thenReturn(List.of(new ErpAccountingPostingDO().setVoucherId(8801L)));
+
+        // 反审核后重新审核命中同一幂等键：必须直接返回原凭证，不能被勾稽守卫误判为超额。
+        Long voucherId = accountingEventService.postEvent(
+                installmentRequest(1, "1000.0000", "130.0000", "1130.0000"));
+
+        assertEquals(8801L, voucherId);
+        verify(accountingEventMapper, never()).insert(any(ErpAccountingEventDO.class));
+        verify(glVoucherService, never()).createGlVoucher(any());
+    }
+
+    @Test
+    void reverseEventInheritsDocTotalBaselineFromOriginalEvent() {
+        ErpAccountingEventDO original = purchaseReceiptOriginalEvent(
+                ErpAccountingEventStatusEnum.POSTED.getStatus()).setDocTotalAmount(new BigDecimal("1130.0000"));
+        when(accountingEventMapper.selectBySource("PURCHASE_RECEIPT_ACCRUAL", "PURCHASE_IN",
+                99L, 0L, 1, 0, 0L)).thenReturn(original);
+        when(accountingEventMapper.selectById(100L)).thenReturn(original);
+        stubPurchaseAccrualRuleAndAccounts();
+        when(periodService.getPeriodByCode("202609")).thenReturn(
+                period(202609L, "202609", 9, ErpPeriodStatusEnum.OPEN.getStatus()));
+        when(glVoucherService.createGlVoucher(any())).thenReturn(505L);
+        doAnswer(invocation -> {
+            ErpAccountingEventDO event = invocation.getArgument(0);
+            event.setId(400L);
+            return 1;
+        }).when(accountingEventMapper).insert(any(ErpAccountingEventDO.class));
+
+        accountingEventService.reverseEvent(ErpAccountingEventReverseReqBO.builder()
+                .eventType("PURCHASE_RECEIPT_ACCRUAL")
+                .sourceDocType("PURCHASE_IN")
+                .sourceDocId(99L)
+                .sourceDocLineId(0L)
+                .sourceRevision(1)
+                .accountingDate(LocalDate.of(2026, 9, 26))
+                .occurredAt(LocalDateTime.of(2026, 9, 26, 9, 0))
+                .build());
+
+        ArgumentCaptor<ErpAccountingEventDO> eventCaptor = ArgumentCaptor.forClass(ErpAccountingEventDO.class);
+        verify(accountingEventMapper).insert(eventCaptor.capture());
+        assertEquals(new BigDecimal("1130.0000"), eventCaptor.getValue().getDocTotalAmount());
+        assertEquals(100L, eventCaptor.getValue().getReversalOfEventId());
+    }
+
+    private static ErpAccountingEventDO reversalInstallmentEvent(Integer sequenceNo, String amountWithTax,
+                                                                String docTotalAmount) {
+        return postedInstallmentEvent(sequenceNo, amountWithTax, docTotalAmount).setReversalOfEventId(1L);
+    }
+
+    private static ErpAccountingEventDO postedInstallmentEvent(Integer sequenceNo, String amountWithTax,
+                                                               String docTotalAmount) {
+        return new ErpAccountingEventDO().setId(200L + sequenceNo)
+                .setEventId("installment-event-" + sequenceNo).setEventType("PURCHASE_RECEIPT_ACCRUAL")
+                .setSourceDocType("PURCHASE_IN").setSourceDocId(99L).setSourceDocNo("PI20260925001")
+                .setSourceDocLineId(0L).setSourceRevision(1).setSequenceNo(sequenceNo)
+                .setStatus(ErpAccountingEventStatusEnum.POSTED.getStatus())
+                .setEventDate(LocalDate.of(2026, 9, 25))
+                .setAccountingDate(LocalDate.of(2026, 9, 25))
+                .setAmountWithoutTax(new BigDecimal(amountWithTax))
+                .setTaxAmount(BigDecimal.ZERO)
+                .setAmountWithTax(new BigDecimal(amountWithTax))
+                .setDocTotalAmount(docTotalAmount == null ? null : new BigDecimal(docTotalAmount))
+                .setCurrency("cny").setExchangeRate(BigDecimal.ONE);
+    }
+
     private static ErpAccountingEventCreateReqBO installmentRequest(Integer sequenceNo, String amountWithoutTax,
                                                                     String taxAmount, String amountWithTax) {
+        return installmentRequest(sequenceNo, amountWithoutTax, taxAmount, amountWithTax, "1130.0000");
+    }
+
+    private static ErpAccountingEventCreateReqBO installmentRequest(Integer sequenceNo, String amountWithoutTax,
+                                                                    String taxAmount, String amountWithTax,
+                                                                    String docTotalAmount) {
         return ErpAccountingEventCreateReqBO.builder()
                 .eventType("PURCHASE_RECEIPT_ACCRUAL")
                 .sourceDocType("PURCHASE_IN")
@@ -562,6 +742,7 @@ class ErpAccountingEventServiceTest {
                 .amountWithoutTax(new BigDecimal(amountWithoutTax))
                 .taxAmount(new BigDecimal(taxAmount))
                 .amountWithTax(new BigDecimal(amountWithTax))
+                .docTotalAmount(docTotalAmount == null ? null : new BigDecimal(docTotalAmount))
                 .sequenceNo(sequenceNo)
                 .currency("cny")
                 .exchangeRate(BigDecimal.ONE)
@@ -580,6 +761,7 @@ class ErpAccountingEventServiceTest {
                 .amountWithoutTax(new BigDecimal("2000.0000"))
                 .taxAmount(new BigDecimal("260.0000"))
                 .amountWithTax(new BigDecimal("2260.0000"))
+                .docTotalAmount(new BigDecimal("2260.0000"))
                 .costAmount(new BigDecimal("1500.0000"))
                 .currency("cny")
                 .exchangeRate(BigDecimal.ONE)
@@ -598,6 +780,7 @@ class ErpAccountingEventServiceTest {
                 .amountWithoutTax(new BigDecimal("1000.0000"))
                 .taxAmount(new BigDecimal("130.0000"))
                 .amountWithTax(new BigDecimal("1130.0000"))
+                .docTotalAmount(new BigDecimal("1130.0000"))
                 .currency("cny")
                 .exchangeRate(BigDecimal.ONE)
                 .occurredAt(LocalDateTime.of(2026, 9, 25, 9, 30))

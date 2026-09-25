@@ -195,6 +195,7 @@ public class ErpFinancePaymentServiceImpl implements ErpFinancePaymentService {
                 .amountWithoutTax(paymentPrice)
                 .taxAmount(BigDecimal.ZERO)
                 .amountWithTax(paymentPrice)
+                .docTotalAmount(paymentPrice)
                 .currency(null)
                 .exchangeRate(BigDecimal.ONE)
                 .reversalOfEventId(0L)

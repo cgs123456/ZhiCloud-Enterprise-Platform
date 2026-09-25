@@ -52,6 +52,11 @@ public class ErpAccountingEventDO extends TenantBaseDO {
      * 成本金额。用于销售成本结转等需要独立于收入金额记账的场景，不涉及成本的事件为 0。
      */
     private BigDecimal costAmount;
+    /**
+     * 来源单据勾稽总额。同一单据同事件类型的带符号累计金额绝对值不得大于该值。
+     * NULL 表示未参与勾稽守卫（历史数据默认值）。
+     */
+    private BigDecimal docTotalAmount;
     private String currency;
     private BigDecimal exchangeRate;
     private Integer status;
