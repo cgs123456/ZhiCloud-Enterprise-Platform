@@ -194,7 +194,7 @@ INSERT INTO tmp_v94_verify_expected_index
 VALUES
     ('erp_accounting_event', 'uk_erp_accounting_event_business_id', 'tenant_id,event_id', 0),
     ('erp_accounting_event', 'uk_erp_accounting_event_idempotency', 'tenant_id,idempotency_key', 0),
-    ('erp_accounting_event', 'uk_erp_accounting_event_source', 'tenant_id,event_type,source_doc_type,source_doc_id,source_doc_line_id,source_revision,reversal_of_event_id', 0),
+    ('erp_accounting_event', 'uk_erp_accounting_event_source', 'tenant_id,event_type,source_doc_type,source_doc_id,source_doc_line_id,source_revision,sequence_no,reversal_of_event_id', 0),
     ('erp_accounting_posting', 'uk_erp_accounting_posting_event_rule', 'tenant_id,event_id,posting_rule_id,rule_version', 0),
     ('erp_posting_rule', 'uk_erp_posting_rule_code_version', 'tenant_id,rule_code,version', 0),
     ('erp_posting_rule_line', 'uk_erp_posting_rule_line_no', 'tenant_id,rule_id,line_no', 0),

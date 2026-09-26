@@ -43,7 +43,7 @@ VALUES
     ('event_outbox', 'published_at',   'datetime',     'YES'),
     ('event_outbox', 'trace_id',       'varchar(64)',  'YES'),
     ('event_outbox', 'last_error',     'varchar(2000)','YES'),
-    ('event_outbox', 'deleted',        'bit',          'NO'),
+    ('event_outbox', 'deleted',        'bit(1)',       'NO'),
     ('event_inbox',  'id',             'bigint',       'NO'),
     ('event_inbox',  'tenant_id',      'bigint',       'NO'),
     ('event_inbox',  'consumer_name',  'varchar(64)',  'NO'),
@@ -54,7 +54,7 @@ VALUES
     ('event_inbox',  'received_at',    'datetime',     'NO'),
     ('event_inbox',  'processed_at',   'datetime',     'YES'),
     ('event_inbox',  'error',          'varchar(2000)','YES'),
-    ('event_inbox',  'deleted',        'bit',          'NO');
+    ('event_inbox',  'deleted',        'bit(1)',       'NO');
 
 SELECT @v100_verify_expected_column_count := COUNT(*)
   FROM tmp_v100_verify_expected_column;

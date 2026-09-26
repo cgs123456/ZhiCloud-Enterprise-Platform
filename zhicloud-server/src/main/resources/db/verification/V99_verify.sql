@@ -108,9 +108,10 @@ WITH column_gate AS (
             AND c.TABLE_NAME = e.table_name
             AND c.COLUMN_NAME = e.column_name
 ), group_gate AS (
-    SELECT SUM(IF(MIN(doc_total_amount) <> MAX(doc_total_amount), 1, 0)) AS inconsistent_baselines,
-           SUM(IF(MIN(doc_total_amount) = MAX(doc_total_amount)
-                  AND ABS(SUM(amount_with_tax)) > MAX(doc_total_amount), 1, 0)) AS exceeded_groups
+    SELECT IFNULL(SUM(IF(g.doc_total_min <> g.doc_total_max, 1, 0)), 0) AS inconsistent_baselines,
+           IFNULL(SUM(IF(g.doc_total_min = g.doc_total_max
+                  AND ABS(g.signed_amount_sum) > g.doc_total_max, 1, 0)), 0) AS exceeded_groups,
+           COUNT(*) AS checked_groups
       FROM (
             SELECT tenant_id,
                    event_type,
@@ -130,6 +131,7 @@ SELECT @v99_verify_expected_column_count AS expected_columns,
        cg.wrong_columns,
        gg.inconsistent_baselines,
        gg.exceeded_groups,
+       gg.checked_groups,
        CASE WHEN cg.missing_columns = 0
                   AND cg.wrong_columns = 0
                   AND gg.inconsistent_baselines = 0

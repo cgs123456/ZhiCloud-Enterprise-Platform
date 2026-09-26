@@ -16,8 +16,8 @@
 -- ------------------------------------------------------------
 DROP TEMPORARY TABLE IF EXISTS tmp_v102_verify_expected_group;
 CREATE TEMPORARY TABLE tmp_v102_verify_expected_group (
-    source_entity VARCHAR(32) NOT NULL,
-    target_entity VARCHAR(32) NOT NULL,
+    source_entity VARCHAR(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+    target_entity VARCHAR(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
     expected_rows INT         NOT NULL
 );
 
@@ -68,16 +68,22 @@ SELECT SUM(IF(r.status <> 'VALID', 1, 0)) AS invalid_rows,
 --     PASS 仅代表「模拟数据已按预期灌入」，不代表这些 id 在你的库里真实存在。
 -- ------------------------------------------------------------
 WITH row_gate AS (
-    SELECT SUM(IF(COUNT(r.id) = e.expected_rows, 0, 1)) AS mismatch_groups
-      FROM tmp_v102_verify_expected_group e
-      LEFT JOIN mdm_cross_ref r
-             ON r.deleted = 0
-            AND r.source_system = 'ERP'
-            AND r.target_system = 'WMS'
-            AND r.source_entity = e.source_entity
-            AND r.target_entity = e.target_entity
-            AND r.status = 'VALID'
-     GROUP BY e.source_entity, e.target_entity, e.expected_rows
+    SELECT IFNULL(SUM(IF(x.actual_rows <> x.expected_rows, 1, 0)), 0) AS mismatch_groups
+      FROM (
+            SELECT e.source_entity,
+                   e.target_entity,
+                   e.expected_rows,
+                   COUNT(r.id) AS actual_rows
+              FROM tmp_v102_verify_expected_group e
+              LEFT JOIN mdm_cross_ref r
+                     ON r.deleted = 0
+                    AND r.source_system = 'ERP'
+                    AND r.target_system = 'WMS'
+                    AND r.source_entity = e.source_entity
+                    AND r.target_entity = e.target_entity
+                    AND r.status = 'VALID'
+             GROUP BY e.source_entity, e.target_entity, e.expected_rows
+           ) x
 ), dup_gate AS (
     SELECT COUNT(*) AS duplicate_groups
       FROM (

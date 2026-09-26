@@ -37,7 +37,7 @@ VALUES
     ('mdm_cross_ref', 'target_id',     'varchar(64)', 'NO'),
     ('mdm_cross_ref', 'status',        'varchar(16)', 'NO'),
     ('mdm_cross_ref', 'remark',        'varchar(500)','YES'),
-    ('mdm_cross_ref', 'deleted',       'bit',         'NO');
+    ('mdm_cross_ref', 'deleted',       'bit(1)',      'NO');
 
 SELECT @v101_verify_expected_column_count := COUNT(*)
   FROM tmp_v101_verify_expected_column;

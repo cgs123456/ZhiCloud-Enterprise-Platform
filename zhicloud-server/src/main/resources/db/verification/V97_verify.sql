@@ -20,10 +20,10 @@ SET @v97_verify_expected_rule_count = 2;
 
 DROP TEMPORARY TABLE IF EXISTS tmp_v97_verify_expected_rule;
 CREATE TEMPORARY TABLE tmp_v97_verify_expected_rule (
-    rule_code          VARCHAR(64) NOT NULL,
-    event_type         VARCHAR(64) NOT NULL,
+    rule_code          VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+    event_type         VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
     expected_lines     INT NOT NULL,
-    expected_side_map  VARCHAR(255) NOT NULL,
+    expected_side_map  VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
     PRIMARY KEY (rule_code)
 ) ENGINE = MEMORY;
 
@@ -81,7 +81,7 @@ SELECT r.rule_code,
    AND l.deleted = 0
   LEFT JOIN erp_gl_account a
          ON a.tenant_id = 0
-        AND a.code = l.account_code
+        AND a.code COLLATE utf8mb4_unicode_ci = l.account_code
         AND a.deleted = 0
  WHERE r.tenant_id = 0
    AND r.deleted = 0
@@ -120,23 +120,31 @@ SELECT e.rule_code,
 --     不代表会计政策已签字确认。
 -- ------------------------------------------------------------
 WITH rule_gate AS (
-    SELECT SUM(IF(r.id IS NULL, 1, 0)) AS missing_rules,
-           SUM(IF(r.id IS NOT NULL AND COUNT(l.id) <> e.expected_lines, 1, 0)) AS wrong_line_counts,
-           SUM(IF(r.id IS NOT NULL
-                  AND IFNULL(GROUP_CONCAT(CONCAT(l.entry_side, ':', l.amount_expression)
-                                          ORDER BY l.line_no SEPARATOR '|'), '')
-                      <> e.expected_side_map, 1, 0)) AS wrong_direction_maps
-      FROM tmp_v97_verify_expected_rule e
-      LEFT JOIN erp_posting_rule r
-             ON r.tenant_id = 0
-            AND r.rule_code = e.rule_code
-            AND r.version = 'v1'
-            AND r.deleted = 0
-      LEFT JOIN erp_posting_rule_line l
-             ON l.tenant_id = 0
-            AND l.rule_id = r.id
-            AND l.deleted = 0
-     GROUP BY e.rule_code, e.expected_lines, e.expected_side_map, r.id
+    SELECT IFNULL(SUM(IF(x.rule_id IS NULL, 1, 0)), 0) AS missing_rules,
+           IFNULL(SUM(IF(x.rule_id IS NOT NULL
+                         AND x.actual_lines <> x.expected_lines, 1, 0)), 0) AS wrong_line_counts,
+           IFNULL(SUM(IF(x.rule_id IS NOT NULL
+                         AND IFNULL(x.actual_side_map, '') <> x.expected_side_map, 1, 0)), 0) AS wrong_direction_maps
+      FROM (
+            SELECT e.rule_code,
+                   e.expected_lines,
+                   e.expected_side_map,
+                   r.id AS rule_id,
+                   COUNT(l.id) AS actual_lines,
+                   GROUP_CONCAT(CONCAT(l.entry_side, ':', l.amount_expression)
+                                ORDER BY l.line_no SEPARATOR '|') AS actual_side_map
+              FROM tmp_v97_verify_expected_rule e
+              LEFT JOIN erp_posting_rule r
+                     ON r.tenant_id = 0
+                    AND r.rule_code = e.rule_code
+                    AND r.version = 'v1'
+                    AND r.deleted = 0
+              LEFT JOIN erp_posting_rule_line l
+                     ON l.tenant_id = 0
+                    AND l.rule_id = r.id
+                    AND l.deleted = 0
+             GROUP BY e.rule_code, e.expected_lines, e.expected_side_map, r.id
+           ) x
 ), line_gate AS (
     SELECT SUM(IF(a.id IS NULL, 1, 0)) AS missing_accounts,
            SUM(IF(a.id IS NOT NULL
@@ -150,7 +158,7 @@ WITH rule_gate AS (
        AND l.deleted = 0
       LEFT JOIN erp_gl_account a
              ON a.tenant_id = 0
-            AND a.code = l.account_code
+            AND a.code COLLATE utf8mb4_unicode_ci = l.account_code
             AND a.deleted = 0
      WHERE r.tenant_id = 0
        AND r.deleted = 0

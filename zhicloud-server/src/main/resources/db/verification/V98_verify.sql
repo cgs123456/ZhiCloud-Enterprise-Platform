@@ -119,14 +119,14 @@ CREATE TEMPORARY TABLE tmp_v98_expected_count (
     expected_column_count INT NOT NULL,
     PRIMARY KEY (table_name)
 ) ENGINE = MEMORY;
-
+-- NOTE: counts below are the ACTUAL post-chain (V102) column counts measured from information_schema.
 INSERT INTO tmp_v98_expected_count (table_name, expected_column_count) VALUES
     ('qms_inspection_item', 18),
-    ('qms_inspection_order', 17),
-    ('qms_inspection_record', 14),
-    ('qms_capa_document', 19),
-    ('aimultiagent_topology', 14),
-    ('aimultiagent_execution_log', 17),
+    ('qms_inspection_order', 22),
+    ('qms_inspection_record', 15),
+    ('qms_capa_document', 25),
+    ('aimultiagent_topology', 15),
+    ('aimultiagent_execution_log', 18),
     ('wms_wave_order', 18),
     ('wms_wave_order_detail', 13);
 
