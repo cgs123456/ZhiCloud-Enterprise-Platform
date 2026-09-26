@@ -247,6 +247,12 @@
             <artifactId>spring-modulith-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- 真实 MySQL 跨模块集成测试需要显式声明 Mockito；starter-test 在本项目 dependencyManagement 中为 test scope，不会传递到 server。 -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <!-- P1-3 Flyway：数据库版本管理，替代 sql/ 手工脚本 -->
         <!-- 启动时自动执行 db/migration 下的 V*__*.sql，schema 演进可追溯/可回滚/CI 可校验 -->

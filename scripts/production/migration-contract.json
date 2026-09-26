@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "contract_start_version": 90,
-  "purpose": "Reviewed V90-V100 migration bytes; execution evidence remains MySQL shadow-run only.",
+  "purpose": "Reviewed V90-V103 migration and verification bytes; execution evidence remains MySQL shadow-run plus scoped integration evidence.",
   "migrations": [
     {
       "version": 90,
@@ -36,7 +36,7 @@
       "file": "V94__erp_accounting_foundation.sql",
       "sha256": "b7a5bd104227b42d6f5c28c919f0859582d721442767f8c4f9c871207e38904b",
       "verification_file": "V94_verify.sql",
-      "verification_sha256": "6ba8a14e885f5499dd8c32cda0eea72c1b8096526f0bd46bfd65bc5edeb54a8d"
+      "verification_sha256": "867413162a57819bf3ea45e60ee7cd8cd0e65c89140144932ebf635cec8dd6ae"
     },
     {
       "version": 95,
@@ -57,42 +57,49 @@
       "file": "V97__erp_return_posting_rule_seed.sql",
       "sha256": "69f0eea862cb79f1f02056446f89f962da418319ff208cb9fd824dd42dca79b7",
       "verification_file": "V97_verify.sql",
-      "verification_sha256": "61ca074d519a7c153dc8d79c79b19d7c988329d36361cfbf98972553aeac10ed"
+      "verification_sha256": "045ee9cb2dfe3c26e3c7522b1bcc5bf484357d080ef6782513895870b8e5fac4"
     },
     {
       "version": 98,
       "file": "V98__reconcile_duplicate_table_ddl.sql",
       "sha256": "79bc347097c3a2d16842e2e0c71ff651617053ac72d0f58646a48c4b6c85c90e",
       "verification_file": "V98_verify.sql",
-      "verification_sha256": "747f2f78fcd4fdfb0c44a71553580be1d5b79fc5d6c732fbbb0e8c5324c2888e"
+      "verification_sha256": "ddd5786c7fd5885012fdb5509f4ea5b3f69c0c57f21bd214ef58c5c014a59971"
     },
     {
       "version": 99,
       "file": "V99__erp_accounting_event_doc_total.sql",
       "sha256": "0e8bf21c00e617f29f6f89b71418fc3b785461b3e27a840a5cfdb08f4b2621be",
       "verification_file": "V99_verify.sql",
-      "verification_sha256": "a2ae57c47c4fa0978c65e40b792e0eb2a95d5f38cc46a63b9302887ec318cbe6"
+      "verification_sha256": "8b3565ee7bd2b45cc4a8fc78dc1705395f090c708bc54a0b385bb38e8099a254"
     },
     {
       "version": 100,
       "file": "V100__event_outbox_inbox.sql",
       "sha256": "526ea17e03761a4f75914a2d0623df84f64c1d5bc142c90323926a9da4313bf0",
       "verification_file": "V100_verify.sql",
-      "verification_sha256": "bee5c0eb631c7aaad0ff4f5b982b5ecb63906fbea1bb2a1d84ebc26e2c07cec5"
+      "verification_sha256": "029790ed8871d13341bd94aced2f2789bed229e524edf5947d873c9cdb6a572d"
     },
     {
       "version": 101,
       "file": "V101__mdm_cross_ref.sql",
       "sha256": "6486e17a336de10cb40ddd34a901b68ee04a09f42ef2aed5dd539427346f6e40",
       "verification_file": "V101_verify.sql",
-      "verification_sha256": "ae5b59d9b167c3f096a0b1850a0e81d7970282576bd4c4257ecc0cfa59fee56d"
+      "verification_sha256": "00957b09f5dcd32a7ddf14f207950af85b4a54f72838ff060a22acbd02b5d046"
     },
     {
       "version": 102,
       "file": "V102__mdm_cross_ref_seed.sql",
       "sha256": "b133dcb51dd65b7d558a970de345d7c3eacacc9b533fc245f0116bd8bbfca323",
       "verification_file": "V102_verify.sql",
-      "verification_sha256": "8be5c7d1e3ffe3e5b723b542c578f466b0b281908a412c6c8b09c2dda3ae1a61"
+      "verification_sha256": "fbecf2848feed4ebe7eab7588f01cf6b8a6eb5439f0ee314197f0dc8dfdcb365"
+    },
+    {
+      "version": 103,
+      "file": "V103__wms_order_type_range.sql",
+      "sha256": "42690f9e18b231d436703196994f04a8ab140002756d82ae376ff00c09a66c09",
+      "verification_file": "V103_verify.sql",
+      "verification_sha256": "55f7c91515ee422625a7ac59f93225120aa76fbb615576cf0c85a639b991336b"
     }
   ]
 }

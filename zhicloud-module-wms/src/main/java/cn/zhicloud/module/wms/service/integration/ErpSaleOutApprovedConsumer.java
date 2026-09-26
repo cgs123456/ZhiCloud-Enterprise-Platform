@@ -53,7 +53,7 @@ public class ErpSaleOutApprovedConsumer implements EventConsumer {
     public static final String NAME = "wms-shipment-order-creator";
 
     /**
-     * 默认租户：ERP/WMS 主表当前都没有 tenant_id 列，取不到真实租户；
+     * 默认租户：ERP/WMS 主表虽有 tenant_id 列，但相关 DO 未映射租户字段，取不到真实租户；
      * 接入多租户前不要用本链路承载多租户数据（已在风险清单登记）。
      */
     private static final Long DEFAULT_TENANT_ID = 0L;

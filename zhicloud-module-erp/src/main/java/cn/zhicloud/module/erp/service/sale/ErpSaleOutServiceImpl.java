@@ -59,7 +59,7 @@ import static cn.zhicloud.module.erp.enums.ErrorCodeConstants.*;
 public class ErpSaleOutServiceImpl implements ErpSaleOutService {
 
     /**
-     * 跨域事件的默认租户：ERP 主表（含 erp_sale_out）当前没有 tenant_id 列，取不到真实租户，
+     * 跨域事件的默认租户：ERP 主表（含 erp_sale_out）虽有 tenant_id 列，但相关 DO 未映射租户字段，取不到真实租户，
      * 统一按 0 登记。接入多租户前不要用本链路承载多租户数据（已在风险清单登记）。
      */
     private static final Long DEFAULT_EVENT_TENANT_ID = 0L;
@@ -254,7 +254,7 @@ public class ErpSaleOutServiceImpl implements ErpSaleOutService {
      * <p>eventId 由业务主键推导（{@code erp-sale-out-{id}-approved}）而不是随机数：
      * 同一单据重复触发时得到相同 eventId，消费侧才能靠 event_inbox 唯一键去重。
      *
-     * <p>tenantId 固定 0：ERP 主表当前没有 tenant_id 列，取不到真实租户；
+     * <p>tenantId 固定 0：ERP 主表虽有 tenant_id 列，但相关 DO 未映射租户字段，取不到真实租户；
      * 接入多租户前不要用本链路承载多租户数据（已在风险清单登记）。
      */
     private EventAppendReq buildSaleOutApprovedEventAppendReq(ErpSaleOutDO saleOut,
