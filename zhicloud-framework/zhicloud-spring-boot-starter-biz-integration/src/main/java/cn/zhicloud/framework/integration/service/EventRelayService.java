@@ -37,7 +37,7 @@ public class EventRelayService {
     private IntegrationProperties properties;
 
     /**
-     * 进程内消费者；无消费者时为空列表（事件仅作审计留痕，中继直接标记完成）
+     * 进程内消费者；无消费者或没有消费者支持事件类型时，事件保持可重试并最终进入死信。
      */
     private List<EventConsumer> consumers = new ArrayList<>();
 
@@ -76,14 +76,23 @@ public class EventRelayService {
     }
 
     /**
-     * 按事件类型分发给所有匹配消费者；无匹配消费者时视为「无需投递」，直接完成
+     * 按事件类型分发给所有匹配消费者；无匹配消费者时 fail-closed。
+     *
+     * <p>消费者漏注册、事件类型写错或对应模块未部署时，绝不能把事件标记为投递成功。
+     * 抛出异常后由 {@link #relayOnce(int)} 按统一策略退避重试，最终进入死信并触发告警。
      */
     private void dispatch(EventOutboxDO event) throws Exception {
+        boolean matched = false;
         for (EventConsumer consumer : consumers) {
             if (consumer.supports(event.getEventType())) {
+                matched = true;
                 eventInboxService.consume(consumer.name(), event.getEventId(), event.getEventType(),
                         event.getTenantId(), () -> consumer.handle(event));
             }
+        }
+        if (!matched) {
+            throw new IllegalStateException("No matching event consumer for eventId="
+                    + event.getEventId() + ", eventType=" + event.getEventType());
         }
     }
 

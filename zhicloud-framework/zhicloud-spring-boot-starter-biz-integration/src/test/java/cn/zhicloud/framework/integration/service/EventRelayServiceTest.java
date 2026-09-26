@@ -122,12 +122,18 @@ public class EventRelayServiceTest {
     }
 
     @Test
-    public void testRelayWithoutConsumerMarksPublished() {
-        EventRelayService relay = newRelay(List.of());
-        append("relay-4");
+    public void testRelayWithoutMatchingConsumerLeavesEventRetryable() {
+        CountingConsumer consumer = new CountingConsumer(false);
+        EventRelayService relay = newRelay(List.of(consumer));
+        append("relay-4", "erp.sale-in.approved.v1");
 
-        assertEquals(1, relay.relayOnce(10), "无匹配消费者时事件视为无需投递，不应无限重试");
-        assertEquals(OUTBOX_PUBLISHED, eventOutboxMapper.selectByEventId("relay-4").getStatus());
+        assertEquals(0, relay.relayOnce(10), "无匹配消费者时必须 fail-closed，不能把事件伪装成投递成功");
+        EventOutboxDO event = eventOutboxMapper.selectByEventId("relay-4");
+        assertEquals(OUTBOX_NEW, event.getStatus());
+        assertEquals(1, event.getRetryCount());
+        assertNull(event.getPublishedAt());
+        assertNotNull(event.getNextRetryAt());
+        assertEquals(0, consumer.calls.get());
         assertEquals(0L, eventInboxMapper.selectCount(null));
     }
 
@@ -148,12 +154,16 @@ public class EventRelayServiceTest {
     // -------------------- 辅助 --------------------
 
     private void append(String eventId) {
+        append(eventId, "erp.sale-out.approved.v1");
+    }
+
+    private void append(String eventId, String eventType) {
         eventOutboxService.append(EventAppendReq.builder()
                 .eventId(eventId)
                 .tenantId(0L)
                 .aggregateType("erp_sale_out")
                 .aggregateId("1001")
-                .eventType("erp.sale-out.approved.v1")
+                .eventType(eventType)
                 .payload("{\"id\":1001}")
                 .build());
     }
