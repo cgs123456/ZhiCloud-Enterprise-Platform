@@ -54,6 +54,14 @@ public interface EventOutboxService {
     long countDead();
 
     /**
+     * 最老未投递事件已等待秒数（NEW + PUBLISHING），供监控告警
+     *
+     * <p>没有待投递事件时返回 0。该值直接反映事件从业务发生到被中继之间的
+     * 端到端滞留时间，不能只依赖队列长度判断系统是否健康。
+     */
+    long oldestPendingSeconds();
+
+    /**
      * 人工重放：把死信事件放回待投递队列
      */
     boolean replay(Long id);

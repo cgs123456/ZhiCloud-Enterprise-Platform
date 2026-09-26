@@ -105,3 +105,47 @@ groups:
         annotations:
           summary: "应用实例不可达 ({{ $labels.instance }})"
           description: "Prometheus 已持续 1 分钟无法抓取 {{ $labels.instance }}（up={{ $value }}）。请检查进程是否宕机、健康检查 /actuator/health 是否异常或网络隔离。"
+
+  # ---------------- 可靠集成数据面 Outbox ----------------
+  - name: integration-outbox
+    rules:
+      - alert: ZhiCloudOutboxBacklogHigh
+        # 初始阈值 100，需在预生产按实际流量与 SLO 校准。
+        expr: zhicloud_integration_outbox_backlog{application=~"zhicloud-server.*"} > 100
+        for: 10m
+        labels:
+          severity: warning
+          component: integration-outbox
+        annotations:
+          summary: "Outbox 待投递事件堆积 ({{ $labels.instance }})"
+          description: "待投递事件持续 10 分钟超过 100（当前 {{ $value }}）。请检查中继任务、下游投递与数据库负载。"
+
+      - alert: ZhiCloudOutboxBacklogCritical
+        expr: zhicloud_integration_outbox_backlog{application=~"zhicloud-server.*"} > 1000
+        for: 5m
+        labels:
+          severity: critical
+          component: integration-outbox
+        annotations:
+          summary: "Outbox 待投递事件严重堆积 ({{ $labels.instance }})"
+          description: "待投递事件持续 5 分钟超过 1000（当前 {{ $value }}）。请立即检查中继、下游和数据库可用性。"
+
+      - alert: ZhiCloudOutboxDeadPresent
+        expr: zhicloud_integration_outbox_dead{application=~"zhicloud-server.*"} > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: integration-outbox
+        annotations:
+          summary: "Outbox 存在死信事件 ({{ $labels.instance }})"
+          description: "死信事件数 = {{ $value }}。自动重试已停止，请核对错误并执行受控重放；重放前确认消费幂等。"
+
+      - alert: ZhiCloudOutboxOldestPendingHigh
+        expr: zhicloud_integration_outbox_oldest_pending_seconds{application=~"zhicloud-server.*"} > 300
+        for: 5m
+        labels:
+          severity: warning
+          component: integration-outbox
+        annotations:
+          summary: "Outbox 最老未投递事件滞留 ({{ $labels.instance }})"
+          description: "最老未投递事件已等待 {{ $value }} 秒，持续 5 分钟。请检查中继扫描、退避窗口和下游响应时间。"

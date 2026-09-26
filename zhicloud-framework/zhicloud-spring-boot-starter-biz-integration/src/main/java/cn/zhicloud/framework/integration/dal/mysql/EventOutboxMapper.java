@@ -42,6 +42,15 @@ public interface EventOutboxMapper extends BaseMapperX<EventOutboxDO> {
     }
 
     /**
+     * 查询最老未投递事件的业务发生时间；没有待投递事件时返回 null。
+     *
+     * <p>只统计 NEW/PUBLISHING，不把 PUBLISHED 历史事件计入滞留时长。
+     */
+    @Select("SELECT MIN(occurred_at) FROM event_outbox WHERE deleted = 0 "
+            + "AND status IN ('" + OUTBOX_NEW + "','" + OUTBOX_PUBLISHING + "')")
+    LocalDateTime selectOldestPendingOccurredAt();
+
+    /**
      * 扫描可被领取的事件主键：NEW 与 PUBLISHING 都可再领取（PUBLISHING 覆盖「领取后进程崩溃」的残留），
      * 且 next_retry_at 为空或已到期。
      */

@@ -13,6 +13,7 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -139,6 +140,16 @@ public class EventOutboxServiceImpl implements EventOutboxService {
         Long count = eventOutboxMapper.selectCount(new LambdaQueryWrapper<EventOutboxDO>()
                 .eq(EventOutboxDO::getStatus, OUTBOX_DEAD));
         return count == null ? 0L : count;
+    }
+
+    @Override
+    public long oldestPendingSeconds() {
+        LocalDateTime oldest = eventOutboxMapper.selectOldestPendingOccurredAt();
+        if (oldest == null) {
+            return 0L;
+        }
+        // 数据库与应用时钟可能存在轻微偏差；负数没有业务意义，统一归零避免指标抖动。
+        return Math.max(0L, Duration.between(oldest, LocalDateTime.now()).getSeconds());
     }
 
     @Override

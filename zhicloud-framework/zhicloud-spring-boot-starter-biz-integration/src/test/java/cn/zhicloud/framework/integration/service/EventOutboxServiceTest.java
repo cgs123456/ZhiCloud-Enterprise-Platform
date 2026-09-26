@@ -257,6 +257,36 @@ public class EventOutboxServiceTest {
         assertEquals(0L, eventOutboxService.countBacklog(), "死信不再计入堆积口径，避免同一事件同时触发堆积与死信两个告警");
     }
 
+    @Test
+    public void testOldestPendingSecondsUsesOldestUnfinishedOccurredAt() {
+        Long published = append("evt-age-published");
+        assertTrue(eventOutboxService.claim(published, LocalDateTime.now()));
+        assertTrue(eventOutboxService.markPublished(published));
+
+        Long oldestPending = append("evt-age-pending-old");
+        EventOutboxDO oldestRow = eventOutboxMapper.selectById(oldestPending);
+        oldestRow.setOccurredAt(LocalDateTime.now().minusSeconds(120));
+        eventOutboxMapper.updateById(oldestRow);
+
+        Long newerPending = append("evt-age-pending-new");
+        EventOutboxDO newerRow = eventOutboxMapper.selectById(newerPending);
+        newerRow.setOccurredAt(LocalDateTime.now().minusSeconds(10));
+        eventOutboxMapper.updateById(newerRow);
+
+        long age = eventOutboxService.oldestPendingSeconds();
+        assertTrue(age >= 115 && age <= 125,
+                "最老未投递时长必须取 NEW/PUBLISHING 的最小 occurred_at，实际=" + age);
+    }
+
+    @Test
+    public void testOldestPendingSecondsIsZeroWhenNothingPending() {
+        Long published = append("evt-age-empty");
+        assertTrue(eventOutboxService.claim(published, LocalDateTime.now()));
+        assertTrue(eventOutboxService.markPublished(published));
+
+        assertEquals(0L, eventOutboxService.oldestPendingSeconds(),
+                "没有待投递事件时最老年龄必须是 0，不能把 PUBLISHED 历史事件算成堆积");
+    }
     // -------------------- 辅助方法 --------------------
 
     private Long append(String eventId) {
