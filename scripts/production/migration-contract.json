@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "contract_start_version": 90,
-  "purpose": "Reviewed V90-V103 migration and verification bytes; execution evidence remains MySQL shadow-run plus scoped integration evidence.",
+  "purpose": "Reviewed V90-V104 migration and verification bytes; execution evidence remains MySQL shadow-run plus scoped integration evidence.",
   "migrations": [
     {
       "version": 90,
@@ -100,6 +100,13 @@
       "sha256": "42690f9e18b231d436703196994f04a8ab140002756d82ae376ff00c09a66c09",
       "verification_file": "V103_verify.sql",
       "verification_sha256": "55f7c91515ee422625a7ac59f93225120aa76fbb615576cf0c85a639b991336b"
+    },
+    {
+      "version": 104,
+      "file": "V104__integration_monitoring_indexes.sql",
+      "sha256": "673d05aea7eb6938fedb3f053e62c9e2436b1d6768e9b5da851b06d5a071b5a1",
+      "verification_file": "V104_verify.sql",
+      "verification_sha256": "dcf54cd4c87c81b5eae8eee165f7846c03ffd655857b63c25d37a32d0f415d06"
     }
   ]
 }

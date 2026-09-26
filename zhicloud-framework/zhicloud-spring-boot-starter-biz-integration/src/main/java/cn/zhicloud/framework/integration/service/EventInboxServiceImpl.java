@@ -8,13 +8,16 @@ import cn.zhicloud.framework.integration.dal.dataobject.EventInboxDO;
 import cn.zhicloud.framework.integration.dal.mysql.EventInboxMapper;
 import cn.zhicloud.framework.integration.enums.ErrorCodeConstants;
 import cn.zhicloud.framework.integration.util.EventTextUtils;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 import static cn.zhicloud.framework.integration.enums.EventStatusConstants.INBOX_DEAD;
+import static cn.zhicloud.framework.integration.enums.EventStatusConstants.INBOX_FAILED;
 import static cn.zhicloud.framework.integration.enums.EventStatusConstants.INBOX_PROCESSED;
 import static cn.zhicloud.framework.integration.enums.EventStatusConstants.INBOX_RECEIVED;
 
@@ -120,6 +123,30 @@ public class EventInboxServiceImpl implements EventInboxService {
             return false;
         }
         return eventInboxMapper.replay(row.getId()) == 1;
+    }
+
+    @Override
+    public long countFailed() {
+        Long count = eventInboxMapper.selectCount(new LambdaQueryWrapper<EventInboxDO>()
+                .eq(EventInboxDO::getStatus, INBOX_FAILED));
+        return count == null ? 0L : count;
+    }
+
+    @Override
+    public long countDead() {
+        Long count = eventInboxMapper.selectCount(new LambdaQueryWrapper<EventInboxDO>()
+                .eq(EventInboxDO::getStatus, INBOX_DEAD));
+        return count == null ? 0L : count;
+    }
+
+    @Override
+    public long oldestPendingSeconds() {
+        LocalDateTime oldest = eventInboxMapper.selectOldestPendingReceivedAt();
+        if (oldest == null) {
+            return 0L;
+        }
+        // 数据库与应用时钟可能存在轻微偏差；负数没有业务意义，统一归零避免指标抖动。
+        return Math.max(0L, Duration.between(oldest, LocalDateTime.now()).getSeconds());
     }
 
     private int maxRetry() {

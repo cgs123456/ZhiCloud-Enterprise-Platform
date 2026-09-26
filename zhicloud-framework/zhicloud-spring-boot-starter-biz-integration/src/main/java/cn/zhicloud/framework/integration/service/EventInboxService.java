@@ -38,4 +38,23 @@ public interface EventInboxService {
      */
     boolean replay(String consumerName, String eventId);
 
+    /**
+     * 当前待重试失败存量（FAILED），供监控告警。
+     *
+     * <p>这是数据库中的当前状态数量，不是时间窗口失败率；真实失败率需要累计 Counter。
+     */
+    long countFailed();
+
+    /**
+     * 当前死信存量（DEAD），供监控告警。
+     */
+    long countDead();
+
+    /**
+     * 最老待消费事件已等待秒数（RECEIVED + FAILED），供监控告警。
+     *
+     * <p>没有待消费事件时返回 0；DEAD 已停止自动消费，不计入该口径。
+     */
+    long oldestPendingSeconds();
+
 }

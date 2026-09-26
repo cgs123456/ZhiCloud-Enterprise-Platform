@@ -5,6 +5,7 @@ import cn.zhicloud.framework.mybatis.core.mapper.BaseMapperX;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 import java.time.LocalDateTime;
@@ -33,6 +34,15 @@ public interface EventInboxMapper extends BaseMapperX<EventInboxDO> {
                 .eq(EventInboxDO::getConsumerName, consumerName)
                 .eq(EventInboxDO::getEventId, eventId));
     }
+
+    /**
+     * 查询最老待消费事件的接收时间；没有待消费事件时返回 null。
+     *
+     * <p>只统计 RECEIVED/FAILED，不把已完成的 PROCESSED 或停止自动消费的 DEAD 计入。
+     */
+    @Select("SELECT MIN(received_at) FROM event_inbox WHERE deleted = 0 "
+            + "AND status IN ('" + INBOX_RECEIVED + "','" + INBOX_FAILED + "')")
+    LocalDateTime selectOldestPendingReceivedAt();
 
     /**
      * CAS 抢占未完成的记录：仅当状态仍为 RECEIVED / FAILED 时可执行

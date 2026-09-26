@@ -173,6 +173,46 @@ public class EventInboxServiceTest {
         }
     }
 
+    @Test
+    public void testMonitoringCountsAndOldestPendingSeconds() throws Exception {
+        assertEquals(0L, eventInboxService.countFailed());
+        assertEquals(0L, eventInboxService.countDead());
+        assertEquals(0L, eventInboxService.oldestPendingSeconds());
+
+        assertThrows(IllegalStateException.class, () -> eventInboxService.consume(
+                "c-monitor-failed", "e-monitor-failed", "t", 0L, () -> {
+                    throw new IllegalStateException("monitor-boom");
+                }));
+        assertEquals(1L, eventInboxService.countFailed());
+        assertEquals(0L, eventInboxService.countDead());
+
+        EventInboxDO failed = eventInboxService.selectByConsumerAndEvent("c-monitor-failed", "e-monitor-failed");
+        failed.setReceivedAt(java.time.LocalDateTime.now().minusSeconds(120));
+        eventInboxMapper.updateById(failed);
+        long oldest = eventInboxService.oldestPendingSeconds();
+        assertTrue(oldest >= 119L && oldest <= 125L, "最老待消费时长应接近 120 秒，实际：" + oldest);
+
+        AtomicInteger processedCalls = new AtomicInteger();
+        assertEquals(ConsumeResult.PROCESSED, consume("c-monitor-processed", "e-monitor-processed", processedCalls));
+        assertEquals(1L, eventInboxService.countFailed(), "PROCESSED 不应计入失败存量");
+        assertEquals(1, processedCalls.get());
+
+        for (int i = 1; i <= properties.getMaxRetry(); i++) {
+            assertThrows(IllegalStateException.class, () -> eventInboxService.consume(
+                    "c-monitor-dead", "e-monitor-dead", "t", 0L, () -> {
+                        throw new IllegalStateException("monitor-dead");
+                    }));
+        }
+        assertEquals(1L, eventInboxService.countDead());
+        assertEquals(1L, eventInboxService.countFailed(), "DEAD 必须单独统计，不能混入 FAILED 存量");
+
+        EventInboxDO dead = eventInboxService.selectByConsumerAndEvent("c-monitor-dead", "e-monitor-dead");
+        dead.setReceivedAt(java.time.LocalDateTime.now().minusSeconds(600));
+        eventInboxMapper.updateById(dead);
+        oldest = eventInboxService.oldestPendingSeconds();
+        assertTrue(oldest >= 119L && oldest <= 125L,
+                "DEAD 已停止自动消费，不应成为最老待消费项，实际：" + oldest);
+    }
     private ConsumeResult consume(String consumer, String eventId, AtomicInteger counter) throws Exception {
         return eventInboxService.consume(consumer, eventId, "erp.sale-out.approved.v1", 0L, () -> counter.incrementAndGet());
     }

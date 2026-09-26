@@ -149,3 +149,46 @@ groups:
         annotations:
           summary: "Outbox 最老未投递事件滞留 ({{ $labels.instance }})"
           description: "最老未投递事件已等待 {{ $value }} 秒，持续 5 分钟。请检查中继扫描、退避窗口和下游响应时间。"
+  # ---------------- 可靠集成数据面 Inbox ----------------
+  - name: integration-inbox
+    rules:
+      - alert: ZhiCloudInboxFailedHigh
+        # FAILED 是当前待重试存量，不是时间窗口失败率；初始阈值 100，需在预生产按实际流量与 SLO 校准。
+        expr: zhicloud_integration_inbox_failed{application=~"zhicloud-server.*"} > 100
+        for: 10m
+        labels:
+          severity: warning
+          component: integration-inbox
+        annotations:
+          summary: "Inbox 待重试失败存量过高 ({{ $labels.instance }})"
+          description: "待重试失败存量持续 10 分钟超过 100（当前 {{ $value }}）。请检查消费者异常、下游依赖和重试退避。"
+
+      - alert: ZhiCloudInboxFailedCritical
+        expr: zhicloud_integration_inbox_failed{application=~"zhicloud-server.*"} > 1000
+        for: 5m
+        labels:
+          severity: critical
+          component: integration-inbox
+        annotations:
+          summary: "Inbox 待重试失败存量严重过高 ({{ $labels.instance }})"
+          description: "待重试失败存量持续 5 分钟超过 1000（当前 {{ $value }}）。请立即检查消费者、下游依赖和重试队列。"
+
+      - alert: ZhiCloudInboxDeadPresent
+        expr: zhicloud_integration_inbox_dead{application=~"zhicloud-server.*"} > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: integration-inbox
+        annotations:
+          summary: "Inbox 存在死信事件 ({{ $labels.instance }})"
+          description: "死信事件数 = {{ $value }}。自动重试已停止，请核对错误、消费者幂等和下游状态后执行受控重放。"
+
+      - alert: ZhiCloudInboxOldestPendingHigh
+        expr: zhicloud_integration_inbox_oldest_pending_seconds{application=~"zhicloud-server.*"} > 300
+        for: 5m
+        labels:
+          severity: warning
+          component: integration-inbox
+        annotations:
+          summary: "Inbox 最老待消费事件滞留 ({{ $labels.instance }})"
+          description: "最老待消费事件已等待 {{ $value }} 秒，持续 5 分钟。请检查消费者执行、重试退避和下游响应时间。"
