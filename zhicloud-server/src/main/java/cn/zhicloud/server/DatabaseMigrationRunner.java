@@ -11,6 +11,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -52,12 +53,13 @@ public final class DatabaseMigrationRunner {
     static final String CLEAN_BASELINE_RESOURCE = "db/clean-baseline/V1.1__system_base_schema.clean.sql";
     static final String CLEAN_MANIFEST_RESOURCE = "db/clean-baseline/manifest.json";
     static final String SOURCE_BASELINE_RESOURCE = "db/migration/V1.1__system_base_schema.sql";
-    static final String EXISTING_BASELINE_VERSION = "1";
+    static final String EXISTING_BASELINE_VERSION = "1.1";
     static final String CLEAN_BASELINE_VERSION = "1.1";
 
-    static final List<String> REQUIRED_EXISTING_TABLES = List.of(
-            "system_users", "system_role", "system_user_role", "system_user_post");
+    private static final Pattern TABLE_DEFINITION = Pattern.compile(
+            "(?m)^CREATE TABLE IF NOT EXISTS `([^`]+)`");
 
+    static final List<String> REQUIRED_EXISTING_TABLES = loadRequiredExistingTables();
     private static final Pattern JSON_HASH = Pattern.compile(
             "\"source_sha256\"\\s*:\\s*\"([0-9a-fA-F]{64})\"");
     private static final Pattern JSON_CLEAN_HASH = Pattern.compile(
@@ -197,22 +199,57 @@ public final class DatabaseMigrationRunner {
     }
 
     /**
-     * existing 模式拒绝空库，避免误把公开种子账号通过 V1.1 写入一个全新数据库。
+     * existing 模式只接受已经完整初始化且已记录成功 V1.1 的存量库。
+     *
+     * <p>不能仅凭“表非空”建立 V1.1 基线：Flyway 会把带表但缺少历史记录的 schema 直接标成
+     * V1.1，导致目标库是否真的具备 V1.1 结构无法核实。该路径必须 fail-closed，由人工恢复或
+     * 显式 clean 建库后重新发布。</p>
+     */
+    static void validateExistingTargetInitialization(
+            Set<String> tableNames, boolean successfulBaselineRecorded) {
+        Objects.requireNonNull(tableNames, "tableNames");
+        if (tableNames.isEmpty()) {
+            throw new IllegalStateException(
+                    "existing 模式拒绝空库：请先执行历史安装脚本，或显式设置 MIGRATION_BASELINE_MODE=clean");
+        }
+
+        Set<String> missingTables = missingRequiredTables(tableNames);
+        if (!missingTables.isEmpty()) {
+            throw new IllegalStateException(
+                    "existing 模式目标库缺少关键系统表: " + String.join(", ", missingTables)
+                            + "；请确认连接的是历史安装脚本初始化的 schema，"
+                            + "或显式设置 MIGRATION_BASELINE_MODE=clean 重建空库");
+        }
+
+        if (!successfulBaselineRecorded) {
+            throw new IllegalStateException(
+                    "existing 模式目标库缺少 flyway_schema_history 中成功的 V1.1 记录；"
+                            + "拒绝自动建立 V1.1 baseline，请先完成受控历史库基线修复");
+        }
+    }
+
+    /**
+     * existing 模式拒绝空库，并拒绝任何未记录成功 V1.1 的库，
+     * 避免误把公开种子账号通过 V1.1 写入一个全新数据库或错误信任 legacy schema。
      */
     private static void assertExistingTargetInitialized(
             String url, String username, String password, Map<String, String> jdbcProperties) throws SQLException {
         try (Connection connection = openConnection(url, username, password, jdbcProperties)) {
             Set<String> tableNames = readTableNames(connection);
-            if (tableNames.isEmpty()) {
-                throw new IllegalStateException(
-                        "existing 模式拒绝空库：请先执行历史安装脚本，或显式设置 MIGRATION_BASELINE_MODE=clean");
-            }
-            Set<String> missingTables = missingRequiredTables(tableNames);
-            if (!missingTables.isEmpty()) {
-                throw new IllegalStateException(
-                        "existing 模式目标库缺少关键系统表: " + String.join(", ", missingTables)
-                                + "；请确认连接的是历史安装脚本初始化的 schema，"
-                                + "或显式设置 MIGRATION_BASELINE_MODE=clean 重建空库");
+            boolean successfulBaselineRecorded = hasSuccessfulMigration(connection, EXISTING_BASELINE_VERSION);
+            validateExistingTargetInitialization(tableNames, successfulBaselineRecorded);
+        }
+    }
+
+    private static boolean hasSuccessfulMigration(Connection connection, String version) throws SQLException {
+        if (!readTableNames(connection).contains(HISTORY_TABLE)) {
+            return false;
+        }
+        try (PreparedStatement statement = connection.prepareStatement(
+                "SELECT COUNT(*) FROM " + HISTORY_TABLE + " WHERE success = 1 AND version = ?")) {
+            statement.setString(1, version);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                return resultSet.next() && resultSet.getLong(1) > 0;
             }
         }
     }
@@ -243,6 +280,24 @@ public final class DatabaseMigrationRunner {
             }
         }
         return tableNames;
+    }
+
+    private static List<String> loadRequiredExistingTables() {
+        try {
+            String baseline = new String(
+                    readRequiredResource(CLEAN_BASELINE_RESOURCE), StandardCharsets.UTF_8);
+            Set<String> tableNames = new LinkedHashSet<>();
+            Matcher matcher = TABLE_DEFINITION.matcher(baseline);
+            while (matcher.find()) {
+                tableNames.add(matcher.group(1).toLowerCase(Locale.ROOT));
+            }
+            if (tableNames.isEmpty()) {
+                throw new IllegalStateException("clean baseline 未声明任何基础表");
+            }
+            return List.copyOf(tableNames);
+        } catch (IOException ex) {
+            throw new ExceptionInInitializerError(ex);
+        }
     }
 
     static Set<String> missingRequiredTables(Set<String> tableNames) {

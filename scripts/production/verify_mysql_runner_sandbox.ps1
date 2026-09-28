@@ -4,15 +4,20 @@
   使用本机 MySQL 沙箱验证新构建 JAR 的 clean migration 与管理员 bootstrap 闭环。
 
 .DESCRIPTION
-  脚本只创建全新的 zhicloud_runner_clean_<时间戳> 数据库和专用账号，
+  脚本只创建全新的 zhicloud_runner_clean_<时间戳> 和独立的
+  zhicloud_runner_existing_<时间戳>/zhicloud_runner_incomplete_<时间戳> 数据库及专用账号，
   不会覆盖旧证据库，也不会把数据库口令或 bootstrap 明文口令写入 evidence。
 
   验证内容：
     1. clean baseline + Flyway V2..V117 首次迁移；
     2. 相同 clean 模式重复执行，必须 applied=0；
-    3. 管理员 ensure 首次创建、相同口令 no-op、不同口令 fail-closed；
-    4. rotate 更新口令，旧口令随后必须失败；
-    5. 只读审计器检查管理员、角色、岗位、索引与哈希形态。
+    3. existing 模式在完整 schema 且存在成功 V1.1 history 时必须通过，并且不得重复执行 V1.1；
+    4. existing 模式在 history 缺少成功 V1.1 时必须 fail-closed，且不得自动补写 V1.1；
+    5. existing 模式在非空 legacy schema 缺少 history 时必须 fail-closed，且不得创建基线；
+    6. existing 模式在完整 history 但缺少基础表时必须 fail-closed；
+    7. 管理员 ensure 首次创建、相同口令 no-op、不同口令 fail-closed；
+    8. rotate 更新口令，旧口令随后必须失败；
+    9. 只读审计器检查管理员、角色、岗位、索引与哈希形态。
 
 .PARAMETER AdminPasswordEnv
   可选：保存 MySQL 管理账号口令的环境变量名。未指定时按空口令沙箱处理。
@@ -95,8 +100,12 @@ if (-not [string]::IsNullOrWhiteSpace($AdminPasswordEnv)) {
 
 $Stamp = Get-Date -Format 'yyyyMMdd_HHmmss'
 $DbName = 'zhicloud_runner_clean_' + $Stamp
+$ValidationDbName = 'zhicloud_runner_existing_' + $Stamp
+$IncompleteDbName = 'zhicloud_runner_incomplete_' + $Stamp
 $DbUser = 'zhicloud_run_' + $Stamp
 if ($DbName.Length -gt 64) { throw "数据库名过长: $DbName" }
+if ($ValidationDbName.Length -gt 64) { throw "数据库名过长: $ValidationDbName" }
+if ($IncompleteDbName.Length -gt 64) { throw "数据库名过长: $IncompleteDbName" }
 if ($DbUser.Length -gt 32) { throw "数据库账号过长: $DbUser" }
 
 # 只在本进程内存在；不写入日志、evidence 或 argv。
@@ -106,6 +115,8 @@ $BootstrapPassword2 = 'Zc!' + [guid]::NewGuid().ToString('N') + '7b'
 $BootstrapPassword3 = 'Zc!' + [guid]::NewGuid().ToString('N') + '5c'
 
 $DbUrl = "jdbc:mysql://${DatabaseHost}:${DatabasePort}/${DbName}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=utf8"
+$ValidationDbUrl = "jdbc:mysql://${DatabaseHost}:${DatabasePort}/${ValidationDbName}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=utf8"
+$IncompleteDbUrl = "jdbc:mysql://${DatabaseHost}:${DatabasePort}/${IncompleteDbName}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=utf8"
 $LogBase = 'mysql-runner-sandbox-' + $Stamp
 $CleanLog = Join-Path $EvidenceDir ($LogBase + '-clean.log')
 $ResumeLog = Join-Path $EvidenceDir ($LogBase + '-resume.log')
@@ -115,6 +126,12 @@ $EnsureMismatchLog = Join-Path $EvidenceDir ($LogBase + '-bootstrap-ensure-misma
 $RotateLog = Join-Path $EvidenceDir ($LogBase + '-bootstrap-rotate.log')
 $EnsureOldLog = Join-Path $EvidenceDir ($LogBase + '-bootstrap-old-password.log')
 $EnsureNewLog = Join-Path $EvidenceDir ($LogBase + '-bootstrap-new-password.log')
+$ValidationFixtureLog = Join-Path $EvidenceDir ($LogBase + '-existing-fixture-clean.log')
+$ExistingHistoryLog = Join-Path $EvidenceDir ($LogBase + '-existing-complete-history.log')
+$MissingV11Log = Join-Path $EvidenceDir ($LogBase + '-existing-missing-v11.log')
+$NoHistoryLog = Join-Path $EvidenceDir ($LogBase + '-existing-no-history.log')
+$IncompleteFixtureLog = Join-Path $EvidenceDir ($LogBase + '-incomplete-fixture-clean.log')
+$IncompleteSchemaLog = Join-Path $EvidenceDir ($LogBase + '-existing-incomplete-schema.log')
 $AuditJson = Join-Path $EvidenceDir ($LogBase + '-audit.json')
 $AuditStdoutLog = Join-Path $EvidenceDir ($LogBase + '-audit.stdout.log')
 $EvidenceJson = Join-Path $EvidenceDir ($LogBase + '.json')
@@ -333,6 +350,13 @@ function Invoke-MysqlScalar {
     return $value.Trim()
 }
 
+function New-SandboxDatabase {
+    param([Parameter(Mandatory = $true)][string]$DatabaseName)
+
+    Invoke-MysqlText -Sql "CREATE DATABASE ``$DatabaseName`` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;" | Out-Null
+    Invoke-MysqlText -Sql "GRANT ALL PRIVILEGES ON ``$DatabaseName``.* TO '$DbUser'@'127.0.0.1'; FLUSH PRIVILEGES;" | Out-Null
+}
+
 function Invoke-JavaMain {
     param(
         [Parameter(Mandatory = $true)][string]$MainClass,
@@ -356,6 +380,26 @@ function Invoke-JavaMain {
     return [int]$script:lastJavaExitCode
 }
 
+function Initialize-SandboxCleanFixture {
+    param(
+        [Parameter(Mandatory = $true)][string]$Url,
+        [Parameter(Mandatory = $true)][string]$LogPath
+    )
+
+    $environment = @{
+        MASTER_DATASOURCE_URL = $Url
+        MASTER_DATASOURCE_USERNAME = $DbUser
+        MASTER_DATASOURCE_PASSWORD = $DbPassword
+        MIGRATION_BASELINE_MODE = 'clean'
+    }
+    $exitCode = Invoke-JavaMain `
+        -MainClass 'cn.zhicloud.server.DatabaseMigrationRunner' `
+        -Environment $environment `
+        -LogPath $LogPath
+    if ($exitCode -ne 0) { throw "existing 验证夹具 clean migration 退出码 $exitCode，见 $LogPath" }
+    return [int]$exitCode
+}
+
 function Read-Match {
     param(
         [Parameter(Mandatory = $true)][string]$Path,
@@ -364,11 +408,17 @@ function Read-Match {
         [string]$Default = ''
     )
     if (-not (Test-Path -LiteralPath $Path)) { return $Default }
-    $text = Get-Content -LiteralPath $Path -Raw -ErrorAction SilentlyContinue
+    $text = Get-Content -LiteralPath $Path -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
     if ([string]::IsNullOrEmpty($text)) { return $Default }
     $match = [regex]::Match($text, $Pattern, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
     if (-not $match.Success) { return $Default }
     return $match.Groups[$Group].Value
+}
+
+function Read-LogText {
+    param([Parameter(Mandatory = $true)][string]$Path)
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { return '' }
+    return (Get-Content -LiteralPath $Path -Raw -Encoding UTF8 -ErrorAction SilentlyContinue)
 }
 
 if ([string]::IsNullOrWhiteSpace($Reviewer)) {
@@ -415,7 +465,7 @@ $ExecutionCommand = $executionParts -join ' '
 $result = [ordered]@{
     generated_at = (Get-Date).ToString('o')
     status = 'running'
-    scope = 'MySQL 8.4 sandbox clean migration and bootstrap administrator end-to-end validation'
+    scope = 'MySQL 8.4 sandbox clean/existing migration fail-closed validation and bootstrap administrator end-to-end validation'
     production_ready = $false
     gate3_passed = $false
     r011_status = 'OPEN'
@@ -424,6 +474,12 @@ $result = [ordered]@{
     database = [ordered]@{
         name = $DbName
         user = $DbUser
+        host = $DatabaseHost
+        port = $DatabasePort
+    }
+    validation_databases = [ordered]@{
+        existing_history = $ValidationDbName
+        incomplete_schema = $IncompleteDbName
         host = $DatabaseHost
         port = $DatabasePort
     }
@@ -468,6 +524,7 @@ $result = [ordered]@{
     }
     runs = [ordered]@{}
     database_checks = [ordered]@{}
+    existing_checks = [ordered]@{}
     bootstrap_checks = [ordered]@{}
     secret_handling = [ordered]@{
         database_password_persisted = $false
@@ -480,6 +537,7 @@ $result = [ordered]@{
         'BPM/Flowable 事务回滚、备份恢复、容量与高可用未由本脚本证明。',
         '工作区存在未提交改动时，commit_sha 不能单独唯一标识被验证代码；必须结合 JAR 哈希、脚本哈希和 git status 哈希复核。',
         'reviewer 默认为执行主机用户，不代表独立复核；生产放行前必须补充独立复核人。',
+        'existing 成功场景由 clean baseline 构造，只证明成功 V1.1 history 不会被重复执行；不证明外部 legacy schema 的列、索引和约束均已通过强签名校验。',
         'Production readiness 和 Gate 3 仍为 false，R-011 和 R-029 仍为 OPEN，直到所有阻断项关闭。'
     )
 }
@@ -532,6 +590,127 @@ try {
         initial_version = Read-Match -Path $ResumeLog -Pattern 'initialVersion=([^,\r\n]+)' -Default ''
         target_version = Read-Match -Path $ResumeLog -Pattern 'targetVersion=([^,\r\n]+)' -Default ''
     }
+    New-SandboxDatabase -DatabaseName $ValidationDbName
+    Initialize-SandboxCleanFixture -Url $ValidationDbUrl -LogPath $ValidationFixtureLog | Out-Null
+
+    $existingEnvironment = @{
+        MASTER_DATASOURCE_URL = $ValidationDbUrl
+        MASTER_DATASOURCE_USERNAME = $DbUser
+        MASTER_DATASOURCE_PASSWORD = $DbPassword
+        MIGRATION_BASELINE_MODE = 'existing'
+    }
+
+    $completeBeforeTotal = [int](Invoke-MysqlScalar -Database $ValidationDbName -Sql 'SELECT COUNT(*) FROM flyway_schema_history;')
+    $completeBeforeV11 = [int](Invoke-MysqlScalar -Database $ValidationDbName -Sql "SELECT COUNT(*) FROM flyway_schema_history WHERE success = 1 AND version = '1.1';")
+    $existingCompleteExit = Invoke-JavaMain -MainClass 'cn.zhicloud.server.DatabaseMigrationRunner' -Environment $existingEnvironment -LogPath $ExistingHistoryLog
+    $completeAfterTotal = [int](Invoke-MysqlScalar -Database $ValidationDbName -Sql 'SELECT COUNT(*) FROM flyway_schema_history;')
+    $completeAfterV11 = [int](Invoke-MysqlScalar -Database $ValidationDbName -Sql "SELECT COUNT(*) FROM flyway_schema_history WHERE success = 1 AND version = '1.1';")
+
+    $result.runs.existing_complete_history = [ordered]@{
+        exit_code = $existingCompleteExit
+        applied_migrations = [int](Read-Match -Path $ExistingHistoryLog -Pattern 'success: applied=(\d+)' -Default '-1')
+        fixture_exit_code = 0
+        fixture_log_path = $ValidationFixtureLog
+        fixture_log_sha256 = Get-Sha256 -Path $ValidationFixtureLog
+        log_path = $ExistingHistoryLog
+        log_sha256 = Get-Sha256 -Path $ExistingHistoryLog
+        history_rows_before = $completeBeforeTotal
+        history_rows_after = $completeAfterTotal
+        v11_rows_before = $completeBeforeV11
+        v11_rows_after = $completeAfterV11
+    }
+    $result.existing_checks.complete_schema_with_v11_accepted = ($existingCompleteExit -eq 0)
+    $result.existing_checks.v11_not_reapplied = (
+        $existingCompleteExit -eq 0 -and
+        $completeBeforeV11 -eq 1 -and
+        $completeAfterV11 -eq 1 -and
+        $completeAfterTotal -eq $completeBeforeTotal -and
+        $result.runs.existing_complete_history.applied_migrations -eq 0
+    )
+
+    Invoke-MysqlText -Database $ValidationDbName -Sql "DELETE FROM flyway_schema_history WHERE success = 1 AND version = '1.1';" | Out-Null
+    $missingV11BeforeTotal = [int](Invoke-MysqlScalar -Database $ValidationDbName -Sql 'SELECT COUNT(*) FROM flyway_schema_history;')
+    $missingV11BeforeRows = [int](Invoke-MysqlScalar -Database $ValidationDbName -Sql "SELECT COUNT(*) FROM flyway_schema_history WHERE success = 1 AND version = '1.1';")
+    $missingV11Exit = Invoke-JavaMain -MainClass 'cn.zhicloud.server.DatabaseMigrationRunner' -Environment $existingEnvironment -LogPath $MissingV11Log
+    $missingV11AfterTotal = [int](Invoke-MysqlScalar -Database $ValidationDbName -Sql 'SELECT COUNT(*) FROM flyway_schema_history;')
+    $missingV11AfterRows = [int](Invoke-MysqlScalar -Database $ValidationDbName -Sql "SELECT COUNT(*) FROM flyway_schema_history WHERE success = 1 AND version = '1.1';")
+    $missingV11Text = Read-LogText -Path $MissingV11Log
+    $result.runs.existing_missing_v11_history = [ordered]@{
+        exit_code = $missingV11Exit
+        log_path = $MissingV11Log
+        log_sha256 = Get-Sha256 -Path $MissingV11Log
+        history_rows_before = $missingV11BeforeTotal
+        history_rows_after = $missingV11AfterTotal
+        v11_rows_before = $missingV11BeforeRows
+        v11_rows_after = $missingV11AfterRows
+        log_mentions_v11 = ($missingV11Text -match 'V1\.1')
+        log_mentions_history_table = ($missingV11Text -match 'flyway_schema_history')
+    }
+    $result.existing_checks.missing_v11_history_fail_closed = (
+        $missingV11Exit -ne 0 -and
+        $missingV11BeforeRows -eq 0 -and
+        $missingV11AfterRows -eq 0 -and
+        $missingV11AfterTotal -eq $missingV11BeforeTotal -and
+        $result.runs.existing_missing_v11_history.log_mentions_v11 -and
+        $result.runs.existing_missing_v11_history.log_mentions_history_table
+    )
+
+    Invoke-MysqlText -Database $ValidationDbName -Sql 'DROP TABLE flyway_schema_history;' | Out-Null
+    $historyTableAfterDrop = [int](Invoke-MysqlScalar -Database $ValidationDbName -Sql "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'flyway_schema_history';")
+    $noHistoryExit = Invoke-JavaMain -MainClass 'cn.zhicloud.server.DatabaseMigrationRunner' -Environment $existingEnvironment -LogPath $NoHistoryLog
+    $historyTableAfterRun = [int](Invoke-MysqlScalar -Database $ValidationDbName -Sql "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'flyway_schema_history';")
+    $noHistoryText = Read-LogText -Path $NoHistoryLog
+    $result.runs.existing_nonempty_without_history = [ordered]@{
+        exit_code = $noHistoryExit
+        log_path = $NoHistoryLog
+        log_sha256 = Get-Sha256 -Path $NoHistoryLog
+        history_table_before_run = $historyTableAfterDrop
+        history_table_after_run = $historyTableAfterRun
+        log_mentions_v11 = ($noHistoryText -match 'V1\.1')
+        log_mentions_history_table = ($noHistoryText -match 'flyway_schema_history')
+    }
+    $result.existing_checks.nonempty_without_history_fail_closed = (
+        $noHistoryExit -ne 0 -and
+        $historyTableAfterDrop -eq 0 -and
+        $historyTableAfterRun -eq 0 -and
+        $result.runs.existing_nonempty_without_history.log_mentions_v11 -and
+        $result.runs.existing_nonempty_without_history.log_mentions_history_table
+    )
+
+    New-SandboxDatabase -DatabaseName $IncompleteDbName
+    Initialize-SandboxCleanFixture -Url $IncompleteDbUrl -LogPath $IncompleteFixtureLog | Out-Null
+    $incompleteBeforeTotal = [int](Invoke-MysqlScalar -Database $IncompleteDbName -Sql 'SELECT COUNT(*) FROM flyway_schema_history;')
+    $incompleteBeforeV11 = [int](Invoke-MysqlScalar -Database $IncompleteDbName -Sql "SELECT COUNT(*) FROM flyway_schema_history WHERE success = 1 AND version = '1.1';")
+    Invoke-MysqlText -Database $IncompleteDbName -Sql 'SET FOREIGN_KEY_CHECKS=0; DROP TABLE `system_menu`; SET FOREIGN_KEY_CHECKS=1;' | Out-Null
+    $incompleteEnvironment = @{} + $existingEnvironment
+    $incompleteEnvironment.MASTER_DATASOURCE_URL = $IncompleteDbUrl
+    $incompleteExit = Invoke-JavaMain -MainClass 'cn.zhicloud.server.DatabaseMigrationRunner' -Environment $incompleteEnvironment -LogPath $IncompleteSchemaLog
+    $incompleteAfterTotal = [int](Invoke-MysqlScalar -Database $IncompleteDbName -Sql 'SELECT COUNT(*) FROM flyway_schema_history;')
+    $incompleteAfterV11 = [int](Invoke-MysqlScalar -Database $IncompleteDbName -Sql "SELECT COUNT(*) FROM flyway_schema_history WHERE success = 1 AND version = '1.1';")
+    $incompleteSchemaText = Read-LogText -Path $IncompleteSchemaLog
+    $result.runs.existing_incomplete_schema = [ordered]@{
+        exit_code = $incompleteExit
+        missing_table = 'system_menu'
+        fixture_exit_code = 0
+        fixture_log_path = $IncompleteFixtureLog
+        fixture_log_sha256 = Get-Sha256 -Path $IncompleteFixtureLog
+        log_path = $IncompleteSchemaLog
+        log_sha256 = Get-Sha256 -Path $IncompleteSchemaLog
+        history_rows_before = $incompleteBeforeTotal
+        history_rows_after = $incompleteAfterTotal
+        v11_rows_before = $incompleteBeforeV11
+        v11_rows_after = $incompleteAfterV11
+        log_mentions_missing_table = ($incompleteSchemaText -match 'system_menu')
+    }
+    $result.existing_checks.incomplete_schema_fail_closed_with_history = (
+        $incompleteExit -ne 0 -and
+        $result.runs.existing_incomplete_schema.log_mentions_missing_table
+    )
+    $result.existing_checks.incomplete_schema_history_unchanged = (
+        $incompleteBeforeV11 -eq 1 -and
+        $incompleteAfterV11 -eq $incompleteBeforeV11 -and
+        $incompleteAfterTotal -eq $incompleteBeforeTotal
+    )
     if ($resumeExit -ne 0) { throw "clean migration resume 退出码 $resumeExit，见 $ResumeLog" }
 
     $bootstrapEnvironment = @{
@@ -639,7 +818,7 @@ try {
     if (-not (Test-Path -LiteralPath $AuditJson -PathType Leaf)) {
         throw "管理员只读审计未生成 JSON，见 $AuditStdoutLog"
     }
-    $audit = Get-Content -LiteralPath $AuditJson -Raw | ConvertFrom-Json
+    $audit = Get-Content -LiteralPath $AuditJson -Raw -Encoding UTF8 | ConvertFrom-Json
     $result.runs.bootstrap_audit = [ordered]@{
         exit_code = $auditExit
         status = $audit.status
@@ -672,6 +851,12 @@ try {
         $result.database_checks.receivable_idempotency_unique_index,
         ($result.runs.clean_first.applied_migrations -gt 0),
         ($result.runs.clean_resume.applied_migrations -eq 0),
+        $result.existing_checks.complete_schema_with_v11_accepted,
+        $result.existing_checks.v11_not_reapplied,
+        $result.existing_checks.missing_v11_history_fail_closed,
+        $result.existing_checks.nonempty_without_history_fail_closed,
+        $result.existing_checks.incomplete_schema_fail_closed_with_history,
+        $result.existing_checks.incomplete_schema_history_unchanged,
         $result.bootstrap_checks.user_count_exactly_one,
         $result.bootstrap_checks.ensure_created,
         $result.bootstrap_checks.ensure_same_password_noop,

@@ -1,0 +1,12 @@
+[flyway-migration] target=jdbc:mysql://127.0.0.1:53306/zhicloud_runner_existing_20260928_094014 mode=existing
+[flyway-migration] FAILED: existing ģʽĿ���ȱ�� flyway_schema_history �гɹ��� V1.1 ��¼���ܾ��Զ����� V1.1 baseline����������ܿ���ʷ������޸�
+java.lang.IllegalStateException: existing ģʽĿ���ȱ�� flyway_schema_history �гɹ��� V1.1 ��¼���ܾ��Զ����� V1.1 baseline����������ܿ���ʷ������޸�
+	at cn.zhicloud.server.DatabaseMigrationRunner.validateExistingTargetInitialization(DatabaseMigrationRunner.java:225)
+	at cn.zhicloud.server.DatabaseMigrationRunner.assertExistingTargetInitialized(DatabaseMigrationRunner.java:240)
+	at cn.zhicloud.server.DatabaseMigrationRunner.run(DatabaseMigrationRunner.java:98)
+	at cn.zhicloud.server.DatabaseMigrationRunner.main(DatabaseMigrationRunner.java:76)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.boot.loader.launch.Launcher.launch(Launcher.java:106)
+	at org.springframework.boot.loader.launch.Launcher.launch(Launcher.java:64)
+	at org.springframework.boot.loader.launch.PropertiesLauncher.main(PropertiesLauncher.java:580)

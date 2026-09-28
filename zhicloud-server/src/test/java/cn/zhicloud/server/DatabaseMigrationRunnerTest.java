@@ -4,10 +4,14 @@ import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -28,13 +32,61 @@ class DatabaseMigrationRunnerTest {
     }
 
     @Test
-    void missingRequiredTablesDetectsCoreSchemaGapsCaseInsensitively() {
-        assertEquals(Set.of(), DatabaseMigrationRunner.missingRequiredTables(Set.of(
-                "SYSTEM_USERS", "system_role", "system_user_role", "system_user_post")));
-        assertEquals(Set.of("system_users"), DatabaseMigrationRunner.missingRequiredTables(Set.of(
-                "system_role", "system_user_role", "system_user_post")));
+    void existingBaselineVersionMustBeOneDotOneToSkipSourceSeeds() {
+        assertEquals("1.1", DatabaseMigrationRunner.EXISTING_BASELINE_VERSION);
+    }
+
+    @Test
+    void existingTargetAcceptsCompleteSchemaWithSuccessfulV11History() throws Exception {
+        assertDoesNotThrow(() -> DatabaseMigrationRunner.validateExistingTargetInitialization(
+                sourceBaselineTables(), true));
+    }
+
+    @Test
+    void existingTargetRejectsMissingV11HistoryEvenWhenAllTablesExist() throws Exception {
+        IllegalStateException failure = assertThrows(IllegalStateException.class,
+                () -> DatabaseMigrationRunner.validateExistingTargetInitialization(
+                        sourceBaselineTables(), false));
+
+        assertTrue(failure.getMessage().contains("V1.1"));
+        assertTrue(failure.getMessage().contains("flyway_schema_history"));
+    }
+
+    @Test
+    void existingTargetRejectsEmptyOrIncompleteSchema() throws Exception {
+        assertThrows(IllegalStateException.class,
+                () -> DatabaseMigrationRunner.validateExistingTargetInitialization(Set.of(), false));
+
+        Set<String> incompleteTables = sourceBaselineTables();
+        incompleteTables.remove("system_users");
+        IllegalStateException failure = assertThrows(IllegalStateException.class,
+                () -> DatabaseMigrationRunner.validateExistingTargetInitialization(incompleteTables, true));
+
+        assertTrue(failure.getMessage().contains("system_users"));
+    }
+
+    @Test
+    void existingSchemaSignatureRequiresEverySourceBaselineTable() throws Exception {
+        Set<String> sourceTables = sourceBaselineTables();
+        assertFalse(sourceTables.isEmpty());
+        sourceTables.remove("system_menu");
+
+        assertEquals(Set.of("system_menu"), DatabaseMigrationRunner.missingRequiredTables(sourceTables));
+    }
+
+    @Test
+    void missingRequiredTablesDetectsCoreSchemaGapsCaseInsensitively() throws Exception {
+        Set<String> sourceTables = sourceBaselineTables();
+        assertEquals(Set.of(), DatabaseMigrationRunner.missingRequiredTables(sourceTables));
+
+        sourceTables.remove("system_users");
+        assertEquals(Set.of("system_users"), DatabaseMigrationRunner.missingRequiredTables(sourceTables));
+
+        sourceTables.add("system_users");
+        sourceTables.remove("system_user_role");
+        sourceTables.remove("system_user_post");
         assertEquals(Set.of("system_user_role", "system_user_post"),
-                DatabaseMigrationRunner.missingRequiredTables(Set.of("system_users", "system_role")));
+                DatabaseMigrationRunner.missingRequiredTables(sourceTables));
     }
 
     @Test
@@ -133,6 +185,17 @@ class DatabaseMigrationRunnerTest {
                 "MASTER_DATASOURCE_URL", "jdbc:mysql://db:3306/zhicloud"));
 
         assertTrue(properties.isEmpty());
+    }
+
+    private static Set<String> sourceBaselineTables() throws Exception {
+        Set<String> sourceTables = new HashSet<>();
+        Matcher matcher = Pattern.compile("(?m)^CREATE TABLE IF NOT EXISTS `([^`]+)`")
+                .matcher(new String(readResource(DatabaseMigrationRunner.CLEAN_BASELINE_RESOURCE),
+                        StandardCharsets.UTF_8));
+        while (matcher.find()) {
+            sourceTables.add(matcher.group(1).toLowerCase());
+        }
+        return sourceTables;
     }
 
     private static byte[] readResource(String resource) throws Exception {
