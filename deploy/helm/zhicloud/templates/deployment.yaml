@@ -84,6 +84,9 @@ spec:
               value: {{ .Values.env.TZ | quote }}
             - name: JAVA_OPTS
               value: {{ .Values.env.JAVA_OPTS | quote }}
+            # env 覆盖 envFrom：即使 ConfigMap 被误改，业务副本也不能取得自动迁移入口。
+            - name: SPRING_FLYWAY_ENABLED
+              value: "false"
             {{- if .Values.mysqlTls.enabled }}
             - name: MYSQL_TLS_TRUSTSTORE_URL
               value: {{ printf "file:%s/%s" .Values.mysqlTls.truststore.mountPath .Values.mysqlTls.truststore.fileName | quote }}

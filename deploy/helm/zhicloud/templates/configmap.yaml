@@ -5,6 +5,9 @@ zhicloud-server ConfigMap 模板
 通过 envFrom.configMapRef 注入到容器环境变量
 敏感信息（密码）请放入 Secret，不要放此处
 */}}
+{{- if not .Values.migration.enabled }}
+{{- fail "migration.enabled 必须为 true：Kubernetes 部署的唯一迁移入口是 ArgoCD PreSync Job，禁止回退到业务应用自动迁移。" }}
+{{- end }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -19,6 +22,8 @@ data:
   TZ: {{ .Values.env.TZ | quote }}
   # JVM 参数
   JAVA_OPTS: {{ .Values.env.JAVA_OPTS | quote }}
+  # 唯一迁移入口：Kubernetes 业务 Pod 禁止自行执行 Flyway；迁移由 PreSync Job 完成。
+  SPRING_FLYWAY_ENABLED: "false"
   # ----- 主数据源（密码见 Secret）-----
   MASTER_DATASOURCE_URL: {{ .Values.env.MASTER_DATASOURCE_URL | quote }}
   MASTER_DATASOURCE_USERNAME: {{ .Values.env.MASTER_DATASOURCE_USERNAME | quote }}

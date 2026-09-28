@@ -59,9 +59,9 @@ bootstrapAdmin:
   passwordSecretName: ""
   passwordSecretKey: "BOOTSTRAP_ADMIN_PASSWORD"
 
-# 开发环境可关闭迁移 Job（直接由 Spring Boot 启动迁移）
+# Kubernetes 开发环境同样由 PreSync Job 迁移，避免业务 Pod 形成第二迁移入口。
 migration:
-  enabled: false
+  enabled: true
   baselineMode: existing
 
 # 优雅停机：开发环境缩短

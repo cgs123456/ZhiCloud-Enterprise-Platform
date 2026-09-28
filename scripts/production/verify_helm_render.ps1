@@ -102,6 +102,31 @@ function Get-AnnotationHash {
     if ($match.Success) { return $match.Groups[1].Value }
     return $null
 }
+function Get-RenderedDocument {
+    param(
+        [string]$Text,
+        [Parameter(Mandatory = $true)][string]$Kind,
+        [Parameter(Mandatory = $true)][string]$Name
+    )
+    if ([string]::IsNullOrWhiteSpace($Text)) { return $null }
+    $documents = [regex]::Split($Text, '(?m)^---\s*\r?\n')
+    foreach ($document in $documents) {
+        $kindPattern = '(?m)^kind:\s*' + [regex]::Escape($Kind) + '\s*$'
+        $namePattern = '(?m)^\s*name:\s*' + [regex]::Escape($Name) + '\s*$'
+        if ([regex]::IsMatch($document, $kindPattern) -and [regex]::IsMatch($document, $namePattern)) {
+            return $document
+        }
+    }
+    return $null
+}
+
+function Test-SpringFlywayDisabled {
+    param([string]$Document)
+    if ([string]::IsNullOrWhiteSpace($Document)) { return $false }
+    $mapEntry = '(?m)^\s*SPRING_FLYWAY_ENABLED:\s*"false"\s*$'
+    $containerEnv = '(?ms)^\s*-\s*name:\s*SPRING_FLYWAY_ENABLED\s*\r?\n\s*value:\s*"false"\s*$'
+    return ([regex]::IsMatch($Document, $mapEntry) -or [regex]::IsMatch($Document, $containerEnv))
+}
 
 if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
     $RepoRoot = (Resolve-Path (Join-Path (Get-ScriptDirectory) '..\..')).Path
@@ -192,12 +217,18 @@ $negativeCases = @(
         name = 'prod_allow_insecure_defaults'; values = 'values-prod.yaml'; namespace = 'zhicloud-prod'
         extra = @('--set-string', 'secrets.allowInsecureDefaults=true')
         expectedPattern = '生产环境不允许 allowInsecureDefaults=true'
+    },
+    [pscustomobject]@{
+        name = 'prod_migration_job_disabled'; values = 'values-prod.yaml'; namespace = 'zhicloud-prod'
+        extra = @('--set-string', 'secrets.existingSecret=zhicloud-app-secret', '--set-string', 'secrets.existingSecretRevision=rev-001', '--set-string', 'mysqlTls.truststore.existingSecret=zhicloud-mysql-truststore', '--set-string', 'mysqlTls.truststore.existingSecretRevision=rev-001', '--set', 'migration.enabled=false')
+        expectedPattern = 'migration\.enabled'
     }
 )
 
 $positiveRecords = @()
 $schemaRecords = @()
 $negativeRecords = @()
+$migrationContractRecords = @()
 $rotationRecord = [ordered]@{ status = 'not_run'; app_revision_changes_template = $false; truststore_revision_changes_template = $false; details = @() }
 
 if ($script:FailureReasons.Count -eq 0) {
@@ -232,6 +263,19 @@ if ($script:FailureReasons.Count -eq 0) {
             $secretObjectRendered = [regex]::IsMatch($renderText, '(?m)^kind:\s*Secret\s*$')
             $placeholderFound = [regex]::IsMatch($renderText, 'CHANGE_ME|__REQUIRED__|\[INSECURE_DEFAULT\]')
 
+            $configMapDocument = Get-RenderedDocument -Text $renderText -Kind 'ConfigMap' -Name 'zhicloud-config'
+            $deploymentDocument = Get-RenderedDocument -Text $renderText -Kind 'Deployment' -Name 'zhicloud'
+            $migrationJobDocument = Get-RenderedDocument -Text $renderText -Kind 'Job' -Name 'zhicloud-migration'
+            $configMapFlywayDisabled = Test-SpringFlywayDisabled -Document $configMapDocument
+            $deploymentFlywayDisabled = Test-SpringFlywayDisabled -Document $deploymentDocument
+            $migrationJobPresent = -not [string]::IsNullOrWhiteSpace($migrationJobDocument)
+            $migrationJobPreSync = $migrationJobPresent -and [regex]::IsMatch($migrationJobDocument, '(?m)^\s*argocd\.argoproj\.io/hook:\s*PreSync\s*$')
+            $migrationContractPassed = ($configMapFlywayDisabled -and $deploymentFlywayDisabled -and $migrationJobPresent -and $migrationJobPreSync)
+            if (-not $configMapFlywayDisabled) { Add-Failure "configmap_flyway_not_disabled:$($helmTool.name):$($case.name)" }
+            if (-not $deploymentFlywayDisabled) { Add-Failure "deployment_flyway_not_disabled:$($helmTool.name):$($case.name)" }
+            if (-not $migrationJobPresent) { Add-Failure "migration_job_missing:$($helmTool.name):$($case.name)" }
+            if (-not $migrationJobPreSync) { Add-Failure "migration_job_not_presync:$($helmTool.name):$($case.name)" }
+
             if ($templateExit -eq 0 -and [string]::IsNullOrWhiteSpace($externalRevision)) {
                 Add-Failure "external_secret_revision_annotation_missing:$($helmTool.name):$($case.name)"
             }
@@ -255,6 +299,15 @@ if ($script:FailureReasons.Count -eq 0) {
                 truststore_revision_annotation = $truststoreRevision
                 secret_object_rendered = $secretObjectRendered
                 placeholder_rendered = $placeholderFound
+            }
+            $migrationContractRecords += [ordered]@{
+                helm = $helmTool.name
+                environment = $case.name
+                configmap_flyway_disabled = $configMapFlywayDisabled
+                deployment_flyway_disabled = $deploymentFlywayDisabled
+                migration_job_present = $migrationJobPresent
+                migration_job_pre_sync = $migrationJobPreSync
+                passed = $migrationContractPassed
             }
 
             if ($templateExit -eq 0) {
@@ -375,6 +428,7 @@ $evidence = [ordered]@{
     positive_cases = $positiveRecords
     negative_cases = $negativeRecords
     schema_validation = $schemaRecords
+    migration_contract = $migrationContractRecords
     rotation_contract = $rotationRecord
     server_side_dry_run = [ordered]@{
         status = 'not_run'
