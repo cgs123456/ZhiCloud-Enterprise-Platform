@@ -1,0 +1,274 @@
+test_dryrun_emits_a_plan_without_touching_a_database (test_backup_restore_drill.DrillArgumentGuardTest.test_dryrun_emits_a_plan_without_touching_a_database) ... ok
+test_missing_state_file_is_rejected (test_backup_restore_drill.DrillArgumentGuardTest.test_missing_state_file_is_rejected) ... ok
+test_production_container_is_rejected (test_backup_restore_drill.DrillArgumentGuardTest.test_production_container_is_rejected) ... ok
+test_remote_host_is_rejected (test_backup_restore_drill.DrillArgumentGuardTest.test_remote_host_is_rejected) ... ok
+test_state_file_is_required (test_backup_restore_drill.DrillArgumentGuardTest.test_state_file_is_required) ... ok
+test_target_database_must_be_drill_scoped (test_backup_restore_drill.DrillArgumentGuardTest.test_target_database_must_be_drill_scoped) ... ok
+test_target_database_must_differ_from_source (test_backup_restore_drill.DrillArgumentGuardTest.test_target_database_must_differ_from_source) ... ok
+test_live_ordered_dictionary_snapshots_compare (test_backup_restore_drill.LiveDictionaryCompareTest.test_live_ordered_dictionary_snapshots_compare) ... ok
+test_checksum_mismatch_is_rejected (test_backup_restore_drill.RestoreVerificationTest.test_checksum_mismatch_is_rejected) ... ok
+test_flyway_history_mismatch_is_rejected (test_backup_restore_drill.RestoreVerificationTest.test_flyway_history_mismatch_is_rejected) ... ok
+test_identical_snapshots_pass (test_backup_restore_drill.RestoreVerificationTest.test_identical_snapshots_pass) ... ok
+test_missing_checksums_is_rejected (test_backup_restore_drill.RestoreVerificationTest.test_missing_checksums_is_rejected) ... ok
+test_missing_probe_table_is_rejected (test_backup_restore_drill.RestoreVerificationTest.test_missing_probe_table_is_rejected) ... ok
+test_missing_row_counts_is_rejected (test_backup_restore_drill.RestoreVerificationTest.test_missing_row_counts_is_rejected) ... ok
+test_row_count_mismatch_is_rejected (test_backup_restore_drill.RestoreVerificationTest.test_row_count_mismatch_is_rejected) ... ok
+test_build_command_prints_toolchain_versions (test_build_container.BuildContainerScriptTest.test_build_command_prints_toolchain_versions) ... ok
+test_build_uses_explicit_central_settings (test_build_container.BuildContainerScriptTest.test_build_uses_explicit_central_settings) ... ok
+test_central_settings_mirror_all_repositories (test_build_container.BuildContainerScriptTest.test_central_settings_mirror_all_repositories) ... ok
+test_ci_pins_java_and_maven_versions (test_build_container.BuildContainerScriptTest.test_ci_pins_java_and_maven_versions) ... ok
+test_ci_uploads_surefire_reports_on_failure (test_build_container.BuildContainerScriptTest.test_ci_uploads_surefire_reports_on_failure) ... ok
+test_default_dry_run_uses_pinned_image_and_maven_workspace (test_build_container.BuildContainerScriptTest.test_default_dry_run_uses_pinned_image_and_maven_workspace) ... ok
+test_default_image_is_locked_to_digest (test_build_container.BuildContainerScriptTest.test_default_image_is_locked_to_digest) ... ok
+test_default_repo_root_resolves_under_windows_powershell (test_build_container.BuildContainerScriptTest.test_default_repo_root_resolves_under_windows_powershell) ... ok
+test_default_repo_root_resolves_without_explicit_argument (test_build_container.BuildContainerScriptTest.test_default_repo_root_resolves_without_explicit_argument) ... ok
+test_latest_image_is_rejected (test_build_container.BuildContainerScriptTest.test_latest_image_is_rejected) ... ok
+test_maven_cache_is_outside_project (test_build_container.BuildContainerScriptTest.test_maven_cache_is_outside_project) ... ok
+test_missing_pom_is_rejected (test_build_container.BuildContainerScriptTest.test_missing_pom_is_rejected) ... ok
+test_canonical_migration_outside_creators_fails (test_check_duplicate_ddl.FailClosedTest.test_canonical_migration_outside_creators_fails) ... ok
+test_creating_migration_set_mismatch_fails (test_check_duplicate_ddl.FailClosedTest.test_creating_migration_set_mismatch_fails) ... ok
+test_expected_column_not_covered_by_reconciliation_fails (test_check_duplicate_ddl.FailClosedTest.test_expected_column_not_covered_by_reconciliation_fails) ... ok
+test_expected_column_not_derivable_fails (test_check_duplicate_ddl.FailClosedTest.test_expected_column_not_derivable_fails) ... ok
+test_invalid_allowlist_schema_fails (test_check_duplicate_ddl.FailClosedTest.test_invalid_allowlist_schema_fails) ... ok
+test_missing_reconciliation_migration_fails (test_check_duplicate_ddl.FailClosedTest.test_missing_reconciliation_migration_fails) ... ok
+test_registered_duplicate_passes (test_check_duplicate_ddl.FailClosedTest.test_registered_duplicate_passes) ... ok
+test_stale_allowlist_entry_fails (test_check_duplicate_ddl.FailClosedTest.test_stale_allowlist_entry_fails) ... ok
+test_unregistered_duplicate_fails (test_check_duplicate_ddl.FailClosedTest.test_unregistered_duplicate_fails) ... ok
+test_comment_is_stripped_from_definition (test_check_duplicate_ddl.ParserTest.test_comment_is_stripped_from_definition) ... ok
+test_index_lines_are_not_treated_as_columns (test_check_duplicate_ddl.ParserTest.test_index_lines_are_not_treated_as_columns) ... ok
+test_nested_parentheses_do_not_break_block_scan (test_check_duplicate_ddl.ParserTest.test_nested_parentheses_do_not_break_block_scan) ... ok
+test_conflicting_tables_are_registered_with_canonical_v6_or_v38 (test_check_duplicate_ddl.RepoScanTest.test_conflicting_tables_are_registered_with_canonical_v6_or_v38) ... ok
+test_identical_groups_need_no_column_reconciliation (test_check_duplicate_ddl.RepoScanTest.test_identical_groups_need_no_column_reconciliation) ... ok
+test_real_repo_has_eleven_duplicate_groups (test_check_duplicate_ddl.RepoScanTest.test_real_repo_has_eleven_duplicate_groups) ... ok
+test_duplicate_dotted_version_fails (test_check_migration_contract.MigrationContractTest.test_duplicate_dotted_version_fails) ... ok
+test_duplicate_version_fails (test_check_migration_contract.MigrationContractTest.test_duplicate_version_fails) ... ok
+test_manifest_version_must_match_filename (test_check_migration_contract.MigrationContractTest.test_manifest_version_must_match_filename) ... ok
+test_matching_contract_passes (test_check_migration_contract.MigrationContractTest.test_matching_contract_passes) ... ok
+test_missing_verification_sql_fails (test_check_migration_contract.MigrationContractTest.test_missing_verification_sql_fails) ... ok
+test_modified_migration_fails_checksum_contract (test_check_migration_contract.MigrationContractTest.test_modified_migration_fails_checksum_contract) ... ok
+test_tracked_migration_must_pass_lint (test_check_migration_contract.MigrationContractTest.test_tracked_migration_must_pass_lint) ... ok
+test_untracked_migration_fails (test_check_migration_contract.MigrationContractTest.test_untracked_migration_fails) ... ok
+test_add_column_alter_is_applied (test_check_tenant_isolation.DdlParseTest.test_add_column_alter_is_applied) ... ok
+test_add_index_alter_is_applied (test_check_tenant_isolation.DdlParseTest.test_add_index_alter_is_applied) ... ok
+test_alter_is_applied_after_all_create_tables (test_check_tenant_isolation.DdlParseTest.test_alter_is_applied_after_all_create_tables) ... ok
+test_index_style_index_is_recognised (test_check_tenant_isolation.DdlParseTest.test_index_style_index_is_recognised) ... ok
+test_key_style_index_is_recognised (test_check_tenant_isolation.DdlParseTest.test_key_style_index_is_recognised)
+�ֿ� DDL �õ��� `KEY idx_tenant (tenant_id)`������ INDEX�� ... ok
+test_nested_paren_in_column_definition (test_check_tenant_isolation.DdlParseTest.test_nested_paren_in_column_definition) ... ok
+test_primary_key_is_not_treated_as_column (test_check_tenant_isolation.DdlParseTest.test_primary_key_is_not_treated_as_column) ... ok
+test_report_counts_and_disclaimers (test_check_tenant_isolation.ReportTest.test_report_counts_and_disclaimers) ... ok
+test_additive_migration_satisfies_tenant_contract (test_check_tenant_isolation.RuleTest.test_additive_migration_satisfies_tenant_contract)
+CREATE ��ͨ�� ALTER ���⻧�к��������ǺϷ���Ǩ���ݽ���ʽ�� ... ok
+test_consistent_repo_passes (test_check_tenant_isolation.RuleTest.test_consistent_repo_passes) ... ok
+test_t1_tenant_do_without_column (test_check_tenant_isolation.RuleTest.test_t1_tenant_do_without_column) ... ok
+test_t2_filter_applied_without_column (test_check_tenant_isolation.RuleTest.test_t2_filter_applied_without_column) ... ok
+test_t2_is_suppressed_by_tenant_ignore (test_check_tenant_isolation.RuleTest.test_t2_is_suppressed_by_tenant_ignore) ... ok
+test_t3_ignored_but_has_tenant_column (test_check_tenant_isolation.RuleTest.test_t3_ignored_but_has_tenant_column) ... ok
+test_t4_suppressed_when_indexed (test_check_tenant_isolation.RuleTest.test_t4_suppressed_when_indexed) ... ok
+test_t4_tenant_column_not_indexed (test_check_tenant_isolation.RuleTest.test_t4_tenant_column_not_indexed) ... ok
+test_t5_unverified_table_is_not_guessed (test_check_tenant_isolation.RuleTest.test_t5_unverified_table_is_not_guessed)
+������û�� tenant_id ��֪�� -> �� T5(P1)�������� P0�� ... ok
+test_auto_increment_detection (test_migration_shadow_run.EvaluateTest.test_auto_increment_detection) ... ok
+test_blocking_column_requires_not_null_no_default (test_migration_shadow_run.EvaluateTest.test_blocking_column_requires_not_null_no_default) ... ok
+test_dropped_column_no_longer_blocks (test_migration_shadow_run.EvaluateTest.test_dropped_column_no_longer_blocks) ... ok
+test_missing_column_detected (test_migration_shadow_run.EvaluateTest.test_missing_column_detected) ... ok
+test_loads_three_evidence_files (test_migration_shadow_run.LoadTargetsTest.test_loads_three_evidence_files) ... ok
+test_blank_lines_skipped (test_migration_shadow_run.ParseTsvTest.test_blank_lines_skipped) ... ok
+test_empty_output (test_migration_shadow_run.ParseTsvTest.test_empty_output) ... ok
+test_tab_separated_rows (test_migration_shadow_run.ParseTsvTest.test_tab_separated_rows) ... ok
+test_plan_mentions_container_and_verify_sql (test_migration_shadow_run.SandboxGuardTest.test_plan_mentions_container_and_verify_sql) ... ok
+test_default_image_is_locked_to_digest (test_mysql_sandbox.SandboxArgumentGuardTest.test_default_image_is_locked_to_digest) ... ok
+test_existing_volume_reuse_is_rejected (test_mysql_sandbox.SandboxArgumentGuardTest.test_existing_volume_reuse_is_rejected) ... skipped 'docker daemon is not available'
+test_health_without_state_is_rejected (test_mysql_sandbox.SandboxArgumentGuardTest.test_health_without_state_is_rejected) ... ok
+test_mutable_image_tag_is_rejected (test_mysql_sandbox.SandboxArgumentGuardTest.test_mutable_image_tag_is_rejected) ... ok
+test_non_localhost_bind_address_is_rejected (test_mysql_sandbox.SandboxArgumentGuardTest.test_non_localhost_bind_address_is_rejected) ... ok
+test_predictable_container_name_is_rejected (test_mysql_sandbox.SandboxArgumentGuardTest.test_predictable_container_name_is_rejected) ... ok
+test_production_looking_container_name_is_rejected (test_mysql_sandbox.SandboxArgumentGuardTest.test_production_looking_container_name_is_rejected) ... ok
+test_remote_database_host_is_rejected (test_mysql_sandbox.SandboxArgumentGuardTest.test_remote_database_host_is_rejected) ... ok
+test_unknown_command_is_rejected (test_mysql_sandbox.SandboxArgumentGuardTest.test_unknown_command_is_rejected) ... ok
+test_unpinned_image_is_rejected (test_mysql_sandbox.SandboxArgumentGuardTest.test_unpinned_image_is_rejected) ... ok
+test_health_sql_is_read_only (test_mysql_sandbox.SandboxHealthSqlTest.test_health_sql_is_read_only) ... ok
+test_health_sql_reports_required_metrics (test_mysql_sandbox.SandboxHealthSqlTest.test_health_sql_reports_required_metrics) ... ok
+test_start_health_stop_roundtrip (test_mysql_sandbox.SandboxLifecycleTest.test_start_health_stop_roundtrip) ... skipped 'docker daemon is not available'
+test_non_ascii_scripts_carry_utf8_bom (test_powershell_portability.PowerShellScriptPortabilityTest.test_non_ascii_scripts_carry_utf8_bom) ... ok
+test_repo_contains_powershell_scripts (test_powershell_portability.PowerShellScriptPortabilityTest.test_repo_contains_powershell_scripts) ... ok
+test_scripts_parse_under_powershell_7_and_51 (test_powershell_portability.PowerShellScriptPortabilityTest.test_scripts_parse_under_powershell_7_and_51) ... ok
+test_detects_non_ascii_script_without_bom (test_powershell_portability_cli.PowerShellPortabilityCliTest.test_detects_non_ascii_script_without_bom) ... ok
+test_evidence_json_is_strict_and_bom_free (test_powershell_portability_cli.PowerShellPortabilityCliTest.test_evidence_json_is_strict_and_bom_free) ... ok
+test_pwsh_version_is_recorded (test_powershell_portability_cli.PowerShellPortabilityCliTest.test_pwsh_version_is_recorded) ... ok
+test_reports_zero_parse_errors_for_this_repository (test_powershell_portability_cli.PowerShellPortabilityCliTest.test_reports_zero_parse_errors_for_this_repository) ... ok
+test_java_below_21_is_blocker (test_preflight.PreflightAssessmentTest.test_java_below_21_is_blocker) ... ok
+test_low_disk_is_blocker (test_preflight.PreflightAssessmentTest.test_low_disk_is_blocker) ... ok
+test_maven_below_39_is_blocker (test_preflight.PreflightAssessmentTest.test_maven_below_39_is_blocker) ... ok
+test_remote_datasource_is_allowed_with_explicit_opt_in (test_preflight.PreflightAssessmentTest.test_remote_datasource_is_allowed_with_explicit_opt_in) ... ok
+test_remote_datasource_requires_explicit_production_opt_in (test_preflight.PreflightAssessmentTest.test_remote_datasource_requires_explicit_production_opt_in) ... ok
+test_result_has_required_contract (test_preflight.PreflightAssessmentTest.test_result_has_required_contract) ... ok
+test_unavailable_docker_daemon_is_blocker (test_preflight.PreflightAssessmentTest.test_unavailable_docker_daemon_is_blocker) ... ok
+test_parses_legacy_java_major (test_preflight.VersionParsingTest.test_parses_legacy_java_major) ... ok
+test_parses_maven_major_minor (test_preflight.VersionParsingTest.test_parses_maven_major_minor) ... ok
+test_parses_modern_java_major (test_preflight.VersionParsingTest.test_parses_modern_java_major) ... ok
+test_install_scripts_do_not_insert_client_secret_rows (test_production_seed_cleanup.InstallerSecretSeedTest.test_install_scripts_do_not_insert_client_secret_rows) ... ok
+test_migration_blocks_cleanup_without_non_seed_super_admin (test_production_seed_cleanup.ProductionSeedCleanupMigrationTest.test_migration_blocks_cleanup_without_non_seed_super_admin) ... ok
+test_migration_disables_demo_clients_without_embedding_secrets (test_production_seed_cleanup.ProductionSeedCleanupMigrationTest.test_migration_disables_demo_clients_without_embedding_secrets) ... ok
+test_migration_disables_users_without_physically_deleting_them (test_production_seed_cleanup.ProductionSeedCleanupMigrationTest.test_migration_disables_users_without_physically_deleting_them) ... ok
+test_migration_exists_and_lints_clean (test_production_seed_cleanup.ProductionSeedCleanupMigrationTest.test_migration_exists_and_lints_clean) ... ok
+test_migration_matches_all_seed_accounts_by_exact_tuple (test_production_seed_cleanup.ProductionSeedCleanupMigrationTest.test_migration_matches_all_seed_accounts_by_exact_tuple) ... ok
+test_migration_revokes_relationships_and_sessions (test_production_seed_cleanup.ProductionSeedCleanupMigrationTest.test_migration_revokes_relationships_and_sessions) ... ok
+test_verify_sql_exists_and_is_read_only (test_production_seed_cleanup.ProductionSeedCleanupMigrationTest.test_verify_sql_exists_and_is_read_only) ... ok
+test_exit_code_is_0_when_only_p1_findings_with_default_threshold (test_schema_audit.CliTest.test_exit_code_is_0_when_only_p1_findings_with_default_threshold) ... ok
+test_exit_code_is_2_when_p0_findings_exist (test_schema_audit.CliTest.test_exit_code_is_2_when_p0_findings_exist) ... ok
+test_fail_on_p1_turns_p1_into_exit_code_2 (test_schema_audit.CliTest.test_fail_on_p1_turns_p1_into_exit_code_2) ... ok
+test_missing_sandbox_state_is_an_execution_error (test_schema_audit.CliTest.test_missing_sandbox_state_is_an_execution_error) ... [ERROR] sandbox state file not found: C:\Users\Administrator\AppData\Local\Temp\tmp5k5e0yua\missing.json. Run mysql-sandbox.ps1 start first.
+ok
+test_password_never_reaches_the_report (test_schema_audit.CliTest.test_password_never_reaches_the_report) ... ok
+test_remote_host_is_allowed_with_explicit_flag (test_schema_audit.CliTest.test_remote_host_is_allowed_with_explicit_flag) ... ok
+test_remote_host_is_refused_without_explicit_flag (test_schema_audit.CliTest.test_remote_host_is_refused_without_explicit_flag) ... ok
+test_unknown_database_connection_is_an_execution_error (test_schema_audit.CliTest.test_unknown_database_connection_is_an_execution_error) ... [ERROR] --database is required whenʹ�� --host ģʽ
+ok
+test_counts_are_stable (test_schema_audit.DivergenceAndOrderingTest.test_counts_are_stable) ... ok
+test_do_only_table_is_not_reported_as_divergence (test_schema_audit.DivergenceAndOrderingTest.test_do_only_table_is_not_reported_as_divergence) ... ok
+test_findings_are_sorted_by_severity_then_table (test_schema_audit.DivergenceAndOrderingTest.test_findings_are_sorted_by_severity_then_table) ... ok
+test_live_db_wins_when_static_ddl_lacks_the_column (test_schema_audit.DivergenceAndOrderingTest.test_live_db_wins_when_static_ddl_lacks_the_column) ... ok
+test_loader_ignores_blank_rows (test_schema_audit.LiveSchemaLoadingTest.test_loader_ignores_blank_rows) ... ok
+test_loader_maps_information_schema_rows (test_schema_audit.LiveSchemaLoadingTest.test_loader_maps_information_schema_rows) ... ok
+test_short_rows_do_not_crash (test_schema_audit.LiveSchemaLoadingTest.test_short_rows_do_not_crash) ... ok
+test_healthy_table_has_no_findings (test_schema_audit.P0ChecksTest.test_healthy_table_has_no_findings) ... ok
+test_id_auto_increment_is_tagged_with_v92_source (test_schema_audit.P0ChecksTest.test_id_auto_increment_is_tagged_with_v92_source) ... ok
+test_id_without_auto_increment_is_p0_blocker (test_schema_audit.P0ChecksTest.test_id_without_auto_increment_is_p0_blocker) ... ok
+test_missing_column_is_p0_blocker (test_schema_audit.P0ChecksTest.test_missing_column_is_p0_blocker) ... ok
+test_missing_id_column_is_p0_blocker (test_schema_audit.P0ChecksTest.test_missing_id_column_is_p0_blocker) ... ok
+test_missing_table_is_p0_blocker (test_schema_audit.P0ChecksTest.test_missing_table_is_p0_blocker) ... ok
+test_not_null_column_with_default_is_not_a_finding (test_schema_audit.P0ChecksTest.test_not_null_column_with_default_is_not_a_finding) ... ok
+test_primary_key_mismatch_is_p0_blocker (test_schema_audit.P0ChecksTest.test_primary_key_mismatch_is_p0_blocker) ... ok
+test_required_column_missing_from_do_is_p0_with_medium_confidence (test_schema_audit.P0ChecksTest.test_required_column_missing_from_do_is_p0_with_medium_confidence) ... ok
+test_bigdecimal_on_bigint_is_compatible (test_schema_audit.P1ChecksTest.test_bigdecimal_on_bigint_is_compatible) ... ok
+test_boolean_tinyint_matches_java_boolean (test_schema_audit.P1ChecksTest.test_boolean_tinyint_matches_java_boolean) ... ok
+test_evolved_unique_index_is_divergence_not_missing (test_schema_audit.P1ChecksTest.test_evolved_unique_index_is_divergence_not_missing) ... ok
+test_missing_plain_index_is_p1_high (test_schema_audit.P1ChecksTest.test_missing_plain_index_is_p1_high) ... ok
+test_missing_unique_index_is_p1_high (test_schema_audit.P1ChecksTest.test_missing_unique_index_is_p1_high) ... ok
+test_tenant_column_missing_is_p1_high (test_schema_audit.P1ChecksTest.test_tenant_column_missing_is_p1_high) ... ok
+test_tenant_index_missing_is_p1_high (test_schema_audit.P1ChecksTest.test_tenant_index_missing_is_p1_high) ... ok
+test_tenant_index_prefix_matches_tenant_first_column (test_schema_audit.P1ChecksTest.test_tenant_index_prefix_matches_tenant_first_column) ... ok
+test_tenant_index_present_is_not_a_finding (test_schema_audit.P1ChecksTest.test_tenant_index_present_is_not_a_finding) ... ok
+test_tenant_index_requires_tenant_as_first_column (test_schema_audit.P1ChecksTest.test_tenant_index_requires_tenant_as_first_column) ... ok
+test_type_family_mismatch_is_p1_high (test_schema_audit.P1ChecksTest.test_type_family_mismatch_is_p1_high) ... ok
+test_unique_index_is_matched_by_columns_not_name (test_schema_audit.P1ChecksTest.test_unique_index_is_matched_by_columns_not_name) ... ok
+test_date_versus_localdatetime_is_p2_review (test_schema_audit.P2ChecksTest.test_date_versus_localdatetime_is_p2_review) ... ok
+test_declaration_drift_is_p2_review (test_schema_audit.P2ChecksTest.test_declaration_drift_is_p2_review) ... ok
+test_unsigned_normalisation_avoids_false_positive (test_schema_audit.P2ChecksTest.test_unsigned_normalisation_avoids_false_positive) ... ok
+test_audit_detects_real_schema_drift (test_schema_audit.SandboxEndToEndTest.test_audit_detects_real_schema_drift) ... skipped 'docker daemon is not available'
+test_audit_sql_is_read_only (test_schema_audit.SqlSafetyTest.test_audit_sql_is_read_only) ... ok
+test_runner_raises_on_non_zero_exit (test_schema_audit.SqlSafetyTest.test_runner_raises_on_non_zero_exit) ... ok
+test_sql_is_passed_via_stdin_not_command_line (test_schema_audit.SqlSafetyTest.test_sql_is_passed_via_stdin_not_command_line) ... ok
+test_build_expectations_merges_sources (test_schema_audit.StaticParsingTest.test_build_expectations_merges_sources) ... ok
+test_check_do_ddl_applies_static_alter_add_column (test_schema_audit.StaticParsingTest.test_check_do_ddl_applies_static_alter_add_column) ... ok
+test_ddl_constraint_lines_are_not_parsed_as_columns (test_schema_audit.StaticParsingTest.test_ddl_constraint_lines_are_not_parsed_as_columns) ... ok
+test_default_ddl_files_prefer_flyway_migrations (test_schema_audit.StaticParsingTest.test_default_ddl_files_prefer_flyway_migrations) ... ok
+test_parse_ddl_applies_static_alter_add_column_and_indexes (test_schema_audit.StaticParsingTest.test_parse_ddl_applies_static_alter_add_column_and_indexes) ... ok
+test_parse_ddl_captures_columns_indexes_and_uniques (test_schema_audit.StaticParsingTest.test_parse_ddl_captures_columns_indexes_and_uniques) ... ok
+test_parse_do_fields_handles_annotations (test_schema_audit.StaticParsingTest.test_parse_do_fields_handles_annotations) ... ok
+test_parse_verify_expectations_from_frozen_sql (test_schema_audit.StaticParsingTest.test_parse_verify_expectations_from_frozen_sql) ... ok
+test_parsed_columns_match_check_do_ddl (test_schema_audit.StaticParsingTest.test_parsed_columns_match_check_do_ddl) ... ok
+test_v91_nullable_expectation_met_is_not_a_finding (test_schema_audit.StaticParsingTest.test_v91_nullable_expectation_met_is_not_a_finding) ... ok
+test_v91_nullable_expectation_unmet_is_p0 (test_schema_audit.StaticParsingTest.test_v91_nullable_expectation_unmet_is_p0) ... ok
+test_verify_nullable_expectations_are_parsed (test_schema_audit.StaticParsingTest.test_verify_nullable_expectations_are_parsed) ... ok
+test_airag_secret_missing_app_key_fails (test_security_baseline_scan.ControlTest.test_airag_secret_missing_app_key_fails) ... ok
+test_missing_file_is_reported (test_security_baseline_scan.ControlTest.test_missing_file_is_reported) ... ok
+test_missing_job_truststore_fails (test_security_baseline_scan.ControlTest.test_missing_job_truststore_fails) ... ok
+test_missing_k8s_truststore_fails (test_security_baseline_scan.ControlTest.test_missing_k8s_truststore_fails) ... ok
+test_partial_pattern_is_failed (test_security_baseline_scan.ControlTest.test_partial_pattern_is_failed) ... ok
+test_passing_controls (test_security_baseline_scan.ControlTest.test_passing_controls) ... ok
+test_clean_repo_passes (test_security_baseline_scan.ReportTest.test_clean_repo_passes)
+������ + �ĸ���������뱸�������� status=passed�� ... ok
+test_main_writes_output_and_returns_failed (test_security_baseline_scan.ReportTest.test_main_writes_output_and_returns_failed) ... ok
+test_p0_finding_makes_status_failed (test_security_baseline_scan.ReportTest.test_p0_finding_makes_status_failed) ... ok
+test_report_carries_disclaimers (test_security_baseline_scan.ReportTest.test_report_carries_disclaimers) ... ok
+test_report_records_scanned_files_and_rules (test_security_baseline_scan.ReportTest.test_report_records_scanned_files_and_rules) ... ok
+test_clean_file_has_no_finding (test_security_baseline_scan.RuleHitTest.test_clean_file_has_no_finding) ... ok
+test_r10_literal_oauth2_seed_secret (test_security_baseline_scan.RuleHitTest.test_r10_literal_oauth2_seed_secret) ... ok
+test_r10_literal_social_client_seed_secret (test_security_baseline_scan.RuleHitTest.test_r10_literal_social_client_seed_secret) ... ok
+test_r10_placeholder_secret_is_not_a_literal_seed (test_security_baseline_scan.RuleHitTest.test_r10_placeholder_secret_is_not_a_literal_seed) ... ok
+test_r1_jdbc_tls_disabled (test_security_baseline_scan.RuleHitTest.test_r1_jdbc_tls_disabled) ... ok
+test_r2_public_key_retrieve (test_security_baseline_scan.RuleHitTest.test_r2_public_key_retrieve) ... ok
+test_r3_default_credential (test_security_baseline_scan.RuleHitTest.test_r3_default_credential) ... ok
+test_r3_env_fallback_chain_is_not_a_default_credential (test_security_baseline_scan.RuleHitTest.test_r3_env_fallback_chain_is_not_a_default_credential)
+${A:${B}} �Ǳ�����������Ĭ��ֵ��������Ӳ������ ... ok
+test_r3_required_placeholder_is_not_a_default_credential (test_security_baseline_scan.RuleHitTest.test_r3_required_placeholder_is_not_a_default_credential)
+${ENV:?required} �ǡ�ȱʧ��ʧ�ܡ��ı���ռλ������Ĭ�Ͽ�� ... ok
+test_r4_placeholder_secret (test_security_baseline_scan.RuleHitTest.test_r4_placeholder_secret) ... ok
+test_r5_empty_secret_value (test_security_baseline_scan.RuleHitTest.test_r5_empty_secret_value) ... ok
+test_r6_literal_weak_secret (test_security_baseline_scan.RuleHitTest.test_r6_literal_weak_secret) ... ok
+test_r7_bootstrap_placeholder_is_not_a_seed_account (test_security_baseline_scan.RuleHitTest.test_r7_bootstrap_placeholder_is_not_a_seed_account) ... ok
+test_r7_insert_ignore_test_account_seed (test_security_baseline_scan.RuleHitTest.test_r7_insert_ignore_test_account_seed) ... ok
+test_r7_non_whitelisted_production_seed_account (test_security_baseline_scan.RuleHitTest.test_r7_non_whitelisted_production_seed_account) ... ok
+test_r7_sqlserver_n_literal_seed_account (test_security_baseline_scan.RuleHitTest.test_r7_sqlserver_n_literal_seed_account) ... ok
+test_r7_test_account_seed (test_security_baseline_scan.RuleHitTest.test_r7_test_account_seed) ... ok
+test_r8_demo_mode_enabled (test_security_baseline_scan.RuleHitTest.test_r8_demo_mode_enabled) ... ok
+test_r9_comment_only_is_not_a_finding (test_security_baseline_scan.RuleHitTest.test_r9_comment_only_is_not_a_finding) ... ok
+test_r9_deprecated_identity_verification_disabled (test_security_baseline_scan.RuleHitTest.test_r9_deprecated_identity_verification_disabled) ... ok
+test_r9_ssl_mode_required_is_not_identity_verification (test_security_baseline_scan.RuleHitTest.test_r9_ssl_mode_required_is_not_identity_verification) ... ok
+test_r9_ssl_mode_verify_ca_is_not_identity_verification (test_security_baseline_scan.RuleHitTest.test_r9_ssl_mode_verify_ca_is_not_identity_verification) ... ok
+test_r9_verify_identity_is_allowed (test_security_baseline_scan.RuleHitTest.test_r9_verify_identity_is_allowed) ... ok
+test_unscanned_suffix_is_ignored (test_security_baseline_scan.RuleHitTest.test_unscanned_suffix_is_ignored) ... ok
+test_non_prod_path_is_downgraded (test_security_baseline_scan.SeverityTest.test_non_prod_path_is_downgraded) ... ok
+test_non_sql_test_account_is_p1 (test_security_baseline_scan.SeverityTest.test_non_sql_test_account_is_p1) ... ok
+test_prod_path_credential_is_p0 (test_security_baseline_scan.SeverityTest.test_prod_path_credential_is_p0) ... ok
+test_production_flyway_seed_is_p0 (test_security_baseline_scan.SeverityTest.test_production_flyway_seed_is_p0) ... ok
+test_sql_install_path_is_p0 (test_security_baseline_scan.SeverityTest.test_sql_install_path_is_p0) ... ok
+test_clean_delimiter_passes (test_sql_migration_lint.DelimiterRuleTest.test_clean_delimiter_passes) ... ok
+test_odd_delimiter_count_is_violation (test_sql_migration_lint.DelimiterRuleTest.test_odd_delimiter_count_is_violation) ... ok
+test_trailing_comment_after_delimiter_is_violation (test_sql_migration_lint.DelimiterRuleTest.test_trailing_comment_after_delimiter_is_violation) ... ok
+test_delete_with_where_passes (test_sql_migration_lint.DestructiveRuleTest.test_delete_with_where_passes) ... ok
+test_delete_without_where_is_violation (test_sql_migration_lint.DestructiveRuleTest.test_delete_without_where_is_violation) ... ok
+test_drop_business_table_is_violation (test_sql_migration_lint.DestructiveRuleTest.test_drop_business_table_is_violation) ... ok
+test_temporary_table_operations_allowed (test_sql_migration_lint.DestructiveRuleTest.test_temporary_table_operations_allowed) ... ok
+test_literal_passes (test_sql_migration_lint.PrepareRuleTest.test_literal_passes) ... ok
+test_local_variable_is_violation (test_sql_migration_lint.PrepareRuleTest.test_local_variable_is_violation) ... ok
+test_prepare_inside_comment_is_ignored (test_sql_migration_lint.PrepareRuleTest.test_prepare_inside_comment_is_ignored) ... ok
+test_user_variable_passes (test_sql_migration_lint.PrepareRuleTest.test_user_variable_passes) ... ok
+test_shipped_migrations_are_clean (test_sql_migration_lint.RealMigrationsTest.test_shipped_migrations_are_clean) ... ok
+test_missing_newline_is_violation (test_sql_migration_lint.TrailingNewlineRuleTest.test_missing_newline_is_violation) ... ok
+test_commit_sha_is_recorded_for_real_git_repository (test_verify_build.VerifyBuildScriptTest.test_commit_sha_is_recorded_for_real_git_repository) ... ok
+test_default_repo_root_resolves_under_windows_powershell (test_verify_build.VerifyBuildScriptTest.test_default_repo_root_resolves_under_windows_powershell) ... ok
+test_evidence_is_host_independent_and_bom_free (test_verify_build.VerifyBuildScriptTest.test_evidence_is_host_independent_and_bom_free)
+֤�ݲ������������ PowerShell �汾�޹ء� ... ok
+test_failed_evidence_uses_documented_exit_code (test_verify_build.VerifyBuildScriptTest.test_failed_evidence_uses_documented_exit_code) ... ok
+test_failing_surefire_tests_are_rejected (test_verify_build.VerifyBuildScriptTest.test_failing_surefire_tests_are_rejected) ... ok
+test_missing_build_log_is_rejected_without_fabricated_evidence (test_verify_build.VerifyBuildScriptTest.test_missing_build_log_is_rejected_without_fabricated_evidence) ... ok
+test_missing_toolchain_evidence_is_rejected (test_verify_build.VerifyBuildScriptTest.test_missing_toolchain_evidence_is_rejected) ... ok
+test_nonzero_build_exit_is_rejected (test_verify_build.VerifyBuildScriptTest.test_nonzero_build_exit_is_rejected) ... ok
+test_repo_root_is_recorded_in_evidence (test_verify_build.VerifyBuildScriptTest.test_repo_root_is_recorded_in_evidence) ... ok
+test_successful_build_writes_reproducible_evidence (test_verify_build.VerifyBuildScriptTest.test_successful_build_writes_reproducible_evidence) ... ok
+test_accepts_only_safe_sandbox_database (test_verify_v107_negative.V107NegativeVerifierTest.test_accepts_only_safe_sandbox_database) ... ok
+test_evidence_always_marks_simulated_data_as_non_production (test_verify_v107_negative.V107NegativeVerifierTest.test_evidence_always_marks_simulated_data_as_non_production) ... ok
+test_expected_error_requires_exact_migration_signal (test_verify_v107_negative.V107NegativeVerifierTest.test_expected_error_requires_exact_migration_signal) ... ok
+
+----------------------------------------------------------------------
+Ran 235 tests in 52.201s
+
+OK (skipped=3)
+[INFO] report written to C:\Users\Administrator\AppData\Local\Temp\tmplm34qkbn\audit.json
+[INFO] tables expected=1 present=1 db_tables=1; columns expected=2 present=2
+[INFO] findings total=1 P0=0 P1=1 P2=0 divergences=0
+[P1_HIGH] tenant_index_missing erp_demo.tenant_id :: tenant_id ��û������Ϊ���е����������⻧���˻��˻���ȫ��ɨ�裬������ǿɹ۲�����ܷ��գ����������⻧���𣩡�
+[INFO] exit code = 0 (fail-on P0_BLOCKER)
+[INFO] report written to C:\Users\Administrator\AppData\Local\Temp\tmpjfbed8id\audit.json
+[INFO] tables expected=1 present=1 db_tables=1; columns expected=2 present=1
+[INFO] findings total=4 P0=3 P1=1 P2=0 divergences=0
+[P0_BLOCKER] id_not_auto_increment erp_demo.id :: id ��û�� AUTO_INCREMENT�����ṩ id �Ĳ������ϸ�ģʽ�±� 1364�����ϸ�ģʽ�»���� id=0 ���ڵڶ��β���ʱײ������
+[P0_BLOCKER] missing_column erp_demo.account_id :: ���ȱ�У�MyBatis-Plus ��ȡ���ֶλᱨ Unknown column��
+[P0_BLOCKER] primary_key_mismatch erp_demo.id :: �������ǵ��� (id)��MyBatis-Plus �� id ��λ�еļ��費������
+[P1_HIGH] tenant_column_missing erp_demo.tenant_id :: DO �̳� TenantBaseDO�������û�� tenant_id�����⻧�����ʧ�ܡ�
+[INFO] exit code = 2 (fail-on P0_BLOCKER)
+[INFO] tables expected=1 present=1 db_tables=1; columns expected=2 present=2
+[INFO] findings total=1 P0=0 P1=1 P2=0 divergences=0
+[P1_HIGH] tenant_index_missing erp_demo.tenant_id :: tenant_id ��û������Ϊ���е����������⻧���˻��˻���ȫ��ɨ�裬������ǿɹ۲�����ܷ��գ����������⻧���𣩡�
+[INFO] exit code = 2 (fail-on P1_HIGH)
+[INFO] report written to C:\Users\Administrator\AppData\Local\Temp\tmp4yge5wem\audit.json
+[INFO] tables expected=1 present=1 db_tables=1; columns expected=2 present=2
+[INFO] findings total=1 P0=0 P1=1 P2=0 divergences=0
+[P1_HIGH] tenant_column_missing erp_demo.tenant_id :: DO �̳� TenantBaseDO�������û�� tenant_id�����⻧�����ʧ�ܡ�
+[INFO] exit code = 0 (fail-on P0_BLOCKER)
+ɨ���ļ� 1������ 1 ��{'P0': 1}�����������ʧ�� 16
+status=failed
+EXIT_CODE=0

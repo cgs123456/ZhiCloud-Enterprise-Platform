@@ -9,6 +9,7 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -112,7 +113,12 @@ public class IntegrationMetricsTest {
     }
 
     @Configuration(proxyBeanMethods = false)
-    @ComponentScan("cn.zhicloud.server.integration")
+    @ComponentScan(
+            basePackageClasses = IntegrationMetrics.class,
+            useDefaultFilters = false,
+            includeFilters = @ComponentScan.Filter(
+                    type = FilterType.ASSIGNABLE_TYPE,
+                    classes = IntegrationMetrics.class))
     static class TestConfiguration {
     }
 

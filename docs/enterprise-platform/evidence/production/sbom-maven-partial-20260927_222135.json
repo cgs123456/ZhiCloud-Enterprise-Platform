@@ -1,0 +1,50 @@
+{
+  "generated_at": "2026-09-27T22:21:35.7461072+08:00",
+  "tool": "CycloneDX Maven aggregate BOM evidence summary",
+  "evidence_class": "partial supply-chain audit; not a CVE scan, image scan, runtime scan, or complete secret archaeology",
+  "repo_root": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2",
+  "commit": "d7994f60e12ef1b93baede2ad811b15cc3f533f1",
+  "sbom": {
+    "path": "target/bom.json",
+    "sha256": "AEBA1568CDD26AD9C637B4E7C69C3692408903B13207B79ED5FBF8BCB4388696",
+    "spec_version": "1.5",
+    "component_count": 863,
+    "component_types": {
+      "library": 863
+    },
+    "license_count_by_name": {
+      "GENERAL PUBLIC LICENSE, version 3 (GPL-3.0)": 1,
+      "UnRar License": 1,
+      "Podam runs under the MIT license": 1,
+      "Eclipse Public License (EPL) 2.0": 1,
+      "GNU General Public License, version 2 with the GNU Classpath Exception": 3,
+      "UNKNOWN": 832,
+      "EPL 1.0": 1,
+      "GNU LESSER GENERAL PUBLIC LICENSE, version 3 (LGPL-3.0)": 1,
+      "BSD 3-clause License w/nuclear disclaimer": 1,
+      "Mozilla Public License Version 1.1": 1,
+      "Bouncy Castle Licence": 4,
+      "Oracle Free Use Terms and Conditions (FUTC)": 4,
+      "Indiana University Extreme! Lab Software License": 1,
+      "Public Domain": 3,
+      "AL 2.0": 1,
+      "GNU Lesser Public License": 1,
+      "Similar to Apache License but with the acknowledgment clause removed": 1,
+      "The GNU General Public License, v2 with Universal FOSS Exception, v1.0": 1,
+      "BSD licence": 1,
+      "(CDDL-1.0 OR GPL-2.0-with-classpath-exception)": 1,
+      "Mulan Permissive Software License，Version 2": 1,
+      "Unicode-3.0": 1,
+      "GPL v2": 1,
+      "CDDL, v1.0": 1,
+      "Apache License v2": 1
+    },
+    "unknown_license_component_count": 832
+  },
+  "status": "partial",
+  "disclaimers": [
+    "SBOM only records Maven aggregate dependencies; it does not prove CVE-free or license-safe.",
+    "Docker daemon is unavailable; image SBOM and image CVE scan were not run.",
+    "T-107 remains OPEN; no security gate is relaxed."
+  ]
+}

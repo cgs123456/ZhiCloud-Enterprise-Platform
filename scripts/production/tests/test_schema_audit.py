@@ -229,12 +229,42 @@ class P1ChecksTest(unittest.TestCase):
         )
         self.assertEqual([], categories(result))
 
+    def test_tenant_index_prefix_matches_tenant_first_column(self):
+        tables, columns, indexes = healthy(
+            extra_columns=[column("erp_sale_order", "tenant_id")],
+            extra_indexes=index_rows("erp_sale_order", "idx_tenant_deleted", "1", ["tenant_id", "deleted"]),
+        )
+        result = sa.analyze(
+            expected_table("erp_sale_order", [], tenant=True), live_from(tables, columns, indexes)
+        )
+        self.assertEqual([], categories(result))
+
+    def test_tenant_index_requires_tenant_as_first_column(self):
+        tables, columns, indexes = healthy(
+            extra_columns=[column("erp_sale_order", "tenant_id")],
+            extra_indexes=index_rows("erp_sale_order", "idx_deleted_tenant", "1", ["deleted", "tenant_id"]),
+        )
+        result = sa.analyze(
+            expected_table("erp_sale_order", [], tenant=True), live_from(tables, columns, indexes)
+        )
+        self.assertEqual(["tenant_index_missing"], categories(result))
+
     def test_missing_unique_index_is_p1_high(self):
         tables, columns, indexes = healthy(extra_columns=[column("erp_sale_order", "bill_no", "varchar(64)", "varchar", default="''")])
         expected = expected_table("erp_sale_order", [], unique_indexes=[("bill_no",)])
         result = sa.analyze(expected, live_from(tables, columns, indexes))
         self.assertEqual(["missing_unique_index"], categories(result))
         self.assertEqual("P1_HIGH", result.findings[0].severity)
+
+    def test_evolved_unique_index_is_divergence_not_missing(self):
+        tables, columns, indexes = healthy(
+            extra_columns=[column("erp_sale_order", "bill_no", "varchar(64)", "varchar", default="''")],
+            extra_indexes=index_rows("erp_sale_order", "uk_tenant_bill", "0", ["tenant_id", "bill_no"]),
+        )
+        expected = expected_table("erp_sale_order", [], unique_indexes=[("bill_no",)])
+        result = sa.analyze(expected, live_from(tables, columns, indexes))
+        self.assertEqual([], categories(result))
+        self.assertEqual(["unique_index_evolved"], [item.kind for item in result.divergences])
 
     def test_unique_index_is_matched_by_columns_not_name(self):
         tables, columns, indexes = healthy(
@@ -347,6 +377,46 @@ class DivergenceAndOrderingTest(unittest.TestCase):
         self.assertEqual({"missing_column": 2, "missing_index": 1}, result.counts_by_category())
 
 
+class ModuleSelectionTest(unittest.TestCase):
+    def test_default_module_dirs_only_uses_active_maven_modules(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            (root / "pom.xml").write_text(
+                """<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modules>
+    <module>zhicloud-module-erp</module>
+    <!-- <module>zhicloud-module-im</module> -->
+    <module>zhicloud-framework</module>
+  </modules>
+</project>""",
+                encoding="utf-8",
+            )
+            (root / "zhicloud-framework").mkdir()
+            (root / "zhicloud-framework" / "pom.xml").write_text(
+                """<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modules>
+    <module>zhicloud-spring-boot-starter-biz-mdm</module>
+  </modules>
+</project>""",
+                encoding="utf-8",
+            )
+            (root / "zhicloud-module-erp").mkdir()
+            (root / "zhicloud-module-im").mkdir()
+            (root / "zhicloud-framework" / "zhicloud-spring-boot-starter-biz-mdm").mkdir()
+
+            selected = {path.name for path in sa.default_module_dirs(root)}
+
+            self.assertEqual(
+                {"zhicloud-module-erp", "zhicloud-spring-boot-starter-biz-mdm"},
+                selected,
+            )
+
+    def test_default_module_dirs_fail_closed_without_root_pom(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with self.assertRaises(sa.SchemaAuditError):
+                sa.default_module_dirs(Path(temp_dir))
+
+
 class StaticParsingTest(unittest.TestCase):
     def test_parse_do_fields_handles_annotations(self):
         text = (
@@ -421,6 +491,56 @@ class StaticParsingTest(unittest.TestCase):
         self.assertEqual({("account_id",)}, entry.unique_indexes)
         self.assertIn(("account_id",), entry.indexes)
 
+
+    def test_parse_ddl_applies_static_alter_add_column_and_indexes(self):
+        ddl = (
+            "CREATE TABLE `erp_demo` (\n"
+            "  `id` bigint NOT NULL AUTO_INCREMENT,\n"
+            "  `bill_no` varchar(64) NOT NULL,\n"
+            "  PRIMARY KEY (`id`)\n"
+            ") ENGINE = InnoDB;\n"
+            "ALTER TABLE `erp_demo` ADD COLUMN `tenant_id` bigint NOT NULL DEFAULT 0;\n"
+            "ALTER TABLE `erp_demo` ADD UNIQUE KEY `uk_tenant_bill` (`tenant_id`, `bill_no`);\n"
+            "ALTER TABLE `erp_demo` ADD KEY `idx_tenant_bill` (`tenant_id`, `bill_no`);\n"
+        )
+        with tempfile.TemporaryDirectory() as temp_dir:
+            ddl_file = Path(temp_dir) / "alter.sql"
+            ddl_file.write_text(ddl, encoding="utf-8")
+            tables = sa.parse_ddl_expectations([ddl_file])
+        entry = tables["erp_demo"]
+        self.assertIn("tenant_id", entry.columns)
+        self.assertIn(("tenant_id", "bill_no"), entry.unique_indexes)
+        self.assertIn(("tenant_id", "bill_no"), entry.indexes)
+
+    def test_check_do_ddl_applies_static_alter_add_column(self):
+        sys.path.insert(0, str(SCRIPTS_DIR.parent))
+        import check_do_ddl
+
+        ddl = (
+            "CREATE TABLE `erp_demo` (\n"
+            "  `id` bigint NOT NULL,\n"
+            "  PRIMARY KEY (`id`)\n"
+            ") ENGINE = InnoDB;\n"
+            "ALTER TABLE `erp_demo` ADD COLUMN `tenant_id` bigint NOT NULL DEFAULT 0;\n"
+        )
+        with tempfile.TemporaryDirectory() as temp_dir:
+            ddl_file = Path(temp_dir) / "alter.sql"
+            ddl_file.write_text(ddl, encoding="utf-8")
+            tables = check_do_ddl.parse_ddl([ddl_file])
+        self.assertIn("tenant_id", tables["erp_demo"])
+
+    def test_default_ddl_files_prefer_flyway_migrations(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            old_dir = root / "sql" / "mysql"
+            old_dir.mkdir(parents=True)
+            old_ddl = old_dir / "zhicloud_platform.sql"
+            old_ddl.write_text("SELECT 1;\n", encoding="utf-8")
+            migration_dir = root / "zhicloud-server" / "src" / "main" / "resources" / "db" / "migration"
+            migration_dir.mkdir(parents=True)
+            migration = migration_dir / "V1__baseline.sql"
+            migration.write_text("SELECT 1;\n", encoding="utf-8")
+            self.assertEqual([migration], sa.default_ddl_files(root))
 
     def test_parse_verify_expectations_from_frozen_sql(self):
         files = sa.default_verify_sql_files(REPO_ROOT)

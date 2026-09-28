@@ -42,6 +42,13 @@
     <name>${project.artifactId}</name>
     <description>智云企业数字化平台</description>
     <url>https://github.com/cgs123456/ZhiCloud-Enterprise-Platform</url>
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://github.com/cgs123456/ZhiCloud-Enterprise-Platform/blob/master/LICENSE</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
 
     <properties>
         <revision>2026.06.0</revision>

@@ -1,0 +1,79 @@
+{
+  "generated_at": "2026-09-27T18:27:25.947932+08:00",
+  "status": "passed",
+  "scope": "MySQL sandbox bootstrap administrator read-only audit",
+  "production_ready": false,
+  "gate3_passed": false,
+  "database": "zhicloud_runner_clean_20260927_181750",
+  "mysql": {
+    "database_reported": "zhicloud_runner_clean_20260927_181750",
+    "server_version": "8.4.9",
+    "host": "127.0.0.1",
+    "port": 53306,
+    "user": "root",
+    "client": "C:\\Users\\Administrator\\mysql84-sandbox\\mysql-8.4.9-winx64\\bin\\mysql.exe"
+  },
+  "bootstrap": {
+    "username": "zhicloud_admin",
+    "tenant_id": 1,
+    "user_count": 1,
+    "user_id": 225,
+    "status": 0,
+    "deleted": 0,
+    "password_hash_length": 60,
+    "password_hash_prefix": "$2a$",
+    "role_id": 1,
+    "role_binding_count": 1,
+    "role_ids": "1",
+    "post_id": 4,
+    "post_binding_count": 1,
+    "post_ids": "4"
+  },
+  "database_checks": {
+    "active_username_unique_index": "uk_system_users_tenant_active_username",
+    "active_username_unique_index_columns": "tenant_id,active_username",
+    "active_username_duplicate_groups": 0
+  },
+  "checks": {
+    "database_reachable": true,
+    "single_tenant_user": true,
+    "enabled": true,
+    "not_deleted": true,
+    "bcrypt_hash_shape": true,
+    "role_binding_exact": true,
+    "post_binding_exact": true,
+    "active_username_unique_index": true,
+    "no_duplicate_active_usernames": true
+  },
+  "failures": [],
+  "dialect_scope": {
+    "executed_in_this_evidence": [
+      "mysql"
+    ],
+    "not_executed_in_this_evidence": [
+      "postgresql",
+      "highgo",
+      "kingbase",
+      "opengauss",
+      "oracle",
+      "sqlserver",
+      "dm"
+    ],
+    "note": "其余 7 套模板仍只有渲染器和静态契约证据。"
+  },
+  "secret_handling": {
+    "plaintext_password_persisted": false,
+    "plaintext_password_supplied_to_auditor": false,
+    "database_password_hash_only": true,
+    "note": "本审计器只接收数据库连接参数，不接收 bootstrap 明文口令；数据库查询只能证明口令以 BCrypt 哈希形态存在，不能单独证明外部日志、终端历史或备份中不存在明文。"
+  },
+  "artifacts": {
+    "auditor_sha256": "9b2a4beddbd863ff5be22daa2ae15ff92db638182d4a58b43de4d10b7f2ff215"
+  },
+  "caveats": [
+    "V116/V117 concurrency and soft-delete semantics are not proven by this audit.",
+    "BPM/Flowable transaction rollback is not proven by this audit.",
+    "Only MySQL is audited here; other dialects remain unverified in target databases.",
+    "Production readiness and Gate 3 remain false until all blocking checks pass."
+  ]
+}

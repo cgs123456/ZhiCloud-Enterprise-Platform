@@ -2,7 +2,9 @@ package cn.zhicloud.module.erp.service.sale;
 
 import cn.zhicloud.framework.integration.api.EventAppendReq;
 import cn.zhicloud.framework.integration.contract.ErpSaleOutApprovedEvent;
+import cn.zhicloud.framework.common.exception.ServiceException;
 import cn.zhicloud.framework.integration.service.EventOutboxService;
+import cn.zhicloud.framework.tenant.core.context.TenantContextHolder;
 import cn.zhicloud.module.erp.dal.dataobject.product.ErpProductDO;
 import cn.zhicloud.module.erp.dal.dataobject.sale.ErpSaleOutDO;
 import cn.zhicloud.module.erp.dal.dataobject.sale.ErpSaleOutItemDO;
@@ -14,6 +16,7 @@ import cn.zhicloud.module.erp.service.accounting.bo.ErpAccountingEventCreateReqB
 import cn.zhicloud.module.erp.service.accounting.bo.ErpAccountingEventReverseReqBO;
 import cn.zhicloud.module.erp.service.product.ErpProductService;
 import cn.zhicloud.module.erp.service.stock.ErpStockRecordService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,6 +33,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -38,6 +42,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static cn.zhicloud.framework.integration.enums.ErrorCodeConstants.EVENT_TENANT_MISMATCH;
+import static cn.zhicloud.framework.integration.enums.ErrorCodeConstants.EVENT_TENANT_REQUIRED;
 
 /**
  * 销售出库审核状态行为测试，重点验证收入确认与成本结转事件只生成一次，
@@ -61,6 +67,11 @@ class ErpSaleOutStatusTest {
 
     private ErpSaleOutServiceImpl saleOutService;
 
+    @AfterEach
+    void tearDown() {
+        TenantContextHolder.clear();
+    }
+
     @BeforeEach
     void setUp() {
         saleOutService = new ErpSaleOutServiceImpl();
@@ -74,6 +85,7 @@ class ErpSaleOutStatusTest {
 
     @Test
     void repeatedApprovalIsIdempotentAndDoesNotPostAccountingEvent() {
+        TenantContextHolder.setTenantId(7L);
         when(saleOutMapper.selectById(1L)).thenReturn(saleOut(ErpAuditStatus.APPROVE.getStatus()));
 
         assertDoesNotThrow(() -> saleOutService.updateSaleOutStatus(1L, ErpAuditStatus.APPROVE.getStatus()));
@@ -85,6 +97,7 @@ class ErpSaleOutStatusTest {
 
     @Test
     void approvalCreatesSalesShipmentEventWithRevenueAndCost() {
+        TenantContextHolder.setTenantId(7L);
         when(saleOutMapper.selectById(1L)).thenReturn(saleOut(ErpAuditStatus.PROCESS.getStatus())
                 .setTotalPrice(new BigDecimal("2260.0000"))
                 .setTotalProductPrice(new BigDecimal("2000.0000"))
@@ -125,7 +138,7 @@ class ErpSaleOutStatusTest {
         assertEquals("erp.sale-out.approved.v1", appendReq.getEventType());
         assertEquals("erp_sale_out", appendReq.getAggregateType());
         assertEquals("1", appendReq.getAggregateId());
-        assertEquals(0L, appendReq.getTenantId());
+        assertEquals(7L, appendReq.getTenantId());
         assertEquals(LocalDateTime.of(2026, 9, 25, 10, 0), appendReq.getOccurredAt());
         assertNotNull(appendReq.getPayload());
         assertTrue(appendReq.getPayload().contains("SO001"));
@@ -140,6 +153,7 @@ class ErpSaleOutStatusTest {
 
     @Test
     void cancellingApprovedSaleOutCreatesReversalEvent() {
+        TenantContextHolder.setTenantId(7L);
         when(saleOutMapper.selectById(1L)).thenReturn(saleOut(ErpAuditStatus.APPROVE.getStatus())
                 .setOutTime(LocalDateTime.of(2026, 9, 25, 10, 0)));
         when(saleOutMapper.updateByIdAndStatus(eq(1L), eq(ErpAuditStatus.APPROVE.getStatus()), any()))
@@ -164,9 +178,38 @@ class ErpSaleOutStatusTest {
         verify(eventOutboxService, never()).append(any(EventAppendReq.class));
     }
 
+    @Test
+    void approvalWithoutTenantContextIsRejectedBeforeSideEffects() {
+        ServiceException exception = assertThrows(ServiceException.class,
+                () -> saleOutService.updateSaleOutStatus(1L, ErpAuditStatus.APPROVE.getStatus()));
+
+        assertEquals(EVENT_TENANT_REQUIRED.getCode(), exception.getCode());
+        verifyNoInteractions(saleOutItemMapper, stockRecordService, productService, accountingEventService,
+                eventOutboxService);
+        verify(saleOutMapper, never()).updateByIdAndStatus(anyLong(), any(), any());
+    }
+
+    @Test
+    void approvalRejectsSaleOutTenantMismatchingCurrentContext() {
+        TenantContextHolder.setTenantId(7L);
+        ErpSaleOutDO mismatched = saleOut(ErpAuditStatus.PROCESS.getStatus());
+        mismatched.setTenantId(8L);
+        when(saleOutMapper.selectById(1L)).thenReturn(mismatched);
+
+        ServiceException exception = assertThrows(ServiceException.class,
+                () -> saleOutService.updateSaleOutStatus(1L, ErpAuditStatus.APPROVE.getStatus()));
+
+        assertEquals(EVENT_TENANT_MISMATCH.getCode(), exception.getCode());
+        verifyNoInteractions(saleOutItemMapper, stockRecordService, productService, accountingEventService,
+                eventOutboxService);
+        verify(saleOutMapper, never()).updateByIdAndStatus(anyLong(), any(), any());
+    }
+
     private static ErpSaleOutDO saleOut(Integer status) {
-        return new ErpSaleOutDO().setId(1L).setNo("SO001").setStatus(status)
+        ErpSaleOutDO saleOut = new ErpSaleOutDO().setId(1L).setNo("SO001").setStatus(status)
                 .setReceiptPrice(BigDecimal.ZERO);
+        saleOut.setTenantId(7L);
+        return saleOut;
     }
 
     private static ErpSaleOutItemDO saleOutItem() {

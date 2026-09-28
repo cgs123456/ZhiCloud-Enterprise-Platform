@@ -103,3 +103,7 @@ scripts/fix_flyway_mysql_compat.py
 __pycache__/
 *.pyc
 
+
+### 生产就绪证据日志必须入仓（.gitignore 第 40 行的 *.log 会静默排除它们，
+### 导致 08/01 等文档按路径引用的证据变成悬空链接）
+!docs/enterprise-platform/evidence/production/**/*.log

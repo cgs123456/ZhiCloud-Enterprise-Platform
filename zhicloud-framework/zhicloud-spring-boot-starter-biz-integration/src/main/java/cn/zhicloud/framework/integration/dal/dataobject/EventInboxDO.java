@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 /**
  * 事件收件箱 DO（V100 可靠集成数据面）
  *
- * <p>按 {@code (consumer_name, event_id)} 唯一键做数据库级去重：同一事件被同一消费者重复投递时，
+ * <p>按 {@code (tenant_id, consumer_name, event_id)} 唯一键做数据库级去重：同一事件被同一消费者重复投递时，
  * 第二次插入会被唯一键拒绝，消费侧据此直接跳过而不是重复执行业务。这是「至少一次投递 + 消费侧幂等」
  * 的最低保障，不依赖消费者自己实现幂等。
  *

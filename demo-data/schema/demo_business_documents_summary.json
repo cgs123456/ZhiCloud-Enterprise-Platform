@@ -1,0 +1,452 @@
+{
+  "generated_by": "demo-data/generators/generate_business_documents.py",
+  "seed": 20260928,
+  "tenant_id": 9001,
+  "scale": "small",
+  "dialect": "mysql",
+  "snapshot": "demo-data/schema/schema-snapshot.json",
+  "snapshot_payload_sha256": "37df29503a427702fb61f62da187de6e75ba55c636cafe5ec664502ed573ac3d",
+  "depends_on": {
+    "master_data_json": "demo-data/schema/demo_master_data.json",
+    "master_data_file_sha256": "3a6a06cdf4a5de4ffece26deda01fcb9db2c02bde7ae57277461692ecf5e9552",
+    "master_data_tenant_id": 9001,
+    "master_data_seed": 20260928
+  },
+  "table_count": 99,
+  "row_total": 2458,
+  "tables": [
+    {
+      "table": "erp_account",
+      "rows": 4
+    },
+    {
+      "table": "wms_item_sku",
+      "rows": 40
+    },
+    {
+      "table": "mes_md_unit_measure",
+      "rows": 6
+    },
+    {
+      "table": "mes_md_item_type",
+      "rows": 4
+    },
+    {
+      "table": "mes_md_item",
+      "rows": 12
+    },
+    {
+      "table": "mes_md_client",
+      "rows": 6
+    },
+    {
+      "table": "mes_md_vendor",
+      "rows": 5
+    },
+    {
+      "table": "mes_pro_process",
+      "rows": 6
+    },
+    {
+      "table": "mes_md_workshop",
+      "rows": 2
+    },
+    {
+      "table": "mes_md_workstation",
+      "rows": 8
+    },
+    {
+      "table": "mes_pro_route",
+      "rows": 2
+    },
+    {
+      "table": "mes_pro_route_process",
+      "rows": 12
+    },
+    {
+      "table": "mes_md_bom",
+      "rows": 6
+    },
+    {
+      "table": "mes_md_bom_detail",
+      "rows": 18
+    },
+    {
+      "table": "crm_product_category",
+      "rows": 3
+    },
+    {
+      "table": "crm_product",
+      "rows": 10
+    },
+    {
+      "table": "crm_business_status_type",
+      "rows": 2
+    },
+    {
+      "table": "crm_business_status",
+      "rows": 8
+    },
+    {
+      "table": "qms_inspection_item",
+      "rows": 5
+    },
+    {
+      "table": "qms_instrument",
+      "rows": 3
+    },
+    {
+      "table": "hr_leave_type",
+      "rows": 4
+    },
+    {
+      "table": "oa_meeting_room",
+      "rows": 3
+    },
+    {
+      "table": "erp_sale_order",
+      "rows": 10
+    },
+    {
+      "table": "erp_sale_order_items",
+      "rows": 30
+    },
+    {
+      "table": "erp_sale_out",
+      "rows": 8
+    },
+    {
+      "table": "erp_sale_out_items",
+      "rows": 16
+    },
+    {
+      "table": "erp_sale_return",
+      "rows": 3
+    },
+    {
+      "table": "erp_sale_return_items",
+      "rows": 6
+    },
+    {
+      "table": "erp_purchase_order",
+      "rows": 8
+    },
+    {
+      "table": "erp_purchase_order_items",
+      "rows": 24
+    },
+    {
+      "table": "erp_purchase_in",
+      "rows": 6
+    },
+    {
+      "table": "erp_purchase_in_items",
+      "rows": 12
+    },
+    {
+      "table": "erp_purchase_return",
+      "rows": 2
+    },
+    {
+      "table": "erp_purchase_return_items",
+      "rows": 4
+    },
+    {
+      "table": "erp_stock_in",
+      "rows": 5
+    },
+    {
+      "table": "erp_stock_in_item",
+      "rows": 10
+    },
+    {
+      "table": "erp_stock_out",
+      "rows": 5
+    },
+    {
+      "table": "erp_stock_out_item",
+      "rows": 10
+    },
+    {
+      "table": "erp_stock_move",
+      "rows": 4
+    },
+    {
+      "table": "erp_stock_move_item",
+      "rows": 8
+    },
+    {
+      "table": "erp_stock",
+      "rows": 96
+    },
+    {
+      "table": "erp_stock_record",
+      "rows": 36
+    },
+    {
+      "table": "erp_stock_check",
+      "rows": 3
+    },
+    {
+      "table": "erp_stock_check_item",
+      "rows": 9
+    },
+    {
+      "table": "erp_finance_receipt",
+      "rows": 6
+    },
+    {
+      "table": "erp_finance_receipt_item",
+      "rows": 6
+    },
+    {
+      "table": "erp_finance_payment",
+      "rows": 5
+    },
+    {
+      "table": "erp_finance_payment_item",
+      "rows": 5
+    },
+    {
+      "table": "mes_pro_work_order",
+      "rows": 8
+    },
+    {
+      "table": "mes_pro_work_order_bom",
+      "rows": 24
+    },
+    {
+      "table": "mes_pro_task",
+      "rows": 24
+    },
+    {
+      "table": "mes_pro_task_issue",
+      "rows": 48
+    },
+    {
+      "table": "mes_pro_feedback",
+      "rows": 24
+    },
+    {
+      "table": "mes_wm_material_stock",
+      "rows": 48
+    },
+    {
+      "table": "wms_asn_order",
+      "rows": 5
+    },
+    {
+      "table": "wms_asn_order_detail",
+      "rows": 10
+    },
+    {
+      "table": "wms_receipt_order",
+      "rows": 8
+    },
+    {
+      "table": "wms_receipt_order_detail",
+      "rows": 16
+    },
+    {
+      "table": "wms_inventory",
+      "rows": 160
+    },
+    {
+      "table": "wms_shipment_order",
+      "rows": 8
+    },
+    {
+      "table": "wms_shipment_order_detail",
+      "rows": 16
+    },
+    {
+      "table": "wms_wave_order",
+      "rows": 4
+    },
+    {
+      "table": "wms_wave_order_detail",
+      "rows": 16
+    },
+    {
+      "table": "wms_pick_task",
+      "rows": 16
+    },
+    {
+      "table": "wms_movement_order",
+      "rows": 3
+    },
+    {
+      "table": "wms_movement_order_detail",
+      "rows": 6
+    },
+    {
+      "table": "qms_inspection_order",
+      "rows": 8
+    },
+    {
+      "table": "qms_inspection_record",
+      "rows": 24
+    },
+    {
+      "table": "qms_ncr_document",
+      "rows": 4
+    },
+    {
+      "table": "qms_capa_document",
+      "rows": 3
+    },
+    {
+      "table": "qms_customer_complaint",
+      "rows": 4
+    },
+    {
+      "table": "qms_instrument_calibration",
+      "rows": 6
+    },
+    {
+      "table": "crm_clue",
+      "rows": 12
+    },
+    {
+      "table": "crm_business",
+      "rows": 10
+    },
+    {
+      "table": "crm_business_product",
+      "rows": 20
+    },
+    {
+      "table": "crm_contract",
+      "rows": 6
+    },
+    {
+      "table": "crm_contract_product",
+      "rows": 12
+    },
+    {
+      "table": "crm_receivable_plan",
+      "rows": 12
+    },
+    {
+      "table": "crm_receivable",
+      "rows": 12
+    },
+    {
+      "table": "crm_contact",
+      "rows": 15
+    },
+    {
+      "table": "crm_follow_up_record",
+      "rows": 20
+    },
+    {
+      "table": "crm_invoice",
+      "rows": 5
+    },
+    {
+      "table": "crm_invoice_line",
+      "rows": 10
+    },
+    {
+      "table": "hr_leave_balance",
+      "rows": 160
+    },
+    {
+      "table": "hr_leave_request",
+      "rows": 20
+    },
+    {
+      "table": "hr_attendance",
+      "rows": 800
+    },
+    {
+      "table": "hr_contract",
+      "rows": 40
+    },
+    {
+      "table": "hr_salary",
+      "rows": 120
+    },
+    {
+      "table": "hr_performance",
+      "rows": 80
+    },
+    {
+      "table": "oa_announcement",
+      "rows": 6
+    },
+    {
+      "table": "oa_reimburse",
+      "rows": 8
+    },
+    {
+      "table": "oa_reimburse_item",
+      "rows": 16
+    },
+    {
+      "table": "oa_meeting_reservation",
+      "rows": 6
+    },
+    {
+      "table": "oa_schedule",
+      "rows": 10
+    },
+    {
+      "table": "tms_shipment",
+      "rows": 8
+    },
+    {
+      "table": "tms_shipment_stop",
+      "rows": 16
+    },
+    {
+      "table": "tms_tracking_event",
+      "rows": 24
+    },
+    {
+      "table": "tms_freight",
+      "rows": 8
+    },
+    {
+      "table": "tms_freight_reconciliation",
+      "rows": 3
+    }
+  ],
+  "unverified_fields": [
+    "crm_business.status_type_id / status_id（已生成 crm_business_status_type/status 并绑定，但 end_status 语义仅知为 int，未定位枚举定义，按 0/1 填充并标注）",
+    "crm_contract.process_instance_id / esign_task_id（工作流与电子签实例 ID，留 NULL）",
+    "crm_receivable.process_instance_id（同上，留 NULL）",
+    "crm_receivable.idempotency_key / payload_hash（幂等与防篡改字段，留 NULL）",
+    "crm_clue.owner_user_id / crm_business.owner_user_id / crm_contract.owner_user_id（绑定真实 system 用户会与账号体系耦合，留 NULL）",
+    "crm_contact.owner_user_id（同上，留 NULL）",
+    "crm_follow_up_record.business_ids / contact_ids（逗号分隔 ID 串，格式未核实，留 NULL）",
+    "oa_reimburse.process_instance_id（工作流实例 ID，留 NULL）",
+    "oa_meeting_reservation.attendee_user_ids（ID 串格式未核实，留 NULL）",
+    "mes_pro_task_issue.source_doc_id / source_line_id（来源单据行标识，无上游来源单据，留 NULL）",
+    "qms_customer_complaint.eight_d_id（8D 报告 ID，未生成 qms_eight_d_report，留 NULL）",
+    "wms_pick_task.picker_user_id / wms_wave_order.picker（system 用户 ID，留 NULL）",
+    "erp_stock_check.status（盘点差异未回填业务语义，按 ERP 通用 10/20 填充）",
+    "crm_follow_up_record.biz_type / type（未定位到 Java 枚举定义，按 (1,2,3,4)/(10,20,30) 取值域填充）",
+    "crm_invoice.invoice_type / crm_invoice_line.tax_rate（按 10/20 与 13% 常见取值填充，未与税务配置核对）",
+    "crm_invoice.buyer_tax_no（DEMO_TAXNO_ 前缀占位，非真实纳税人识别号）",
+    "tms_freight.billing_method（按 (10,20,30) 取值域填充，未定位枚举定义）",
+    "oa_schedule.user_id / oa_reimburse.applicant_user_id / oa_meeting_reservation.organizer_user_id / oa_announcement.publisher_user_id（NOT NULL 但指向 system 用户，demo 数据无真实用户，统一填占位 ID=1，未校验 system_users 中是否存在该行）",
+    "hr_attendance.check_in_time / check_out_time（按状态推导的演示时刻，未与考勤规则引擎核对）",
+    "hr_performance.period（使用 2026-H1/H2 半年度格式，未与绩效周期配置核对）"
+  ],
+  "artifacts": {
+    "sql": {
+      "path": "demo-data/sql/mysql/demo_business_documents.sql",
+      "payload_sha256": "782b84832d15f7b7dbedf40f3e8eaf2e9310e492718c94becb9a852331c20801",
+      "file_sha256": "782b84832d15f7b7dbedf40f3e8eaf2e9310e492718c94becb9a852331c20801",
+      "bytes": 1087176
+    },
+    "json": {
+      "path": "demo-data/schema/demo_business_documents.json",
+      "payload_sha256": "76beb44954ad4ce7a42769c6941c6b27338f199d790c2defb640ea29263cfa11",
+      "file_sha256": "76beb44954ad4ce7a42769c6941c6b27338f199d790c2defb640ea29263cfa11",
+      "bytes": 1453500
+    }
+  },
+  "status": "STATIC_ONLY —— 未在任何数据库执行过，可执行性未验证"
+}

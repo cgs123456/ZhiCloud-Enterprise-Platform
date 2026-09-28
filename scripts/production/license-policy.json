@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "evidence_type": "maven_license_policy",
+  "policy_version": "2026-09-28",
+  "description": "Maven 组件许可证 CI 门禁策略（T-107）。默认 fail-closed：除 internal MIT 与 permissive_standard 外，任何组件必须在 allowlist 中存在未过期且审批通过的条目，否则门禁失败（exit=1）。",
+  "internal": {
+    "group_prefix": "cn.zhicloud",
+    "required_licenses": [
+      "MIT"
+    ],
+    "action": "allow"
+  },
+  "category_actions": {
+    "permissive_standard": "allow",
+    "weak_copyleft": "review_and_record",
+    "strong_or_restrictive": "deny_until_approved",
+    "custom_or_non_spdx": "deny_until_approved",
+    "expression_or_dual": "review",
+    "missing": "deny",
+    "unmapped": "deny"
+  },
+  "unmapped_category_action": "deny",
+  "blocking_actions": [
+    "review_and_record",
+    "deny_until_approved",
+    "review",
+    "deny"
+  ],
+  "approved_decisions": [
+    "approved",
+    "approved_with_exception"
+  ],
+  "allowlist": [],
+  "allowlist_entry_schema": {
+    "purl": "pkg:maven/group/artifact@version（推荐，精确匹配；也可改用 group+artifact+version）",
+    "decision": "approved | approved_with_exception | isolated",
+    "justification": "审批理由/法务意见编号",
+    "approved_by": "审批人（法务或授权人）",
+    "approved_on": "YYYY-MM-DD",
+    "expires_on": "YYYY-MM-DD",
+    "scope": "all | server_runtime"
+  },
+  "maintenance": {
+    "renew_on_dependency_upgrade": true,
+    "max_entry_validity_days": 365
+  },
+  "limits": [
+    "本策略是工程门禁，不是法律意见；放行与否必须由法务或授权人审批。",
+    "allowlist 为空表示尚未发生任何审批，门禁必然 fail-closed。",
+    "依赖升级后必须重新生成 inventory 并重新审批，不得沿用过期 allowlist。"
+  ]
+}

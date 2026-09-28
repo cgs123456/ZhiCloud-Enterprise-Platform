@@ -9,11 +9,14 @@ import cn.zhicloud.framework.integration.dal.dataobject.EventOutboxDO;
 import cn.zhicloud.framework.integration.dal.mysql.EventInboxMapper;
 import cn.zhicloud.framework.integration.dal.mysql.EventOutboxMapper;
 import cn.zhicloud.framework.mybatis.config.ZhiCloudMybatisAutoConfiguration;
+import cn.zhicloud.framework.tenant.core.context.TenantContextHolder;
 import cn.zhicloud.framework.test.config.SqlInitializationTestConfiguration;
 import com.alibaba.druid.spring.boot3.autoconfigure.DruidDataSourceAutoConfigure;
 import com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration;
 import com.github.yulichang.autoconfigure.MybatisPlusJoinAutoConfiguration;
 import jakarta.annotation.Resource;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
@@ -74,6 +77,16 @@ public class EventRelayServiceTest {
     @Resource
     private IntegrationProperties properties;
 
+    @BeforeEach
+    public void setUpTenantContext() {
+        TenantContextHolder.setTenantId(0L);
+    }
+
+    @AfterEach
+    public void clearTenantContext() {
+        TenantContextHolder.clear();
+    }
+
     @Test
     public void testRelayPublishesAndConsumesExactlyOnce() {
         CountingConsumer consumer = new CountingConsumer(false);
@@ -82,10 +95,10 @@ public class EventRelayServiceTest {
 
         assertEquals(1, relay.relayOnce(10));
         assertEquals(1, consumer.calls.get());
-        EventOutboxDO event = eventOutboxMapper.selectByEventId("relay-1");
+        EventOutboxDO event = eventOutboxMapper.selectByEventIdAndTenantId("relay-1", 0L);
         assertEquals(OUTBOX_PUBLISHED, event.getStatus());
         assertNotNull(event.getPublishedAt());
-        assertEquals(INBOX_PROCESSED, eventInboxService.selectByConsumerAndEvent("test-consumer", "relay-1").getStatus());
+        assertEquals(INBOX_PROCESSED, eventInboxService.selectByConsumerAndEvent("test-consumer", "relay-1", 0L).getStatus());
 
         // 再跑一轮：已完成的事件不应被重复消费
         assertEquals(0, relay.relayOnce(10));
@@ -100,12 +113,12 @@ public class EventRelayServiceTest {
 
         assertEquals(0, relay.relayOnce(10), "消费者失败时不应标记投递完成");
         assertEquals(1, consumer.calls.get());
-        EventOutboxDO event = eventOutboxMapper.selectByEventId("relay-2");
+        EventOutboxDO event = eventOutboxMapper.selectByEventIdAndTenantId("relay-2", 0L);
         assertEquals(OUTBOX_NEW, event.getStatus());
         assertEquals(1, event.getRetryCount());
         assertNull(event.getPublishedAt());
         assertTrue(event.getNextRetryAt().isAfter(LocalDateTime.now()), "失败后必须进入退避窗口，避免无间隔热重试");
-        assertEquals("FAILED", eventInboxService.selectByConsumerAndEvent("test-consumer", "relay-2").getStatus());
+        assertEquals("FAILED", eventInboxService.selectByConsumerAndEvent("test-consumer", "relay-2", 0L).getStatus());
     }
 
     @Test
@@ -118,7 +131,7 @@ public class EventRelayServiceTest {
         // 退避窗口内再扫描：不应领取、不应再次执行业务
         assertEquals(0, relay.relayOnce(10));
         assertEquals(1, consumer.calls.get());
-        assertEquals(1, eventOutboxMapper.selectByEventId("relay-3").getRetryCount());
+        assertEquals(1, eventOutboxMapper.selectByEventIdAndTenantId("relay-3", 0L).getRetryCount());
     }
 
     @Test
@@ -128,7 +141,7 @@ public class EventRelayServiceTest {
         append("relay-4", "erp.sale-in.approved.v1");
 
         assertEquals(0, relay.relayOnce(10), "无匹配消费者时必须 fail-closed，不能把事件伪装成投递成功");
-        EventOutboxDO event = eventOutboxMapper.selectByEventId("relay-4");
+        EventOutboxDO event = eventOutboxMapper.selectByEventIdAndTenantId("relay-4", 0L);
         assertEquals(OUTBOX_NEW, event.getStatus());
         assertEquals(1, event.getRetryCount());
         assertNull(event.getPublishedAt());

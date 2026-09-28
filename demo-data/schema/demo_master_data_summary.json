@@ -1,0 +1,113 @@
+{
+  "generated_by": "demo-data/generators/generate_master_data.py",
+  "seed": 20260928,
+  "tenant_id": 9001,
+  "scale": "small",
+  "dialect": "mysql",
+  "snapshot": "demo-data/schema/schema-snapshot.json",
+  "snapshot_payload_sha256": "37df29503a427702fb61f62da187de6e75ba55c636cafe5ec664502ed573ac3d",
+  "table_count": 19,
+  "row_total": 267,
+  "tables": [
+    {
+      "table": "erp_product_category",
+      "rows": 8
+    },
+    {
+      "table": "erp_product_unit",
+      "rows": 8
+    },
+    {
+      "table": "erp_product",
+      "rows": 24
+    },
+    {
+      "table": "erp_customer",
+      "rows": 12
+    },
+    {
+      "table": "erp_supplier",
+      "rows": 10
+    },
+    {
+      "table": "erp_warehouse",
+      "rows": 4
+    },
+    {
+      "table": "wms_warehouse",
+      "rows": 4
+    },
+    {
+      "table": "wms_zone",
+      "rows": 12
+    },
+    {
+      "table": "wms_location",
+      "rows": 48
+    },
+    {
+      "table": "wms_item_category",
+      "rows": 6
+    },
+    {
+      "table": "wms_item",
+      "rows": 20
+    },
+    {
+      "table": "wms_merchant",
+      "rows": 8
+    },
+    {
+      "table": "crm_customer",
+      "rows": 15
+    },
+    {
+      "table": "hr_department",
+      "rows": 8
+    },
+    {
+      "table": "hr_position",
+      "rows": 10
+    },
+    {
+      "table": "hr_employee",
+      "rows": 40
+    },
+    {
+      "table": "tms_carrier",
+      "rows": 6
+    },
+    {
+      "table": "tms_driver",
+      "rows": 12
+    },
+    {
+      "table": "tms_vehicle",
+      "rows": 12
+    }
+  ],
+  "unverified_fields": [
+    "crm_customer.source（迁移脚本与代码均未定位到枚举定义，留 NULL）",
+    "crm_customer.industry_id（同上，留 NULL）",
+    "crm_customer.area_id（同上，留 NULL）",
+    "crm_customer.owner_user_id（绑定真实用户会与账号体系耦合，留 NULL）",
+    "tms_vehicle.driver_user_id（未确认是 system 用户 ID 还是 tms_driver ID，留 NULL）",
+    "hr_employee.id_card（不生成可通过校验规则的证件号，避免伪造身份标识，留 NULL）",
+    "hr_department.leader_id（需与 hr_employee 绑定，主数据阶段留 NULL）"
+  ],
+  "artifacts": {
+    "sql": {
+      "path": "demo-data/sql/mysql/demo_master_data.sql",
+      "payload_sha256": "d7be937714aeb9ad4c344b2705224387d18c640c42ac47de15479cbd27c7c789",
+      "file_sha256": "d7be937714aeb9ad4c344b2705224387d18c640c42ac47de15479cbd27c7c789",
+      "bytes": 128815
+    },
+    "json": {
+      "path": "demo-data/schema/demo_master_data.json",
+      "payload_sha256": "3a6a06cdf4a5de4ffece26deda01fcb9db2c02bde7ae57277461692ecf5e9552",
+      "file_sha256": "3a6a06cdf4a5de4ffece26deda01fcb9db2c02bde7ae57277461692ecf5e9552",
+      "bytes": 176368
+    }
+  },
+  "status": "STATIC_ONLY —— 未在任何数据库执行过，可执行性未验证"
+}

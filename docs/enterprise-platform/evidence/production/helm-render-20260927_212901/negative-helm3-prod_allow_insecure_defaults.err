@@ -1,0 +1,3 @@
+Error: execution error at (zhicloud/templates/secret.yaml:27:33): secrets.MASTER_DATASOURCE_PASSWORD：生产环境不允许 allowInsecureDefaults=true，必须注入真实密钥或使用 existingSecret。
+
+Use --debug flag to render out invalid YAML

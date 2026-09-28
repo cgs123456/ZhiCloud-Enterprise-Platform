@@ -1,0 +1,2215 @@
+{
+  "commit": "d7994f60e12ef1b93baede2ad811b15cc3f533f1",
+  "controls": [
+    {
+      "code": "PROD_DOCS_DISABLED",
+      "control": "C1",
+      "file": "zhicloud-server/src/main/resources/application-prod.yaml",
+      "missing_patterns": [],
+      "status": "passed"
+    },
+    {
+      "code": "PROD_SECRET_REQUIRED",
+      "control": "C2",
+      "file": "zhicloud-server/src/main/resources/application-prod.yaml",
+      "missing_patterns": [],
+      "status": "passed"
+    },
+    {
+      "code": "HELM_SECRET_GATE",
+      "control": "C3",
+      "file": "deploy/helm/zhicloud/templates/_helpers.tpl",
+      "missing_patterns": [],
+      "status": "passed"
+    },
+    {
+      "code": "HELM_SECRET_WIRED",
+      "control": "C4",
+      "file": "deploy/helm/zhicloud/templates/secret.yaml",
+      "missing_patterns": [],
+      "status": "passed"
+    },
+    {
+      "code": "AIRAG_SECRET_WIRED",
+      "control": "C5",
+      "file": "deploy/helm/zhicloud/templates/secret.yaml",
+      "missing_patterns": [],
+      "status": "passed"
+    },
+    {
+      "code": "AIRAG_SCHEMA_MANUAL",
+      "control": "C6",
+      "file": "sql/postgresql/airag_pgvector.sql",
+      "missing_patterns": [],
+      "status": "passed"
+    },
+    {
+      "code": "AIRAG_SCHEMA_DDL_DISABLED_HELM",
+      "control": "C7",
+      "file": "deploy/helm/zhicloud/values-prod.yaml",
+      "missing_patterns": [],
+      "status": "passed"
+    },
+    {
+      "code": "AIRAG_SCHEMA_DDL_DISABLED_K8S",
+      "control": "C8",
+      "file": "k8s/zhicloud-server.yaml",
+      "missing_patterns": [],
+      "status": "passed"
+    },
+    {
+      "code": "AIRAG_TLS_VERIFY_HELM",
+      "control": "C9",
+      "file": "deploy/helm/zhicloud/values-prod.yaml",
+      "missing_patterns": [],
+      "status": "passed"
+    },
+    {
+      "code": "AIRAG_TLS_VERIFY_K8S",
+      "control": "C10",
+      "file": "k8s/zhicloud-server.yaml",
+      "missing_patterns": [],
+      "status": "passed"
+    },
+    {
+      "code": "MYSQL_TLS_VERIFY_HELM",
+      "control": "C11",
+      "file": "deploy/helm/zhicloud/values-prod.yaml",
+      "missing_patterns": [],
+      "status": "passed"
+    },
+    {
+      "code": "MYSQL_TLS_VERIFY_K8S",
+      "control": "C12",
+      "file": "k8s/zhicloud-server.yaml",
+      "missing_patterns": [],
+      "status": "passed"
+    },
+    {
+      "code": "MYSQL_TLS_TRUSTSTORE_WIRED",
+      "control": "C13",
+      "file": "deploy/helm/zhicloud/templates/deployment.yaml",
+      "missing_patterns": [],
+      "status": "passed"
+    },
+    {
+      "code": "MYSQL_TLS_TRUSTSTORE_CONFIG",
+      "control": "C14",
+      "file": "zhicloud-server/src/main/resources/application-prod.yaml",
+      "missing_patterns": [],
+      "status": "passed"
+    },
+    {
+      "code": "MYSQL_TLS_TRUSTSTORE_WIRED_JOB",
+      "control": "C15",
+      "file": "deploy/helm/zhicloud/templates/job-migration.yaml",
+      "missing_patterns": [],
+      "status": "passed"
+    },
+    {
+      "code": "MYSQL_TLS_TRUSTSTORE_WIRED_K8S",
+      "control": "C16",
+      "file": "k8s/zhicloud-server.yaml",
+      "missing_patterns": [],
+      "status": "passed"
+    },
+    {
+      "code": "MYSQL_TLS_TRUSTSTORE_WIRED_BOOTSTRAP_JOB",
+      "control": "C17",
+      "file": "deploy/helm/zhicloud/templates/job-bootstrap-admin.yaml",
+      "missing_patterns": [],
+      "status": "passed"
+    },
+    {
+      "code": "BOOTSTRAP_ADMIN_PASSWORD_SECRET_WIRED",
+      "control": "C18",
+      "file": "deploy/helm/zhicloud/templates/job-bootstrap-admin.yaml",
+      "missing_patterns": [],
+      "status": "passed"
+    }
+  ],
+  "controls_failed": 0,
+  "disclaimers": [
+    "静态文本扫描：环境变量/Secret 注入可能覆盖默认值，命中项需人工确认。",
+    "不覆盖依赖漏洞（CVE）、渗透测试、历史 git 密钥泄露考古。",
+    "本扫描通过不等于安全基线已达标；P0-2 仍需逐项人工处置与复测。",
+    "MySQL TLS 规则只校验连接参数；真实证书链/主机名握手仍需连接带证书的数据库验证。"
+  ],
+  "evidence_class": "static-text scan; no runtime/profile resolution, no dependency CVE scan",
+  "fail_on": "P0",
+  "finding_count": 255,
+  "findings": [
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql",
+      "line": 9,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql",
+      "line": 10,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql",
+      "line": 11,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql",
+      "line": 12,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql",
+      "line": 13,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql",
+      "line": 14,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql",
+      "line": 15,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql",
+      "line": 16,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql",
+      "line": 17,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql",
+      "line": 18,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql",
+      "line": 19,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql",
+      "line": 20,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql",
+      "line": 21,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql",
+      "line": 22,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql",
+      "line": 23,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql",
+      "line": 24,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql",
+      "line": 25,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql",
+      "line": 26,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql",
+      "line": 27,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql",
+      "line": 28,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql",
+      "line": 9,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql",
+      "line": 10,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql",
+      "line": 11,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql",
+      "line": 12,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql",
+      "line": 13,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql",
+      "line": 14,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql",
+      "line": 15,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql",
+      "line": 16,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql",
+      "line": 17,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql",
+      "line": 18,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql",
+      "line": 19,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql",
+      "line": 20,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql",
+      "line": 21,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql",
+      "line": 22,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql",
+      "line": 23,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql",
+      "line": 24,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql",
+      "line": 25,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql",
+      "line": 26,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql",
+      "line": 27,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql",
+      "line": 28,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql",
+      "line": 9,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql",
+      "line": 10,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql",
+      "line": 11,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql",
+      "line": 12,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql",
+      "line": 13,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql",
+      "line": 14,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql",
+      "line": 15,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql",
+      "line": 16,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql",
+      "line": 17,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql",
+      "line": 18,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql",
+      "line": 19,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql",
+      "line": 20,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql",
+      "line": 21,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql",
+      "line": 22,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql",
+      "line": 23,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql",
+      "line": 24,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql",
+      "line": 25,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql",
+      "line": 26,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql",
+      "line": 27,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql",
+      "line": 28,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create_time`,",
+      "file": "demo-data/sql/mysql/zhicloud_platform_demo_seed.sql",
+      "line": 10,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create_time`,",
+      "file": "demo-data/sql/mysql/zhicloud_platform_demo_seed.sql",
+      "line": 11,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create_time`,",
+      "file": "demo-data/sql/mysql/zhicloud_platform_demo_seed.sql",
+      "line": 12,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create_time`,",
+      "file": "demo-data/sql/mysql/zhicloud_platform_demo_seed.sql",
+      "line": 13,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create_time`,",
+      "file": "demo-data/sql/mysql/zhicloud_platform_demo_seed.sql",
+      "line": 14,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create_time`,",
+      "file": "demo-data/sql/mysql/zhicloud_platform_demo_seed.sql",
+      "line": 15,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create_time`,",
+      "file": "demo-data/sql/mysql/zhicloud_platform_demo_seed.sql",
+      "line": 16,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create_time`,",
+      "file": "demo-data/sql/mysql/zhicloud_platform_demo_seed.sql",
+      "line": 17,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create_time`,",
+      "file": "demo-data/sql/mysql/zhicloud_platform_demo_seed.sql",
+      "line": 18,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create_time`,",
+      "file": "demo-data/sql/mysql/zhicloud_platform_demo_seed.sql",
+      "line": 19,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create_time`,",
+      "file": "demo-data/sql/mysql/zhicloud_platform_demo_seed.sql",
+      "line": 20,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create_time`,",
+      "file": "demo-data/sql/mysql/zhicloud_platform_demo_seed.sql",
+      "line": 21,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create_time`,",
+      "file": "demo-data/sql/mysql/zhicloud_platform_demo_seed.sql",
+      "line": 22,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create_time`,",
+      "file": "demo-data/sql/mysql/zhicloud_platform_demo_seed.sql",
+      "line": 23,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create_time`,",
+      "file": "demo-data/sql/mysql/zhicloud_platform_demo_seed.sql",
+      "line": 24,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create_time`,",
+      "file": "demo-data/sql/mysql/zhicloud_platform_demo_seed.sql",
+      "line": 25,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create_time`,",
+      "file": "demo-data/sql/mysql/zhicloud_platform_demo_seed.sql",
+      "line": 26,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create_time`,",
+      "file": "demo-data/sql/mysql/zhicloud_platform_demo_seed.sql",
+      "line": 27,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create_time`,",
+      "file": "demo-data/sql/mysql/zhicloud_platform_demo_seed.sql",
+      "line": 28,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create_time`,",
+      "file": "demo-data/sql/mysql/zhicloud_platform_demo_seed.sql",
+      "line": 29,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql",
+      "line": 9,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql",
+      "line": 10,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql",
+      "line": 11,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql",
+      "line": 12,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql",
+      "line": 13,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql",
+      "line": 14,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql",
+      "line": 15,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql",
+      "line": 16,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql",
+      "line": 17,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql",
+      "line": 18,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql",
+      "line": 19,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql",
+      "line": 20,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql",
+      "line": 21,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql",
+      "line": 22,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql",
+      "line": 23,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql",
+      "line": 24,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql",
+      "line": 25,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql",
+      "line": 26,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql",
+      "line": 27,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql",
+      "line": 28,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql",
+      "line": 9,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql",
+      "line": 10,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql",
+      "line": 11,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql",
+      "line": 12,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql",
+      "line": 13,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql",
+      "line": 14,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql",
+      "line": 15,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql",
+      "line": 16,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql",
+      "line": 17,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql",
+      "line": 18,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql",
+      "line": 19,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql",
+      "line": 20,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql",
+      "line": 21,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql",
+      "line": 22,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql",
+      "line": 23,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql",
+      "line": 24,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql",
+      "line": 25,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql",
+      "line": 26,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql",
+      "line": 27,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql",
+      "line": 28,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql",
+      "line": 9,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql",
+      "line": 10,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql",
+      "line": 11,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql",
+      "line": 12,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql",
+      "line": 13,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql",
+      "line": 14,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql",
+      "line": 15,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql",
+      "line": 16,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql",
+      "line": 17,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql",
+      "line": 18,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql",
+      "line": 19,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql",
+      "line": 20,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql",
+      "line": 21,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql",
+      "line": 22,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql",
+      "line": 23,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql",
+      "line": 24,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql",
+      "line": 25,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql",
+      "line": 26,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql",
+      "line": 27,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql",
+      "line": 28,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql",
+      "line": 11,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql",
+      "line": 12,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql",
+      "line": 13,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql",
+      "line": 14,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql",
+      "line": 15,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql",
+      "line": 16,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql",
+      "line": 17,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql",
+      "line": 18,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql",
+      "line": 19,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql",
+      "line": 20,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql",
+      "line": 21,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql",
+      "line": 22,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql",
+      "line": 23,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql",
+      "line": 24,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql",
+      "line": 25,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql",
+      "line": 26,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql",
+      "line": 27,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql",
+      "line": 28,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql",
+      "line": 29,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, creator, create_time, updater, update_time, deleted, te",
+      "file": "demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql",
+      "line": 30,
+      "rule": "R7",
+      "severity": "P1"
+    },
+    {
+      "code": "JDBC_TLS_IDENTITY_NOT_VERIFIED",
+      "evidence": "MASTER_DATASOURCE_URL: \"jdbc:mysql://zhicloud-mysql-dev:3306/zhicloud_platform?useSSL=true&requireSSL=true&verifyServerCertificate=false&enabledTLSProtocols=TLSv1.2,TLSv1.3&serverTimezone=Asia/Shangha",
+      "file": "deploy/helm/zhicloud/values-dev.yaml",
+      "line": 42,
+      "rule": "R9",
+      "severity": "P1"
+    },
+    {
+      "code": "JDBC_TLS_IDENTITY_NOT_VERIFIED",
+      "evidence": "SLAVE_DATASOURCE_URL: \"jdbc:mysql://zhicloud-mysql-dev:3306/zhicloud_platform?useSSL=true&requireSSL=true&verifyServerCertificate=false&enabledTLSProtocols=TLSv1.2,TLSv1.3&serverTimezone=Asia/Shanghai",
+      "file": "deploy/helm/zhicloud/values-dev.yaml",
+      "line": 43,
+      "rule": "R9",
+      "severity": "P1"
+    },
+    {
+      "code": "EMPTY_SECRET_VALUE",
+      "evidence": "passwordSecretName: \"\"",
+      "file": "deploy/helm/zhicloud/values-dev.yaml",
+      "line": 59,
+      "rule": "R5",
+      "severity": "P1"
+    },
+    {
+      "code": "EMPTY_SECRET_VALUE",
+      "evidence": "existingSecret: \"\"",
+      "file": "deploy/helm/zhicloud/values-prod.yaml",
+      "line": 56,
+      "rule": "R5",
+      "severity": "P0"
+    },
+    {
+      "code": "EMPTY_SECRET_VALUE",
+      "evidence": "passwordSecretName: \"\"",
+      "file": "deploy/helm/zhicloud/values-prod.yaml",
+      "line": 84,
+      "rule": "R5",
+      "severity": "P0"
+    },
+    {
+      "code": "EMPTY_SECRET_VALUE",
+      "evidence": "existingSecret: \"\"",
+      "file": "deploy/helm/zhicloud/values-staging.yaml",
+      "line": 44,
+      "rule": "R5",
+      "severity": "P0"
+    },
+    {
+      "code": "EMPTY_SECRET_VALUE",
+      "evidence": "passwordSecretName: \"\"",
+      "file": "deploy/helm/zhicloud/values-staging.yaml",
+      "line": 66,
+      "rule": "R5",
+      "severity": "P0"
+    },
+    {
+      "code": "EMPTY_SECRET_VALUE",
+      "evidence": "existingSecret: \"\"",
+      "file": "deploy/helm/zhicloud/values.yaml",
+      "line": 177,
+      "rule": "R5",
+      "severity": "P0"
+    },
+    {
+      "code": "PLACEHOLDER_SECRET",
+      "evidence": "# 这是刻意为之——历史上这些字段默认值全是占位符字符串（CHANGE_ME 前缀），",
+      "file": "deploy/helm/zhicloud/values.yaml",
+      "line": 220,
+      "rule": "R4",
+      "severity": "P1"
+    },
+    {
+      "code": "EMPTY_SECRET_VALUE",
+      "evidence": "passwordSecretName: \"\"",
+      "file": "deploy/helm/zhicloud/values.yaml",
+      "line": 283,
+      "rule": "R5",
+      "severity": "P0"
+    },
+    {
+      "code": "PLACEHOLDER_SECRET",
+      "evidence": "安全策略（此前的问题：values.yaml 里 11 个密钥默认值全是 CHANGE_ME_IN_PRODUCTION，",
+      "file": "deploy/helm/zhicloud/templates/secret.yaml",
+      "line": 5,
+      "rule": "R4",
+      "severity": "P1"
+    },
+    {
+      "code": "PLACEHOLDER_SECRET",
+      "evidence": "3. 任何仍为空或以 CHANGE_ME 开头的值都会让 helm 渲染直接失败（见 zhicloud.requiredSecret）。",
+      "file": "deploy/helm/zhicloud/templates/secret.yaml",
+      "line": 12,
+      "rule": "R4",
+      "severity": "P1"
+    },
+    {
+      "code": "PLACEHOLDER_SECRET",
+      "evidence": "设计意图：以往 values.yaml 中 11 个密钥的默认值都是 \"CHANGE_ME_IN_PRODUCTION\"，",
+      "file": "deploy/helm/zhicloud/templates/_helpers.tpl",
+      "line": 121,
+      "rule": "R4",
+      "severity": "P1"
+    },
+    {
+      "code": "PLACEHOLDER_SECRET",
+      "evidence": "{{- if or (eq $value \"\") (hasPrefix \"CHANGE_ME\" $value) (hasPrefix \"__REQUIRED__\" $value) -}}",
+      "file": "deploy/helm/zhicloud/templates/_helpers.tpl",
+      "line": 135,
+      "rule": "R4",
+      "severity": "P1"
+    },
+    {
+      "code": "PLACEHOLDER_SECRET",
+      "evidence": "# 原因：此前这里内联了 9 个 \"CHANGE_ME_IN_PRODUCTION\" 明文占位符，",
+      "file": "k8s/zhicloud-server.yaml",
+      "line": 45,
+      "rule": "R4",
+      "severity": "P1"
+    },
+    {
+      "code": "PLACEHOLDER_SECRET",
+      "evidence": "#      Chart 内置渲染期校验，空值或 CHANGE_ME 前缀会让 helm 直接失败。",
+      "file": "k8s/zhicloud-server.yaml",
+      "line": 74,
+      "rule": "R4",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}",
+      "file": "script/docker/docker-compose.yml",
+      "line": 130,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "JDBC_TLS_IDENTITY_NOT_VERIFIED",
+      "evidence": "--spring.datasource.dynamic.datasource.master.url=${MASTER_DATASOURCE_URL:-jdbc:mysql://zhicloud-mysql:3306/zhicloud_platform?useSSL=true&requireSSL=true&verifyServerCertificate=false&enabledTLSProtoc",
+      "file": "script/docker/docker-compose.yml",
+      "line": 269,
+      "rule": "R9",
+      "severity": "P1"
+    },
+    {
+      "code": "JDBC_TLS_IDENTITY_NOT_VERIFIED",
+      "evidence": "--spring.datasource.dynamic.datasource.slave.url=${SLAVE_DATASOURCE_URL:-jdbc:mysql://zhicloud-mysql:3306/zhicloud_platform?useSSL=true&requireSSL=true&verifyServerCertificate=false&enabledTLSProtocol",
+      "file": "script/docker/docker-compose.yml",
+      "line": 272,
+      "rule": "R9",
+      "severity": "P1"
+    },
+    {
+      "code": "JDBC_TLS_IDENTITY_NOT_VERIFIED",
+      "evidence": "--spring.datasource.dynamic.datasource.master.url=\"jdbc:mysql://${DRILL_MYSQL_CONTAINER}:3306/${DRILL_MYSQL_DATABASE}?useSSL=true&requireSSL=true&verifyServerCertificate=false&enabledTLSProtocols=TLSv",
+      "file": "script/shell/disaster-recovery-drill.sh",
+      "line": 338,
+      "rule": "R9",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "login-password: ${DRUID_PASSWORD:druid@2026} # 控制台管理密码（生产环境通过环境变量注入）",
+      "file": "zhicloud-server/src/main/resources/application-dev.yaml",
+      "line": 22,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "JDBC_TLS_DISABLED",
+      "evidence": "url: jdbc:mysql://127.0.0.1:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true # MySQL Connector/J",
+      "file": "zhicloud-server/src/main/resources/application-dev.yaml",
+      "line": 50,
+      "rule": "R1",
+      "severity": "P1"
+    },
+    {
+      "code": "JDBC_PUBLIC_KEY_RETRIEVE",
+      "evidence": "url: jdbc:mysql://127.0.0.1:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true # MySQL Connector/J",
+      "file": "zhicloud-server/src/main/resources/application-dev.yaml",
+      "line": 50,
+      "rule": "R2",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "password: ${MYSQL_PASSWORD:123456}",
+      "file": "zhicloud-server/src/main/resources/application-dev.yaml",
+      "line": 52,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "JDBC_TLS_DISABLED",
+      "evidence": "url: jdbc:mysql://127.0.0.1:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true # MySQL Connector/J",
+      "file": "zhicloud-server/src/main/resources/application-dev.yaml",
+      "line": 55,
+      "rule": "R1",
+      "severity": "P1"
+    },
+    {
+      "code": "JDBC_PUBLIC_KEY_RETRIEVE",
+      "evidence": "url: jdbc:mysql://127.0.0.1:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true # MySQL Connector/J",
+      "file": "zhicloud-server/src/main/resources/application-dev.yaml",
+      "line": 55,
+      "rule": "R2",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "password: ${MYSQL_SLAVE_PASSWORD:123456}",
+      "file": "zhicloud-server/src/main/resources/application-dev.yaml",
+      "line": 57,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "password: ${RABBITMQ_PASSWORD:rabbit} # RabbitMQ 服务的密码",
+      "file": "zhicloud-server/src/main/resources/application-dev.yaml",
+      "line": 115,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "password: ${SBA_PASSWORD:admin}",
+      "file": "zhicloud-server/src/main/resources/application-dev.yaml",
+      "line": 147,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "LITERAL_WEAK_SECRET",
+      "evidence": "client-secret: xx",
+      "file": "zhicloud-server/src/main/resources/application-dev.yaml",
+      "line": 213,
+      "rule": "R6",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "login-password: ${DRUID_PASSWORD:druid@2026} # 控制台管理密码（生产环境通过环境变量注入）",
+      "file": "zhicloud-server/src/main/resources/application-local.yaml",
+      "line": 22,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "JDBC_TLS_DISABLED",
+      "evidence": "url: ${MASTER_DATASOURCE_URL:jdbc:mysql://127.0.0.1:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=",
+      "file": "zhicloud-server/src/main/resources/application-local.yaml",
+      "line": 50,
+      "rule": "R1",
+      "severity": "P1"
+    },
+    {
+      "code": "JDBC_PUBLIC_KEY_RETRIEVE",
+      "evidence": "url: ${MASTER_DATASOURCE_URL:jdbc:mysql://127.0.0.1:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=",
+      "file": "zhicloud-server/src/main/resources/application-local.yaml",
+      "line": 50,
+      "rule": "R2",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "password: ${MASTER_DATASOURCE_PASSWORD:123456} # 本地开发默认密码，生产环境通过环境变量注入",
+      "file": "zhicloud-server/src/main/resources/application-local.yaml",
+      "line": 52,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "JDBC_TLS_DISABLED",
+      "evidence": "url: ${SLAVE_DATASOURCE_URL:jdbc:mysql://127.0.0.1:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=t",
+      "file": "zhicloud-server/src/main/resources/application-local.yaml",
+      "line": 55,
+      "rule": "R1",
+      "severity": "P1"
+    },
+    {
+      "code": "JDBC_PUBLIC_KEY_RETRIEVE",
+      "evidence": "url: ${SLAVE_DATASOURCE_URL:jdbc:mysql://127.0.0.1:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=t",
+      "file": "zhicloud-server/src/main/resources/application-local.yaml",
+      "line": 55,
+      "rule": "R2",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "password: ${SLAVE_DATASOURCE_PASSWORD:123456}",
+      "file": "zhicloud-server/src/main/resources/application-local.yaml",
+      "line": 57,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "password: ${REDIS_PASSWORD:redis@2026} # 本地 Redis 密码（生产环境通过环境变量注入）",
+      "file": "zhicloud-server/src/main/resources/application-local.yaml",
+      "line": 73,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "password: ${RABBITMQ_PASSWORD:rabbit} # RabbitMQ 服务的密码",
+      "file": "zhicloud-server/src/main/resources/application-local.yaml",
+      "line": 123,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "password: ${SBA_PASSWORD:sba@2026} # SBA 密码（生产环境通过环境变量注入，local 默认 sba@2026）",
+      "file": "zhicloud-server/src/main/resources/application-local.yaml",
+      "line": 155,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "mock-secret: ${MOCK_SECRET:test-only-for-local} # P0 安全修复：mock 模式密钥，仅 local 环境使用，生产环境必须关闭 mock-enable",
+      "file": "zhicloud-server/src/main/resources/application-local.yaml",
+      "line": 222,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "api-key: ${OPENAI_API_KEY:sk-xxxx}",
+      "file": "zhicloud-server/src/main/resources/application.yaml",
+      "line": 216,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "api-key: ${ANTHROPIC_API_KEY:sk-xxxx}",
+      "file": "zhicloud-server/src/main/resources/application.yaml",
+      "line": 222,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "api-key: ${STABILITYAI_API_KEY:sk-xxxx}",
+      "file": "zhicloud-server/src/main/resources/application.yaml",
+      "line": 228,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "api-key: ${DASHSCOPE_API_KEY:sk-xxxx}",
+      "file": "zhicloud-server/src/main/resources/application.yaml",
+      "line": 230,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "api-key: ${DEEPSEEK_API_KEY:sk-xxxx}",
+      "file": "zhicloud-server/src/main/resources/application.yaml",
+      "line": 232,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "api-key: ${GEMINI_API_KEY:sk-xxxx}",
+      "file": "zhicloud-server/src/main/resources/application.yaml",
+      "line": 335,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "api-key: ${DOUBAO_API_KEY:sk-xxxx}",
+      "file": "zhicloud-server/src/main/resources/application.yaml",
+      "line": 339,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "api-key: ${HUNYUAN_API_KEY:sk-xxxx}",
+      "file": "zhicloud-server/src/main/resources/application.yaml",
+      "line": 343,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "api-key: ${SILICONFLOW_API_KEY:sk-xxxx}",
+      "file": "zhicloud-server/src/main/resources/application.yaml",
+      "line": 347,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "api-key: ${XINGHUO_API_KEY:sk-xxxx}",
+      "file": "zhicloud-server/src/main/resources/application.yaml",
+      "line": 351,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "api-key: ${BAICHUAN_API_KEY:sk-xxxx}",
+      "file": "zhicloud-server/src/main/resources/application.yaml",
+      "line": 355,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "api-key: ${YIYAN_API_KEY:sk-xxxx}",
+      "file": "zhicloud-server/src/main/resources/application.yaml",
+      "line": 359,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "api-key: ${ZHIPU_API_KEY:sk-xxxx}",
+      "file": "zhicloud-server/src/main/resources/application.yaml",
+      "line": 363,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "api-key: ${MINIMAX_API_KEY:sk-xxxx}",
+      "file": "zhicloud-server/src/main/resources/application.yaml",
+      "line": 367,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "api-key: ${MOONSHOT_API_KEY:sk-xxxx}",
+      "file": "zhicloud-server/src/main/resources/application.yaml",
+      "line": 371,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "api-key: ${STEPFUN_API_KEY:sk-xxxx}",
+      "file": "zhicloud-server/src/main/resources/application.yaml",
+      "line": 375,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "api-key: ${GROK_API_KEY:sk-xxxx}",
+      "file": "zhicloud-server/src/main/resources/application.yaml",
+      "line": 379,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "api-key: ${MIDJOURNEY_API_KEY:sk-xxxx}",
+      "file": "zhicloud-server/src/main/resources/application.yaml",
+      "line": 385,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "api-key: ${WEB_SEARCH_API_KEY:sk-xxxx}",
+      "file": "zhicloud-server/src/main/resources/application.yaml",
+      "line": 393,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "DEFAULT_CREDENTIAL",
+      "evidence": "password: ${NACOS_PASSWORD:nacos}",
+      "file": "zhicloud-server/src/main/resources/bootstrap.yml",
+      "line": 13,
+      "rule": "R3",
+      "severity": "P1"
+    },
+    {
+      "code": "SQL_LITERAL_SEED_CREDENTIAL",
+      "evidence": "INSERT IGNORE INTO `system_oauth2_client` (`id`, `client_id`, `secret`, `name`, `logo`, `description`, `status`, `access_token_validity_seconds`, `refresh_token_validity_seconds`, `redirect_uris`, `au",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 3518,
+      "rule": "R10",
+      "severity": "P0"
+    },
+    {
+      "code": "SQL_LITERAL_SEED_CREDENTIAL",
+      "evidence": "INSERT IGNORE INTO `system_oauth2_client` (`id`, `client_id`, `secret`, `name`, `logo`, `description`, `status`, `access_token_validity_seconds`, `refresh_token_validity_seconds`, `redirect_uris`, `au",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 3519,
+      "rule": "R10",
+      "severity": "P0"
+    },
+    {
+      "code": "SQL_LITERAL_SEED_CREDENTIAL",
+      "evidence": "INSERT IGNORE INTO `system_oauth2_client` (`id`, `client_id`, `secret`, `name`, `logo`, `description`, `status`, `access_token_validity_seconds`, `refresh_token_validity_seconds`, `redirect_uris`, `au",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 3520,
+      "rule": "R10",
+      "severity": "P0"
+    },
+    {
+      "code": "SQL_LITERAL_SEED_CREDENTIAL",
+      "evidence": "INSERT IGNORE INTO `system_oauth2_client` (`id`, `client_id`, `secret`, `name`, `logo`, `description`, `status`, `access_token_validity_seconds`, `refresh_token_validity_seconds`, `redirect_uris`, `au",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 3521,
+      "rule": "R10",
+      "severity": "P0"
+    },
+    {
+      "code": "SQL_LITERAL_SEED_CREDENTIAL",
+      "evidence": "INSERT IGNORE INTO `system_social_client` (`id`, `name`, `social_type`, `user_type`, `client_id`, `client_secret`, `agent_id`, `public_key`, `status`, `creator`, `create_time`, `updater`, `update_time",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 4782,
+      "rule": "R10",
+      "severity": "P0"
+    },
+    {
+      "code": "SQL_LITERAL_SEED_CREDENTIAL",
+      "evidence": "INSERT IGNORE INTO `system_social_client` (`id`, `name`, `social_type`, `user_type`, `client_id`, `client_secret`, `agent_id`, `public_key`, `status`, `creator`, `create_time`, `updater`, `update_time",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 4783,
+      "rule": "R10",
+      "severity": "P0"
+    },
+    {
+      "code": "SQL_LITERAL_SEED_CREDENTIAL",
+      "evidence": "INSERT IGNORE INTO `system_social_client` (`id`, `name`, `social_type`, `user_type`, `client_id`, `client_secret`, `agent_id`, `public_key`, `status`, `creator`, `create_time`, `updater`, `update_time",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 4784,
+      "rule": "R10",
+      "severity": "P0"
+    },
+    {
+      "code": "SQL_LITERAL_SEED_CREDENTIAL",
+      "evidence": "INSERT IGNORE INTO `system_social_client` (`id`, `name`, `social_type`, `user_type`, `client_id`, `client_secret`, `agent_id`, `public_key`, `status`, `creator`, `create_time`, `updater`, `update_time",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 4785,
+      "rule": "R10",
+      "severity": "P0"
+    },
+    {
+      "code": "SQL_LITERAL_SEED_CREDENTIAL",
+      "evidence": "INSERT IGNORE INTO `system_social_client` (`id`, `name`, `social_type`, `user_type`, `client_id`, `client_secret`, `agent_id`, `public_key`, `status`, `creator`, `create_time`, `updater`, `update_time",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 4786,
+      "rule": "R10",
+      "severity": "P0"
+    },
+    {
+      "code": "SQL_LITERAL_SEED_CREDENTIAL",
+      "evidence": "INSERT IGNORE INTO `system_social_client` (`id`, `name`, `social_type`, `user_type`, `client_id`, `client_secret`, `agent_id`, `public_key`, `status`, `creator`, `create_time`, `updater`, `update_time",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 4787,
+      "rule": "R10",
+      "severity": "P0"
+    },
+    {
+      "code": "SQL_LITERAL_SEED_CREDENTIAL",
+      "evidence": "INSERT IGNORE INTO `system_social_client` (`id`, `name`, `social_type`, `user_type`, `client_id`, `client_secret`, `agent_id`, `public_key`, `status`, `creator`, `create_time`, `updater`, `update_time",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 4788,
+      "rule": "R10",
+      "severity": "P0"
+    },
+    {
+      "code": "SQL_LITERAL_SEED_CREDENTIAL",
+      "evidence": "INSERT IGNORE INTO `system_social_client` (`id`, `name`, `social_type`, `user_type`, `client_id`, `client_secret`, `agent_id`, `public_key`, `status`, `creator`, `create_time`, `updater`, `update_time",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 4789,
+      "rule": "R10",
+      "severity": "P0"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT IGNORE INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 5018,
+      "rule": "R7",
+      "severity": "P0"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT IGNORE INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 5019,
+      "rule": "R7",
+      "severity": "P0"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT IGNORE INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 5020,
+      "rule": "R7",
+      "severity": "P0"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT IGNORE INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 5021,
+      "rule": "R7",
+      "severity": "P0"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT IGNORE INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 5022,
+      "rule": "R7",
+      "severity": "P0"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT IGNORE INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 5023,
+      "rule": "R7",
+      "severity": "P0"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT IGNORE INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 5024,
+      "rule": "R7",
+      "severity": "P0"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT IGNORE INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 5025,
+      "rule": "R7",
+      "severity": "P0"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT IGNORE INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 5026,
+      "rule": "R7",
+      "severity": "P0"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT IGNORE INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 5027,
+      "rule": "R7",
+      "severity": "P0"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT IGNORE INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 5028,
+      "rule": "R7",
+      "severity": "P0"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT IGNORE INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 5029,
+      "rule": "R7",
+      "severity": "P0"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT IGNORE INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 5030,
+      "rule": "R7",
+      "severity": "P0"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT IGNORE INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 5031,
+      "rule": "R7",
+      "severity": "P0"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT IGNORE INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 5032,
+      "rule": "R7",
+      "severity": "P0"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT IGNORE INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 5033,
+      "rule": "R7",
+      "severity": "P0"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT IGNORE INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 5034,
+      "rule": "R7",
+      "severity": "P0"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT IGNORE INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 5035,
+      "rule": "R7",
+      "severity": "P0"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT IGNORE INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 5036,
+      "rule": "R7",
+      "severity": "P0"
+    },
+    {
+      "code": "LITERAL_USER_ACCOUNT_SEED",
+      "evidence": "INSERT IGNORE INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`, `sex`, `avatar`, `status`, `login_ip`, `login_date`, `creator`, `create",
+      "file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+      "line": 5037,
+      "rule": "R7",
+      "severity": "P0"
+    },
+    {
+      "code": "JDBC_TLS_DISABLED",
+      "evidence": "url: \"jdbc:mysql://127.0.0.1:53306/zhicloud_sandbox_chain?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true\"",
+      "file": "zhicloud-server/src/test/resources/application-integration-mysql.yaml",
+      "line": 7,
+      "rule": "R1",
+      "severity": "P1"
+    },
+    {
+      "code": "JDBC_PUBLIC_KEY_RETRIEVE",
+      "evidence": "url: \"jdbc:mysql://127.0.0.1:53306/zhicloud_sandbox_chain?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true\"",
+      "file": "zhicloud-server/src/test/resources/application-integration-mysql.yaml",
+      "line": 7,
+      "rule": "R2",
+      "severity": "P1"
+    }
+  ],
+  "findings_by_rule": {
+    "R1": 5,
+    "R10": 12,
+    "R2": 5,
+    "R3": 33,
+    "R4": 7,
+    "R5": 7,
+    "R6": 1,
+    "R7": 180,
+    "R9": 5
+  },
+  "findings_by_severity": {
+    "P0": 38,
+    "P1": 217
+  },
+  "generated_at": "2026-09-27T19:15:55+08:00",
+  "repo_root": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2",
+  "rules": {
+    "R1": "JDBC_TLS_DISABLED",
+    "R10": "SQL_LITERAL_SEED_CREDENTIAL",
+    "R2": "JDBC_PUBLIC_KEY_RETRIEVE",
+    "R3": "DEFAULT_CREDENTIAL",
+    "R4": "PLACEHOLDER_SECRET",
+    "R5": "EMPTY_SECRET_VALUE",
+    "R6": "LITERAL_WEAK_SECRET",
+    "R7": "LITERAL_USER_ACCOUNT_SEED",
+    "R8": "DEMO_MODE_ENABLED",
+    "R9": "JDBC_TLS_IDENTITY_NOT_VERIFIED"
+  },
+  "scanned_files": 463,
+  "status": "failed",
+  "tool": "security_baseline_scan.py"
+}

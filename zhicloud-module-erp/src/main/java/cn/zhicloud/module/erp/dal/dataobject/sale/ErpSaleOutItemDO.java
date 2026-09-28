@@ -1,6 +1,6 @@
 package cn.zhicloud.module.erp.dal.dataobject.sale;
 
-import cn.zhicloud.framework.mybatis.core.dataobject.BaseDO;
+import cn.zhicloud.framework.tenant.core.db.TenantBaseDO;
 import cn.zhicloud.module.erp.dal.dataobject.product.ErpProductDO;
 import cn.zhicloud.module.erp.dal.dataobject.stock.ErpStockOutDO;
 import cn.zhicloud.module.erp.dal.dataobject.stock.ErpWarehouseDO;
@@ -24,7 +24,7 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ErpSaleOutItemDO extends BaseDO {
+public class ErpSaleOutItemDO extends TenantBaseDO {
 
     /**
      * 编号

@@ -68,8 +68,11 @@ public class Bm25LexicalRetriever {
                 return new Chunk(id, content);
             }, String.valueOf(knowledgeId), String.valueOf(tenantId));
         } catch (Exception e) {
-            // 向量底表尚未建好或查询异常时，词法路径降级为空（不影响向量主路径）
-            return Collections.emptyList();
+            // 不允许把数据库/底表故障伪装成“无命中”；由调用方显式降级并记录告警。
+            throw new IllegalStateException(
+                    "BM25 词法检索失败，knowledgeId=" + knowledgeId + ", tenantId=" + tenantId
+                            + ", table=" + vectorTableName,
+                    e);
         }
         if (corpus == null || corpus.isEmpty()) {
             return Collections.emptyList();

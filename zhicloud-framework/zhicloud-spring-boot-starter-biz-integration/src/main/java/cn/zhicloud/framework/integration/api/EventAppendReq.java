@@ -24,7 +24,7 @@ public class EventAppendReq {
     /** 事件唯一编号（必填，业务侧可推导的幂等键） */
     private String eventId;
 
-    /** 租户编号（空则默认 0） */
+    /** 租户编号（空则从当前上下文推导；上下文缺失或租户冲突时拒绝） */
     private Long tenantId;
 
     /** 聚合类型，如 erp_sale_out（必填） */

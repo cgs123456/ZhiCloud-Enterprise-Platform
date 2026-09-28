@@ -47,6 +47,14 @@ TENANT_FIELD_RE = re.compile(r"^\s*private\s+[\w<>\[\], .]+?\s+(tenantId|tenant_
 CREATE_TABLE_RE = re.compile(r"CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?`?([\w$]+)`?\s*\(",
                              re.IGNORECASE)
 INDEX_RE = re.compile(r"\b(?:INDEX|KEY)\s+`?([\w$]+)`?\s*\(([^)]*)\)", re.IGNORECASE)
+ALTER_TABLE_RE = re.compile(r"ALTER\s+TABLE\s+`?([\w$]+)`?\s+(.*?);",
+                            re.IGNORECASE | re.DOTALL)
+ADD_COLUMN_RE = re.compile(
+    r"\bADD\s+(?:COLUMN\s+)?(?:IF\s+NOT\s+EXISTS\s+)?`?([\w$]+)`?\s+",
+    re.IGNORECASE)
+ADD_INDEX_RE = re.compile(
+    r"\bADD\s+(?:UNIQUE\s+)?(?:INDEX|KEY)\s+`?([\w$]+)`?\s*\(([^)]*)\)",
+    re.IGNORECASE | re.DOTALL)
 KEYWORD_PREFIXES = {"primary", "unique", "key", "index", "constraint",
                     "fulltext", "check", "foreign"}
 
@@ -60,13 +68,19 @@ def iter_java(repo: Path):
 
 
 def parse_ddl_files(paths: list[Path]) -> dict[str, dict[str, Any]]:
-    """解析 CREATE TABLE，返回 {表名: {columns:set, indexes:[(name, first_col)]}}。"""
+    """Parse all CREATE TABLE statements, then apply ALTER TABLE statements."""
     out: dict[str, dict[str, Any]] = {}
+    documents: list[tuple[Path, str]] = []
+
+    # Pass 1: collect the complete CREATE TABLE model. Migration filenames are
+    # lexicographic (V108 sorts before V52), so ALTERs cannot be applied while
+    # walking files one by one.
     for path in paths:
         try:
             text = path.read_text(encoding="utf-8", errors="replace")
         except OSError:
             continue
+        documents.append((path, text))
         pos = 0
         while True:
             m = CREATE_TABLE_RE.search(text, pos)
@@ -113,6 +127,26 @@ def parse_ddl_files(paths: list[Path]) -> dict[str, dict[str, Any]]:
                     indexes.append((im.group(1).lower(), cols[0].lower()))
             out[m.group(1).lower()] = {"columns": columns, "indexes": indexes,
                                        "source": path.name}
+
+    # Pass 2: additive migrations must update the already-complete model.
+    for _path, text in documents:
+        for alter in ALTER_TABLE_RE.finditer(text):
+            table = alter.group(1).lower()
+            info = out.get(table)
+            if info is None:
+                continue
+            alter_body = alter.group(2)
+            for column in ADD_COLUMN_RE.finditer(alter_body):
+                column_name = column.group(1).lower()
+                if column_name in KEYWORD_PREFIXES:
+                    continue
+                info["columns"].add(column_name)
+            for index in ADD_INDEX_RE.finditer(alter_body):
+                cols = re.findall(r"`?([\w$]+)`?", index.group(2))
+                if cols:
+                    entry = (index.group(1).lower(), cols[0].lower())
+                    if entry not in info["indexes"]:
+                        info["indexes"].append(entry)
     return out
 
 

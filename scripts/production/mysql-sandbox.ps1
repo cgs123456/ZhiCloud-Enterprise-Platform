@@ -326,12 +326,21 @@ $dockerRunArgs = @(
     '--default-time-zone=+08:00'
 )
 
+$volumeCheck = 'not_applicable'
 if ($Command -eq 'start') {
     if (Test-Path -LiteralPath $StateFile -PathType Leaf) {
         throw "Sandbox state file already exists: $StateFile. Run 'stop' first; sandbox volumes are never reused."
     }
-    if (Test-VolumeExists -VolumeName $resolvedVolume) {
-        throw "Refusing to start: volume '$resolvedVolume' already exists. The sandbox never reuses a volume."
+    if ($DryRun) {
+        # DryRun 承诺「不接触任何外部状态」；查卷需要 docker daemon，
+        # 因此只在真实启动时执行，并在输出里显式标注该守卫被跳过（不能静默）。
+        $volumeCheck = 'skipped: dry-run does not contact the docker daemon'
+    }
+    else {
+        if (Test-VolumeExists -VolumeName $resolvedVolume) {
+            throw "Refusing to start: volume '$resolvedVolume' already exists. The sandbox never reuses a volume."
+        }
+        $volumeCheck = 'checked: volume does not exist'
     }
 }
 
@@ -345,6 +354,7 @@ if ($DryRun) {
         sandbox_database = $SandboxDatabase
         state_file       = $StateFile
         evidence_file    = $EvidenceFile
+        volume_check     = $volumeCheck
         docker_run_args  = @($dockerRunArgs)
         note             = 'DryRun only: nothing was created and no password is shown.'
     } | ConvertTo-Json -Depth 8 -Compress

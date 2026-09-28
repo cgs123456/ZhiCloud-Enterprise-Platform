@@ -10,7 +10,10 @@ import cn.zhicloud.framework.test.config.SqlInitializationTestConfiguration;
 import com.alibaba.druid.spring.boot3.autoconfigure.DruidDataSourceAutoConfigure;
 import com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration;
 import com.github.yulichang.autoconfigure.MybatisPlusJoinAutoConfiguration;
+import cn.zhicloud.framework.tenant.core.context.TenantContextHolder;
 import jakarta.annotation.Resource;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
@@ -22,6 +25,8 @@ import org.springframework.test.context.jdbc.Sql;
 import static cn.zhicloud.framework.mdm.enums.ErrorCodeConstants.MDM_CROSS_REF_ARG_INVALID;
 import static cn.zhicloud.framework.mdm.enums.ErrorCodeConstants.MDM_CROSS_REF_NOT_FOUND;
 import static cn.zhicloud.framework.mdm.enums.ErrorCodeConstants.MDM_CROSS_REF_TARGET_ID_INVALID;
+import static cn.zhicloud.framework.mdm.enums.ErrorCodeConstants.MDM_CROSS_REF_TENANT_MISMATCH;
+import static cn.zhicloud.framework.mdm.enums.ErrorCodeConstants.MDM_CROSS_REF_TENANT_REQUIRED;
 import static cn.zhicloud.framework.mdm.enums.MdmConstants.ENTITY_PRODUCT;
 import static cn.zhicloud.framework.mdm.enums.MdmConstants.ENTITY_SKU;
 import static cn.zhicloud.framework.mdm.enums.MdmConstants.ENTITY_WAREHOUSE;
@@ -61,6 +66,48 @@ public class MdmCrossRefServiceTest {
     private MdmCrossRefService mdmCrossRefService;
     @Resource
     private MdmCrossRefMapper mdmCrossRefMapper;
+
+    @BeforeEach
+    public void setUpTenantContext() {
+        TenantContextHolder.setTenantId(0L);
+    }
+
+    @AfterEach
+    public void clearTenantContext() {
+        TenantContextHolder.clear();
+    }
+
+    @Test
+    public void testUpsertWithoutTenantContextFailsClosed() {
+        TenantContextHolder.clear();
+
+        ServiceException ex = assertThrows(ServiceException.class,
+                () -> mdmCrossRefService.upsert(productRef("100", "9001")));
+        assertEquals(MDM_CROSS_REF_TENANT_REQUIRED.getCode(), ex.getCode());
+    }
+
+    @Test
+    public void testUpsertRejectsTenantMismatch() {
+        TenantContextHolder.setTenantId(7L);
+        MdmCrossRefUpsertReq req = MdmCrossRefUpsertReq.builder()
+                .tenantId(8L)
+                .sourceSystem(SYSTEM_ERP).sourceEntity(ENTITY_PRODUCT).sourceId("100")
+                .targetSystem(SYSTEM_WMS).targetEntity(ENTITY_SKU).targetId("9001")
+                .build();
+
+        ServiceException ex = assertThrows(ServiceException.class, () -> mdmCrossRefService.upsert(req));
+        assertEquals(MDM_CROSS_REF_TENANT_MISMATCH.getCode(), ex.getCode());
+    }
+
+    @Test
+    public void testResolveRejectsTenantMismatch() {
+        TenantContextHolder.setTenantId(7L);
+
+        ServiceException ex = assertThrows(ServiceException.class,
+                () -> mdmCrossRefService.mapTargetId(8L, SYSTEM_ERP, ENTITY_PRODUCT, "100",
+                        SYSTEM_WMS, ENTITY_SKU));
+        assertEquals(MDM_CROSS_REF_TENANT_MISMATCH.getCode(), ex.getCode());
+    }
 
     @Test
     public void testUpsertThenMap() {
@@ -104,6 +151,7 @@ public class MdmCrossRefServiceTest {
 
         assertEquals("9001", mdmCrossRefService.mapTargetId(0L, SYSTEM_ERP, ENTITY_PRODUCT, "100",
                 SYSTEM_WMS, ENTITY_SKU));
+        TenantContextHolder.setTenantId(1L);
         assertThrows(ServiceException.class,
                 () -> mdmCrossRefService.mapTargetId(1L, SYSTEM_ERP, ENTITY_PRODUCT, "100", SYSTEM_WMS, ENTITY_SKU),
                 "A 租户的映射不能被 B 租户解析到");

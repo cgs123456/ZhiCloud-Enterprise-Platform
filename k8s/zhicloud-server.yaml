@@ -19,18 +19,20 @@ data:
   # 容器感知堆：按 memory limit 的 60% 自动设堆上限，避免固定 -Xmx 与限额不匹配；OOM 时快速退出便于探针重启
   JAVA_OPTS: "-XX:MaxRAMPercentage=60.0 -XX:+ExitOnOutOfMemoryError -XX:+UseZGC -XX:+ZGenerational -Djava.security.egd=file:/dev/./urandom"
   # 数据源（rewriteBatchedStatements=true 使 JDBC 批量重写为 multi-values INSERT，批量写入性能提升约 20 倍）
-  MASTER_DATASOURCE_URL: "jdbc:mysql://zhicloud-mysql:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true"
+  MASTER_DATASOURCE_URL: "jdbc:mysql://zhicloud-mysql:3306/zhicloud_platform?sslMode=VERIFY_IDENTITY&tlsVersions=TLSv1.2,TLSv1.3&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true"
   # 最小权限：使用专用业务账号（需预先创建并授权），Flyway 迁移如需 DDL 请用独立高权限账号执行
   MASTER_DATASOURCE_USERNAME: "zhicloud"
-  SLAVE_DATASOURCE_URL: "jdbc:mysql://zhicloud-mysql:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true"
+  SLAVE_DATASOURCE_URL: "jdbc:mysql://zhicloud-mysql:3306/zhicloud_platform?sslMode=VERIFY_IDENTITY&tlsVersions=TLSv1.2,TLSv1.3&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true"
   SLAVE_DATASOURCE_USERNAME: "zhicloud"
   # Redis
   REDIS_HOST: "zhicloud-redis"
   REDIS_PORT: "6379"
   # RAG
   ZHICLOUD_AIRAG_ENABLED: "true"
-  ZHICLOUD_AIRAG_DATASOURCE_URL: "jdbc:postgresql://zhicloud-postgres:5432/zhicloud_rag"
+  # 生产必须校验 PostgreSQL 证书链与主机名；CA 需在 JVM truststore 或通过 sslrootcert 提供
+  ZHICLOUD_AIRAG_DATASOURCE_URL: "jdbc:postgresql://zhicloud-postgres:5432/zhicloud_rag?sslmode=verify-full"
   ZHICLOUD_AIRAG_DATASOURCE_USERNAME: "zhicloud"
+  ZHICLOUD_AIRAG_INITIALIZE_SCHEMA: "false"
   # OTel
   OTEL_EXPORTER_OTLP_ENDPOINT: "http://zhicloud-jaeger:4318/v1/traces"
   MANAGEMENT_OTLP_TRACING_ENDPOINT: "http://zhicloud-jaeger:4318/v1/traces"
@@ -60,6 +62,7 @@ data:
 #        --from-literal=SLAVE_DATASOURCE_PASSWORD="$SLAVE_DATASOURCE_PASSWORD" \
 #        --from-literal=REDIS_PASSWORD="$REDIS_PASSWORD" \
 #        --from-literal=POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
+#        --from-literal=ZHICLOUD_AIRAG_DATASOURCE_PASSWORD="$ZHICLOUD_AIRAG_DATASOURCE_PASSWORD" \
 #        --from-literal=MYBATIS_ENCRYPTOR_PASSWORD="$MYBATIS_ENCRYPTOR_PASSWORD" \
 #        --from-literal=API_ENCRYPT_REQUEST_KEY="$API_ENCRYPT_REQUEST_KEY" \
 #        --from-literal=API_ENCRYPT_RESPONSE_KEY="$API_ENCRYPT_RESPONSE_KEY" \
@@ -72,7 +75,7 @@ data:
 #
 # 必需的键（缺一不可）：
 #   MASTER_DATASOURCE_PASSWORD、SLAVE_DATASOURCE_PASSWORD、REDIS_PASSWORD、
-#   POSTGRES_PASSWORD、MYBATIS_ENCRYPTOR_PASSWORD、API_ENCRYPT_REQUEST_KEY、
+#   POSTGRES_PASSWORD、ZHICLOUD_AIRAG_DATASOURCE_PASSWORD、MYBATIS_ENCRYPTOR_PASSWORD、API_ENCRYPT_REQUEST_KEY、
 #   API_ENCRYPT_RESPONSE_KEY、DRUID_USERNAME、DRUID_PASSWORD、SBA_PASSWORD
 # ============================================================
 
@@ -125,6 +128,16 @@ spec:
               value: "prod"
             - name: TZ
               value: "Asia/Shanghai"
+            # MySQL Connector/J VERIFY_IDENTITY 需要可信 CA 与主机名匹配
+            - name: MYSQL_TLS_TRUSTSTORE_URL
+              value: "file:/etc/zhicloud/mysql-tls/truststore.p12"
+            - name: MYSQL_TLS_TRUSTSTORE_TYPE
+              value: "PKCS12"
+            - name: MYSQL_TLS_TRUSTSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: zhicloud-mysql-tls-secret
+                  key: MYSQL_TLS_TRUSTSTORE_PASSWORD
           resources:
             requests:
               cpu: "500m"
@@ -168,6 +181,17 @@ spec:
             runAsNonRoot: true
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: false
+          volumeMounts:
+            - name: mysql-tls-truststore
+              mountPath: /etc/zhicloud/mysql-tls
+              readOnly: true
+      volumes:
+        - name: mysql-tls-truststore
+          secret:
+            secretName: zhicloud-mysql-tls-secret
+            items:
+              - key: truststore.p12
+                path: truststore.p12
       terminationGracePeriodSeconds: 60
 
 # ============================================================

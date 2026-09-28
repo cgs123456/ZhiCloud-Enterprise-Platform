@@ -1,7 +1,6 @@
 package cn.zhicloud.module.system.dal.dataobject.sms;
 
-import cn.zhicloud.framework.mybatis.core.dataobject.BaseDO;
-import cn.zhicloud.framework.tenant.core.aop.TenantIgnore;
+import cn.zhicloud.framework.tenant.core.db.TenantBaseDO;
 import com.baomidou.mybatisplus.annotation.KeySequence;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
@@ -22,8 +21,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@TenantIgnore
-public class SmsCodeDO extends BaseDO {
+public class SmsCodeDO extends TenantBaseDO {
 
     /**
      * 编号

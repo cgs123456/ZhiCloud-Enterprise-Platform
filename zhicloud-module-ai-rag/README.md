@@ -136,6 +136,7 @@ zhicloud:
   airag:
     enabled: true
     vector-table-name: airag_vector_store
+    initialize-schema: false # 生产由 SQL 迁移显式建表；仅本地临时调试可设 true
 ```
 
 如使用独立数据源（与 MySQL 业务库隔离），可参考 `docker-compose.yml` 中的配置：
@@ -147,7 +148,7 @@ zhicloud:
     datasource:
       url: jdbc:postgresql://localhost:5432/zhicloud_rag
       username: zhicloud
-      password: zhicloud@2026
+      password: ${ZHICLOUD_AIRAG_DATASOURCE_PASSWORD:?required}
 ```
 
 ### 5.5 补充 EmbeddingModel Bean（部署完成后）
@@ -162,7 +163,7 @@ BGE-base-zh 输出维度为 **768**，需在以下位置保持一致：
 |---|---|---|
 | `AiragKnowledgeDO.vectorDimension` | 768 | 知识库元信息记录的向量维度 |
 | `AiragConfiguration.DEFAULT_VECTOR_DIMENSION` | 768 | `PgVectorStore.builder().dimensions(768)` |
-| `airag_vector_store.embedding` | `vector(768)` | pgvector 列类型（由 Spring AI 自动创建） |
+| `airag_vector_store.embedding` | `vector(768)` | pgvector 列类型，由 `sql/postgresql/airag_pgvector.sql` 显式创建 |
 | `AiragKnowledgeSaveReqVO.vectorDimension` | 768 | 创建知识库时校验 |
 
 **切换模型时需同步调整**：

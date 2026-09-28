@@ -68,6 +68,20 @@ spec:
               value: {{ .Values.env.SPRING_PROFILES_ACTIVE | quote }}
             - name: TZ
               value: {{ .Values.env.TZ | quote }}
+            # existing=存量库增量迁移；clean=仅空 MySQL 库，显式覆盖后才允许
+            - name: MIGRATION_BASELINE_MODE
+              value: {{ .Values.migration.baselineMode | default "existing" | quote }}
+            {{- if .Values.mysqlTls.enabled }}
+            - name: MYSQL_TLS_TRUSTSTORE_URL
+              value: {{ printf "file:%s/%s" .Values.mysqlTls.truststore.mountPath .Values.mysqlTls.truststore.fileName | quote }}
+            - name: MYSQL_TLS_TRUSTSTORE_TYPE
+              value: {{ .Values.mysqlTls.truststore.type | quote }}
+            - name: MYSQL_TLS_TRUSTSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ required "mysqlTls.truststore.existingSecret 未设置：生产迁移 Job 必须提供 truststore Secret" .Values.mysqlTls.truststore.existingSecret | quote }}
+                  key: {{ .Values.mysqlTls.truststore.passwordKey | quote }}
+            {{- end }}
           # 直接运行 fat jar 内的迁移入口类：只初始化 Flyway + JDBC，跑完即退出。
           # 迁移失败会以非 0 退出码结束，从而让 PreSync Hook 失败并阻断发布。
           command:
@@ -81,5 +95,21 @@ spec:
             - org.springframework.boot.loader.launch.PropertiesLauncher
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
+          # 迁移 Job 与业务 Pod 使用同一 truststore 契约，避免 PreSync 阶段先失败
+          {{- if .Values.mysqlTls.enabled }}
+          volumeMounts:
+            - name: mysql-tls-truststore
+              mountPath: {{ .Values.mysqlTls.truststore.mountPath | quote }}
+              readOnly: true
+          {{- end }}
           {{- include "zhicloud.resources" . | nindent 10 }}
+      {{- if .Values.mysqlTls.enabled }}
+      volumes:
+        - name: mysql-tls-truststore
+          secret:
+            secretName: {{ required "mysqlTls.truststore.existingSecret 未设置：生产迁移 Job 必须提供 truststore Secret" .Values.mysqlTls.truststore.existingSecret | quote }}
+            items:
+              - key: {{ .Values.mysqlTls.truststore.fileKey | quote }}
+                path: {{ .Values.mysqlTls.truststore.fileName | quote }}
+      {{- end }}
 {{- end }}

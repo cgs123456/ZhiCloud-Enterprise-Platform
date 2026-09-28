@@ -1,0 +1,3475 @@
+{
+  "commit": "d7994f60e12ef1b93baede2ad811b15cc3f533f1",
+  "ddl_files": [
+    "ai.sql",
+    "ai_prompt_template.sql",
+    "aimultiagent.sql",
+    "bpm.sql",
+    "erp.sql",
+    "erp_cost.sql",
+    "erp_mps.sql",
+    "erp_tax.sql",
+    "hr.sql",
+    "mes.sql",
+    "mes_rework.sql",
+    "mes_tpm.sql",
+    "qms.sql",
+    "qms_document_audit.sql",
+    "qms_ext.sql",
+    "qms_instrument.sql",
+    "quartz.sql",
+    "wms.sql",
+    "wms_wave.sql",
+    "wms_zone_location.sql",
+    "zhicloud_platform.sql",
+    "zhicloud_platform_bootstrap.sql"
+  ],
+  "ddl_table_count": 331,
+  "ddl_tables_with_tenant_column": 298,
+  "disclaimers": [
+    "读的是仓库 DDL 文本，不是生产 information_schema；DDL 缺失的表记为不可判定。",
+    "不覆盖方法级/Controller 级 @TenantIgnore 的运行时行为、Redis Key 隔离、MQ 消费链路与 mapper XML 手写 SQL 的 JOIN。",
+    "规则语义来自 TenantDatabaseInterceptor 与 TenantProperties 源码，若拦截器被二改需重新核对。"
+  ],
+  "do_by_base": {
+    "BaseDO": 458,
+    "TenantBaseDO": 120
+  },
+  "do_count": 578,
+  "do_tenant_ignore_count": 22,
+  "do_unverified_count": 258,
+  "do_verified_count": 320,
+  "evidence_class": "static-text (Java DO + repository DDL); not production information_schema",
+  "finding_count": 360,
+  "findings": [
+    {
+      "class": "EventDlqReplayLogDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-framework/zhicloud-spring-boot-starter-biz-integration/src/main/java/cn/zhicloud/framework/integration/dal/dataobject/EventDlqReplayLogDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "event_dlq_replay_log"
+    },
+    {
+      "class": "EventInboxDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-framework/zhicloud-spring-boot-starter-biz-integration/src/main/java/cn/zhicloud/framework/integration/dal/dataobject/EventInboxDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "event_inbox"
+    },
+    {
+      "class": "EventOutboxDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-framework/zhicloud-spring-boot-starter-biz-integration/src/main/java/cn/zhicloud/framework/integration/dal/dataobject/EventOutboxDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "event_outbox"
+    },
+    {
+      "class": "InventoryItemDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-framework/zhicloud-spring-boot-starter-biz-inventory/src/main/java/cn/zhicloud/framework/inventory/dal/dataobject/InventoryItemDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "inventory_item"
+    },
+    {
+      "class": "MdmCrossRefDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-framework/zhicloud-spring-boot-starter-biz-mdm/src/main/java/cn/zhicloud/framework/mdm/dal/dataobject/MdmCrossRefDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "mdm_cross_ref"
+    },
+    {
+      "class": "AiPromptTemplateDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-ai/src/main/java/cn/zhicloud/module/ai/dal/dataobject/prompt/AiPromptTemplateDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "ai_prompt_template"
+    },
+    {
+      "class": "MultiAgentCheckpointDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-ai-multiagent/src/main/java/cn/zhicloud/module/aimultiagent/dal/dataobject/MultiAgentCheckpointDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "aimultiagent_checkpoint"
+    },
+    {
+      "class": "MultiAgentExecutionLogDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-ai-multiagent/src/main/java/cn/zhicloud/module/aimultiagent/dal/dataobject/MultiAgentExecutionLogDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "aimultiagent_execution_log"
+    },
+    {
+      "class": "MultiAgentExecutionSpanDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-ai-multiagent/src/main/java/cn/zhicloud/module/aimultiagent/dal/dataobject/MultiAgentExecutionSpanDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "aimultiagent_execution_span"
+    },
+    {
+      "class": "MultiAgentSkillDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-ai-multiagent/src/main/java/cn/zhicloud/module/aimultiagent/dal/dataobject/MultiAgentSkillDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "aimultiagent_skill"
+    },
+    {
+      "class": "MultiAgentSkillGroupDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-ai-multiagent/src/main/java/cn/zhicloud/module/aimultiagent/dal/dataobject/MultiAgentSkillGroupDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "aimultiagent_skill_group"
+    },
+    {
+      "class": "MultiAgentTopologyDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-ai-multiagent/src/main/java/cn/zhicloud/module/aimultiagent/dal/dataobject/MultiAgentTopologyDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "aimultiagent_topology"
+    },
+    {
+      "class": "AiragDocumentDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-ai-rag/src/main/java/cn/zhicloud/module/airag/dal/dataobject/AiragDocumentDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "airag_document"
+    },
+    {
+      "class": "AiragKnowledgeDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-ai-rag/src/main/java/cn/zhicloud/module/airag/dal/dataobject/AiragKnowledgeDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "airag_knowledge"
+    },
+    {
+      "class": "AiragEvalDatasetDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-ai-rag/src/main/java/cn/zhicloud/module/airag/dal/dataobject/eval/AiragEvalDatasetDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "airag_eval_dataset"
+    },
+    {
+      "class": "AiragEvalQuestionDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-ai-rag/src/main/java/cn/zhicloud/module/airag/dal/dataobject/eval/AiragEvalQuestionDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "airag_eval_question"
+    },
+    {
+      "class": "AiragEvalReportDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-ai-rag/src/main/java/cn/zhicloud/module/airag/dal/dataobject/eval/AiragEvalReportDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "airag_eval_report"
+    },
+    {
+      "class": "AiRagEvaluationLogDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-ai-rag/src/main/java/cn/zhicloud/module/airag/dal/dataobject/evaluation/AiRagEvaluationLogDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "ai_rag_evaluation_log"
+    },
+    {
+      "class": "CrmBusinessDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/dal/dataobject/business/CrmBusinessDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "crm_business"
+    },
+    {
+      "class": "CrmBusinessProductDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/dal/dataobject/business/CrmBusinessProductDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "crm_business_product"
+    },
+    {
+      "class": "CrmBusinessStatusDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/dal/dataobject/business/CrmBusinessStatusDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "crm_business_status"
+    },
+    {
+      "class": "CrmBusinessStatusTypeDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/dal/dataobject/business/CrmBusinessStatusTypeDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "crm_business_status_type"
+    },
+    {
+      "class": "CrmClueDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/dal/dataobject/clue/CrmClueDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "crm_clue"
+    },
+    {
+      "class": "CrmCluePoolConfigDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/dal/dataobject/clue/CrmCluePoolConfigDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "crm_clue_pool_config"
+    },
+    {
+      "class": "CrmContactBusinessDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/dal/dataobject/contact/CrmContactBusinessDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "crm_contact_business"
+    },
+    {
+      "class": "CrmContactDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/dal/dataobject/contact/CrmContactDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "crm_contact"
+    },
+    {
+      "class": "CrmContractConfigDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/dal/dataobject/contract/CrmContractConfigDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "crm_contract_config"
+    },
+    {
+      "class": "CrmContractDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/dal/dataobject/contract/CrmContractDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "crm_contract"
+    },
+    {
+      "class": "CrmContractProductDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/dal/dataobject/contract/CrmContractProductDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "crm_contract_product"
+    },
+    {
+      "class": "CrmCustomerDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/dal/dataobject/customer/CrmCustomerDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "crm_customer"
+    },
+    {
+      "class": "CrmCustomerLimitConfigDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/dal/dataobject/customer/CrmCustomerLimitConfigDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "crm_customer_limit_config"
+    },
+    {
+      "class": "CrmCustomerPoolConfigDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/dal/dataobject/customer/CrmCustomerPoolConfigDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "crm_customer_pool_config"
+    },
+    {
+      "class": "CrmFollowUpRecordDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/dal/dataobject/followup/CrmFollowUpRecordDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "crm_follow_up_record"
+    },
+    {
+      "class": "CrmInvoiceDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/dal/dataobject/invoice/CrmInvoiceDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "crm_invoice"
+    },
+    {
+      "class": "CrmInvoiceLineDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/dal/dataobject/invoice/CrmInvoiceLineDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "crm_invoice_line"
+    },
+    {
+      "class": "CrmPerformanceConfigDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/dal/dataobject/performance/CrmPerformanceConfigDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "crm_performance_config"
+    },
+    {
+      "class": "CrmOwnerRecordDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/dal/dataobject/permission/CrmOwnerRecordDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "crm_owner_record"
+    },
+    {
+      "class": "CrmPermissionDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/dal/dataobject/permission/CrmPermissionDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "crm_permission"
+    },
+    {
+      "class": "CrmProductCategoryDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/dal/dataobject/product/CrmProductCategoryDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "crm_product_category"
+    },
+    {
+      "class": "CrmProductDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/dal/dataobject/product/CrmProductDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "crm_product"
+    },
+    {
+      "class": "CrmReceivableDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/dal/dataobject/receivable/CrmReceivableDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "crm_receivable"
+    },
+    {
+      "class": "CrmReceivablePlanDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/dal/dataobject/receivable/CrmReceivablePlanDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "crm_receivable_plan"
+    },
+    {
+      "class": "CrmSaleOrderDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/dal/dataobject/salesorder/CrmSaleOrderDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "crm_sale_order"
+    },
+    {
+      "class": "CrmSaleOrderItemDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/dal/dataobject/salesorder/CrmSaleOrderItemDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "crm_sale_order_item"
+    },
+    {
+      "class": "CrmVisitRecordDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/dal/dataobject/visit/CrmVisitRecordDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "crm_visit_record"
+    },
+    {
+      "class": "CrmClueChannelDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/service/clue/channel/CrmClueChannelDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "crm_clue_channel"
+    },
+    {
+      "class": "CrmWorkOrderDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-crm/src/main/java/cn/zhicloud/module/crm/service/servicecloud/CrmWorkOrderDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "crm_work_order"
+    },
+    {
+      "class": "ErpAccountingEventDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/accounting/ErpAccountingEventDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_accounting_event"
+    },
+    {
+      "class": "ErpAccountingPostingDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/accounting/ErpAccountingPostingDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_accounting_posting"
+    },
+    {
+      "class": "ErpFinanceSettlementAllocationDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/accounting/ErpFinanceSettlementAllocationDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_finance_settlement_allocation"
+    },
+    {
+      "class": "ErpPostingRuleDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/accounting/ErpPostingRuleDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_posting_rule"
+    },
+    {
+      "class": "ErpPostingRuleLineDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/accounting/ErpPostingRuleLineDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_posting_rule_line"
+    },
+    {
+      "class": "ErpTaxInvoiceSourceDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/accounting/ErpTaxInvoiceSourceDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_tax_invoice_source"
+    },
+    {
+      "class": "ErpCpfrExceptionDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/collaboration/cpfr/ErpCpfrExceptionDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_cpfr_exception"
+    },
+    {
+      "class": "ErpCpfrForecastDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/collaboration/cpfr/ErpCpfrForecastDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_cpfr_forecast"
+    },
+    {
+      "class": "ErpAccountBookDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/ErpAccountBookDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_account_book"
+    },
+    {
+      "class": "ErpAccountDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/ErpAccountDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_account"
+    },
+    {
+      "class": "ErpBankAccountDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/ErpBankAccountDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_bank_account"
+    },
+    {
+      "class": "ErpBudgetDetailDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/ErpBudgetDetailDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_budget_detail"
+    },
+    {
+      "class": "ErpBudgetDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/ErpBudgetDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_budget"
+    },
+    {
+      "class": "ErpCashFlowDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/ErpCashFlowDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_cash_flow"
+    },
+    {
+      "class": "ErpConsolidationEntryDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/ErpConsolidationEntryDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_consolidation_entry"
+    },
+    {
+      "class": "ErpConsolidationScopeDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/ErpConsolidationScopeDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_consolidation_scope"
+    },
+    {
+      "class": "ErpConsolidationWorksheetDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/ErpConsolidationWorksheetDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_consolidation_worksheet"
+    },
+    {
+      "class": "ErpCostAllocationDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/ErpCostAllocationDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_cost_allocation"
+    },
+    {
+      "class": "ErpCostCenterDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/ErpCostCenterDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_cost_center"
+    },
+    {
+      "class": "ErpCurrencyDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/ErpCurrencyDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_currency"
+    },
+    {
+      "class": "ErpExchangeRateDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/ErpExchangeRateDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_exchange_rate"
+    },
+    {
+      "class": "ErpFaChangeDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/ErpFaChangeDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_fa_change"
+    },
+    {
+      "class": "ErpFinancePaymentDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/ErpFinancePaymentDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_finance_payment"
+    },
+    {
+      "class": "ErpFinancePaymentItemDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/ErpFinancePaymentItemDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_finance_payment_item"
+    },
+    {
+      "class": "ErpFinanceReceiptDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/ErpFinanceReceiptDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_finance_receipt"
+    },
+    {
+      "class": "ErpFinanceReceiptItemDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/ErpFinanceReceiptItemDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_finance_receipt_item"
+    },
+    {
+      "class": "ErpFixedAssetDepreciationDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/ErpFixedAssetDepreciationDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_fixed_asset_depreciation"
+    },
+    {
+      "class": "ErpFixedAssetDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/ErpFixedAssetDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_fixed_asset"
+    },
+    {
+      "class": "ErpFundPlanDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/ErpFundPlanDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_fund_plan"
+    },
+    {
+      "class": "ErpGlAccountDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/ErpGlAccountDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_gl_account"
+    },
+    {
+      "class": "ErpGlVoucherDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/ErpGlVoucherDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_gl_voucher"
+    },
+    {
+      "class": "ErpGlVoucherEntryDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/ErpGlVoucherEntryDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_gl_voucher_entry"
+    },
+    {
+      "class": "ErpPeriodCloseDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/ErpPeriodCloseDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_period_close"
+    },
+    {
+      "class": "ErpPeriodDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/ErpPeriodDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_period"
+    },
+    {
+      "class": "ErpProfitabilityAnalysisDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/ErpProfitabilityAnalysisDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_profitability_analysis"
+    },
+    {
+      "class": "ErpProfitCenterDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/ErpProfitCenterDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_profit_center"
+    },
+    {
+      "class": "ErpCashierDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/cashier/ErpCashierDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_cashier"
+    },
+    {
+      "class": "ErpActualCostDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/cost/ErpActualCostDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_actual_cost"
+    },
+    {
+      "class": "ErpCostItemDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/cost/ErpCostItemDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_cost_item"
+    },
+    {
+      "class": "ErpCostVarianceDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/cost/ErpCostVarianceDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_cost_variance"
+    },
+    {
+      "class": "ErpStandardCostDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/cost/ErpStandardCostDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_standard_cost"
+    },
+    {
+      "class": "ErpWorkOrderCostDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/cost/ErpWorkOrderCostDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_work_order_cost"
+    },
+    {
+      "class": "ErpTaxInvoiceDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/tax/ErpTaxInvoiceDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_tax_invoice"
+    },
+    {
+      "class": "ErpTaxInvoiceLineDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/tax/ErpTaxInvoiceLineDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_tax_invoice_line"
+    },
+    {
+      "class": "ErpTaxRateDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/finance/tax/ErpTaxRateDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_tax_rate"
+    },
+    {
+      "class": "ErpProductCategoryDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/product/ErpProductCategoryDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_product_category"
+    },
+    {
+      "class": "ErpProductDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/product/ErpProductDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_product"
+    },
+    {
+      "class": "ErpProductUnitDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/product/ErpProductUnitDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_product_unit"
+    },
+    {
+      "class": "ErpMpsPlanDetailDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/production/mps/ErpMpsPlanDetailDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_mps_plan_detail"
+    },
+    {
+      "class": "ErpMpsPlanDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/production/mps/ErpMpsPlanDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_mps_plan"
+    },
+    {
+      "class": "ErpMrpPlanDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/production/mrp/ErpMrpPlanDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_mrp_plan"
+    },
+    {
+      "class": "ErpMrpResultDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/production/mrp/ErpMrpResultDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_mrp_result"
+    },
+    {
+      "class": "ErpPurchaseInDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/purchase/ErpPurchaseInDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_purchase_in"
+    },
+    {
+      "class": "ErpPurchaseInItemDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/purchase/ErpPurchaseInItemDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_purchase_in_items"
+    },
+    {
+      "class": "ErpPurchaseOrderDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/purchase/ErpPurchaseOrderDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_purchase_order"
+    },
+    {
+      "class": "ErpPurchaseOrderItemDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/purchase/ErpPurchaseOrderItemDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_purchase_order_items"
+    },
+    {
+      "class": "ErpPurchaseReturnDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/purchase/ErpPurchaseReturnDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_purchase_return"
+    },
+    {
+      "class": "ErpPurchaseReturnItemDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/purchase/ErpPurchaseReturnItemDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_purchase_return_items"
+    },
+    {
+      "class": "ErpSupplierDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/purchase/ErpSupplierDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_supplier"
+    },
+    {
+      "class": "ErpSupplierEvaluationDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/purchase/evaluation/ErpSupplierEvaluationDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_supplier_evaluation"
+    },
+    {
+      "class": "ErpSupplierEvaluationItemDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/purchase/evaluation/ErpSupplierEvaluationItemDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_supplier_evaluation_item"
+    },
+    {
+      "class": "ErpPurchaseCompareDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/purchase/inquiry/ErpPurchaseCompareDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_purchase_compare"
+    },
+    {
+      "class": "ErpPurchaseCompareLineDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/purchase/inquiry/ErpPurchaseCompareLineDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_purchase_compare_line"
+    },
+    {
+      "class": "ErpPurchaseInquiryDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/purchase/inquiry/ErpPurchaseInquiryDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_purchase_inquiry"
+    },
+    {
+      "class": "ErpPurchaseInquiryItemDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/purchase/inquiry/ErpPurchaseInquiryItemDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_purchase_inquiry_item"
+    },
+    {
+      "class": "ErpPurchaseQuoteDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/purchase/inquiry/ErpPurchaseQuoteDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_purchase_quote"
+    },
+    {
+      "class": "ErpPurchaseQuoteItemDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/purchase/inquiry/ErpPurchaseQuoteItemDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_purchase_quote_item"
+    },
+    {
+      "class": "ErpCustomerDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/sale/ErpCustomerDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_customer"
+    },
+    {
+      "class": "ErpSaleOrderDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/sale/ErpSaleOrderDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_sale_order"
+    },
+    {
+      "class": "ErpSaleOrderItemDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/sale/ErpSaleOrderItemDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_sale_order_items"
+    },
+    {
+      "class": "ErpSaleOutDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/sale/ErpSaleOutDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_sale_out"
+    },
+    {
+      "class": "ErpSaleOutItemDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/sale/ErpSaleOutItemDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_sale_out_items"
+    },
+    {
+      "class": "ErpSaleReturnDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/sale/ErpSaleReturnDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_sale_return"
+    },
+    {
+      "class": "ErpSaleReturnItemDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/sale/ErpSaleReturnItemDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_sale_return_items"
+    },
+    {
+      "class": "ErpCreditLimitDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/sale/credit/ErpCreditLimitDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_credit_limit"
+    },
+    {
+      "class": "ErpStockBatchDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/stock/ErpStockBatchDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_stock_batch"
+    },
+    {
+      "class": "ErpStockCheckDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/stock/ErpStockCheckDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_stock_check"
+    },
+    {
+      "class": "ErpStockCheckItemDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/stock/ErpStockCheckItemDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_stock_check_item"
+    },
+    {
+      "class": "ErpStockDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/stock/ErpStockDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_stock"
+    },
+    {
+      "class": "ErpStockInDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/stock/ErpStockInDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_stock_in"
+    },
+    {
+      "class": "ErpStockInItemDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/stock/ErpStockInItemDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_stock_in_item"
+    },
+    {
+      "class": "ErpStockMoveDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/stock/ErpStockMoveDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_stock_move"
+    },
+    {
+      "class": "ErpStockMoveItemDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/stock/ErpStockMoveItemDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_stock_move_item"
+    },
+    {
+      "class": "ErpStockOutDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/stock/ErpStockOutDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_stock_out"
+    },
+    {
+      "class": "ErpStockOutItemDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/stock/ErpStockOutItemDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_stock_out_item"
+    },
+    {
+      "class": "ErpStockRecordDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/stock/ErpStockRecordDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_stock_record"
+    },
+    {
+      "class": "ErpStockSerialDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/stock/ErpStockSerialDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_stock_serial"
+    },
+    {
+      "class": "ErpWarehouseDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/stock/ErpWarehouseDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "erp_warehouse"
+    },
+    {
+      "class": "ErpVmiInventoryDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/stock/vmi/ErpVmiInventoryDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_vmi_inventory"
+    },
+    {
+      "class": "ErpVmiReplenishmentDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/stock/vmi/ErpVmiReplenishmentDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_vmi_replenishment"
+    },
+    {
+      "class": "ErpVmiReplenishmentItemDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-erp/src/main/java/cn/zhicloud/module/erp/dal/dataobject/stock/vmi/ErpVmiReplenishmentItemDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "erp_vmi_replenishment_item"
+    },
+    {
+      "class": "HrContractDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-hr/src/main/java/cn/zhicloud/module/hr/dal/dataobject/contract/HrContractDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "hr_contract"
+    },
+    {
+      "class": "HrLeaveBalanceDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-hr/src/main/java/cn/zhicloud/module/hr/dal/dataobject/leave/HrLeaveBalanceDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "hr_leave_balance"
+    },
+    {
+      "class": "HrLeaveRequestDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-hr/src/main/java/cn/zhicloud/module/hr/dal/dataobject/leave/HrLeaveRequestDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "hr_leave_request"
+    },
+    {
+      "class": "HrLeaveTypeDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-hr/src/main/java/cn/zhicloud/module/hr/dal/dataobject/leave/HrLeaveTypeDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "hr_leave_type"
+    },
+    {
+      "class": "HrInterviewDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-hr/src/main/java/cn/zhicloud/module/hr/dal/dataobject/recruitment/HrInterviewDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "hr_interview"
+    },
+    {
+      "class": "HrJobPostingDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-hr/src/main/java/cn/zhicloud/module/hr/dal/dataobject/recruitment/HrJobPostingDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "hr_job_posting"
+    },
+    {
+      "class": "HrResumeDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-hr/src/main/java/cn/zhicloud/module/hr/dal/dataobject/recruitment/HrResumeDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "hr_resume"
+    },
+    {
+      "class": "HrSocialInsuranceBaseDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-hr/src/main/java/cn/zhicloud/module/hr/dal/dataobject/socialinsurance/HrSocialInsuranceBaseDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "hr_social_insurance_base"
+    },
+    {
+      "class": "ImChannelDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-im/src/main/java/cn/zhicloud/module/im/dal/dataobject/channel/ImChannelDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "im_channel"
+    },
+    {
+      "class": "ImChannelMaterialDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-im/src/main/java/cn/zhicloud/module/im/dal/dataobject/channel/ImChannelMaterialDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "im_channel_material"
+    },
+    {
+      "class": "ImConversationReadDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-im/src/main/java/cn/zhicloud/module/im/dal/dataobject/conversation/ImConversationReadDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "im_conversation_read"
+    },
+    {
+      "class": "ImFacePackDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-im/src/main/java/cn/zhicloud/module/im/dal/dataobject/face/ImFacePackDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "im_face_pack"
+    },
+    {
+      "class": "ImFacePackItemDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-im/src/main/java/cn/zhicloud/module/im/dal/dataobject/face/ImFacePackItemDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "im_face_pack_item"
+    },
+    {
+      "class": "ImFaceUserItemDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-im/src/main/java/cn/zhicloud/module/im/dal/dataobject/face/ImFaceUserItemDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "im_face_user_item"
+    },
+    {
+      "class": "ImFriendDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-im/src/main/java/cn/zhicloud/module/im/dal/dataobject/friend/ImFriendDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "im_friend"
+    },
+    {
+      "class": "ImFriendRequestDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-im/src/main/java/cn/zhicloud/module/im/dal/dataobject/friend/ImFriendRequestDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "im_friend_request"
+    },
+    {
+      "class": "ImGroupDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-im/src/main/java/cn/zhicloud/module/im/dal/dataobject/group/ImGroupDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "im_group"
+    },
+    {
+      "class": "ImGroupMemberDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-im/src/main/java/cn/zhicloud/module/im/dal/dataobject/group/ImGroupMemberDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "im_group_member"
+    },
+    {
+      "class": "ImGroupRequestDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-im/src/main/java/cn/zhicloud/module/im/dal/dataobject/group/ImGroupRequestDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "im_group_request"
+    },
+    {
+      "class": "ImChannelMessageDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-im/src/main/java/cn/zhicloud/module/im/dal/dataobject/message/ImChannelMessageDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "im_channel_message"
+    },
+    {
+      "class": "ImGroupMessageDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-im/src/main/java/cn/zhicloud/module/im/dal/dataobject/message/ImGroupMessageDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "im_group_message"
+    },
+    {
+      "class": "ImPrivateMessageDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-im/src/main/java/cn/zhicloud/module/im/dal/dataobject/message/ImPrivateMessageDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "im_private_message"
+    },
+    {
+      "class": "ImRtcCallDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-im/src/main/java/cn/zhicloud/module/im/dal/dataobject/rtc/ImRtcCallDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "im_rtc_call"
+    },
+    {
+      "class": "ImRtcParticipantDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-im/src/main/java/cn/zhicloud/module/im/dal/dataobject/rtc/ImRtcParticipantDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "im_rtc_participant"
+    },
+    {
+      "class": "ImSensitiveWordDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-im/src/main/java/cn/zhicloud/module/im/dal/dataobject/sensitiveword/ImSensitiveWordDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "im_sensitive_word"
+    },
+    {
+      "class": "Demo01ContactDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-infra/src/main/java/cn/zhicloud/module/infra/dal/dataobject/demo/demo01/Demo01ContactDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "zhicloud_demo01_contact"
+    },
+    {
+      "class": "Demo02CategoryDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-infra/src/main/java/cn/zhicloud/module/infra/dal/dataobject/demo/demo02/Demo02CategoryDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "zhicloud_demo02_category"
+    },
+    {
+      "class": "Demo03CourseDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-infra/src/main/java/cn/zhicloud/module/infra/dal/dataobject/demo/demo03/Demo03CourseDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "zhicloud_demo03_course"
+    },
+    {
+      "class": "Demo03GradeDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-infra/src/main/java/cn/zhicloud/module/infra/dal/dataobject/demo/demo03/Demo03GradeDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "zhicloud_demo03_grade"
+    },
+    {
+      "class": "Demo03StudentDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-infra/src/main/java/cn/zhicloud/module/infra/dal/dataobject/demo/demo03/Demo03StudentDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "zhicloud_demo03_student"
+    },
+    {
+      "class": "ApiAccessLogDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-infra/src/main/java/cn/zhicloud/module/infra/dal/dataobject/logger/ApiAccessLogDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "infra_api_access_log"
+    },
+    {
+      "class": "ApiErrorLogDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-infra/src/main/java/cn/zhicloud/module/infra/dal/dataobject/logger/ApiErrorLogDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "infra_api_error_log"
+    },
+    {
+      "class": "IotAlertConfigDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-iot/zhicloud-module-iot-biz/src/main/java/cn/zhicloud/module/iot/dal/dataobject/alert/IotAlertConfigDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "iot_alert_config"
+    },
+    {
+      "class": "IotAlertRecordDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-iot/zhicloud-module-iot-biz/src/main/java/cn/zhicloud/module/iot/dal/dataobject/alert/IotAlertRecordDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "iot_alert_record"
+    },
+    {
+      "class": "IotDeviceDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-iot/zhicloud-module-iot-biz/src/main/java/cn/zhicloud/module/iot/dal/dataobject/device/IotDeviceDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "iot_device"
+    },
+    {
+      "class": "IotDeviceGroupDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-iot/zhicloud-module-iot-biz/src/main/java/cn/zhicloud/module/iot/dal/dataobject/device/IotDeviceGroupDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "iot_device_group"
+    },
+    {
+      "class": "IotDeviceModbusConfigDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-iot/zhicloud-module-iot-biz/src/main/java/cn/zhicloud/module/iot/dal/dataobject/device/IotDeviceModbusConfigDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "iot_device_modbus_config"
+    },
+    {
+      "class": "IotDeviceModbusPointDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-iot/zhicloud-module-iot-biz/src/main/java/cn/zhicloud/module/iot/dal/dataobject/device/IotDeviceModbusPointDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "iot_device_modbus_point"
+    },
+    {
+      "class": "IotOtaFirmwareDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-iot/zhicloud-module-iot-biz/src/main/java/cn/zhicloud/module/iot/dal/dataobject/ota/IotOtaFirmwareDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "iot_ota_firmware"
+    },
+    {
+      "class": "IotOtaTaskDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-iot/zhicloud-module-iot-biz/src/main/java/cn/zhicloud/module/iot/dal/dataobject/ota/IotOtaTaskDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "iot_ota_task"
+    },
+    {
+      "class": "IotOtaTaskRecordDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-iot/zhicloud-module-iot-biz/src/main/java/cn/zhicloud/module/iot/dal/dataobject/ota/IotOtaTaskRecordDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "iot_ota_task_record"
+    },
+    {
+      "class": "IotProductCategoryDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-iot/zhicloud-module-iot-biz/src/main/java/cn/zhicloud/module/iot/dal/dataobject/product/IotProductCategoryDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "iot_product_category"
+    },
+    {
+      "class": "IotProductDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-iot/zhicloud-module-iot-biz/src/main/java/cn/zhicloud/module/iot/dal/dataobject/product/IotProductDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "iot_product"
+    },
+    {
+      "class": "IotDataRuleDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-iot/zhicloud-module-iot-biz/src/main/java/cn/zhicloud/module/iot/dal/dataobject/rule/IotDataRuleDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "iot_data_rule"
+    },
+    {
+      "class": "IotDataSinkDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-iot/zhicloud-module-iot-biz/src/main/java/cn/zhicloud/module/iot/dal/dataobject/rule/IotDataSinkDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "iot_data_sink"
+    },
+    {
+      "class": "IotSceneRuleDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-iot/zhicloud-module-iot-biz/src/main/java/cn/zhicloud/module/iot/dal/dataobject/rule/IotSceneRuleDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "iot_scene_rule"
+    },
+    {
+      "class": "IotThingModelDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-iot/zhicloud-module-iot-biz/src/main/java/cn/zhicloud/module/iot/dal/dataobject/thingmodel/IotThingModelDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "iot_thing_model"
+    },
+    {
+      "class": "ProductBrandDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-product/src/main/java/cn/zhicloud/module/product/dal/dataobject/brand/ProductBrandDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "product_brand"
+    },
+    {
+      "class": "ProductCategoryDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-product/src/main/java/cn/zhicloud/module/product/dal/dataobject/category/ProductCategoryDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "product_category"
+    },
+    {
+      "class": "ProductCommentDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-product/src/main/java/cn/zhicloud/module/product/dal/dataobject/comment/ProductCommentDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "product_comment"
+    },
+    {
+      "class": "ProductFavoriteDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-product/src/main/java/cn/zhicloud/module/product/dal/dataobject/favorite/ProductFavoriteDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "product_favorite"
+    },
+    {
+      "class": "ProductBrowseHistoryDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-product/src/main/java/cn/zhicloud/module/product/dal/dataobject/history/ProductBrowseHistoryDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "product_browse_history"
+    },
+    {
+      "class": "ProductPropertyDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-product/src/main/java/cn/zhicloud/module/product/dal/dataobject/property/ProductPropertyDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "product_property"
+    },
+    {
+      "class": "ProductPropertyValueDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-product/src/main/java/cn/zhicloud/module/product/dal/dataobject/property/ProductPropertyValueDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "product_property_value"
+    },
+    {
+      "class": "ProductSkuDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-product/src/main/java/cn/zhicloud/module/product/dal/dataobject/sku/ProductSkuDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "product_sku"
+    },
+    {
+      "class": "ProductSpuDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-product/src/main/java/cn/zhicloud/module/product/dal/dataobject/spu/ProductSpuDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "product_spu"
+    },
+    {
+      "class": "ArticleCategoryDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-promotion/src/main/java/cn/zhicloud/module/promotion/dal/dataobject/article/ArticleCategoryDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "promotion_article_category"
+    },
+    {
+      "class": "ArticleDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-promotion/src/main/java/cn/zhicloud/module/promotion/dal/dataobject/article/ArticleDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "promotion_article"
+    },
+    {
+      "class": "BannerDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-promotion/src/main/java/cn/zhicloud/module/promotion/dal/dataobject/banner/BannerDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "promotion_banner"
+    },
+    {
+      "class": "BargainActivityDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-promotion/src/main/java/cn/zhicloud/module/promotion/dal/dataobject/bargain/BargainActivityDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "promotion_bargain_activity"
+    },
+    {
+      "class": "BargainHelpDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-promotion/src/main/java/cn/zhicloud/module/promotion/dal/dataobject/bargain/BargainHelpDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "promotion_bargain_help"
+    },
+    {
+      "class": "BargainRecordDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-promotion/src/main/java/cn/zhicloud/module/promotion/dal/dataobject/bargain/BargainRecordDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "promotion_bargain_record"
+    },
+    {
+      "class": "CombinationActivityDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-promotion/src/main/java/cn/zhicloud/module/promotion/dal/dataobject/combination/CombinationActivityDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "promotion_combination_activity"
+    },
+    {
+      "class": "CombinationProductDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-promotion/src/main/java/cn/zhicloud/module/promotion/dal/dataobject/combination/CombinationProductDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "promotion_combination_product"
+    },
+    {
+      "class": "CombinationRecordDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-promotion/src/main/java/cn/zhicloud/module/promotion/dal/dataobject/combination/CombinationRecordDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "promotion_combination_record"
+    },
+    {
+      "class": "CouponDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-promotion/src/main/java/cn/zhicloud/module/promotion/dal/dataobject/coupon/CouponDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "promotion_coupon"
+    },
+    {
+      "class": "CouponTemplateDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-promotion/src/main/java/cn/zhicloud/module/promotion/dal/dataobject/coupon/CouponTemplateDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "promotion_coupon_template"
+    },
+    {
+      "class": "DiscountActivityDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-promotion/src/main/java/cn/zhicloud/module/promotion/dal/dataobject/discount/DiscountActivityDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "promotion_discount_activity"
+    },
+    {
+      "class": "DiscountProductDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-promotion/src/main/java/cn/zhicloud/module/promotion/dal/dataobject/discount/DiscountProductDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "promotion_discount_product"
+    },
+    {
+      "class": "DiyPageDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-promotion/src/main/java/cn/zhicloud/module/promotion/dal/dataobject/diy/DiyPageDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "promotion_diy_page"
+    },
+    {
+      "class": "DiyTemplateDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-promotion/src/main/java/cn/zhicloud/module/promotion/dal/dataobject/diy/DiyTemplateDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "promotion_diy_template"
+    },
+    {
+      "class": "KeFuConversationDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-promotion/src/main/java/cn/zhicloud/module/promotion/dal/dataobject/kefu/KeFuConversationDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "promotion_kefu_conversation"
+    },
+    {
+      "class": "KeFuMessageDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-promotion/src/main/java/cn/zhicloud/module/promotion/dal/dataobject/kefu/KeFuMessageDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "promotion_kefu_message"
+    },
+    {
+      "class": "PointActivityDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-promotion/src/main/java/cn/zhicloud/module/promotion/dal/dataobject/point/PointActivityDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "promotion_point_activity"
+    },
+    {
+      "class": "PointProductDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-promotion/src/main/java/cn/zhicloud/module/promotion/dal/dataobject/point/PointProductDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "promotion_point_product"
+    },
+    {
+      "class": "RewardActivityDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-promotion/src/main/java/cn/zhicloud/module/promotion/dal/dataobject/reward/RewardActivityDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "promotion_reward_activity"
+    },
+    {
+      "class": "SeckillActivityDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-promotion/src/main/java/cn/zhicloud/module/promotion/dal/dataobject/seckill/SeckillActivityDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "promotion_seckill_activity"
+    },
+    {
+      "class": "SeckillConfigDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-promotion/src/main/java/cn/zhicloud/module/promotion/dal/dataobject/seckill/SeckillConfigDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "promotion_seckill_config"
+    },
+    {
+      "class": "SeckillProductDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-promotion/src/main/java/cn/zhicloud/module/promotion/dal/dataobject/seckill/SeckillProductDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "promotion_seckill_product"
+    },
+    {
+      "class": "ProductStatisticsDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-statistics/src/main/java/cn/zhicloud/module/statistics/dal/dataobject/product/ProductStatisticsDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "product_statistics"
+    },
+    {
+      "class": "TradeStatisticsDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-statistics/src/main/java/cn/zhicloud/module/statistics/dal/dataobject/trade/TradeStatisticsDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "trade_statistics"
+    },
+    {
+      "class": "AfterSaleDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-trade/src/main/java/cn/zhicloud/module/trade/dal/dataobject/aftersale/AfterSaleDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "trade_after_sale"
+    },
+    {
+      "class": "AfterSaleLogDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-trade/src/main/java/cn/zhicloud/module/trade/dal/dataobject/aftersale/AfterSaleLogDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "trade_after_sale_log"
+    },
+    {
+      "class": "BrokerageRecordDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-trade/src/main/java/cn/zhicloud/module/trade/dal/dataobject/brokerage/BrokerageRecordDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "trade_brokerage_record"
+    },
+    {
+      "class": "BrokerageUserDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-trade/src/main/java/cn/zhicloud/module/trade/dal/dataobject/brokerage/BrokerageUserDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "trade_brokerage_user"
+    },
+    {
+      "class": "BrokerageWithdrawDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-trade/src/main/java/cn/zhicloud/module/trade/dal/dataobject/brokerage/BrokerageWithdrawDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "trade_brokerage_withdraw"
+    },
+    {
+      "class": "CartDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-trade/src/main/java/cn/zhicloud/module/trade/dal/dataobject/cart/CartDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "trade_cart"
+    },
+    {
+      "class": "TradeConfigDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-trade/src/main/java/cn/zhicloud/module/trade/dal/dataobject/config/TradeConfigDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "trade_config"
+    },
+    {
+      "class": "DeliveryExpressDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-trade/src/main/java/cn/zhicloud/module/trade/dal/dataobject/delivery/DeliveryExpressDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "trade_delivery_express"
+    },
+    {
+      "class": "DeliveryExpressTemplateChargeDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-trade/src/main/java/cn/zhicloud/module/trade/dal/dataobject/delivery/DeliveryExpressTemplateChargeDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "trade_delivery_express_template_charge"
+    },
+    {
+      "class": "DeliveryExpressTemplateDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-trade/src/main/java/cn/zhicloud/module/trade/dal/dataobject/delivery/DeliveryExpressTemplateDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "trade_delivery_express_template"
+    },
+    {
+      "class": "DeliveryExpressTemplateFreeDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-trade/src/main/java/cn/zhicloud/module/trade/dal/dataobject/delivery/DeliveryExpressTemplateFreeDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "trade_delivery_express_template_free"
+    },
+    {
+      "class": "DeliveryPickUpStoreDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-trade/src/main/java/cn/zhicloud/module/trade/dal/dataobject/delivery/DeliveryPickUpStoreDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "trade_delivery_pick_up_store"
+    },
+    {
+      "class": "TradeOrderDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-trade/src/main/java/cn/zhicloud/module/trade/dal/dataobject/order/TradeOrderDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "trade_order"
+    },
+    {
+      "class": "TradeOrderItemDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-trade/src/main/java/cn/zhicloud/module/trade/dal/dataobject/order/TradeOrderItemDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "trade_order_item"
+    },
+    {
+      "class": "TradeOrderLogDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mall/zhicloud-module-trade/src/main/java/cn/zhicloud/module/trade/dal/dataobject/order/TradeOrderLogDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "trade_order_log"
+    },
+    {
+      "class": "MemberAddressDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-member/src/main/java/cn/zhicloud/module/member/dal/dataobject/address/MemberAddressDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "member_address"
+    },
+    {
+      "class": "MemberConfigDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-member/src/main/java/cn/zhicloud/module/member/dal/dataobject/config/MemberConfigDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "member_config"
+    },
+    {
+      "class": "MemberGroupDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-member/src/main/java/cn/zhicloud/module/member/dal/dataobject/group/MemberGroupDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "member_group"
+    },
+    {
+      "class": "MemberExperienceRecordDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-member/src/main/java/cn/zhicloud/module/member/dal/dataobject/level/MemberExperienceRecordDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "member_experience_record"
+    },
+    {
+      "class": "MemberLevelDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-member/src/main/java/cn/zhicloud/module/member/dal/dataobject/level/MemberLevelDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "member_level"
+    },
+    {
+      "class": "MemberLevelRecordDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-member/src/main/java/cn/zhicloud/module/member/dal/dataobject/level/MemberLevelRecordDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "member_level_record"
+    },
+    {
+      "class": "MemberPointRecordDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-member/src/main/java/cn/zhicloud/module/member/dal/dataobject/point/MemberPointRecordDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "member_point_record"
+    },
+    {
+      "class": "MemberSignInConfigDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-member/src/main/java/cn/zhicloud/module/member/dal/dataobject/signin/MemberSignInConfigDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "member_sign_in_config"
+    },
+    {
+      "class": "MemberSignInRecordDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-member/src/main/java/cn/zhicloud/module/member/dal/dataobject/signin/MemberSignInRecordDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "member_sign_in_record"
+    },
+    {
+      "class": "MemberTagDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-member/src/main/java/cn/zhicloud/module/member/dal/dataobject/tag/MemberTagDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "member_tag"
+    },
+    {
+      "class": "MemberUserDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-member/src/main/java/cn/zhicloud/module/member/dal/dataobject/user/MemberUserDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "member_user"
+    },
+    {
+      "class": "MesDvDeviceDataRecordDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mes/src/main/java/cn/zhicloud/module/mes/dal/dataobject/dv/scada/MesDvDeviceDataRecordDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "mes_dv_device_data_record"
+    },
+    {
+      "class": "MesDvScadaConfigDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mes/src/main/java/cn/zhicloud/module/mes/dal/dataobject/dv/scada/MesDvScadaConfigDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "mes_dv_scada_config"
+    },
+    {
+      "class": "MesDvTpKpiDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-mes/src/main/java/cn/zhicloud/module/mes/dal/dataobject/dv/tp/MesDvTpKpiDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "mes_dv_tp_kpi"
+    },
+    {
+      "class": "MesDvTpPlanDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-mes/src/main/java/cn/zhicloud/module/mes/dal/dataobject/dv/tp/MesDvTpPlanDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "mes_dv_tp_plan"
+    },
+    {
+      "class": "MesDvTpPlanItemDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-mes/src/main/java/cn/zhicloud/module/mes/dal/dataobject/dv/tp/MesDvTpPlanItemDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "mes_dv_tp_plan_item"
+    },
+    {
+      "class": "MesDvTpRecordDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-mes/src/main/java/cn/zhicloud/module/mes/dal/dataobject/dv/tp/MesDvTpRecordDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "mes_dv_tp_record"
+    },
+    {
+      "class": "MesEnergyConsumptionDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mes/src/main/java/cn/zhicloud/module/mes/dal/dataobject/energy/MesEnergyConsumptionDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "mes_energy_consumption"
+    },
+    {
+      "class": "MesBomDetailDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mes/src/main/java/cn/zhicloud/module/mes/dal/dataobject/md/bom/MesBomDetailDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "mes_md_bom_detail"
+    },
+    {
+      "class": "MesBomDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mes/src/main/java/cn/zhicloud/module/mes/dal/dataobject/md/bom/MesBomDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "mes_md_bom"
+    },
+    {
+      "class": "MesBomSubstituteDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mes/src/main/java/cn/zhicloud/module/mes/dal/dataobject/md/bom/MesBomSubstituteDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "mes_bom_substitute"
+    },
+    {
+      "class": "MesMdEcnOrderDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mes/src/main/java/cn/zhicloud/module/mes/dal/dataobject/md/ecn/MesMdEcnOrderDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "mes_md_ecn_order"
+    },
+    {
+      "class": "MesMdEcnOrderItemDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mes/src/main/java/cn/zhicloud/module/mes/dal/dataobject/md/ecn/MesMdEcnOrderItemDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "mes_md_ecn_order_item"
+    },
+    {
+      "class": "MesProPieceworkRecordDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mes/src/main/java/cn/zhicloud/module/mes/dal/dataobject/pro/piecework/MesProPieceworkRecordDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "mes_pro_piecework_record"
+    },
+    {
+      "class": "MesProPieceworkRuleDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mes/src/main/java/cn/zhicloud/module/mes/dal/dataobject/pro/piecework/MesProPieceworkRuleDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "mes_pro_piecework_rule"
+    },
+    {
+      "class": "MpAccountDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mp/src/main/java/cn/zhicloud/module/mp/dal/dataobject/account/MpAccountDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "mp_account"
+    },
+    {
+      "class": "MpMaterialDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mp/src/main/java/cn/zhicloud/module/mp/dal/dataobject/material/MpMaterialDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "mp_material"
+    },
+    {
+      "class": "MpMenuDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mp/src/main/java/cn/zhicloud/module/mp/dal/dataobject/menu/MpMenuDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "mp_menu"
+    },
+    {
+      "class": "MpAutoReplyDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mp/src/main/java/cn/zhicloud/module/mp/dal/dataobject/message/MpAutoReplyDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "mp_auto_reply"
+    },
+    {
+      "class": "MpMessageDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mp/src/main/java/cn/zhicloud/module/mp/dal/dataobject/message/MpMessageDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "mp_message"
+    },
+    {
+      "class": "MpMessageTemplateDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mp/src/main/java/cn/zhicloud/module/mp/dal/dataobject/message/MpMessageTemplateDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "mp_message_template"
+    },
+    {
+      "class": "MpTagDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mp/src/main/java/cn/zhicloud/module/mp/dal/dataobject/tag/MpTagDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "mp_tag"
+    },
+    {
+      "class": "MpUserDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-mp/src/main/java/cn/zhicloud/module/mp/dal/dataobject/user/MpUserDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "mp_user"
+    },
+    {
+      "class": "OaAnnouncementDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-oa/src/main/java/cn/zhicloud/module/oa/dal/dataobject/announcement/OaAnnouncementDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "oa_announcement"
+    },
+    {
+      "class": "OaApprovalTemplateDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-oa/src/main/java/cn/zhicloud/module/oa/dal/dataobject/approvaltemplate/OaApprovalTemplateDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "oa_approval_template"
+    },
+    {
+      "class": "OaDocumentAttachmentDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-oa/src/main/java/cn/zhicloud/module/oa/dal/dataobject/document/OaDocumentAttachmentDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "oa_document_attachment"
+    },
+    {
+      "class": "OaDocumentDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-oa/src/main/java/cn/zhicloud/module/oa/dal/dataobject/document/OaDocumentDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "oa_document"
+    },
+    {
+      "class": "OaKnowledgeArticleDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-oa/src/main/java/cn/zhicloud/module/oa/dal/dataobject/knowledge/OaKnowledgeArticleDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "oa_knowledge_article"
+    },
+    {
+      "class": "OaKnowledgeCategoryDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-oa/src/main/java/cn/zhicloud/module/oa/dal/dataobject/knowledge/OaKnowledgeCategoryDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "oa_knowledge_category"
+    },
+    {
+      "class": "OaKnowledgeCommentDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-oa/src/main/java/cn/zhicloud/module/oa/dal/dataobject/knowledge/OaKnowledgeCommentDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "oa_knowledge_comment"
+    },
+    {
+      "class": "OaKnowledgeVersionDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-oa/src/main/java/cn/zhicloud/module/oa/dal/dataobject/knowledge/OaKnowledgeVersionDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "oa_knowledge_version"
+    },
+    {
+      "class": "OaMeetingReservationDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-oa/src/main/java/cn/zhicloud/module/oa/dal/dataobject/meeting/OaMeetingReservationDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "oa_meeting_reservation"
+    },
+    {
+      "class": "OaMeetingRoomDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-oa/src/main/java/cn/zhicloud/module/oa/dal/dataobject/meeting/OaMeetingRoomDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "oa_meeting_room"
+    },
+    {
+      "class": "OaReimburseDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-oa/src/main/java/cn/zhicloud/module/oa/dal/dataobject/reimburse/OaReimburseDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "oa_reimburse"
+    },
+    {
+      "class": "OaReimburseItemDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-oa/src/main/java/cn/zhicloud/module/oa/dal/dataobject/reimburse/OaReimburseItemDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "oa_reimburse_item"
+    },
+    {
+      "class": "OaScheduleDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-oa/src/main/java/cn/zhicloud/module/oa/dal/dataobject/schedule/OaScheduleDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "oa_schedule"
+    },
+    {
+      "class": "PayAppDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-pay/src/main/java/cn/zhicloud/module/pay/dal/dataobject/app/PayAppDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "pay_app"
+    },
+    {
+      "class": "PayChannelDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-pay/src/main/java/cn/zhicloud/module/pay/dal/dataobject/channel/PayChannelDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "pay_channel"
+    },
+    {
+      "class": "PayDemoOrderDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-pay/src/main/java/cn/zhicloud/module/pay/dal/dataobject/demo/PayDemoOrderDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "pay_demo_order"
+    },
+    {
+      "class": "PayDemoWithdrawDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-pay/src/main/java/cn/zhicloud/module/pay/dal/dataobject/demo/PayDemoWithdrawDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "pay_demo_withdraw"
+    },
+    {
+      "class": "PayNotifyLogDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-pay/src/main/java/cn/zhicloud/module/pay/dal/dataobject/notify/PayNotifyLogDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "pay_notify_log"
+    },
+    {
+      "class": "PayNotifyTaskDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-pay/src/main/java/cn/zhicloud/module/pay/dal/dataobject/notify/PayNotifyTaskDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "pay_notify_task"
+    },
+    {
+      "class": "PayOrderDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-pay/src/main/java/cn/zhicloud/module/pay/dal/dataobject/order/PayOrderDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "pay_order"
+    },
+    {
+      "class": "PayOrderExtensionDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-pay/src/main/java/cn/zhicloud/module/pay/dal/dataobject/order/PayOrderExtensionDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "pay_order_extension"
+    },
+    {
+      "class": "PayRefundDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-pay/src/main/java/cn/zhicloud/module/pay/dal/dataobject/refund/PayRefundDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "pay_refund"
+    },
+    {
+      "class": "PayTransferDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-pay/src/main/java/cn/zhicloud/module/pay/dal/dataobject/transfer/PayTransferDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "pay_transfer"
+    },
+    {
+      "class": "PayWalletDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-pay/src/main/java/cn/zhicloud/module/pay/dal/dataobject/wallet/PayWalletDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "pay_wallet"
+    },
+    {
+      "class": "PayWalletRechargeDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-pay/src/main/java/cn/zhicloud/module/pay/dal/dataobject/wallet/PayWalletRechargeDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "pay_wallet_recharge"
+    },
+    {
+      "class": "PayWalletRechargePackageDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-pay/src/main/java/cn/zhicloud/module/pay/dal/dataobject/wallet/PayWalletRechargePackageDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "pay_wallet_recharge_package"
+    },
+    {
+      "class": "PayWalletTransactionDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-pay/src/main/java/cn/zhicloud/module/pay/dal/dataobject/wallet/PayWalletTransactionDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "pay_wallet_transaction"
+    },
+    {
+      "class": "CAPADocumentDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-qms/src/main/java/cn/zhicloud/module/qms/dal/dataobject/capa/CAPADocumentDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "qms_capa_document"
+    },
+    {
+      "class": "CustomerComplaintDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-qms/src/main/java/cn/zhicloud/module/qms/dal/dataobject/complaint/CustomerComplaintDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "qms_customer_complaint"
+    },
+    {
+      "class": "EightDReportDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-qms/src/main/java/cn/zhicloud/module/qms/dal/dataobject/eightd/EightDReportDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "qms_eight_d_report"
+    },
+    {
+      "class": "ElectronicSignatureLogDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-qms/src/main/java/cn/zhicloud/module/qms/dal/dataobject/electronicsignature/ElectronicSignatureLogDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "qms_electronic_signature_log"
+    },
+    {
+      "class": "FmeaDocumentDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-qms/src/main/java/cn/zhicloud/module/qms/dal/dataobject/fmea/FmeaDocumentDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "qms_fmea_document"
+    },
+    {
+      "class": "FmeaItemDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-qms/src/main/java/cn/zhicloud/module/qms/dal/dataobject/fmea/FmeaItemDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "qms_fmea_item"
+    },
+    {
+      "class": "InspectionItemDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-qms/src/main/java/cn/zhicloud/module/qms/dal/dataobject/inspectionitem/InspectionItemDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "qms_inspection_item"
+    },
+    {
+      "class": "InspectionOrderDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-qms/src/main/java/cn/zhicloud/module/qms/dal/dataobject/inspectionorder/InspectionOrderDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "qms_inspection_order"
+    },
+    {
+      "class": "InspectionRecordDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-qms/src/main/java/cn/zhicloud/module/qms/dal/dataobject/inspectionrecord/InspectionRecordDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "qms_inspection_record"
+    },
+    {
+      "class": "MsaMeasurementDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-qms/src/main/java/cn/zhicloud/module/qms/dal/dataobject/msa/MsaMeasurementDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "qms_msa_measurement"
+    },
+    {
+      "class": "MsaStudyDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-qms/src/main/java/cn/zhicloud/module/qms/dal/dataobject/msa/MsaStudyDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "qms_msa_study"
+    },
+    {
+      "class": "NcrDocumentDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-qms/src/main/java/cn/zhicloud/module/qms/dal/dataobject/ncr/NcrDocumentDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "qms_ncr_document"
+    },
+    {
+      "class": "NcrMrbRecordDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-qms/src/main/java/cn/zhicloud/module/qms/dal/dataobject/ncr/NcrMrbRecordDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "qms_ncr_mrb_record"
+    },
+    {
+      "class": "QmsQualityCostDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-qms/src/main/java/cn/zhicloud/module/qms/dal/dataobject/qualitycost/QmsQualityCostDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "qms_quality_cost"
+    },
+    {
+      "class": "ScarDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-qms/src/main/java/cn/zhicloud/module/qms/dal/dataobject/sqm/ScarDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "qms_scar"
+    },
+    {
+      "class": "SupplierAuditDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-qms/src/main/java/cn/zhicloud/module/qms/dal/dataobject/sqm/SupplierAuditDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "qms_supplier_audit"
+    },
+    {
+      "class": "SupplierRatingDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-qms/src/main/java/cn/zhicloud/module/qms/dal/dataobject/sqm/SupplierRatingDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "qms_supplier_rating"
+    },
+    {
+      "class": "QualificationDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-qms/src/main/java/cn/zhicloud/module/qms/dal/dataobject/training/QualificationDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "qms_qualification"
+    },
+    {
+      "class": "TrainingPlanDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-qms/src/main/java/cn/zhicloud/module/qms/dal/dataobject/training/TrainingPlanDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "qms_training_plan"
+    },
+    {
+      "class": "TrainingRecordDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-qms/src/main/java/cn/zhicloud/module/qms/dal/dataobject/training/TrainingRecordDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "qms_training_record"
+    },
+    {
+      "class": "GoViewProjectDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-report/src/main/java/cn/zhicloud/module/report/dal/dataobject/goview/GoViewProjectDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "report_go_view_project"
+    },
+    {
+      "class": "DeptDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/dal/dataobject/dept/DeptDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "system_dept"
+    },
+    {
+      "class": "PostDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/dal/dataobject/dept/PostDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "system_post"
+    },
+    {
+      "class": "UserPostDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/dal/dataobject/dept/UserPostDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "system_user_post"
+    },
+    {
+      "class": "LoginLogDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/dal/dataobject/logger/LoginLogDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "system_login_log"
+    },
+    {
+      "class": "OperateLogDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/dal/dataobject/logger/OperateLogDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "system_operate_log"
+    },
+    {
+      "class": "NoticeDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/dal/dataobject/notice/NoticeDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "system_notice"
+    },
+    {
+      "class": "NotifyMessageDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/dal/dataobject/notify/NotifyMessageDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "system_notify_message"
+    },
+    {
+      "class": "OAuth2AccessTokenDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/dal/dataobject/oauth2/OAuth2AccessTokenDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "system_oauth2_access_token"
+    },
+    {
+      "class": "OAuth2ApproveDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/dal/dataobject/oauth2/OAuth2ApproveDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "system_oauth2_approve"
+    },
+    {
+      "class": "OAuth2CodeDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/dal/dataobject/oauth2/OAuth2CodeDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "system_oauth2_code"
+    },
+    {
+      "class": "OAuth2RefreshTokenDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/dal/dataobject/oauth2/OAuth2RefreshTokenDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "system_oauth2_refresh_token"
+    },
+    {
+      "class": "RoleDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/dal/dataobject/permission/RoleDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "system_role"
+    },
+    {
+      "class": "RoleMenuDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/dal/dataobject/permission/RoleMenuDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "system_role_menu"
+    },
+    {
+      "class": "UserRoleDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/dal/dataobject/permission/UserRoleDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "system_user_role"
+    },
+    {
+      "class": "SmsCodeDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/dal/dataobject/sms/SmsCodeDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "system_sms_code"
+    },
+    {
+      "class": "SocialClientDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/dal/dataobject/social/SocialClientDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "system_social_client"
+    },
+    {
+      "class": "SocialUserBindDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/dal/dataobject/social/SocialUserBindDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "system_social_user_bind"
+    },
+    {
+      "class": "SocialUserDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/dal/dataobject/social/SocialUserDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "system_social_user"
+    },
+    {
+      "class": "AdminUserDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/dal/dataobject/user/AdminUserDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "system_users"
+    },
+    {
+      "class": "TmsCarrierDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-tms/src/main/java/cn/zhicloud/module/tms/dal/dataobject/carrier/TmsCarrierDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "tms_carrier"
+    },
+    {
+      "class": "TmsDriverDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-tms/src/main/java/cn/zhicloud/module/tms/dal/dataobject/driver/TmsDriverDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "tms_driver"
+    },
+    {
+      "class": "TmsFreightDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-tms/src/main/java/cn/zhicloud/module/tms/dal/dataobject/freight/TmsFreightDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "tms_freight"
+    },
+    {
+      "class": "TmsFreightReconciliationDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-tms/src/main/java/cn/zhicloud/module/tms/dal/dataobject/freight/TmsFreightReconciliationDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "tms_freight_reconciliation"
+    },
+    {
+      "class": "TmsGpsPositionDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-tms/src/main/java/cn/zhicloud/module/tms/dal/dataobject/gps/TmsGpsPositionDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "tms_gps_position"
+    },
+    {
+      "class": "TmsShipmentDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-tms/src/main/java/cn/zhicloud/module/tms/dal/dataobject/shipment/TmsShipmentDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "tms_shipment"
+    },
+    {
+      "class": "TmsShipmentStopDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-tms/src/main/java/cn/zhicloud/module/tms/dal/dataobject/shipment/TmsShipmentStopDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "tms_shipment_stop"
+    },
+    {
+      "class": "TmsTrackingEventDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-tms/src/main/java/cn/zhicloud/module/tms/dal/dataobject/tracking/TmsTrackingEventDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "tms_tracking_event"
+    },
+    {
+      "class": "TmsFleetOperationDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-tms/src/main/java/cn/zhicloud/module/tms/dal/dataobject/vehicle/TmsFleetOperationDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "tms_fleet_operation"
+    },
+    {
+      "class": "TmsVehicleDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-tms/src/main/java/cn/zhicloud/module/tms/dal/dataobject/vehicle/TmsVehicleDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "tms_vehicle"
+    },
+    {
+      "class": "WmsBillingBillDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-wms/src/main/java/cn/zhicloud/module/wms/dal/dataobject/billing/WmsBillingBillDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "wms_billing_bill"
+    },
+    {
+      "class": "WmsBillingBillLineDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-wms/src/main/java/cn/zhicloud/module/wms/dal/dataobject/billing/WmsBillingBillLineDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "wms_billing_bill_line"
+    },
+    {
+      "class": "WmsBillingContractDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-wms/src/main/java/cn/zhicloud/module/wms/dal/dataobject/billing/WmsBillingContractDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "wms_billing_contract"
+    },
+    {
+      "class": "WmsBillingContractItemDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-wms/src/main/java/cn/zhicloud/module/wms/dal/dataobject/billing/WmsBillingContractItemDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "wms_billing_contract_item"
+    },
+    {
+      "class": "WmsInventoryAlertDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-wms/src/main/java/cn/zhicloud/module/wms/dal/dataobject/inventory/WmsInventoryAlertDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "wms_inventory_alert"
+    },
+    {
+      "class": "WmsSafetyStockConfigDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-wms/src/main/java/cn/zhicloud/module/wms/dal/dataobject/inventory/WmsSafetyStockConfigDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "wms_safety_stock_config"
+    },
+    {
+      "class": "WmsSnDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-wms/src/main/java/cn/zhicloud/module/wms/dal/dataobject/md/sn/WmsSnDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "wms_sn"
+    },
+    {
+      "class": "WmsAsnOrderDetailDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-wms/src/main/java/cn/zhicloud/module/wms/dal/dataobject/order/asn/WmsAsnOrderDetailDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "wms_asn_order_detail"
+    },
+    {
+      "class": "WmsAsnOrderDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-wms/src/main/java/cn/zhicloud/module/wms/dal/dataobject/order/asn/WmsAsnOrderDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "wms_asn_order"
+    },
+    {
+      "class": "WmsCheckCyclePlanDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-wms/src/main/java/cn/zhicloud/module/wms/dal/dataobject/order/check/WmsCheckCyclePlanDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "wms_check_cycle_plan"
+    },
+    {
+      "class": "WmsCrossDockOrderDetailDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-wms/src/main/java/cn/zhicloud/module/wms/dal/dataobject/order/crossdock/WmsCrossDockOrderDetailDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "wms_cross_dock_order_detail"
+    },
+    {
+      "class": "WmsCrossDockOrderDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-wms/src/main/java/cn/zhicloud/module/wms/dal/dataobject/order/crossdock/WmsCrossDockOrderDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "wms_cross_dock_order"
+    },
+    {
+      "class": "WmsDockDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-wms/src/main/java/cn/zhicloud/module/wms/dal/dataobject/order/dock/WmsDockDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "wms_dock"
+    },
+    {
+      "class": "WmsPickTaskDO",
+      "code": "DO_TABLE_UNVERIFIED",
+      "detail": "DO 映射的表在仓库 DDL 里不存在，隔离契约无法判定（不猜测）",
+      "file": "zhicloud-module-wms/src/main/java/cn/zhicloud/module/wms/dal/dataobject/order/pickstrategy/WmsPickTaskDO.java",
+      "rule": "T5",
+      "severity": "P1",
+      "table": "wms_pick_task"
+    },
+    {
+      "class": "WmsWaveOrderDetailDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-wms/src/main/java/cn/zhicloud/module/wms/dal/dataobject/order/wave/WmsWaveOrderDetailDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "wms_wave_order_detail"
+    },
+    {
+      "class": "WmsWaveOrderDO",
+      "code": "TENANT_COLUMN_NOT_INDEXED",
+      "detail": "tenant_id 上没有以它为首列的索引：多租户过滤在大表上退化为全表扫描",
+      "file": "zhicloud-module-wms/src/main/java/cn/zhicloud/module/wms/dal/dataobject/order/wave/WmsWaveOrderDO.java",
+      "rule": "T4",
+      "severity": "P1",
+      "table": "wms_wave_order"
+    }
+  ],
+  "findings_by_rule": {
+    "T4": 102,
+    "T5": 258
+  },
+  "findings_by_severity": {
+    "P1": 360
+  },
+  "generated_at": "2026-09-27T19:25:06+08:00",
+  "repo_root": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2",
+  "status": "passed",
+  "tenant_ignore_bypass_count": 35,
+  "tenant_ignore_bypass_points": [
+    {
+      "evidence": "// 获得有 @TenantIgnore 注解的接口",
+      "file": "zhicloud-framework/zhicloud-spring-boot-starter-biz-tenant/src/main/java/cn/zhicloud/framework/tenant/config/ZhiCloudTenantAutoConfiguration.java",
+      "line": 139
+    },
+    {
+      "evidence": "* 2、MQ 场景：有点难以抉择，目前可以通过 Consumer 手动在消费的方法上，添加 @TenantIgnore 进行忽略",
+      "file": "zhicloud-framework/zhicloud-spring-boot-starter-biz-tenant/src/main/java/cn/zhicloud/framework/tenant/core/aop/TenantIgnore.java",
+      "line": 12
+    },
+    {
+      "evidence": "// 如果添加了 @TenantIgnore 注解，则忽略租户",
+      "file": "zhicloud-framework/zhicloud-spring-boot-starter-biz-tenant/src/main/java/cn/zhicloud/framework/tenant/core/db/TenantDatabaseInterceptor.java",
+      "line": 76
+    },
+    {
+      "evidence": "* 目的：解决 <a href=\"https://gitee.com/zhijiantianya/zhicloud-cloud/issues/ICUQL9\">修改配置会导致 @TenantIgnore Controller 接口过滤失效</>",
+      "file": "zhicloud-framework/zhicloud-spring-boot-starter-biz-tenant/src/main/java/cn/zhicloud/framework/tenant/core/security/TenantSecurityWebFilter.java",
+      "line": 42
+    },
+    {
+      "evidence": "@TenantIgnore",
+      "file": "zhicloud-module-ai/src/main/java/cn/zhicloud/module/ai/controller/admin/image/AiImageController.java",
+      "line": 102
+    },
+    {
+      "evidence": "@TenantIgnore",
+      "file": "zhicloud-module-im/src/main/java/cn/zhicloud/module/im/controller/admin/rtc/ImRtcLiveKitController.java",
+      "line": 51
+    },
+    {
+      "evidence": "@TenantIgnore",
+      "file": "zhicloud-module-infra/src/main/java/cn/zhicloud/module/infra/controller/admin/file/FileController.java",
+      "line": 138
+    },
+    {
+      "evidence": "@TenantIgnore",
+      "file": "zhicloud-module-infra/src/main/java/cn/zhicloud/module/infra/job/job/JobLogCleanJob.java",
+      "line": 33
+    },
+    {
+      "evidence": "@TenantIgnore",
+      "file": "zhicloud-module-infra/src/main/java/cn/zhicloud/module/infra/job/logger/AccessLogCleanJob.java",
+      "line": 34
+    },
+    {
+      "evidence": "@TenantIgnore",
+      "file": "zhicloud-module-infra/src/main/java/cn/zhicloud/module/infra/job/logger/ErrorLogCleanJob.java",
+      "line": 34
+    },
+    {
+      "evidence": "@TenantIgnore",
+      "file": "zhicloud-module-iot/zhicloud-module-iot-biz/src/main/java/cn/zhicloud/module/iot/api/device/IoTDeviceApiImpl.java",
+      "line": 85
+    },
+    {
+      "evidence": "@TenantIgnore // 忽略租户信息",
+      "file": "zhicloud-module-iot/zhicloud-module-iot-biz/src/main/java/cn/zhicloud/module/iot/service/device/IotDeviceServiceImpl.java",
+      "line": 282
+    },
+    {
+      "evidence": "@TenantIgnore // 忽略租户信息，跨租户 productKey + deviceName 是唯一的",
+      "file": "zhicloud-module-iot/zhicloud-module-iot-biz/src/main/java/cn/zhicloud/module/iot/service/device/IotDeviceServiceImpl.java",
+      "line": 289
+    },
+    {
+      "evidence": "@TenantIgnore // 忽略租户信息",
+      "file": "zhicloud-module-iot/zhicloud-module-iot-biz/src/main/java/cn/zhicloud/module/iot/service/product/IotProductServiceImpl.java",
+      "line": 130
+    },
+    {
+      "evidence": "@TenantIgnore // 忽略租户隔离：因为 IotSceneRuleMessageHandler 调用时，一般未传递租户，所以需要忽略",
+      "file": "zhicloud-module-iot/zhicloud-module-iot-biz/src/main/java/cn/zhicloud/module/iot/service/rule/scene/IotSceneRuleServiceImpl.java",
+      "line": 165
+    },
+    {
+      "evidence": "@TenantIgnore // 忽略租户信息",
+      "file": "zhicloud-module-iot/zhicloud-module-iot-biz/src/main/java/cn/zhicloud/module/iot/service/thingmodel/IotThingModelServiceImpl.java",
+      "line": 158
+    },
+    {
+      "evidence": "@TenantIgnore // 忽略租户信息",
+      "file": "zhicloud-module-iot/zhicloud-module-iot-biz/src/main/java/cn/zhicloud/module/iot/service/thingmodel/IotThingModelServiceImpl.java",
+      "line": 469
+    },
+    {
+      "evidence": "@TenantIgnore",
+      "file": "zhicloud-module-mp/src/main/java/cn/zhicloud/module/mp/controller/admin/open/MpOpenController.java",
+      "line": 46
+    },
+    {
+      "evidence": "@TenantIgnore",
+      "file": "zhicloud-module-mp/src/main/java/cn/zhicloud/module/mp/controller/admin/open/MpOpenController.java",
+      "line": 72
+    },
+    {
+      "evidence": "@TenantIgnore",
+      "file": "zhicloud-module-pay/src/main/java/cn/zhicloud/module/pay/controller/admin/notify/PayNotifyController.java",
+      "line": 66
+    },
+    {
+      "evidence": "@TenantIgnore",
+      "file": "zhicloud-module-pay/src/main/java/cn/zhicloud/module/pay/controller/admin/notify/PayNotifyController.java",
+      "line": 88
+    },
+    {
+      "evidence": "@TenantIgnore",
+      "file": "zhicloud-module-pay/src/main/java/cn/zhicloud/module/pay/controller/admin/notify/PayNotifyController.java",
+      "line": 110
+    },
+    {
+      "evidence": "@TenantIgnore",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/controller/admin/captcha/CaptchaController.java",
+      "line": 30
+    },
+    {
+      "evidence": "@TenantIgnore",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/controller/admin/captcha/CaptchaController.java",
+      "line": 40
+    },
+    {
+      "evidence": "@TenantIgnore",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/controller/admin/sms/SmsCallbackController.java",
+      "line": 28
+    },
+    {
+      "evidence": "@TenantIgnore",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/controller/admin/sms/SmsCallbackController.java",
+      "line": 38
+    },
+    {
+      "evidence": "@TenantIgnore",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/controller/admin/sms/SmsCallbackController.java",
+      "line": 49
+    },
+    {
+      "evidence": "@TenantIgnore",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/controller/admin/sms/SmsCallbackController.java",
+      "line": 58
+    },
+    {
+      "evidence": "@TenantIgnore",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/controller/admin/tenant/TenantController.java",
+      "line": 46
+    },
+    {
+      "evidence": "@TenantIgnore",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/controller/admin/tenant/TenantController.java",
+      "line": 56
+    },
+    {
+      "evidence": "@TenantIgnore",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/controller/admin/tenant/TenantController.java",
+      "line": 66
+    },
+    {
+      "evidence": "@TenantIgnore",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/controller/app/tenant/AppTenantController.java",
+      "line": 35
+    },
+    {
+      "evidence": "@TenantIgnore // 获取 token 的时候，需要忽略租户编号。原因是：一些场景下，可能不会传递 tenant-id 请求头，例如说文件上传、积木报表等等",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/dal/mysql/oauth2/OAuth2AccessTokenMapper.java",
+      "line": 19
+    },
+    {
+      "evidence": "@TenantIgnore // 获取 token 的时候，需要忽略租户编号。原因是：一些场景下，可能不会传递 tenant-id 请求头，例如说文件上传、积木报表等等",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/dal/mysql/oauth2/OAuth2RefreshTokenMapper.java",
+      "line": 21
+    },
+    {
+      "evidence": "@TenantIgnore",
+      "file": "zhicloud-module-system/src/main/java/cn/zhicloud/module/system/job/token/TokenCleanJob.java",
+      "line": 33
+    }
+  ],
+  "tool": "check_tenant_isolation.py"
+}

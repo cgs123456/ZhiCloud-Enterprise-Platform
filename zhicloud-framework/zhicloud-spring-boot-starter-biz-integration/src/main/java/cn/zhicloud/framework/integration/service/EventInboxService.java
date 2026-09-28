@@ -7,7 +7,7 @@ import cn.zhicloud.framework.integration.dal.dataobject.EventInboxDO;
 /**
  * 事件收件箱 Service（V100）
  *
- * <p>提供「至少一次投递 + 消费侧幂等」的最小保障：去重键 {@code (consumer_name, event_id)}
+ * <p>提供「至少一次投递 + 消费侧幂等」的最小保障：去重键 {@code (tenant_id, consumer_name, event_id)}
  * 由数据库唯一约束兜底，业务处理器不需要自己实现幂等表。
  *
  * @author 智云集成治理
@@ -31,12 +31,12 @@ public interface EventInboxService {
     /**
      * 查询去重记录
      */
-    EventInboxDO selectByConsumerAndEvent(String consumerName, String eventId);
+    EventInboxDO selectByConsumerAndEvent(String consumerName, String eventId, Long tenantId);
 
     /**
      * 人工重放：把死信记录重置为可再次消费
      */
-    boolean replay(String consumerName, String eventId);
+    boolean replay(String consumerName, String eventId, Long tenantId);
 
     /**
      * 当前待重试失败存量（FAILED），供监控告警。

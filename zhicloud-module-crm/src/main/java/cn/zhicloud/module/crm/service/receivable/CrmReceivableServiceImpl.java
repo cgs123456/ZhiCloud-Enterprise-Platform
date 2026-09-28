@@ -4,7 +4,9 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.crypto.digest.DigestUtil;
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.common.util.collection.CollectionUtils;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
@@ -88,55 +90,114 @@ public class CrmReceivableServiceImpl implements CrmReceivableService {
     @LogRecord(type = CRM_RECEIVABLE_TYPE, subType = CRM_RECEIVABLE_CREATE_SUB_TYPE, bizNo = "{{#receivable.id}}",
             success = CRM_RECEIVABLE_CREATE_SUCCESS)
     public Long createReceivable(CrmReceivableSaveReqVO createReqVO) {
-        // 1.1 校验可回款金额超过上限
+        // 1. 幂等键与载荷指纹必须先于任何业务副作用计算和校验
+        String idempotencyKey = validateAndNormalizeIdempotencyKey(createReqVO.getIdempotencyKey());
+        String payloadHash = buildReceivablePayloadHash(createReqVO);
+        CrmReceivableDO existing = receivableMapper.selectByIdempotencyKey(idempotencyKey);
+        if (existing != null) {
+            return resolveIdempotentReceivable(existing, payloadHash);
+        }
+
+        // 2.1 校验可回款金额超过上限（同时锁定合同行）
         validateReceivablePriceExceedsLimit(createReqVO);
-        // 1.2 校验关联数据存在
+        // 2.2 校验关联数据存在
         validateRelationDataExists(createReqVO);
-        // 1.3 生成回款编号
+        // 2.3 获得合同行锁后再次检查幂等键，覆盖同一合同并发重试窗口
+        existing = receivableMapper.selectByIdempotencyKey(idempotencyKey);
+        if (existing != null) {
+            return resolveIdempotentReceivable(existing, payloadHash);
+        }
+        // 2.4 生成回款编号
         String no = noRedisDAO.generate(CrmNoRedisDAO.RECEIVABLE_PREFIX);
         if (receivableMapper.selectByNo(no) != null) {
             throw exception(RECEIVABLE_NO_EXISTS);
         }
 
-        // 2.1 插入回款
+        // 3. 插入回款
         CrmReceivableDO receivable = BeanUtils.toBean(createReqVO, CrmReceivableDO.class)
-                .setNo(no).setAuditStatus(CrmAuditStatusEnum.DRAFT.getStatus());
+                .setNo(no).setAuditStatus(CrmAuditStatusEnum.DRAFT.getStatus())
+                .setIdempotencyKey(idempotencyKey).setPayloadHash(payloadHash).setVersion(0);
         try {
             receivableMapper.insert(receivable);
         } catch (DuplicateKeyException e) {
-            // V78 uk_contract_no 唯一索引并发兜底：捕获并发重复提交，返回已有 id
-            CrmReceivableDO existing = receivableMapper.selectOne(CrmReceivableDO::getContractId, receivable.getContractId());
-            log.warn("[createReceivable][并发重复提交合同={} 返回已有id={}]", receivable.getContractId(),
-                    existing != null ? existing.getId() : "unknown");
-            return existing != null ? existing.getId() : receivable.getId();
+            // 唯一键并发兜底：只按幂等键回查，禁止按 contractId 猜测并返回其他业务单据。
+            existing = receivableMapper.selectByIdempotencyKeyForUpdate(idempotencyKey);
+            if (existing == null) {
+                throw e;
+            }
+            log.warn("[createReceivable][幂等键={} 并发重复提交，返回已有 id={}]",
+                    idempotencyKey, existing.getId());
+            return resolveIdempotentReceivable(existing, payloadHash);
         }
-        // 2.2
 
-        // 3. 创建数据权限
+        // 4. 创建数据权限
         permissionService.createPermission(new CrmPermissionCreateReqBO().setBizType(CrmBizTypeEnum.CRM_RECEIVABLE.getType())
                 .setBizId(receivable.getId()).setUserId(createReqVO.getOwnerUserId())
                 .setLevel(CrmPermissionLevelEnum.OWNER.getLevel())); // 设置当前操作的人为负责人
 
-        // 4. 更新关联的回款计划
+        // 5. 更新关联的回款计划
         if (createReqVO.getPlanId() != null) {
             receivablePlanService.updateReceivablePlanReceivableId(receivable.getPlanId(), receivable.getId());
         }
 
-        // 5. 记录操作日志上下文
+        // 6. 记录操作日志上下文
         LogRecordContext.putVariable("receivable", receivable);
         LogRecordContext.putVariable("period", getReceivablePeriod(receivable.getPlanId()));
         return receivable.getId();
     }
 
+    private String validateAndNormalizeIdempotencyKey(String idempotencyKey) {
+        String normalized = StrUtil.trimToNull(idempotencyKey);
+        if (normalized == null) {
+            throw exception(RECEIVABLE_IDEMPOTENCY_KEY_REQUIRED);
+        }
+        if (normalized.length() > 128) {
+            throw exception(RECEIVABLE_IDEMPOTENCY_KEY_INVALID);
+        }
+        return normalized;
+    }
+
+    private Long resolveIdempotentReceivable(CrmReceivableDO existing, String payloadHash) {
+        if (!Objects.equals(existing.getPayloadHash(), payloadHash)) {
+            throw exception(RECEIVABLE_IDEMPOTENCY_KEY_CONFLICT);
+        }
+        return existing.getId();
+    }
+
+    private String buildReceivablePayloadHash(CrmReceivableSaveReqVO reqVO) {
+        return DigestUtil.sha256Hex(String.join("|",
+                hashValue(reqVO.getContractId()),
+                hashValue(reqVO.getPlanId()),
+                hashValue(reqVO.getOwnerUserId()),
+                hashValue(reqVO.getReturnType()),
+                hashValue(normalizeAmount(reqVO.getPrice())),
+                hashValue(reqVO.getReturnTime()),
+                hashValue(reqVO.getRemark())));
+    }
+
+    private String hashValue(Object value) {
+        return value == null ? "<null>" : value.toString();
+    }
+
+    private String normalizeAmount(BigDecimal amount) {
+        return amount == null ? null : amount.stripTrailingZeros().toPlainString();
+    }
+
     private void validateReceivablePriceExceedsLimit(CrmReceivableSaveReqVO reqVO) {
+        validateReceivableAmount(reqVO.getPrice());
         // P2 TOCTOU 修复：使用 FOR UPDATE 锁合同行，防止并发超收
         // 在同一事务内先锁定合同，再计算剩余可回款金额，确保原子性
         CrmContractDO contract = contractMapper.selectByIdForUpdate(reqVO.getContractId());
         if (contract == null) {
             throw exception(CONTRACT_NOT_EXISTS);
         }
+        if (contract.getTotalPrice() == null) {
+            throw exception(RECEIVABLE_CREATE_FAIL_CONTRACT_AMOUNT_INVALID);
+        }
+        // 草稿、审批中、审批通过均占用合同回款额度，避免重复创建导致超额
         List<CrmReceivableDO> receivables = receivableMapper.selectListByContractIdAndStatus(reqVO.getContractId(),
-                Arrays.asList(CrmAuditStatusEnum.APPROVE.getStatus(), CrmAuditStatusEnum.PROCESS.getStatus()));
+                Arrays.asList(CrmAuditStatusEnum.DRAFT.getStatus(), CrmAuditStatusEnum.PROCESS.getStatus(),
+                        CrmAuditStatusEnum.APPROVE.getStatus()));
         if (reqVO.getId() != null) {
             receivables.removeIf(receivable -> ObjectUtil.equal(receivable.getId(), reqVO.getId()));
         }
@@ -145,6 +206,15 @@ public class CrmReceivableServiceImpl implements CrmReceivableService {
         // 2. 校验金额是否超过
         if (reqVO.getPrice().compareTo(notReceivablePrice) > 0) {
             throw exception(RECEIVABLE_CREATE_FAIL_PRICE_EXCEEDS_LIMIT, notReceivablePrice);
+        }
+    }
+
+    private void validateReceivableAmount(BigDecimal price) {
+        if (price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
+            throw exception(RECEIVABLE_AMOUNT_INVALID);
+        }
+        if (price.stripTrailingZeros().scale() > 2) {
+            throw exception(RECEIVABLE_AMOUNT_SCALE_INVALID);
         }
     }
 
@@ -166,6 +236,11 @@ public class CrmReceivableServiceImpl implements CrmReceivableService {
             }
             if (receivablePlan.getReceivableId() != null) {
                 throw exception(RECEIVABLE_PLAN_EXISTS_RECEIVABLE);
+            }
+            // 防止跨合同/跨客户关联计划，导致后续回款归属和额度校验失真
+            if (ObjectUtil.notEqual(receivablePlan.getContractId(), reqVO.getContractId())
+                    || ObjectUtil.notEqual(receivablePlan.getCustomerId(), reqVO.getCustomerId())) {
+                throw exception(RECEIVABLE_PLAN_RELATION_MISMATCH);
             }
         }
     }
@@ -191,9 +266,13 @@ public class CrmReceivableServiceImpl implements CrmReceivableService {
             throw exception(RECEIVABLE_UPDATE_FAIL_EDITING_PROHIBITED);
         }
 
-        // 2. 更新回款
-        CrmReceivableDO updateObj = BeanUtils.toBean(updateReqVO, CrmReceivableDO.class);
-        receivableMapper.updateById(updateObj);
+        // 2. 更新回款（显式携带旧版本，0 行代表并发修改，必须失败关闭）
+        CrmReceivableDO updateObj = BeanUtils.toBean(updateReqVO, CrmReceivableDO.class)
+                .setVersion(oldReceivable.getVersion());
+        int updated = receivableMapper.updateById(updateObj);
+        if (updated == 0) {
+            throw exception(CRM_OPTIMISTIC_LOCK_FAIL);
+        }
 
         // 3. 记录操作日志上下文
         updateReqVO.setOwnerUserId(oldReceivable.getOwnerUserId()); // 避免操作日志出现“删除负责人”的情况
@@ -263,21 +342,39 @@ public class CrmReceivableServiceImpl implements CrmReceivableService {
     @LogRecord(type = CRM_RECEIVABLE_TYPE, subType = CRM_RECEIVABLE_SUBMIT_SUB_TYPE, bizNo = "{{#id}}",
             success = CRM_RECEIVABLE_SUBMIT_SUCCESS)
     public void submitReceivable(Long id, Long userId) {
-        // 1. 校验回款是否在审批
-        CrmReceivableDO receivable = validateReceivableExists(id);
+        // 1. 锁定回款行并校验状态，保证同一单据只有一个提交者能创建流程
+        CrmReceivableDO receivable = receivableMapper.selectByIdForUpdate(id);
+        if (receivable == null) {
+            throw exception(RECEIVABLE_NOT_EXISTS);
+        }
         if (ObjUtil.notEqual(receivable.getAuditStatus(), CrmAuditStatusEnum.DRAFT.getStatus())) {
             throw exception(RECEIVABLE_SUBMIT_FAIL_NOT_DRAFT);
         }
+        if (receivable.getVersion() == null) {
+            throw exception(CRM_OPTIMISTIC_LOCK_FAIL);
+        }
 
-        // 2. 创建回款审批流程实例
+        // 2. 先 CAS 抢占 DRAFT -> PROCESS；失败时绝不调用外部 BPM，避免重复流程实例
+        CrmReceivableDO claimObj = new CrmReceivableDO().setId(id)
+                .setAuditStatus(CrmAuditStatusEnum.PROCESS.getStatus())
+                .setVersion(receivable.getVersion());
+        int claimed = receivableMapper.updateById(claimObj);
+        if (claimed == 0) {
+            throw exception(CRM_OPTIMISTIC_LOCK_FAIL);
+        }
+
+        // 3. 创建回款审批流程实例。业务键由 BPM 侧负责幂等/去重，数据库锁只覆盖本地事务。
         String processInstanceId = bpmProcessInstanceApi.createProcessInstance(userId, new BpmProcessInstanceCreateReqDTO()
                 .setProcessDefinitionKey(BPM_PROCESS_DEFINITION_KEY).setBusinessKey(String.valueOf(id)));
 
-        // 3. 更新回款工作流编号
-        receivableMapper.updateById(new CrmReceivableDO().setId(id).setProcessInstanceId(processInstanceId)
-                .setAuditStatus(CrmAuditStatusEnum.PROCESS.getStatus()));
+        // 4. 回写工作流编号；当前事务仍持有行锁，失败则回滚本地状态并暴露补偿问题
+        CrmReceivableDO processObj = new CrmReceivableDO().setId(id).setProcessInstanceId(processInstanceId)
+                .setVersion(receivable.getVersion() + 1);
+        if (receivableMapper.updateById(processObj) == 0) {
+            throw exception(CRM_OPTIMISTIC_LOCK_FAIL);
+        }
 
-        // 4. 记录日志
+        // 5. 记录日志
         LogRecordContext.putVariable("receivableNo", receivable.getNo());
     }
 

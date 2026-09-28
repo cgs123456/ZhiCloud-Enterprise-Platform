@@ -15,6 +15,8 @@ public interface ErrorCodeConstants {
     ErrorCode CONFIG_CAN_NOT_DELETE_SYSTEM_TYPE = new ErrorCode(1_001_000_003, "不能删除类型为系统内置的参数配置");
     ErrorCode CONFIG_GET_VALUE_ERROR_IF_VISIBLE = new ErrorCode(1_001_000_004, "获取参数配置失败，原因：不允许获取不可见配置");
 
+    // ========== 集成死信 1-001-008-000 ==========
+    ErrorCode EVENT_DLQ_OPERATOR_NOT_LOGIN = new ErrorCode(1_001_008_000, "未获取到登录用户，禁止重放死信");
     // ========== 定时任务 1-001-001-000 ==========
     ErrorCode JOB_NOT_EXISTS = new ErrorCode(1_001_001_000, "定时任务不存在");
     ErrorCode JOB_HANDLER_EXISTS = new ErrorCode(1_001_001_001, "定时任务的处理器已经存在");

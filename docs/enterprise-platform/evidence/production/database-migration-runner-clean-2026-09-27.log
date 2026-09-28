@@ -1,0 +1,2 @@
+����: �Ҳ������޷��������� .main=cn.zhicloud.server.DatabaseMigrationRunner
+ԭ��: java.lang.ClassNotFoundException: /main=cn/zhicloud/server/DatabaseMigrationRunner

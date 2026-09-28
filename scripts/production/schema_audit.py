@@ -29,6 +29,7 @@ import os
 import re
 import subprocess
 import sys
+import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -52,8 +53,8 @@ SEVERITY_ORDER = {name: index for index, name in enumerate(SEVERITIES)}
 # MyBatis-Plus 插入时会自动填充的字段：真库里即使 NOT NULL 也不是「应用写不进去」。
 AUTO_FILLED_COLUMNS = set(INHERITED_COLUMNS) | {"id"}
 
-DEFAULT_MODULE_GLOBS = ("zhicloud-module-*/", "zhicloud-framework/*/")
-DEFAULT_DDL_GLOB = "sql/mysql/*.sql"
+DEFAULT_DDL_GLOB = "zhicloud-server/src/main/resources/db/migration/V*.sql"
+DEFAULT_LEGACY_DDL_GLOB = "sql/mysql/*.sql"
 DEFAULT_VERIFY_SQL_DIR = "script/enterprise-platform-upgrade/verification"
 
 FIELD_TYPE_RE = re.compile(
@@ -75,6 +76,28 @@ DDL_UNIQUE_RE = re.compile(
 DDL_KEY_RE = re.compile(
     r"^\s*(?:KEY|INDEX)\s+[`\"]?\w+[`\"]?\s*\(([^)]*)\)", re.IGNORECASE
 )
+ALTER_TABLE_RE = re.compile(
+    r"^\s*ALTER\s+TABLE\s+[`\"]?(\w+)[`\"]?\s+(.*?);",
+    re.IGNORECASE | re.MULTILINE | re.DOTALL,
+)
+ALTER_ADD_COLUMN_RE = re.compile(
+    r"\bADD\s+(?:COLUMN\s+)?(?:IF\s+NOT\s+EXISTS\s+)?[`\"]?(\w+)[`\"]?\s+"
+    r"([A-Za-z][A-Za-z0-9]*(?:\s*\([^)]*\))?(?:\s+unsigned)?(?:\s+zerofill)?)",
+    re.IGNORECASE,
+)
+ALTER_ADD_UNIQUE_RE = re.compile(
+    r"\bADD\s+(?:CONSTRAINT\s+[`\"]?\w+[`\"]?\s+)?UNIQUE"
+    r"(?:\s+(?:KEY|INDEX))?\s*(?:[`\"]?\w+[`\"]?)?\s*\(([^)]*)\)",
+    re.IGNORECASE,
+)
+ALTER_ADD_KEY_RE = re.compile(
+    r"\bADD\s+(?:KEY|INDEX)\s+[`\"]?\w+[`\"]?\s*\(([^)]*)\)",
+    re.IGNORECASE,
+)
+ALTER_NON_COLUMN_TOKENS = {
+    "primary", "unique", "key", "index", "constraint", "foreign",
+    "check", "fulltext", "spatial", "partition",
+}
 
 # MySQL 建表语句里的表级约束行（PRIMARY KEY / CONSTRAINT ... FOREIGN KEY 等）不是列定义。
 # 带名字的 UNIQUE / KEY 索引已由上面两个分支抽取，这里只负责「别把它们当成列」。
@@ -268,6 +291,29 @@ class LiveSchema:
         wanted = tuple(column.lower() for column in columns)
         return wanted in self.index_columns(table, unique=unique)
 
+    def has_index_prefix(
+        self, table: str, columns: Sequence[str], *, unique: bool | None = None
+    ) -> bool:
+        wanted = tuple(column.lower() for column in columns)
+        if not wanted:
+            return False
+        return any(
+            index_columns[: len(wanted)] == wanted
+            for index_columns in self.index_columns(table, unique=unique)
+        )
+
+    def unique_index_supersets(
+        self, table: str, columns: Sequence[str]
+    ) -> list[tuple[str, ...]]:
+        wanted = set(column.lower() for column in columns)
+        if not wanted:
+            return []
+        return sorted(
+            index_columns
+            for index_columns in self.index_columns(table, unique=True)
+            if wanted.issubset(index_columns)
+        )
+
 
 @dataclass
 class Finding:
@@ -416,14 +462,24 @@ def _index_spec_columns(spec: str) -> tuple[str, ...]:
 
 
 def parse_ddl_expectations(ddl_files: Iterable[Path]) -> dict[str, ExpectedTable]:
+    """从 CREATE TABLE 与静态 ALTER TABLE 迁移语句推导期望结构。
+
+    迁移文件按字符串排序时，V108 可能排在 V52 前面；因此必须先收集所有
+    CREATE TABLE，再统一应用 ALTER，避免把合法补列误报为缺列。动态拼接
+    的 PREPARE/CONCAT 语句不进入静态期望值，由真库结果作为最终事实源。
+    """
     tables: dict[str, ExpectedTable] = {}
+    documents: list[str] = []
+
+    # Pass 1: CREATE TABLE.
     for ddl_file in ddl_files:
         ddl_file = Path(ddl_file)
         if not ddl_file.exists():
             continue
         text = ddl_file.read_text(encoding="utf-8", errors="replace")
+        documents.append(text)
         for match in CREATE_TABLE_RE.finditer(text):
-            table_name = match.group(1)
+            table_name = match.group(1).lower()
             entry = tables.setdefault(table_name, ExpectedTable(name=table_name))
             for line in match.group(2).splitlines():
                 stripped = line.strip().rstrip(",")
@@ -448,7 +504,33 @@ def parse_ddl_expectations(ddl_files: Iterable[Path]) -> dict[str, ExpectedTable
                 if column:
                     column_name = column.group(1).lower()
                     entry.add_column(column_name, "ddl")
-                    entry.ddl_types[column_name] = re.sub(r"\s+", " ", column.group(2).strip().lower())
+                    entry.ddl_types[column_name] = re.sub(
+                        r"\s+", " ", column.group(2).strip().lower()
+                    )
+            entry.sources.add("ddl")
+
+    # Pass 2: static ALTER TABLE ADD COLUMN / ADD INDEX / ADD UNIQUE.
+    for text in documents:
+        for alter in ALTER_TABLE_RE.finditer(text):
+            table_name = alter.group(1).lower()
+            entry = tables.setdefault(table_name, ExpectedTable(name=table_name))
+            body = alter.group(2)
+            for add in ALTER_ADD_COLUMN_RE.finditer(body):
+                column_name = add.group(1).lower()
+                if column_name in ALTER_NON_COLUMN_TOKENS:
+                    continue
+                entry.add_column(column_name, "ddl")
+                entry.ddl_types[column_name] = re.sub(
+                    r"\s+", " ", add.group(2).strip().lower()
+                )
+            for unique in ALTER_ADD_UNIQUE_RE.finditer(body):
+                columns = _index_spec_columns(unique.group(1))
+                if columns:
+                    entry.unique_indexes.add(columns)
+            for key in ALTER_ADD_KEY_RE.finditer(body):
+                columns = _index_spec_columns(key.group(1))
+                if columns:
+                    entry.indexes.add(columns)
             entry.sources.add("ddl")
     return tables
 
@@ -845,7 +927,7 @@ def analyze(
                         sources=sources,
                     )
                 )
-            elif not live.has_index(key, ["tenant_id"]):
+            elif not live.has_index_prefix(key, ["tenant_id"]):
                 result.findings.append(
                     Finding(
                         severity="P1_HIGH",
@@ -940,19 +1022,36 @@ def analyze(
             )
 
         for columns in sorted(entry.unique_indexes):
-            if not live.has_index(key, columns, unique=True):
-                result.findings.append(
-                    Finding(
-                        severity="P1_HIGH",
-                        category="missing_unique_index",
+            if live.has_index(key, columns, unique=True):
+                continue
+            supersets = live.unique_index_supersets(key, columns)
+            if supersets:
+                result.divergences.append(
+                    Divergence(
+                        kind="unique_index_evolved",
                         table=table_name,
                         column=",".join(columns),
-                        message="DDL 声明了唯一键，但真库缺少同列的唯一索引。",
-                        expected=f"UNIQUE ({', '.join(columns)})",
-                        actual="<none>",
-                        sources=["ddl"],
+                        static_says=f"UNIQUE ({', '.join(columns)})",
+                        live_says="; ".join(
+                            f"UNIQUE ({', '.join(index_columns)})" for index_columns in supersets
+                        ),
+                        resolution="live_wins",
+                        source="ddl",
                     )
                 )
+                continue
+            result.findings.append(
+                Finding(
+                    severity="P1_HIGH",
+                    category="missing_unique_index",
+                    table=table_name,
+                    column=",".join(columns),
+                    message="DDL 声明了唯一键，但真库缺少同列的唯一索引。",
+                    expected=f"UNIQUE ({', '.join(columns)})",
+                    actual="<none>",
+                    sources=["ddl"],
+                )
+            )
         for columns in sorted(entry.indexes):
             if not live.has_index(key, columns):
                 result.findings.append(
@@ -1048,13 +1147,50 @@ def build_report(
     }
 
 
+def _active_maven_module_names(pom_file: Path) -> list[str]:
+    """读取 POM 中未被 XML 注释掉的 module 名称。"""
+    if not pom_file.is_file():
+        raise SchemaAuditError(f"Maven POM not found: {pom_file}")
+    try:
+        root = ET.parse(pom_file).getroot()
+    except ET.ParseError as exc:
+        raise SchemaAuditError(f"invalid Maven POM {pom_file}: {exc}") from exc
+
+    names: list[str] = []
+    for element in root.iter():
+        if element.tag.rsplit("}", 1)[-1] != "module":
+            continue
+        name = (element.text or "").strip()
+        if name:
+            names.append(name)
+    return names
+
+
+def _active_leaf_module_dirs(module_root: Path, pom_file: Path) -> list[Path]:
+    dirs: list[Path] = []
+    for name in _active_maven_module_names(pom_file):
+        module_dir = module_root / name
+        if not module_dir.is_dir():
+            continue
+        nested_pom = module_dir / "pom.xml"
+        if nested_pom.is_file() and _active_maven_module_names(nested_pom):
+            dirs.extend(_active_leaf_module_dirs(module_dir, nested_pom))
+        else:
+            dirs.append(module_dir)
+    return dirs
+
+
 def default_module_dirs(repo_root: Path) -> list[Path]:
-    dirs = sorted(repo_root.glob("zhicloud-module-*"))
-    dirs += sorted((repo_root / "zhicloud-framework").glob("zhicloud-*"))
-    return [path for path in dirs if path.is_dir()]
+    """只审计根 POM 实际启用并参与构建的模块，排除注释停用模块。"""
+    return sorted(set(_active_leaf_module_dirs(repo_root, repo_root / "pom.xml")))
 
 
 def default_ddl_files(repo_root: Path) -> list[Path]:
+    """优先使用 Flyway 迁移链；仅在没有迁移文件时回退旧整库 DDL。"""
+    migration_dir = repo_root / "zhicloud-server" / "src" / "main" / "resources" / "db" / "migration"
+    migrations = sorted(migration_dir.glob("V*.sql"))
+    if migrations:
+        return migrations
     return sorted((repo_root / "sql" / "mysql").glob("*.sql"))
 
 

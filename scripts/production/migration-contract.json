@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "contract_start_version": 90,
-  "purpose": "Reviewed V90-V104 migration and verification bytes; execution evidence remains MySQL shadow-run plus scoped integration evidence.",
+  "purpose": "Reviewed V90-V117 migration and verification bytes; execution evidence includes a MySQL 8.4.9 sandbox clean baseline with V2-V117 applied, V115-V117 executed and verified, idempotent clean-mode rerun, MySQL bootstrap success with repeat fail-closed, a Flyway 11.7.2 parser/execution check for V108, V107 fail-closed negative scenarios, and full ERP-to-WMS integration evidence including cross-tenant identical WMS order numbers. The existing-database chain remains correctly blocked by V115 until bootstrap ordering is completed. V116/V117 concurrency, soft-delete semantics, large-table DDL cost, non-MySQL equivalents, and BPM rollback remain pending.",
   "migrations": [
     {
       "version": 90,
@@ -107,6 +107,97 @@
       "sha256": "673d05aea7eb6938fedb3f053e62c9e2436b1d6768e9b5da851b06d5a071b5a1",
       "verification_file": "V104_verify.sql",
       "verification_sha256": "dcf54cd4c87c81b5eae8eee165f7846c03ffd655857b63c25d37a32d0f415d06"
+    },
+    {
+      "version": 105,
+      "file": "V105__event_dlq_replay_log.sql",
+      "sha256": "47934663b0f9daa6cd20623b01a276f9b33ab5e60bdcdd1ea38dd060e6598bd5",
+      "verification_file": "V105_verify.sql",
+      "verification_sha256": "77054fc914496f3e0f6ffcaf9fea3f29ba5648fcb89af0ff17c58e2c50ef802b"
+    },
+    {
+      "version": 106,
+      "file": "V106__event_dlq_permissions.sql",
+      "sha256": "6d65aad21d278c8134c6d7fcb3a67ccd55516ecb29917744f7a49a6e39bcfc13",
+      "verification_file": "V106_verify.sql",
+      "verification_sha256": "a2a8b9ae0c829853297ee0a8248823c68ffd79c88c18e7d5c51ccdb4caf677de"
+    },
+    {
+      "version": 107,
+      "file": "V107__event_tenant_unique_keys.sql",
+      "sha256": "bddfbb8b8476ed7e0358a65f16d18e1f9b7276e8dfdf7903fda708bb9f21a78b",
+      "verification_file": "V107_verify.sql",
+      "verification_sha256": "95875b1552bdad7e6b3cd0aa85fd8f849f867a7c156da7bf94450bbd2f4f8d12"
+    },
+    {
+      "version": 108,
+      "file": "V108__tenant_isolation_p0.sql",
+      "sha256": "f18c5b2e7805ea251c981ad0ba10dd9c7ed3999c56b532b6b043c7e3b931c083",
+      "verification_file": "V108_verify.sql",
+      "verification_sha256": "b1d6adc832a9834febe1104b91b6c94bab777cfeaeae42ba6c43fcec74019c04"
+    },
+    {
+      "version": 109,
+      "file": "V109__wms_shipment_order_tenant_unique.sql",
+      "sha256": "39a0c4c392ac1ac430db656f4af47643c3d5200fc757f6b8d955c9d5f1197262",
+      "verification_file": "V109_verify.sql",
+      "verification_sha256": "245e9c22d5f2f3466b1f830c7d4fbaaa5a82beb1dd0d61a261fdf6f417125270"
+    },
+    {
+      "version": 110,
+      "file": "V110__erp_cost_mps_tables.sql",
+      "sha256": "b7100805a8804c4dc9e52fd4ebbcb975c634539790d9888d7c762ca091561fb2",
+      "verification_file": "V110_verify.sql",
+      "verification_sha256": "eb9a234a49e5845a542fe1fa6a3c7bc626fa40633cabe56bb97c06196c7c06f5"
+    },
+    {
+      "version": 111,
+      "file": "V111__mes_tpm_rework_tables.sql",
+      "sha256": "028b3ded48bfbfcaac447c6931e0b520f2ccbb87a31933fff17132e84ac8d5d3",
+      "verification_file": "V111_verify.sql",
+      "verification_sha256": "7eddbcdcf2c168f0e4a874e69fa095724c980dde4b98de91912b9c9d07f60205"
+    },
+    {
+      "version": 112,
+      "file": "V112__qms_document_audit_instrument_tables.sql",
+      "sha256": "e0442b668d5ba9709a6105295fee1653f0ffd6102045eac5060e7d182eafa80d",
+      "verification_file": "V112_verify.sql",
+      "verification_sha256": "ccddcacb160be925828967c49f61b850029d0403ccf30bb4cc8e346f35e9003f"
+    },
+    {
+      "version": 113,
+      "file": "V113__tenant_indexes.sql",
+      "sha256": "43579610d795b21769c148fb26dedf3dc355bc88c57ca159203256000a5743c9",
+      "verification_file": "V113_verify.sql",
+      "verification_sha256": "6da7d0ac0f85827b85ddfddc680d13c8720b79413f6b7147f9581decce1264b1"
+    },
+    {
+      "version": 114,
+      "file": "V114__ai_metadata_tables.sql",
+      "sha256": "987ddd58029e882bbda1d2d59062d1a444fa8545f099f8dbf1a44f63ac98d20e",
+      "verification_file": "V114_verify.sql",
+      "verification_sha256": "19f96881a440a0e8f02269bbfbcc15a9ee12af4fdf7d3f4a53be05df0a8430c5"
+    },
+    {
+      "version": 115,
+      "file": "V115__production_seed_account_cleanup.sql",
+      "sha256": "7bbaedae0e4a332d8c2cbbddc67104dd5551d2091379f12fa54952c24b610641",
+      "verification_file": "V115_verify.sql",
+      "verification_sha256": "0bf58b4b921a56222bdd917b5361627800b402aaeb8a780d992ded9c569b2784"
+    },
+    {
+      "version": 116,
+      "file": "V116__system_users_active_username_unique.sql",
+      "sha256": "7e8131760055c462065e5d420bb699aea39e076265b2c0344170b693883e28fd",
+      "verification_file": "V116_verify.sql",
+      "verification_sha256": "cebbc235ad68f32032d67d02e7b375b874ce2911b1bc2577a045585007938077"
+    },
+    {
+      "version": 117,
+      "file": "V117__crm_receivable_idempotency.sql",
+      "sha256": "5418533c05c413ce6ddf6c96f18e622b8970e17fa90211b00b97face239e3cb2",
+      "verification_file": "V117_verify.sql",
+      "verification_sha256": "9e291f2eef92b2754b25ae310c0d867a4ae4c2bf2b441618ea09dc8c9d82cb22"
     }
   ]
 }

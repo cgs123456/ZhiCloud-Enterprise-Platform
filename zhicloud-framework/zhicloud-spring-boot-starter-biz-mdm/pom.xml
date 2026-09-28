@@ -21,6 +21,12 @@
             <artifactId>zhicloud-common</artifactId>
         </dependency>
 
+        <!-- 多租户上下文与 TenantBaseDO：MDM 映射必须绑定当前租户，禁止回退默认租户 0 -->
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-spring-boot-starter-biz-tenant</artifactId>
+        </dependency>
+
         <!-- DB 相关 -->
         <dependency>
             <groupId>cn.zhicloud</groupId>

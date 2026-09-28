@@ -1,0 +1,167 @@
+{
+  "blocking": [],
+  "counts": {
+    "blocking": 0,
+    "ignored_evidence_logs": 0,
+    "required_ignored": 0,
+    "required_missing": 0,
+    "required_total": 17,
+    "required_tracked": 17,
+    "required_untracked": 0,
+    "temp_residue": 9,
+    "untracked_trees": 0,
+    "warnings": 9
+  },
+  "decision": "pass",
+  "evidence_type": "commit_readiness_check",
+  "flags": {
+    "gate3_passed": false,
+    "independent_review": false,
+    "production_ready": false,
+    "t107_status": "OPEN"
+  },
+  "generated_at_local": "2026-09-28T08:15:09+08:00",
+  "ignored_evidence": [],
+  "limits": [
+    "本脚本只检查 Git 跟踪状态，不执行 add / commit，也不判断文件内容是否正确。",
+    "被 .gitignore 排除的证据日志不会自动入仓，必须显式 git add -f 或添加例外规则。",
+    "warnings 为提示项：不参与 pass/fail 判定，但需要人工裁决（授权 git add 或清理残留）。"
+  ],
+  "repo": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2",
+  "required": [
+    {
+      "action": "",
+      "path": ".github/workflows/maven.yml",
+      "status": "tracked"
+    },
+    {
+      "action": "",
+      "path": "script/security/security-check.sh",
+      "status": "tracked"
+    },
+    {
+      "action": "",
+      "path": "scripts/check_error_codes.py",
+      "status": "tracked"
+    },
+    {
+      "action": "",
+      "path": "scripts/check_missing_preauthorize.py",
+      "status": "tracked"
+    },
+    {
+      "action": "",
+      "path": "scripts/check_electronic_signature.py",
+      "status": "tracked"
+    },
+    {
+      "action": "",
+      "path": "scripts/check_bare_throws.py",
+      "status": "tracked"
+    },
+    {
+      "action": "",
+      "path": "scripts/scan_tx.py",
+      "status": "tracked"
+    },
+    {
+      "action": "",
+      "path": "scripts/production/check_migration_contract.py",
+      "status": "tracked"
+    },
+    {
+      "action": "",
+      "path": "scripts/production/check_duplicate_ddl.py",
+      "status": "tracked"
+    },
+    {
+      "action": "",
+      "path": "scripts/production/duplicate_ddl_allowlist.json",
+      "status": "tracked"
+    },
+    {
+      "action": "",
+      "path": "scripts/production/migration-contract.json",
+      "status": "tracked"
+    },
+    {
+      "action": "",
+      "path": "scripts/production/generate_license_inventory.py",
+      "status": "tracked"
+    },
+    {
+      "action": "",
+      "path": "scripts/production/check_license_policy.py",
+      "status": "tracked"
+    },
+    {
+      "action": "",
+      "path": "scripts/production/license-policy.json",
+      "status": "tracked"
+    },
+    {
+      "action": "",
+      "path": "scripts/production/build_license_disposition_register.py",
+      "status": "tracked"
+    },
+    {
+      "action": "",
+      "path": "scripts/production/security_baseline_suppressions.py",
+      "status": "tracked"
+    },
+    {
+      "action": "",
+      "path": "scripts/production/security-baseline-suppressions.json",
+      "status": "tracked"
+    }
+  ],
+  "schema_version": 1,
+  "tool": "check_commit_readiness.py",
+  "warnings": [
+    {
+      "action": "仓库根临时脚本残留，入仓前需人工确认删除或移出",
+      "path": "_tmp_c6.py",
+      "status": "temp_residue"
+    },
+    {
+      "action": "仓库根临时脚本残留，入仓前需人工确认删除或移出",
+      "path": "_tmp_chk.py",
+      "status": "temp_residue"
+    },
+    {
+      "action": "仓库根临时脚本残留，入仓前需人工确认删除或移出",
+      "path": "_tmp_enums.py",
+      "status": "temp_residue"
+    },
+    {
+      "action": "仓库根临时脚本残留，入仓前需人工确认删除或移出",
+      "path": "_tmp_fix3.py",
+      "status": "temp_residue"
+    },
+    {
+      "action": "仓库根临时脚本残留，入仓前需人工确认删除或移出",
+      "path": "_tmp_fix4.py",
+      "status": "temp_residue"
+    },
+    {
+      "action": "仓库根临时脚本残留，入仓前需人工确认删除或移出",
+      "path": "_tmp_fix5.py",
+      "status": "temp_residue"
+    },
+    {
+      "action": "仓库根临时脚本残留，入仓前需人工确认删除或移出",
+      "path": "_tmp_peek.py",
+      "status": "temp_residue"
+    },
+    {
+      "action": "仓库根临时脚本残留，入仓前需人工确认删除或移出",
+      "path": "_tmp_scan.py",
+      "status": "temp_residue"
+    },
+    {
+      "action": "仓库根临时脚本残留，入仓前需人工确认删除或移出",
+      "path": "_tmp_split.py",
+      "status": "temp_residue"
+    }
+  ]
+}

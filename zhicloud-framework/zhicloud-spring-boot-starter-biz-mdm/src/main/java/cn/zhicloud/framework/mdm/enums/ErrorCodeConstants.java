@@ -21,5 +21,9 @@ public interface ErrorCodeConstants {
     // ========== 映射解析 ==========
     ErrorCode MDM_CROSS_REF_NOT_FOUND = new ErrorCode(1_099_002_003,
             "主数据映射缺失：{0}.{1}={2} -> {3}.{4}，请先维护主数据对照后再重试");
+    ErrorCode MDM_CROSS_REF_TENANT_REQUIRED = new ErrorCode(1_099_002_004,
+            "主数据映射操作缺少租户上下文");
+    ErrorCode MDM_CROSS_REF_TENANT_MISMATCH = new ErrorCode(1_099_002_005,
+            "主数据映射租户不一致：当前租户={0}，请求租户={1}");
 
 }

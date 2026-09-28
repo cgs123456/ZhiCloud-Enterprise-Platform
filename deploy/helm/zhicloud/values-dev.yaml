@@ -39,17 +39,30 @@ ingress:
 env:
   SPRING_PROFILES_ACTIVE: "dev"
   # 开发环境指向本地/独立数据库
-  MASTER_DATASOURCE_URL: "jdbc:mysql://zhicloud-mysql-dev:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true"
-  SLAVE_DATASOURCE_URL: "jdbc:mysql://zhicloud-mysql-dev:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true"
+  MASTER_DATASOURCE_URL: "jdbc:mysql://zhicloud-mysql-dev:3306/zhicloud_platform?useSSL=true&requireSSL=true&verifyServerCertificate=false&enabledTLSProtocols=TLSv1.2,TLSv1.3&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true"
+  SLAVE_DATASOURCE_URL: "jdbc:mysql://zhicloud-mysql-dev:3306/zhicloud_platform?useSSL=true&requireSSL=true&verifyServerCertificate=false&enabledTLSProtocols=TLSv1.2,TLSv1.3&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true"
   REDIS_HOST: "zhicloud-redis-dev"
   ZHICLOUD_AIRAG_DATASOURCE_URL: "jdbc:postgresql://zhicloud-postgres-dev:5432/zhicloud_rag"
+  ZHICLOUD_AIRAG_INITIALIZE_SCHEMA: "false"
   # 关闭 OTel（开发环境可选）
   OTEL_EXPORTER_OTLP_ENDPOINT: "http://zhicloud-jaeger-dev:4318/v1/traces"
   MANAGEMENT_OTLP_TRACING_ENDPOINT: "http://zhicloud-jaeger-dev:4318/v1/traces"
 
+# 开发环境保留宽松 TLS 配置，不挂载生产 truststore
+mysqlTls:
+  enabled: false
+
+# 管理员引导 Job：默认关闭，首次安装/受控轮换时按 runbook 显式开启。
+bootstrapAdmin:
+  enabled: false
+  mode: ensure
+  passwordSecretName: ""
+  passwordSecretKey: "BOOTSTRAP_ADMIN_PASSWORD"
+
 # 开发环境可关闭迁移 Job（直接由 Spring Boot 启动迁移）
 migration:
   enabled: false
+  baselineMode: existing
 
 # 优雅停机：开发环境缩短
 terminationGracePeriodSeconds: 15

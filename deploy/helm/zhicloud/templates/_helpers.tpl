@@ -132,7 +132,7 @@ helm install 不会报错，于是「忘了改密码」会静默进入生产—�
 {{- $root := index . 0 -}}
 {{- $key := index . 1 -}}
 {{- $value := index . 2 | default "" -}}
-{{- if or (eq $value "") (hasPrefix "CHANGE_ME" $value) -}}
+{{- if or (eq $value "") (hasPrefix "CHANGE_ME" $value) (hasPrefix "__REQUIRED__" $value) -}}
   {{- if not $root.Values.secrets.allowInsecureDefaults -}}
     {{- fail (printf "secrets.%s 未设置或仍为占位符。请通过 External Secrets / Sealed Secrets / SOPS 注入真实值，或设置 secrets.existingSecret 引用外部 Secret；仅限非生产冒烟可用 --set secrets.allowInsecureDefaults=true 放行。" $key) -}}
   {{- else -}}

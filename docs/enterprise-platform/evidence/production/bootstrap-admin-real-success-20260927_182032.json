@@ -1,0 +1,9 @@
+{
+  "database": "zhicloud_runner_clean_20260927_181750",
+  "bootstrap_first_exit_code": 0,
+  "bootstrap_repeat_exit_code": 2,
+  "bootstrap_repeat_fail_closed": true,
+  "evidence_generated_at": "2026-09-27T18:20:33.4596154+08:00",
+  "plaintext_password_persisted": false,
+  "note": "一次性口令输出已丢弃；evidence 仅保留退出码与数据库查询结果。"
+}

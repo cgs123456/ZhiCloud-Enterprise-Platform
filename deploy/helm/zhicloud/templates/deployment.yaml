@@ -32,6 +32,18 @@ spec:
         # 注入 ConfigMap/Secret 哈希，内容变更时自动滚动更新
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        {{- if .Values.secrets.existingSecret }}
+        {{- if not .Values.secrets.existingSecretRevision }}
+        {{- fail "secrets.existingSecretRevision 未设置：existingSecret 模式下必须提供外部 Secret 版本/指纹，轮换后更新该值才能触发 Pod 滚动更新。" }}
+        {{- end }}
+        checksum/external-secret-revision: {{ .Values.secrets.existingSecretRevision | sha256sum }}
+        {{- end }}
+        {{- if .Values.mysqlTls.enabled }}
+        {{- if not .Values.mysqlTls.truststore.existingSecretRevision }}
+        {{- fail "mysqlTls.truststore.existingSecretRevision 未设置：挂载外部 truststore Secret 时必须提供版本/指纹，轮换后更新该值才能触发 Pod 滚动更新。" }}
+        {{- end }}
+        checksum/mysql-tls-truststore-revision: {{ .Values.mysqlTls.truststore.existingSecretRevision | sha256sum }}
+        {{- end }}
         {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -72,14 +84,25 @@ spec:
               value: {{ .Values.env.TZ | quote }}
             - name: JAVA_OPTS
               value: {{ .Values.env.JAVA_OPTS | quote }}
+            {{- if .Values.mysqlTls.enabled }}
+            - name: MYSQL_TLS_TRUSTSTORE_URL
+              value: {{ printf "file:%s/%s" .Values.mysqlTls.truststore.mountPath .Values.mysqlTls.truststore.fileName | quote }}
+            - name: MYSQL_TLS_TRUSTSTORE_TYPE
+              value: {{ .Values.mysqlTls.truststore.type | quote }}
+            - name: MYSQL_TLS_TRUSTSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ required "mysqlTls.truststore.existingSecret 未设置：生产必须提供 truststore Secret" .Values.mysqlTls.truststore.existingSecret | quote }}
+                  key: {{ .Values.mysqlTls.truststore.passwordKey | quote }}
+            {{- end }}
           # 健康检查
           {{- if .Values.probes.readiness.enabled }}
           readinessProbe:
-            {{- toYaml .Values.probes.readiness | nindent 12 }}
+            {{- omit .Values.probes.readiness "enabled" | toYaml | nindent 12 }}
           {{- end }}
           {{- if .Values.probes.liveness.enabled }}
           livenessProbe:
-            {{- toYaml .Values.probes.liveness | nindent 12 }}
+            {{- omit .Values.probes.liveness "enabled" | toYaml | nindent 12 }}
           {{- end }}
           # 资源配额
           {{- include "zhicloud.resources" . | nindent 10 }}
@@ -96,15 +119,34 @@ spec:
           # 容器级安全上下文
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          # 额外卷挂载（如 tmp 可写目录）
-          {{- with .Values.extraVolumeMounts }}
+          # MySQL TLS truststore 只读挂载
+          {{- if .Values.mysqlTls.enabled }}
           volumeMounts:
+            - name: mysql-tls-truststore
+              mountPath: {{ .Values.mysqlTls.truststore.mountPath | quote }}
+              readOnly: true
+            {{- with .Values.extraVolumeMounts }}
             {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- else if .Values.extraVolumeMounts }}
+          volumeMounts:
+            {{- toYaml .Values.extraVolumeMounts | nindent 12 }}
           {{- end }}
-      # 额外卷
-      {{- with .Values.extraVolumes }}
+      # 卷：MySQL TLS truststore + 额外卷
+      {{- if .Values.mysqlTls.enabled }}
       volumes:
+        - name: mysql-tls-truststore
+          secret:
+            secretName: {{ required "mysqlTls.truststore.existingSecret 未设置：生产必须提供 truststore Secret" .Values.mysqlTls.truststore.existingSecret | quote }}
+            items:
+              - key: {{ .Values.mysqlTls.truststore.fileKey | quote }}
+                path: {{ .Values.mysqlTls.truststore.fileName | quote }}
+        {{- with .Values.extraVolumes }}
         {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- else if .Values.extraVolumes }}
+      volumes:
+        {{- toYaml .Values.extraVolumes | nindent 8 }}
       {{- end }}
       # 调度策略
       {{- with .Values.nodeSelector }}

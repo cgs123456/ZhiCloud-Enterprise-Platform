@@ -12,7 +12,11 @@ import cn.zhicloud.framework.mdm.api.MdmCrossRefUpsertReq;
 import cn.zhicloud.framework.mdm.config.MdmAutoConfiguration;
 import cn.zhicloud.framework.mdm.enums.MdmConstants;
 import cn.zhicloud.framework.mdm.service.MdmCrossRefService;
+import cn.zhicloud.framework.tenant.config.TenantProperties;
+import cn.zhicloud.framework.tenant.core.context.TenantContextHolder;
+import cn.zhicloud.framework.tenant.core.db.TenantDatabaseInterceptor;
 import cn.zhicloud.framework.mybatis.config.ZhiCloudMybatisAutoConfiguration;
+import cn.zhicloud.framework.mybatis.core.util.MyBatisUtils;
 import cn.zhicloud.module.erp.dal.dataobject.product.ErpProductDO;
 import cn.zhicloud.module.erp.dal.redis.no.ErpNoRedisDAO;
 import cn.zhicloud.module.erp.enums.ErpAuditStatus;
@@ -25,6 +29,7 @@ import cn.zhicloud.module.erp.service.sale.ErpSaleOutServiceImpl;
 import cn.zhicloud.module.erp.service.stock.ErpStockRecordService;
 import cn.zhicloud.module.system.api.user.AdminUserApi;
 import cn.zhicloud.module.wms.dal.dataobject.md.item.WmsItemSkuDO;
+import cn.zhicloud.module.wms.dal.mysql.order.shipment.WmsShipmentOrderMapper;
 import cn.zhicloud.module.wms.dal.dataobject.md.merchant.WmsMerchantDO;
 import cn.zhicloud.module.wms.dal.dataobject.md.warehouse.WmsWarehouseDO;
 import cn.zhicloud.module.wms.enums.order.WmsOrderStatusEnum;
@@ -38,6 +43,8 @@ import cn.zhicloud.module.wms.service.order.shipment.WmsShipmentOrderServiceImpl
 import cn.hutool.extra.spring.SpringUtil;
 import com.alibaba.druid.spring.boot3.autoconfigure.DruidDataSourceAutoConfigure;
 import com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration;
+import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
+import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
 import com.github.yulichang.autoconfigure.MybatisPlusJoinAutoConfiguration;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.AfterEach;
@@ -48,6 +55,8 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -87,7 +96,8 @@ import static org.mockito.Mockito.when;
 public class ErpToWmsIntegrationTest {
 
     private static final String EXPECTED_DATABASE = "zhicloud_sandbox_chain";
-    private static final Long TENANT_ID = 0L;
+    private static final Long TENANT_ID = 7L;
+    private static final Long SECOND_TENANT_ID = 8L;
 
     private static final Long ERP_PRODUCT_ID = 990000001L;
     private static final Long WMS_SKU_ID = 990000101L;
@@ -117,9 +127,31 @@ public class ErpToWmsIntegrationTest {
             ErpSaleOutServiceImpl.class,
             ErpSaleOutApprovedConsumer.class,
             WmsShipmentOrderServiceImpl.class,
-            WmsShipmentOrderDetailServiceImpl.class
+            WmsShipmentOrderDetailServiceImpl.class,
+            TenantInterceptorTestConfiguration.class
     })
     public static class TestApplication {
+    }
+
+    /**
+     * 真实链路测试必须显式装配租户 DB 拦截器，否则 Mapper 的单租户查询会掩盖跨租户串数据。
+     */
+    @TestConfiguration(proxyBeanMethods = false)
+    public static class TenantInterceptorTestConfiguration {
+
+        @Bean
+        public TenantProperties tenantProperties() {
+            return new TenantProperties();
+        }
+
+        @Bean
+        public TenantLineInnerInterceptor tenantLineInnerInterceptor(TenantProperties properties,
+                                                                     MybatisPlusInterceptor interceptor) {
+            TenantLineInnerInterceptor inner = new TenantLineInnerInterceptor(
+                    new TenantDatabaseInterceptor(properties));
+            MyBatisUtils.addInterceptor(interceptor, inner, 0);
+            return inner;
+        }
     }
 
     @Resource
@@ -136,6 +168,10 @@ public class ErpToWmsIntegrationTest {
     private MdmCrossRefService mdmCrossRefService;
     @Resource
     private ErpSaleOutApprovedConsumer consumer;
+    @Resource
+    private WmsShipmentOrderMapper shipmentOrderMapper;
+    @Resource
+    private TenantLineInnerInterceptor tenantLineInnerInterceptor;
 
     @MockitoBean
     private ErpNoRedisDAO noRedisDAO;
@@ -165,6 +201,10 @@ public class ErpToWmsIntegrationTest {
 
     @BeforeEach
     void setUp() throws Exception {
+        TenantContextHolder.clear();
+        TenantContextHolder.setTenantId(TENANT_ID);
+        // 懒加载测试上下文中，显式触碰该 Bean，确保生产同款租户拦截器已加入 MyBatis 插件链。
+        assertNotNull(tenantLineInnerInterceptor);
         assertSandboxDatabase();
         erpNo = "IT-ERP-" + UUID.randomUUID().toString().substring(0, 8);
         duplicateEventId = "it-dup-" + UUID.randomUUID().toString().substring(0, 8);
@@ -186,7 +226,11 @@ public class ErpToWmsIntegrationTest {
 
     @AfterEach
     void tearDown() {
-        cleanup();
+        try {
+            cleanup();
+        } finally {
+            TenantContextHolder.clear();
+        }
     }
 
     @Test
@@ -197,7 +241,9 @@ public class ErpToWmsIntegrationTest {
 
         String eventId = ErpSaleOutApprovedEvent.eventIdOf(ERP_SALE_OUT_ID);
         assertEquals("NEW", outboxStatus(eventId));
-        assertEquals(0L, count("SELECT COUNT(*) FROM wms_shipment_order WHERE biz_order_no = ?", erpNo));
+        assertEquals(0L, count(
+                "SELECT COUNT(*) FROM wms_shipment_order WHERE biz_order_no = ? AND tenant_id = ?",
+                erpNo, TENANT_ID));
         assertTrue(consumer.supports(IntegrationEventTypes.ERP_SALE_OUT_APPROVED));
 
         eventRelayService.relayOnce(10);
@@ -218,7 +264,8 @@ public class ErpToWmsIntegrationTest {
 
         // 第二层：换一个 eventId 指向同一 ERP 业务单，消费者仍必须按 bizOrderNo 拒绝重复建单。
         String payload = jdbcTemplate.queryForObject(
-                "SELECT payload FROM event_outbox WHERE event_id = ?", String.class, eventId);
+                "SELECT payload FROM event_outbox WHERE event_id = ? AND tenant_id = ?",
+                String.class, eventId, TENANT_ID);
         consumer.handle(EventOutboxDO.builder()
                 .eventId(duplicateEventId)
                 .tenantId(TENANT_ID)
@@ -226,6 +273,49 @@ public class ErpToWmsIntegrationTest {
                 .payload(payload)
                 .build());
         assertWmsOrderCount(1L);
+    }
+
+    /**
+     * V109 的验收用例：不同租户可以使用同一个 ERP 业务单号，各自只看到自己的 WMS 出库单。
+     * 在旧 uk_no(no) 上，第二个租户建单会被全局唯一键拒绝；改错租户拦截器时，
+     * selectByBizOrderNo 还会跨租户读到两行。
+     */
+    @Test
+    void testSameBizOrderNoIsIsolatedAcrossTenants() throws Exception {
+        insertAllMappings();
+        insertAllMappings(SECOND_TENANT_ID);
+        String payload = buildSaleOutApprovedEventPayload();
+
+        consumer.handle(EventOutboxDO.builder()
+                .eventId("it-cross-tenant-" + erpNo + "-7")
+                .tenantId(TENANT_ID)
+                .eventType(IntegrationEventTypes.ERP_SALE_OUT_APPROVED)
+                .payload(payload)
+                .build());
+        TenantContextHolder.setTenantId(SECOND_TENANT_ID);
+        consumer.handle(EventOutboxDO.builder()
+                .eventId("it-cross-tenant-" + erpNo + "-8")
+                .tenantId(SECOND_TENANT_ID)
+                .eventType(IntegrationEventTypes.ERP_SALE_OUT_APPROVED)
+                .payload(payload)
+                .build());
+
+        List<Map<String, Object>> orders = jdbcTemplate.queryForList("""
+                SELECT tenant_id, no, biz_order_no
+                FROM wms_shipment_order
+                WHERE biz_order_no = ? AND tenant_id IN (?, ?)
+                ORDER BY tenant_id
+                """, erpNo, TENANT_ID, SECOND_TENANT_ID);
+        assertEquals(2, orders.size());
+        assertEquals(TENANT_ID, ((Number) orders.get(0).get("tenant_id")).longValue());
+        assertEquals(SECOND_TENANT_ID, ((Number) orders.get(1).get("tenant_id")).longValue());
+        assertEquals("WS" + erpNo, orders.get(0).get("no"));
+        assertEquals("WS" + erpNo, orders.get(1).get("no"));
+
+        TenantContextHolder.setTenantId(SECOND_TENANT_ID);
+        assertEquals(SECOND_TENANT_ID, shipmentOrderMapper.selectByBizOrderNo(erpNo).getTenantId());
+        TenantContextHolder.setTenantId(TENANT_ID);
+        assertEquals(TENANT_ID, shipmentOrderMapper.selectByBizOrderNo(erpNo).getTenantId());
     }
 
     @Test
@@ -275,34 +365,64 @@ public class ErpToWmsIntegrationTest {
                 ERP_SALE_OUT_ID, ERP_PRODUCT_ID, ERP_WAREHOUSE_ID, UNIT_PRICE, QUANTITY, TOTAL_PRICE, TENANT_ID);
     }
 
+    private String buildSaleOutApprovedEventPayload() {
+        return ErpSaleOutApprovedEvent.builder()
+                .no(erpNo)
+                .saleOutId(ERP_SALE_OUT_ID)
+                .customerId(ERP_CUSTOMER_ID)
+                .outTime(OUT_TIME)
+                .totalPrice(TOTAL_PRICE)
+                .items(List.of(ErpSaleOutApprovedEvent.Item.builder()
+                        .productId(ERP_PRODUCT_ID)
+                        .warehouseId(ERP_WAREHOUSE_ID)
+                        .count(QUANTITY)
+                        .price(UNIT_PRICE)
+                        .build()))
+                .build().toJson();
+    }
+
     private void insertAllMappings() {
-        mdmCrossRefService.upsert(MdmCrossRefUpsertReq.builder()
-                .tenantId(TENANT_ID)
-                .sourceSystem(MdmConstants.SYSTEM_ERP)
-                .sourceEntity(MdmConstants.ENTITY_PRODUCT)
-                .sourceId(String.valueOf(ERP_PRODUCT_ID))
-                .targetSystem(MdmConstants.SYSTEM_WMS)
-                .targetEntity(MdmConstants.ENTITY_SKU)
-                .targetId(String.valueOf(WMS_SKU_ID))
-                .build());
-        mdmCrossRefService.upsert(MdmCrossRefUpsertReq.builder()
-                .tenantId(TENANT_ID)
-                .sourceSystem(MdmConstants.SYSTEM_ERP)
-                .sourceEntity(MdmConstants.ENTITY_WAREHOUSE)
-                .sourceId(String.valueOf(ERP_WAREHOUSE_ID))
-                .targetSystem(MdmConstants.SYSTEM_WMS)
-                .targetEntity(MdmConstants.ENTITY_WAREHOUSE)
-                .targetId(String.valueOf(WMS_WAREHOUSE_ID))
-                .build());
-        mdmCrossRefService.upsert(MdmCrossRefUpsertReq.builder()
-                .tenantId(TENANT_ID)
-                .sourceSystem(MdmConstants.SYSTEM_ERP)
-                .sourceEntity(MdmConstants.ENTITY_CUSTOMER)
-                .sourceId(String.valueOf(ERP_CUSTOMER_ID))
-                .targetSystem(MdmConstants.SYSTEM_WMS)
-                .targetEntity(MdmConstants.ENTITY_MERCHANT)
-                .targetId(String.valueOf(WMS_MERCHANT_ID))
-                .build());
+        insertAllMappings(TENANT_ID);
+    }
+
+    private void insertAllMappings(Long tenantId) {
+        Long oldTenantId = TenantContextHolder.getTenantId();
+        TenantContextHolder.setTenantId(tenantId);
+        try {
+            mdmCrossRefService.upsert(MdmCrossRefUpsertReq.builder()
+                    .tenantId(tenantId)
+                    .sourceSystem(MdmConstants.SYSTEM_ERP)
+                    .sourceEntity(MdmConstants.ENTITY_PRODUCT)
+                    .sourceId(String.valueOf(ERP_PRODUCT_ID))
+                    .targetSystem(MdmConstants.SYSTEM_WMS)
+                    .targetEntity(MdmConstants.ENTITY_SKU)
+                    .targetId(String.valueOf(WMS_SKU_ID))
+                    .build());
+            mdmCrossRefService.upsert(MdmCrossRefUpsertReq.builder()
+                    .tenantId(tenantId)
+                    .sourceSystem(MdmConstants.SYSTEM_ERP)
+                    .sourceEntity(MdmConstants.ENTITY_WAREHOUSE)
+                    .sourceId(String.valueOf(ERP_WAREHOUSE_ID))
+                    .targetSystem(MdmConstants.SYSTEM_WMS)
+                    .targetEntity(MdmConstants.ENTITY_WAREHOUSE)
+                    .targetId(String.valueOf(WMS_WAREHOUSE_ID))
+                    .build());
+            mdmCrossRefService.upsert(MdmCrossRefUpsertReq.builder()
+                    .tenantId(tenantId)
+                    .sourceSystem(MdmConstants.SYSTEM_ERP)
+                    .sourceEntity(MdmConstants.ENTITY_CUSTOMER)
+                    .sourceId(String.valueOf(ERP_CUSTOMER_ID))
+                    .targetSystem(MdmConstants.SYSTEM_WMS)
+                    .targetEntity(MdmConstants.ENTITY_MERCHANT)
+                    .targetId(String.valueOf(WMS_MERCHANT_ID))
+                    .build());
+        } finally {
+            if (oldTenantId == null) {
+                TenantContextHolder.clear();
+            } else {
+                TenantContextHolder.setTenantId(oldTenantId);
+            }
+        }
     }
 
     private void assertSandboxDatabase() throws Exception {
@@ -315,7 +435,7 @@ public class ErpToWmsIntegrationTest {
     private void assertWmsOrder() {
         Map<String, Object> order = jdbcTemplate.queryForMap(
                 "SELECT no, biz_order_no, warehouse_id, merchant_id, status, total_quantity, total_price " +
-                        "FROM wms_shipment_order WHERE biz_order_no = ?", erpNo);
+                        "FROM wms_shipment_order WHERE biz_order_no = ? AND tenant_id = ?", erpNo, TENANT_ID);
         assertEquals("WS" + erpNo, order.get("no"));
         assertEquals(erpNo, order.get("biz_order_no"));
         assertEquals(WMS_WAREHOUSE_ID, ((Number) order.get("warehouse_id")).longValue());
@@ -327,7 +447,7 @@ public class ErpToWmsIntegrationTest {
         List<Map<String, Object>> details = jdbcTemplate.queryForList(
                 "SELECT d.sku_id, d.warehouse_id, d.quantity, d.price, d.total_price " +
                         "FROM wms_shipment_order_detail d JOIN wms_shipment_order o ON o.id = d.order_id " +
-                        "WHERE o.biz_order_no = ?", erpNo);
+                        "WHERE o.biz_order_no = ? AND o.tenant_id = ?", erpNo, TENANT_ID);
         assertEquals(1, details.size());
         Map<String, Object> detail = details.get(0);
         assertEquals(WMS_SKU_ID, ((Number) detail.get("sku_id")).longValue());
@@ -338,27 +458,34 @@ public class ErpToWmsIntegrationTest {
     }
 
     private void assertWmsOrderCount(long expected) {
-        assertEquals(expected, count("SELECT COUNT(*) FROM wms_shipment_order WHERE biz_order_no = ?", erpNo));
+        assertEquals(expected, count(
+                "SELECT COUNT(*) FROM wms_shipment_order WHERE biz_order_no = ? AND tenant_id = ?",
+                erpNo, TENANT_ID));
     }
 
     private String outboxStatus(String eventId) {
-        return jdbcTemplate.queryForObject("SELECT status FROM event_outbox WHERE event_id = ?", String.class, eventId);
+        return jdbcTemplate.queryForObject(
+                "SELECT status FROM event_outbox WHERE event_id = ? AND tenant_id = ?",
+                String.class, eventId, TENANT_ID);
     }
 
     private int retryCount(String eventId) {
         Number value = jdbcTemplate.queryForObject(
-                "SELECT retry_count FROM event_outbox WHERE event_id = ?", Number.class, eventId);
+                "SELECT retry_count FROM event_outbox WHERE event_id = ? AND tenant_id = ?",
+                Number.class, eventId, TENANT_ID);
         return value == null ? 0 : value.intValue();
     }
 
     private Object nextRetryAt(String eventId) {
-        return jdbcTemplate.queryForObject("SELECT next_retry_at FROM event_outbox WHERE event_id = ?", Object.class, eventId);
+        return jdbcTemplate.queryForObject(
+                "SELECT next_retry_at FROM event_outbox WHERE event_id = ? AND tenant_id = ?",
+                Object.class, eventId, TENANT_ID);
     }
 
     private String inboxStatus(String consumerName, String eventId) {
         return jdbcTemplate.queryForObject(
-                "SELECT status FROM event_inbox WHERE consumer_name = ? AND event_id = ?",
-                String.class, consumerName, eventId);
+                "SELECT status FROM event_inbox WHERE consumer_name = ? AND event_id = ? AND tenant_id = ?",
+                String.class, consumerName, eventId, TENANT_ID);
     }
 
     private long count(String sql, Object... args) {
@@ -372,28 +499,41 @@ public class ErpToWmsIntegrationTest {
     }
 
     private void cleanup() {
+        TenantContextHolder.setTenantId(TENANT_ID);
         String wmsNo = erpNo == null ? null : "WS" + erpNo;
         if (erpNo != null) {
             jdbcTemplate.update("""
                     DELETE d FROM wms_shipment_order_detail d
                     JOIN wms_shipment_order o ON o.id = d.order_id
-                    WHERE o.biz_order_no = ? OR o.no = ?
-                    """, erpNo, wmsNo);
-            jdbcTemplate.update("DELETE FROM wms_shipment_order WHERE biz_order_no = ? OR no = ?", erpNo, wmsNo);
+                    WHERE o.tenant_id IN (?, ?) AND (o.biz_order_no = ? OR o.no = ?)
+                    """, TENANT_ID, SECOND_TENANT_ID, erpNo, wmsNo);
+            jdbcTemplate.update("""
+                    DELETE FROM wms_shipment_order
+                    WHERE tenant_id IN (?, ?) AND (biz_order_no = ? OR no = ?)
+                    """, TENANT_ID, SECOND_TENANT_ID, erpNo, wmsNo);
         }
         String eventId = ErpSaleOutApprovedEvent.eventIdOf(ERP_SALE_OUT_ID);
-        jdbcTemplate.update("DELETE FROM event_inbox WHERE event_id IN (?, ?)", eventId, duplicateEventId);
-        jdbcTemplate.update("DELETE FROM event_outbox WHERE event_id IN (?, ?)", eventId, duplicateEventId);
-        jdbcTemplate.update("DELETE FROM erp_sale_out_items WHERE out_id = ?", ERP_SALE_OUT_ID);
-        jdbcTemplate.update("DELETE FROM erp_sale_out WHERE id = ? OR no = ?", ERP_SALE_OUT_ID, erpNo);
+        jdbcTemplate.update("""
+                DELETE FROM event_inbox
+                WHERE tenant_id IN (?, ?) AND event_id IN (?, ?)
+                """, TENANT_ID, SECOND_TENANT_ID, eventId, duplicateEventId);
+        jdbcTemplate.update("""
+                DELETE FROM event_outbox
+                WHERE tenant_id IN (?, ?) AND event_id IN (?, ?)
+                """, TENANT_ID, SECOND_TENANT_ID, eventId, duplicateEventId);
+        jdbcTemplate.update("DELETE FROM erp_sale_out_items WHERE tenant_id = ? AND out_id = ?",
+                TENANT_ID, ERP_SALE_OUT_ID);
+        jdbcTemplate.update("DELETE FROM erp_sale_out WHERE tenant_id = ? AND (id = ? OR no = ?)",
+                TENANT_ID, ERP_SALE_OUT_ID, erpNo);
         jdbcTemplate.update("""
                 DELETE FROM mdm_cross_ref
-                WHERE tenant_id = 0 AND source_system = 'ERP' AND target_system = 'WMS'
+                WHERE tenant_id IN (?, ?) AND source_system = 'ERP' AND target_system = 'WMS'
                   AND source_id IN (?, ?, ?)
                   AND ((source_entity = 'PRODUCT' AND target_entity = 'SKU')
                     OR (source_entity = 'WAREHOUSE' AND target_entity = 'WAREHOUSE')
                     OR (source_entity = 'CUSTOMER' AND target_entity = 'MERCHANT'))
-                """,
+                """, TENANT_ID, SECOND_TENANT_ID,
                 String.valueOf(ERP_PRODUCT_ID), String.valueOf(ERP_WAREHOUSE_ID), String.valueOf(ERP_CUSTOMER_ID));
     }
 }
+

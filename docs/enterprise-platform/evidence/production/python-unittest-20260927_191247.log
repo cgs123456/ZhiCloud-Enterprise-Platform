@@ -1,0 +1,90 @@
+......................................................................................................................s..........sF...F.F......................[ERROR] sandbox state file not found: C:\Users\Administrator\AppData\Local\Temp\tmpas21iqwu\missing.json. Run mysql-sandbox.ps1 start first.
+....[ERROR] --database is required whenʹ�� --host ģʽ
+................................s........................................................................................
+======================================================================
+FAIL: test_non_ascii_scripts_carry_utf8_bom (test_powershell_portability.PowerShellScriptPortabilityTest.test_non_ascii_scripts_carry_utf8_bom)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\scripts\production\tests\test_powershell_portability.py", line 89, in test_non_ascii_scripts_carry_utf8_bom
+    self.assertEqual(
+AssertionError: Lists differ: [] != ['scripts\\production\\verify_mysql_runner_sandbox.ps1']
+
+Second list contains 1 additional elements.
+First extra element 0:
+'scripts\\production\\verify_mysql_runner_sandbox.ps1'
+
+- []
++ ['scripts\\production\\verify_mysql_runner_sandbox.ps1'] : scripts with non-ASCII bytes must be UTF-8 with BOM, otherwise Windows PowerShell 5.1 decodes them as ANSI
+
+======================================================================
+FAIL: test_evidence_json_is_strict_and_bom_free (test_powershell_portability_cli.PowerShellPortabilityCliTest.test_evidence_json_is_strict_and_bom_free)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\scripts\production\tests\test_powershell_portability_cli.py", line 62, in test_evidence_json_is_strict_and_bom_free
+    self.assertEqual(0, completed.returncode, completed.stdout + completed.stderr)
+AssertionError: 0 != 2 : evidence written to C:\Users\ADMINI~1\AppData\Local\Temp\tmpo08936w9\portability.json
+
+
+======================================================================
+FAIL: test_reports_zero_parse_errors_for_this_repository (test_powershell_portability_cli.PowerShellPortabilityCliTest.test_reports_zero_parse_errors_for_this_repository)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\scripts\production\tests\test_powershell_portability_cli.py", line 37, in test_reports_zero_parse_errors_for_this_repository
+    self.assertEqual(0, completed.returncode, completed.stdout + completed.stderr)
+AssertionError: 0 != 2 : {
+  "artifact": "powershell-portability",
+  "status": "failed",
+  "generated_at": "2026-09-27T11:13:31.859728+00:00",
+  "repo_root": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2",
+  "commit": "d7994f60e12ef1b93baede2ad811b15cc3f533f1",
+  "script_count": 6,
+  "rule": "scripts containing non-ASCII bytes must be UTF-8 with BOM",
+  "bom_offenders": [
+    "scripts\\production\\verify_mysql_runner_sandbox.ps1"
+  ],
+  "hosts": {
+    "pwsh": {
+      "path": "C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\powershell\\pwsh.EXE",
+      "version": "7.6.5",
+      "parse_errors": []
+    },
+    "windows_powershell": {
+      "path": "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+      "version": "5.1.26100.9444",
+      "parse_errors": []
+    }
+  },
+  "failure_reasons": [
+    "bom_offenders: 1 script(s)"
+  ]
+}
+
+
+----------------------------------------------------------------------
+Ran 284 tests in 53.526s
+
+FAILED (failures=3, skipped=3)
+[INFO] report written to C:\Users\Administrator\AppData\Local\Temp\tmp7xhpyn_4\audit.json
+[INFO] tables expected=1 present=1 db_tables=1; columns expected=2 present=2
+[INFO] findings total=1 P0=0 P1=1 P2=0 divergences=0
+[P1_HIGH] tenant_index_missing erp_demo.tenant_id :: tenant_id ��û������Ϊ���е����������⻧���˻��˻���ȫ��ɨ�裬������ǿɹ۲�����ܷ��գ����������⻧���𣩡�
+[INFO] exit code = 0 (fail-on P0_BLOCKER)
+[INFO] report written to C:\Users\Administrator\AppData\Local\Temp\tmp6v0f3ub1\audit.json
+[INFO] tables expected=1 present=1 db_tables=1; columns expected=2 present=1
+[INFO] findings total=4 P0=3 P1=1 P2=0 divergences=0
+[P0_BLOCKER] id_not_auto_increment erp_demo.id :: id ��û�� AUTO_INCREMENT�����ṩ id �Ĳ������ϸ�ģʽ�±� 1364�����ϸ�ģʽ�»���� id=0 ���ڵڶ��β���ʱײ������
+[P0_BLOCKER] missing_column erp_demo.account_id :: ���ȱ�У�MyBatis-Plus ��ȡ���ֶλᱨ Unknown column��
+[P0_BLOCKER] primary_key_mismatch erp_demo.id :: �������ǵ��� (id)��MyBatis-Plus �� id ��λ�еļ��費������
+[P1_HIGH] tenant_column_missing erp_demo.tenant_id :: DO �̳� TenantBaseDO�������û�� tenant_id�����⻧�����ʧ�ܡ�
+[INFO] exit code = 2 (fail-on P0_BLOCKER)
+[INFO] tables expected=1 present=1 db_tables=1; columns expected=2 present=2
+[INFO] findings total=1 P0=0 P1=1 P2=0 divergences=0
+[P1_HIGH] tenant_index_missing erp_demo.tenant_id :: tenant_id ��û������Ϊ���е����������⻧���˻��˻���ȫ��ɨ�裬������ǿɹ۲�����ܷ��գ����������⻧���𣩡�
+[INFO] exit code = 2 (fail-on P1_HIGH)
+[INFO] report written to C:\Users\Administrator\AppData\Local\Temp\tmpcj8wv4vl\audit.json
+[INFO] tables expected=1 present=1 db_tables=1; columns expected=2 present=2
+[INFO] findings total=1 P0=0 P1=1 P2=0 divergences=0
+[P1_HIGH] tenant_column_missing erp_demo.tenant_id :: DO �̳� TenantBaseDO�������û�� tenant_id�����⻧�����ʧ�ܡ�
+[INFO] exit code = 0 (fail-on P0_BLOCKER)
+ɨ���ļ� 1������ 1 ��{'P0': 1}�����������ʧ�� 18
+status=failed

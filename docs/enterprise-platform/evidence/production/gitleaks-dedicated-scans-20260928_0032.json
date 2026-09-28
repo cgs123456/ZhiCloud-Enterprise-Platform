@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "evidence_type": "gitleaks_dedicated_scans",
+  "generated_at_local": "2026-09-28T00:32:50+08:00",
+  "tool": {
+    "name": "gitleaks",
+    "version": "8.30.1",
+    "platform": "windows_x64",
+    "downloaded_to": "%TEMP%",
+    "license": "MIT"
+  },
+  "commands": {
+    "worktree_dir": "gitleaks dir . --redact=100 --report-format json --report-path <tmp> --log-level warn --no-banner",
+    "git_history": "gitleaks git . --redact=100 --report-format json --report-path <tmp> --log-level warn --no-banner"
+  },
+  "notes": [
+    "Both scans used Gitleaks default rules with 100% redaction; raw Secret/Match values were not copied into evidence.",
+    "The dir scan includes the current working tree, including generated test output and evidence directories.",
+    "The git scan is a dedicated cross-check of Git history and is additive to the prior regex history screen.",
+    "Dedicated scanner exit code 1 means findings, not tool failure."
+  ],
+  "summary": {
+    "worktree_dir": {
+      "findings": 108,
+      "rules": {
+        "gcp-api-key": 1,
+        "generic-api-key": 98,
+        "jwt": 9
+      },
+      "unique_files": 46,
+      "unique_commits": 0,
+      "plaintext_regex_hits": 0,
+      "secret_field_values": {
+        "REDACTED": 108
+      }
+    },
+    "git_history": {
+      "findings": 67,
+      "rules": {
+        "gcp-api-key": 2,
+        "generic-api-key": 47,
+        "jwt": 18
+      },
+      "unique_files": 36,
+      "unique_commits": 3,
+      "plaintext_regex_hits": 0,
+      "secret_field_values": {
+        "REDACTED": 67
+      }
+    }
+  },
+  "reports": {
+    "worktree_dir": {
+      "path": "docs/enterprise-platform/evidence/production/gitleaks-worktree_dir-20260928_0032.json",
+      "sha256": "6D653A62522206D4C97F5530D9E67FEF1E60E42AD17ED1C96F3FFEBD5C819A1A",
+      "bytes": 74732
+    },
+    "git_history": {
+      "path": "docs/enterprise-platform/evidence/production/gitleaks-git_history-20260928_0032.json",
+      "sha256": "FBDF493EB130D13D66BB85837C81705893A63C0E71B237FBC1BB9D95C4AE55D3",
+      "bytes": 67328
+    }
+  },
+  "interpretation": "OPEN: findings require triage; scanner runs do not by themselves close T-107."
+}

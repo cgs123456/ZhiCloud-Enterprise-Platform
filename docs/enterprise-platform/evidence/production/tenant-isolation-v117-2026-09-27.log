@@ -1,0 +1,93 @@
+EVIDENCE_HEADER
+timestamp=2026-09-27T17:49:10.1998761+08:00
+repo=C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2
+commit=d7994f60e12ef1b93baede2ad811b15cc3f533f1
+branch=upgrade/production-readiness
+command=python scripts/production/check_tenant_isolation.py --output docs/enterprise-platform/evidence/production/tenant-isolation-v117-2026-09-27.json
+python=Python 3.11.9
+scope=static tenant isolation scan; passed status does not mean all P1 findings are closed
+--- command output ---
+[P1][T5] event_dlq_replay_log <- EventDlqReplayLogDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] event_inbox <- EventInboxDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] event_outbox <- EventOutboxDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] inventory_item <- InventoryItemDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] mdm_cross_ref <- MdmCrossRefDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] ai_prompt_template <- AiPromptTemplateDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] aimultiagent_checkpoint <- MultiAgentCheckpointDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T4] aimultiagent_execution_log <- MultiAgentExecutionLogDO :: tenant_id ��û������Ϊ���е����������⻧�����ڴ�����˻�Ϊȫ��ɨ��
+[P1][T5] aimultiagent_execution_span <- MultiAgentExecutionSpanDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] aimultiagent_skill <- MultiAgentSkillDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] aimultiagent_skill_group <- MultiAgentSkillGroupDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T4] aimultiagent_topology <- MultiAgentTopologyDO :: tenant_id ��û������Ϊ���е����������⻧�����ڴ�����˻�Ϊȫ��ɨ��
+[P1][T5] airag_document <- AiragDocumentDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] airag_knowledge <- AiragKnowledgeDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] airag_eval_dataset <- AiragEvalDatasetDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] airag_eval_question <- AiragEvalQuestionDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] airag_eval_report <- AiragEvalReportDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] ai_rag_evaluation_log <- AiRagEvaluationLogDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] crm_business <- CrmBusinessDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] crm_business_product <- CrmBusinessProductDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] crm_business_status <- CrmBusinessStatusDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] crm_business_status_type <- CrmBusinessStatusTypeDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] crm_clue <- CrmClueDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] crm_clue_pool_config <- CrmCluePoolConfigDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] crm_contact_business <- CrmContactBusinessDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] crm_contact <- CrmContactDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] crm_contract_config <- CrmContractConfigDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] crm_contract <- CrmContractDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] crm_contract_product <- CrmContractProductDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] crm_customer <- CrmCustomerDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] crm_customer_limit_config <- CrmCustomerLimitConfigDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] crm_customer_pool_config <- CrmCustomerPoolConfigDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] crm_follow_up_record <- CrmFollowUpRecordDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] crm_invoice <- CrmInvoiceDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] crm_invoice_line <- CrmInvoiceLineDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] crm_performance_config <- CrmPerformanceConfigDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] crm_owner_record <- CrmOwnerRecordDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] crm_permission <- CrmPermissionDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] crm_product_category <- CrmProductCategoryDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] crm_product <- CrmProductDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] crm_receivable <- CrmReceivableDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] crm_receivable_plan <- CrmReceivablePlanDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] crm_sale_order <- CrmSaleOrderDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] crm_sale_order_item <- CrmSaleOrderItemDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] crm_visit_record <- CrmVisitRecordDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] crm_clue_channel <- CrmClueChannelDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] crm_work_order <- CrmWorkOrderDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] erp_accounting_event <- ErpAccountingEventDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] erp_accounting_posting <- ErpAccountingPostingDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] erp_finance_settlement_allocation <- ErpFinanceSettlementAllocationDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] erp_posting_rule <- ErpPostingRuleDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] erp_posting_rule_line <- ErpPostingRuleLineDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] erp_tax_invoice_source <- ErpTaxInvoiceSourceDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] erp_cpfr_exception <- ErpCpfrExceptionDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] erp_cpfr_forecast <- ErpCpfrForecastDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] erp_account_book <- ErpAccountBookDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T4] erp_account <- ErpAccountDO :: tenant_id ��û������Ϊ���е����������⻧�����ڴ�����˻�Ϊȫ��ɨ��
+[P1][T5] erp_bank_account <- ErpBankAccountDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] erp_budget_detail <- ErpBudgetDetailDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] erp_budget <- ErpBudgetDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] erp_cash_flow <- ErpCashFlowDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] erp_consolidation_entry <- ErpConsolidationEntryDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] erp_consolidation_scope <- ErpConsolidationScopeDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] erp_consolidation_worksheet <- ErpConsolidationWorksheetDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T4] erp_cost_allocation <- ErpCostAllocationDO :: tenant_id ��û������Ϊ���е����������⻧�����ڴ�����˻�Ϊȫ��ɨ��
+[P1][T4] erp_cost_center <- ErpCostCenterDO :: tenant_id ��û������Ϊ���е����������⻧�����ڴ�����˻�Ϊȫ��ɨ��
+[P1][T4] erp_currency <- ErpCurrencyDO :: tenant_id ��û������Ϊ���е����������⻧�����ڴ�����˻�Ϊȫ��ɨ��
+[P1][T4] erp_exchange_rate <- ErpExchangeRateDO :: tenant_id ��û������Ϊ���е����������⻧�����ڴ�����˻�Ϊȫ��ɨ��
+[P1][T5] erp_fa_change <- ErpFaChangeDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T4] erp_finance_payment <- ErpFinancePaymentDO :: tenant_id ��û������Ϊ���е����������⻧�����ڴ�����˻�Ϊȫ��ɨ��
+[P1][T4] erp_finance_payment_item <- ErpFinancePaymentItemDO :: tenant_id ��û������Ϊ���е����������⻧�����ڴ�����˻�Ϊȫ��ɨ��
+[P1][T4] erp_finance_receipt <- ErpFinanceReceiptDO :: tenant_id ��û������Ϊ���е����������⻧�����ڴ�����˻�Ϊȫ��ɨ��
+[P1][T4] erp_finance_receipt_item <- ErpFinanceReceiptItemDO :: tenant_id ��û������Ϊ���е����������⻧�����ڴ�����˻�Ϊȫ��ɨ��
+[P1][T5] erp_fixed_asset_depreciation <- ErpFixedAssetDepreciationDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] erp_fixed_asset <- ErpFixedAssetDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T5] erp_fund_plan <- ErpFundPlanDO :: DO ӳ��ı��ڲֿ� DDL �ﲻ���ڣ�������Լ�޷��ж������²⣩
+[P1][T4] erp_gl_account <- ErpGlAccountDO :: tenant_id ��û������Ϊ���е����������⻧�����ڴ�����˻�Ϊȫ��ɨ��
+[P1][T4] erp_gl_voucher <- ErpGlVoucherDO :: tenant_id ��û������Ϊ���е����������⻧�����ڴ�����˻�Ϊȫ��ɨ��
+[P1][T4] erp_gl_voucher_entry <- ErpGlVoucherEntryDO :: tenant_id ��û������Ϊ���е����������⻧�����ڴ�����˻�Ϊȫ��ɨ��
+[P1][T4] erp_period_close <- ErpPeriodCloseDO :: tenant_id ��û������Ϊ���е����������⻧�����ڴ�����˻�Ϊȫ��ɨ��
+DDL �� 331���� tenant_id 298����DO 578�����ж� 320 / �����ж� 258��
+���� 360 {'T5': 258, 'T4': 102} {'P1': 360}��@TenantIgnore �� DO �ƹ��� 35
+status=passed
+EXIT_CODE=0

@@ -8,6 +8,8 @@ import cn.zhicloud.framework.integration.dal.dataobject.EventOutboxDO;
 import cn.zhicloud.framework.integration.dal.mysql.EventOutboxMapper;
 import cn.zhicloud.framework.integration.enums.ErrorCodeConstants;
 import cn.zhicloud.framework.integration.util.EventTextUtils;
+import cn.zhicloud.framework.tenant.core.context.TenantContextHolder;
+import cn.zhicloud.framework.tenant.core.util.TenantUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -46,45 +48,49 @@ public class EventOutboxServiceImpl implements EventOutboxService {
     @Override
     public Long append(EventAppendReq req) {
         validate(req);
-        Long tenantId = req.getTenantId() == null ? 0L : req.getTenantId();
-        EventOutboxDO event = EventOutboxDO.builder()
-                .eventId(req.getEventId())
-                .tenantId(tenantId)
-                .aggregateType(req.getAggregateType())
-                .aggregateId(req.getAggregateId())
-                .eventType(req.getEventType())
-                .schemaVersion(EventTextUtils.isBlank(req.getSchemaVersion()) ? DEFAULT_SCHEMA_VERSION : req.getSchemaVersion())
-                .partitionKey(EventTextUtils.isBlank(req.getPartitionKey()) ? tenantId + ":" + req.getAggregateId() : req.getPartitionKey())
-                .payload(req.getPayload())
-                .status(OUTBOX_NEW)
-                .retryCount(0)
-                .nextRetryAt(null)
-                .occurredAt(req.getOccurredAt() == null ? LocalDateTime.now() : req.getOccurredAt())
-                .traceId(req.getTraceId())
-                .build();
-        try {
-            eventOutboxMapper.insert(event);
-            return event.getId();
-        } catch (DuplicateKeyException e) {
-            // 幂等登记：同一 eventId 视为同一事件。业务侧重复触发（用户双击、上游重推）不应产生第二行，
-            // 否则消费侧会因为 eventId 不唯一而失去去重能力。
-            EventOutboxDO existing = eventOutboxMapper.selectByEventId(req.getEventId());
-            if (existing != null) {
-                log.warn("[append][事件编号重复，按幂等登记返回已有行 id={} eventId={}]", existing.getId(), req.getEventId());
-                return existing.getId();
+        Long tenantId = resolveTenantId(req.getTenantId());
+        return TenantUtils.execute(tenantId, () -> {
+            EventOutboxDO event = EventOutboxDO.builder()
+                    .eventId(req.getEventId())
+                    .tenantId(tenantId)
+                    .aggregateType(req.getAggregateType())
+                    .aggregateId(req.getAggregateId())
+                    .eventType(req.getEventType())
+                    .schemaVersion(EventTextUtils.isBlank(req.getSchemaVersion()) ? DEFAULT_SCHEMA_VERSION : req.getSchemaVersion())
+                    .partitionKey(EventTextUtils.isBlank(req.getPartitionKey()) ? tenantId + ":" + req.getAggregateId() : req.getPartitionKey())
+                    .payload(req.getPayload())
+                    .status(OUTBOX_NEW)
+                    .retryCount(0)
+                    .nextRetryAt(null)
+                    .occurredAt(req.getOccurredAt() == null ? LocalDateTime.now() : req.getOccurredAt())
+                    .traceId(req.getTraceId())
+                    .build();
+            try {
+                eventOutboxMapper.insert(event);
+                return event.getId();
+            } catch (DuplicateKeyException e) {
+                // 幂等登记：同一租户内的同一 eventId 视为同一事件。业务侧重复触发（用户双击、上游重推）
+                // 不应产生第二行；不同租户的业务编号空间相互独立，不能跨租户合并。
+                EventOutboxDO existing = eventOutboxMapper.selectByEventIdAndTenantId(req.getEventId(), tenantId);
+                if (existing != null) {
+                    log.warn("[append][事件编号重复，按幂等登记返回已有行 id={} eventId={}]", existing.getId(), req.getEventId());
+                    return existing.getId();
+                }
+                throw e;
             }
-            throw e;
-        }
+        });
     }
 
     @Override
     public List<EventOutboxDO> selectClaimable(LocalDateTime now, int limit) {
         int size = limit <= 0 ? batchSize() : Math.min(limit, MAX_BATCH_SIZE);
-        List<Long> ids = eventOutboxMapper.selectClaimableIds(now == null ? LocalDateTime.now() : now, size);
-        if (ids == null || ids.isEmpty()) {
-            return new ArrayList<>();
-        }
-        return eventOutboxMapper.selectBatchIds(ids);
+        return TenantUtils.executeIgnore(() -> {
+            List<Long> ids = eventOutboxMapper.selectClaimableIds(now == null ? LocalDateTime.now() : now, size);
+            if (ids == null || ids.isEmpty()) {
+                return new ArrayList<>();
+            }
+            return eventOutboxMapper.selectBatchIds(ids);
+        });
     }
 
     @Override
@@ -93,8 +99,9 @@ public class EventOutboxServiceImpl implements EventOutboxService {
             return false;
         }
         LocalDateTime base = now == null ? LocalDateTime.now() : now;
+        Long tenantId = currentTenantId();
         // 租约：领取后 leaseSeconds 内不可再领取，过期后 PUBLISHING 事件重新可见（崩溃恢复）
-        return eventOutboxMapper.claim(id, base, base.plusSeconds(leaseSeconds())) == 1;
+        return eventOutboxMapper.claim(id, tenantId, base, base.plusSeconds(leaseSeconds())) == 1;
     }
 
     @Override
@@ -102,7 +109,7 @@ public class EventOutboxServiceImpl implements EventOutboxService {
         if (id == null) {
             return false;
         }
-        return eventOutboxMapper.markPublished(id, LocalDateTime.now()) == 1;
+        return eventOutboxMapper.markPublished(id, currentTenantId(), LocalDateTime.now()) == 1;
     }
 
     @Override
@@ -110,54 +117,49 @@ public class EventOutboxServiceImpl implements EventOutboxService {
         if (id == null) {
             return;
         }
-        EventOutboxDO event = eventOutboxMapper.selectById(id);
+        Long tenantId = currentTenantId();
+        EventOutboxDO event = eventOutboxMapper.selectByIdAndTenantId(id, tenantId);
         if (event == null) {
             return;
         }
         String error = EventTextUtils.truncate(EventTextUtils.rootMessage(cause), EventTextUtils.MAX_ERROR_LEN);
         int nextRetry = (event.getRetryCount() == null ? 0 : event.getRetryCount()) + 1;
         if (nextRetry >= maxRetry()) {
-            eventOutboxMapper.markDead(id, error);
+            eventOutboxMapper.markDead(id, tenantId, error);
             log.error("[markRetryOrDead][事件进入死信 id={} eventId={} retryCount={} error={}]",
                     id, event.getEventId(), nextRetry, error);
             return;
         }
         long backoff = backoffSeconds(nextRetry);
-        eventOutboxMapper.markRetry(id, LocalDateTime.now().plusSeconds(backoff), error);
+        eventOutboxMapper.markRetry(id, tenantId, LocalDateTime.now().plusSeconds(backoff), error);
         log.warn("[markRetryOrDead][事件重试入队 id={} eventId={} retryCount={} backoffSeconds={}]",
                 id, event.getEventId(), nextRetry, backoff);
     }
 
     @Override
     public long countBacklog() {
-        Long count = eventOutboxMapper.selectCount(new LambdaQueryWrapper<EventOutboxDO>()
-                .in(EventOutboxDO::getStatus, Arrays.asList(OUTBOX_NEW, OUTBOX_PUBLISHING)));
+        Long count = TenantUtils.executeIgnore(() -> eventOutboxMapper.selectCount(
+                new LambdaQueryWrapper<EventOutboxDO>()
+                        .in(EventOutboxDO::getStatus, Arrays.asList(OUTBOX_NEW, OUTBOX_PUBLISHING))));
         return count == null ? 0L : count;
     }
 
     @Override
     public long countDead() {
-        Long count = eventOutboxMapper.selectCount(new LambdaQueryWrapper<EventOutboxDO>()
-                .eq(EventOutboxDO::getStatus, OUTBOX_DEAD));
+        Long count = TenantUtils.executeIgnore(() -> eventOutboxMapper.selectCount(
+                new LambdaQueryWrapper<EventOutboxDO>()
+                        .eq(EventOutboxDO::getStatus, OUTBOX_DEAD)));
         return count == null ? 0L : count;
     }
 
     @Override
     public long oldestPendingSeconds() {
-        LocalDateTime oldest = eventOutboxMapper.selectOldestPendingOccurredAt();
+        LocalDateTime oldest = TenantUtils.executeIgnore(eventOutboxMapper::selectOldestPendingOccurredAt);
         if (oldest == null) {
             return 0L;
         }
         // 数据库与应用时钟可能存在轻微偏差；负数没有业务意义，统一归零避免指标抖动。
         return Math.max(0L, Duration.between(oldest, LocalDateTime.now()).getSeconds());
-    }
-
-    @Override
-    public boolean replay(Long id) {
-        if (id == null) {
-            return false;
-        }
-        return eventOutboxMapper.replay(id) == 1;
     }
 
     // -------------------- 内部方法 --------------------
@@ -186,6 +188,31 @@ public class EventOutboxServiceImpl implements EventOutboxService {
         int shift = Math.min(Math.max(retryCount - 1, 0), MAX_BACKOFF_SHIFT);
         long seconds = base * (1L << shift);
         return Math.min(Math.max(seconds, 0L), max);
+    }
+
+    /**
+     * 解析事件所属租户：允许从当前上下文推导，但禁止静默回退租户 0，也禁止跨租户显式登记。
+     */
+    private Long resolveTenantId(Long requestedTenantId) {
+        Long currentTenantId = TenantContextHolder.getTenantId();
+        if (currentTenantId == null) {
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.EVENT_TENANT_REQUIRED);
+        }
+        if (requestedTenantId != null && !requestedTenantId.equals(currentTenantId)) {
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.EVENT_TENANT_MISMATCH);
+        }
+        return currentTenantId;
+    }
+
+    /**
+     * 状态迁移必须作用于当前上下文所属租户，禁止无上下文时回退到租户 0。
+     */
+    private Long currentTenantId() {
+        Long tenantId = TenantContextHolder.getTenantId();
+        if (tenantId == null) {
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.EVENT_TENANT_REQUIRED);
+        }
+        return tenantId;
     }
 
     private int maxRetry() {

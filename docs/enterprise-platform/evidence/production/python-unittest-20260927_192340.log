@@ -1,0 +1,31 @@
+......................................................................................................................s..........s.............................[ERROR] sandbox state file not found: C:\Users\Administrator\AppData\Local\Temp\tmppii8umru\missing.json. Run mysql-sandbox.ps1 start first.
+....[ERROR] --database is required whenʹ�� --host ģʽ
+..................................s..........................................................................................
+----------------------------------------------------------------------
+Ran 288 tests in 52.204s
+
+OK (skipped=3)
+[INFO] report written to C:\Users\Administrator\AppData\Local\Temp\tmpla8n493w\audit.json
+[INFO] tables expected=1 present=1 db_tables=1; columns expected=2 present=2
+[INFO] findings total=1 P0=0 P1=1 P2=0 divergences=0
+[P1_HIGH] tenant_index_missing erp_demo.tenant_id :: tenant_id ��û������Ϊ���е����������⻧���˻��˻���ȫ��ɨ�裬������ǿɹ۲�����ܷ��գ����������⻧���𣩡�
+[INFO] exit code = 0 (fail-on P0_BLOCKER)
+[INFO] report written to C:\Users\Administrator\AppData\Local\Temp\tmp567typjd\audit.json
+[INFO] tables expected=1 present=1 db_tables=1; columns expected=2 present=1
+[INFO] findings total=4 P0=3 P1=1 P2=0 divergences=0
+[P0_BLOCKER] id_not_auto_increment erp_demo.id :: id ��û�� AUTO_INCREMENT�����ṩ id �Ĳ������ϸ�ģʽ�±� 1364�����ϸ�ģʽ�»���� id=0 ���ڵڶ��β���ʱײ������
+[P0_BLOCKER] missing_column erp_demo.account_id :: ���ȱ�У�MyBatis-Plus ��ȡ���ֶλᱨ Unknown column��
+[P0_BLOCKER] primary_key_mismatch erp_demo.id :: �������ǵ��� (id)��MyBatis-Plus �� id ��λ�еļ��費������
+[P1_HIGH] tenant_column_missing erp_demo.tenant_id :: DO �̳� TenantBaseDO�������û�� tenant_id�����⻧�����ʧ�ܡ�
+[INFO] exit code = 2 (fail-on P0_BLOCKER)
+[INFO] tables expected=1 present=1 db_tables=1; columns expected=2 present=2
+[INFO] findings total=1 P0=0 P1=1 P2=0 divergences=0
+[P1_HIGH] tenant_index_missing erp_demo.tenant_id :: tenant_id ��û������Ϊ���е����������⻧���˻��˻���ȫ��ɨ�裬������ǿɹ۲�����ܷ��գ����������⻧���𣩡�
+[INFO] exit code = 2 (fail-on P1_HIGH)
+[INFO] report written to C:\Users\Administrator\AppData\Local\Temp\tmpdesl3lqe\audit.json
+[INFO] tables expected=1 present=1 db_tables=1; columns expected=2 present=2
+[INFO] findings total=1 P0=0 P1=1 P2=0 divergences=0
+[P1_HIGH] tenant_column_missing erp_demo.tenant_id :: DO �̳� TenantBaseDO�������û�� tenant_id�����⻧�����ʧ�ܡ�
+[INFO] exit code = 0 (fail-on P0_BLOCKER)
+ɨ���ļ� 1������ 1 ��{'P0': 1}�����������ʧ�� 18
+status=failed

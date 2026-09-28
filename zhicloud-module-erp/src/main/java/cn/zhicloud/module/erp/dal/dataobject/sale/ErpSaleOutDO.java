@@ -1,6 +1,6 @@
 package cn.zhicloud.module.erp.dal.dataobject.sale;
 
-import cn.zhicloud.framework.mybatis.core.dataobject.BaseDO;
+import cn.zhicloud.framework.tenant.core.db.TenantBaseDO;
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpAccountDO;
 import com.baomidou.mybatisplus.annotation.KeySequence;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ErpSaleOutDO extends BaseDO {
+public class ErpSaleOutDO extends TenantBaseDO {
 
     /**
      * 编号

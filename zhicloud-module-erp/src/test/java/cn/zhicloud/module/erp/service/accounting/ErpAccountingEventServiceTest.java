@@ -21,6 +21,7 @@ import cn.zhicloud.module.erp.service.accounting.bo.ErpAccountingEventReverseReq
 import cn.zhicloud.module.erp.service.finance.ErpGlVoucherService;
 import cn.zhicloud.module.erp.service.finance.ErpPeriodService;
 import cn.zhicloud.framework.tenant.core.context.TenantContextHolder;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,6 +46,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -67,8 +69,14 @@ class ErpAccountingEventServiceTest {
 
     private ErpAccountingEventServiceImpl accountingEventService;
 
+    @AfterEach
+    void tearDown() {
+        TenantContextHolder.clear();
+    }
+
     @BeforeEach
     void setUp() {
+        TenantContextHolder.setTenantId(1L);
         accountingEventService = new ErpAccountingEventServiceImpl();
         ReflectionTestUtils.setField(accountingEventService, "accountingEventMapper", accountingEventMapper);
         ReflectionTestUtils.setField(accountingEventService, "accountingPostingMapper", accountingPostingMapper);
@@ -165,10 +173,23 @@ class ErpAccountingEventServiceTest {
             verify(glAccountMapper, times(2)).selectByCode("1403");
             verify(glAccountMapper, times(2)).selectByCode("22210101");
             verify(glAccountMapper, times(2)).selectByCode("2202");
+            assertEquals(7L, TenantContextHolder.getTenantId());
         } finally {
             TenantContextHolder.clear();
         }
     }
+
+    @Test
+    void postEventFailsClosedWhenTenantContextIsMissingBeforeDatabaseAccess() {
+        TenantContextHolder.clear();
+
+        ServiceException exception = assertThrows(ServiceException.class,
+                () -> accountingEventService.postEvent(purchaseReceiptRequest()));
+
+        assertEquals(ErrorCodeConstants.ACCOUNTING_EVENT_TENANT_REQUIRED.getCode(), exception.getCode());
+        verifyNoInteractions(accountingEventMapper, postingRuleMapper, glAccountMapper, glVoucherService);
+    }
+
     @Test
     void reverseEventCreatesOppositeVoucherLinkedToOriginalEvent() {
         ErpAccountingEventDO original = new ErpAccountingEventDO().setId(100L)
@@ -434,6 +455,128 @@ class ErpAccountingEventServiceTest {
         assertEquals(LocalDate.of(2026, 9, 25), original.getEventDate());
     }
 
+    @Test
+    void postEventPrefersTenantRuleAndAccountOverridesWithoutPlatformLookup() {
+        ErpPostingRuleDO tenantRule = new ErpPostingRuleDO().setId(20L).setRuleCode("TENANT_PURCHASE_ACCRUAL")
+                .setVersion("v2").setEventType("PURCHASE_RECEIPT_ACCRUAL").setEnabled(true)
+                .setEffectiveFrom(LocalDateTime.now().minusDays(1));
+        when(postingRuleMapper.selectListByEventType("PURCHASE_RECEIPT_ACCRUAL"))
+                .thenReturn(List.of(tenantRule));
+        when(postingRuleLineMapper.selectListByRuleId(20L)).thenReturn(List.of(
+                ruleLine(1, 10, "1403", "amountWithoutTax"),
+                ruleLine(2, 10, "22210101", "taxAmount"),
+                ruleLine(3, 20, "2202", "amountWithTax")));
+        when(glAccountMapper.selectByCode("1403")).thenReturn(account(14031L, "1403", "租户原材料"));
+        when(glAccountMapper.selectByCode("22210101")).thenReturn(account(222101011L, "22210101", "租户进项税额"));
+        when(glAccountMapper.selectByCode("2202")).thenReturn(account(22021L, "2202", "租户应付账款"));
+        when(periodService.getPeriodByCode("202609")).thenReturn(
+                period(202609L, "202609", 9, ErpPeriodStatusEnum.OPEN.getStatus()));
+        when(glVoucherService.createGlVoucher(any())).thenReturn(777L);
+        doAnswer(invocation -> {
+            ErpAccountingEventDO event = invocation.getArgument(0);
+            event.setId(700L);
+            return 1;
+        }).when(accountingEventMapper).insert(any(ErpAccountingEventDO.class));
+
+        assertEquals(777L, accountingEventService.postEvent(purchaseReceiptRequest()));
+
+        verify(postingRuleMapper, times(1)).selectListByEventType("PURCHASE_RECEIPT_ACCRUAL");
+        verify(glAccountMapper, times(1)).selectByCode("1403");
+        verify(glAccountMapper, times(1)).selectByCode("22210101");
+        verify(glAccountMapper, times(1)).selectByCode("2202");
+        ArgumentCaptor<ErpGlVoucherSaveReqVO> voucherCaptor =
+                ArgumentCaptor.forClass(ErpGlVoucherSaveReqVO.class);
+        verify(glVoucherService).createGlVoucher(voucherCaptor.capture());
+        assertEquals(List.of(14031L, 222101011L, 22021L), voucherCaptor.getValue().getEntries().stream()
+                .map(entry -> entry.getAccountId()).toList());
+    }
+
+    @Test
+    void postEventReadsPlatformTemplatesDirectlyWhenPlatformTenantContextIsZero() {
+        TenantContextHolder.setTenantId(0L);
+        ErpPostingRuleDO platformRule = new ErpPostingRuleDO().setId(10L)
+                .setRuleCode("ERP_PURCHASE_RECEIPT_ACCRUAL").setVersion("v1")
+                .setEventType("PURCHASE_RECEIPT_ACCRUAL").setEnabled(true)
+                .setEffectiveFrom(LocalDateTime.now().minusDays(1));
+        when(postingRuleMapper.selectListByEventType("PURCHASE_RECEIPT_ACCRUAL"))
+                .thenReturn(List.of(platformRule));
+        when(postingRuleLineMapper.selectListByRuleId(10L)).thenReturn(List.of(
+                ruleLine(1, 10, "1403", "amountWithoutTax"),
+                ruleLine(2, 10, "22210101", "taxAmount"),
+                ruleLine(3, 20, "2202", "amountWithTax")));
+        when(glAccountMapper.selectByCode("1403")).thenReturn(account(14030L, "1403", "平台原材料"));
+        when(glAccountMapper.selectByCode("22210101")).thenReturn(account(222101010L, "22210101", "平台进项税额"));
+        when(glAccountMapper.selectByCode("2202")).thenReturn(account(22020L, "2202", "平台应付账款"));
+        when(periodService.getPeriodByCode("202609")).thenReturn(
+                period(202609L, "202609", 9, ErpPeriodStatusEnum.OPEN.getStatus()));
+        when(glVoucherService.createGlVoucher(any())).thenReturn(778L);
+        doAnswer(invocation -> {
+            ErpAccountingEventDO event = invocation.getArgument(0);
+            event.setId(701L);
+            return 1;
+        }).when(accountingEventMapper).insert(any(ErpAccountingEventDO.class));
+
+        assertEquals(778L, accountingEventService.postEvent(purchaseReceiptRequest()));
+
+        verify(postingRuleMapper, times(1)).selectListByEventType("PURCHASE_RECEIPT_ACCRUAL");
+        verify(glAccountMapper, times(1)).selectByCode("1403");
+        verify(glAccountMapper, times(1)).selectByCode("22210101");
+        verify(glAccountMapper, times(1)).selectByCode("2202");
+        assertEquals(0L, TenantContextHolder.getTenantId());
+    }
+
+    @Test
+    void reverseEventFailsClosedWhenTenantContextIsMissingBeforeDatabaseAccess() {
+        TenantContextHolder.clear();
+
+        ServiceException exception = assertThrows(ServiceException.class,
+                () -> accountingEventService.reverseEvent(ErpAccountingEventReverseReqBO.builder()
+                        .eventType("PURCHASE_RECEIPT_ACCRUAL")
+                        .sourceDocType("PURCHASE_IN")
+                        .sourceDocId(99L)
+                        .sourceDocLineId(0L)
+                        .sourceRevision(1)
+                        .accountingDate(LocalDate.of(2026, 9, 26))
+                        .build()));
+
+        assertEquals(ErrorCodeConstants.ACCOUNTING_EVENT_TENANT_REQUIRED.getCode(), exception.getCode());
+        verifyNoInteractions(accountingEventMapper, accountingPostingMapper, postingRuleMapper,
+                postingRuleLineMapper, glAccountMapper, glVoucherService, periodService);
+    }
+
+    @Test
+    void postEventKeepsExplicitRuleNotFoundErrorWhenPlatformTemplateIsMissing() {
+        TenantContextHolder.setTenantId(7L);
+        when(postingRuleMapper.selectListByEventType("PURCHASE_RECEIPT_ACCRUAL")).thenReturn(List.of());
+
+        ServiceException exception = assertThrows(ServiceException.class,
+                () -> accountingEventService.postEvent(purchaseReceiptRequest()));
+
+        assertEquals(ErrorCodeConstants.ACCOUNTING_RULE_NOT_FOUND.getCode(), exception.getCode());
+        verify(postingRuleMapper, times(2)).selectListByEventType("PURCHASE_RECEIPT_ACCRUAL");
+        assertEquals(7L, TenantContextHolder.getTenantId());
+    }
+
+    @Test
+    void postEventKeepsExplicitAccountNotFoundErrorWhenPlatformTemplateAccountIsMissing() {
+        TenantContextHolder.setTenantId(7L);
+        ErpPostingRuleDO platformRule = new ErpPostingRuleDO().setId(10L)
+                .setRuleCode("ERP_PURCHASE_RECEIPT_ACCRUAL").setVersion("v1")
+                .setEventType("PURCHASE_RECEIPT_ACCRUAL").setEnabled(true)
+                .setEffectiveFrom(LocalDateTime.now().minusDays(1));
+        when(postingRuleMapper.selectListByEventType("PURCHASE_RECEIPT_ACCRUAL"))
+                .thenReturn(List.of()).thenReturn(List.of(platformRule));
+        when(postingRuleLineMapper.selectListByRuleId(10L)).thenReturn(List.of(
+                ruleLine(1, 10, "1403", "amountWithoutTax")));
+        when(glAccountMapper.selectByCode("1403")).thenReturn(null);
+
+        ServiceException exception = assertThrows(ServiceException.class,
+                () -> accountingEventService.postEvent(purchaseReceiptRequest()));
+
+        assertEquals(ErrorCodeConstants.ACCOUNTING_RULE_ACCOUNT_NOT_FOUND.getCode(), exception.getCode());
+        verify(glAccountMapper, times(2)).selectByCode("1403");
+        assertEquals(7L, TenantContextHolder.getTenantId());
+    }
     private void stubPurchaseAccrualRuleAndAccounts() {
         ErpPostingRuleDO rule = new ErpPostingRuleDO().setId(10L).setRuleCode("PURCHASE_ACCRUAL")
                 .setVersion("v1").setEventType("PURCHASE_RECEIPT_ACCRUAL").setEnabled(true)

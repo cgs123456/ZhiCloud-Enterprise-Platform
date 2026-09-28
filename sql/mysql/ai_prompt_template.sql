@@ -1,30 +1,13 @@
--- ======================== AI Prompt 模板（ai_prompt_template）建表脚本 ========================
--- 作者：zhicloud
--- 说明：用于管理可复用的 Prompt 模板，支持变量占位符 {variableName} 渲染
-
--- ----------------------------
--- AI Prompt 模板表
--- ----------------------------
-CREATE TABLE IF NOT EXISTS `ai_prompt_template` (
-    `id` BIGINT NOT NULL COMMENT '编号',
-    `name` VARCHAR(128) NOT NULL COMMENT '模板名称',
-    `code` VARCHAR(64) NOT NULL COMMENT '模板编码',
-    `category` VARCHAR(32) NOT NULL COMMENT '分类（SYSTEM/CHAT/RAG/AGENT/TRANSLATION/SUMMARIZATION/CODE）',
-    `content` TEXT NOT NULL COMMENT '模板内容（含变量占位符 {variableName}）',
-    `variables` VARCHAR(512) COMMENT '变量列表（JSON 格式）',
-    `description` VARCHAR(512) COMMENT '描述',
-    `status` TINYINT NOT NULL DEFAULT 0 COMMENT '状态（0 开启 1 停用）',
-    `remark` VARCHAR(512) COMMENT '备注',
-    `creator` VARCHAR(64) COMMENT '创建者',
-    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `updater` VARCHAR(64) COMMENT '更新者',
-    `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `deleted` BIT(1) DEFAULT 0 COMMENT '是否删除',
-    `tenant_id` BIGINT DEFAULT 0 COMMENT '租户编号',
-    PRIMARY KEY (`id`)
-) COMMENT 'AI Prompt 模板表';
-
--- ----------------------------
--- 唯一索引：code 在租户内唯一
--- ----------------------------
-CREATE UNIQUE INDEX `uk_airag_prompt_code` ON `ai_prompt_template` (`code`, `tenant_id`);
+-- ============================================================================
+-- DEPRECATED / 已废弃：请勿再执行本文件创建 ai_prompt_template。
+--
+-- 唯一权威定义：
+--   zhicloud-server/src/main/resources/db/migration/V114__ai_metadata_tables.sql
+--
+-- 原因：
+--   1. 旧脚本的 id 未声明 AUTO_INCREMENT，与 MyBatis-Plus/既有 MySQL 表约定不一致；
+--   2. 旧脚本索引为 (code, tenant_id)，V114 已统一为租户内唯一键 (tenant_id, code)；
+--   3. 双份 DDL 会导致全新库、Flyway 升级库和手工初始化库出现结构漂移。
+--
+-- 生产部署必须通过 Flyway 执行 V114；本文件刻意不再包含任何 DDL。
+-- ============================================================================

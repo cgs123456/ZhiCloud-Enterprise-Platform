@@ -61,9 +61,5 @@ public interface EventOutboxService {
      */
     long oldestPendingSeconds();
 
-    /**
-     * 人工重放：把死信事件放回待投递队列
-     */
-    boolean replay(Long id);
 
 }

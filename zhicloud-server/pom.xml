@@ -254,6 +254,13 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- BootstrapAdminRunner 测试使用内存 H2，版本由 Spring Boot BOM 统一管理。 -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- P1-3 Flyway：数据库版本管理，替代 sql/ 手工脚本 -->
         <!-- 启动时自动执行 db/migration 下的 V*__*.sql，schema 演进可追溯/可回滚/CI 可校验 -->
         <dependency>

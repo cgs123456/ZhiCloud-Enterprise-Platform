@@ -78,6 +78,7 @@ public class ErpAccountingEventServiceImpl implements ErpAccountingEventService 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long postEvent(ErpAccountingEventCreateReqBO request) {
+        requireTenantContext();
         validateRequest(request);
         ErpAccountingEventDO reversalOriginal = validateReversalReference(request);
         String idempotencyKey = buildIdempotencyKey(request);
@@ -120,6 +121,7 @@ public class ErpAccountingEventServiceImpl implements ErpAccountingEventService 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long reverseEvent(ErpAccountingEventReverseReqBO request) {
+        requireTenantContext();
         validateReverseRequest(request);
         Long sourceDocLineId = defaultZero(request.getSourceDocLineId());
         Integer sourceRevision = defaultZero(request.getSourceRevision());
@@ -218,10 +220,16 @@ public class ErpAccountingEventServiceImpl implements ErpAccountingEventService 
         }
     }
 
+    private void requireTenantContext() {
+        if (TenantContextHolder.getTenantId() == null) {
+            throw exception(ACCOUNTING_EVENT_TENANT_REQUIRED);
+        }
+    }
+
     private ErpPostingRuleDO selectPostingRule(String eventType) {
         List<ErpPostingRuleDO> effectiveRules = selectEffectiveRules(eventType,
                 postingRuleMapper.selectListByEventType(eventType));
-        if (effectiveRules.isEmpty() && !isDefaultTenant()) {
+        if (effectiveRules.isEmpty() && !isPlatformTenant()) {
             // 租户没有有效自定义规则时，回退到 tenant_id=0 的平台默认模板。
             effectiveRules = TenantUtils.execute(0L, () -> selectEffectiveRules(eventType,
                     postingRuleMapper.selectListByEventType(eventType)));
@@ -254,9 +262,9 @@ public class ErpAccountingEventServiceImpl implements ErpAccountingEventService 
                 .toList();
     }
 
-    private boolean isDefaultTenant() {
+    private boolean isPlatformTenant() {
         Long tenantId = TenantContextHolder.getTenantId();
-        return tenantId == null || tenantId == 0L;
+        return tenantId != null && tenantId == 0L;
     }
 
     private List<ErpGlVoucherEntryReqVO> buildVoucherEntries(ErpAccountingEventCreateReqBO request,
@@ -283,7 +291,7 @@ public class ErpAccountingEventServiceImpl implements ErpAccountingEventService 
                 continue;
             }
             ErpGlAccountDO account = glAccountMapper.selectByCode(ruleLine.getAccountCode());
-            if (account == null && !isDefaultTenant()) {
+            if (account == null && !isPlatformTenant()) {
                 // 租户可覆盖同编码科目；未配置时使用 tenant_id=0 的平台默认科目模板。
                 account = TenantUtils.execute(0L, () -> glAccountMapper.selectByCode(ruleLine.getAccountCode()));
             }

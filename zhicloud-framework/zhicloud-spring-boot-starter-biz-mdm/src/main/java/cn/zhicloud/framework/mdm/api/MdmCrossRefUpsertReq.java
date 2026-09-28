@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class MdmCrossRefUpsertReq {
 
-    /** 租户编号（空则默认 0） */
+    /** 租户编号（空则使用当前租户上下文；上下文缺失时拒绝操作，禁止回退默认租户 0） */
     private Long tenantId;
 
     /** 源系统，如 ERP（必填） */

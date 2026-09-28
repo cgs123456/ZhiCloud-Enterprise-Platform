@@ -1,6 +1,6 @@
 package cn.zhicloud.framework.mdm.dal.dataobject;
 
-import cn.zhicloud.framework.mybatis.core.dataobject.BaseDO;
+import cn.zhicloud.framework.tenant.core.db.TenantBaseDO;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -19,7 +19,7 @@ import lombok.ToString;
  * 一旦某侧主键重新生成或导入顺序变化，下游就会把单据建到错误的 SKU / 仓库上。
  *
  * <p>字段与 V101__mdm_cross_ref.sql 的 {@code mdm_cross_ref} 列一一对应
- * （{@code creator/create_time/updater/update_time/deleted} 由 {@link BaseDO} 提供）。
+ * （{@code tenant_id} 由 {@link TenantBaseDO} 提供，{@code creator/create_time/updater/update_time/deleted} 由父类一并提供）。
  *
  * <p>{@code sourceId/targetId} 用 VARCHAR 而不是 BIGINT：ERP 产品、WMS SKU 目前都是数值主键，
  * 但外部系统（电商平台、客户编码）的标识可能是字符串，用数值列会把「支持字符串标识」这条路堵死。
@@ -33,7 +33,7 @@ import lombok.ToString;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MdmCrossRefDO extends BaseDO {
+public class MdmCrossRefDO extends TenantBaseDO {
 
     /**
      * 主键编号（DB 自增）
@@ -41,10 +41,6 @@ public class MdmCrossRefDO extends BaseDO {
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    /**
-     * 租户编号：映射是租户级数据，A 租户的映射不能被 B 租户解析到
-     */
-    private Long tenantId;
 
     /**
      * 源系统，如 ERP

@@ -1,7 +1,7 @@
 package cn.zhicloud.module.ai.dal.dataobject.prompt;
 
 import cn.zhicloud.framework.common.enums.CommonStatusEnum;
-import cn.zhicloud.framework.mybatis.core.dataobject.BaseDO;
+import cn.zhicloud.framework.tenant.core.db.TenantBaseDO;
 import cn.zhicloud.module.ai.enums.prompt.AiPromptTemplateCategoryEnum;
 import com.baomidou.mybatisplus.annotation.KeySequence;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -16,7 +16,7 @@ import lombok.Data;
 @TableName(value = "ai_prompt_template", autoResultMap = true)
 @KeySequence("ai_prompt_template_seq") // 用于 Oracle、PostgreSQL、Kingbase、DB2、H2 数据库的主键自增。如果是 MySQL 等数据库，可不写。
 @Data
-public class AiPromptTemplateDO extends BaseDO {
+public class AiPromptTemplateDO extends TenantBaseDO {
 
     /**
      * 编号

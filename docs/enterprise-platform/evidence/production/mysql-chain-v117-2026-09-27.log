@@ -1,0 +1,42 @@
+{
+  "generated_at": "2026-09-27T18:03:05.153620+08:00",
+  "host": "127.0.0.1",
+  "port": 53306,
+  "database": "zhicloud_sandbox_v117_chain",
+  "migration_dir": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration",
+  "files_total": 124,
+  "from_version": null,
+  "continue_on_error": false,
+  "files_failed": 1,
+  "stopped_at": "V115__production_seed_account_cleanup.sql",
+  "verify": [
+    {
+      "script": "V116_verify.sql",
+      "file": "V116_verify.sql",
+      "bytes": 4882,
+      "exit_code": 0,
+      "duration_s": 0.045,
+      "stdout": "check_name\tverdict\r\nV116_ACTIVE_USERNAME_COLUMN\tFAIL\r\ntable_name\tindex_name\texpected_columns\tactual_columns\tnon_unique\tindex_verdict\r\nsystem_users\tuk_system_users_tenant_active_username\ttenant_id,active_username\tNULL\tNULL\tMISSING\r\ncheck_name\tverdict\r\nV116_ACTIVE_USERNAME_UNIQUE_INDEX\tFAIL\r\ncheck_name\tverdict\r\nV116_ACTIVE_USERNAME_NO_DUPLICATES\tPASS\r\n",
+      "stderr": ""
+    },
+    {
+      "script": "V117_verify.sql",
+      "file": "V117_verify.sql",
+      "bytes": 5611,
+      "exit_code": 1,
+      "duration_s": 0.049,
+      "stdout": "check_name\tverdict\r\nV117_CRM_RECEIVABLE_IDEMPOTENCY_COLUMNS\tFAIL\r\ntable_name\tindex_name\texpected_columns\tactual_columns\tnon_unique\tindex_verdict\r\ncrm_receivable\tuk_crm_receivable_idempotency\ttenant_id,idempotency_key\tNULL\tNULL\tMISSING\r\ncheck_name\tverdict\r\nV117_CRM_RECEIVABLE_IDEMPOTENCY_INDEX\tFAIL\r\n",
+      "stderr": "ERROR 1054 (42S22) at line 100: Unknown column 'idempotency_key' in 'where clause'\r\n"
+    }
+  ],
+  "server_metrics": {
+    "exit_code": 0,
+    "duration_s": 0.096,
+    "stdout": "VERSION()\t@@sql_mode\t@@collation_server\t@@time_zone\t@@transaction_isolation\r\n8.4.9\tONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION\tutf8mb4_0900_ai_ci\t+08:00\tREPEATABLE-READ\r\n",
+    "stderr": ""
+  },
+  "table_count": "463",
+  "status": "failed"
+}
+
+[summary] files=124 failed=1 stopped_at=V115__production_seed_account_cleanup.sql tables=463

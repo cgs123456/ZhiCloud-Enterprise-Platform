@@ -1,0 +1,9 @@
+# 复核对象：本次新增的 14 个非 MySQL 方言存量升级脚本
+# 生成时间：2026-09-28
+# 命令 1：python scripts/production/sql_migration_lint.py sql\postgresql\upgrade sql\highgo\upgrade sql\kingbase\upgrade sql\opengauss\upgrade sql\oracle\upgrade sql\sqlserver\upgrade sql\dm\upgrade
+# 命令 2：python scripts/production/check_migration_contract.py
+# 说明：仅静态 lint 与契约校验，不连接任何数据库，不构成实库执行证据
+PASS: 14 个文件，0 处违规
+lint_exit=0
+PASSED: tracked=28 scanned=124 findings=0
+contract_exit=0

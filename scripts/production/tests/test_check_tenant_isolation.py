@@ -81,6 +81,27 @@ class DdlParseTest(unittest.TestCase):
         self.assertIn("a", got["t4"]["columns"])
         self.assertIn("tenant_id", got["t4"]["columns"])
 
+    def test_add_column_alter_is_applied(self):
+        got = self._parse(ddl("t5", with_tenant=False) +
+                          "ALTER TABLE `t5` ADD COLUMN `tenant_id` BIGINT NOT NULL DEFAULT 0;\n")
+        self.assertIn("tenant_id", got["t5"]["columns"])
+
+    def test_add_index_alter_is_applied(self):
+        got = self._parse(ddl("t6", with_tenant=False) +
+                          "ALTER TABLE `t6` ADD INDEX `idx_tenant` (`tenant_id`, `deleted`);\n")
+        self.assertIn(("idx_tenant", "tenant_id"), got["t6"]["indexes"])
+
+    def test_alter_is_applied_after_all_create_tables(self):
+        # Real migrations are lexicographically sorted: V108 sorts before V52.
+        write(self.root, "sql/mysql/V108__add.sql",
+              "ALTER TABLE `t7` ADD COLUMN `tenant_id` BIGINT NOT NULL DEFAULT 0;\n"
+              "ALTER TABLE `t7` ADD INDEX `idx_tenant` (`tenant_id`, `deleted`);\n")
+        write(self.root, "sql/mysql/V52__create.sql", ddl("t7", with_tenant=False))
+        paths = sorted((self.root / "sql" / "mysql").glob("*.sql"))
+        got = tnt.parse_ddl_files(paths)
+        self.assertIn("tenant_id", got["t7"]["columns"])
+        self.assertIn(("idx_tenant", "tenant_id"), got["t7"]["indexes"])
+
 
 class RuleTest(unittest.TestCase):
     def setUp(self):
@@ -142,6 +163,18 @@ class RuleTest(unittest.TestCase):
     def test_consistent_repo_passes(self):
         rep = self._scan("m/H.java", do_java("H", "TenantBaseDO", "t_h"),
                          ddl("t_h"))
+        self.assertEqual(rep["status"], "passed")
+
+    def test_additive_migration_satisfies_tenant_contract(self):
+        """CREATE 后通过 ALTER 补租户列和索引，是合法的迁移演进方式。"""
+        rep = self._scan(
+            "m/I.java", do_java("I", "TenantBaseDO", "t_i"),
+            ddl("t_i", with_tenant=False) +
+            "ALTER TABLE `t_i` ADD COLUMN `tenant_id` BIGINT NOT NULL DEFAULT 0;\n"
+            "ALTER TABLE `t_i` ADD INDEX `idx_tenant` (`tenant_id`, `deleted`);\n",
+        )
+        self.assertNotIn(("T1", "t_i"), self._rules(rep))
+        self.assertNotIn(("T4", "t_i"), self._rules(rep))
         self.assertEqual(rep["status"], "passed")
 
 

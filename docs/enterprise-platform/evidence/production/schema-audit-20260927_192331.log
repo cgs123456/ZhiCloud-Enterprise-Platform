@@ -1,0 +1,21 @@
+[INFO] report written to C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\docs\enterprise-platform\evidence\production\schema-audit-20260927_192331.json
+[INFO] tables expected=463 present=463 db_tables=464; columns expected=7644 present=7644
+[INFO] findings total=17 P0=0 P1=0 P2=17 divergences=200
+[P2_REVIEW] column_type_declaration_drift ai_nl2sql_query_history.data_source :: DDL �����������������ʵ�����Ͳ�һ�£�����/��������죬���˹�ȷ�ϣ���
+[P2_REVIEW] column_type_declaration_drift ai_nl2sql_query_history.error_msg :: DDL �����������������ʵ�����Ͳ�һ�£�����/��������죬���˹�ȷ�ϣ���
+[P2_REVIEW] column_type_declaration_drift ai_nl2sql_query_history.natural_language :: DDL �����������������ʵ�����Ͳ�һ�£�����/��������죬���˹�ȷ�ϣ���
+[P2_REVIEW] column_type_declaration_drift ai_nl2sql_query_history.status :: DDL �����������������ʵ�����Ͳ�һ�£�����/��������죬���˹�ȷ�ϣ���
+[P2_REVIEW] column_type_declaration_drift event_dlq_replay_log.deleted :: DDL �����������������ʵ�����Ͳ�һ�£�����/��������죬���˹�ȷ�ϣ���
+[P2_REVIEW] column_type_declaration_drift event_dlq_replay_log.outbox_replayed :: DDL �����������������ʵ�����Ͳ�һ�£�����/��������죬���˹�ȷ�ϣ���
+[P2_REVIEW] column_type_declaration_drift event_inbox.deleted :: DDL �����������������ʵ�����Ͳ�һ�£�����/��������죬���˹�ȷ�ϣ���
+[P2_REVIEW] column_type_declaration_drift event_outbox.deleted :: DDL �����������������ʵ�����Ͳ�һ�£�����/��������죬���˹�ȷ�ϣ���
+[P2_REVIEW] column_type_declaration_drift inventory_item.deleted :: DDL �����������������ʵ�����Ͳ�һ�£�����/��������죬���˹�ȷ�ϣ���
+[P2_REVIEW] column_type_declaration_drift inventory_item.locked_count :: DDL �����������������ʵ�����Ͳ�һ�£�����/��������죬���˹�ȷ�ϣ���
+[P2_REVIEW] column_type_declaration_drift inventory_item.quantity :: DDL �����������������ʵ�����Ͳ�һ�£�����/��������죬���˹�ȷ�ϣ���
+[P2_REVIEW] column_type_declaration_drift mdm_cross_ref.deleted :: DDL �����������������ʵ�����Ͳ�һ�£�����/��������죬���˹�ȷ�ϣ���
+[P2_REVIEW] column_type_declaration_drift oa_announcement.top_flag :: DDL �����������������ʵ�����Ͳ�һ�£�����/��������죬���˹�ȷ�ϣ���
+[P2_REVIEW] column_type_declaration_drift oa_knowledge_article.top_flag :: DDL �����������������ʵ�����Ͳ�һ�£�����/��������죬���˹�ȷ�ϣ���
+[P2_REVIEW] column_type_declaration_drift oa_meeting_reservation.reminder_enabled :: DDL �����������������ʵ�����Ͳ�һ�£�����/��������죬���˹�ȷ�ϣ���
+[P2_REVIEW] column_type_declaration_drift wms_receipt_order.type :: DDL �����������������ʵ�����Ͳ�һ�£�����/��������죬���˹�ȷ�ϣ���
+[P2_REVIEW] column_type_declaration_drift wms_shipment_order.type :: DDL �����������������ʵ�����Ͳ�һ�£�����/��������죬���˹�ȷ�ϣ���
+[INFO] exit code = 0 (fail-on P0_BLOCKER)

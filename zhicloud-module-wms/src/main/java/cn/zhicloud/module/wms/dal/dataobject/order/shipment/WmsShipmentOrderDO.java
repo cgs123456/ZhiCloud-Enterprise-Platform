@@ -1,6 +1,6 @@
 package cn.zhicloud.module.wms.dal.dataobject.order.shipment;
 
-import cn.zhicloud.framework.mybatis.core.dataobject.BaseDO;
+import cn.zhicloud.framework.tenant.core.db.TenantBaseDO;
 import cn.zhicloud.module.wms.dal.dataobject.md.merchant.WmsMerchantDO;
 import cn.zhicloud.module.wms.dal.dataobject.md.warehouse.WmsWarehouseDO;
 import cn.zhicloud.module.wms.enums.DictTypeConstants;
@@ -26,7 +26,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class WmsShipmentOrderDO extends BaseDO {
+public class WmsShipmentOrderDO extends TenantBaseDO {
 
     /**
      * 主键编号

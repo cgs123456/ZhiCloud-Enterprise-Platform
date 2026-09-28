@@ -9,6 +9,9 @@ import cn.zhicloud.framework.mdm.api.MdmCrossRefUpsertReq;
  * 用默认值或跳过会让下游单据建到错误的 SKU / 仓库上，且事后几乎无法发现。
  * 抛异常后由可靠集成数据面（V100）重试，重试仍然失败则进入死信并告警，问题可见。
  *
+ * <p>所有操作都绑定当前租户上下文：上下文缺失时拒绝；显式传入的租户编号必须与上下文一致。
+ * 禁止在没有上下文或租户不一致时静默回退到默认租户 0。
+ *
  * @author 智云集成治理
  */
 public interface MdmCrossRefService {

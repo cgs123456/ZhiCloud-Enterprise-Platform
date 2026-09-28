@@ -6,6 +6,7 @@ import cn.zhicloud.framework.integration.contract.IntegrationEventTypes;
 import cn.zhicloud.framework.integration.dal.dataobject.EventOutboxDO;
 import cn.zhicloud.framework.mdm.enums.MdmConstants;
 import cn.zhicloud.framework.mdm.service.MdmCrossRefService;
+import cn.zhicloud.framework.tenant.core.context.TenantContextHolder;
 import cn.zhicloud.module.wms.controller.admin.order.shipment.vo.detail.WmsShipmentOrderDetailSaveReqVO;
 import cn.zhicloud.module.wms.controller.admin.order.shipment.vo.order.WmsShipmentOrderSaveReqVO;
 import cn.zhicloud.module.wms.dal.mysql.order.shipment.WmsShipmentOrderMapper;
@@ -21,6 +22,8 @@ import java.util.List;
 import java.util.Objects;
 
 import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static cn.zhicloud.framework.integration.enums.ErrorCodeConstants.EVENT_TENANT_MISMATCH;
+import static cn.zhicloud.framework.integration.enums.ErrorCodeConstants.EVENT_TENANT_REQUIRED;
 import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.SHIPMENT_ORDER_MULTI_WAREHOUSE_UNSUPPORTED;
 
 /**
@@ -52,11 +55,6 @@ public class ErpSaleOutApprovedConsumer implements EventConsumer {
      */
     public static final String NAME = "wms-shipment-order-creator";
 
-    /**
-     * 默认租户：ERP/WMS 主表虽有 tenant_id 列，但相关 DO 未映射租户字段，取不到真实租户；
-     * 接入多租户前不要用本链路承载多租户数据（已在风险清单登记）。
-     */
-    private static final Long DEFAULT_TENANT_ID = 0L;
 
     @Resource
     private WmsShipmentOrderService shipmentOrderService;
@@ -77,11 +75,41 @@ public class ErpSaleOutApprovedConsumer implements EventConsumer {
 
     @Override
     public void handle(EventOutboxDO event) throws Exception {
+        Long eventTenantId = requireEventTenantId(event);
+        Long oldTenantId = TenantContextHolder.getTenantId();
+        boolean oldIgnore = TenantContextHolder.isIgnore();
+        try {
+            // 消费者也可能被直接调用；不能依赖中继框架替它建立租户上下文。
+            TenantContextHolder.setTenantId(eventTenantId);
+            TenantContextHolder.setIgnore(false);
+            handleInTenant(event, eventTenantId);
+        } finally {
+            TenantContextHolder.setTenantId(oldTenantId);
+            TenantContextHolder.setIgnore(oldIgnore);
+        }
+    }
+
+    /**
+     * 校验事件租户并拒绝借用调用线程的租户上下文。
+     */
+    private Long requireEventTenantId(EventOutboxDO event) {
+        Long eventTenantId = event == null ? null : event.getTenantId();
+        if (eventTenantId == null) {
+            throw exception(EVENT_TENANT_REQUIRED);
+        }
+        Long currentTenantId = TenantContextHolder.getTenantId();
+        if (currentTenantId != null && !currentTenantId.equals(eventTenantId)) {
+            throw exception(EVENT_TENANT_MISMATCH);
+        }
+        return eventTenantId;
+    }
+
+    private void handleInTenant(EventOutboxDO event, Long tenantId) throws Exception {
         ErpSaleOutApprovedEvent payload = ErpSaleOutApprovedEvent.fromJson(event.getPayload());
 
-        // 1. 业务级幂等：同一张 ERP 出库单只建一张 WMS 出库单
+        // 1. 业务级幂等：同一租户的同一张 ERP 出库单只建一张 WMS 出库单
         if (shipmentOrderMapper.selectByBizOrderNo(payload.getNo()) != null) {
-            log.info("[ERP->WMS] 业务单号已存在，跳过建单 bizOrderNo={}", payload.getNo());
+            log.info("[ERP->WMS] 业务单号已存在，跳过建单 tenantId={} bizOrderNo={}", tenantId, payload.getNo());
             return;
         }
 
@@ -89,10 +117,10 @@ public class ErpSaleOutApprovedConsumer implements EventConsumer {
         Long warehouseId = null;
         List<WmsShipmentOrderDetailSaveReqVO> details = new ArrayList<>();
         for (ErpSaleOutApprovedEvent.Item item : payload.getItems()) {
-            Long skuId = mdmCrossRefService.mapTargetIdAsLong(DEFAULT_TENANT_ID,
+            Long skuId = mdmCrossRefService.mapTargetIdAsLong(tenantId,
                     MdmConstants.SYSTEM_ERP, MdmConstants.ENTITY_PRODUCT, String.valueOf(item.getProductId()),
                     MdmConstants.SYSTEM_WMS, MdmConstants.ENTITY_SKU);
-            Long itemWarehouseId = mdmCrossRefService.mapTargetIdAsLong(DEFAULT_TENANT_ID,
+            Long itemWarehouseId = mdmCrossRefService.mapTargetIdAsLong(tenantId,
                     MdmConstants.SYSTEM_ERP, MdmConstants.ENTITY_WAREHOUSE, String.valueOf(item.getWarehouseId()),
                     MdmConstants.SYSTEM_WMS, MdmConstants.ENTITY_WAREHOUSE);
             // WMS 出库单只有单仓库头字段，跨仓库的 ERP 出库单本版本不接受：宁可失败进死信，
@@ -107,7 +135,7 @@ public class ErpSaleOutApprovedConsumer implements EventConsumer {
                     .setPrice(item.getPrice()));
         }
         // 客户是可选映射：映射缺失只影响单据上的客户字段，不影响出库动作本身是否发生
-        String merchantIdText = mdmCrossRefService.findTargetId(DEFAULT_TENANT_ID,
+        String merchantIdText = mdmCrossRefService.findTargetId(tenantId,
                 MdmConstants.SYSTEM_ERP, MdmConstants.ENTITY_CUSTOMER, String.valueOf(payload.getCustomerId()),
                 MdmConstants.SYSTEM_WMS, MdmConstants.ENTITY_MERCHANT);
         Long merchantId = merchantIdText == null ? null : Long.valueOf(merchantIdText);
@@ -123,9 +151,9 @@ public class ErpSaleOutApprovedConsumer implements EventConsumer {
                 .setRemark("来源：ERP 销售出库 " + payload.getNo() + "（V101 集成链路自动生成）")
                 .setDetails(details);
         Long id = shipmentOrderService.createShipmentOrder(createReqVO);
-        log.info("[ERP->WMS] 已生成出库单 id={} no={} bizOrderNo={}", id, createReqVO.getNo(), payload.getNo());
+        log.info("[ERP->WMS] 已生成出库单 id={} no={} tenantId={} bizOrderNo={}",
+                id, createReqVO.getNo(), tenantId, payload.getNo());
     }
-
     /**
      * 出库单号：{@code WS + ERP 单号}。
      * <p>刻意可推导：人工看到 WMS 单号就能反查 ERP 单号；也保证同一 ERP 单号重试时不会因为

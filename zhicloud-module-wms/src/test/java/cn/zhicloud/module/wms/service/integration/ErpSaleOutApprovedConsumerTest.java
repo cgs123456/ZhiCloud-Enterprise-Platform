@@ -4,11 +4,13 @@ import cn.zhicloud.framework.common.exception.ServiceException;
 import cn.zhicloud.framework.integration.contract.ErpSaleOutApprovedEvent;
 import cn.zhicloud.framework.integration.dal.dataobject.EventOutboxDO;
 import cn.zhicloud.framework.mdm.service.MdmCrossRefService;
+import cn.zhicloud.framework.tenant.core.context.TenantContextHolder;
 import cn.zhicloud.module.wms.controller.admin.order.shipment.vo.order.WmsShipmentOrderSaveReqVO;
 import cn.zhicloud.module.wms.dal.dataobject.order.shipment.WmsShipmentOrderDO;
 import cn.zhicloud.module.wms.dal.mysql.order.shipment.WmsShipmentOrderMapper;
 import cn.zhicloud.module.wms.enums.order.WmsShipmentOrderTypeEnum;
 import cn.zhicloud.module.wms.service.order.shipment.WmsShipmentOrderService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -21,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static cn.zhicloud.framework.integration.enums.ErrorCodeConstants.EVENT_TENANT_REQUIRED;
 import static cn.zhicloud.framework.mdm.enums.ErrorCodeConstants.MDM_CROSS_REF_NOT_FOUND;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -52,13 +55,18 @@ class ErpSaleOutApprovedConsumerTest {
     @InjectMocks
     private ErpSaleOutApprovedConsumer consumer;
 
+    @AfterEach
+    void tearDown() {
+        TenantContextHolder.clear();
+    }
+
     @Test
     void createsShipmentOrderWithMdmMappedIds() throws Exception {
         when(shipmentOrderMapper.selectByBizOrderNo("SO001")).thenReturn(null);
-        when(mdmCrossRefService.mapTargetIdAsLong(0L, "ERP", "PRODUCT", "100", "WMS", "SKU")).thenReturn(1001L);
-        when(mdmCrossRefService.mapTargetIdAsLong(0L, "ERP", "WAREHOUSE", "200", "WMS", "WAREHOUSE"))
+        when(mdmCrossRefService.mapTargetIdAsLong(7L, "ERP", "PRODUCT", "100", "WMS", "SKU")).thenReturn(1001L);
+        when(mdmCrossRefService.mapTargetIdAsLong(7L, "ERP", "WAREHOUSE", "200", "WMS", "WAREHOUSE"))
                 .thenReturn(2001L);
-        when(mdmCrossRefService.findTargetId(0L, "ERP", "CUSTOMER", "300", "WMS", "MERCHANT")).thenReturn("3001");
+        when(mdmCrossRefService.findTargetId(7L, "ERP", "CUSTOMER", "300", "WMS", "MERCHANT")).thenReturn("3001");
 
         consumer.handle(outboxEvent(singleItemPayload()));
 
@@ -94,7 +102,7 @@ class ErpSaleOutApprovedConsumerTest {
     @Test
     void failsWhenSkuMappingMissing() throws Exception {
         when(shipmentOrderMapper.selectByBizOrderNo("SO001")).thenReturn(null);
-        when(mdmCrossRefService.mapTargetIdAsLong(0L, "ERP", "PRODUCT", "100", "WMS", "SKU"))
+        when(mdmCrossRefService.mapTargetIdAsLong(7L, "ERP", "PRODUCT", "100", "WMS", "SKU"))
                 .thenThrow(exception(MDM_CROSS_REF_NOT_FOUND, "ERP", "PRODUCT", "100", "WMS", "SKU"));
 
         ServiceException ex = assertThrows(ServiceException.class,
@@ -108,10 +116,10 @@ class ErpSaleOutApprovedConsumerTest {
     @Test
     void createsWithoutMerchantWhenCustomerMappingMissing() throws Exception {
         when(shipmentOrderMapper.selectByBizOrderNo("SO001")).thenReturn(null);
-        when(mdmCrossRefService.mapTargetIdAsLong(0L, "ERP", "PRODUCT", "100", "WMS", "SKU")).thenReturn(1001L);
-        when(mdmCrossRefService.mapTargetIdAsLong(0L, "ERP", "WAREHOUSE", "200", "WMS", "WAREHOUSE"))
+        when(mdmCrossRefService.mapTargetIdAsLong(7L, "ERP", "PRODUCT", "100", "WMS", "SKU")).thenReturn(1001L);
+        when(mdmCrossRefService.mapTargetIdAsLong(7L, "ERP", "WAREHOUSE", "200", "WMS", "WAREHOUSE"))
                 .thenReturn(2001L);
-        when(mdmCrossRefService.findTargetId(0L, "ERP", "CUSTOMER", "300", "WMS", "MERCHANT")).thenReturn(null);
+        when(mdmCrossRefService.findTargetId(7L, "ERP", "CUSTOMER", "300", "WMS", "MERCHANT")).thenReturn(null);
 
         consumer.handle(outboxEvent(singleItemPayload()));
 
@@ -124,11 +132,11 @@ class ErpSaleOutApprovedConsumerTest {
     @Test
     void failsWhenErpLinesMapToMultipleWarehouses() throws Exception {
         when(shipmentOrderMapper.selectByBizOrderNo("SO001")).thenReturn(null);
-        when(mdmCrossRefService.mapTargetIdAsLong(0L, "ERP", "PRODUCT", "100", "WMS", "SKU")).thenReturn(1001L);
-        when(mdmCrossRefService.mapTargetIdAsLong(0L, "ERP", "WAREHOUSE", "200", "WMS", "WAREHOUSE"))
+        when(mdmCrossRefService.mapTargetIdAsLong(7L, "ERP", "PRODUCT", "100", "WMS", "SKU")).thenReturn(1001L);
+        when(mdmCrossRefService.mapTargetIdAsLong(7L, "ERP", "WAREHOUSE", "200", "WMS", "WAREHOUSE"))
                 .thenReturn(2001L);
-        when(mdmCrossRefService.mapTargetIdAsLong(0L, "ERP", "PRODUCT", "101", "WMS", "SKU")).thenReturn(1002L);
-        when(mdmCrossRefService.mapTargetIdAsLong(0L, "ERP", "WAREHOUSE", "201", "WMS", "WAREHOUSE"))
+        when(mdmCrossRefService.mapTargetIdAsLong(7L, "ERP", "PRODUCT", "101", "WMS", "SKU")).thenReturn(1002L);
+        when(mdmCrossRefService.mapTargetIdAsLong(7L, "ERP", "WAREHOUSE", "201", "WMS", "WAREHOUSE"))
                 .thenReturn(2002L);
 
         ServiceException ex = assertThrows(ServiceException.class,
@@ -138,6 +146,36 @@ class ErpSaleOutApprovedConsumerTest {
         verify(shipmentOrderService, never()).createShipmentOrder(any());
     }
 
+    @Test
+    void failsClosedWhenEventTenantMissing() throws Exception {
+        ServiceException ex = assertThrows(ServiceException.class,
+                () -> consumer.handle(outboxEvent(singleItemPayload(), null)));
+
+        assertEquals(EVENT_TENANT_REQUIRED.getCode(), ex.getCode());
+        verifyNoInteractions(shipmentOrderMapper, shipmentOrderService, mdmCrossRefService);
+    }
+
+    @Test
+    void handlesWithinEventTenantAndRestoresCallerContext() throws Exception {
+        TenantContextHolder.setTenantId(7L);
+        TenantContextHolder.setIgnore(true);
+        when(shipmentOrderMapper.selectByBizOrderNo("SO001")).thenAnswer(invocation -> {
+            assertEquals(7L, TenantContextHolder.getTenantId());
+            assertFalse(TenantContextHolder.isIgnore());
+            return null;
+        });
+        when(mdmCrossRefService.mapTargetIdAsLong(7L, "ERP", "PRODUCT", "100", "WMS", "SKU"))
+                .thenReturn(1001L);
+        when(mdmCrossRefService.mapTargetIdAsLong(7L, "ERP", "WAREHOUSE", "200", "WMS", "WAREHOUSE"))
+                .thenReturn(2001L);
+        when(mdmCrossRefService.findTargetId(7L, "ERP", "CUSTOMER", "300", "WMS", "MERCHANT"))
+                .thenReturn("3001");
+
+        consumer.handle(outboxEvent(singleItemPayload()));
+
+        assertEquals(7L, TenantContextHolder.getTenantId());
+        assertTrue(TenantContextHolder.isIgnore());
+    }
     /**
      * 消费者名与事件类型是「契约」而不是实现细节：改名会让 Inbox 去重键变化，
      * 历史事件会被当成新消费者重新消费一次；事件类型写错则整条链路静默不生效。
@@ -149,12 +187,17 @@ class ErpSaleOutApprovedConsumerTest {
         assertFalse(consumer.supports("erp.sale-out.approved.v2"));
         assertFalse(consumer.supports("wms.shipment.finished.v1"));
     }
+
     private static EventOutboxDO outboxEvent(ErpSaleOutApprovedEvent payload) {
+        return outboxEvent(payload, 7L);
+    }
+
+    private static EventOutboxDO outboxEvent(ErpSaleOutApprovedEvent payload, Long tenantId) {
         return EventOutboxDO.builder()
                 .id(1L)
                 .eventId(ErpSaleOutApprovedEvent.eventIdOf(payload.getSaleOutId()))
                 .eventType("erp.sale-out.approved.v1")
-                .tenantId(0L)
+                .tenantId(tenantId)
                 .payload(payload.toJson())
                 .build();
     }

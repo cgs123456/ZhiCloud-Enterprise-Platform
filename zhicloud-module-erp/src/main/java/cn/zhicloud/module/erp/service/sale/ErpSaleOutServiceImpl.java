@@ -5,6 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.common.util.number.MoneyUtils;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
+import cn.zhicloud.framework.tenant.core.context.TenantContextHolder;
 import cn.zhicloud.framework.integration.api.EventAppendReq;
 import cn.zhicloud.framework.integration.contract.ErpSaleOutApprovedEvent;
 import cn.zhicloud.framework.integration.contract.IntegrationEventTypes;
@@ -46,6 +47,8 @@ import java.util.Map;
 import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.zhicloud.framework.common.util.collection.CollectionUtils.*;
 import static cn.zhicloud.module.erp.enums.ErrorCodeConstants.*;
+import static cn.zhicloud.framework.integration.enums.ErrorCodeConstants.EVENT_TENANT_MISMATCH;
+import static cn.zhicloud.framework.integration.enums.ErrorCodeConstants.EVENT_TENANT_REQUIRED;
 
 // 操作日志已通过 @OperateLog 注解自动记录（bizlog-sdk 通过 AOP 自动记录）
 
@@ -57,12 +60,6 @@ import static cn.zhicloud.module.erp.enums.ErrorCodeConstants.*;
 @Service
 @Validated
 public class ErpSaleOutServiceImpl implements ErpSaleOutService {
-
-    /**
-     * 跨域事件的默认租户：ERP 主表（含 erp_sale_out）虽有 tenant_id 列，但相关 DO 未映射租户字段，取不到真实租户，
-     * 统一按 0 登记。接入多租户前不要用本链路承载多租户数据（已在风险清单登记）。
-     */
-    private static final Long DEFAULT_EVENT_TENANT_ID = 0L;
 
     @Resource
     private ErpSaleOutMapper saleOutMapper;
@@ -193,13 +190,16 @@ public class ErpSaleOutServiceImpl implements ErpSaleOutService {
             throw exception(ERP_AUDIT_STATUS_INVALID, status);
         }
         boolean approve = ErpAuditStatus.APPROVE.getStatus().equals(status);
-        // 1.1 校验存在
+        // 1.1 当前操作必须租户明确，且只能操作当前租户自己的单据；缺失或冲突时在副作用前拒绝。
+        Long tenantId = requireCurrentTenantId();
+        // 1.2 校验存在
         ErpSaleOutDO saleOut = validateSaleOutExists(id);
-        // 1.2 幂等处理：目标状态与当前状态一致时，返回同一业务结果
+        validateSaleOutTenant(saleOut, tenantId);
+        // 1.3 幂等处理：目标状态与当前状态一致时，返回同一业务结果
         if (status.equals(saleOut.getStatus())) {
             return;
         }
-        // 1.3 校验已退款
+        // 1.4 校验已退款
         if (!approve && saleOut.getReceiptPrice().compareTo(BigDecimal.ZERO) > 0) {
             throw exception(SALE_OUT_PROCESS_FAIL_EXISTS_RECEIPT);
         }
@@ -244,7 +244,7 @@ public class ErpSaleOutServiceImpl implements ErpSaleOutService {
         //    同一事务内登记则随业务回滚一起消失，宁可少发也不要发出未发生的业务事实。
         //    这里只登记不投递：投递由可靠集成数据面（V100）的中继任务异步完成，失败重试并最终进死信。
         if (approve) {
-            eventOutboxService.append(buildSaleOutApprovedEventAppendReq(saleOut, saleOutItems));
+            eventOutboxService.append(buildSaleOutApprovedEventAppendReq(saleOut, saleOutItems, tenantId));
         }
     }
 
@@ -254,11 +254,11 @@ public class ErpSaleOutServiceImpl implements ErpSaleOutService {
      * <p>eventId 由业务主键推导（{@code erp-sale-out-{id}-approved}）而不是随机数：
      * 同一单据重复触发时得到相同 eventId，消费侧才能靠 event_inbox 唯一键去重。
      *
-     * <p>tenantId 固定 0：ERP 主表虽有 tenant_id 列，但相关 DO 未映射租户字段，取不到真实租户；
-     * 接入多租户前不要用本链路承载多租户数据（已在风险清单登记）。
+     * <p>tenantId 使用审核时验证过的当前租户，禁止静默回退租户 0。
      */
     private EventAppendReq buildSaleOutApprovedEventAppendReq(ErpSaleOutDO saleOut,
-                                                            List<ErpSaleOutItemDO> saleOutItems) {
+                                                            List<ErpSaleOutItemDO> saleOutItems,
+                                                            Long tenantId) {
         ErpSaleOutApprovedEvent event = ErpSaleOutApprovedEvent.builder()
                 .no(saleOut.getNo())
                 .saleOutId(saleOut.getId())
@@ -274,7 +274,7 @@ public class ErpSaleOutServiceImpl implements ErpSaleOutService {
                 .build();
         return EventAppendReq.builder()
                 .eventId(ErpSaleOutApprovedEvent.eventIdOf(saleOut.getId()))
-                .tenantId(DEFAULT_EVENT_TENANT_ID)
+                .tenantId(tenantId)
                 .aggregateType(ErpSaleOutApprovedEvent.AGGREGATE_TYPE)
                 .aggregateId(String.valueOf(saleOut.getId()))
                 .eventType(IntegrationEventTypes.ERP_SALE_OUT_APPROVED)
@@ -282,6 +282,20 @@ public class ErpSaleOutServiceImpl implements ErpSaleOutService {
                 .payload(event.toJson())
                 .occurredAt(saleOut.getOutTime() == null ? LocalDateTime.now() : saleOut.getOutTime())
                 .build();
+    }
+
+    private Long requireCurrentTenantId() {
+        Long tenantId = TenantContextHolder.getTenantId();
+        if (tenantId == null) {
+            throw exception(EVENT_TENANT_REQUIRED);
+        }
+        return tenantId;
+    }
+
+    private void validateSaleOutTenant(ErpSaleOutDO saleOut, Long tenantId) {
+        if (saleOut.getTenantId() == null || !tenantId.equals(saleOut.getTenantId())) {
+            throw exception(EVENT_TENANT_MISMATCH);
+        }
     }
 
     private ErpAccountingEventCreateReqBO buildSaleShipmentEvent(ErpSaleOutDO saleOut,

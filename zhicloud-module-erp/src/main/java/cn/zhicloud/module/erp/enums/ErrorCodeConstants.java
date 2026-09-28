@@ -252,6 +252,7 @@ ErrorCode PURCHASE_ORDER_ITEM_RETURN_FAIL_IN_EXCEED = new ErrorCode(1_030_101_00
             "来源单据勾稽总额与已落地基线不一致：基线({})，本次({})");
     ErrorCode ACCOUNTING_EVENT_DOC_TOTAL_EXCEEDED = new ErrorCode(1_030_711_016,
             "累计过账金额({})超过来源单据勾稽总额({})：事件类型({})，来源单据({}:{})");
+    ErrorCode ACCOUNTING_EVENT_TENANT_REQUIRED = new ErrorCode(1_030_711_017, "会计事件操作缺少租户上下文，已拒绝执行");
 
     // ========== ERP 库存批次 1-030-405-000 ==========
     ErrorCode STOCK_BATCH_NOT_EXISTS = new ErrorCode(1_030_405_000, "库存批次不存在");

@@ -8,6 +8,8 @@ import cn.zhicloud.framework.integration.dal.dataobject.EventInboxDO;
 import cn.zhicloud.framework.integration.dal.mysql.EventInboxMapper;
 import cn.zhicloud.framework.integration.enums.ErrorCodeConstants;
 import cn.zhicloud.framework.integration.util.EventTextUtils;
+import cn.zhicloud.framework.tenant.core.context.TenantContextHolder;
+import cn.zhicloud.framework.tenant.core.util.TenantUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -50,11 +52,27 @@ public class EventInboxServiceImpl implements EventInboxService {
         if (EventTextUtils.isBlank(consumerName) || EventTextUtils.isBlank(eventId)) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.EVENT_OUTBOX_ARG_INVALID);
         }
-        EventInboxDO row = eventInboxMapper.selectByConsumerAndEvent(consumerName, eventId);
+        Long eventTenantId = requireTenantId(tenantId);
+        Long oldTenantId = TenantContextHolder.getTenantId();
+        boolean oldIgnore = TenantContextHolder.isIgnore();
+        try {
+            // 去重键包含 tenant_id；即使调用方来自定时任务，也必须先进入事件所属租户上下文。
+            TenantContextHolder.setTenantId(eventTenantId);
+            TenantContextHolder.setIgnore(false);
+            return doConsume(consumerName, eventId, eventType, eventTenantId, handler);
+        } finally {
+            TenantContextHolder.setTenantId(oldTenantId);
+            TenantContextHolder.setIgnore(oldIgnore);
+        }
+    }
+
+    private ConsumeResult doConsume(String consumerName, String eventId, String eventType,
+                                    Long eventTenantId, EventHandler handler) throws Exception {
+        EventInboxDO row = eventInboxMapper.selectByConsumerAndEvent(consumerName, eventId, eventTenantId);
         boolean fresh = false;
         if (row == null) {
             EventInboxDO created = EventInboxDO.builder()
-                    .tenantId(tenantId == null ? 0L : tenantId)
+                    .tenantId(eventTenantId)
                     .consumerName(consumerName)
                     .eventId(eventId)
                     .eventType(eventType == null ? "" : eventType)
@@ -68,7 +86,7 @@ public class EventInboxServiceImpl implements EventInboxService {
                 fresh = true;
             } catch (DuplicateKeyException e) {
                 // 并发首次投递：唯一键兜底，回查已有行按既有状态判定
-                row = eventInboxMapper.selectByConsumerAndEvent(consumerName, eventId);
+                row = eventInboxMapper.selectByConsumerAndEvent(consumerName, eventId, eventTenantId);
                 if (row == null) {
                     throw e;
                 }
@@ -84,7 +102,7 @@ public class EventInboxServiceImpl implements EventInboxService {
                 throw ServiceExceptionUtil.exception(ErrorCodeConstants.EVENT_INBOX_DEAD);
             }
             // RECEIVED / FAILED：抢占后再执行，避免同一事件被两个线程同时跑业务
-            if (eventInboxMapper.claim(row.getId()) == 0) {
+            if (eventInboxMapper.claim(row.getId(), eventTenantId) == 0) {
                 log.info("[consume][并发抢占失败，跳过 consumer={} eventId={}]", consumerName, eventId);
                 return ConsumeResult.DUPLICATE;
             }
@@ -93,17 +111,17 @@ public class EventInboxServiceImpl implements EventInboxService {
             if (handler != null) {
                 handler.handle();
             }
-            eventInboxMapper.markProcessed(row.getId(), LocalDateTime.now());
+            eventInboxMapper.markProcessed(row.getId(), eventTenantId, LocalDateTime.now());
             return ConsumeResult.PROCESSED;
         } catch (Exception ex) {
             String error = EventTextUtils.truncate(EventTextUtils.rootMessage(ex), EventTextUtils.MAX_ERROR_LEN);
             int nextRetry = (row.getRetryCount() == null ? 0 : row.getRetryCount()) + 1;
             if (nextRetry >= maxRetry()) {
-                eventInboxMapper.markDead(row.getId(), error);
+                eventInboxMapper.markDead(row.getId(), eventTenantId, error);
                 log.error("[consume][消费进入死信 consumer={} eventId={} retryCount={} error={}]",
                         consumerName, eventId, nextRetry, error);
             } else {
-                eventInboxMapper.markFailed(row.getId(), error);
+                eventInboxMapper.markFailed(row.getId(), eventTenantId, error);
                 log.warn("[consume][消费失败待重试 consumer={} eventId={} retryCount={} error={}]",
                         consumerName, eventId, nextRetry, error);
             }
@@ -112,41 +130,65 @@ public class EventInboxServiceImpl implements EventInboxService {
     }
 
     @Override
-    public EventInboxDO selectByConsumerAndEvent(String consumerName, String eventId) {
-        return eventInboxMapper.selectByConsumerAndEvent(consumerName, eventId);
+    public EventInboxDO selectByConsumerAndEvent(String consumerName, String eventId, Long tenantId) {
+        Long eventTenantId = requireTenantId(tenantId);
+        return TenantUtils.execute(eventTenantId,
+                () -> eventInboxMapper.selectByConsumerAndEvent(consumerName, eventId, eventTenantId));
     }
 
     @Override
-    public boolean replay(String consumerName, String eventId) {
-        EventInboxDO row = eventInboxMapper.selectByConsumerAndEvent(consumerName, eventId);
-        if (row == null || !INBOX_DEAD.equals(row.getStatus())) {
-            return false;
-        }
-        return eventInboxMapper.replay(row.getId()) == 1;
+    public boolean replay(String consumerName, String eventId, Long tenantId) {
+        Long eventTenantId = requireTenantId(tenantId);
+        return TenantUtils.execute(eventTenantId, () -> {
+            EventInboxDO row = eventInboxMapper.selectByConsumerAndEvent(consumerName, eventId, eventTenantId);
+            if (row == null || !INBOX_DEAD.equals(row.getStatus())) {
+                return false;
+            }
+            return eventInboxMapper.replayByTenantId(row.getId(), eventTenantId) == 1;
+        });
     }
 
     @Override
     public long countFailed() {
-        Long count = eventInboxMapper.selectCount(new LambdaQueryWrapper<EventInboxDO>()
-                .eq(EventInboxDO::getStatus, INBOX_FAILED));
+        Long count = TenantUtils.executeIgnore(() -> eventInboxMapper.selectCount(
+                new LambdaQueryWrapper<EventInboxDO>()
+                        .eq(EventInboxDO::getStatus, INBOX_FAILED)));
         return count == null ? 0L : count;
     }
 
     @Override
     public long countDead() {
-        Long count = eventInboxMapper.selectCount(new LambdaQueryWrapper<EventInboxDO>()
-                .eq(EventInboxDO::getStatus, INBOX_DEAD));
+        Long count = TenantUtils.executeIgnore(() -> eventInboxMapper.selectCount(
+                new LambdaQueryWrapper<EventInboxDO>()
+                        .eq(EventInboxDO::getStatus, INBOX_DEAD)));
         return count == null ? 0L : count;
     }
 
     @Override
     public long oldestPendingSeconds() {
-        LocalDateTime oldest = eventInboxMapper.selectOldestPendingReceivedAt();
+        LocalDateTime oldest = TenantUtils.executeIgnore(eventInboxMapper::selectOldestPendingReceivedAt);
         if (oldest == null) {
             return 0L;
         }
         // 数据库与应用时钟可能存在轻微偏差；负数没有业务意义，统一归零避免指标抖动。
         return Math.max(0L, Duration.between(oldest, LocalDateTime.now()).getSeconds());
+    }
+
+    /**
+     * 解析收件箱操作租户：显式租户不得覆盖调用方已有的不同租户上下文。
+     *
+     * <p>中继任务可以没有 ambient tenant 上下文，因此允许显式租户创建正确上下文；
+     * 但调用方一旦已有租户上下文，显式传入其他租户即视为越权并 fail-closed。
+     */
+    private Long requireTenantId(Long tenantId) {
+        if (tenantId == null) {
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.EVENT_TENANT_REQUIRED);
+        }
+        Long currentTenantId = TenantContextHolder.getTenantId();
+        if (currentTenantId != null && !currentTenantId.equals(tenantId)) {
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.EVENT_TENANT_MISMATCH);
+        }
+        return tenantId;
     }
 
     private int maxRetry() {

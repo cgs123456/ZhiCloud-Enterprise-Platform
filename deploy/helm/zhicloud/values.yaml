@@ -164,6 +164,30 @@ monitoring:
     scrapeTimeout: 10s
     # 附加标签（用于 Prometheus 通过 labelSelector 选择 ServiceMonitor）
     additionalLabels: {}
+# ----- MySQL TLS 证书信任库（生产必需）-----
+# Connector/J 9.x 的 VERIFY_IDENTITY 会校验证书链与数据库主机名。
+# 仅有 sslMode=REQUIRED/VERIFY_CA 不足；truststore 文件与密码必须由外部 Secret 提供。
+mysqlTls:
+  # true 时 Deployment 与 Flyway PreSync Job 都挂载 truststore 并注入连接属性
+  enabled: true
+  # 只允许生产使用 VERIFY_IDENTITY
+  mode: "VERIFY_IDENTITY"
+  truststore:
+    # 专用 Secret 名称；生产必须显式设置，留空时 Helm 渲染失败
+    existingSecret: ""
+    # 外部 truststore Secret 的版本/指纹；existingSecret 非空时必须提供，轮换后更新以触发滚动更新。
+    existingSecretRevision: ""
+    # Secret 中 PKCS12/JKS 文件的 data key
+    fileKey: "truststore.p12"
+    # 挂载到容器后的文件名
+    fileName: "truststore.p12"
+    # Secret 中 truststore 密码的 key；应用仅通过 secretKeyRef 读取
+    passwordKey: "MYSQL_TLS_TRUSTSTORE_PASSWORD"
+    # PKCS12 或 JKS
+    type: "PKCS12"
+    # 容器内只读挂载目录
+    mountPath: "/etc/zhicloud/mysql-tls"
+
 # ----- 环境变量（非敏感，写入 ConfigMap）-----
 # 数据库/Redis 等连接信息通过 ${ENV_VAR} 占位，DEV/STAGING/PROD 通过 values 覆盖注入
 env:
@@ -174,11 +198,11 @@ env:
   # JVM 参数（容器感知堆：按 memory limit 60% 自动设上限，OOM 快速退出）
   JAVA_OPTS: "-XX:MaxRAMPercentage=60.0 -XX:+ExitOnOutOfMemoryError -XX:+UseZGC -XX:+ZGenerational -Djava.security.egd=file:/dev/./urandom"
   # ----- 主数据源（rewriteBatchedStatements=true 开启 JDBC 批量重写，批量写入约 20 倍提升）-----
-  MASTER_DATASOURCE_URL: "jdbc:mysql://zhicloud-mysql:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true"
+  MASTER_DATASOURCE_URL: "jdbc:mysql://zhicloud-mysql:3306/zhicloud_platform?sslMode=VERIFY_IDENTITY&tlsVersions=TLSv1.2,TLSv1.3&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true"
   # 最小权限：使用专用业务账号（需预先创建并授权）
   MASTER_DATASOURCE_USERNAME: "zhicloud"
   # ----- 从数据源 -----
-  SLAVE_DATASOURCE_URL: "jdbc:mysql://zhicloud-mysql:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true"
+  SLAVE_DATASOURCE_URL: "jdbc:mysql://zhicloud-mysql:3306/zhicloud_platform?sslMode=VERIFY_IDENTITY&tlsVersions=TLSv1.2,TLSv1.3&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true"
   SLAVE_DATASOURCE_USERNAME: "zhicloud"
   # ----- Redis -----
   REDIS_HOST: "zhicloud-redis"
@@ -187,6 +211,8 @@ env:
   ZHICLOUD_AIRAG_ENABLED: "true"
   ZHICLOUD_AIRAG_DATASOURCE_URL: "jdbc:postgresql://zhicloud-postgres:5432/zhicloud_rag"
   ZHICLOUD_AIRAG_DATASOURCE_USERNAME: "zhicloud"
+  # 生产/默认路径禁止应用启动 DDL；表和索引由 sql/postgresql/airag_pgvector.sql 显式创建
+  ZHICLOUD_AIRAG_INITIALIZE_SCHEMA: "false"
   # ----- OTel 链路追踪 -----
   OTEL_EXPORTER_OTLP_ENDPOINT: "http://zhicloud-jaeger:4318/v1/traces"
   MANAGEMENT_OTLP_TRACING_ENDPOINT: "http://zhicloud-jaeger:4318/v1/traces"
@@ -204,42 +230,66 @@ env:
 # 本地/CI 冒烟可临时 --set secrets.allowInsecureDefaults=true 放行空值。
 secrets:
   # 引用已存在的 Secret 名称（由外部体系管理）。设置后本 Chart 不再渲染下方任何密钥。
-  existingSecret: ""
+  existingSecret: null
+  # 外部 Secret 的版本/指纹。existingSecret 非空时必须提供；轮换后更新该值会触发 Pod 滚动更新。
+  # Helm 无法读取外部 Secret 内容，因此发布流程必须把密钥版本写入这里，不能把“Secret 已更新”当作“Pod 已重载”。
+  existingSecretRevision: ""
   # 是否允许空值/占位符通过校验；仅限本地与 CI 冒烟，生产必须保持 false
   allowInsecureDefaults: false
   # 主数据源密码
-  MASTER_DATASOURCE_PASSWORD: ""
+  MASTER_DATASOURCE_PASSWORD: "__REQUIRED__"
   # 从数据源密码
-  SLAVE_DATASOURCE_PASSWORD: ""
+  SLAVE_DATASOURCE_PASSWORD: "__REQUIRED__"
   # Redis 密码
-  REDIS_PASSWORD: ""
-  # Postgres 密码
-  POSTGRES_PASSWORD: ""
+  REDIS_PASSWORD: "__REQUIRED__"
+  # Postgres 容器/扩展初始化密码
+  POSTGRES_PASSWORD: "__REQUIRED__"
+  # AI-RAG 独立 PostgreSQL 密码（应用读取 zhicloud.airag.datasource.password）
+  ZHICLOUD_AIRAG_DATASOURCE_PASSWORD: "__REQUIRED__"
   # MyBatis 加密器密码
-  MYBATIS_ENCRYPTOR_PASSWORD: ""
+  MYBATIS_ENCRYPTOR_PASSWORD: "__REQUIRED__"
   # API 请求加密 Key
-  API_ENCRYPT_REQUEST_KEY: ""
+  API_ENCRYPT_REQUEST_KEY: "__REQUIRED__"
   # API 响应加密 Key
-  API_ENCRYPT_RESPONSE_KEY: ""
+  API_ENCRYPT_RESPONSE_KEY: "__REQUIRED__"
   # Druid 监控台用户名
   DRUID_USERNAME: "druid"
   # Druid 监控台密码
-  DRUID_PASSWORD: ""
+  DRUID_PASSWORD: "__REQUIRED__"
   # SBA 监控密码
-  SBA_PASSWORD: ""
+  SBA_PASSWORD: "__REQUIRED__"
   # AI 平台 API Key（OpenAI/通义千问等）
-  AI_API_KEY: ""
+  AI_API_KEY: "__REQUIRED__"
 
 # ----- Flyway 迁移 Job 配置（PreSync 阶段执行）-----
 migration:
   # 是否启用迁移 Job
   enabled: true
+  baselineMode: existing
   # 迁移失败策略：失败则阻止后续 Sync
   backoffLimit: 2
   # 迁移完成后的 TTL（秒），超时自动清理
   ttlSecondsAfterFinished: 600
   # 迁移最长执行时间（秒）；超时视为失败，避免卡死 PreSync 阶段
   activeDeadlineSeconds: 900
+
+# ----- 生产管理员引导 Job 配置（ArgoCD PreSync）-----
+# 默认关闭：生产首次安装或受控 break-glass 时显式开启。
+# 注意：ensure 模式不会覆盖已存在但口令不匹配的账号；口令轮换必须显式使用 rotate。
+bootstrapAdmin:
+  enabled: false
+  mode: ensure
+  username: zhicloud_admin
+  tenantId: 1
+  roleId: 1
+  postId: 4
+  bcryptCost: 12
+  # 独立 Secret 名称与 key；启用时由 Helm required 强制校验。
+  passwordSecretName: ""
+  passwordSecretKey: "BOOTSTRAP_ADMIN_PASSWORD"
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 1800
+  activeDeadlineSeconds: 600
 
 # ----- Pod 调度 / 亲和性 / 拓扑分布 -----
 nodeSelector: {}

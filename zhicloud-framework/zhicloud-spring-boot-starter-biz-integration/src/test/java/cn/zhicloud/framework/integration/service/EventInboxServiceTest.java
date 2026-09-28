@@ -9,11 +9,14 @@ import cn.zhicloud.framework.integration.dal.dataobject.EventInboxDO;
 import cn.zhicloud.framework.integration.dal.mysql.EventInboxMapper;
 import cn.zhicloud.framework.integration.enums.ErrorCodeConstants;
 import cn.zhicloud.framework.mybatis.config.ZhiCloudMybatisAutoConfiguration;
+import cn.zhicloud.framework.tenant.core.context.TenantContextHolder;
 import cn.zhicloud.framework.test.config.SqlInitializationTestConfiguration;
 import com.alibaba.druid.spring.boot3.autoconfigure.DruidDataSourceAutoConfigure;
 import com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration;
 import com.github.yulichang.autoconfigure.MybatisPlusJoinAutoConfiguration;
 import jakarta.annotation.Resource;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
@@ -64,6 +67,16 @@ public class EventInboxServiceTest {
     @Resource
     private IntegrationProperties properties;
 
+    @BeforeEach
+    public void setUpTenantContext() {
+        TenantContextHolder.setTenantId(0L);
+    }
+
+    @AfterEach
+    public void clearTenantContext() {
+        TenantContextHolder.clear();
+    }
+
     @Resource
     private EventInboxMapper eventInboxMapper;
 
@@ -75,7 +88,7 @@ public class EventInboxServiceTest {
                 "同一消费者重复收到同一事件时必须跳过");
         assertEquals(1, calls.get(), "去重后业务处理器只应执行一次");
 
-        EventInboxDO row = eventInboxService.selectByConsumerAndEvent("c1", "e1");
+        EventInboxDO row = eventInboxService.selectByConsumerAndEvent("c1", "e1", 0L);
         assertEquals(INBOX_PROCESSED, row.getStatus());
         assertNotNull(row.getProcessedAt());
         assertEquals(0, row.getRetryCount());
@@ -88,11 +101,11 @@ public class EventInboxServiceTest {
         // 否则「恰好一次」会退化成「至少一次」，重复扣减 / 重复过账将不可控。
         AtomicInteger calls = new AtomicInteger();
         assertEquals(ConsumeResult.PROCESSED, consume("c-dup", "e-dup", calls));
-        EventInboxDO processed = eventInboxService.selectByConsumerAndEvent("c-dup", "e-dup");
+        EventInboxDO processed = eventInboxService.selectByConsumerAndEvent("c-dup", "e-dup", 0L);
         assertEquals(INBOX_PROCESSED, processed.getStatus());
 
-        assertEquals(0, eventInboxMapper.claim(processed.getId()), "已完成的记录不允许被再次抢占");
-        assertEquals(INBOX_PROCESSED, eventInboxService.selectByConsumerAndEvent("c-dup", "e-dup").getStatus());
+        assertEquals(0, eventInboxMapper.claim(processed.getId(), 0L), "已完成的记录不允许被再次抢占");
+        assertEquals(INBOX_PROCESSED, eventInboxService.selectByConsumerAndEvent("c-dup", "e-dup", 0L).getStatus());
         assertEquals(1, calls.get());
     }
 
@@ -114,7 +127,7 @@ public class EventInboxServiceTest {
             calls.incrementAndGet();
             throw new IllegalStateException("boom");
         }));
-        EventInboxDO failed = eventInboxService.selectByConsumerAndEvent("c3", "e3");
+        EventInboxDO failed = eventInboxService.selectByConsumerAndEvent("c3", "e3", 0L);
         assertEquals(INBOX_FAILED, failed.getStatus());
         assertEquals(1, failed.getRetryCount());
         assertNotNull(failed.getError());
@@ -122,7 +135,7 @@ public class EventInboxServiceTest {
         // 重投成功：FAILED 状态允许再次执行
         assertEquals(ConsumeResult.PROCESSED, eventInboxService.consume("c3", "e3", "t", 0L, () -> calls.incrementAndGet()));
         assertEquals(2, calls.get());
-        assertEquals(INBOX_PROCESSED, eventInboxService.selectByConsumerAndEvent("c3", "e3").getStatus());
+        assertEquals(INBOX_PROCESSED, eventInboxService.selectByConsumerAndEvent("c3", "e3", 0L).getStatus());
     }
 
     @Test
@@ -132,7 +145,7 @@ public class EventInboxServiceTest {
                 throw new IllegalStateException("boom");
             }));
         }
-        assertEquals(INBOX_DEAD, eventInboxService.selectByConsumerAndEvent("c4", "e4").getStatus());
+        assertEquals(INBOX_DEAD, eventInboxService.selectByConsumerAndEvent("c4", "e4", 0L).getStatus());
         // 死信必须显式拒绝而不是静默跳过：否则中继会把事件当消费成功，故障彻底消失在监控之外
         assertInboxDead("c4", "e4");
     }
@@ -149,15 +162,15 @@ public class EventInboxServiceTest {
                 // 预期内
             }
         }
-        assertTrue(eventInboxService.replay("c5", "e5"));
-        EventInboxDO row = eventInboxService.selectByConsumerAndEvent("c5", "e5");
+        assertTrue(eventInboxService.replay("c5", "e5", 0L));
+        EventInboxDO row = eventInboxService.selectByConsumerAndEvent("c5", "e5", 0L);
         assertEquals(INBOX_FAILED, row.getStatus());
         assertEquals(0, row.getRetryCount());
 
         assertEquals(ConsumeResult.PROCESSED, eventInboxService.consume("c5", "e5", "t", 0L, () -> {
         }));
-        assertEquals(INBOX_PROCESSED, eventInboxService.selectByConsumerAndEvent("c5", "e5").getStatus());
-        assertFalse(eventInboxService.replay("c5", "e5"), "非死信记录不应被重放");
+        assertEquals(INBOX_PROCESSED, eventInboxService.selectByConsumerAndEvent("c5", "e5", 0L).getStatus());
+        assertFalse(eventInboxService.replay("c5", "e5", 0L), "非死信记录不应被重放");
     }
 
     @Test
@@ -186,7 +199,7 @@ public class EventInboxServiceTest {
         assertEquals(1L, eventInboxService.countFailed());
         assertEquals(0L, eventInboxService.countDead());
 
-        EventInboxDO failed = eventInboxService.selectByConsumerAndEvent("c-monitor-failed", "e-monitor-failed");
+        EventInboxDO failed = eventInboxService.selectByConsumerAndEvent("c-monitor-failed", "e-monitor-failed", 0L);
         failed.setReceivedAt(java.time.LocalDateTime.now().minusSeconds(120));
         eventInboxMapper.updateById(failed);
         long oldest = eventInboxService.oldestPendingSeconds();
@@ -206,7 +219,7 @@ public class EventInboxServiceTest {
         assertEquals(1L, eventInboxService.countDead());
         assertEquals(1L, eventInboxService.countFailed(), "DEAD 必须单独统计，不能混入 FAILED 存量");
 
-        EventInboxDO dead = eventInboxService.selectByConsumerAndEvent("c-monitor-dead", "e-monitor-dead");
+        EventInboxDO dead = eventInboxService.selectByConsumerAndEvent("c-monitor-dead", "e-monitor-dead", 0L);
         dead.setReceivedAt(java.time.LocalDateTime.now().minusSeconds(600));
         eventInboxMapper.updateById(dead);
         oldest = eventInboxService.oldestPendingSeconds();

@@ -1,6 +1,8 @@
 package cn.zhicloud.framework.integration.config;
 
 import cn.zhicloud.framework.integration.job.EventRelayJob;
+import cn.zhicloud.framework.integration.service.EventDlqService;
+import cn.zhicloud.framework.integration.service.EventDlqServiceImpl;
 import cn.zhicloud.framework.integration.service.EventInboxService;
 import cn.zhicloud.framework.integration.service.EventInboxServiceImpl;
 import cn.zhicloud.framework.integration.service.EventOutboxService;
@@ -45,6 +47,11 @@ public class IntegrationAutoConfiguration {
     @Bean
     public EventRelayService eventRelayService() {
         return new EventRelayService();
+    }
+
+    @Bean
+    public EventDlqService eventDlqService() {
+        return new EventDlqServiceImpl();
     }
 
     @Bean

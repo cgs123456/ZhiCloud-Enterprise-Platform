@@ -40,7 +40,7 @@ public class EventOutboxDO extends BaseDO {
     private Long id;
 
     /**
-     * 事件唯一编号（消费侧幂等键、重放入口）
+     * 租户内事件唯一编号（消费侧幂等键、重放入口）
      */
     private String eventId;
 

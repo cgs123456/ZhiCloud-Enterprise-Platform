@@ -23,13 +23,17 @@ files = {
 }
 orig = {k: p.read_bytes() for k, p in files.items()}
 
-CMD_MDM = ["mvn.cmd", "-o", "-pl", "zhicloud-framework/zhicloud-spring-boot-starter-biz-mdm", "test"]
-CMD_ERP = ["mvn.cmd", "-o", "-pl", "zhicloud-module-erp", "test"]
-CMD_WMS = ["mvn.cmd", "-o", "-pl", "zhicloud-module-wms", "test", "-Dtest=ErpSaleOutApprovedConsumerTest"]
+COMMON_FLAGS = ["-am", "-DfailIfNoTests=false", "-Dsurefire.failIfNoSpecifiedTests=false"]
+CMD_MDM = ["mvn.cmd", "-o", "-pl", "zhicloud-framework/zhicloud-spring-boot-starter-biz-mdm",
+           "-Dtest=MdmCrossRefServiceTest", *COMMON_FLAGS, "test"]
+CMD_ERP = ["mvn.cmd", "-o", "-pl", "zhicloud-module-erp",
+           "-Dtest=ErpSaleOutStatusTest", *COMMON_FLAGS, "test"]
+CMD_WMS = ["mvn.cmd", "-o", "-pl", "zhicloud-module-wms",
+           "-Dtest=ErpSaleOutApprovedConsumerTest", *COMMON_FLAGS, "test"]
 # 事件契约属于集成 Starter：ERP 模块按 -pl 单跑时依赖的是已安装 jar 而不是 Starter 源码，
 # 因此改 Starter 源码必须回 Starter 自己的测试里验证，改 ERP 源码才在 ERP 模块里验证。
 CMD_INT = ["mvn.cmd", "-o", "-pl", "zhicloud-framework/zhicloud-spring-boot-starter-biz-integration",
-           "test", "-Dtest=ErpSaleOutApprovedEventTest"]
+           "-Dtest=ErpSaleOutApprovedEventTest", *COMMON_FLAGS, "test"]
 
 MUTATIONS = [
     ("M1 MDM 映射缺失不再抛错（静默返回 null，下游会建到错误 SKU 上）", CMD_MDM, [
@@ -90,6 +94,9 @@ MUTATIONS = [
 ]
 
 KEEP = re.compile(r"Tests run:|<<< (FAILURE|ERROR)|BUILD (SUCCESS|FAILURE)|expected:|but was:|ERROR\]   ")
+COMPILE_ERROR = re.compile(r"\[ERROR\] COMPILATION ERROR|\[ERROR\] Failed to execute goal .*:compile")
+TEST_COUNT = re.compile(r"Tests run:\s*(\d+),\s*Failures:\s*(\d+),\s*Errors:\s*(\d+)")
+FAILURE_SIGNAL = re.compile(r"<<< (FAILURE|ERROR)!")
 
 
 def restore_all():
@@ -97,8 +104,28 @@ def restore_all():
         files[k].write_bytes(raw)
 
 
+def mutate_once(path, old, new):
+    """应用单点变异，兼容仓库中 LF/CRLF 混用，并保持原换行风格。"""
+    data = path.read_bytes()
+    n = data.count(old)
+    if n == 1:
+        path.write_bytes(data.replace(old, new))
+        return 1
+    if b"\r\n" not in data:
+        return n
+    normalized = data.replace(b"\r\n", b"\n")
+    old_normalized = old.replace(b"\r\n", b"\n")
+    new_normalized = new.replace(b"\r\n", b"\n")
+    n = normalized.count(old_normalized)
+    if n == 1:
+        mutated = normalized.replace(old_normalized, new_normalized).replace(b"\n", b"\r\n")
+        path.write_bytes(mutated)
+    return n
+
+
 only = set(sys.argv[1:])
 survivors = []
+invalid = []
 for label, cmd, ops in MUTATIONS:
     if only and label.split(" ")[0] not in only:
         continue
@@ -106,12 +133,11 @@ for label, cmd, ops in MUTATIONS:
     for key, old, new in ops:
         path = files[key]
         data = path.read_bytes()
-        n = data.count(old)
+        n = mutate_once(path, old, new)
         if n != 1:
             print("\n### MUTATION:", label, "| SKIPPED, target =", key, "replacements =", n)
             applied = False
             break
-        path.write_bytes(data.replace(old, new))
     if not applied:
         restore_all()
         survivors.append(label + " (SKIPPED)")
@@ -121,16 +147,30 @@ for label, cmd, ops in MUTATIONS:
     text = proc.stdout.decode("gbk", errors="replace")
     kept = [line for line in text.splitlines() if KEEP.search(line)]
     print("\n".join(kept[-8:]))
-    killed = proc.returncode != 0
-    print("MUTATION RESULT:", "TESTS_FAILED_AS_EXPECTED" if killed else "TESTS_PASSED_UNEXPECTEDLY")
-    if not killed:
+    counts = [(int(a), int(b), int(c)) for a, b, c in TEST_COUNT.findall(text)]
+    tests_failed = any(failures or errors for _, failures, errors in counts) or bool(FAILURE_SIGNAL.search(text))
+    if proc.returncode == 0:
+        result = "TESTS_PASSED_UNEXPECTEDLY"
         survivors.append(label)
+    elif COMPILE_ERROR.search(text):
+        result = "INVALID_COMPILE_FAILURE"
+        invalid.append(label + " (COMPILE_FAILURE)")
+    elif tests_failed:
+        result = "TESTS_FAILED_AS_EXPECTED"
+    else:
+        result = "INVALID_NO_TEST_FAILURE"
+        invalid.append(label + " (NO_TEST_FAILURE)")
+    print("MUTATION RESULT:", result)
     restore_all()
 
 restore_all()
 print("\n=== SUMMARY ===")
-print("total:", len(MUTATIONS), "survivors:", len(survivors))
+print("total:", len(MUTATIONS), "survivors:", len(survivors), "invalid:", len(invalid))
 for s in survivors:
     print("SURVIVOR:", s)
+for s in invalid:
+    print("INVALID:", s)
 for k, raw in orig.items():
     print("restored:", files[k].name, files[k].read_bytes() == raw)
+if survivors or invalid:
+    raise SystemExit(1)

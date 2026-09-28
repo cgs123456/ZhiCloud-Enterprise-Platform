@@ -1,0 +1,351 @@
+{
+  "status": "passed",
+  "generated_at": "2026-09-27T13:29:06.2649928+00:00",
+  "repo_root": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2",
+  "commit_sha": "d7994f60e12ef1b93baede2ad811b15cc3f533f1",
+  "branch": "upgrade/production-readiness",
+  "chart": "deploy\\helm\\zhicloud",
+  "tools": {
+    "helm3": "C:\\Users\\Administrator\\AppData\\Local\\zhicloud-tools\\helm\\v3.22.0\\windows-amd64\\helm.exe",
+    "helm4": "C:\\Users\\Administrator\\AppData\\Local\\zhicloud-tools\\helm\\v4.3.0\\windows-amd64\\helm.exe",
+    "kubeconform": "C:\\Users\\Administrator\\AppData\\Local\\zhicloud-tools\\kubeconform\\v0.8.0\\kubeconform.exe",
+    "schema_root_1_34_0": "C:\\Users\\Administrator\\AppData\\Local\\zhicloud-tools\\k8s-schemas\\v1.34.0",
+    "schema_root_1_36_1": "C:\\Users\\Administrator\\AppData\\Local\\zhicloud-tools\\k8s-schemas\\v1.36.1",
+    "versions": {
+      "helm3": "v3.22.0+g144ca65",
+      "helm4": "v4.3.0+gbec5b06",
+      "kubeconform": "v0.8.0"
+    }
+  },
+  "positive_cases": [
+    {
+      "name": "dev",
+      "values": "values-dev.yaml",
+      "namespace": "zhicloud-dev",
+      "expectTruststore": false,
+      "extra": [
+        "--set-string",
+        "secrets.existingSecret=zhicloud-app-secret",
+        "--set-string",
+        "secrets.existingSecretRevision=rev-001"
+      ]
+    },
+    {
+      "name": "staging",
+      "values": "values-staging.yaml",
+      "namespace": "zhicloud-staging",
+      "expectTruststore": true,
+      "extra": [
+        "--set-string",
+        "secrets.existingSecret=zhicloud-app-secret",
+        "--set-string",
+        "secrets.existingSecretRevision=rev-001",
+        "--set-string",
+        "mysqlTls.truststore.existingSecret=zhicloud-mysql-truststore",
+        "--set-string",
+        "mysqlTls.truststore.existingSecretRevision=rev-001"
+      ]
+    },
+    {
+      "name": "prod",
+      "values": "values-prod.yaml",
+      "namespace": "zhicloud-prod",
+      "expectTruststore": true,
+      "extra": [
+        "--set-string",
+        "secrets.existingSecret=zhicloud-app-secret",
+        "--set-string",
+        "secrets.existingSecretRevision=rev-001",
+        "--set-string",
+        "mysqlTls.truststore.existingSecret=zhicloud-mysql-truststore",
+        "--set-string",
+        "mysqlTls.truststore.existingSecretRevision=rev-001"
+      ]
+    }
+  ],
+  "negative_cases": [
+    {
+      "helm": "helm3",
+      "name": "prod_missing_app_secret_revision",
+      "exit_code": 1,
+      "expected_nonzero": true,
+      "expected_pattern": "secrets\\.existingSecretRevision",
+      "expected_pattern_matched": true,
+      "passed": true,
+      "stdout_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\negative-helm3-prod_missing_app_secret_revision.out",
+      "stderr_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\negative-helm3-prod_missing_app_secret_revision.err"
+    },
+    {
+      "helm": "helm3",
+      "name": "prod_missing_truststore_secret_revision",
+      "exit_code": 1,
+      "expected_nonzero": true,
+      "expected_pattern": "mysqlTls\\.truststore\\.existingSecretRevision",
+      "expected_pattern_matched": true,
+      "passed": true,
+      "stdout_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\negative-helm3-prod_missing_truststore_secret_revision.out",
+      "stderr_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\negative-helm3-prod_missing_truststore_secret_revision.err"
+    },
+    {
+      "helm": "helm3",
+      "name": "prod_missing_truststore_secret",
+      "exit_code": 1,
+      "expected_nonzero": true,
+      "expected_pattern": "mysqlTls\\.truststore\\.existingSecret",
+      "expected_pattern_matched": true,
+      "passed": true,
+      "stdout_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\negative-helm3-prod_missing_truststore_secret.out",
+      "stderr_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\negative-helm3-prod_missing_truststore_secret.err"
+    },
+    {
+      "helm": "helm3",
+      "name": "prod_allow_insecure_defaults",
+      "exit_code": 1,
+      "expected_nonzero": true,
+      "expected_pattern": "生产环境不允许 allowInsecureDefaults=true",
+      "expected_pattern_matched": true,
+      "passed": true,
+      "stdout_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\negative-helm3-prod_allow_insecure_defaults.out",
+      "stderr_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\negative-helm3-prod_allow_insecure_defaults.err"
+    },
+    {
+      "helm": "helm4",
+      "name": "prod_missing_app_secret_revision",
+      "exit_code": 1,
+      "expected_nonzero": true,
+      "expected_pattern": "secrets\\.existingSecretRevision",
+      "expected_pattern_matched": true,
+      "passed": true,
+      "stdout_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\negative-helm4-prod_missing_app_secret_revision.out",
+      "stderr_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\negative-helm4-prod_missing_app_secret_revision.err"
+    },
+    {
+      "helm": "helm4",
+      "name": "prod_missing_truststore_secret_revision",
+      "exit_code": 1,
+      "expected_nonzero": true,
+      "expected_pattern": "mysqlTls\\.truststore\\.existingSecretRevision",
+      "expected_pattern_matched": true,
+      "passed": true,
+      "stdout_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\negative-helm4-prod_missing_truststore_secret_revision.out",
+      "stderr_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\negative-helm4-prod_missing_truststore_secret_revision.err"
+    },
+    {
+      "helm": "helm4",
+      "name": "prod_missing_truststore_secret",
+      "exit_code": 1,
+      "expected_nonzero": true,
+      "expected_pattern": "mysqlTls\\.truststore\\.existingSecret",
+      "expected_pattern_matched": true,
+      "passed": true,
+      "stdout_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\negative-helm4-prod_missing_truststore_secret.out",
+      "stderr_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\negative-helm4-prod_missing_truststore_secret.err"
+    },
+    {
+      "helm": "helm4",
+      "name": "prod_allow_insecure_defaults",
+      "exit_code": 1,
+      "expected_nonzero": true,
+      "expected_pattern": "生产环境不允许 allowInsecureDefaults=true",
+      "expected_pattern_matched": true,
+      "passed": true,
+      "stdout_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\negative-helm4-prod_allow_insecure_defaults.out",
+      "stderr_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\negative-helm4-prod_allow_insecure_defaults.err"
+    }
+  ],
+  "schema_validation": [
+    {
+      "helm": "helm3",
+      "environment": "dev",
+      "kubernetes_version": "1.34.0",
+      "exit_code": 0,
+      "valid": 5,
+      "invalid": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true,
+      "stdout_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\kubeconform-helm3-dev-1.34.0.out",
+      "stderr_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\kubeconform-helm3-dev-1.34.0.err"
+    },
+    {
+      "helm": "helm3",
+      "environment": "dev",
+      "kubernetes_version": "1.36.1",
+      "exit_code": 0,
+      "valid": 5,
+      "invalid": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true,
+      "stdout_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\kubeconform-helm3-dev-1.36.1.out",
+      "stderr_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\kubeconform-helm3-dev-1.36.1.err"
+    },
+    {
+      "helm": "helm3",
+      "environment": "staging",
+      "kubernetes_version": "1.34.0",
+      "exit_code": 0,
+      "valid": 8,
+      "invalid": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true,
+      "stdout_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\kubeconform-helm3-staging-1.34.0.out",
+      "stderr_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\kubeconform-helm3-staging-1.34.0.err"
+    },
+    {
+      "helm": "helm3",
+      "environment": "staging",
+      "kubernetes_version": "1.36.1",
+      "exit_code": 0,
+      "valid": 8,
+      "invalid": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true,
+      "stdout_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\kubeconform-helm3-staging-1.36.1.out",
+      "stderr_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\kubeconform-helm3-staging-1.36.1.err"
+    },
+    {
+      "helm": "helm3",
+      "environment": "prod",
+      "kubernetes_version": "1.34.0",
+      "exit_code": 0,
+      "valid": 8,
+      "invalid": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true,
+      "stdout_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\kubeconform-helm3-prod-1.34.0.out",
+      "stderr_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\kubeconform-helm3-prod-1.34.0.err"
+    },
+    {
+      "helm": "helm3",
+      "environment": "prod",
+      "kubernetes_version": "1.36.1",
+      "exit_code": 0,
+      "valid": 8,
+      "invalid": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true,
+      "stdout_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\kubeconform-helm3-prod-1.36.1.out",
+      "stderr_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\kubeconform-helm3-prod-1.36.1.err"
+    },
+    {
+      "helm": "helm4",
+      "environment": "dev",
+      "kubernetes_version": "1.34.0",
+      "exit_code": 0,
+      "valid": 5,
+      "invalid": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true,
+      "stdout_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\kubeconform-helm4-dev-1.34.0.out",
+      "stderr_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\kubeconform-helm4-dev-1.34.0.err"
+    },
+    {
+      "helm": "helm4",
+      "environment": "dev",
+      "kubernetes_version": "1.36.1",
+      "exit_code": 0,
+      "valid": 5,
+      "invalid": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true,
+      "stdout_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\kubeconform-helm4-dev-1.36.1.out",
+      "stderr_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\kubeconform-helm4-dev-1.36.1.err"
+    },
+    {
+      "helm": "helm4",
+      "environment": "staging",
+      "kubernetes_version": "1.34.0",
+      "exit_code": 0,
+      "valid": 8,
+      "invalid": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true,
+      "stdout_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\kubeconform-helm4-staging-1.34.0.out",
+      "stderr_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\kubeconform-helm4-staging-1.34.0.err"
+    },
+    {
+      "helm": "helm4",
+      "environment": "staging",
+      "kubernetes_version": "1.36.1",
+      "exit_code": 0,
+      "valid": 8,
+      "invalid": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true,
+      "stdout_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\kubeconform-helm4-staging-1.36.1.out",
+      "stderr_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\kubeconform-helm4-staging-1.36.1.err"
+    },
+    {
+      "helm": "helm4",
+      "environment": "prod",
+      "kubernetes_version": "1.34.0",
+      "exit_code": 0,
+      "valid": 8,
+      "invalid": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true,
+      "stdout_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\kubeconform-helm4-prod-1.34.0.out",
+      "stderr_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\kubeconform-helm4-prod-1.34.0.err"
+    },
+    {
+      "helm": "helm4",
+      "environment": "prod",
+      "kubernetes_version": "1.36.1",
+      "exit_code": 0,
+      "valid": 8,
+      "invalid": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true,
+      "stdout_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\kubeconform-helm4-prod-1.36.1.out",
+      "stderr_path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\kubeconform-helm4-prod-1.36.1.err"
+    }
+  ],
+  "rotation_contract": {
+    "status": "passed",
+    "app_revision_changes_template": true,
+    "truststore_revision_changes_template": true,
+    "app_revision_hashes": [
+      "2520d63f4c10069488f7074a0b8556cf971b25be14ec69a948134d4af6e89418",
+      "40b8d6ca97099058e46e220f072a33198e1a7e24b0c5d9f1fceca25e7b192cf4"
+    ],
+    "truststore_revision_hashes": [
+      "2520d63f4c10069488f7074a0b8556cf971b25be14ec69a948134d4af6e89418",
+      "40b8d6ca97099058e46e220f072a33198e1a7e24b0c5d9f1fceca25e7b192cf4"
+    ],
+    "details": [
+      {
+        "path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\rotation-app-rev001.yaml",
+        "sha256": "9420bb5f4ac3ba03709edb35140210b83f84d838bf00f7274a233faa3fbfe501"
+      },
+      {
+        "path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\rotation-app-rev002.yaml",
+        "sha256": "dc60a1d590008c3453c6fcb5e75a35c31487ccc9e81fe53b2c951aafbfd8afdc"
+      },
+      {
+        "path": "docs\\enterprise-platform\\evidence\\production\\helm-render-20260927_212901\\rotation-truststore-rev002.yaml",
+        "sha256": "a82ce034dc7d16f50f6975b71485be7af26a300e18f8c4045d6519b2733b1a51"
+      }
+    ]
+  },
+  "server_side_dry_run": {
+    "status": "not_run",
+    "reason": "No Kubernetes API server or target cluster is available in this environment; offline schema validation does not replace kubectl --dry-run=server."
+  },
+  "limitations": [
+    "This evidence proves local Helm rendering, fail-closed rendering and offline Kubernetes schema validation only.",
+    "It does not prove external Secret object existence, key names, RBAC, file permissions, actual Secret content or live rotation.",
+    "It does not replace kubectl --dry-run=server, a staging deployment, a target-cluster rollout or a production migration."
+  ],
+  "failure_reasons": []
+}

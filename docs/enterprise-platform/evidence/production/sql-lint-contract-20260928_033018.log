@@ -1,0 +1,6 @@
+== sql_migration_lint (7 upgrade dirs) ==
+PASS: 14 个文件，0 处违规
+lint_exit=0
+== check_migration_contract ==
+PASSED: tracked=28 scanned=124 findings=0
+contract_exit=0

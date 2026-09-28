@@ -2,6 +2,8 @@ package cn.zhicloud.module.erp.service;
 
 import cn.zhicloud.framework.common.exception.ServiceException;
 import cn.zhicloud.framework.mybatis.core.mapper.BaseMapperX;
+import cn.zhicloud.framework.tenant.core.context.TenantContextHolder;
+import cn.zhicloud.framework.tenant.core.db.TenantBaseDO;
 import cn.zhicloud.module.erp.enums.ErpAuditStatus;
 import cn.zhicloud.module.erp.service.sale.ErpCustomerCreditService;
 import cn.zhicloud.module.erp.service.sale.ErpCustomerService;
@@ -33,15 +35,16 @@ import static org.mockito.Mockito.when;
 final class AuditStatusTestSupport {
 
     private static final Long DOCUMENT_ID = 1L;
+    private static final Long TENANT_ID = 7L;
 
     private AuditStatusTestSupport() {
     }
 
     static Stream<DynamicTest> tests(List<AuditCase> cases) {
         return cases.stream().flatMap(auditCase -> Stream.of(
-                dynamicTest(auditCase.name() + " rejects unknown status", () -> assertUnknownStatusRejected(auditCase)),
-                dynamicTest(auditCase.name() + " repeated approval is idempotent", () -> assertRepeatedApprovalIdempotent(auditCase)),
-                dynamicTest(auditCase.name() + " concurrent duplicate approval uses locking read", () -> assertConcurrentDuplicateApproval(auditCase))
+                dynamicTest(auditCase.name() + " rejects unknown status", () -> withTenantContext(() -> assertUnknownStatusRejected(auditCase))),
+                dynamicTest(auditCase.name() + " repeated approval is idempotent", () -> withTenantContext(() -> assertRepeatedApprovalIdempotent(auditCase))),
+                dynamicTest(auditCase.name() + " concurrent duplicate approval uses locking read", () -> withTenantContext(() -> assertConcurrentDuplicateApproval(auditCase)))
         ));
     }
 
@@ -82,6 +85,15 @@ final class AuditStatusTestSupport {
         assertSideEffectNotInvoked(fixture);
     }
 
+    private static void withTenantContext(Runnable assertion) {
+        TenantContextHolder.setTenantId(TENANT_ID);
+        try {
+            assertion.run();
+        } finally {
+            TenantContextHolder.clear();
+        }
+    }
+
     private static Fixture createFixture(AuditCase auditCase) {
         try {
             Object service = auditCase.serviceClass().getDeclaredConstructor().newInstance();
@@ -106,6 +118,9 @@ final class AuditStatusTestSupport {
         try {
             Object entity = entityClass.getDeclaredConstructor().newInstance();
             entityClass.getMethod("setStatus", Integer.class).invoke(entity, status);
+            if (entity instanceof TenantBaseDO tenantBaseDO) {
+                tenantBaseDO.setTenantId(TENANT_ID);
+            }
             return entity;
         } catch (ReflectiveOperationException exception) {
             throw new AssertionError("创建审核实体失败: " + entityClass.getName(), exception);

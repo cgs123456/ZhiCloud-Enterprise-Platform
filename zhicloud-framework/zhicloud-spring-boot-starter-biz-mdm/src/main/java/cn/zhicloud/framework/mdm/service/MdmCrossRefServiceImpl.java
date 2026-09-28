@@ -5,6 +5,7 @@ import cn.zhicloud.framework.common.exception.ServiceException;
 import cn.zhicloud.framework.mdm.api.MdmCrossRefUpsertReq;
 import cn.zhicloud.framework.mdm.dal.dataobject.MdmCrossRefDO;
 import cn.zhicloud.framework.mdm.dal.mysql.MdmCrossRefMapper;
+import cn.zhicloud.framework.tenant.core.context.TenantContextHolder;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,8 @@ import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.e
 import static cn.zhicloud.framework.mdm.enums.ErrorCodeConstants.MDM_CROSS_REF_ARG_INVALID;
 import static cn.zhicloud.framework.mdm.enums.ErrorCodeConstants.MDM_CROSS_REF_NOT_FOUND;
 import static cn.zhicloud.framework.mdm.enums.ErrorCodeConstants.MDM_CROSS_REF_TARGET_ID_INVALID;
+import static cn.zhicloud.framework.mdm.enums.ErrorCodeConstants.MDM_CROSS_REF_TENANT_MISMATCH;
+import static cn.zhicloud.framework.mdm.enums.ErrorCodeConstants.MDM_CROSS_REF_TENANT_REQUIRED;
 import static cn.zhicloud.framework.mdm.enums.MdmConstants.STATUS_INVALID;
 import static cn.zhicloud.framework.mdm.enums.MdmConstants.STATUS_VALID;
 
@@ -25,8 +28,6 @@ import static cn.zhicloud.framework.mdm.enums.MdmConstants.STATUS_VALID;
 @Service
 public class MdmCrossRefServiceImpl implements MdmCrossRefService {
 
-    /** 未显式传租户时的默认租户：与可靠集成数据面（V100）对 tenantId 的默认处理保持一致 */
-    private static final Long DEFAULT_TENANT_ID = 0L;
 
     @Resource
     private MdmCrossRefMapper mdmCrossRefMapper;
@@ -34,14 +35,13 @@ public class MdmCrossRefServiceImpl implements MdmCrossRefService {
     @Override
     public Long upsert(MdmCrossRefUpsertReq req) {
         validateUpsertReq(req);
-        Long tenantId = defaultTenant(req.getTenantId());
+        Long tenantId = resolveTenant(req.getTenantId());
         String status = StrUtil.isBlank(req.getStatus()) ? STATUS_VALID : req.getStatus();
 
         MdmCrossRefDO existing = mdmCrossRefMapper.selectByRef(tenantId, req.getSourceSystem(), req.getSourceEntity(),
                 req.getSourceId(), req.getTargetSystem(), req.getTargetEntity());
         if (existing == null) {
             MdmCrossRefDO insertObj = MdmCrossRefDO.builder()
-                    .tenantId(tenantId)
                     .sourceSystem(req.getSourceSystem())
                     .sourceEntity(req.getSourceEntity())
                     .sourceId(req.getSourceId())
@@ -51,6 +51,7 @@ public class MdmCrossRefServiceImpl implements MdmCrossRefService {
                     .status(status)
                     .remark(req.getRemark())
                     .build();
+            insertObj.setTenantId(tenantId);
             mdmCrossRefMapper.insert(insertObj);
             return insertObj.getId();
         }
@@ -96,7 +97,7 @@ public class MdmCrossRefServiceImpl implements MdmCrossRefService {
     @Override
     public boolean invalidate(Long tenantId, String sourceSystem, String sourceEntity, String sourceId,
                               String targetSystem, String targetEntity) {
-        MdmCrossRefDO existing = mdmCrossRefMapper.selectByRef(defaultTenant(tenantId), sourceSystem, sourceEntity,
+        MdmCrossRefDO existing = mdmCrossRefMapper.selectByRef(resolveTenant(tenantId), sourceSystem, sourceEntity,
                 sourceId, targetSystem, targetEntity);
         if (existing == null) {
             return false;
@@ -110,7 +111,7 @@ public class MdmCrossRefServiceImpl implements MdmCrossRefService {
 
     private MdmCrossRefDO selectValidRef(Long tenantId, String sourceSystem, String sourceEntity, String sourceId,
                                          String targetSystem, String targetEntity) {
-        MdmCrossRefDO ref = mdmCrossRefMapper.selectByRef(defaultTenant(tenantId), sourceSystem, sourceEntity,
+        MdmCrossRefDO ref = mdmCrossRefMapper.selectByRef(resolveTenant(tenantId), sourceSystem, sourceEntity,
                 sourceId, targetSystem, targetEntity);
         // 失效映射等同于缺失：让调用方显式失败，而不是用一条已废弃的映射继续写下游单据
         if (ref == null || !STATUS_VALID.equals(ref.getStatus())) {
@@ -131,8 +132,19 @@ public class MdmCrossRefServiceImpl implements MdmCrossRefService {
         }
     }
 
-    private static Long defaultTenant(Long tenantId) {
-        return tenantId == null ? DEFAULT_TENANT_ID : tenantId;
+    /**
+     * 统一解析租户：上下文缺失时 fail-closed；请求租户为空时使用上下文；
+     * 请求租户与上下文不一致时拒绝，禁止任何调用点静默落到默认租户 0。
+     */
+    private static Long resolveTenant(Long requestTenantId) {
+        Long contextTenantId = TenantContextHolder.getTenantId();
+        if (contextTenantId == null) {
+            throw exception(MDM_CROSS_REF_TENANT_REQUIRED);
+        }
+        if (requestTenantId != null && !Objects.equals(contextTenantId, requestTenantId)) {
+            throw exception(MDM_CROSS_REF_TENANT_MISMATCH, contextTenantId, requestTenantId);
+        }
+        return contextTenantId;
     }
 
 }

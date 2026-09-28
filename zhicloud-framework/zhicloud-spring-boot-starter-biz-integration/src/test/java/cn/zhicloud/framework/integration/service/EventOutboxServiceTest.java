@@ -8,12 +8,15 @@ import cn.zhicloud.framework.integration.dal.dataobject.EventOutboxDO;
 import cn.zhicloud.framework.integration.dal.mysql.EventOutboxMapper;
 import cn.zhicloud.framework.integration.enums.ErrorCodeConstants;
 import cn.zhicloud.framework.mybatis.config.ZhiCloudMybatisAutoConfiguration;
+import cn.zhicloud.framework.tenant.core.context.TenantContextHolder;
 import cn.zhicloud.framework.test.config.SqlInitializationTestConfiguration;
 import com.alibaba.druid.spring.boot3.autoconfigure.DruidDataSourceAutoConfigure;
 import com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.yulichang.autoconfigure.MybatisPlusJoinAutoConfiguration;
 import jakarta.annotation.Resource;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
@@ -70,6 +73,16 @@ public class EventOutboxServiceTest {
 
     @Resource
     private IntegrationProperties properties;
+
+    @BeforeEach
+    public void setUpTenantContext() {
+        TenantContextHolder.setTenantId(0L);
+    }
+
+    @AfterEach
+    public void clearTenantContext() {
+        TenantContextHolder.clear();
+    }
 
     // -------------------- 登记 --------------------
 
@@ -199,22 +212,6 @@ public class EventOutboxServiceTest {
         assertFalse(eventOutboxService.markPublished(id), "死信事件不应被标记为投递完成");
     }
 
-    @Test
-    public void testReplayRestoresDeadEvent() {
-        Long id = append("evt-replay-1");
-        makeDead(id);
-        assertEquals(1L, eventOutboxService.countDead());
-
-        assertTrue(eventOutboxService.replay(id));
-        EventOutboxDO row = eventOutboxMapper.selectById(id);
-        assertEquals(OUTBOX_NEW, row.getStatus());
-        assertEquals(0, row.getRetryCount());
-        assertNull(row.getNextRetryAt());
-        assertNull(row.getLastError());
-        assertEquals(1, eventOutboxService.selectClaimable(LocalDateTime.now(), 10).size());
-        assertFalse(eventOutboxService.replay(id), "非死信事件不应被重放");
-    }
-
     // -------------------- 失败原因落库 --------------------
 
     @Test
@@ -251,7 +248,7 @@ public class EventOutboxServiceTest {
         assertEquals(1L, eventOutboxService.countBacklog());
         assertEquals(0L, eventOutboxService.countDead());
 
-        Long b = eventOutboxMapper.selectByEventId("evt-cnt-2").getId();
+        Long b = eventOutboxMapper.selectByEventIdAndTenantId("evt-cnt-2", 0L).getId();
         makeDead(b);
         assertEquals(1L, eventOutboxService.countDead());
         assertEquals(0L, eventOutboxService.countBacklog(), "死信不再计入堆积口径，避免同一事件同时触发堆积与死信两个告警");
