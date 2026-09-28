@@ -13,6 +13,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashSet;
@@ -55,11 +56,96 @@ public final class DatabaseMigrationRunner {
     static final String SOURCE_BASELINE_RESOURCE = "db/migration/V1.1__system_base_schema.sql";
     static final String EXISTING_BASELINE_VERSION = "1.1";
     static final String CLEAN_BASELINE_VERSION = "1.1";
+    static final String V116_VERIFICATION_RESOURCE = "db/verification/V116_verify.sql";
+    static final String V117_VERIFICATION_RESOURCE = "db/verification/V117_verify.sql";
+
+    /**
+     * Flyway 只能证明脚本“执行成功”，不能证明关键结构约束与数据不变量已经满足。
+     * 这里把 V116/V117 的只读语义检查登记为迁移退出码的硬门禁；任何一项缺失、
+     * 失败或额外漂移都会让 PreSync Job 失败，阻止业务 Deployment 继续发布。
+     */
+    static final List<VerificationSpec> POST_MIGRATION_VERIFICATIONS = List.of(
+            new VerificationSpec(V116_VERIFICATION_RESOURCE, Set.of(
+                    "V116_ACTIVE_USERNAME_COLUMN",
+                    "V116_ACTIVE_USERNAME_UNIQUE_INDEX",
+                    "V116_ACTIVE_USERNAME_NO_DUPLICATES")),
+            new VerificationSpec(V117_VERIFICATION_RESOURCE, Set.of(
+                    "V117_CRM_RECEIVABLE_IDEMPOTENCY_COLUMNS",
+                    "V117_CRM_RECEIVABLE_IDEMPOTENCY_INDEX",
+                    "V117_CRM_RECEIVABLE_IDEMPOTENCY_DATA")));
+
+    record VerificationSpec(String resource, Set<String> expectedChecks) {
+    }
+
+    record MigrationOutcome(int appliedMigrations, String initialVersion, String targetVersion) {
+    }
+
+    @FunctionalInterface
+    interface MigrationPreflight {
+        void check(String url, String username, String password, String mode,
+                   Map<String, String> jdbcProperties) throws Exception;
+    }
+
+    @FunctionalInterface
+    interface MigrationExecutor {
+        MigrationOutcome execute(String url, String username, String password, String mode,
+                                 Map<String, String> jdbcProperties) throws Exception;
+    }
+
+    @FunctionalInterface
+    interface PostMigrationVerifier {
+        void verify(String url, String username, String password,
+                    Map<String, String> jdbcProperties) throws Exception;
+    }
 
     private static final Pattern TABLE_DEFINITION = Pattern.compile(
             "(?m)^CREATE TABLE IF NOT EXISTS `([^`]+)`");
 
     static final List<String> REQUIRED_EXISTING_TABLES = loadRequiredExistingTables();
+
+    /**
+     * existing 存量库的最小结构签名。
+     *
+     * <p>这里刻意只覆盖迁移、生产种子清理和后续关键约束所依赖的字段，不复制 V1.1
+     * 的全部字段定义。历史库允许存在向后兼容的附加列，但缺少必需列时必须在任何
+     * DDL 前失败，避免把结构错误的历史库错误标记成 V1.1。</p>
+     */
+    static final Map<String, Set<String>> REQUIRED_EXISTING_COLUMNS = Map.ofEntries(
+            Map.entry("system_users", Set.of("id", "tenant_id", "username", "password", "status", "deleted")),
+            Map.entry("system_role", Set.of("id", "tenant_id", "code", "status", "deleted")),
+            Map.entry("system_user_role", Set.of("id", "tenant_id", "user_id", "role_id", "deleted")),
+            Map.entry("system_user_post", Set.of("id", "tenant_id", "user_id", "post_id", "deleted")),
+            Map.entry("system_oauth2_access_token",
+                    Set.of("id", "tenant_id", "user_id", "deleted", "expires_time", "update_time")),
+            Map.entry("system_oauth2_refresh_token",
+                    Set.of("id", "tenant_id", "user_id", "deleted", "expires_time", "update_time")),
+            Map.entry("system_oauth2_approve",
+                    Set.of("id", "tenant_id", "user_id", "deleted", "expires_time", "update_time")),
+            Map.entry("system_oauth2_code",
+                    Set.of("id", "tenant_id", "user_id", "deleted", "expires_time", "update_time")),
+            Map.entry("system_social_user_bind",
+                    Set.of("id", "tenant_id", "user_id", "deleted", "update_time")),
+            Map.entry("system_oauth2_client", Set.of("id", "client_id", "status", "update_time")),
+            Map.entry("system_social_client", Set.of("id", "client_id", "status", "update_time")),
+            Map.entry("crm_receivable", Set.of("id", "tenant_id")));
+
+    /**
+     * 最小索引签名只要求主键存在，避免把不同团队对非关键二级索引的命名差异误判为
+     * 不可迁移。V116/V117 新增的唯一索引由迁移后语义校验单独验证。
+     */
+    static final Map<String, Set<String>> REQUIRED_EXISTING_INDEXES = Map.ofEntries(
+            Map.entry("system_users", Set.of("PRIMARY")),
+            Map.entry("system_role", Set.of("PRIMARY")),
+            Map.entry("system_user_role", Set.of("PRIMARY")),
+            Map.entry("system_user_post", Set.of("PRIMARY")),
+            Map.entry("system_oauth2_access_token", Set.of("PRIMARY")),
+            Map.entry("system_oauth2_refresh_token", Set.of("PRIMARY")),
+            Map.entry("system_oauth2_approve", Set.of("PRIMARY")),
+            Map.entry("system_oauth2_code", Set.of("PRIMARY")),
+            Map.entry("system_social_user_bind", Set.of("PRIMARY")),
+            Map.entry("system_oauth2_client", Set.of("PRIMARY")),
+            Map.entry("system_social_client", Set.of("PRIMARY")),
+            Map.entry("crm_receivable", Set.of("PRIMARY")));
     private static final Pattern JSON_HASH = Pattern.compile(
             "\"source_sha256\"\\s*:\\s*\"([0-9a-fA-F]{64})\"");
     private static final Pattern JSON_CLEAN_HASH = Pattern.compile(
@@ -80,6 +166,21 @@ public final class DatabaseMigrationRunner {
      * 运行迁移并返回进程退出码，便于测试时不触发 {@link System#exit(int)}。
      */
     static int run(Map<String, String> environment) {
+        return run(environment,
+                DatabaseMigrationRunner::preflightMigrationTarget,
+                DatabaseMigrationRunner::executeFlywayMigration,
+                DatabaseMigrationRunner::verifyPostMigrationSemantics);
+    }
+
+    /**
+     * 运行迁移并返回进程退出码。预检、Flyway 执行、迁移后语义校验三段都通过后才返回 0；
+     * 最后一段失败时会进入统一 catch，确保“Flyway success”不能绕过 V116/V117 门禁。
+     */
+    static int run(
+            Map<String, String> environment,
+            MigrationPreflight preflight,
+            MigrationExecutor executor,
+            PostMigrationVerifier verifier) {
         long start = System.currentTimeMillis();
         try {
             String url = requireEnv(environment, "MASTER_DATASOURCE_URL", "SPRING_DATASOURCE_URL");
@@ -87,23 +188,16 @@ public final class DatabaseMigrationRunner {
             String password = requireEnv(environment, "MASTER_DATASOURCE_PASSWORD", "SPRING_DATASOURCE_PASSWORD");
             String mode = resolveBaselineMode(environment.get(BASELINE_MODE_ENV));
 
-            if (CLEAN_MODE.equals(mode)) {
-                requireMySqlUrl(url);
-            }
-
             Map<String, String> connectionProperties = jdbcProperties(environment);
             System.out.printf("[flyway-migration] target=%s mode=%s%n", maskUrl(url), mode);
 
-            if (EXISTING_MODE.equals(mode)) {
-                assertExistingTargetInitialized(url, username, password, connectionProperties);
-            } else {
-                executeCleanBaseline(url, username, password, connectionProperties);
-            }
+            preflight.check(url, username, password, mode, connectionProperties);
+            MigrationOutcome result = executor.execute(url, username, password, mode, connectionProperties);
+            verifier.verify(url, username, password, connectionProperties);
 
-            MigrateResult result = configureFlyway(url, username, password, mode, connectionProperties).migrate();
             System.out.printf(
                     "[flyway-migration] success: applied=%d, initialVersion=%s, targetVersion=%s, cost=%dms%n",
-                    result.migrationsExecuted, result.initialSchemaVersion, result.targetSchemaVersion,
+                    result.appliedMigrations(), result.initialVersion(), result.targetVersion(),
                     System.currentTimeMillis() - start);
             return 0;
         } catch (Throwable ex) {
@@ -113,6 +207,132 @@ public final class DatabaseMigrationRunner {
         }
     }
 
+    private static void preflightMigrationTarget(
+            String url, String username, String password, String mode,
+            Map<String, String> jdbcProperties) throws Exception {
+        if (CLEAN_MODE.equals(mode)) {
+            requireMySqlUrl(url);
+            executeCleanBaseline(url, username, password, jdbcProperties);
+            return;
+        }
+        assertExistingTargetInitialized(url, username, password, jdbcProperties);
+    }
+
+    private static MigrationOutcome executeFlywayMigration(
+            String url, String username, String password, String mode,
+            Map<String, String> jdbcProperties) {
+        MigrateResult result = configureFlyway(url, username, password, mode, jdbcProperties).migrate();
+        return new MigrationOutcome(
+                result.migrationsExecuted, result.initialSchemaVersion, result.targetSchemaVersion);
+    }
+
+    static void verifyPostMigrationSemantics(
+            String url, String username, String password,
+            Map<String, String> jdbcProperties) throws Exception {
+        requireMySqlUrl(url);
+        try (Connection connection = openConnection(url, username, password, jdbcProperties)) {
+            for (VerificationSpec spec : POST_MIGRATION_VERIFICATIONS) {
+                Map<String, String> verdicts = executeVerificationScript(connection, spec.resource());
+                validateVerificationVerdicts(spec, verdicts);
+                System.out.printf(
+                        "[flyway-migration] verification PASS: resource=%s, checks=%d%n",
+                        spec.resource(), verdicts.size());
+            }
+        }
+    }
+
+    private static Map<String, String> executeVerificationScript(
+            Connection connection, String resource) throws IOException, SQLException {
+        String script = new String(readRequiredResource(resource), StandardCharsets.UTF_8);
+        List<String> statements = SqlScriptSplitter.split(script);
+        if (statements.isEmpty()) {
+            throw new IllegalStateException("验证脚本没有可执行语句: " + resource);
+        }
+
+        Map<String, String> verdicts = new LinkedHashMap<>();
+        try (Statement statement = connection.createStatement()) {
+            for (String rawStatement : statements) {
+                String sql = rawStatement.strip();
+                if (sql.isEmpty()) {
+                    continue;
+                }
+                statement.execute(sql);
+                try (ResultSet resultSet = statement.getResultSet()) {
+                    if (resultSet != null) {
+                        collectVerificationVerdicts(resultSet, verdicts);
+                    }
+                }
+            }
+        }
+        return Map.copyOf(verdicts);
+    }
+
+    private static void collectVerificationVerdicts(
+            ResultSet resultSet, Map<String, String> verdicts) throws SQLException {
+        ResultSetMetaData metadata = resultSet.getMetaData();
+        int checkNameIndex = findColumn(metadata, "check_name");
+        int verdictIndex = findColumn(metadata, "verdict");
+        if (checkNameIndex < 0 || verdictIndex < 0) {
+            return;
+        }
+
+        while (resultSet.next()) {
+            String checkName = resultSet.getString(checkNameIndex);
+            String verdict = resultSet.getString(verdictIndex);
+            if (checkName == null || checkName.isBlank()) {
+                throw new IllegalStateException("验证脚本返回了空检查项名称");
+            }
+            String normalizedName = checkName.trim();
+            String normalizedVerdict = verdict == null
+                    ? "" : verdict.trim().toUpperCase(Locale.ROOT);
+            String previous = verdicts.putIfAbsent(normalizedName, normalizedVerdict);
+            if (previous != null) {
+                throw new IllegalStateException("验证脚本返回了重复检查项: " + normalizedName);
+            }
+        }
+    }
+
+    private static int findColumn(ResultSetMetaData metadata, String expectedName) throws SQLException {
+        for (int index = 1; index <= metadata.getColumnCount(); index++) {
+            if (expectedName.equalsIgnoreCase(metadata.getColumnLabel(index))) {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    static void validateVerificationVerdicts(
+            VerificationSpec spec, Map<String, String> verdicts) {
+        Objects.requireNonNull(spec, "spec");
+        Objects.requireNonNull(verdicts, "verdicts");
+
+        Set<String> missing = new LinkedHashSet<>(spec.expectedChecks());
+        missing.removeAll(verdicts.keySet());
+        Set<String> unexpected = new LinkedHashSet<>(verdicts.keySet());
+        unexpected.removeAll(spec.expectedChecks());
+        Map<String, String> failed = new LinkedHashMap<>();
+        for (String checkName : spec.expectedChecks()) {
+            String verdict = verdicts.get(checkName);
+            if (verdict != null && !"PASS".equals(verdict)) {
+                failed.put(checkName, verdict);
+            }
+        }
+
+        if (missing.isEmpty() && unexpected.isEmpty() && failed.isEmpty()) {
+            return;
+        }
+        StringBuilder message = new StringBuilder("迁移后语义校验未通过: resource=").append(spec.resource());
+        if (!missing.isEmpty()) {
+            message.append("，缺失=").append(String.join(",", missing));
+        }
+        if (!unexpected.isEmpty()) {
+            message.append("，未预期=").append(String.join(",", unexpected));
+        }
+        if (!failed.isEmpty()) {
+            message.append("，失败=").append(failed);
+        }
+        throw new IllegalStateException(message.toString());
+    }
     private static Flyway configureFlyway(
             String url, String username, String password, String mode,
             Map<String, String> jdbcProperties) {
@@ -194,7 +414,7 @@ public final class DatabaseMigrationRunner {
 
     static void requireMySqlUrl(String url) {
         if (url == null || !url.toLowerCase(Locale.ROOT).startsWith("jdbc:mysql:")) {
-            throw new IllegalArgumentException("clean baseline 模式只支持 MySQL JDBC URL");
+            throw new IllegalArgumentException("数据库迁移入口只支持 MySQL JDBC URL");
         }
     }
 
@@ -207,7 +427,18 @@ public final class DatabaseMigrationRunner {
      */
     static void validateExistingTargetInitialization(
             Set<String> tableNames, boolean successfulBaselineRecorded) {
+        validateExistingTargetInitialization(
+                tableNames, successfulBaselineRecorded, REQUIRED_EXISTING_COLUMNS, REQUIRED_EXISTING_INDEXES);
+    }
+
+    static void validateExistingTargetInitialization(
+            Set<String> tableNames,
+            boolean successfulBaselineRecorded,
+            Map<String, Set<String>> existingColumns,
+            Map<String, Set<String>> existingIndexes) {
         Objects.requireNonNull(tableNames, "tableNames");
+        Objects.requireNonNull(existingColumns, "existingColumns");
+        Objects.requireNonNull(existingIndexes, "existingIndexes");
         if (tableNames.isEmpty()) {
             throw new IllegalStateException(
                     "existing 模式拒绝空库：请先执行历史安装脚本，或显式设置 MIGRATION_BASELINE_MODE=clean");
@@ -226,6 +457,42 @@ public final class DatabaseMigrationRunner {
                     "existing 模式目标库缺少 flyway_schema_history 中成功的 V1.1 记录；"
                             + "拒绝自动建立 V1.1 baseline，请先完成受控历史库基线修复");
         }
+
+        Set<String> missingStructure = new LinkedHashSet<>();
+        collectMissingStructure(existingColumns, REQUIRED_EXISTING_COLUMNS, missingStructure);
+        collectMissingStructure(existingIndexes, REQUIRED_EXISTING_INDEXES, missingStructure);
+        if (!missingStructure.isEmpty()) {
+            throw new IllegalStateException(
+                    "existing 模式目标库缺少关键结构: " + String.join(", ", missingStructure)
+                            + "；拒绝在结构不完整的历史库上继续迁移");
+        }
+    }
+
+    private static void collectMissingStructure(
+            Map<String, Set<String>> existing,
+            Map<String, Set<String>> required,
+            Set<String> missingStructure) {
+        for (Map.Entry<String, Set<String>> entry : required.entrySet()) {
+            Set<String> normalizedExisting = normalizeNames(existing.get(entry.getKey()));
+            for (String requiredName : entry.getValue()) {
+                if (!normalizedExisting.contains(requiredName.toLowerCase(Locale.ROOT))) {
+                    missingStructure.add(entry.getKey() + "." + requiredName);
+                }
+            }
+        }
+    }
+
+    private static Set<String> normalizeNames(Set<String> names) {
+        Set<String> normalized = new HashSet<>();
+        if (names == null) {
+            return normalized;
+        }
+        for (String name : names) {
+            if (name != null && !name.isBlank()) {
+                normalized.add(name.toLowerCase(Locale.ROOT));
+            }
+        }
+        return normalized;
     }
 
     /**
@@ -237,7 +504,10 @@ public final class DatabaseMigrationRunner {
         try (Connection connection = openConnection(url, username, password, jdbcProperties)) {
             Set<String> tableNames = readTableNames(connection);
             boolean successfulBaselineRecorded = hasSuccessfulMigration(connection, EXISTING_BASELINE_VERSION);
-            validateExistingTargetInitialization(tableNames, successfulBaselineRecorded);
+            Map<String, Set<String>> existingColumns = readRequiredColumns(connection);
+            Map<String, Set<String>> existingIndexes = readRequiredIndexes(connection);
+            validateExistingTargetInitialization(
+                    tableNames, successfulBaselineRecorded, existingColumns, existingIndexes);
         }
     }
 
@@ -252,6 +522,78 @@ public final class DatabaseMigrationRunner {
                 return resultSet.next() && resultSet.getLong(1) > 0;
             }
         }
+    }
+
+    private static Map<String, Set<String>> readRequiredColumns(Connection connection) throws SQLException {
+        Map<String, Set<String>> columns = new LinkedHashMap<>();
+        for (String tableName : REQUIRED_EXISTING_COLUMNS.keySet()) {
+            columns.put(tableName, readColumnNames(connection, tableName));
+        }
+        return columns;
+    }
+
+    private static Map<String, Set<String>> readRequiredIndexes(Connection connection) throws SQLException {
+        Map<String, Set<String>> indexes = new LinkedHashMap<>();
+        for (String tableName : REQUIRED_EXISTING_INDEXES.keySet()) {
+            indexes.put(tableName, readIndexNames(connection, tableName));
+        }
+        return indexes;
+    }
+
+    private static Set<String> readColumnNames(Connection connection, String tableName) throws SQLException {
+        DatabaseMetaData metadata = connection.getMetaData();
+        String catalog = connection.getCatalog();
+        String schema = connection.getSchema();
+        Set<String> columnNames = collectColumnNames(metadata, catalog, schema, tableName);
+        if (columnNames.isEmpty()) {
+            columnNames = collectColumnNames(metadata, catalog, null, tableName);
+        }
+        if (columnNames.isEmpty()) {
+            columnNames = collectColumnNames(metadata, null, null, tableName);
+        }
+        return columnNames;
+    }
+
+    private static Set<String> collectColumnNames(
+            DatabaseMetaData metadata, String catalog, String schema, String tableName) throws SQLException {
+        Set<String> columnNames = new HashSet<>();
+        try (ResultSet resultSet = metadata.getColumns(catalog, schema, tableName, "%")) {
+            while (resultSet.next()) {
+                String columnName = resultSet.getString("COLUMN_NAME");
+                if (columnName != null && !columnName.isBlank()) {
+                    columnNames.add(columnName.toLowerCase(Locale.ROOT));
+                }
+            }
+        }
+        return columnNames;
+    }
+
+    private static Set<String> readIndexNames(Connection connection, String tableName) throws SQLException {
+        DatabaseMetaData metadata = connection.getMetaData();
+        String catalog = connection.getCatalog();
+        String schema = connection.getSchema();
+        Set<String> indexNames = collectIndexNames(metadata, catalog, schema, tableName);
+        if (indexNames.isEmpty()) {
+            indexNames = collectIndexNames(metadata, catalog, null, tableName);
+        }
+        if (indexNames.isEmpty()) {
+            indexNames = collectIndexNames(metadata, null, null, tableName);
+        }
+        return indexNames;
+    }
+
+    private static Set<String> collectIndexNames(
+            DatabaseMetaData metadata, String catalog, String schema, String tableName) throws SQLException {
+        Set<String> indexNames = new HashSet<>();
+        try (ResultSet resultSet = metadata.getIndexInfo(catalog, schema, tableName, false, false)) {
+            while (resultSet.next()) {
+                String indexName = resultSet.getString("INDEX_NAME");
+                if (indexName != null && !indexName.isBlank()) {
+                    indexNames.add(indexName.toLowerCase(Locale.ROOT));
+                }
+            }
+        }
+        return indexNames;
     }
 
     private static Set<String> readTableNames(Connection connection) throws SQLException {

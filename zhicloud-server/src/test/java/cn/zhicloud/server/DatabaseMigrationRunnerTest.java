@@ -4,10 +4,13 @@ import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -187,6 +190,121 @@ class DatabaseMigrationRunnerTest {
         assertTrue(properties.isEmpty());
     }
 
+    @Test
+    void existingTargetAcceptsCompleteCoreSchemaSignature() throws Exception {
+        Map<String, Set<String>> columns = new HashMap<>(DatabaseMigrationRunner.REQUIRED_EXISTING_COLUMNS);
+        Map<String, Set<String>> indexes = new HashMap<>(DatabaseMigrationRunner.REQUIRED_EXISTING_INDEXES);
+
+        assertDoesNotThrow(() -> DatabaseMigrationRunner.validateExistingTargetInitialization(
+                sourceBaselineTables(), true, columns, indexes));
+    }
+
+    @Test
+    void existingTargetRejectsCompleteTableListWhenRequiredCoreColumnIsMissing() throws Exception {
+        Map<String, Set<String>> columns = new HashMap<>(DatabaseMigrationRunner.REQUIRED_EXISTING_COLUMNS);
+        Set<String> userColumns = new HashSet<>(columns.get("system_users"));
+        userColumns.remove("tenant_id");
+        columns.put("system_users", userColumns);
+        Map<String, Set<String>> indexes = new HashMap<>(DatabaseMigrationRunner.REQUIRED_EXISTING_INDEXES);
+
+        IllegalStateException failure = assertThrows(IllegalStateException.class,
+                () -> DatabaseMigrationRunner.validateExistingTargetInitialization(
+                        sourceBaselineTables(), true, columns, indexes));
+
+        assertTrue(failure.getMessage().contains("system_users.tenant_id"));
+    }
+
+    @Test
+    void existingTargetRejectsCompleteTableListWhenRequiredCoreIndexIsMissing() throws Exception {
+        Map<String, Set<String>> columns = new HashMap<>(DatabaseMigrationRunner.REQUIRED_EXISTING_COLUMNS);
+        Map<String, Set<String>> indexes = new HashMap<>(DatabaseMigrationRunner.REQUIRED_EXISTING_INDEXES);
+        Set<String> userIndexes = new HashSet<>(indexes.get("system_users"));
+        userIndexes.remove("PRIMARY");
+        indexes.put("system_users", userIndexes);
+
+        IllegalStateException failure = assertThrows(IllegalStateException.class,
+                () -> DatabaseMigrationRunner.validateExistingTargetInitialization(
+                        sourceBaselineTables(), true, columns, indexes));
+
+        assertTrue(failure.getMessage().contains("system_users.PRIMARY"));
+    }
+
+    @Test
+    void postMigrationSemanticFailureMakesRunnerFailClosed() {
+        int exitCode = DatabaseMigrationRunner.run(
+                migrationEnvironment(),
+                (url, username, password, mode, properties) -> { },
+                (url, username, password, mode, properties) ->
+                        new DatabaseMigrationRunner.MigrationOutcome(1, "1.1", "117"),
+                (url, username, password, properties) -> {
+                    throw new IllegalStateException("V117 semantic verification failed");
+                });
+
+        assertEquals(1, exitCode);
+    }
+
+    @Test
+    void postMigrationSemanticSuccessCompletesRunner() {
+        AtomicBoolean verified = new AtomicBoolean(false);
+
+        int exitCode = DatabaseMigrationRunner.run(
+                migrationEnvironment(),
+                (url, username, password, mode, properties) -> { },
+                (url, username, password, mode, properties) ->
+                        new DatabaseMigrationRunner.MigrationOutcome(1, "1.1", "117"),
+                (url, username, password, properties) -> verified.set(true));
+
+        assertEquals(0, exitCode);
+        assertTrue(verified.get());
+    }
+
+    @Test
+    void postMigrationVerificationCatalogMatchesSqlScripts() throws Exception {
+        for (DatabaseMigrationRunner.VerificationSpec spec : DatabaseMigrationRunner.POST_MIGRATION_VERIFICATIONS) {
+            Set<String> declaredChecks = new HashSet<>();
+            Matcher matcher = Pattern.compile("SELECT '([A-Z0-9_]+)' AS check_name")
+                    .matcher(new String(readResource(spec.resource()), StandardCharsets.UTF_8));
+            while (matcher.find()) {
+                declaredChecks.add(matcher.group(1));
+            }
+
+            assertEquals(spec.expectedChecks(), declaredChecks, spec.resource());
+        }
+    }
+
+    @Test
+    void postMigrationVerificationRejectsFailedOrMissingVerdicts() {
+        DatabaseMigrationRunner.VerificationSpec spec = DatabaseMigrationRunner.POST_MIGRATION_VERIFICATIONS.get(0);
+        Map<String, String> verdicts = new LinkedHashMap<>();
+        spec.expectedChecks().forEach(check -> verdicts.put(check, "PASS"));
+        String failedCheck = spec.expectedChecks().iterator().next();
+        verdicts.put(failedCheck, "FAIL");
+
+        IllegalStateException failure = assertThrows(IllegalStateException.class,
+                () -> DatabaseMigrationRunner.validateVerificationVerdicts(spec, verdicts));
+        assertTrue(failure.getMessage().contains(failedCheck));
+        assertTrue(failure.getMessage().contains("FAIL"));
+
+        verdicts.put(failedCheck, "PASS");
+        verdicts.remove(failedCheck);
+        IllegalStateException missing = assertThrows(IllegalStateException.class,
+                () -> DatabaseMigrationRunner.validateVerificationVerdicts(spec, verdicts));
+        assertTrue(missing.getMessage().contains(failedCheck));
+        assertTrue(missing.getMessage().contains("缺失"));
+    }
+
+    @Test
+    void postMigrationVerificationFailsClosedForNonMySqlTarget() {
+        assertThrows(IllegalArgumentException.class,
+                () -> DatabaseMigrationRunner.verifyPostMigrationSemantics(
+                        "jdbc:h2:mem:verification", "sa", "", Map.of()));
+    }
+    private static Map<String, String> migrationEnvironment() {
+        return Map.of(
+                "MASTER_DATASOURCE_URL", "jdbc:mysql://db:3306/zhicloud",
+                "MASTER_DATASOURCE_USERNAME", "migration-user",
+                "MASTER_DATASOURCE_PASSWORD", "not-a-real-secret");
+    }
     private static Set<String> sourceBaselineTables() throws Exception {
         Set<String> sourceTables = new HashSet<>();
         Matcher matcher = Pattern.compile("(?m)^CREATE TABLE IF NOT EXISTS `([^`]+)`")
