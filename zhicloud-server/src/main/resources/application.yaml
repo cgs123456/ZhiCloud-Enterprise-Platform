@@ -109,6 +109,8 @@ flowable:
   db-history-used: true # flowable6 默认 true 生成信息表，无需手动设置
   check-process-definitions: false # 设置为 false，禁用 /resources/processes 自动部署 BPMN XML 流程
   history-level: audit # full：保存历史数据的最高级别，可保存全部流程相关细节，包括流程流转各节点参数
+  app:
+    enabled: false # 本项目仅使用 BPMN Process Engine；显式关闭 Flowable App Engine，避免引入额外的 ACT_APP_* 表
 
 # MyBatis Plus 的配置项
 mybatis-plus:

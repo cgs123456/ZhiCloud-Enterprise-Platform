@@ -12,6 +12,7 @@ import cn.zhicloud.framework.common.util.json.JsonUtils;
 import cn.zhicloud.framework.common.util.object.ObjectUtils;
 import cn.zhicloud.framework.common.util.object.PageUtils;
 import cn.zhicloud.framework.datapermission.core.annotation.DataPermission;
+import cn.zhicloud.framework.tenant.core.context.TenantContextHolder;
 import cn.zhicloud.module.bpm.api.task.dto.BpmProcessInstanceCreateReqDTO;
 import cn.zhicloud.module.bpm.controller.admin.definition.vo.model.BpmModelMetaInfoVO;
 import cn.zhicloud.module.bpm.controller.admin.definition.vo.model.simple.BpmSimpleModelNodeVO;
@@ -20,6 +21,8 @@ import cn.zhicloud.module.bpm.controller.admin.task.vo.instance.BpmApprovalDetai
 import cn.zhicloud.module.bpm.controller.admin.task.vo.task.BpmTaskRespVO;
 import cn.zhicloud.module.bpm.convert.task.BpmProcessInstanceConvert;
 import cn.zhicloud.module.bpm.dal.dataobject.definition.BpmProcessDefinitionInfoDO;
+import cn.zhicloud.module.bpm.dal.dataobject.task.BpmProcessInstanceIdempotencyDO;
+import cn.zhicloud.module.bpm.dal.mysql.task.BpmProcessInstanceIdempotencyMapper;
 import cn.zhicloud.module.bpm.dal.redis.BpmProcessIdRedisDAO;
 import cn.zhicloud.module.bpm.enums.ErrorCodeConstants;
 import cn.zhicloud.module.bpm.enums.definition.BpmModelTypeEnum;
@@ -62,6 +65,7 @@ import org.flowable.task.api.Task;
 import org.flowable.task.api.history.HistoricTaskInstance;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -123,6 +127,8 @@ public class BpmProcessInstanceServiceImpl implements BpmProcessInstanceService 
 
     @Resource
     private BpmProcessIdRedisDAO processIdRedisDAO;
+    @Resource
+    private BpmProcessInstanceIdempotencyMapper processInstanceIdempotencyMapper;
 
     // ========== Query 查询相关方法 ==========
 
@@ -770,15 +776,45 @@ public class BpmProcessInstanceServiceImpl implements BpmProcessInstanceService 
 
     @Override
     @DataPermission(enable = false) // 关闭数据权限，避免查询不到用户数据。相关案例：https://gitee.com/zhijiantianya/zhicloud-cloud/issues/ID1UYA
+    @Transactional(rollbackFor = Exception.class)
     public String createProcessInstance(Long userId, @Valid BpmProcessInstanceCreateReqDTO createReqDTO) {
+        Long tenantId = TenantContextHolder.getTenantId();
+        if (tenantId == null) {
+            throw exception(PROCESS_INSTANCE_IDEMPOTENCY_TENANT_REQUIRED);
+        }
+        BpmProcessInstanceIdempotencyDO idempotency = processInstanceIdempotencyMapper
+                .selectByUniqueKey(tenantId, createReqDTO.getProcessDefinitionKey(), createReqDTO.getBusinessKey());
+        if (idempotency != null) {
+            if (cn.hutool.core.util.StrUtil.isBlank(idempotency.getProcessInstanceId())) {
+                throw exception(PROCESS_INSTANCE_IDEMPOTENCY_PENDING);
+            }
+            return idempotency.getProcessInstanceId();
+        }
+        BpmProcessInstanceIdempotencyDO claim = new BpmProcessInstanceIdempotencyDO();
+        claim.setTenantId(tenantId);
+        claim.setProcessDefinitionKey(createReqDTO.getProcessDefinitionKey());
+        claim.setBusinessKey(createReqDTO.getBusinessKey());
+        try {
+            processInstanceIdempotencyMapper.insert(claim);
+        } catch (DuplicateKeyException ex) {
+            idempotency = processInstanceIdempotencyMapper
+                    .selectByUniqueKey(tenantId, createReqDTO.getProcessDefinitionKey(), createReqDTO.getBusinessKey());
+            if (idempotency == null || cn.hutool.core.util.StrUtil.isBlank(idempotency.getProcessInstanceId())) {
+                throw exception(PROCESS_INSTANCE_IDEMPOTENCY_PENDING);
+            }
+            return idempotency.getProcessInstanceId();
+        }
         return FlowableUtils.executeAuthenticatedUserId(userId, () -> {
             // 获得流程定义
             ProcessDefinition definition = processDefinitionService
                     .getActiveProcessDefinition(createReqDTO.getProcessDefinitionKey());
             // 发起流程
-            return createProcessInstance0(userId, definition, createReqDTO.getVariables(),
+            String processInstanceId = createProcessInstance0(userId, definition, createReqDTO.getVariables(),
                     createReqDTO.getBusinessKey(),
                     createReqDTO.getStartUserSelectAssignees());
+            claim.setProcessInstanceId(processInstanceId);
+            processInstanceIdempotencyMapper.updateById(claim);
+            return processInstanceId;
         });
     }
 

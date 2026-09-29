@@ -496,6 +496,22 @@
                 <artifactId>flowable-spring-boot-starter-actuator</artifactId>
                 <version>${flowable.version}</version>
             </dependency>
+            <!-- Flowable 8.0.0 的 process starter 未传递其自动配置直接引用的可选模块，缺失会导致 Spring 上下文启动失败。 -->
+            <dependency>
+                <groupId>org.flowable</groupId>
+                <artifactId>flowable-engine-configurator</artifactId>
+                <version>${flowable.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.flowable</groupId>
+                <artifactId>flowable-spring-configurator</artifactId>
+                <version>${flowable.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.flowable</groupId>
+                <artifactId>flowable-app-engine-spring</artifactId>
+                <version>${flowable.version}</version>
+            </dependency>
             <!-- 工作流相关结束 -->
 
             <!-- 工具类相关 -->
