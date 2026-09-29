@@ -1,7 +1,7 @@
 """Clean baseline 生成器与产物的回归测试。
 
 目标：
-  * 不修改 V1.1 历史迁移，保证已部署库 Flyway checksum 不漂移；
+  * 生产 V1.1 不得再写入公开账号、OAuth2 客户端或社交平台凭据；
   * 新库使用独立 clean baseline，移除公开账号、OAuth2/社交客户端和 demo 数据；
   * 保留所有表 DDL 与非敏感参考数据；
   * 生成器遇到目标表的多行 INSERT 必须 fail-closed。
@@ -72,7 +72,23 @@ class ShippedCleanBaselineTest(unittest.TestCase):
         self.assertEqual(manifest["schema_version"], 1)
         self.assertEqual(manifest["source_sha256"], sha256(SOURCE))
         self.assertEqual(manifest["clean_baseline_sha256"], sha256(CLEAN))
-        self.assertEqual(manifest["removed_insert_lines"], 95)
+        self.assertEqual(manifest["removed_insert_lines"], 63)
+        for table in ("system_users", "system_oauth2_client", "system_social_client"):
+            with self.subTest(table=table):
+                self.assertEqual(0, manifest["removed_insert_statements"].get(table, 0))
+
+    def test_source_migration_has_no_public_account_or_client_seed_inserts(self):
+        text = SOURCE.read_text(encoding="utf-8")
+        for table in ("system_users", "system_oauth2_client", "system_social_client"):
+            with self.subTest(table=table):
+                self.assertIsNone(
+                    re.search(
+                        rf"\bINSERT\s+(?:IGNORE\s+)?INTO\s+`{re.escape(table)}`",
+                        text,
+                        re.IGNORECASE,
+                    ),
+                    f"V1.1 仍包含生产禁用的 {table} 种子 INSERT",
+                )
 
     def test_clean_baseline_has_no_target_inserts(self):
         text = CLEAN.read_text(encoding="utf-8")

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "contract_start_version": 90,
-  "purpose": "Reviewed V90-V117 migration and verification bytes; execution evidence includes a MySQL 8.4.9 sandbox clean baseline with V2-V117 applied, V115-V117 executed and verified, idempotent clean-mode rerun, MySQL bootstrap success with repeat fail-closed, a Flyway 11.7.2 parser/execution check for V108, V107 fail-closed negative scenarios, and full ERP-to-WMS integration evidence including cross-tenant identical WMS order numbers. The existing-database chain remains correctly blocked by V115 until bootstrap ordering is completed. V116/V117 concurrency, soft-delete semantics, large-table DDL cost, non-MySQL equivalents, and BPM rollback remain pending.",
+  "purpose": "Reviewed V90-V118 migration and verification bytes; execution evidence includes a MySQL 8.4.9 sandbox clean baseline with V2-V118 applied, V115-V118 executed and verified, idempotent clean-mode rerun, MySQL bootstrap success with repeat fail-closed, a Flyway 11.7.2 parser/execution check for V108, V107 fail-closed negative scenarios, and full ERP-to-WMS integration evidence including cross-tenant identical WMS order numbers. The existing-database chain remains correctly blocked by V115 until bootstrap ordering is completed. V116/V117 concurrency, soft-delete semantics, large-table DDL cost, non-MySQL equivalents, and BPM rollback remain pending.",
   "migrations": [
     {
       "version": 90,
@@ -198,6 +198,13 @@
       "sha256": "5418533c05c413ce6ddf6c96f18e622b8970e17fa90211b00b97face239e3cb2",
       "verification_file": "V117_verify.sql",
       "verification_sha256": "9e291f2eef92b2754b25ae310c0d867a4ae4c2bf2b441618ea09dc8c9d82cb22"
+    },
+    {
+      "version": 118,
+      "file": "V118__bpm_process_instance_idempotency.sql",
+      "sha256": "f57dc75a5e731e17d3978a459d4f722b039c07d0d5d36b9f1bc1cec9652db8db",
+      "verification_file": "V118_verify.sql",
+      "verification_sha256": "35f2a5e3065352d71148b4da7108726051a8cb638d246ffdc33b383d5e3d9824"
     }
   ]
 }

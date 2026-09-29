@@ -3,8 +3,12 @@ package cn.zhicloud.server;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.output.MigrateResult;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -28,6 +32,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.CRC32;
 
 /**
  * 数据库迁移独立入口（供 Kubernetes PreSync Job / CI 显式调用）。
@@ -58,10 +63,18 @@ public final class DatabaseMigrationRunner {
     static final String CLEAN_BASELINE_VERSION = "1.1";
     static final String V116_VERIFICATION_RESOURCE = "db/verification/V116_verify.sql";
     static final String V117_VERIFICATION_RESOURCE = "db/verification/V117_verify.sql";
+    static final String V118_VERIFICATION_RESOURCE = "db/verification/V118_verify.sql";
+
+    /**
+     * 已发布 V1.1 的 Flyway checksum。该值来自 Flyway 11.7.2 的 CRC32 行拼接算法，
+     * 并以有符号 int 保存；只允许从这一个精确值做一次性受控对齐。
+     */
+    static final int LEGACY_V11_CHECKSUM = -1213470718;
+    static final int CURRENT_V11_CHECKSUM = loadCurrentV11Checksum();
 
     /**
      * Flyway 只能证明脚本“执行成功”，不能证明关键结构约束与数据不变量已经满足。
-     * 这里把 V116/V117 的只读语义检查登记为迁移退出码的硬门禁；任何一项缺失、
+     * 这里把 V116-V118 的只读语义检查登记为迁移退出码的硬门禁；任何一项缺失、
      * 失败或额外漂移都会让 PreSync Job 失败，阻止业务 Deployment 继续发布。
      */
     static final List<VerificationSpec> POST_MIGRATION_VERIFICATIONS = List.of(
@@ -72,12 +85,50 @@ public final class DatabaseMigrationRunner {
             new VerificationSpec(V117_VERIFICATION_RESOURCE, Set.of(
                     "V117_CRM_RECEIVABLE_IDEMPOTENCY_COLUMNS",
                     "V117_CRM_RECEIVABLE_IDEMPOTENCY_INDEX",
-                    "V117_CRM_RECEIVABLE_IDEMPOTENCY_DATA")));
+                    "V117_CRM_RECEIVABLE_IDEMPOTENCY_DATA")),
+            new VerificationSpec(V118_VERIFICATION_RESOURCE, Set.of(
+                    "V118_PROCESS_INSTANCE_IDEMPOTENCY_TABLE",
+                    "V118_PROCESS_INSTANCE_IDEMPOTENCY_INDEX")));
 
     record VerificationSpec(String resource, Set<String> expectedChecks) {
     }
 
     record MigrationOutcome(int appliedMigrations, String initialVersion, String targetVersion) {
+    }
+
+    enum V11ChecksumDisposition {
+        CLEAN_BASELINE,
+        CURRENT,
+        LEGACY_REPAIR_REQUIRED
+    }
+
+    /**
+     * flyway_schema_history 的完整快照行。checksum 是唯一允许在受控 V1.1 修复中变化的字段。
+     */
+    record HistoryRow(
+            int installedRank,
+            String version,
+            String description,
+            String type,
+            String script,
+            Integer checksum,
+            String installedBy,
+            String installedOn,
+            long executionTime,
+            boolean success) {
+
+        boolean sameExceptChecksum(HistoryRow other) {
+            return other != null
+                    && installedRank == other.installedRank
+                    && Objects.equals(version, other.version)
+                    && Objects.equals(description, other.description)
+                    && Objects.equals(type, other.type)
+                    && Objects.equals(script, other.script)
+                    && Objects.equals(installedBy, other.installedBy)
+                    && Objects.equals(installedOn, other.installedOn)
+                    && executionTime == other.executionTime
+                    && success == other.success;
+        }
     }
 
     @FunctionalInterface
@@ -508,6 +559,233 @@ public final class DatabaseMigrationRunner {
             Map<String, Set<String>> existingIndexes = readRequiredIndexes(connection);
             validateExistingTargetInitialization(
                     tableNames, successfulBaselineRecorded, existingColumns, existingIndexes);
+            alignExistingV11Checksum(connection);
+        }
+    }
+
+    /**
+     * 唯一允许的 Flyway checksum 对齐：仅当现存库记录的是已发布 V1.1 的精确 legacy checksum 时，
+     * 将 V1.1 这一行的 checksum 更新到当前源码值。不得调用全局 Flyway.repair()，
+     * 也不得忽略其他迁移的 checksum mismatch。
+     */
+    private static void alignExistingV11Checksum(Connection connection) throws SQLException {
+        Map<Integer, HistoryRow> before = readHistoryRows(connection, false);
+        HistoryRow v11 = requireV11HistoryRow(before);
+        V11ChecksumDisposition v11Disposition = classifyV11HistoryRow(v11);
+        if (v11Disposition == V11ChecksumDisposition.CLEAN_BASELINE
+                || v11Disposition == V11ChecksumDisposition.CURRENT) {
+            return;
+        }
+        requireV1HistoryRowForLegacyChecksumRepair(before, v11);
+
+        connection.setAutoCommit(false);
+        try {
+            Map<Integer, HistoryRow> locked = readHistoryRows(connection, true);
+            if (!locked.equals(before)) {
+                throw new IllegalStateException("V1.1 checksum 对齐前 flyway_schema_history 发生变化，拒绝继续");
+            }
+            HistoryRow lockedV11 = requireV11HistoryRow(locked);
+            if (classifyV11HistoryRow(lockedV11) != V11ChecksumDisposition.LEGACY_REPAIR_REQUIRED) {
+                throw new IllegalStateException("V1.1 checksum 对齐状态发生变化，拒绝继续");
+            }
+
+            int updated;
+            try (PreparedStatement statement = connection.prepareStatement(
+                    "UPDATE " + HISTORY_TABLE + " SET checksum = ? "
+                            + "WHERE installed_rank = ? AND version = ? AND script = ? "
+                            + "AND success = 1 AND checksum = ?")) {
+                statement.setInt(1, CURRENT_V11_CHECKSUM);
+                statement.setInt(2, lockedV11.installedRank());
+                statement.setString(3, EXISTING_BASELINE_VERSION);
+                statement.setString(4, "V1.1__system_base_schema.sql");
+                statement.setInt(5, LEGACY_V11_CHECKSUM);
+                updated = statement.executeUpdate();
+            }
+            if (updated != 1) {
+                throw new IllegalStateException("V1.1 checksum 对齐必须恰好更新一行，实际=" + updated);
+            }
+
+            Map<Integer, HistoryRow> after = readHistoryRows(connection, false);
+            validateV11ChecksumRepairScope(locked, after, lockedV11.installedRank(), CURRENT_V11_CHECKSUM);
+            connection.commit();
+            System.out.printf(
+                    "[flyway-migration] V1.1 checksum aligned: legacy=%d current=%d rank=%d%n",
+                    LEGACY_V11_CHECKSUM, CURRENT_V11_CHECKSUM, lockedV11.installedRank());
+        } catch (Throwable ex) {
+            try {
+                connection.rollback();
+            } catch (SQLException rollbackEx) {
+                ex.addSuppressed(rollbackEx);
+            }
+            if (ex instanceof SQLException sqlEx) {
+                throw sqlEx;
+            }
+            if (ex instanceof RuntimeException runtimeEx) {
+                throw runtimeEx;
+            }
+            throw new IllegalStateException("V1.1 checksum 对齐失败", ex);
+        } finally {
+            connection.setAutoCommit(true);
+        }
+    }
+
+    /**
+     * 旧库 V1.1 checksum 修复前必须确认 V1 基线真实存在；否则 Flyway 会把
+     * V1.1 从 BASELINE 改判为 SQL 后判定 version 1 缺失，导致修复后迁移失败。
+     */
+    static void requireV1HistoryRowForLegacyChecksumRepair(
+            Map<Integer, HistoryRow> history, HistoryRow v11) {
+        List<HistoryRow> rows = history.values().stream()
+                .filter(row -> "1".equals(row.version()))
+                .toList();
+        if (rows.size() != 1) {
+            throw new IllegalStateException(
+                    "V1.1 legacy checksum 修复前必须存在恰好一条成功的 V1 基线记录，实际=" + rows.size());
+        }
+        HistoryRow row = rows.get(0);
+        if (!row.success()) {
+            throw new IllegalStateException("flyway_schema_history 中 V1 基线记录不是成功迁移");
+        }
+        if (row.installedRank() >= v11.installedRank()) {
+            throw new IllegalStateException("flyway_schema_history 中 V1 基线记录必须早于 V1.1");
+        }
+        if ("BASELINE".equals(row.type())) {
+            if (!"<< Flyway Baseline >>".equals(row.script())) {
+                throw new IllegalStateException("flyway_schema_history 中 V1 BASELINE 记录的脚本不符合 Flyway 基线行");
+            }
+            return;
+        }
+        if (!"SQL".equals(row.type()) || !"V1__baseline.sql".equals(row.script())) {
+            throw new IllegalStateException(
+                    "flyway_schema_history 中 V1 基线记录既不是 Flyway BASELINE，也不是 V1__baseline.sql");
+        }
+    }
+
+    private static HistoryRow requireV11HistoryRow(Map<Integer, HistoryRow> history) {
+        List<HistoryRow> rows = history.values().stream()
+                .filter(row -> EXISTING_BASELINE_VERSION.equals(row.version()))
+                .toList();
+        if (rows.size() != 1) {
+            throw new IllegalStateException("flyway_schema_history 中 V1.1 记录必须恰好一行，实际=" + rows.size());
+        }
+        HistoryRow row = rows.get(0);
+        classifyV11HistoryRow(row);
+        return row;
+    }
+
+    private static Map<Integer, HistoryRow> readHistoryRows(Connection connection, boolean forUpdate)
+            throws SQLException {
+        String sql = "SELECT installed_rank, version, description, type, script, checksum, "
+                + "installed_by, installed_on, execution_time, success FROM " + HISTORY_TABLE
+                + " ORDER BY installed_rank" + (forUpdate ? " FOR UPDATE" : "");
+        Map<Integer, HistoryRow> rows = new LinkedHashMap<>();
+        try (Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(sql)) {
+            while (resultSet.next()) {
+                int installedRank = resultSet.getInt("installed_rank");
+                HistoryRow row = new HistoryRow(
+                        installedRank,
+                        resultSet.getString("version"),
+                        resultSet.getString("description"),
+                        resultSet.getString("type"),
+                        resultSet.getString("script"),
+                        readNullableInt(resultSet, "checksum"),
+                        resultSet.getString("installed_by"),
+                        resultSet.getString("installed_on"),
+                        resultSet.getLong("execution_time"),
+                        resultSet.getBoolean("success"));
+                if (rows.put(installedRank, row) != null) {
+                    throw new IllegalStateException("flyway_schema_history 存在重复 installed_rank=" + installedRank);
+                }
+            }
+        }
+        if (rows.isEmpty()) {
+            throw new IllegalStateException("flyway_schema_history 为空，无法确认 V1.1 基线");
+        }
+        return rows;
+    }
+
+    static V11ChecksumDisposition classifyV11HistoryRow(HistoryRow row) {
+        Objects.requireNonNull(row, "row");
+        if (!row.success()) {
+            throw new IllegalStateException("flyway_schema_history 中 V1.1 记录不是成功迁移");
+        }
+        if (isCleanBaselineRow(row)) {
+            return V11ChecksumDisposition.CLEAN_BASELINE;
+        }
+        if (!"SQL".equals(row.type())
+                || !"V1.1__system_base_schema.sql".equals(row.script())) {
+            throw new IllegalStateException("flyway_schema_history 中 V1.1 记录既不是 clean BASELINE，也不是正式 SQL 迁移");
+        }
+        if (row.checksum() == null) {
+            throw new IllegalStateException("flyway_schema_history 中 V1.1 SQL 迁移 checksum 不能为空");
+        }
+        return classifyV11Checksum(row.checksum());
+    }
+
+    private static boolean isCleanBaselineRow(HistoryRow row) {
+        return EXISTING_BASELINE_VERSION.equals(row.version())
+                && "<< Flyway Baseline >>".equals(row.description())
+                && "BASELINE".equals(row.type())
+                && "<< Flyway Baseline >>".equals(row.script())
+                && row.checksum() == null
+                && row.success();
+    }
+
+    static V11ChecksumDisposition classifyV11Checksum(int appliedChecksum) {
+        if (appliedChecksum == CURRENT_V11_CHECKSUM) {
+            return V11ChecksumDisposition.CURRENT;
+        }
+        if (appliedChecksum == LEGACY_V11_CHECKSUM) {
+            return V11ChecksumDisposition.LEGACY_REPAIR_REQUIRED;
+        }
+        throw new IllegalStateException(
+                "未知 V1.1 checksum: " + appliedChecksum + "；只允许当前或已发布 legacy checksum");
+    }
+
+    private static Integer readNullableInt(ResultSet resultSet, String column) throws SQLException {
+        int value = resultSet.getInt(column);
+        return resultSet.wasNull() ? null : value;
+    }
+
+    static void validateV11ChecksumRepairScope(
+            Map<Integer, HistoryRow> before,
+            Map<Integer, HistoryRow> after,
+            int repairedRank,
+            int expectedChecksum) {
+        Objects.requireNonNull(before, "before");
+        Objects.requireNonNull(after, "after");
+        if (expectedChecksum != CURRENT_V11_CHECKSUM) {
+            throw new IllegalStateException("V1.1 checksum 对齐目标不是当前源码 checksum");
+        }
+        if (!before.keySet().equals(after.keySet())) {
+            throw new IllegalStateException("V1.1 checksum 对齐不得增删 flyway_schema_history 行");
+        }
+
+        int changedRows = 0;
+        for (Integer installedRank : before.keySet()) {
+            HistoryRow beforeRow = before.get(installedRank);
+            HistoryRow afterRow = after.get(installedRank);
+            if (Objects.equals(beforeRow, afterRow)) {
+                continue;
+            }
+            changedRows++;
+            if (installedRank != repairedRank) {
+                throw new IllegalStateException("V1.1 checksum 对齐修改了非目标 history 行: " + installedRank);
+            }
+            if (beforeRow == null || afterRow == null || !beforeRow.sameExceptChecksum(afterRow)) {
+                throw new IllegalStateException("V1.1 checksum 对齐修改了 checksum 以外的字段");
+            }
+            if (!Objects.equals(beforeRow.checksum(), LEGACY_V11_CHECKSUM)
+                    || !Objects.equals(afterRow.checksum(), CURRENT_V11_CHECKSUM)
+                    || !afterRow.success()
+                    || !EXISTING_BASELINE_VERSION.equals(afterRow.version())
+                    || !"V1.1__system_base_schema.sql".equals(afterRow.script())) {
+                throw new IllegalStateException("V1.1 checksum 对齐结果不符合受控契约");
+            }
+        }
+        if (changedRows != 1) {
+            throw new IllegalStateException("V1.1 checksum 对齐必须恰好修改一行，实际=" + changedRows);
         }
     }
 
@@ -777,6 +1055,34 @@ public final class DatabaseMigrationRunner {
                 throw new IOException("classpath 资源不存在: " + resource);
             }
             return input.readAllBytes();
+        }
+    }
+
+    static int flywayChecksum(byte[] resourceBytes) {
+        Objects.requireNonNull(resourceBytes, "resourceBytes");
+        CRC32 crc32 = new CRC32();
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(new ByteArrayInputStream(resourceBytes), StandardCharsets.UTF_8), 4096)) {
+            String line = reader.readLine();
+            if (line != null) {
+                if (!line.isEmpty() && line.charAt(0) == '\uFEFF') {
+                    line = line.substring(1);
+                }
+                do {
+                    crc32.update(line.getBytes(StandardCharsets.UTF_8));
+                } while ((line = reader.readLine()) != null);
+            }
+        } catch (IOException ex) {
+            throw new UncheckedIOException("无法计算 Flyway checksum", ex);
+        }
+        return (int) crc32.getValue();
+    }
+
+    private static int loadCurrentV11Checksum() {
+        try {
+            return flywayChecksum(readRequiredResource(SOURCE_BASELINE_RESOURCE));
+        } catch (IOException ex) {
+            throw new ExceptionInInitializerError(ex);
         }
     }
 

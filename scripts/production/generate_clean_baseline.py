@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Generate the production clean baseline from the immutable V1.1 schema script.
+"""Generate the production clean baseline from the reviewed V1.1 schema script.
 
-The historical V1.1 migration is intentionally not edited: changing it would
-change the Flyway checksum of databases that already applied it.  A clean
-installation therefore gets a separately reviewed artifact that keeps all
-schema DDL and non-seed reference data, but removes the public demo/seed rows
-that must never be imported into production.
+V1.1 is the production schema source of truth and must not contain public
+accounts or client credentials.  The migration runner permits a one-time,
+checksum-whitelisted alignment for previously deployed databases; fresh
+installations instead use this separately reviewed artifact, which keeps all
+schema DDL and non-seed reference data while removing demo rows.
 
 This generator deliberately removes whole ``INSERT`` lines by table name.  It
 does not parse, rewrite, or invent any password/secret value.  If a target

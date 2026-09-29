@@ -299,6 +299,164 @@ class DatabaseMigrationRunnerTest {
                 () -> DatabaseMigrationRunner.verifyPostMigrationSemantics(
                         "jdbc:h2:mem:verification", "sa", "", Map.of()));
     }
+    @Test
+    void flywayChecksumMatchesFlywayLineNormalizationAndBomFiltering() {
+        byte[] expected = "ab".getBytes(StandardCharsets.UTF_8);
+
+        assertEquals(-1635563411, DatabaseMigrationRunner.flywayChecksum(expected));
+        assertEquals(-1635563411, DatabaseMigrationRunner.flywayChecksum(
+                "a\r\nb\r\n".getBytes(StandardCharsets.UTF_8)));
+        assertEquals(-1635563411, DatabaseMigrationRunner.flywayChecksum(
+                "\uFEFFab\n".getBytes(StandardCharsets.UTF_8)));
+    }
+
+    @Test
+    void legacyV11ChecksumIsExactAndCurrentMigrationHasNewChecksum() throws Exception {
+        assertEquals(-1213470718, DatabaseMigrationRunner.LEGACY_V11_CHECKSUM);
+        assertEquals(DatabaseMigrationRunner.flywayChecksum(
+                        readResource(DatabaseMigrationRunner.SOURCE_BASELINE_RESOURCE)),
+                DatabaseMigrationRunner.CURRENT_V11_CHECKSUM);
+        assertTrue(DatabaseMigrationRunner.CURRENT_V11_CHECKSUM
+                != DatabaseMigrationRunner.LEGACY_V11_CHECKSUM);
+    }
+
+    @Test
+    void v11ChecksumDispositionOnlyAllowsCurrentOrExactLegacy() {
+        assertEquals(DatabaseMigrationRunner.V11ChecksumDisposition.CURRENT,
+                DatabaseMigrationRunner.classifyV11Checksum(
+                        DatabaseMigrationRunner.CURRENT_V11_CHECKSUM));
+        assertEquals(DatabaseMigrationRunner.V11ChecksumDisposition.LEGACY_REPAIR_REQUIRED,
+                DatabaseMigrationRunner.classifyV11Checksum(
+                        DatabaseMigrationRunner.LEGACY_V11_CHECKSUM));
+
+        IllegalStateException failure = assertThrows(IllegalStateException.class,
+                () -> DatabaseMigrationRunner.classifyV11Checksum(123456789));
+        assertTrue(failure.getMessage().contains("未知"));
+        assertTrue(failure.getMessage().contains("V1.1"));
+    }
+
+    @Test
+    void v11ChecksumRepairScopeAllowsOnlyTheExactChecksumCellToChange() {
+        int legacyRank = 1;
+        int laterRank = 115;
+        Map<Integer, DatabaseMigrationRunner.HistoryRow> before = new LinkedHashMap<>();
+        before.put(legacyRank, historyRow(legacyRank, DatabaseMigrationRunner.LEGACY_V11_CHECKSUM,
+                "1.1", "V1.1__system_base_schema.sql"));
+        before.put(laterRank, historyRow(laterRank, 456789, "115",
+                "V115__production_seed_account_cleanup.sql"));
+
+        Map<Integer, DatabaseMigrationRunner.HistoryRow> after = new LinkedHashMap<>(before);
+        after.put(legacyRank, historyRow(legacyRank, DatabaseMigrationRunner.CURRENT_V11_CHECKSUM,
+                "1.1", "V1.1__system_base_schema.sql"));
+
+        assertDoesNotThrow(() -> DatabaseMigrationRunner.validateV11ChecksumRepairScope(
+                before, after, legacyRank, DatabaseMigrationRunner.CURRENT_V11_CHECKSUM));
+
+        Map<Integer, DatabaseMigrationRunner.HistoryRow> drifted = new LinkedHashMap<>(after);
+        drifted.put(laterRank, historyRow(laterRank, 987654, "115",
+                "V115__production_seed_account_cleanup.sql"));
+        assertThrows(IllegalStateException.class,
+                () -> DatabaseMigrationRunner.validateV11ChecksumRepairScope(
+                        before, drifted, legacyRank, DatabaseMigrationRunner.CURRENT_V11_CHECKSUM));
+    }
+
+    @Test
+    void v11HistoryClassificationDistinguishesCleanBaselineFromSqlMigration() {
+        assertEquals(DatabaseMigrationRunner.V11ChecksumDisposition.CLEAN_BASELINE,
+                DatabaseMigrationRunner.classifyV11HistoryRow(cleanBaselineHistoryRow(1)));
+        assertEquals(DatabaseMigrationRunner.V11ChecksumDisposition.CURRENT,
+                DatabaseMigrationRunner.classifyV11HistoryRow(historyRow(1,
+                        DatabaseMigrationRunner.CURRENT_V11_CHECKSUM,
+                        "1.1", "V1.1__system_base_schema.sql")));
+        assertEquals(DatabaseMigrationRunner.V11ChecksumDisposition.LEGACY_REPAIR_REQUIRED,
+                DatabaseMigrationRunner.classifyV11HistoryRow(historyRow(1,
+                        DatabaseMigrationRunner.LEGACY_V11_CHECKSUM,
+                        "1.1", "V1.1__system_base_schema.sql")));
+
+        IllegalStateException unknown = assertThrows(IllegalStateException.class,
+                () -> DatabaseMigrationRunner.classifyV11HistoryRow(historyRow(1, 123456789,
+                        "1.1", "V1.1__system_base_schema.sql")));
+        assertTrue(unknown.getMessage().contains("未知"));
+
+        IllegalStateException nullChecksum = assertThrows(IllegalStateException.class,
+                () -> DatabaseMigrationRunner.classifyV11HistoryRow(historyRow(1, null,
+                        "1.1", "V1.1__system_base_schema.sql")));
+        assertTrue(nullChecksum.getMessage().contains("checksum"));
+    }
+
+    @Test
+    void legacyChecksumRepairRequiresExactlyOneSuccessfulEarlierV1Row() {
+        Map<Integer, DatabaseMigrationRunner.HistoryRow> history = new LinkedHashMap<>();
+        history.put(0, historyRow(0, -981475685, "1", "V1__baseline.sql"));
+        history.put(1, historyRow(1, DatabaseMigrationRunner.LEGACY_V11_CHECKSUM,
+                "1.1", "V1.1__system_base_schema.sql"));
+
+        assertDoesNotThrow(() -> DatabaseMigrationRunner
+                .requireV1HistoryRowForLegacyChecksumRepair(
+                        Map.of(0, history.get(0), 1, history.get(1)), history.get(1)));
+        assertThrows(IllegalStateException.class, () -> DatabaseMigrationRunner
+                .requireV1HistoryRowForLegacyChecksumRepair(
+                        Map.of(1, history.get(1)), history.get(1)));
+        assertThrows(IllegalStateException.class, () -> DatabaseMigrationRunner
+                .requireV1HistoryRowForLegacyChecksumRepair(
+                        Map.of(1, history.get(1), 2, historyRow(2, -981475685, "1", "V1__baseline.sql")),
+                        history.get(1)));
+        assertThrows(IllegalStateException.class, () -> DatabaseMigrationRunner
+                .requireV1HistoryRowForLegacyChecksumRepair(
+                        Map.of(1, history.get(1), 2, historyRow(2, -981475685, "1", "V1__baseline.sql")),
+                        history.get(1)));
+    }
+
+    @Test
+    void legacyChecksumRepairRequiresExactlyOneSuccessfulEarlierV1HistoryRow() {
+        Map<Integer, DatabaseMigrationRunner.HistoryRow> history = new LinkedHashMap<>();
+        history.put(0, historyRow(0, -981475685, "1", "V1__baseline.sql"));
+        history.put(1, historyRow(1, DatabaseMigrationRunner.LEGACY_V11_CHECKSUM,
+                "1.1", "V1.1__system_base_schema.sql"));
+        assertDoesNotThrow(() -> DatabaseMigrationRunner
+                .requireV1HistoryRowForLegacyChecksumRepair(history, history.get(1)));
+
+        assertThrows(IllegalStateException.class, () -> DatabaseMigrationRunner
+                .requireV1HistoryRowForLegacyChecksumRepair(
+                        Map.of(1, history.get(1)), history.get(1)));
+        assertThrows(IllegalStateException.class, () -> DatabaseMigrationRunner
+                .requireV1HistoryRowForLegacyChecksumRepair(
+                        Map.of(0, history.get(0), 1, history.get(1), 2,
+                                historyRow(2, -981475685, "1", "V1__baseline.sql")),
+                        history.get(1)));
+    }
+
+    @Test
+    void legacyChecksumRepairRejectsInvalidV1HistoryRows() {
+        Map<Integer, DatabaseMigrationRunner.HistoryRow> history = new LinkedHashMap<>();
+        history.put(1, historyRow(1, DatabaseMigrationRunner.LEGACY_V11_CHECKSUM,
+                "1.1", "V1.1__system_base_schema.sql"));
+        history.put(2, historyRow(2, -981475685, "1", "V1__baseline.sql"));
+        assertThrows(IllegalStateException.class, () -> DatabaseMigrationRunner
+                .requireV1HistoryRowForLegacyChecksumRepair(history, history.get(1)));
+
+        DatabaseMigrationRunner.HistoryRow invalidScript = new DatabaseMigrationRunner.HistoryRow(
+                0, "1", "baseline", "SQL", "V1__unexpected.sql", -981475685,
+                "migration-user", "2026-09-28 00:00:00", 10L, true);
+        assertThrows(IllegalStateException.class, () -> DatabaseMigrationRunner
+                .requireV1HistoryRowForLegacyChecksumRepair(
+                        Map.of(0, invalidScript, 1, history.get(1)), history.get(1)));
+    }
+
+    private static DatabaseMigrationRunner.HistoryRow historyRow(
+            int installedRank, Integer checksum, String version, String script) {
+        return new DatabaseMigrationRunner.HistoryRow(
+                installedRank, version, "description-" + version, "SQL", script, checksum,
+                "migration-user", "2026-09-28 00:00:00", 10L, true);
+    }
+
+    private static DatabaseMigrationRunner.HistoryRow cleanBaselineHistoryRow(int installedRank) {
+        return new DatabaseMigrationRunner.HistoryRow(
+                installedRank, "1.1", "<< Flyway Baseline >>", "BASELINE",
+                "<< Flyway Baseline >>", null,
+                "migration-user", "2026-09-28 00:00:00", 10L, true);
+    }
+
     private static Map<String, String> migrationEnvironment() {
         return Map.of(
                 "MASTER_DATASOURCE_URL", "jdbc:mysql://db:3306/zhicloud",

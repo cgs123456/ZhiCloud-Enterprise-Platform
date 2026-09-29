@@ -5,13 +5,10 @@
   "generator_version": "1.0.0",
   "preserved_demo_table_ddl": true,
   "purpose": "Fresh-install bootstrap artifact: schema and non-seed reference data only; no public user, OAuth2, social-client, or demo rows.",
-  "removed_insert_lines": 95,
+  "removed_insert_lines": 63,
   "removed_insert_statements": {
-    "system_oauth2_client": 4,
-    "system_social_client": 8,
     "system_user_post": 11,
     "system_user_role": 21,
-    "system_users": 20,
     "zhicloud_demo01_contact": 1,
     "zhicloud_demo02_category": 7,
     "zhicloud_demo03_course": 17,
@@ -28,5 +25,5 @@
   ],
   "schema_version": 1,
   "source_file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
-  "source_sha256": "2a7049a6e4ef221dfc0674c9363599d81ba0f62a3499b8e45de10e04de5770d1"
+  "source_sha256": "5b202dcb1223343844aea26dcdc10417f324ac8dbcefa25c912e3c5901d3f181"
 }
