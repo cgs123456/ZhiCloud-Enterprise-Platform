@@ -18,6 +18,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import static cn.zhicloud.framework.common.pojo.CommonResult.success;
+import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static cn.zhicloud.module.member.enums.ErrorCodeConstants.USER_NOT_EXISTS;
 import static cn.zhicloud.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
 
 @Tag(name = "用户 APP - 用户个人中心")
@@ -36,6 +38,11 @@ public class AppMemberUserController {
     @Operation(summary = "获得基本信息")
     public CommonResult<AppMemberUserInfoRespVO> getUserInfo() {
         MemberUserDO user = userService.getUser(getLoginUserId());
+        if (user == null) {
+            // 登录账号未必是会员（例如后台管理员号直接打会员端接口）：
+            // 不判空就会在下一行 user.getLevelId() 抛 NPE，对外只留下一个"系统异常"，谁也看不出为什么
+            throw exception(USER_NOT_EXISTS);
+        }
         MemberLevelDO level = levelService.getLevel(user.getLevelId());
         return success(MemberUserConvert.INSTANCE.convert(user, level));
     }
