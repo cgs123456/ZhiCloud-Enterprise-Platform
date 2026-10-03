@@ -33,7 +33,7 @@ public class RedisTestConfiguration {
             redisServer = startQuietly(0); // 交给内核选端口
         }
         if (redisServer == null) {
-            throw new IllegalStateException("[redisServer][内嵌 Redis 起不来，宁可直接失败，也不让测试连到真实 Redis 实例]");
+            throw new IllegalStateException("[redisServer][内嵌 Redis 起不来，宁可直接失败，也不让测试连到真实 Redis 实例]"); // @bare-throw-ignore 测试基础设施在业务错误码空间之外；此处必须硬失败，退让会让用例连到机器上真实的 Redis
         }
         properties.setPort(redisServer.getBindPort());
         return redisServer;
