@@ -296,6 +296,13 @@
       "sha256": "c7ae7f699a6c4a41b00185de48a823aaf977fe63f4b13f80adefdc2eb06bb28c",
       "verification_file": "V131_verify.sql",
       "verification_sha256": "88e7ef4d9e975d507441aa92299f60c9312051946c4ca616d85206af44dc4c68"
+    },
+    {
+      "version": 132,
+      "file": "V132__member_level_group_seed.sql",
+      "sha256": "d253c0f28fe5500d3e0113703c1bd747e292b799da938760a6bf4c79d74e9730",
+      "verification_file": "V132_verify.sql",
+      "verification_sha256": "a0662c5500bd11196b5d3ac1ec5304f832331ff15b20bdacb23b10213cc2bbd6"
     }
   ]
 }

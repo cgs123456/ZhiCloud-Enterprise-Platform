@@ -4898,3 +4898,44 @@ B: 带 X-Trino-User: zc-sandbox-agent → 正常返回 id/nextUri/columns
 
 **仍未做的**：`scheduleArchive` 的 cron 定时触发（依赖 `TaskScheduler` Bean，探针里显式传了一个"不可用"的
 `ObjectProvider`，只验证了 `archiveTable` 这条实际归档路径）；以及把 `zhicloud.datalake.enabled` 写进 local 配置。
+
+### 12.107 BIZ-11/BIZ-13 收口：会员等级与分组补种子、会员端 NPE 修复，以及一条台账错记的纠正
+
+**先纠正错记**：BIZ-13 里写的"`system_area` 缺表，商城初始化被挡"是**错记**。
+`grep -rn "system_area|AreaDO|AreaApi|areaService"` 扫遍 system/mall/member 三个模块，**零个 Java 引用** ——
+本仓库根本没接线的功能（那是上游 yudao 的地区树），表不存在不会挡任何流程。
+按"没有消费者就不伪造"处理，不建这张表、不灌全国区划数据。同理核实 `tms_carrier` 虽是空表，
+但只有 CRUD 入口、④ 的运单/签收流程不引用 `carrierId`（只有司机分页 VO 带这个字段），也不是阻塞项。
+
+**真做的一件事：会员等级与分组参照数据（V132）**。这两张是配置型参照数据，且有真消费者：
+`member_level` 0 行时 `/app-api/member/user/get` 返回 `"level":null`，而已有会员 `member_user.level_id = 0`
+指向一个不存在的等级 —— "会员等级/折扣"功能无数据可用。
+种子为 5 档等级（经验阈值 0/100/1000/5000/20000，折扣 100/98/95/90/85）与 3 个默认分组，
+并把**未被人工指定过等级**的会员按经验值对齐到可达的最高档（`level_id IS NULL OR = 0` 才动，人工设过的不覆盖）。
+
+写这个脚本时踩到自己的一处错：我先按 `u.level_update_time = NOW()` 写了赋值，
+`ERROR 1054 Unknown column 'u.level_update_time'` —— `member_user` 实表只有 22 列，没有这一列（等级变更时间在本仓库未建模）。
+按真实表结构去掉该赋值后才成立，而不是猜列名。
+
+**实测（真机上，服务端在跑，数据变更不需重启即生效）**
+
+- 幂等：连跑两次 V132，`levels=5 groups=3` 不变，无第二份。
+- 逐条验证（`db/verification/V132_verify.sql`）5/5 PASS：
+  `LEVEL_COUNT / NO_DUPLICATE_LEVEL / EXPERIENCE_MONOTONIC / GROUP_AVAILABLE / MEMBER_LEVEL_REFERENCE`
+  —— 其中 `EXPERIENCE_MONOTONIC` 是断言阶梯"经验递增且折扣递减"，否则会出现"升级反而更贵"的口径漂移。
+- 会员端：`/app-api/member/user/get`（会员号）由 `"level":null` 变成
+  `"level":{"id":5,"name":"钻石会员","level":5,...}`（该会员 experience 79600 ≥ 20000）。
+- 后台：`/admin-api/member/level/page` `total=5`。
+
+**顺带修掉一处 500（BIZ-8 的"误导性错误"同类）**：`AppMemberUserController.getUserInfo` 不判空，
+`userService.getUser(getLoginUserId())` 返回 null 时下一行 `user.getLevelId()` 直接 NPE，
+对外只剩 `{"code":500,"msg":"系统异常"}`。栈是实测拿到的：
+`java.lang.NullPointerException: Cannot invoke "...MemberUserDO.getLevelId()" because "<local1>" is null`
+at `AppMemberUserController.getUserInfo:39`。改为抛既有错误码 `USER_NOT_EXISTS`（1_004_001_000「用户不存在」），
+不新造错误码（`check_error_codes` 仍 rc=0）。触发方式是**用后台管理员号（225）打会员端接口**，
+在跑着旧代码的服务上复现了 500；新代码的判定要到下次重建重启后才能在 HTTP 上看到，
+本轮只到 `mvn -pl zhicloud-module-member compile` rc=0 这一层，**不把它写成真机已验**。
+
+**门禁复跑读数**：`check_migration_contract` PASSED tracked=43 scanned=139 findings=0（V132 已登记双向 sha256）、
+`check_duplicate_ddl` PASSED tables=554 findings=0、`check_bare_throws` rc=0、`scan_tx` rc=0、
+`check_error_codes` rc=0。
