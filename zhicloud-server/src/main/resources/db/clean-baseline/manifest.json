@@ -1,0 +1,29 @@
+{
+  "clean_baseline_file": "zhicloud-server/src/main/resources/db/clean-baseline/V1.1__system_base_schema.clean.sql",
+  "clean_baseline_sha256": "1eede7a86b9905cbcc01992a89b7889d9f39e88109e83e71df4258fd844695c4",
+  "generator": "scripts/production/generate_clean_baseline.py",
+  "generator_version": "1.0.0",
+  "preserved_demo_table_ddl": true,
+  "purpose": "Fresh-install bootstrap artifact: schema and non-seed reference data only; no public user, OAuth2, social-client, or demo rows.",
+  "removed_insert_lines": 63,
+  "removed_insert_statements": {
+    "system_user_post": 11,
+    "system_user_role": 21,
+    "zhicloud_demo01_contact": 1,
+    "zhicloud_demo02_category": 7,
+    "zhicloud_demo03_course": 17,
+    "zhicloud_demo03_grade": 3,
+    "zhicloud_demo03_student": 3
+  },
+  "removed_table_prefixes": [
+    "system_oauth2_client",
+    "system_social_client",
+    "system_user_post",
+    "system_user_role",
+    "system_users",
+    "zhicloud_demo"
+  ],
+  "schema_version": 1,
+  "source_file": "zhicloud-server/src/main/resources/db/migration/V1.1__system_base_schema.sql",
+  "source_sha256": "5b202dcb1223343844aea26dcdc10417f324ac8dbcefa25c912e3c5901d3f181"
+}

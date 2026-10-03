@@ -67,6 +67,14 @@ public class TenantDatabaseInterceptor implements TenantLineHandler {
         // 找不到的表，说明不是 zhicloud 项目里的，不进行拦截（忽略租户）
         TableInfo tableInfo = TableInfoHelper.getTableInfo(tableName);
         if (tableInfo == null) {
+            // MyBatis-Plus 的 TableInfoHelper 按注册表名精确查找；数据库方言或 SQL 书写可能改变大小写，
+            // 因此对已知实体再做一次大小写不敏感匹配，避免 inventory_item 等租户表被误判为未知表而绕过拦截。
+            tableInfo = TableInfoHelper.getTableInfos().stream()
+                    .filter(info -> info.getTableName().equalsIgnoreCase(tableName))
+                    .findFirst()
+                    .orElse(null);
+        }
+        if (tableInfo == null) {
             return true;
         }
         // 如果继承了 TenantBaseDO 基类，显然不忽略租户

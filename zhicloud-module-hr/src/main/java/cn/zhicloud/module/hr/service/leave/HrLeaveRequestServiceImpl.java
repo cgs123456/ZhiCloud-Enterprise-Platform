@@ -24,6 +24,12 @@ import java.util.List;
 
 import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.zhicloud.module.hr.enums.ErrorCodeConstants.*;
+import cn.zhicloud.module.bpm.api.task.BpmProcessInstanceApi;
+import cn.zhicloud.module.bpm.api.task.dto.BpmProcessInstanceCreateReqDTO;
+import cn.zhicloud.module.bpm.enums.task.BpmProcessInstanceStatusEnum;
+import cn.zhicloud.framework.security.core.util.SecurityFrameworkUtils;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @Validated
@@ -35,6 +41,17 @@ public class HrLeaveRequestServiceImpl implements HrLeaveRequestService {
     private HrLeaveBalanceMapper leaveBalanceMapper;
     @Resource
     private HrLeaveTypeMapper leaveTypeMapper;
+    /**
+     * BPM 流程实例 API：请假审批从 HR 内部手写状态改为走流程引擎。
+     * 仅依赖 bpm 的 api 包（P1-3 模块边界治理）。
+     */
+    @Resource
+    private BpmProcessInstanceApi processInstanceApi;
+
+    /**
+     * 请假审批对应的流程定义 KEY
+     */
+    public static final String PROCESS_KEY = "hr_leave_request";
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -88,6 +105,63 @@ public class HrLeaveRequestServiceImpl implements HrLeaveRequestService {
             }
         } else {
             updateObj.setStatus(HrLeaveStatusEnum.REJECTED.getStatus());
+        }
+        leaveRequestMapper.updateById(updateObj);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void submitLeaveRequest(Long id) {
+        HrLeaveRequestDO leaveRequest = validateExists(id);
+        if (!HrLeaveStatusEnum.PENDING.getStatus().equals(leaveRequest.getStatus())) {
+            throw exception(HR_LEAVE_REQUEST_STATUS_INVALID);
+        }
+        if (leaveRequest.getProcessInstanceId() != null) {
+            // 已经有流程实例还再提交一次，会在引擎里建出第二条在途流程：同一张假单被批两遍
+            throw exception(HR_LEAVE_REQUEST_ALREADY_SUBMITTED);
+        }
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("leaveTypeId", leaveRequest.getLeaveTypeId());
+        variables.put("days", leaveRequest.getDays());
+        String processInstanceId = processInstanceApi.createProcessInstance(
+                SecurityFrameworkUtils.getLoginUserId(),
+                new BpmProcessInstanceCreateReqDTO().setProcessDefinitionKey(PROCESS_KEY)
+                        .setVariables(variables).setBusinessKey(String.valueOf(id)));
+        HrLeaveRequestDO updateObj = new HrLeaveRequestDO();
+        updateObj.setId(id);
+        updateObj.setProcessInstanceId(processInstanceId);
+        leaveRequestMapper.updateById(updateObj);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateLeaveRequestBpmResult(Long id, Integer bpmStatus, String processInstanceId) {
+        HrLeaveRequestDO leaveRequest = validateExists(id);
+        // 幂等：审批结果只能从「待审批」落一次；重复投递（BPM 事件至少一次）不再改状态也不重复扣余额
+        if (!HrLeaveStatusEnum.PENDING.getStatus().equals(leaveRequest.getStatus())) {
+            return;
+        }
+        HrLeaveRequestDO updateObj = new HrLeaveRequestDO();
+        updateObj.setId(id);
+        updateObj.setProcessInstanceId(processInstanceId);
+        updateObj.setApproveTime(LocalDateTime.now());
+        if (BpmProcessInstanceStatusEnum.APPROVE.getStatus().equals(bpmStatus)) {
+            updateObj.setStatus(HrLeaveStatusEnum.APPROVED.getStatus());
+            leaveRequestMapper.updateById(updateObj);
+            HrLeaveTypeDO leaveType = leaveTypeMapper.selectById(leaveRequest.getLeaveTypeId());
+            if (leaveType != null && leaveType.getIsPaid() != null && leaveType.getIsPaid() == 1) {
+                deductBalance(leaveRequest.getEmployeeId(), leaveRequest.getLeaveTypeId(),
+                        leaveRequest.getStartDate().getYear(), leaveRequest.getDays());
+            }
+            return;
+        }
+        if (BpmProcessInstanceStatusEnum.REJECT.getStatus().equals(bpmStatus)) {
+            updateObj.setStatus(HrLeaveStatusEnum.REJECTED.getStatus());
+        } else if (BpmProcessInstanceStatusEnum.CANCEL.getStatus().equals(bpmStatus)) {
+            updateObj.setStatus(HrLeaveStatusEnum.CANCELLED.getStatus());
+        } else {
+            // RUNNING 等中间态不落状态：提交时单据仍是待审批，倒写会把已通过的单据改回去
+            return;
         }
         leaveRequestMapper.updateById(updateObj);
     }

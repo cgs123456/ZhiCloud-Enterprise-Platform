@@ -1,0 +1,11 @@
+EVIDENCE_HEADER
+timestamp=2026-09-27T17:49:09.9919458+08:00
+repo=C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2
+commit=d7994f60e12ef1b93baede2ad811b15cc3f533f1
+branch=upgrade/production-readiness
+command=python scripts/production/check_migration_contract.py
+python=Python 3.11.9
+scope=static migration hash contract V90-V117; does not prove MySQL execution
+--- command output ---
+PASSED: tracked=28 scanned=124 findings=0
+EXIT_CODE=0

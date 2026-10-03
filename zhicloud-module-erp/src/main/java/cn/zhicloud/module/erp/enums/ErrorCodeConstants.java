@@ -12,6 +12,7 @@ public interface ErrorCodeConstants {
     // ========== ERP 供应商（1-030-100-000） ==========
     ErrorCode SUPPLIER_NOT_EXISTS = new ErrorCode(1_030_100_000, "供应商不存在");
     ErrorCode SUPPLIER_NOT_ENABLE = new ErrorCode(1_030_000_000, "供应商({})未启用");
+    ErrorCode ERP_AUDIT_STATUS_INVALID = new ErrorCode(1_030_000_008, "审核状态({})无效");
 
     // ========== ERP 采购订单（1-030-101-000） ==========
     ErrorCode PURCHASE_ORDER_NOT_EXISTS = new ErrorCode(1_030_101_000, "采购订单不存在");
@@ -228,6 +229,30 @@ ErrorCode PURCHASE_ORDER_ITEM_RETURN_FAIL_IN_EXCEED = new ErrorCode(1_030_101_00
     ErrorCode GL_VOUCHER_NOT_BALANCE = new ErrorCode(1_030_702_009, "凭证借贷不平衡：借方合计 {}，贷方合计 {}");
     ErrorCode GL_VOUCHER_ACCOUNT_NOT_LEAF = new ErrorCode(1_030_702_010, "分录({})所选科目({})不是末级科目");
     ErrorCode GL_VOUCHER_PERIOD_CLOSED = new ErrorCode(1_030_702_011, "会计期间({})已关账，不允许录入凭证");
+
+    // ========== ERP 会计事件 1-030-711-000 ==========
+    ErrorCode ACCOUNTING_EVENT_REQUEST_INVALID = new ErrorCode(1_030_711_000, "会计事件请求无效：{}");
+    ErrorCode ACCOUNTING_EVENT_AMOUNT_MISMATCH = new ErrorCode(1_030_711_001, "会计事件金额不一致：不含税({}) + 税额({}) != 价税合计({})");
+    ErrorCode ACCOUNTING_EVENT_ALREADY_PROCESSING = new ErrorCode(1_030_711_002, "会计事件({})正在处理中，暂无法返回凭证");
+    ErrorCode ACCOUNTING_RULE_NOT_FOUND = new ErrorCode(1_030_711_003, "未找到事件类型({})的有效过账规则");
+    ErrorCode ACCOUNTING_RULE_AMBIGUOUS = new ErrorCode(1_030_711_004, "事件类型({})在生效时间({})存在多条过账规则");
+    ErrorCode ACCOUNTING_RULE_CONDITION_UNSUPPORTED = new ErrorCode(1_030_711_005, "过账规则({})包含尚未支持的条件表达式");
+    ErrorCode ACCOUNTING_RULE_LINE_INVALID = new ErrorCode(1_030_711_006, "过账规则分录无效：{}");
+    ErrorCode ACCOUNTING_RULE_AMOUNT_EXPRESSION_INVALID = new ErrorCode(1_030_711_007, "金额表达式({})无效");
+    ErrorCode ACCOUNTING_RULE_ACCOUNT_NOT_FOUND = new ErrorCode(1_030_711_008, "过账规则科目({})不存在");
+    ErrorCode ACCOUNTING_RULE_NOT_BALANCED = new ErrorCode(1_030_711_009, "过账规则借贷不平衡：借方({})，贷方({})");
+    ErrorCode ACCOUNTING_VOUCHER_CREATE_FAILED = new ErrorCode(1_030_711_010, "会计凭证生成失败：{}");
+    ErrorCode ACCOUNTING_EVENT_NOT_FOUND = new ErrorCode(1_030_711_011, "未找到可冲销的会计事件：{}");
+    ErrorCode ACCOUNTING_EVENT_NOT_POSTED = new ErrorCode(1_030_711_012, "会计事件({})尚未过账，不能生成冲销事件");
+    ErrorCode ACCOUNTING_EVENT_DOC_TOTAL_MISSING = new ErrorCode(1_030_711_013,
+            "会计事件缺少来源单据勾稽总额，无法判定是否超额：事件类型({})，来源单据({}:{})");
+    ErrorCode ACCOUNTING_EVENT_DOC_TOTAL_INVALID = new ErrorCode(1_030_711_014,
+            "来源单据勾稽总额({})不能为负数");
+    ErrorCode ACCOUNTING_EVENT_DOC_TOTAL_CONFLICT = new ErrorCode(1_030_711_015,
+            "来源单据勾稽总额与已落地基线不一致：基线({})，本次({})");
+    ErrorCode ACCOUNTING_EVENT_DOC_TOTAL_EXCEEDED = new ErrorCode(1_030_711_016,
+            "累计过账金额({})超过来源单据勾稽总额({})：事件类型({})，来源单据({}:{})");
+    ErrorCode ACCOUNTING_EVENT_TENANT_REQUIRED = new ErrorCode(1_030_711_017, "会计事件操作缺少租户上下文，已拒绝执行");
 
     // ========== ERP 库存批次 1-030-405-000 ==========
     ErrorCode STOCK_BATCH_NOT_EXISTS = new ErrorCode(1_030_405_000, "库存批次不存在");

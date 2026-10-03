@@ -1,0 +1,83 @@
+{
+  "digests": {
+    "generator": {
+      "sha256": "1d773457405b20f0d21cfef805f6d7e162696f6f46842d78904f7f56a520cc00",
+      "path": "scripts/production/generate_license_inventory.py",
+      "bytes": 16969,
+      "sidecar": "1d773457405b20f0d21cfef805f6d7e162696f6f46842d78904f7f56a520cc00"
+    },
+    "gate_script": {
+      "sha256": "8471beeff0093c3884f37fa740024a9cf46dfd8a0d476173462fabfe8f2a1b2b",
+      "path": "scripts/production/check_license_policy.py",
+      "bytes": 14813
+    },
+    "policy": {
+      "sha256": "845ee46b6b763e5b6b8ada0ac021e5bfd3323c297bcb5325f9654e327ebc8ae1",
+      "path": "scripts/production/license-policy.json",
+      "bytes": 1839
+    },
+    "baseline_inventory": {
+      "sha256": "4a5cc32cfeed85f101eaa150096d77df3bc90cc1f6bdc07e1a0efa96f8cdfacd",
+      "path": "docs/enterprise-platform/evidence/production/maven-license-inventory-20260928_0028.json",
+      "bytes": 378561
+    },
+    "baseline_bom": {
+      "sha256": "95a33dd1aa419157833be14a8b77c85f379b33677888a5b3b60ea8ca547cbb2e",
+      "path": "docs/enterprise-platform/evidence/production/bom-maven-aggregate-20260928_0028.json",
+      "bytes": 2274182
+    },
+    "baseline_tree": {
+      "sha256": "26a56098fb6feedab44e5ef572c26d631e0bf927af39cefc0c153c44f7d8cb41",
+      "path": "docs/enterprise-platform/evidence/production/dependency-tree-server-runtime-after-jcip-cleanroom-20260928_0028.log",
+      "bytes": 56074
+    },
+    "regen_inventory": {
+      "sha256": "95ef2e1b3540bdcf29c13d015a373a298fab95d5c5b4389789bd365e71fa9708",
+      "path": "docs/enterprise-platform/evidence/production/maven-license-inventory-regen-20260928_0127.json",
+      "bytes": 378761,
+      "sidecar": "95ef2e1b3540bdcf29c13d015a373a298fab95d5c5b4389789bd365e71fa9708"
+    },
+    "regen_gate": {
+      "sha256": "eb6b6e9b3a861288dfe17eb8a606e09f88fcf554453ac5fd253e36255b1aaa06",
+      "path": "docs/enterprise-platform/evidence/production/license-policy-gate-regen-20260928_0127.json",
+      "bytes": 26705,
+      "sidecar": "eb6b6e9b3a861288dfe17eb8a606e09f88fcf554453ac5fd253e36255b1aaa06"
+    },
+    "tests": {
+      "sha256": "53dec81361a19e02725e606b8d3c00b9be1f41ed734c90da4574282f40149f05",
+      "path": "scripts/production/tests/test_generate_license_inventory.py",
+      "bytes": 18114,
+      "sidecar": "53dec81361a19e02725e606b8d3c00b9be1f41ed734c90da4574282f40149f05"
+    }
+  },
+  "comparison": {
+    "purl_set_identical": true,
+    "category_counts_all_equal": true,
+    "category_counts_external_equal": true,
+    "baseline_runtime": 707,
+    "regen_runtime": 719,
+    "runtime_delta_count": 12,
+    "runtime_only_in_baseline": [],
+    "runtime_only_in_regen": [
+      "pkg:maven/io.netty/netty-resolver-dns-native-macos@4.2.15.Final?classifier=osx-aarch_64&type=jar",
+      "pkg:maven/io.netty/netty-resolver-dns-native-macos@4.2.15.Final?classifier=osx-x86_64&type=jar",
+      "pkg:maven/io.netty/netty-tcnative-boringssl-static@2.0.77.Final?classifier=linux-aarch_64&type=jar",
+      "pkg:maven/io.netty/netty-tcnative-boringssl-static@2.0.77.Final?classifier=linux-x86_64&type=jar",
+      "pkg:maven/io.netty/netty-tcnative-boringssl-static@2.0.77.Final?classifier=osx-aarch_64&type=jar",
+      "pkg:maven/io.netty/netty-tcnative-boringssl-static@2.0.77.Final?classifier=osx-x86_64&type=jar",
+      "pkg:maven/io.netty/netty-tcnative-boringssl-static@2.0.77.Final?classifier=windows-x86_64&type=jar",
+      "pkg:maven/io.netty/netty-transport-native-epoll@4.2.15.Final?classifier=linux-aarch_64&type=jar",
+      "pkg:maven/io.netty/netty-transport-native-epoll@4.2.15.Final?classifier=linux-riscv64&type=jar",
+      "pkg:maven/io.netty/netty-transport-native-epoll@4.2.15.Final?classifier=linux-x86_64&type=jar",
+      "pkg:maven/io.netty/netty-transport-native-kqueue@4.2.15.Final?classifier=osx-aarch_64&type=jar",
+      "pkg:maven/io.netty/netty-transport-native-kqueue@4.2.15.Final?classifier=osx-x86_64&type=jar"
+    ],
+    "gate_decision": [
+      "fail",
+      "fail"
+    ],
+    "gate_counts_equal": true,
+    "denied_purl_sets_equal": true,
+    "review_purl_sets_equal": true
+  }
+}

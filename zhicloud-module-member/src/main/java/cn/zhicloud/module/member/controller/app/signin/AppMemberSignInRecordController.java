@@ -38,7 +38,7 @@ public class AppMemberSignInRecordController {
 
     @PostMapping("/create")
     @Operation(summary = "签到")
-    @PreAuthorize("@ss.hasPermission('member:sign-in-record:create')")
+    @PreAuthorize("isAuthenticated()")
     public CommonResult<AppMemberSignInRecordRespVO> createSignInRecord() {
         MemberSignInRecordDO recordDO = signInRecordService.createSignRecord(getLoginUserId());
         return success(MemberSignInRecordConvert.INSTANCE.coverRecordToAppRecordVo(recordDO));

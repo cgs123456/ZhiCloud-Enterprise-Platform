@@ -1,0 +1,2311 @@
+{
+  "status": "passed",
+  "generated_at": "2026-09-27T11:23:32.927662+00:00",
+  "repo_root": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2",
+  "connection": {
+    "mode": "mysql-cli",
+    "host": "127.0.0.1",
+    "port": 53306,
+    "database": "zhicloud_runner_clean_20260927_191941",
+    "user": "root",
+    "mysql_bin": "C:\\Users\\Administrator\\mysql84-sandbox\\mysql-8.4.9-winx64\\bin\\mysql.exe"
+  },
+  "server": {
+    "version": "8.4.9",
+    "database": "zhicloud_runner_clean_20260927_191941",
+    "sql_mode": "ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION",
+    "time_zone": "+08:00"
+  },
+  "sources": {
+    "do_tables": 463,
+    "ddl_tables": 463,
+    "merged_tables": 463,
+    "v90_verify_columns": 71,
+    "v92_verify_tables": 95,
+    "v91_nullable_columns": 25,
+    "nullable_expectations": {
+      "erp_product": {
+        "code": "V91_verify.sql"
+      },
+      "erp_supplier": {
+        "code": "V91_verify.sql"
+      },
+      "erp_customer": {
+        "code": "V91_verify.sql"
+      },
+      "erp_warehouse": {
+        "code": "V91_verify.sql"
+      },
+      "erp_account": {
+        "code": "V91_verify.sql",
+        "type": "V91_verify.sql"
+      },
+      "erp_stock_move": {
+        "from_warehouse_id": "V91_verify.sql",
+        "to_warehouse_id": "V91_verify.sql"
+      },
+      "erp_stock_check": {
+        "warehouse_id": "V91_verify.sql"
+      },
+      "erp_purchase_order_items": {
+        "master_id": "V91_verify.sql"
+      },
+      "erp_purchase_in_items": {
+        "master_id": "V91_verify.sql"
+      },
+      "erp_purchase_return_items": {
+        "master_id": "V91_verify.sql"
+      },
+      "erp_sale_order_items": {
+        "master_id": "V91_verify.sql"
+      },
+      "erp_sale_out_items": {
+        "master_id": "V91_verify.sql"
+      },
+      "erp_sale_return_items": {
+        "master_id": "V91_verify.sql"
+      },
+      "erp_stock_in_item": {
+        "master_id": "V91_verify.sql"
+      },
+      "erp_stock_out_item": {
+        "master_id": "V91_verify.sql"
+      },
+      "erp_stock_move_item": {
+        "master_id": "V91_verify.sql"
+      },
+      "erp_stock_check_item": {
+        "master_id": "V91_verify.sql"
+      },
+      "erp_finance_payment_item": {
+        "master_id": "V91_verify.sql",
+        "bill_id": "V91_verify.sql",
+        "bill_type": "V91_verify.sql"
+      },
+      "erp_finance_receipt_item": {
+        "master_id": "V91_verify.sql",
+        "bill_id": "V91_verify.sql",
+        "bill_type": "V91_verify.sql"
+      }
+    },
+    "verify_sql_files": [
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\script\\enterprise-platform-upgrade\\verification\\V90_verify.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\script\\enterprise-platform-upgrade\\verification\\V91_verify.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\script\\enterprise-platform-upgrade\\verification\\V92_verify.sql"
+    ],
+    "ddl_files": [
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V1.1__system_base_schema.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V100__event_outbox_inbox.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V101__mdm_cross_ref.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V102__mdm_cross_ref_seed.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V103__wms_order_type_range.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V104__integration_monitoring_indexes.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V105__event_dlq_replay_log.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V106__event_dlq_permissions.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V107__event_tenant_unique_keys.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V108__tenant_isolation_p0.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V109__wms_shipment_order_tenant_unique.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V10__erp_ddl.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V110__erp_cost_mps_tables.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V111__mes_tpm_rework_tables.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V112__qms_document_audit_instrument_tables.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V113__tenant_indexes.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V114__ai_metadata_tables.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V115__production_seed_account_cleanup.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V116__system_users_active_username_unique.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V117__crm_receivable_idempotency.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V11__wms_ddl.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V12__mes_ddl.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V13__qms_ddl.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V14__aimultiagent_ddl.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V15__erp_indexes.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V16__wms_indexes.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V17__mes_indexes.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V18__qms_indexes.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V19__aimultiagent_indexes.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V1__baseline.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V20__erp_multi_currency_columns.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V21__qms_fmea_action_priority.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V22__mes_mrp_low_level_safety_lot.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V23__mes_aps_priority_capacity.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V24__wms_fefo_slotting_fields.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V25__erp_budget_tables.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V26__erp_consolidation_tables.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V27__erp_fixed_asset_tables.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V28__erp_fixed_asset_change.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V29__mes_oee_iso22400_fields.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V2__qms_init.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V30__erp_account_book.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V31__erp_consolidation_engine.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V32__qms_eight_d.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V33__qms_training.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V34__qms_complaint.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V35__qms_sqm.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V36__mes_bom.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V37__wms_sn.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V38__ai_nl2sql_history.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V39__ai_rag_evaluation.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V3__aimultiagent_init.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V40__erp_customer_credit_fields.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V41__erp_fund_management.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V42__mes_bom_substitute.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V43__wms_inventory_alert.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V44__wms_check_order_ext.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V45__wms_shipment_order_status.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V46__qms_fqc_type.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V47__qms_quality_cost.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V48__hr_contract.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V49__hr_leave.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V4__wms_wave_init.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V50__hr_social_insurance.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V51.1__crm_ddl.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V51__hr_recruitment.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V52__crm_patch.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V53__erp_purchase_inquiry.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V54__mes_scada_piecework.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V55__oa_init.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V56__wms_3pl.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V57__erp_vmi_cpfr.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V58__tms_init.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V59__system_menu_new_modules.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V5__qms_capa_workflow_ext.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V60.1__qms_inspection_aql.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V60__erp_mrp_credit_supplier_cashier.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V61.1__wms_receipt_qc.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V61__mes_scada_pda_ecn.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V62.1__wms_inventory_version.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V62__wms_asn_pick_batch.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V63.1__mes_pro_work_order_version.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V63__crm_saleorder_channel_esign_wo.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V64.1__qms_inspection_order_version.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V64__oa_phase4_enhancements.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V65__crm_optimistic_lock.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V66__crm_receivable_optimistic_lock.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V67__tms_freight.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V68__tms_gps.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V69__mes_energy.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V6__erp_period_close.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V70__oa_schedule.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V71__tms_freight_reconciliation_fleet_operation.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V72__wms_zone_location_tables.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V73__ai_ddl.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V74__bpm_ddl.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V75__wms_pda_permissions.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V76__mes_pda_permissions.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V77__aimultiagent_resilience.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V78__crm_receivable_unique_constraint.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V79__mes_material_stock_unique_constraint.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V7__erp_gl_account_voucher.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V80__erp_stock_version_column.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V81__inventory_item.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V82__fix_do_column_mappings.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V83__hr_base_tables.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V84__hr_salary_unique_constraint.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V85__aimultiagent_checkpoint.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V86__airag_eval_dataset.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V87__aimultiagent_skill.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V88__aimultiagent_execute_menu.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V89__aimultiagent_trace.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V8__user_totp.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V90__fix_erp_bill_master_columns.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V91__unblock_erp_phantom_not_null_columns.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V92__ensure_id_auto_increment.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V93__erp_tax_ddl.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V94__erp_accounting_foundation.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V95__erp_posting_rule_seed.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V96__erp_accounting_event_sequence.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V97__erp_return_posting_rule_seed.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V98__reconcile_duplicate_table_ddl.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V99__erp_accounting_event_doc_total.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V9__operate_log_hash_chain.sql"
+    ],
+    "module_dirs": [
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-dependencies",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-common",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-biz-data-permission",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-biz-integration",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-biz-inventory",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-biz-ip",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-biz-mdm",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-biz-tenant",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-excel",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-job",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-monitor",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-mq",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-mybatis",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-protection",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-redis",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-security",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-test",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-web",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-websocket",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-ai",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-ai-multiagent",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-ai-rag",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-bpm",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-crm",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-datalake",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-erp",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-hr",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-infra",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-mes",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-oa",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-qms",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-system",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-tms",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-wms",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server"
+    ]
+  },
+  "summary": {
+    "fail_on": "P0_BLOCKER",
+    "exit_code": 0,
+    "tables_expected": 463,
+    "tables_present": 463,
+    "tables_in_database": 464,
+    "columns_expected": 7644,
+    "columns_present": 7644,
+    "findings_total": 17,
+    "divergences_total": 200,
+    "by_severity": {
+      "P0_BLOCKER": 0,
+      "P1_HIGH": 0,
+      "P2_REVIEW": 17
+    },
+    "by_category": {
+      "column_type_declaration_drift": 17
+    }
+  },
+  "findings": [
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "ai_nl2sql_query_history",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "data_source",
+      "expected": "text",
+      "actual": "varchar(64)",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "ai_nl2sql_query_history",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "error_msg",
+      "expected": "varchar(255)",
+      "actual": "varchar(2000)",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "ai_nl2sql_query_history",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "natural_language",
+      "expected": "varchar(255)",
+      "actual": "text",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "ai_nl2sql_query_history",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "status",
+      "expected": "int",
+      "actual": "tinyint",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "event_dlq_replay_log",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "deleted",
+      "expected": "bit",
+      "actual": "bit(1)",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "event_dlq_replay_log",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "outbox_replayed",
+      "expected": "bit",
+      "actual": "bit(1)",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "event_inbox",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "deleted",
+      "expected": "bit",
+      "actual": "bit(1)",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "event_outbox",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "deleted",
+      "expected": "bit",
+      "actual": "bit(1)",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "inventory_item",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "deleted",
+      "expected": "bit",
+      "actual": "bit(1)",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "inventory_item",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "locked_count",
+      "expected": "decimal(20, 2)",
+      "actual": "decimal(20,2)",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "inventory_item",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "quantity",
+      "expected": "decimal(20, 2)",
+      "actual": "decimal(20,2)",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "mdm_cross_ref",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "deleted",
+      "expected": "bit",
+      "actual": "bit(1)",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "oa_announcement",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "top_flag",
+      "expected": "bit",
+      "actual": "bit(1)",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "oa_knowledge_article",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "top_flag",
+      "expected": "bit",
+      "actual": "bit(1)",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "oa_meeting_reservation",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "reminder_enabled",
+      "expected": "bit",
+      "actual": "bit(1)",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "wms_receipt_order",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "type",
+      "expected": "tinyint",
+      "actual": "smallint",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "wms_shipment_order",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "type",
+      "expected": "tinyint",
+      "actual": "smallint",
+      "sources": [
+        "ddl"
+      ]
+    }
+  ],
+  "divergences": [
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "crm_receivable_plan",
+      "column": "version",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_account",
+      "column": "default_status",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_account",
+      "column": "no",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_account",
+      "column": "remark",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_account",
+      "column": "sort",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_accounting_event",
+      "column": "doc_total_amount",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_accounting_event",
+      "column": "sequence_no",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_customer",
+      "column": "bank_address",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_customer",
+      "column": "fax",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_customer",
+      "column": "remark",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_customer",
+      "column": "sort",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_customer",
+      "column": "tax_no",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_customer",
+      "column": "tax_percent",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_customer",
+      "column": "telephone",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_payment",
+      "column": "discount_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_payment",
+      "column": "finance_user_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_payment",
+      "column": "payment_time",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_payment_item",
+      "column": "biz_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_payment_item",
+      "column": "biz_no",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_payment_item",
+      "column": "biz_type",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_payment_item",
+      "column": "paid_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_payment_item",
+      "column": "payment_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_payment_item",
+      "column": "total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_receipt",
+      "column": "discount_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_receipt",
+      "column": "finance_user_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_receipt",
+      "column": "receipt_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_receipt",
+      "column": "receipt_time",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_receipt_item",
+      "column": "biz_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_receipt_item",
+      "column": "biz_no",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_receipt_item",
+      "column": "biz_type",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_receipt_item",
+      "column": "receipt_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_receipt_item",
+      "column": "receipt_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_receipt_item",
+      "column": "receipted_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_receipt_item",
+      "column": "total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_voucher",
+      "column": "account_book_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_voucher",
+      "column": "source_doc_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_voucher",
+      "column": "source_doc_no",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_voucher",
+      "column": "source_doc_type",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_voucher",
+      "column": "source_event_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_product",
+      "column": "bar_code",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_product",
+      "column": "expiry_day",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_product",
+      "column": "min_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_product",
+      "column": "remark",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_product",
+      "column": "standard",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_product",
+      "column": "weight",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_in",
+      "column": "base_currency_total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_in",
+      "column": "currency_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_in",
+      "column": "exchange_rate",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_in_items",
+      "column": "count",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_in_items",
+      "column": "in_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_in_items",
+      "column": "order_item_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_in_items",
+      "column": "product_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_in_items",
+      "column": "product_unit_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_in_items",
+      "column": "tax_percent",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_in_items",
+      "column": "tax_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_in_items",
+      "column": "warehouse_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_order",
+      "column": "base_currency_total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_order",
+      "column": "currency_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_order",
+      "column": "exchange_rate",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_order_items",
+      "column": "count",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_order_items",
+      "column": "in_count",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_order_items",
+      "column": "order_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_order_items",
+      "column": "product_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_order_items",
+      "column": "product_unit_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_order_items",
+      "column": "return_count",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_order_items",
+      "column": "tax_percent",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_order_items",
+      "column": "tax_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_return",
+      "column": "base_currency_total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_return",
+      "column": "currency_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_return",
+      "column": "exchange_rate",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_return_items",
+      "column": "count",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_return_items",
+      "column": "order_item_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_return_items",
+      "column": "product_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_return_items",
+      "column": "product_unit_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_return_items",
+      "column": "return_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_return_items",
+      "column": "tax_percent",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_return_items",
+      "column": "tax_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_return_items",
+      "column": "warehouse_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_order",
+      "column": "base_currency_total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_order",
+      "column": "currency_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_order",
+      "column": "exchange_rate",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_order_items",
+      "column": "count",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_order_items",
+      "column": "order_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_order_items",
+      "column": "out_count",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_order_items",
+      "column": "product_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_order_items",
+      "column": "product_unit_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_order_items",
+      "column": "return_count",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_order_items",
+      "column": "tax_percent",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_order_items",
+      "column": "tax_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_out",
+      "column": "base_currency_total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_out",
+      "column": "currency_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_out",
+      "column": "exchange_rate",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_out_items",
+      "column": "count",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_out_items",
+      "column": "order_item_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_out_items",
+      "column": "out_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_out_items",
+      "column": "product_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_out_items",
+      "column": "product_unit_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_out_items",
+      "column": "tax_percent",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_out_items",
+      "column": "tax_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_out_items",
+      "column": "warehouse_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_return",
+      "column": "base_currency_total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_return",
+      "column": "currency_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_return",
+      "column": "exchange_rate",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_return_items",
+      "column": "count",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_return_items",
+      "column": "order_item_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_return_items",
+      "column": "product_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_return_items",
+      "column": "product_unit_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_return_items",
+      "column": "return_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_return_items",
+      "column": "tax_percent",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_return_items",
+      "column": "tax_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_return_items",
+      "column": "warehouse_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock",
+      "column": "locked_count",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock",
+      "column": "version",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_check",
+      "column": "file_url",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_check",
+      "column": "total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_check_item",
+      "column": "check_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_check_item",
+      "column": "count",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_check_item",
+      "column": "product_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_check_item",
+      "column": "product_unit_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_check_item",
+      "column": "total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_check_item",
+      "column": "warehouse_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_in",
+      "column": "file_url",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_in",
+      "column": "total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_in_item",
+      "column": "in_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_in_item",
+      "column": "product_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_in_item",
+      "column": "product_unit_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_in_item",
+      "column": "total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_move",
+      "column": "file_url",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_move",
+      "column": "total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_move_item",
+      "column": "from_warehouse_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_move_item",
+      "column": "move_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_move_item",
+      "column": "product_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_move_item",
+      "column": "product_unit_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_move_item",
+      "column": "to_warehouse_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_move_item",
+      "column": "total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_out",
+      "column": "file_url",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_out",
+      "column": "total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_out_item",
+      "column": "out_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_out_item",
+      "column": "product_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_out_item",
+      "column": "product_unit_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_out_item",
+      "column": "total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_record",
+      "column": "biz_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_record",
+      "column": "biz_item_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_record",
+      "column": "biz_no",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_supplier",
+      "column": "bank_address",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_supplier",
+      "column": "fax",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_supplier",
+      "column": "remark",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_supplier",
+      "column": "sort",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_supplier",
+      "column": "tax_no",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_supplier",
+      "column": "tax_percent",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_supplier",
+      "column": "telephone",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_warehouse",
+      "column": "default_status",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_warehouse",
+      "column": "principal",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_warehouse",
+      "column": "remark",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_warehouse",
+      "column": "truckage_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_warehouse",
+      "column": "warehouse_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_dv_machinery",
+      "column": "iot_device_pk",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_dv_machinery",
+      "column": "protocol_type",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_dv_oee_record",
+      "column": "mechanical_efficiency",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_dv_oee_record",
+      "column": "time_utilization_rate",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_md_item",
+      "column": "fixed_lot_size",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_md_item",
+      "column": "lead_time_days",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_md_item",
+      "column": "lot_size_multiple",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_md_item",
+      "column": "lot_size_rule",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_md_item",
+      "column": "low_level_code",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_md_item",
+      "column": "safety_stock",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_md_item",
+      "column": "scrap_rate",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_md_workstation",
+      "column": "capacity",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_md_workstation",
+      "column": "efficiency",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_pro_mrp_result",
+      "column": "lot_size_rule",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_pro_mrp_result",
+      "column": "safety_stock",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_pro_work_order",
+      "column": "priority",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "oa_document",
+      "column": "archive_no",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "oa_document",
+      "column": "archive_time",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "oa_document",
+      "column": "archiver_name",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "oa_document",
+      "column": "archiver_user_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "oa_document",
+      "column": "copy_send_depts",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "oa_document",
+      "column": "main_send_depts",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "oa_document",
+      "column": "read_count",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "oa_document",
+      "column": "review_opinion",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "oa_document",
+      "column": "review_time",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "oa_document",
+      "column": "reviewer_name",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "oa_document",
+      "column": "reviewer_user_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "oa_document",
+      "column": "sign_opinion",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "oa_document",
+      "column": "sign_time",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "oa_document",
+      "column": "signer_name",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "oa_document",
+      "column": "signer_user_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "wms_check_order",
+      "column": "check_type",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "wms_check_order",
+      "column": "cycle_days",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "wms_inventory",
+      "column": "owner_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "wms_inventory_batch",
+      "column": "shelf_life_days",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "wms_inventory_batch",
+      "column": "supplier_batch_no",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "wms_item",
+      "column": "abc_classification",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "wms_receipt_order_detail",
+      "column": "batch_no",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "wms_receipt_order_detail",
+      "column": "expiry_date",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "wms_receipt_order_detail",
+      "column": "production_date",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "unique_index_evolved",
+      "table": "erp_accounting_event",
+      "column": "tenant_id,event_type,source_doc_type,source_doc_id,source_doc_line_id,source_revision,reversal_of_event_id",
+      "static_says": "UNIQUE (tenant_id, event_type, source_doc_type, source_doc_id, source_doc_line_id, source_revision, reversal_of_event_id)",
+      "live_says": "UNIQUE (tenant_id, event_type, source_doc_type, source_doc_id, source_doc_line_id, source_revision, sequence_no, reversal_of_event_id)",
+      "resolution": "live_wins",
+      "source": "ddl"
+    },
+    {
+      "kind": "unique_index_evolved",
+      "table": "event_inbox",
+      "column": "consumer_name,event_id",
+      "static_says": "UNIQUE (consumer_name, event_id)",
+      "live_says": "UNIQUE (tenant_id, consumer_name, event_id)",
+      "resolution": "live_wins",
+      "source": "ddl"
+    },
+    {
+      "kind": "unique_index_evolved",
+      "table": "event_outbox",
+      "column": "event_id",
+      "static_says": "UNIQUE (event_id)",
+      "live_says": "UNIQUE (tenant_id, event_id)",
+      "resolution": "live_wins",
+      "source": "ddl"
+    },
+    {
+      "kind": "unique_index_evolved",
+      "table": "wms_shipment_order",
+      "column": "no",
+      "static_says": "UNIQUE (no)",
+      "live_says": "UNIQUE (tenant_id, no)",
+      "resolution": "live_wins",
+      "source": "ddl"
+    }
+  ],
+  "notes": [
+    "只读审计：脚本只查询 information_schema 与 SELECT VERSION()，不修改任何数据。",
+    "口径规则：期望来自 DO / DDL / V9x 核验 SQL 的静态解析，结论一律以真库 information_schema 为准；静态与真库不一致时以真库为准并记录在 divergences。",
+    "P0_BLOCKER 定义：缺表、缺列、主键/自增错误、NOT NULL 无默认列导致插入阻断；P1_HIGH：索引/租户字段/类型族不兼容；P2_REVIEW：类型宽度与声明漂移。",
+    "P0 未清零前不得进入生产；P1 需要单独的风险接受记录；P2 由业务/DB 负责人人工确认。",
+    "本次审计通过 mysql 客户端直连（未使用沙箱）；请确认目标库不是生产库。"
+  ]
+}

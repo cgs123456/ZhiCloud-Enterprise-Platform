@@ -1,0 +1,72 @@
+{
+  "generated_at": "2026-09-27T18:20:45.3410363+08:00",
+  "status": "passed",
+  "scope": "MySQL 8.4.9 sandbox clean install and clean-mode resume",
+  "production_ready": false,
+  "gate3_passed": false,
+  "database": "zhicloud_runner_clean_20260927_181750",
+  "mysql_version": "8.4.9",
+  "jar": {
+    "path": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\target\\zhicloud-server.jar",
+    "sha256": "4890f97325a37fa11aa8c91aefb51a01899c67234fadac6cd32a0b653d176ae6"
+  },
+  "clean_first_run": {
+    "exit_code": 0,
+    "applied_migrations": 122,
+    "initial_version": "1.1",
+    "target_version": "117",
+    "clean_baseline_source_sha256": "2a7049a6e4ef221dfc0674c9363599d81ba0f62a3499b8e45de10e04de5770d1",
+    "clean_baseline_output_sha256": "1eede7a86b9905cbcc01992a89b7889d9f39e88109e83e71df4258fd844695c4",
+    "statements": 3849,
+    "log_path": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\docs\\enterprise-platform\\evidence\\production\\mysql-runner-clean-20260927_181750.log",
+    "log_sha256": "0603c654d9371880d98ea3c69a98fcc0e183715d808aae42b9f8bf8e2d17ef49"
+  },
+  "clean_resume_run": {
+    "exit_code": 0,
+    "applied_migrations": 0,
+    "schema_current_version": "117",
+    "baseline_reused": true,
+    "log_path": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\docs\\enterprise-platform\\evidence\\production\\mysql-runner-clean-rerun-20260927_181924.log",
+    "log_sha256": "fd146ae7442ab16063e2c72e44c4ccd4a0118b4617572069dfaadba5869506bf"
+  },
+  "known_failed_attempt": {
+    "exit_code": 1,
+    "reason": "PowerShell variable interpolation truncated the JDBC URL before migration; no schema changes were applied in that database.",
+    "log_path": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\docs\\enterprise-platform\\evidence\\production\\mysql-runner-clean-20260927_181738.log",
+    "log_sha256": "ea82ab79e54e01c55433e7d28bcb2b526f10586c794c03ed81a961ab6baaddbf"
+  },
+  "database_checks": {
+    "base_table_count": 464,
+    "flyway_history_rows": 123,
+    "flyway_success_rows": 123,
+    "flyway_last_version": "117",
+    "clean_baseline_version": "1.1",
+    "clean_baseline_success": true,
+    "version_115_success": true,
+    "version_116_success": true,
+    "version_117_success": true,
+    "pre_bootstrap_system_users": 0,
+    "active_username_unique_index": "uk_system_users_tenant_active_username",
+    "receivable_idempotency_unique_index": "uk_crm_receivable_idempotency"
+  },
+  "bootstrap": {
+    "evidence_path": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\docs\\enterprise-platform\\evidence\\production\\bootstrap-admin-real-success-20260927_182032.json",
+    "first_run_exit_code": 0,
+    "repeat_run_exit_code": 2,
+    "repeat_run_fail_closed": true,
+    "username": "zhicloud_admin",
+    "user_id": 225,
+    "tenant_id": 1,
+    "password_hash_length": 60,
+    "password_hash_prefix": "$2a$",
+    "role_id": 1,
+    "post_id": 4,
+    "plaintext_password_persisted": false
+  },
+  "caveats": [
+    "V116 and V117 concurrency/soft-delete semantics are not yet proven by this evidence.",
+    "BPM/Flowable transaction rollback is not yet proven by this evidence.",
+    "Only MySQL was exercised; other dialect migrations remain static/unverified.",
+    "Production readiness and Gate 3 remain false until all blocking checks pass."
+  ]
+}

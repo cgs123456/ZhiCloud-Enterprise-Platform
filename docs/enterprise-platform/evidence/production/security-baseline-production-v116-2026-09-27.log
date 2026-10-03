@@ -1,0 +1,202 @@
+[P1][R7] demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql:9 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql:10 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql:11 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql:12 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql:13 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql:14 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql:15 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql:16 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql:17 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql:18 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql:19 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql:20 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql:21 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql:22 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql:23 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql:24 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql:25 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql:26 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql:27 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/dm/ruoyi-vue-pro-dm8_demo_seed.sql:28 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql:9 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql:10 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql:11 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql:12 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql:13 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql:14 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql:15 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql:16 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql:17 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql:18 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql:19 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql:20 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql:21 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql:22 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql:23 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql:24 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql:25 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql:26 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql:27 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/highgo/ruoyi-vue-pro_demo_seed.sql:28 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql:9 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql:10 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql:11 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql:12 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql:13 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql:14 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql:15 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql:16 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql:17 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql:18 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql:19 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql:20 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql:21 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql:22 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql:23 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql:24 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql:25 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql:26 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql:27 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/kingbase/ruoyi-vue-pro_demo_seed.sql:28 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/mysql/zhicloud_platform_demo_seed.sql:10 :: INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`
+[P1][R7] demo-data/sql/mysql/zhicloud_platform_demo_seed.sql:11 :: INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`
+[P1][R7] demo-data/sql/mysql/zhicloud_platform_demo_seed.sql:12 :: INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`
+[P1][R7] demo-data/sql/mysql/zhicloud_platform_demo_seed.sql:13 :: INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`
+[P1][R7] demo-data/sql/mysql/zhicloud_platform_demo_seed.sql:14 :: INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`
+[P1][R7] demo-data/sql/mysql/zhicloud_platform_demo_seed.sql:15 :: INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`
+[P1][R7] demo-data/sql/mysql/zhicloud_platform_demo_seed.sql:16 :: INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`
+[P1][R7] demo-data/sql/mysql/zhicloud_platform_demo_seed.sql:17 :: INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`
+[P1][R7] demo-data/sql/mysql/zhicloud_platform_demo_seed.sql:18 :: INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`
+[P1][R7] demo-data/sql/mysql/zhicloud_platform_demo_seed.sql:19 :: INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`
+[P1][R7] demo-data/sql/mysql/zhicloud_platform_demo_seed.sql:20 :: INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`
+[P1][R7] demo-data/sql/mysql/zhicloud_platform_demo_seed.sql:21 :: INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`
+[P1][R7] demo-data/sql/mysql/zhicloud_platform_demo_seed.sql:22 :: INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`
+[P1][R7] demo-data/sql/mysql/zhicloud_platform_demo_seed.sql:23 :: INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`
+[P1][R7] demo-data/sql/mysql/zhicloud_platform_demo_seed.sql:24 :: INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`
+[P1][R7] demo-data/sql/mysql/zhicloud_platform_demo_seed.sql:25 :: INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`
+[P1][R7] demo-data/sql/mysql/zhicloud_platform_demo_seed.sql:26 :: INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`
+[P1][R7] demo-data/sql/mysql/zhicloud_platform_demo_seed.sql:27 :: INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`
+[P1][R7] demo-data/sql/mysql/zhicloud_platform_demo_seed.sql:28 :: INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`
+[P1][R7] demo-data/sql/mysql/zhicloud_platform_demo_seed.sql:29 :: INSERT INTO `system_users` (`id`, `username`, `password`, `nickname`, `remark`, `dept_id`, `post_ids`, `email`, `mobile`
+[P1][R7] demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql:9 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql:10 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql:11 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql:12 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql:13 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql:14 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql:15 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql:16 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql:17 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql:18 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql:19 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql:20 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql:21 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql:22 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql:23 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql:24 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql:25 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql:26 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql:27 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/opengauss/ruoyi-vue-pro_demo_seed.sql:28 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql:9 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql:10 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql:11 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql:12 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql:13 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql:14 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql:15 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql:16 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql:17 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql:18 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql:19 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql:20 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql:21 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql:22 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql:23 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql:24 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql:25 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql:26 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql:27 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/oracle/ruoyi-vue-pro_demo_seed.sql:28 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql:9 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql:10 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql:11 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql:12 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql:13 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql:14 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql:15 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql:16 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql:17 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql:18 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql:19 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql:20 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql:21 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql:22 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql:23 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql:24 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql:25 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql:26 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql:27 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/postgresql/ruoyi-vue-pro_demo_seed.sql:28 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql:11 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql:12 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql:13 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql:14 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql:15 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql:16 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql:17 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql:18 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql:19 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql:20 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql:21 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql:22 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql:23 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql:24 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql:25 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql:26 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql:27 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql:28 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql:29 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R7] demo-data/sql/sqlserver/ruoyi-vue-pro_demo_seed.sql:30 :: INSERT INTO system_users (id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, statu
+[P1][R9] deploy/helm/zhicloud/values-dev.yaml:42 :: MASTER_DATASOURCE_URL: "jdbc:mysql://zhicloud-mysql-dev:3306/zhicloud_platform?useSSL=true&requireSSL=true&verifyServerC
+[P1][R9] deploy/helm/zhicloud/values-dev.yaml:43 :: SLAVE_DATASOURCE_URL: "jdbc:mysql://zhicloud-mysql-dev:3306/zhicloud_platform?useSSL=true&requireSSL=true&verifyServerCe
+[P0][R5] deploy/helm/zhicloud/values-prod.yaml:56 :: existingSecret: ""
+[P0][R5] deploy/helm/zhicloud/values-staging.yaml:44 :: existingSecret: ""
+[P0][R5] deploy/helm/zhicloud/values.yaml:177 :: existingSecret: ""
+[P1][R4] deploy/helm/zhicloud/values.yaml:220 :: # ���ǿ���Ϊ֮������ʷ����Щ�ֶ�Ĭ��ֵȫ��ռλ���ַ�����CHANGE_ME ǰ׺����
+[P1][R4] deploy/helm/zhicloud/templates/secret.yaml:5 :: ��ȫ���ԣ���ǰ�����⣺values.yaml �� 11 ����ԿĬ��ֵȫ�� CHANGE_ME_IN_PRODUCTION��
+[P1][R4] deploy/helm/zhicloud/templates/secret.yaml:12 :: 3. �κ���Ϊ�ջ��� CHANGE_ME ��ͷ��ֵ������ helm ��Ⱦֱ��ʧ�ܣ��� zhicloud.requiredSecret����
+[P1][R4] deploy/helm/zhicloud/templates/_helpers.tpl:121 :: �����ͼ������ values.yaml �� 11 ����Կ��Ĭ��ֵ���� "CHANGE_ME_IN_PRODUCTION"��
+[P1][R4] deploy/helm/zhicloud/templates/_helpers.tpl:135 :: {{- if or (eq $value "") (hasPrefix "CHANGE_ME" $value) (hasPrefix "__REQUIRED__" $value) -}}
+[P1][R4] k8s/zhicloud-server.yaml:45 :: # ԭ�򣺴�ǰ���������� 9 �� "CHANGE_ME_IN_PRODUCTION" ����ռλ����
+[P1][R4] k8s/zhicloud-server.yaml:74 :: #      Chart ������Ⱦ��У�飬��ֵ�� CHANGE_ME ǰ׺���� helm ֱ��ʧ�ܡ�
+[P1][R3] script/docker/docker-compose.yml:130 :: AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+[P1][R9] script/docker/docker-compose.yml:269 :: --spring.datasource.dynamic.datasource.master.url=${MASTER_DATASOURCE_URL:-jdbc:mysql://zhicloud-mysql:3306/zhicloud_pla
+[P1][R9] script/docker/docker-compose.yml:272 :: --spring.datasource.dynamic.datasource.slave.url=${SLAVE_DATASOURCE_URL:-jdbc:mysql://zhicloud-mysql:3306/zhicloud_platf
+[P1][R9] script/shell/disaster-recovery-drill.sh:338 :: --spring.datasource.dynamic.datasource.master.url="jdbc:mysql://${DRILL_MYSQL_CONTAINER}:3306/${DRILL_MYSQL_DATABASE}?us
+[P1][R3] zhicloud-server/src/main/resources/application-dev.yaml:22 :: login-password: ${DRUID_PASSWORD:druid@2026} # ����̨�������루��������ͨ����������ע�룩
+[P1][R1] zhicloud-server/src/main/resources/application-dev.yaml:50 :: url: jdbc:mysql://127.0.0.1:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=tru
+[P1][R2] zhicloud-server/src/main/resources/application-dev.yaml:50 :: url: jdbc:mysql://127.0.0.1:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=tru
+[P1][R3] zhicloud-server/src/main/resources/application-dev.yaml:52 :: password: ${MYSQL_PASSWORD:123456}
+[P1][R1] zhicloud-server/src/main/resources/application-dev.yaml:55 :: url: jdbc:mysql://127.0.0.1:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=tru
+[P1][R2] zhicloud-server/src/main/resources/application-dev.yaml:55 :: url: jdbc:mysql://127.0.0.1:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=tru
+[P1][R3] zhicloud-server/src/main/resources/application-dev.yaml:57 :: password: ${MYSQL_SLAVE_PASSWORD:123456}
+[P1][R3] zhicloud-server/src/main/resources/application-dev.yaml:115 :: password: ${RABBITMQ_PASSWORD:rabbit} # RabbitMQ ���������
+[P1][R3] zhicloud-server/src/main/resources/application-dev.yaml:147 :: password: ${SBA_PASSWORD:admin}
+[P1][R6] zhicloud-server/src/main/resources/application-dev.yaml:213 :: client-secret: xx
+[P1][R3] zhicloud-server/src/main/resources/application-local.yaml:22 :: login-password: ${DRUID_PASSWORD:druid@2026} # ����̨�������루��������ͨ����������ע�룩
+[P1][R1] zhicloud-server/src/main/resources/application-local.yaml:50 :: url: ${MASTER_DATASOURCE_URL:jdbc:mysql://127.0.0.1:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&all
+[P1][R2] zhicloud-server/src/main/resources/application-local.yaml:50 :: url: ${MASTER_DATASOURCE_URL:jdbc:mysql://127.0.0.1:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&all
+[P1][R3] zhicloud-server/src/main/resources/application-local.yaml:52 :: password: ${MASTER_DATASOURCE_PASSWORD:123456} # ���ؿ���Ĭ�����룬��������ͨ����������ע��
+[P1][R1] zhicloud-server/src/main/resources/application-local.yaml:55 :: url: ${SLAVE_DATASOURCE_URL:jdbc:mysql://127.0.0.1:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allo
+[P1][R2] zhicloud-server/src/main/resources/application-local.yaml:55 :: url: ${SLAVE_DATASOURCE_URL:jdbc:mysql://127.0.0.1:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allo
+[P1][R3] zhicloud-server/src/main/resources/application-local.yaml:57 :: password: ${SLAVE_DATASOURCE_PASSWORD:123456}
+[P1][R3] zhicloud-server/src/main/resources/application-local.yaml:73 :: password: ${REDIS_PASSWORD:redis@2026} # ���� Redis ���루��������ͨ����������ע�룩
+[P1][R3] zhicloud-server/src/main/resources/application-local.yaml:123 :: password: ${RABBITMQ_PASSWORD:rabbit} # RabbitMQ ���������
+[P1][R3] zhicloud-server/src/main/resources/application-local.yaml:155 :: password: ${SBA_PASSWORD:sba@2026} # SBA ���루��������ͨ����������ע�룬local Ĭ�� sba@2026��
+[P1][R3] zhicloud-server/src/main/resources/application-local.yaml:222 :: mock-secret: ${MOCK_SECRET:test-only-for-local} # P0 ��ȫ�޸���mock ģʽ��Կ���� local ����ʹ�ã�������������ر� mock-enable
+[P1][R3] zhicloud-server/src/main/resources/application.yaml:216 :: api-key: ${OPENAI_API_KEY:sk-xxxx}
+[P1][R3] zhicloud-server/src/main/resources/application.yaml:222 :: api-key: ${ANTHROPIC_API_KEY:sk-xxxx}
+[P1][R3] zhicloud-server/src/main/resources/application.yaml:228 :: api-key: ${STABILITYAI_API_KEY:sk-xxxx}
+ɨ���ļ� 460������ 251 ��{'P1': 216, 'P0': 35}�����������ʧ�� 0
+status=failed

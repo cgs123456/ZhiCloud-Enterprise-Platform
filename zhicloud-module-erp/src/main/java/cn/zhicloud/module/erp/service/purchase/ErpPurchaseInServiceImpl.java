@@ -16,6 +16,9 @@ import cn.zhicloud.module.erp.dal.mysql.purchase.ErpPurchaseInMapper;
 import cn.zhicloud.module.erp.dal.redis.no.ErpNoRedisDAO;
 import cn.zhicloud.module.erp.enums.ErpAuditStatus;
 import cn.zhicloud.module.erp.enums.stock.ErpStockRecordBizTypeEnum;
+import cn.zhicloud.module.erp.service.accounting.ErpAccountingEventService;
+import cn.zhicloud.module.erp.service.accounting.bo.ErpAccountingEventCreateReqBO;
+import cn.zhicloud.module.erp.service.accounting.bo.ErpAccountingEventReverseReqBO;
 import cn.zhicloud.module.erp.service.finance.ErpAccountService;
 import cn.zhicloud.module.erp.service.product.ErpProductService;
 import cn.zhicloud.module.erp.service.stock.ErpStockRecordService;
@@ -28,6 +31,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -66,6 +71,8 @@ public class ErpPurchaseInServiceImpl implements ErpPurchaseInService {
     private ErpAccountService accountService;
     @Resource
     private ErpStockRecordService stockRecordService;
+    @Resource
+    private ErpAccountingEventService accountingEventService;
 
     @Resource
     private AdminUserApi adminUserApi;
@@ -157,12 +164,15 @@ public class ErpPurchaseInServiceImpl implements ErpPurchaseInService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updatePurchaseInStatus(Long id, Integer status) {
+        if (!ErpAuditStatus.isValid(status)) {
+            throw exception(ERP_AUDIT_STATUS_INVALID, status);
+        }
         boolean approve = ErpAuditStatus.APPROVE.getStatus().equals(status);
         // 1.1 校验存在
         ErpPurchaseInDO purchaseIn = validatePurchaseInExists(id);
-        // 1.2 校验状态
-        if (purchaseIn.getStatus().equals(status)) {
-            throw exception(approve ? PURCHASE_IN_APPROVE_FAIL : PURCHASE_IN_PROCESS_FAIL);
+        // 1.2 幂等处理：目标状态与当前状态一致时，返回同一业务结果
+        if (status.equals(purchaseIn.getStatus())) {
+            return;
         }
         // 1.3 校验已付款
         if (!approve && purchaseIn.getPaymentPrice().compareTo(BigDecimal.ZERO) > 0) {
@@ -173,6 +183,10 @@ public class ErpPurchaseInServiceImpl implements ErpPurchaseInService {
         int updateCount = purchaseInMapper.updateByIdAndStatus(id, purchaseIn.getStatus(),
                 new ErpPurchaseInDO().setStatus(status));
         if (updateCount == 0) {
+            ErpPurchaseInDO latest = purchaseInMapper.selectOneForUpdate(ErpPurchaseInDO::getId, id);
+            if (latest != null && status.equals(latest.getStatus())) {
+                return;
+            }
             throw exception(approve ? PURCHASE_IN_APPROVE_FAIL : PURCHASE_IN_PROCESS_FAIL);
         }
 
@@ -191,6 +205,61 @@ public class ErpPurchaseInServiceImpl implements ErpPurchaseInService {
         mergedCountMap.forEach((key, count) -> stockRecordService.createStockRecord(new ErpStockRecordCreateReqBO(
                 key.get(0), key.get(1), count,
                 bizType, id, firstItemIdMap.get(key), purchaseIn.getNo())));
+
+        // 4. 审核通过时生成采购入库暂估会计事件；事件与库存流水处于同一事务
+        if (approve) {
+            accountingEventService.postEvent(buildPurchaseReceiptAccrualEvent(purchaseIn));
+        } else if (ErpAuditStatus.APPROVE.getStatus().equals(purchaseIn.getStatus())) {
+            // 仅当单据此前已审核（存在已过账原事件）时才生成冲销事件；
+            // PROCESS 直接驳回等场景没有可冲销的原事件，不应阻断业务状态流转
+            accountingEventService.reverseEvent(buildPurchaseReceiptReversalRequest(purchaseIn));
+        }
+    }
+
+    private ErpAccountingEventCreateReqBO buildPurchaseReceiptAccrualEvent(ErpPurchaseInDO purchaseIn) {
+        LocalDate eventDate = purchaseIn.getInTime() == null
+                ? LocalDate.now() : purchaseIn.getInTime().toLocalDate();
+        BigDecimal amountWithTax = defaultZero(purchaseIn.getTotalPrice());
+        BigDecimal taxAmount = defaultZero(purchaseIn.getTotalTaxPrice());
+        // 折扣和其他费用会改变价税合计，但当前单据不单独拆分其税额影响，先以最终价税合计倒算不含税金额
+        BigDecimal amountWithoutTax = amountWithTax.subtract(taxAmount);
+        return ErpAccountingEventCreateReqBO.builder()
+                .eventType("PURCHASE_RECEIPT_ACCRUAL")
+                .sourceDocType("PURCHASE_IN")
+                .sourceDocId(purchaseIn.getId())
+                .sourceDocNo(purchaseIn.getNo())
+                .sourceDocLineId(0L)
+                .sourceRevision(1)
+                .eventDate(eventDate)
+                .accountingDate(eventDate)
+                .amountWithoutTax(amountWithoutTax)
+                .taxAmount(taxAmount)
+                .amountWithTax(amountWithTax)
+                .docTotalAmount(defaultZero(purchaseIn.getTotalPrice()))
+                .currency(null)
+                .exchangeRate(purchaseIn.getExchangeRate() == null
+                        ? BigDecimal.ONE : purchaseIn.getExchangeRate())
+                .reversalOfEventId(0L)
+                .occurredAt(purchaseIn.getInTime() == null ? LocalDateTime.now() : purchaseIn.getInTime())
+                .build();
+    }
+
+    private ErpAccountingEventReverseReqBO buildPurchaseReceiptReversalRequest(ErpPurchaseInDO purchaseIn) {
+        LocalDate eventDate = purchaseIn.getInTime() == null
+                ? LocalDate.now() : purchaseIn.getInTime().toLocalDate();
+        return ErpAccountingEventReverseReqBO.builder()
+                .eventType("PURCHASE_RECEIPT_ACCRUAL")
+                .sourceDocType("PURCHASE_IN")
+                .sourceDocId(purchaseIn.getId())
+                .sourceDocLineId(0L)
+                .sourceRevision(1)
+                .eventDate(eventDate)
+                .accountingDate(LocalDate.now())
+                .occurredAt(LocalDateTime.now())
+                .build();
+    }
+    private static BigDecimal defaultZero(BigDecimal value) {
+        return value == null ? BigDecimal.ZERO : value;
     }
 
     @Override

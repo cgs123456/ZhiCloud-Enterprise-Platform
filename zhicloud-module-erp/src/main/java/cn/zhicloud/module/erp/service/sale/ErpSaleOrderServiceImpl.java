@@ -183,12 +183,15 @@ public class ErpSaleOrderServiceImpl implements ErpSaleOrderService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateSaleOrderStatus(Long id, Integer status) {
+        if (!ErpAuditStatus.isValid(status)) {
+            throw exception(ERP_AUDIT_STATUS_INVALID, status);
+        }
         boolean approve = ErpAuditStatus.APPROVE.getStatus().equals(status);
         // 1.1 校验存在
         ErpSaleOrderDO saleOrder = validateSaleOrderExists(id);
-        // 1.2 校验状态
-        if (saleOrder.getStatus().equals(status)) {
-            throw exception(approve ? SALE_ORDER_APPROVE_FAIL : SALE_ORDER_PROCESS_FAIL);
+        // 1.2 幂等处理：目标状态与当前状态一致时，返回同一业务结果
+        if (status.equals(saleOrder.getStatus())) {
+            return;
         }
         // 1.3 存在销售出库单，无法反审核
         if (!approve && saleOrder.getOutCount().compareTo(BigDecimal.ZERO) > 0) {
@@ -207,6 +210,10 @@ public class ErpSaleOrderServiceImpl implements ErpSaleOrderService {
         int updateCount = saleOrderMapper.updateByIdAndStatus(id, saleOrder.getStatus(),
                 new ErpSaleOrderDO().setStatus(status));
         if (updateCount == 0) {
+            ErpSaleOrderDO latest = saleOrderMapper.selectOneForUpdate(ErpSaleOrderDO::getId, id);
+            if (latest != null && status.equals(latest.getStatus())) {
+                return;
+            }
             throw exception(approve ? SALE_ORDER_APPROVE_FAIL : SALE_ORDER_PROCESS_FAIL);
         }
 

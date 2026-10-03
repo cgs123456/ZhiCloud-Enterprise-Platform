@@ -335,7 +335,7 @@ start_drill_server() {
             java:8-jdk-alpine \
             java -jar /app/app.jar \
                 --spring.profiles.active=drill \
-                --spring.datasource.dynamic.datasource.master.url="jdbc:mysql://${DRILL_MYSQL_CONTAINER}:3306/${DRILL_MYSQL_DATABASE}?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true" \
+                --spring.datasource.dynamic.datasource.master.url="jdbc:mysql://${DRILL_MYSQL_CONTAINER}:3306/${DRILL_MYSQL_DATABASE}?useSSL=true&requireSSL=true&verifyServerCertificate=false&enabledTLSProtocols=TLSv1.2,TLSv1.3&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true" \
                 --spring.datasource.dynamic.datasource.master.username=root \
                 --spring.datasource.dynamic.datasource.master.password="${DRILL_MYSQL_ROOT_PASSWORD}" \
                 >/dev/null 2>&1; then

@@ -15,15 +15,15 @@
         <!-- 各种 module 拓展 -->
         <module>zhicloud-module-system</module>
         <module>zhicloud-module-infra</module>
-<!--        <module>zhicloud-member</module>-->
+        <module>zhicloud-module-member</module> <!-- 启用：会员（商城 product/promotion/trade/statistics 四个模块都依赖它；原注释行写的 zhicloud-member 是失效目录名） -->
         <module>zhicloud-module-bpm</module> <!-- 启用：BPM 工作流（Flowable 8.0.0），CRM 依赖 -->
-<!--        <module>zhicloud-module-report</module>-->
+        <module>zhicloud-module-report</module> <!-- 启用：数据报表（GoView + 业务查询视图） -->
 <!--        <module>zhicloud-module-mp</module>-->
-<!--        <module>zhicloud-module-pay</module>-->
-<!--        <module>zhicloud-module-mall</module>-->
+        <module>zhicloud-module-pay</module> <!-- 启用：支付（应用/渠道/退款/转账），商城下单闭环依赖 -->
+        <module>zhicloud-module-mall</module> <!-- 启用：商城（商品/营销/交易/统计） -->
         <module>zhicloud-module-crm</module> <!-- B5 启用：CRM 客户关系管理模块（商机/合同/跟进） -->
         <module>zhicloud-module-erp</module>
-<!--        <module>zhicloud-module-iot</module>-->
+        <module>zhicloud-module-iot</module> <!-- 启用：IoT 物联网（设备/物模型/告警/设备消息） -->
         <module>zhicloud-module-mes</module>
         <module>zhicloud-module-wms</module>
         <module>zhicloud-module-qms</module> <!-- QMS 质量管理系统模块（IQC/IPQC/OQC/CAPA） -->
@@ -42,6 +42,13 @@
     <name>${project.artifactId}</name>
     <description>智云企业数字化平台</description>
     <url>https://github.com/cgs123456/ZhiCloud-Enterprise-Platform</url>
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://github.com/cgs123456/ZhiCloud-Enterprise-Platform/blob/master/LICENSE</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
 
     <properties>
         <revision>2026.06.0</revision>

@@ -90,8 +90,8 @@ public EmbeddingModel airagEmbeddingModel() {
 **部署完成后，需要：**
 1. 引入 `spring-ai-transformers` 依赖（或自行实现 BGE-base-zh 的 ONNX EmbeddingModel Bean）；
 2. 在 `AiragConfiguration` 中新增 `airagEmbeddingModel` Bean（参考 4.1 方式 A）；
-3. 配置 `zhicloud.airag.enabled=true`；
-4. 执行 `sql/postgresql/airag_pgvector.sql` 建表脚本。
+3. 配置 `zhicloud.airag.enabled=true`，并保持 `zhicloud.airag.initialize-schema=false`；
+4. 执行 `sql/postgresql/airag_pgvector.sql`，显式创建 `airag_vector_store` 与 HNSW 索引。
 
 ## 5. 维度对齐说明
 
@@ -101,7 +101,7 @@ BGE-base-zh 输出维度为 **768**，需在以下位置保持一致：
 |---|---|---|
 | `AiragKnowledgeDO.vectorDimension` | 768 | 知识库元信息记录 |
 | `AiragConfiguration.airagVectorStore` | `.dimensions(768)` | PgVectorStore 建表维度 |
-| `airag_vector_store.embedding` | `vector(768)` | pgvector 列类型（由 Spring AI 自动创建） |
+| `airag_vector_store.embedding` | `vector(768)` | pgvector 列类型，由 SQL 迁移显式创建 |
 | `AiragKnowledgeSaveReqVO.vectorDimension` | 768 | 创建知识库时校验 |
 
 **切换模型时需同步调整：**

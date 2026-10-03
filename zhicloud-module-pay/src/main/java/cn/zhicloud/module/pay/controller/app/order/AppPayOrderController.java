@@ -82,7 +82,7 @@ public class AppPayOrderController {
 
     @PostMapping("/submit")
     @Operation(summary = "提交支付订单")
-    @PreAuthorize("@ss.hasPermission('pay:order:create')")
+    @PreAuthorize("isAuthenticated()")
     public CommonResult<AppPayOrderSubmitRespVO> submitPayOrder(@RequestBody AppPayOrderSubmitReqVO reqVO) {
         // 1. 钱包支付事，需要额外传 user_id 和 user_type
         if (Objects.equals(reqVO.getChannelCode(), PayChannelEnum.WALLET.getCode())) {

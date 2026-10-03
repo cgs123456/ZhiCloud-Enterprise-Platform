@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>zhicloud-framework</artifactId>
+        <groupId>cn.zhicloud</groupId>
+        <version>${revision}</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>zhicloud-spring-boot-starter-biz-mdm</artifactId>
+    <packaging>jar</packaging>
+
+    <name>${project.artifactId}</name>
+    <description>主数据跨域映射 Starter（V101）：跨系统主数据对照（mdm_cross_ref）与映射解析</description>
+    <url>https://github.com/cgs123456/ZhiCloud-Enterprise-Platform</url>
+
+    <dependencies>
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-common</artifactId>
+        </dependency>
+
+        <!-- 多租户上下文与 TenantBaseDO：MDM 映射必须绑定当前租户，禁止回退默认租户 0 -->
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-spring-boot-starter-biz-tenant</artifactId>
+        </dependency>
+
+        <!-- DB 相关 -->
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-spring-boot-starter-mybatis</artifactId>
+        </dependency>
+
+        <!-- Test 测试相关 -->
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- 测试 H2 上下文加载需要 servlet API（ZhiCloudDataSourceAutoConfiguration 的 FilterRegistrationBean 签名引用） -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- 测试 H2 上下文加载需要安全 starter（ZhiCloudMybatisAutoConfiguration 的 DefaultDBFieldHandler 引用 SecurityFrameworkUtils） -->
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-spring-boot-starter-security</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+</project>

@@ -5,13 +5,14 @@
 --   1. 本脚本用于本地化 RAG 模块，需在 PostgreSQL 12+ 上执行
 --   2. 需先安装 pgvector 扩展：https://github.com/pgvector/pgvector
 --   3. 知识库表（airag_knowledge）、文档表（airag_document）由本脚本创建
---   4. 向量存储表（airag_vector_store）由 Spring AI PgVectorStore 通过
---      initializeSchema=true 自动创建，本脚本仅作声明，不重复建表
+--   4. 向量存储表（airag_vector_store）和 HNSW 索引由本脚本显式创建，
+--      应用必须配置 zhicloud.airag.initialize-schema=false（生产默认）
 --   5. 字段命名与 zhicloud 框架 BaseDO 保持一致（creator/create_time/updater/update_time/deleted/tenant_id）
 -- ======================================================================
 
--- 启用 pgvector 扩展
+-- 启用 pgvector 与 hstore 扩展（与 Spring AI PgVectorStore 的 schema 校验保持一致）
 CREATE EXTENSION IF NOT EXISTS vector;
+CREATE EXTENSION IF NOT EXISTS hstore;
 
 -- ----------------------------------------------------------------------
 -- 知识库表
@@ -89,21 +90,17 @@ CREATE INDEX IF NOT EXISTS idx_airag_document_tenant_id    ON airag_document (te
 -- ----------------------------------------------------------------------
 -- 向量存储表（airag_vector_store）
 --
--- 由 Spring AI PgVectorStore 通过 initializeSchema=true 自动创建，
--- 表结构由 PgVectorStore 默认定义（id UUID, content TEXT, metadata JSON, embedding vector）。
--- 这里仅作声明，不手动建表，避免与 Spring AI 版本不兼容。
---
--- HNSW 索引由 Spring AI 启动时自动创建（PgVectorStore 配置 PgIndexType.HNSW），
--- 此脚本仅手动建表场景使用。
---
--- 如需手动建表，可参考以下 SQL（需与 PgVectorStore 配置的 dimensions 保持一致）：
---
--- CREATE TABLE IF NOT EXISTS airag_vector_store (
---     id        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
---     content   TEXT,
---     metadata  JSON,
---     embedding vector(768)
--- );
--- CREATE INDEX IF NOT EXISTS airag_vector_store_embedding_index
---     ON airag_vector_store USING hnsw (embedding vector_cosine_ops);
+-- 与 Spring AI 1.1.8 PgVectorStore 的表结构对齐。生产启动只做 schema 校验，
+-- 不在应用启动阶段执行 CREATE TABLE/CREATE EXTENSION；DDL 由本脚本纳入审计和回滚。
+-- 维度必须与 AiragConfiguration.DEFAULT_VECTOR_DIMENSION 保持一致。
 -- ----------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS airag_vector_store (
+    id        UUID PRIMARY KEY,
+    content   TEXT,
+    metadata  JSON,
+    embedding vector(768)
+);
+
+-- Spring AI 1.1.8 对自定义表 airag_vector_store 使用该索引名。
+CREATE INDEX IF NOT EXISTS airag_vector_store_index
+    ON airag_vector_store USING hnsw (embedding vector_cosine_ops);

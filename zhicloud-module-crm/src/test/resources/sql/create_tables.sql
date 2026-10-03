@@ -126,6 +126,7 @@ CREATE TABLE IF NOT EXISTS "crm_clue_pool_config" (
     "updater" varchar(64) DEFAULT '',
     "update_time" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deleted" bit NOT NULL DEFAULT FALSE,
+    "tenant_id" bigint NOT NULL DEFAULT 0,
     PRIMARY KEY ("id")
 );
 
@@ -455,14 +456,18 @@ CREATE TABLE IF NOT EXISTS "crm_receivable" (
     "remark" varchar(255),
     "process_instance_id" varchar(255),
     "audit_status" int,
+    "idempotency_key" varchar(128),
+    "payload_hash" varchar(64),
     "version" int,
+    "tenant_id" bigint NOT NULL DEFAULT 0,
     "creator" varchar(64) DEFAULT '',
     "create_time" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updater" varchar(64) DEFAULT '',
     "update_time" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deleted" bit NOT NULL DEFAULT FALSE,
     PRIMARY KEY ("id"),
-    UNIQUE KEY "uk_contract_no" ("contract_id", "no")
+    UNIQUE KEY "uk_contract_no" ("contract_id", "no"),
+    UNIQUE KEY "uk_tenant_idempotency" ("tenant_id", "idempotency_key")
 );
 
 CREATE TABLE IF NOT EXISTS "crm_receivable_plan" (
@@ -478,6 +483,8 @@ CREATE TABLE IF NOT EXISTS "crm_receivable_plan" (
     "remind_days" int,
     "remind_time" timestamp,
     "remark" varchar(255),
+    "version" int,
+    "tenant_id" bigint NOT NULL DEFAULT 0,
     "creator" varchar(64) DEFAULT '',
     "create_time" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updater" varchar(64) DEFAULT '',

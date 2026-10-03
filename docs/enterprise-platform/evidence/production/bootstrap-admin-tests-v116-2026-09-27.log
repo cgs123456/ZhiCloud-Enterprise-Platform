@@ -1,0 +1,29 @@
+test_run_sql_file_streams_rendered_file_to_mysql_client (scripts.production.tests.test_bootstrap_admin.BootstrapMysqlClientBoundaryTest.test_run_sql_file_streams_rendered_file_to_mysql_client) ... ok
+test_run_sql_text_streams_text_without_sql_file_boundary (scripts.production.tests.test_bootstrap_admin.BootstrapMysqlClientBoundaryTest.test_run_sql_text_streams_text_without_sql_file_boundary) ... ok
+test_default_username_is_not_a_public_seed (scripts.production.tests.test_bootstrap_admin.BootstrapRenderTest.test_default_username_is_not_a_public_seed) ... ok
+test_render_rejects_missing_post_relation (scripts.production.tests.test_bootstrap_admin.BootstrapRenderTest.test_render_rejects_missing_post_relation) ... ok
+test_render_rejects_missing_role_relation (scripts.production.tests.test_bootstrap_admin.BootstrapRenderTest.test_render_rejects_missing_role_relation) ... ok
+test_render_rejects_mysql_without_client_only_delimiter_boundary (scripts.production.tests.test_bootstrap_admin.BootstrapRenderTest.test_render_rejects_mysql_without_client_only_delimiter_boundary) ... ok
+test_render_rejects_non_mysql_without_execution_boundary (scripts.production.tests.test_bootstrap_admin.BootstrapRenderTest.test_render_rejects_non_mysql_without_execution_boundary) ... ok
+test_render_rejects_public_seed_username (scripts.production.tests.test_bootstrap_admin.BootstrapRenderTest.test_render_rejects_public_seed_username) ... ok
+test_render_rejects_template_without_duplicate_guard (scripts.production.tests.test_bootstrap_admin.BootstrapRenderTest.test_render_rejects_template_without_duplicate_guard) ... ok
+test_render_rejects_template_without_tenant_scoped_lookup (scripts.production.tests.test_bootstrap_admin.BootstrapRenderTest.test_render_rejects_template_without_tenant_scoped_lookup) ... ok
+test_render_succeeds_for_all_shipped_templates (scripts.production.tests.test_bootstrap_admin.BootstrapRenderTest.test_render_succeeds_for_all_shipped_templates) ... ok
+test_all_templates_exist_and_have_placeholders (scripts.production.tests.test_bootstrap_admin.BootstrapTemplateContractTest.test_all_templates_exist_and_have_placeholders) ... ok
+test_all_templates_guard_duplicate_bootstrap_usernames (scripts.production.tests.test_bootstrap_admin.BootstrapTemplateContractTest.test_all_templates_guard_duplicate_bootstrap_usernames) ... ok
+test_all_templates_guard_lookup_by_tenant (scripts.production.tests.test_bootstrap_admin.BootstrapTemplateContractTest.test_all_templates_guard_lookup_by_tenant) ... ok
+test_my_sql_and_sqlserver_are_retry_safe (scripts.production.tests.test_bootstrap_admin.BootstrapTemplateContractTest.test_my_sql_and_sqlserver_are_retry_safe) ... ok
+test_mysql_template_declares_client_only_delimiter_boundary (scripts.production.tests.test_bootstrap_admin.BootstrapTemplateContractTest.test_mysql_template_declares_client_only_delimiter_boundary) ... ok
+test_non_mysql_templates_are_retry_safe (scripts.production.tests.test_bootstrap_admin.BootstrapTemplateContractTest.test_non_mysql_templates_are_retry_safe) ... ok
+test_non_mysql_templates_declare_single_use_boundary (scripts.production.tests.test_bootstrap_admin.BootstrapTemplateContractTest.test_non_mysql_templates_declare_single_use_boundary) ... ok
+test_post_ids_never_reference_missing_post_one (scripts.production.tests.test_bootstrap_admin.BootstrapTemplateContractTest.test_post_ids_never_reference_missing_post_one) ... ok
+test_sqlserver_does_not_contain_nnull_typo (scripts.production.tests.test_bootstrap_admin.BootstrapTemplateContractTest.test_sqlserver_does_not_contain_nnull_typo) ... ok
+test_sqlserver_throw_is_inside_begin_end_block (scripts.production.tests.test_bootstrap_admin.BootstrapTemplateContractTest.test_sqlserver_throw_is_inside_begin_end_block) ... ok
+test_templates_create_role_and_post_relations (scripts.production.tests.test_bootstrap_admin.BootstrapTemplateContractTest.test_templates_create_role_and_post_relations) ... ok
+test_templates_do_not_contain_known_seed_secrets (scripts.production.tests.test_bootstrap_admin.BootstrapTemplateContractTest.test_templates_do_not_contain_known_seed_secrets) ... ok
+test_templates_do_not_hardcode_user_id_one (scripts.production.tests.test_bootstrap_admin.BootstrapTemplateContractTest.test_templates_do_not_hardcode_user_id_one) ... ok
+
+----------------------------------------------------------------------
+Ran 24 tests in 0.105s
+
+OK

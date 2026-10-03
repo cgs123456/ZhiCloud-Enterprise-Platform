@@ -206,6 +206,7 @@ CREATE TABLE IF NOT EXISTS "wms_shipment_order" (
     "status" int NOT NULL DEFAULT '0',
     "biz_order_no" varchar(64) DEFAULT NULL,
     "merchant_id" bigint DEFAULT NULL,
+"waybill_id" bigint DEFAULT NULL,
     "remark" varchar(255) DEFAULT NULL,
     "warehouse_id" bigint NOT NULL,
     "area_id" bigint NOT NULL DEFAULT '0',

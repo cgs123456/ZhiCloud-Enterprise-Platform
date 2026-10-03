@@ -7,12 +7,12 @@ import cn.zhicloud.module.trade.framework.delivery.core.client.dto.ExpressTrackR
 import cn.zhicloud.module.trade.framework.delivery.core.client.impl.kd100.Kd100ExpressClient;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import org.junit.jupiter.api.Disabled;
 
 /**
  * {@link Kd100ExpressClient} 的集成测试
@@ -20,6 +20,7 @@ import java.util.List;
  * @author jason
  */
 @Slf4j
+@Disabled // 真实第三方快递 API 探针，不作为本地业务流程用例运行
 public class Kd100ExpressClientIntegrationTest {
 
     private Kd100ExpressClient client;
@@ -34,7 +35,6 @@ public class Kd100ExpressClientIntegrationTest {
     }
 
     @Test
-    @Disabled("集成测试，暂时忽略")
     public void testGetExpressTrackList() {
         ExpressTrackQueryReqDTO reqDTO = new ExpressTrackQueryReqDTO();
         reqDTO.setExpressCode("STO");

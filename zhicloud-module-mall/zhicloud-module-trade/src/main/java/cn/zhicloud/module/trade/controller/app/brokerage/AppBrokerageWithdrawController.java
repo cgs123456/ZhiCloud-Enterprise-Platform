@@ -78,7 +78,7 @@ public class AppBrokerageWithdrawController {
 
     @PostMapping("/create")
     @Operation(summary = "创建分销提现")
-    @PreAuthorize("@ss.hasPermission('trade:brokerage-withdraw:create')")
+    @PreAuthorize("isAuthenticated()")
     public CommonResult<Long> createBrokerageWithdraw(@RequestBody @Valid AppBrokerageWithdrawCreateReqVO createReqVO) {
         return success(brokerageWithdrawService.createBrokerageWithdraw(getLoginUserId(), createReqVO));
     }

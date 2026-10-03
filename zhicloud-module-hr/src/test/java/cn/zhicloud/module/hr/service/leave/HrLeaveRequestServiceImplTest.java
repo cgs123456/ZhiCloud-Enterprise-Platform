@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 import static cn.zhicloud.framework.test.core.util.RandomUtils.randomLongId;
 import static cn.zhicloud.framework.test.core.util.RandomUtils.randomPojo;
 import static org.junit.jupiter.api.Assertions.*;
+import cn.zhicloud.module.bpm.api.task.BpmProcessInstanceApi;
 
 /**
  * {@link HrLeaveRequestServiceImpl} 的单元测试
@@ -36,7 +37,10 @@ public class HrLeaveRequestServiceImplTest extends BaseDbUnitTest {
     @Resource
     private HrLeaveTypeMapper leaveTypeMapper;
 
-    @MockitoBean
+        @MockitoBean
+    private BpmProcessInstanceApi processInstanceApi;
+
+@MockitoBean
     private HrEmployeeService employeeService;
     @MockitoBean
     private HrLeaveTypeService leaveTypeService;

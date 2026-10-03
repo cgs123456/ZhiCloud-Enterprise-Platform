@@ -46,7 +46,7 @@ public class AppSocialUserController {
 
     @DeleteMapping("/unbind")
     @Operation(summary = "取消社交绑定")
-    @PreAuthorize("@ss.hasPermission('member:social-user:update')")
+    @PreAuthorize("isAuthenticated()")
     public CommonResult<Boolean> socialUnbind(@RequestBody AppSocialUserUnbindReqVO reqVO) {
         SocialUserUnbindReqDTO reqDTO = new SocialUserUnbindReqDTO(getLoginUserId(), UserTypeEnum.MEMBER.getValue(),
                 reqVO.getType(), reqVO.getOpenid());

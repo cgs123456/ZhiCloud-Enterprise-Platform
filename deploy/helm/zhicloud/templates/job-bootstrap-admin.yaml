@@ -1,0 +1,123 @@
+{{/*
+============================================================
+zhicloud-server 生产管理员引导 Job（ArgoCD PreSync Hook）
+
+用途：
+  - existing 存量库：在 V115 清理公开种子账号之前，先创建独立管理员并绑定角色/岗位；
+  - clean 空库：先由 migration Job 完成 V1.1 clean baseline，再在 PreSync 后续 wave 创建管理员。
+
+安全约束：
+  1. 默认 bootstrapAdmin.enabled=false。生产安装/break-glass 必须显式开启，
+     避免把“必须有管理员口令 Secret”变成普通应用部署的隐式硬依赖。
+  2. 管理员口令只从独立 Secret 读取，不写入 ConfigMap、values 或 Job 模板。
+  3. ensure 模式对已存在账号 fail-closed；只有受控 rotate 模式才允许更新口令。
+  4. 与 migration Job 使用同一 MySQL truststore 挂载和 secretKeyRef 契约。
+*/}}
+{{- if .Values.bootstrapAdmin.enabled }}
+{{- if and (eq (default "existing" .Values.migration.baselineMode) "clean") (not .Values.migration.enabled) }}
+{{- fail "bootstrapAdmin 在 clean 模式下必须由 migration.enabled=true 先完成 V1.1 clean baseline" }}
+{{- end }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "zhicloud.fullname" . }}-bootstrap-admin
+  namespace: {{ include "zhicloud.namespace" . }}
+  labels:
+    {{- include "zhicloud.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: before-hook-creation
+    {{- if eq (default "existing" .Values.migration.baselineMode) "clean" }}
+    # clean 库必须先让 migration Job 建表，再创建管理员。
+    argocd.argoproj.io/sync-wave: "0"
+    {{- else }}
+    # 存量库必须在 V115 清理种子账号前创建非种子管理员。
+    argocd.argoproj.io/sync-wave: "-2"
+    {{- end }}
+spec:
+  backoffLimit: {{ .Values.bootstrapAdmin.backoffLimit }}
+  ttlSecondsAfterFinished: {{ .Values.bootstrapAdmin.ttlSecondsAfterFinished }}
+  completions: 1
+  parallelism: 1
+  activeDeadlineSeconds: {{ .Values.bootstrapAdmin.activeDeadlineSeconds | default 600 }}
+  template:
+    metadata:
+      labels:
+        {{- include "zhicloud.selectorLabels" . | nindent 8 }}
+        job-type: bootstrap-admin
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ include "zhicloud.serviceAccountName" . }}
+      automountServiceAccountToken: false
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: bootstrap-admin
+          image: {{ include "zhicloud.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "zhicloud.fullname" . }}-config
+            - secretRef:
+                name: {{ include "zhicloud.secretName" . }}
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: {{ .Values.env.SPRING_PROFILES_ACTIVE | quote }}
+            - name: TZ
+              value: {{ .Values.env.TZ | quote }}
+            - name: BOOTSTRAP_ADMIN_MODE
+              value: {{ .Values.bootstrapAdmin.mode | default "ensure" | quote }}
+            - name: BOOTSTRAP_ADMIN_USERNAME
+              value: {{ .Values.bootstrapAdmin.username | default "zhicloud_admin" | quote }}
+            - name: BOOTSTRAP_ADMIN_TENANT_ID
+              value: {{ .Values.bootstrapAdmin.tenantId | default 1 | quote }}
+            - name: BOOTSTRAP_ADMIN_ROLE_ID
+              value: {{ .Values.bootstrapAdmin.roleId | default 1 | quote }}
+            - name: BOOTSTRAP_ADMIN_POST_ID
+              value: {{ .Values.bootstrapAdmin.postId | default 4 | quote }}
+            - name: BOOTSTRAP_ADMIN_BCRYPT_COST
+              value: {{ .Values.bootstrapAdmin.bcryptCost | default 12 | quote }}
+            - name: BOOTSTRAP_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ required "bootstrapAdmin.passwordSecretName 未设置：启用管理员引导 Job 时必须提供独立 Secret" .Values.bootstrapAdmin.passwordSecretName | quote }}
+                  key: {{ .Values.bootstrapAdmin.passwordSecretKey | quote }}
+            {{- if .Values.mysqlTls.enabled }}
+            - name: MYSQL_TLS_TRUSTSTORE_URL
+              value: {{ printf "file:%s/%s" .Values.mysqlTls.truststore.mountPath .Values.mysqlTls.truststore.fileName | quote }}
+            - name: MYSQL_TLS_TRUSTSTORE_TYPE
+              value: {{ .Values.mysqlTls.truststore.type | quote }}
+            - name: MYSQL_TLS_TRUSTSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ required "mysqlTls.truststore.existingSecret 未设置：启用管理员引导 Job 时必须提供 truststore Secret" .Values.mysqlTls.truststore.existingSecret | quote }}
+                  key: {{ .Values.mysqlTls.truststore.passwordKey | quote }}
+            {{- end }}
+          command:
+            - java
+          args:
+            - -XX:MaxRAMPercentage=75
+            - -Duser.timezone={{ .Values.env.TZ }}
+            - -Dloader.main=cn.zhicloud.server.BootstrapAdminRunner
+            - -cp
+            - /zhicloud-server/app.jar
+            - org.springframework.boot.loader.launch.PropertiesLauncher
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          {{- if .Values.mysqlTls.enabled }}
+          volumeMounts:
+            - name: mysql-tls-truststore
+              mountPath: {{ .Values.mysqlTls.truststore.mountPath | quote }}
+              readOnly: true
+          {{- end }}
+          {{- include "zhicloud.resources" . | nindent 10 }}
+      {{- if .Values.mysqlTls.enabled }}
+      volumes:
+        - name: mysql-tls-truststore
+          secret:
+            secretName: {{ required "mysqlTls.truststore.existingSecret 未设置：启用管理员引导 Job 时必须提供 truststore Secret" .Values.mysqlTls.truststore.existingSecret | quote }}
+            items:
+              - key: {{ .Values.mysqlTls.truststore.fileKey | quote }}
+                path: {{ .Values.mysqlTls.truststore.fileName | quote }}
+      {{- end }}
+{{- end }}

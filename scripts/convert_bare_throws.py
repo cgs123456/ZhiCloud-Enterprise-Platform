@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-将业务代码（cn/zhicloud/zhicloud/** 包）中裸抛的
+将业务代码（cn/zhicloud/** 包）中裸抛的
     throw new RuntimeException(...)
     throw new IllegalStateException(...)
 统一改造为
@@ -9,8 +9,12 @@
 复用全局错误码 500，保留原始 message 与 cause。
 
 设计要点：
-- 仅扫描 */src/main/java 下以 cn/zhicloud/zhicloud/ 开头的包；
+- 仅扫描 */src/main/java 下以 cn/zhicloud/ 开头的包；
   排除 org/springframework、org/flowable 等「重打包外部类」（避免改坏 Spring/Flowable 内部行为）。
+- 跳过 check_bare_throws.py 认定的 @bare-throw-ignore 豁免点（throw 行本身或其上方 3 行内）：
+  那些是 CLI 入口与刻意 fail-closed 的基础设施信号，改成 ServiceException 会破坏行为与测试。
+- 注意：本脚本读写未做行尾保真，对 CRLF/混合行尾文件会整体改写；实跑前先用 --dry-run，
+  并确认目标文件行尾与改后一致。
 - 括号匹配与参数切分均「字符串字面量感知」，正确处理 "类型(%s)..." 这类含括号的消息。
 - 单参为 Throwable 变量 -> (code, e.getMessage(), e)；单参为字符串 -> (code, msg)；
   双参 (msg, e) -> (code, msg, e)。多参(>2) 跳过并告警（需人工 review）。
@@ -26,9 +30,18 @@ import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+if SCRIPT_DIR not in sys.path:
+    sys.path.insert(0, SCRIPT_DIR)
 
-THROW_RE = re.compile(r'throw\s+new\s+(RuntimeException|IllegalStateException)\s*\(', re.DOTALL)
-PKG_PREFIX = 'cn/zhicloud/zhicloud/'
+# 豁免判定与注释识别只保留一份实现：此前两个脚本各存一份 3 行回看规则，
+# 已经发生漂移——check 认块注释、convert 只认行注释，于是 convert 会改写
+# 被 /* */ 注释掉的裸抛。共享实现后，门禁怎么判、改写器就怎么跳过。
+import check_bare_throws as gate  # noqa: E402
+
+THROW_RE = gate.THROW_RE
+PKG_PREFIX = gate.PKG_PREFIX
+IGNORE_MARK = gate.IGNORE_MARK
 SERVICE_EXC_IMPORT = 'import cn.zhicloud.framework.common.exception.ServiceException;'
 GLOBAL_IMPORT = 'import cn.zhicloud.framework.common.exception.enums.GlobalErrorCodeConstants;'
 
@@ -166,9 +179,10 @@ def _insert_after_package(text, import_line):
     return import_line + '\n' + text
 
 
-def iter_main_java():
-    for dirpath, _dirs, files in os.walk(ROOT):
-        rel_dir = os.path.relpath(dirpath, ROOT).replace('\\', '/')
+def iter_main_java(root=None):
+    scan_root = os.path.abspath(root or ROOT)
+    for dirpath, _dirs, files in os.walk(scan_root):
+        rel_dir = os.path.relpath(dirpath, scan_root).replace('\\', '/')
         if not rel_dir.endswith('src/main/java'):
             # 仅处理 .../src/main/java 目录树
             if '/src/main/java/' not in ('/' + rel_dir + '/'):
@@ -178,7 +192,7 @@ def iter_main_java():
             if not fn.endswith('.java'):
                 continue
             full = os.path.join(dirpath, fn)
-            rel = os.path.relpath(full, ROOT).replace('\\', '/')
+            rel = os.path.relpath(full, scan_root).replace('\\', '/')
             # 必须是 src/main/java 下
             marker = '/src/main/java/'
             mi = rel.find(marker)
@@ -192,15 +206,25 @@ def iter_main_java():
             yield full, rel
 
 
+def is_exempted(lines, line_no):
+    """直接复用门禁判定：标记必须在 throw 同行、必须在真注释内、必须带非空理由。"""
+    return gate.is_ignored(lines, line_no)
+
+
 def process_file(full, rel, dry_run, stats):
     with open(full, 'r', encoding='utf-8') as f:
         text = f.read()
     if 'throw new RuntimeException(' not in text and 'throw new IllegalStateException(' not in text:
         return False
 
+    lines = text.splitlines()
     changes = []
     for m in THROW_RE.finditer(text):
-        if in_line_comment(text, m.start()):
+        if gate.in_comment(text, m.start()):
+            continue
+        line_no = text.count('\n', 0, m.start()) + 1
+        if is_exempted(lines, line_no):
+            stats['exempted'].append((rel, line_no))
             continue
         open_pos = text.index('(', m.start())
         close = find_matching_paren(text, open_pos)
@@ -214,7 +238,6 @@ def process_file(full, rel, dry_run, stats):
             continue
         old_span = text[m.start():close + 1]
         new_span = f"throw new ServiceException(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR, {newargs})"
-        line_no = text.count('\n', 0, m.start()) + 1
         changes.append((m.start(), close + 1, old_span, new_span, line_no))
 
     if not changes:
@@ -244,9 +267,11 @@ def main():
     ap.add_argument('--root', default=ROOT)
     args = ap.parse_args()
 
-    stats = {'files': 0, 'converted': 0, 'warn': [], 'preview': []}
-    for full, rel in iter_main_java():
+    stats = {'files': 0, 'converted': 0, 'warn': [], 'preview': [], 'exempted': []}
+    for full, rel in iter_main_java(args.root):
         process_file(full, rel, args.dry_run, stats)
+
+    print(f'[INFO] {len(stats["exempted"])} 处 @bare-throw-ignore 豁免点已跳过（不改写）。')
 
     if args.dry_run:
         print(f'[DRY-RUN] 命中文件 {stats["files"]} 处潜在改写（未写入）：')

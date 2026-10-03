@@ -1,0 +1,2 @@
+[bootstrap-admin] target=jdbc:mysql://127.0.0.1:53306/zhicloud_runner_clean_20260927_190515 mode=ensure username=zhicloud_admin tenantId=1
+[bootstrap-admin] success: action=created username=zhicloud_admin tenantId=1 roleId=1 postId=4 cost=1175ms

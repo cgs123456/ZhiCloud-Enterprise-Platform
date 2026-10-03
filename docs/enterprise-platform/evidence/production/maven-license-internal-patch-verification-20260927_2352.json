@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "evidence_type": "maven_license_internal_patch_verification",
+  "generated_at_local": "2026-09-27T23:59:06+08:00",
+  "status": "passed_for_internal_license_metadata",
+  "patch_scope": [
+    "pom.xml: added MIT <licenses> after project url",
+    "zhicloud-dependencies/pom.xml: added MIT <licenses> after project url"
+  ],
+  "command": [
+    "mvn",
+    "-q",
+    "org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom",
+    "-DincludeLicenseText=false",
+    "-DprojectType=application"
+  ],
+  "before": {
+    "bom_sha256": "AEBA1568CDD26AD9C637B4E7C69C3692408903B13207B79ED5FBF8BCB4388696",
+    "total_components": 863,
+    "internal_components": 36,
+    "internal_missing_license": 36,
+    "external_components": 827,
+    "external_missing_license": 1
+  },
+  "after": {
+    "bom_sha256": "29427017AAADEC5E317DA685FD674D79BCD84C8A045342A6E507DDC59629D974",
+    "total_components": 863,
+    "internal_components": 36,
+    "internal_missing_license": 0,
+    "internal_license_counts": {
+      "MIT": 36
+    },
+    "external_components": 827
+  },
+  "boundary": [
+    "Only internal Maven project license metadata is verified; no legal opinion is provided.",
+    "External jcip-annotations missing license label remains unresolved.",
+    "Dependency coordinates were not changed; CVE upgrade and rescan are still required for any future dependency change.",
+    "T-107 remains OPEN because legal approval, CI license gate, image/frontend scans and secret closure are incomplete."
+  ]
+}

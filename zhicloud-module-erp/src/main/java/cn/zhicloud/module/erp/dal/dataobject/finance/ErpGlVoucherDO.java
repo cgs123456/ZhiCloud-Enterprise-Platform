@@ -104,5 +104,21 @@ public class ErpGlVoucherDO extends TenantBaseDO {
      * 账簿 ID（多账簿支持，空表示默认主账簿）
      */
     private Long accountBookId;
+    /**
+     * 来源会计事件 ID（关联 {@link cn.zhicloud.module.erp.dal.dataobject.accounting.ErpAccountingEventDO#getId()}）
+     */
+    private Long sourceEventId;
+    /**
+     * 来源单据类型
+     */
+    private String sourceDocType;
+    /**
+     * 来源单据 ID
+     */
+    private Long sourceDocId;
+    /**
+     * 来源单据编号
+     */
+    private String sourceDocNo;
 
 }

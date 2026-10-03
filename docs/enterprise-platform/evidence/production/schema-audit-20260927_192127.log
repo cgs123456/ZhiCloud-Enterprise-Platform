@@ -1,0 +1,24 @@
+[INFO] report written to C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\docs\enterprise-platform\evidence\production\schema-audit-20260927_192127.json
+[INFO] tables expected=578 present=463 db_tables=464; columns expected=8903 present=7644
+[INFO] findings total=132 P0=115 P1=0 P2=17 divergences=200
+[P0_BLOCKER] missing_table im_channel :: ��ⲻ���ڸñ���DO/DDL ���������ڣ������ڻ�ֱ�ӱ�����
+[P0_BLOCKER] missing_table im_channel_material :: ��ⲻ���ڸñ���DO/DDL ���������ڣ������ڻ�ֱ�ӱ�����
+[P0_BLOCKER] missing_table im_channel_message :: ��ⲻ���ڸñ���DO/DDL ���������ڣ������ڻ�ֱ�ӱ�����
+[P0_BLOCKER] missing_table im_conversation_read :: ��ⲻ���ڸñ���DO/DDL ���������ڣ������ڻ�ֱ�ӱ�����
+[P0_BLOCKER] missing_table im_face_pack :: ��ⲻ���ڸñ���DO/DDL ���������ڣ������ڻ�ֱ�ӱ�����
+[P0_BLOCKER] missing_table im_face_pack_item :: ��ⲻ���ڸñ���DO/DDL ���������ڣ������ڻ�ֱ�ӱ�����
+[P0_BLOCKER] missing_table im_face_user_item :: ��ⲻ���ڸñ���DO/DDL ���������ڣ������ڻ�ֱ�ӱ�����
+[P0_BLOCKER] missing_table im_friend :: ��ⲻ���ڸñ���DO/DDL ���������ڣ������ڻ�ֱ�ӱ�����
+[P0_BLOCKER] missing_table im_friend_request :: ��ⲻ���ڸñ���DO/DDL ���������ڣ������ڻ�ֱ�ӱ�����
+[P0_BLOCKER] missing_table im_group :: ��ⲻ���ڸñ���DO/DDL ���������ڣ������ڻ�ֱ�ӱ�����
+[P0_BLOCKER] missing_table im_group_member :: ��ⲻ���ڸñ���DO/DDL ���������ڣ������ڻ�ֱ�ӱ�����
+[P0_BLOCKER] missing_table im_group_message :: ��ⲻ���ڸñ���DO/DDL ���������ڣ������ڻ�ֱ�ӱ�����
+[P0_BLOCKER] missing_table im_group_request :: ��ⲻ���ڸñ���DO/DDL ���������ڣ������ڻ�ֱ�ӱ�����
+[P0_BLOCKER] missing_table im_private_message :: ��ⲻ���ڸñ���DO/DDL ���������ڣ������ڻ�ֱ�ӱ�����
+[P0_BLOCKER] missing_table im_rtc_call :: ��ⲻ���ڸñ���DO/DDL ���������ڣ������ڻ�ֱ�ӱ�����
+[P0_BLOCKER] missing_table im_rtc_participant :: ��ⲻ���ڸñ���DO/DDL ���������ڣ������ڻ�ֱ�ӱ�����
+[P0_BLOCKER] missing_table im_sensitive_word :: ��ⲻ���ڸñ���DO/DDL ���������ڣ������ڻ�ֱ�ӱ�����
+[P0_BLOCKER] missing_table iot_alert_config :: ��ⲻ���ڸñ���DO/DDL ���������ڣ������ڻ�ֱ�ӱ�����
+[P0_BLOCKER] missing_table iot_alert_record :: ��ⲻ���ڸñ���DO/DDL ���������ڣ������ڻ�ֱ�ӱ�����
+[P0_BLOCKER] missing_table iot_data_rule :: ��ⲻ���ڸñ���DO/DDL ���������ڣ������ڻ�ֱ�ӱ�����
+[INFO] exit code = 2 (fail-on P0_BLOCKER)

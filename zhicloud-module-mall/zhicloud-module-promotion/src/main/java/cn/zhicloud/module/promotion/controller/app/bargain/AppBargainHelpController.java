@@ -12,6 +12,7 @@ import cn.zhicloud.module.promotion.service.bargain.BargainHelpService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,7 +39,7 @@ public class AppBargainHelpController {
 
     @PostMapping("/create")
     @Operation(summary = "创建砍价助力", description = "给拼团记录砍一刀") // 返回结果为砍价金额，单位：分
-    @PreAuthorize("@ss.hasPermission('promotion:bargain-help:create')")
+    @PreAuthorize("isAuthenticated()")
     public CommonResult<Integer> createBargainHelp(@RequestBody AppBargainHelpCreateReqVO reqVO) {
         BargainHelpDO help = bargainHelpService.createBargainHelp(getLoginUserId(), reqVO);
         return success(help.getReducePrice());

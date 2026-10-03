@@ -17,6 +17,9 @@ import cn.zhicloud.module.erp.dal.mysql.finance.ErpFinancePaymentMapper;
 import cn.zhicloud.module.erp.dal.redis.no.ErpNoRedisDAO;
 import cn.zhicloud.module.erp.enums.ErpAuditStatus;
 import cn.zhicloud.module.erp.enums.common.ErpBizTypeEnum;
+import cn.zhicloud.module.erp.service.accounting.ErpAccountingEventService;
+import cn.zhicloud.module.erp.service.accounting.bo.ErpAccountingEventCreateReqBO;
+import cn.zhicloud.module.erp.service.accounting.bo.ErpAccountingEventReverseReqBO;
 import cn.zhicloud.module.erp.service.purchase.ErpPurchaseInService;
 import cn.zhicloud.module.erp.service.purchase.ErpPurchaseReturnService;
 import cn.zhicloud.module.erp.service.purchase.ErpSupplierService;
@@ -27,6 +30,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -62,6 +67,8 @@ public class ErpFinancePaymentServiceImpl implements ErpFinancePaymentService {
     private ErpPurchaseInService purchaseInService;
     @Resource
     private ErpPurchaseReturnService purchaseReturnService;
+    @Resource
+    private ErpAccountingEventService accountingEventService;
 
     @Resource
     private AdminUserApi adminUserApi;
@@ -140,20 +147,78 @@ public class ErpFinancePaymentServiceImpl implements ErpFinancePaymentService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateFinancePaymentStatus(Long id, Integer status) {
+        if (!ErpAuditStatus.isValid(status)) {
+            throw exception(ERP_AUDIT_STATUS_INVALID, status);
+        }
         boolean approve = ErpAuditStatus.APPROVE.getStatus().equals(status);
         // 1.1 校验存在
         ErpFinancePaymentDO payment = validateFinancePaymentExists(id);
-        // 1.2 校验状态
-        if (payment.getStatus().equals(status)) {
-            throw exception(approve ? FINANCE_PAYMENT_APPROVE_FAIL : FINANCE_PAYMENT_PROCESS_FAIL);
+        // 1.2 幂等处理：目标状态与当前状态一致时，返回同一业务结果
+        if (status.equals(payment.getStatus())) {
+            return;
         }
 
         // 2. 更新状态
         int updateCount = financePaymentMapper.updateByIdAndStatus(id, payment.getStatus(),
                 new ErpFinancePaymentDO().setStatus(status));
         if (updateCount == 0) {
+            ErpFinancePaymentDO latest = financePaymentMapper.selectOneForUpdate(ErpFinancePaymentDO::getId, id);
+            if (latest != null && status.equals(latest.getStatus())) {
+                return;
+            }
             throw exception(approve ? FINANCE_PAYMENT_APPROVE_FAIL : FINANCE_PAYMENT_PROCESS_FAIL);
         }
+
+        // 3. 审核通过时生成付款会计事件；事件与付款状态变更处于同一事务
+        if (approve) {
+            accountingEventService.postEvent(buildPaymentPostedEvent(payment));
+        } else if (ErpAuditStatus.APPROVE.getStatus().equals(payment.getStatus())) {
+            // 仅当单据此前已审核（存在已过账原事件）时才生成冲销事件；
+            // PROCESS 直接驳回等场景没有可冲销的原事件，不应阻断业务状态流转
+            accountingEventService.reverseEvent(buildPaymentReversalRequest(payment));
+        }
+    }
+
+    private ErpAccountingEventCreateReqBO buildPaymentPostedEvent(ErpFinancePaymentDO payment) {
+        LocalDate eventDate = payment.getPaymentTime() == null
+                ? LocalDate.now() : payment.getPaymentTime().toLocalDate();
+        BigDecimal paymentPrice = defaultZero(payment.getPaymentPrice());
+        return ErpAccountingEventCreateReqBO.builder()
+                .eventType("PAYMENT_POSTED")
+                .sourceDocType("FINANCE_PAYMENT")
+                .sourceDocId(payment.getId())
+                .sourceDocNo(payment.getNo())
+                .sourceDocLineId(0L)
+                .sourceRevision(1)
+                .eventDate(eventDate)
+                .accountingDate(eventDate)
+                .amountWithoutTax(paymentPrice)
+                .taxAmount(BigDecimal.ZERO)
+                .amountWithTax(paymentPrice)
+                .docTotalAmount(paymentPrice)
+                .currency(null)
+                .exchangeRate(BigDecimal.ONE)
+                .reversalOfEventId(0L)
+                .occurredAt(payment.getPaymentTime() == null ? LocalDateTime.now() : payment.getPaymentTime())
+                .build();
+    }
+
+    private ErpAccountingEventReverseReqBO buildPaymentReversalRequest(ErpFinancePaymentDO payment) {
+        LocalDate eventDate = payment.getPaymentTime() == null
+                ? LocalDate.now() : payment.getPaymentTime().toLocalDate();
+        return ErpAccountingEventReverseReqBO.builder()
+                .eventType("PAYMENT_POSTED")
+                .sourceDocType("FINANCE_PAYMENT")
+                .sourceDocId(payment.getId())
+                .sourceDocLineId(0L)
+                .sourceRevision(1)
+                .eventDate(eventDate)
+                .accountingDate(LocalDate.now())
+                .occurredAt(LocalDateTime.now())
+                .build();
+    }
+    private static BigDecimal defaultZero(BigDecimal value) {
+        return value == null ? BigDecimal.ZERO : value;
     }
 
     private List<ErpFinancePaymentItemDO> validateFinancePaymentItems(

@@ -55,6 +55,17 @@
         <dependency>
             <groupId>uk.co.jemos.podam</groupId> <!-- 单元测试，随机生成 POJO 类 -->
             <artifactId>podam</artifactId>
+            <exclusions>
+                <exclusion>
+                    <!-- jcip-annotations 1.0 缺少许可证元数据；使用 Apache-2.0 cleanroom 实现 -->
+                    <groupId>net.jcip</groupId>
+                    <artifactId>jcip-annotations</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.github.stephenc.jcip</groupId>
+            <artifactId>jcip-annotations</artifactId>
         </dependency>
     </dependencies>
 </project>

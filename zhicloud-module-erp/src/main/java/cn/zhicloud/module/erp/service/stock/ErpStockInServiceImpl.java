@@ -110,18 +110,25 @@ public class ErpStockInServiceImpl implements ErpStockInService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateStockInStatus(Long id, Integer status) {
+        if (!ErpAuditStatus.isValid(status)) {
+            throw exception(ERP_AUDIT_STATUS_INVALID, status);
+        }
         boolean approve = ErpAuditStatus.APPROVE.getStatus().equals(status);
         // 1.1 校验存在
         ErpStockInDO stockIn = validateStockInExists(id);
-        // 1.2 校验状态
-        if (stockIn.getStatus().equals(status)) {
-            throw exception(approve ? STOCK_IN_APPROVE_FAIL : STOCK_IN_PROCESS_FAIL);
+        // 1.2 幂等处理：目标状态与当前状态一致时，返回同一业务结果
+        if (status.equals(stockIn.getStatus())) {
+            return;
         }
 
         // 2. 更新状态
         int updateCount = stockInMapper.updateByIdAndStatus(id, stockIn.getStatus(),
                 new ErpStockInDO().setStatus(status));
         if (updateCount == 0) {
+            ErpStockInDO latest = stockInMapper.selectOneForUpdate(ErpStockInDO::getId, id);
+            if (latest != null && status.equals(latest.getStatus())) {
+                return;
+            }
             throw exception(approve ? STOCK_IN_APPROVE_FAIL : STOCK_IN_PROCESS_FAIL);
         }
 

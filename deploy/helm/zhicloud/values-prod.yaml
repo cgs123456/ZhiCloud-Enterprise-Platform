@@ -47,14 +47,24 @@ ingress:
     nginx.ingress.kubernetes.io/limit-rps: "100"
     nginx.ingress.kubernetes.io/limit-connections: "200"
 
+# MySQL TLS：生产必须校验证书链与主机名；truststore 由外部 Secret 提供
+mysqlTls:
+  enabled: true
+  mode: "VERIFY_IDENTITY"
+  truststore:
+    # 生产部署前必须设置为包含 truststore.p12 与密码键的 Secret
+    existingSecret: ""
+
 # 环境变量：prod profile
 env:
   SPRING_PROFILES_ACTIVE: "prod"
   # 生产环境数据库连接（指向生产集群）
-  MASTER_DATASOURCE_URL: "jdbc:mysql://zhicloud-mysql-prod:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true"
-  SLAVE_DATASOURCE_URL: "jdbc:mysql://zhicloud-mysql-prod-slave:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true"
+  MASTER_DATASOURCE_URL: "jdbc:mysql://zhicloud-mysql-prod:3306/zhicloud_platform?sslMode=VERIFY_IDENTITY&tlsVersions=TLSv1.2,TLSv1.3&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true"
+  SLAVE_DATASOURCE_URL: "jdbc:mysql://zhicloud-mysql-prod-slave:3306/zhicloud_platform?sslMode=VERIFY_IDENTITY&tlsVersions=TLSv1.2,TLSv1.3&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true"
   REDIS_HOST: "zhicloud-redis-prod"
-  ZHICLOUD_AIRAG_DATASOURCE_URL: "jdbc:postgresql://zhicloud-postgres-prod:5432/zhicloud_rag"
+  # 生产必须校验 PostgreSQL 证书链与主机名；CA 需在 JVM truststore 或通过 sslrootcert 提供
+  ZHICLOUD_AIRAG_DATASOURCE_URL: "jdbc:postgresql://zhicloud-postgres-prod:5432/zhicloud_rag?sslmode=verify-full"
+  ZHICLOUD_AIRAG_INITIALIZE_SCHEMA: "false"
   OTEL_EXPORTER_OTLP_ENDPOINT: "http://zhicloud-jaeger-prod:4318/v1/traces"
   MANAGEMENT_OTLP_TRACING_ENDPOINT: "http://zhicloud-jaeger-prod:4318/v1/traces"
   # 生产 JVM 参数（更大堆 + ZGC）
@@ -63,8 +73,16 @@ env:
 # 启用迁移 Job（生产环境显式迁移）
 migration:
   enabled: true
+  baselineMode: existing
   backoffLimit: 2
   ttlSecondsAfterFinished: 1800
+
+# 管理员引导 Job：默认关闭，首次安装/受控轮换时按 runbook 显式开启。
+bootstrapAdmin:
+  enabled: false
+  mode: ensure
+  passwordSecretName: ""
+  passwordSecretKey: "BOOTSTRAP_ADMIN_PASSWORD"
 
 # 优雅停机：生产环境给足时间处理在途请求
 terminationGracePeriodSeconds: 60

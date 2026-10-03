@@ -41,6 +41,15 @@ public class HrLeaveRequestController {
         return success(leaveRequestService.createLeaveRequest(createReqVO));
     }
 
+    @PutMapping("/submit")
+    @Operation(summary = "提交请假单到流程审批")
+    @Parameter(name = "id", description = "编号", required = true)
+    @PreAuthorize("@ss.hasPermission('hr:leave-request:update')")
+    public CommonResult<Boolean> submitLeaveRequest(@RequestParam("id") Long id) {
+        leaveRequestService.submitLeaveRequest(id);
+        return success(true);
+    }
+
     @PutMapping("/approve")
     @Operation(summary = "审批请假单")
     @PreAuthorize("@ss.hasPermission('hr:leave-request:update')")

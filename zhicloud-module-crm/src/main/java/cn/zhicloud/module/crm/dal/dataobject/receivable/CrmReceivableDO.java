@@ -1,6 +1,6 @@
 package cn.zhicloud.module.crm.dal.dataobject.receivable;
 
-import cn.zhicloud.framework.mybatis.core.dataobject.BaseDO;
+import cn.zhicloud.framework.tenant.core.db.TenantBaseDO;
 import cn.zhicloud.module.crm.dal.dataobject.contract.CrmContractDO;
 import cn.zhicloud.module.crm.dal.dataobject.customer.CrmCustomerDO;
 import cn.zhicloud.module.crm.enums.common.CrmAuditStatusEnum;
@@ -28,7 +28,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CrmReceivableDO extends BaseDO {
+public class CrmReceivableDO extends TenantBaseDO {
 
     /**
      * ID
@@ -93,6 +93,15 @@ public class CrmReceivableDO extends BaseDO {
      * 枚举 {@link CrmAuditStatusEnum}
      */
     private Integer auditStatus;
+
+    /**
+     * 客户端幂等键。与 tenant_id 组成唯一键，防止同一请求重复创建回款。
+     */
+    private String idempotencyKey;
+    /**
+     * 创建请求载荷的 SHA-256。同键不同载荷必须拒绝，不能误返回其他业务单据。
+     */
+    private String payloadHash;
 
     /**
      * 乐观锁版本号

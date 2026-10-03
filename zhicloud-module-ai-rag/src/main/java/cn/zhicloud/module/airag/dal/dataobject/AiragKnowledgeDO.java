@@ -1,6 +1,6 @@
 package cn.zhicloud.module.airag.dal.dataobject;
 
-import cn.zhicloud.framework.mybatis.core.dataobject.BaseDO;
+import cn.zhicloud.framework.tenant.core.db.TenantBaseDO;
 import com.baomidou.mybatisplus.annotation.KeySequence;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -20,7 +20,7 @@ import lombok.experimental.Accessors;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Accessors(chain = true)
-public class AiragKnowledgeDO extends BaseDO {
+public class AiragKnowledgeDO extends TenantBaseDO {
 
     /**
      * 编号

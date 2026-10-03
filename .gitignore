@@ -98,3 +98,16 @@ docs/stage*-fix-report.md
 scripts/mvn.sh
 scripts/probe/
 scripts/fix_flyway_mysql_compat.py
+
+# Python bytecode caches under scripts/
+__pycache__/
+*.pyc
+
+
+### 生产就绪证据日志必须入仓（.gitignore 第 40 行的 *.log 会静默排除它们，
+### 导致 08/01 等文档按路径引用的证据变成悬空链接）
+!docs/enterprise-platform/evidence/production/**/*.log
+
+# 仓库根目录的 META-INF（Spring Boot / Flowable 自动配置元数据）是构建或测试
+# 把工作目录当成输出目录产生的残留，不是源码；根锚定规则避免误伤 src/**/META-INF。
+/META-INF/

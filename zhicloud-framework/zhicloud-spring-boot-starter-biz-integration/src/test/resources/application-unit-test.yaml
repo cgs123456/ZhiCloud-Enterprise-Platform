@@ -1,0 +1,32 @@
+spring:
+  main:
+    lazy-initialization: true # 开启懒加载，加快速度
+    banner-mode: off # 单元测试，禁用 Banner
+  #################### 数据库相关配置 ####################
+  datasource:
+    name: zhicloud_platform
+    url: jdbc:h2:mem:testdb;MODE=MYSQL;DATABASE_TO_UPPER=false;NON_KEYWORDS=value; # MODE 使用 MySQL 模式；DATABASE_TO_UPPER 配置表和字段使用小写
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+    druid:
+      async-init: true # 单元测试，异步初始化 Druid 连接池，提升启动速度
+      initial-size: 1 # 单元测试，配置为 1，提升启动速度
+  sql:
+    init:
+      schema-locations: classpath:/sql/create_tables.sql
+
+#################### 智云相关配置 ####################
+zhicloud:
+  info:
+    base-package: cn.zhicloud.module
+  integration:
+    # 刻意不取默认值：让退避、死信阈值、租约的取值都真正参与断言，
+    # 避免测试只在默认参数下「碰巧通过」
+    max-retry: 3
+    base-backoff-seconds: 10
+    max-backoff-seconds: 100
+    lease-seconds: 30
+    batch-size: 20
+    # 单测上下文不排空事件：后台定时任务会与断言并发写 H2，破坏确定性
+    relay-enabled: false

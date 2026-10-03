@@ -1,6 +1,6 @@
 package cn.zhicloud.module.crm.dal.dataobject.receivable;
 
-import cn.zhicloud.framework.mybatis.core.dataobject.BaseDO;
+import cn.zhicloud.framework.tenant.core.db.TenantBaseDO;
 import cn.zhicloud.module.crm.dal.dataobject.contract.CrmContractDO;
 import cn.zhicloud.module.crm.dal.dataobject.customer.CrmCustomerDO;
 import cn.zhicloud.module.crm.enums.receivable.CrmReceivableReturnTypeEnum;
@@ -26,7 +26,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CrmReceivablePlanDO extends BaseDO {
+public class CrmReceivablePlanDO extends TenantBaseDO {
 
     /**
      * 编号

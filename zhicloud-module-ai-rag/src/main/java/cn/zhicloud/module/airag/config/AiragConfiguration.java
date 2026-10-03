@@ -8,13 +8,17 @@ import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.transformers.TransformersEmbeddingModel;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.ai.vectorstore.pgvector.PgVectorStore;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
+
+import javax.sql.DataSource;
 
 /**
  * AI RAG 模块自动配置
@@ -39,20 +43,37 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * @author zhicloud
  */
 @Configuration
+@EnableConfigurationProperties({AiragDataSourceProperties.class, AiragProperties.class})
 @ConditionalOnProperty(prefix = "zhicloud.airag", name = "enabled", havingValue = "true")
 @Slf4j
 public class AiragConfiguration {
 
     /**
+     * 创建 AI-RAG 独立 PostgreSQL 数据源。
+     *
+     * <p>与业务主库（当前为 MySQL）完全隔离；仅当调用方未提供同名
+     * {@code airagDataSource} 或 {@code airagJdbcTemplate} 时创建。
+     */
+    @Bean(name = "airagDataSource")
+    @ConditionalOnMissingBean(name = {"airagDataSource", "airagJdbcTemplate"})
+    public DataSource airagDataSource(AiragDataSourceProperties properties) {
+        log.info("[airagDataSource][初始化 AI-RAG PostgreSQL 数据源，url={}]", properties.getUrl());
+        return properties.initializeDataSourceBuilder().build();
+    }
+
+    /**
+     * 创建 AI-RAG 专用 JdbcTemplate，禁止复用业务主库的全局 JdbcTemplate。
+     */
+    @Bean(name = "airagJdbcTemplate")
+    @ConditionalOnMissingBean(name = "airagJdbcTemplate")
+    public JdbcTemplate airagJdbcTemplate(@Qualifier("airagDataSource") DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
+    }
+
+    /**
      * 默认向量维度：BGE-base-zh 为 768 维
      */
     private static final int DEFAULT_VECTOR_DIMENSION = 768;
-
-    /**
-     * 默认向量存储表名
-     */
-    private static final String DEFAULT_VECTOR_TABLE_NAME = "airag_vector_store";
-
     /**
      * 本地 Embedding 模型文件所在的 classpath 目录名（位于 {@code airag/} 子目录下）。
      *
@@ -92,7 +113,7 @@ public class AiragConfiguration {
      * 创建 PgVectorStore Bean
      *
      * 当 {@code zhicloud.airag.enabled=true} 且容器中存在 {@link EmbeddingModel} 时才创建。
-     * PgVectorStore 通过 {@code initializeSchema=true} 自动建表（airag_vector_store）。
+     * 生产环境默认不自动建表，由数据库迁移脚本显式创建表和索引，应用启动时执行结构校验。
      *
      * @param jdbcTemplate  Spring 自动注入的 JdbcTemplate（来自 spring-ai-starter-vector-store-pgvector 的数据源配置）
      * @param embeddingModel Embedding 模型（本模块本地 BGE-base-zh 或使用方提供的外部 Embedding）
@@ -100,14 +121,17 @@ public class AiragConfiguration {
      */
     @Bean
     @ConditionalOnBean(EmbeddingModel.class)
-    public VectorStore airagVectorStore(JdbcTemplate jdbcTemplate, EmbeddingModel embeddingModel) {
-        log.info("[airagVectorStore][初始化 PgVectorStore，dimension={}, table={}]", DEFAULT_VECTOR_DIMENSION, DEFAULT_VECTOR_TABLE_NAME);
+    public VectorStore airagVectorStore(@Qualifier("airagJdbcTemplate") JdbcTemplate jdbcTemplate,
+                                        EmbeddingModel embeddingModel,
+                                        AiragProperties properties) {
+        log.info("[airagVectorStore][初始化 PgVectorStore，dimension={}, table={}, initializeSchema={}]",
+                DEFAULT_VECTOR_DIMENSION, properties.getVectorTableName(), properties.isInitializeSchema());
         return PgVectorStore.builder(jdbcTemplate, embeddingModel)
                 .dimensions(DEFAULT_VECTOR_DIMENSION)
                 .distanceType(PgVectorStore.PgDistanceType.COSINE_DISTANCE)
                 .indexType(PgVectorStore.PgIndexType.HNSW)
-                .vectorTableName(DEFAULT_VECTOR_TABLE_NAME)
-                .initializeSchema(true)
+                .vectorTableName(properties.getVectorTableName())
+                .initializeSchema(properties.isInitializeSchema())
                 .build();
     }
 
@@ -123,9 +147,10 @@ public class AiragConfiguration {
      */
     @Bean
     @ConditionalOnProperty(prefix = "zhicloud.airag", name = "enabled", havingValue = "true")
-    public Bm25LexicalRetriever bm25LexicalRetriever(JdbcTemplate jdbcTemplate) {
-        log.info("[bm25LexicalRetriever][初始化 BM25 词法检索器，table={}]", DEFAULT_VECTOR_TABLE_NAME);
-        return new Bm25LexicalRetriever(jdbcTemplate, DEFAULT_VECTOR_TABLE_NAME);
+    public Bm25LexicalRetriever bm25LexicalRetriever(@Qualifier("airagJdbcTemplate") JdbcTemplate jdbcTemplate,
+                                                     AiragProperties properties) {
+        log.info("[bm25LexicalRetriever][初始化 BM25 词法检索器，table={}]", properties.getVectorTableName());
+        return new Bm25LexicalRetriever(jdbcTemplate, properties.getVectorTableName());
     }
 
     /**
@@ -144,3 +169,4 @@ public class AiragConfiguration {
     }
 
 }
+

@@ -9,7 +9,6 @@ import cn.zhicloud.module.trade.dal.mysql.brokerage.BrokerageWithdrawMapper;
 import cn.zhicloud.module.trade.service.config.TradeConfigService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Validator;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -19,6 +18,9 @@ import static cn.zhicloud.framework.common.util.object.ObjectUtils.cloneIgnoreId
 import static cn.zhicloud.framework.test.core.util.AssertUtils.assertPojoEquals;
 import static cn.zhicloud.framework.test.core.util.RandomUtils.randomPojo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import cn.zhicloud.module.pay.api.transfer.PayTransferApi;
+import cn.zhicloud.module.pay.api.wallet.PayWalletApi;
+import org.junit.jupiter.api.Disabled;
 
 // TODO 芋艿：后续 review
 /**
@@ -26,8 +28,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * @author 智云
  */
-@Disabled // TODO 芋艿：后续 fix 补充的单测
 @Import(BrokerageWithdrawServiceImpl.class)
+    // 见下方注解说明。修复方向是给缺失的跨模块 API/服务补 @MockitoBean，不是放宽断言。
+@Disabled // TODO 上游 "后续 fix 补充的单测"：上下文还缺 PayWalletApi / PayTransferApi 替身
 public class BrokerageWithdrawServiceImplTest extends BaseDbUnitTest {
 
     @Resource
@@ -48,9 +51,12 @@ public class BrokerageWithdrawServiceImplTest extends BaseDbUnitTest {
 
     @Resource
     private Validator validator;
+    @MockitoBean
+    private PayTransferApi payTransferApi;
+    @MockitoBean
+    private PayWalletApi payWalletApi;
 
     @Test
-    @Disabled  // TODO 请修改 null 为需要的值，然后删除 @Disabled 注解
     public void testGetBrokerageWithdrawPage() {
         // mock 数据
         BrokerageWithdrawDO dbBrokerageWithdraw = randomPojo(BrokerageWithdrawDO.class, o -> { // 等会查询到

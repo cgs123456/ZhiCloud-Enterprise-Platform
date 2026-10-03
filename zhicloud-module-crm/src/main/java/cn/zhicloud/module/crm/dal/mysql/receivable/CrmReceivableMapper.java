@@ -34,6 +34,18 @@ public interface CrmReceivableMapper extends BaseMapperX<CrmReceivableDO> {
         return selectOne(CrmReceivableDO::getNo, no);
     }
 
+    default CrmReceivableDO selectByIdempotencyKey(String idempotencyKey) {
+        return selectOne(CrmReceivableDO::getIdempotencyKey, idempotencyKey);
+    }
+
+    default CrmReceivableDO selectByIdForUpdate(Long id) {
+        return selectOneForUpdate(CrmReceivableDO::getId, id);
+    }
+
+    default CrmReceivableDO selectByIdempotencyKeyForUpdate(String idempotencyKey) {
+        return selectOneForUpdate(CrmReceivableDO::getIdempotencyKey, idempotencyKey);
+    }
+
     default PageResult<CrmReceivableDO> selectPageByCustomerId(CrmReceivablePageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<CrmReceivableDO>()
                 .eq(CrmReceivableDO::getCustomerId, reqVO.getCustomerId()) // 必须传递

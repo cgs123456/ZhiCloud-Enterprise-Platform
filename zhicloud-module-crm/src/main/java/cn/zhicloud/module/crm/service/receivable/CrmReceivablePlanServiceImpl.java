@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static cn.zhicloud.module.crm.enums.ErrorCodeConstants.RECEIVABLE_PLAN_EXISTS_RECEIVABLE;
 import static cn.zhicloud.module.crm.enums.ErrorCodeConstants.RECEIVABLE_PLAN_NOT_EXISTS;
 import static cn.zhicloud.module.crm.enums.ErrorCodeConstants.RECEIVABLE_PLAN_UPDATE_FAIL;
 import static cn.zhicloud.module.crm.enums.LogRecordConstants.*;
@@ -123,10 +124,12 @@ public class CrmReceivablePlanServiceImpl implements CrmReceivablePlanService {
 
     @Override
     public void updateReceivablePlanReceivableId(Long id, Long receivableId) {
-        // 校验存在
+        // 先校验存在，保证不存在与已被并发抢占的错误语义可区分
         validateReceivablePlanExists(id);
-        // 更新回款计划
-        receivablePlanMapper.updateById(new CrmReceivablePlanDO().setId(id).setReceivableId(receivableId));
+        // 原子抢占：仅当 receivable_id 仍为空时才能绑定回款
+        if (receivablePlanMapper.claimReceivableId(id, receivableId) == 0) {
+            throw exception(RECEIVABLE_PLAN_EXISTS_RECEIVABLE);
+        }
     }
 
     @Override

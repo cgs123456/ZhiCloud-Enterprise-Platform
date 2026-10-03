@@ -1,0 +1,3 @@
+# Keep the reviewed migration contract and its verification SQL byte-stable across platforms.
+/scripts/production/migration-contract.json text eol=lf
+/zhicloud-server/src/main/resources/db/verification/*.sql text eol=lf

@@ -1,6 +1,6 @@
 package cn.zhicloud.module.wms.dal.dataobject.order.shipment;
 
-import cn.zhicloud.framework.mybatis.core.dataobject.BaseDO;
+import cn.zhicloud.framework.tenant.core.db.TenantBaseDO;
 import cn.zhicloud.module.wms.dal.dataobject.md.item.WmsItemSkuDO;
 import cn.zhicloud.module.wms.dal.dataobject.md.warehouse.WmsWarehouseDO;
 import com.baomidou.mybatisplus.annotation.KeySequence;
@@ -23,7 +23,7 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class WmsShipmentOrderDetailDO extends BaseDO {
+public class WmsShipmentOrderDetailDO extends TenantBaseDO {
 
     /**
      * 主键编号

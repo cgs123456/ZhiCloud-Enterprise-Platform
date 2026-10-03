@@ -46,6 +46,18 @@ public class ErpGlVoucherSaveReqVO {
     @Schema(description = "备注")
     private String remark;
 
+    @Schema(description = "来源会计事件 ID")
+    private Long sourceEventId;
+
+    @Schema(description = "来源单据类型", example = "PURCHASE_IN")
+    private String sourceDocType;
+
+    @Schema(description = "来源单据 ID", example = "1024")
+    private Long sourceDocId;
+
+    @Schema(description = "来源单据编号", example = "PI20260925001")
+    private String sourceDocNo;
+
     @Schema(description = "分录列表", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotEmpty(message = "凭证分录不能为空")
     @Valid

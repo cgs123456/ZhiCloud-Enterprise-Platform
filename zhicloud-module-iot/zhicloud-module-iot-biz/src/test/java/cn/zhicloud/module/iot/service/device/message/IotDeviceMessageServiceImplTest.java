@@ -152,6 +152,7 @@ public class IotDeviceMessageServiceImplTest extends BaseMockitoUnitTest {
     public void testGetDeviceMessagePage_normal() {
         // 准备
         IotDeviceMessagePageReqVO reqVO = new IotDeviceMessagePageReqVO();
+        reqVO.setDeviceId(1L);
         reqVO.setPageNo(1);
         reqVO.setPageSize(10);
         IotDeviceMessageDO record = new IotDeviceMessageDO().setId("msg-1");
@@ -172,6 +173,7 @@ public class IotDeviceMessageServiceImplTest extends BaseMockitoUnitTest {
     public void testGetDeviceMessagePage_whenTableMissing_returnEmpty() {
         // 准备：mapper 抛 "Table does not exist" → 视为表未创建，返回空结果
         IotDeviceMessagePageReqVO reqVO = new IotDeviceMessagePageReqVO();
+        reqVO.setDeviceId(1L);
         reqVO.setPageNo(1);
         reqVO.setPageSize(10);
         when(deviceMessageMapper.selectPage(any(), any()))
@@ -189,6 +191,7 @@ public class IotDeviceMessageServiceImplTest extends BaseMockitoUnitTest {
     public void testGetDeviceMessagePage_otherException_rethrow() {
         // 准备：mapper 抛非「表不存在」的异常 → 应向上抛
         IotDeviceMessagePageReqVO reqVO = new IotDeviceMessagePageReqVO();
+        reqVO.setDeviceId(1L);
         reqVO.setPageNo(1);
         reqVO.setPageSize(10);
         when(deviceMessageMapper.selectPage(any(), any()))
@@ -196,6 +199,18 @@ public class IotDeviceMessageServiceImplTest extends BaseMockitoUnitTest {
 
         // 调用 & 断言
         assertThrows(RuntimeException.class, () -> service.getDeviceMessagePage(reqVO));
+    }
+
+    @Test
+    public void testGetDeviceMessagePage_missingDeviceId_rejected() {
+        // 准备：deviceId 拼进 TDengine 子表名（device_message_${deviceId}），缺失必须拒绝而不是放行
+        IotDeviceMessagePageReqVO reqVO = new IotDeviceMessagePageReqVO();
+        reqVO.setPageNo(1);
+        reqVO.setPageSize(10);
+
+        // 调用 & 断言
+        assertThrows(IllegalArgumentException.class, () -> service.getDeviceMessagePage(reqVO));
+        verify(deviceMessageMapper, never()).selectPage(any(), any());
     }
 
     // ========== getDeviceMessageListByRequestIdsAndReply ==========

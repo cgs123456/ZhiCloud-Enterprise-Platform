@@ -8,6 +8,7 @@ import cn.zhicloud.module.bpm.service.message.dto.BpmMessageSendWhenProcessInsta
 import cn.zhicloud.module.bpm.service.message.dto.BpmMessageSendWhenTaskCreatedReqDTO;
 import cn.zhicloud.module.bpm.service.message.dto.BpmMessageSendWhenTaskTimeoutReqDTO;
 import cn.zhicloud.module.system.api.sms.SmsSendApi;
+import cn.zhicloud.module.system.api.sms.dto.send.SmsSendSingleToUserReqDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -37,7 +38,7 @@ public class BpmMessageServiceImpl implements BpmMessageService {
         Map<String, Object> templateParams = new HashMap<>();
         templateParams.put("processInstanceName", reqDTO.getProcessInstanceName());
         templateParams.put("detailUrl", getProcessInstanceDetailUrl(reqDTO.getProcessInstanceId()));
-        smsSendApi.sendSingleSmsToAdmin(BpmMessageConvert.INSTANCE.convert(reqDTO.getStartUserId(),
+        sendSmsQuietly(BpmMessageConvert.INSTANCE.convert(reqDTO.getStartUserId(),
                 BpmMessageEnum.PROCESS_INSTANCE_APPROVE.getSmsTemplateCode(), templateParams));
     }
 
@@ -47,7 +48,7 @@ public class BpmMessageServiceImpl implements BpmMessageService {
         templateParams.put("processInstanceName", reqDTO.getProcessInstanceName());
         templateParams.put("reason", reqDTO.getReason());
         templateParams.put("detailUrl", getProcessInstanceDetailUrl(reqDTO.getProcessInstanceId()));
-        smsSendApi.sendSingleSmsToAdmin(BpmMessageConvert.INSTANCE.convert(reqDTO.getStartUserId(),
+        sendSmsQuietly(BpmMessageConvert.INSTANCE.convert(reqDTO.getStartUserId(),
                 BpmMessageEnum.PROCESS_INSTANCE_REJECT.getSmsTemplateCode(), templateParams));
     }
 
@@ -58,7 +59,7 @@ public class BpmMessageServiceImpl implements BpmMessageService {
         templateParams.put("taskName", reqDTO.getTaskName());
         templateParams.put("startUserNickname", reqDTO.getStartUserNickname());
         templateParams.put("detailUrl", getProcessInstanceDetailUrl(reqDTO.getProcessInstanceId()));
-        smsSendApi.sendSingleSmsToAdmin(BpmMessageConvert.INSTANCE.convert(reqDTO.getAssigneeUserId(),
+        sendSmsQuietly(BpmMessageConvert.INSTANCE.convert(reqDTO.getAssigneeUserId(),
                 BpmMessageEnum.TASK_ASSIGNED.getSmsTemplateCode(), templateParams));
     }
 
@@ -68,8 +69,21 @@ public class BpmMessageServiceImpl implements BpmMessageService {
         templateParams.put("processInstanceName", reqDTO.getProcessInstanceName());
         templateParams.put("taskName", reqDTO.getTaskName());
         templateParams.put("detailUrl", getProcessInstanceDetailUrl(reqDTO.getProcessInstanceId()));
-        smsSendApi.sendSingleSmsToAdmin(BpmMessageConvert.INSTANCE.convert(reqDTO.getAssigneeUserId(),
+        sendSmsQuietly(BpmMessageConvert.INSTANCE.convert(reqDTO.getAssigneeUserId(),
                 BpmMessageEnum.TASK_TIMEOUT.getSmsTemplateCode(), templateParams));
+    }
+
+    /**
+     * 通知是旁路而不是业务动作本身：短信模板/渠道未配置、或收信人没有手机号时，
+     * system 侧会直接抛业务异常，让它冒泡就会回滚整笔已完成的审批（真机撞到过：给了手机号才通过）。
+     */
+    private void sendSmsQuietly(SmsSendSingleToUserReqDTO reqDTO) {
+        try {
+            smsSendApi.sendSingleSmsToAdmin(reqDTO);
+        } catch (Exception e) {
+            log.warn("[sendSmsQuietly][短信通知发送失败，业务动作不受影响：userId={}, templateCode={}, 原因={}]",
+                    reqDTO.getUserId(), reqDTO.getTemplateCode(), e.getMessage());
+        }
     }
 
     private String getProcessInstanceDetailUrl(String taskId) {

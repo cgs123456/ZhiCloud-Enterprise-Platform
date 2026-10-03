@@ -241,3 +241,101 @@ groups:
         annotations:
           summary: "zhicloud Druid 连接错误数增长"
           description: "数据源 {{ $labels.datasource }} 5 分钟内错误数增加 {{ $value }} 次，请检查数据库状态和网络连通性。"
+
+  # ------------------------------------------------------------------
+  # 可靠集成数据面 Outbox 告警（初始阈值，需在预生产按流量与 SLO 校准）
+  # ------------------------------------------------------------------
+  - name: zhicloud-upgrade-outbox
+    interval: 30s
+    rules:
+      # 待投递堆积量持续升高：先于死信出现前预警，避免中继容量或下游故障被静默忽略。
+      - alert: ZhiCloudOutboxBacklogHigh
+        expr: zhicloud_integration_outbox_backlog{application=~"zhicloud-server.*"} > 100
+        for: 10m
+        labels:
+          severity: warning
+          component: integration-outbox
+        annotations:
+          summary: "zhicloud Outbox 待投递事件堆积（> 100）"
+          description: "应用 {{ $labels.application }} 待投递事件 = {{ $value }}，持续 10 分钟。请检查中继任务、下游投递与数据库负载；该阈值是初始值，需按实际流量校准。"
+
+      # 堆积量达到严重级别：此时业务事件已明显滞留，可能造成 ERP/WMS/MES 等模块状态不一致。
+      - alert: ZhiCloudOutboxBacklogCritical
+        expr: zhicloud_integration_outbox_backlog{application=~"zhicloud-server.*"} > 1000
+        for: 5m
+        labels:
+          severity: critical
+          component: integration-outbox
+        annotations:
+          summary: "zhicloud Outbox 待投递事件严重堆积（> 1000）"
+          description: "应用 {{ $labels.application }} 待投递事件 = {{ $value }}，持续 5 分钟。请立即检查中继是否停止、下游是否故障或数据库是否不可用。"
+
+      # 死信必须人工处置：进入 DEAD 后自动重试已停止，不能只靠堆积量间接发现。
+      - alert: ZhiCloudOutboxDeadPresent
+        expr: zhicloud_integration_outbox_dead{application=~"zhicloud-server.*"} > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: integration-outbox
+        annotations:
+          summary: "zhicloud Outbox 存在死信事件"
+          description: "应用 {{ $labels.application }} 死信事件 = {{ $value }}。自动重试已停止，请核对 last_error、下游状态并执行受控重放；重放前必须确认幂等语义。"
+
+      # 最老未投递时长反映端到端滞留，比单纯数量更能发现低频但长期卡住的事件。
+      - alert: ZhiCloudOutboxOldestPendingHigh
+        expr: zhicloud_integration_outbox_oldest_pending_seconds{application=~"zhicloud-server.*"} > 300
+        for: 5m
+        labels:
+          severity: warning
+          component: integration-outbox
+        annotations:
+          summary: "zhicloud Outbox 最老未投递事件滞留（> 5 分钟）"
+          description: "应用 {{ $labels.application }} 最老未投递事件已等待 {{ $value }} 秒，持续 5 分钟。请检查中继扫描周期、退避窗口和下游响应时间；该阈值是初始值，需按业务时效要求校准。"
+  # ------------------------------------------------------------------
+  # 可靠集成数据面 Inbox 告警（初始阈值，需在预生产按流量与 SLO 校准）
+  # ------------------------------------------------------------------
+  - name: zhicloud-upgrade-inbox
+    interval: 30s
+    rules:
+      # FAILED 是当前待重试存量，不是时间窗口失败率；持续失败说明消费端或下游依赖异常。
+      - alert: ZhiCloudInboxFailedHigh
+        expr: zhicloud_integration_inbox_failed{application=~"zhicloud-server.*"} > 100
+        for: 10m
+        labels:
+          severity: warning
+          component: integration-inbox
+        annotations:
+          summary: "zhicloud Inbox 待重试失败存量过高（> 100）"
+          description: "应用 {{ $labels.application }} 待重试失败存量 = {{ $value }}，持续 10 分钟。请检查消费者异常、下游依赖和重试退避；该阈值是初始值，需按实际流量校准。"
+
+      - alert: ZhiCloudInboxFailedCritical
+        expr: zhicloud_integration_inbox_failed{application=~"zhicloud-server.*"} > 1000
+        for: 5m
+        labels:
+          severity: critical
+          component: integration-inbox
+        annotations:
+          summary: "zhicloud Inbox 待重试失败存量严重过高（> 1000）"
+          description: "应用 {{ $labels.application }} 待重试失败存量 = {{ $value }}，持续 5 分钟。请立即检查消费者、下游依赖和重试队列，避免继续转化为死信。"
+
+      # DEAD 必须人工处置：自动重试已停止，不能只靠失败存量间接发现。
+      - alert: ZhiCloudInboxDeadPresent
+        expr: zhicloud_integration_inbox_dead{application=~"zhicloud-server.*"} > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: integration-inbox
+        annotations:
+          summary: "zhicloud Inbox 存在死信事件"
+          description: "应用 {{ $labels.application }} 死信事件 = {{ $value }}。自动重试已停止，请核对 error、消费者幂等和下游状态后执行受控重放。"
+
+      # 最老待消费时长覆盖 RECEIVED + FAILED，发现低频但长期卡住的事件。
+      - alert: ZhiCloudInboxOldestPendingHigh
+        expr: zhicloud_integration_inbox_oldest_pending_seconds{application=~"zhicloud-server.*"} > 300
+        for: 5m
+        labels:
+          severity: warning
+          component: integration-inbox
+        annotations:
+          summary: "zhicloud Inbox 最老待消费事件滞留（> 5 分钟）"
+          description: "应用 {{ $labels.application }} 最老待消费事件已等待 {{ $value }} 秒，持续 5 分钟。请检查消费者执行、重试退避和下游响应时间；该阈值是初始值，需按业务时效要求校准。"

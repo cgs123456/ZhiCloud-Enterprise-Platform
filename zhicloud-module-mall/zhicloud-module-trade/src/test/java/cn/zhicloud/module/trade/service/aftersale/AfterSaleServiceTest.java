@@ -21,7 +21,6 @@ import cn.zhicloud.module.trade.framework.order.config.TradeOrderProperties;
 import cn.zhicloud.module.trade.service.order.TradeOrderQueryService;
 import cn.zhicloud.module.trade.service.order.TradeOrderUpdateService;
 import jakarta.annotation.Resource;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -36,14 +35,16 @@ import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.Disabled;
 
 /**
  * {@link AfterSaleService} 的单元测试
  *
  * @author 智云
  */
-@Disabled // TODO 芋艿：后续 fix 补充的单测
 @Import(AfterSaleServiceImpl.class)
+    // 见下方注解说明。修复方向是给缺失的跨模块 API/服务补 @MockitoBean，不是放宽断言。
+@Disabled // TODO 上游 "后续 fix 补充的单测"：上下文还缺 TradeOrderQueryService 的可注入替身（本类已被 @Import 的服务链路依赖它）
 public class AfterSaleServiceTest extends BaseDbUnitTest {
 
     @Resource

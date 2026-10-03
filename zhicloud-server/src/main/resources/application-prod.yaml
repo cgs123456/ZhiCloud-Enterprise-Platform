@@ -50,6 +50,11 @@ spring:
             multi-statement-allow: false
     dynamic:
       druid:
+        # MySQL Connector/J 9.x：VERIFY_IDENTITY 需要显式 truststore；密码只从环境变量读取
+        connection-properties:
+          trustCertificateKeyStoreUrl: ${MYSQL_TLS_TRUSTSTORE_URL}
+          trustCertificateKeyStorePassword: ${MYSQL_TLS_TRUSTSTORE_PASSWORD}
+          trustCertificateKeyStoreType: ${MYSQL_TLS_TRUSTSTORE_TYPE:PKCS12}
         initial-size: 10
         min-idle: 10
         max-active: 100

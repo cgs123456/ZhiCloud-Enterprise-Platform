@@ -32,13 +32,18 @@
             <version>${revision}</version>
         </dependency>
 
-        <!-- 会员中心。默认注释，保证编译速度 -->
-<!--        <dependency>-->
-<!--            <groupId>cn.zhicloud</groupId>-->
-<!--            <artifactId>zhicloud-module-member</artifactId>-->
-<!--            <version>${revision}</version>-->
-<!--        </dependency>-->
+        <!-- 会员中心。已启用：商城四个模块均依赖 member api -->
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-module-member</artifactId>
+            <version>${revision}</version>
+        </dependency>
 
+        <!-- 数据报表。已进构建（模块测试 16 条在跑、V129 建表已登记），但**暂不接进 server**：
+             zhicloud-module-report 会带入 jimureport-spring-boot3-starter 与 jimubi-spring-boot3-starter
+             两个自动配置包，而 zhicloud-server 的 application*.yaml 里没有任何 jeecg/jmreport 配置项；
+             在没有真机启动验证的前提下把它接进部署单元，属于"可能让服务端起不来"的改动，故留在下一步。
+             要接进来时需要：补 jmreport 配置 + 确认它自建的 jimu_* 表是否纳入 Flyway 管理 + 真机启动一次。 -->
         <!-- 数据报表。默认注释，保证编译速度 -->
 <!--        <dependency>-->
 <!--            <groupId>cn.zhicloud</groupId>-->
@@ -51,12 +56,12 @@
             <artifactId>zhicloud-module-bpm</artifactId>
             <version>${revision}</version>
         </dependency>
-        <!-- 支付服务。默认注释，保证编译速度 -->
-<!--        <dependency>-->
-<!--            <groupId>cn.zhicloud</groupId>-->
-<!--            <artifactId>zhicloud-module-pay</artifactId>-->
-<!--            <version>${revision}</version>-->
-<!--        </dependency>-->
+        <!-- 支付服务。已启用：商城下单-支付闭环依赖 -->
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-module-pay</artifactId>
+            <version>${revision}</version>
+        </dependency>
 
         <!-- 微信公众号模块。默认注释，保证编译速度 -->
 <!--        <dependency>-->
@@ -65,27 +70,27 @@
 <!--            <version>${revision}</version>-->
 <!--        </dependency>-->
 
-        <!-- 商城相关模块。默认注释，保证编译速度-->
-<!--        <dependency>-->
-<!--            <groupId>cn.zhicloud</groupId>-->
-<!--            <artifactId>zhicloud-module-product</artifactId>-->
-<!--            <version>${revision}</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>cn.zhicloud</groupId>-->
-<!--            <artifactId>zhicloud-module-promotion</artifactId>-->
-<!--            <version>${revision}</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>cn.zhicloud</groupId>-->
-<!--            <artifactId>zhicloud-module-trade</artifactId>-->
-<!--            <version>${revision}</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>cn.zhicloud</groupId>-->
-<!--            <artifactId>zhicloud-module-statistics</artifactId>-->
-<!--            <version>${revision}</version>-->
-<!--        </dependency>-->
+        <!-- 商城相关模块。已启用：商品/营销/交易/统计（购物车→下单→支付闭环） -->
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-module-product</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-module-promotion</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-module-trade</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-module-statistics</artifactId>
+            <version>${revision}</version>
+        </dependency>
 
         <!-- CRM 相关模块。B5 启用：客户关系管理 -->
         <dependency>
@@ -134,12 +139,12 @@
             <version>${revision}</version>
         </dependency>
 
-        <!-- IoT 物联网相关模块。默认注释，保证编译速度 -->
-<!--        <dependency>-->
-<!--            <groupId>cn.zhicloud</groupId>-->
-<!--            <artifactId>zhicloud-module-iot-biz</artifactId>-->
-<!--            <version>${revision}</version>-->
-<!--        </dependency>-->
+        <!-- IoT 物联网相关模块。已启用：设备/产品/物模型/告警最小闭环 -->
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-module-iot-biz</artifactId>
+            <version>${revision}</version>
+        </dependency>
 
         <!-- MES 制造执行系统相关模块。已启用：配合 MCP Tool 暴露 -->
         <dependency>
@@ -202,6 +207,12 @@
             <artifactId>zhicloud-spring-boot-starter-biz-inventory</artifactId>
         </dependency>
 
+        <!-- 可靠集成数据面 Starter（V100）：事务发件箱 + 幂等收件箱 + 单库中继 -->
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-spring-boot-starter-biz-integration</artifactId>
+        </dependency>
+
         <!-- 监控相关：Spring Boot Actuator + Micrometer Prometheus -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -239,6 +250,19 @@
         <dependency>
             <groupId>org.springframework.modulith</groupId>
             <artifactId>spring-modulith-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- 真实 MySQL 跨模块集成测试需要显式声明 Mockito；starter-test 在本项目 dependencyManagement 中为 test scope，不会传递到 server。 -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- BootstrapAdminRunner 测试使用内存 H2，版本由 Spring Boot BOM 统一管理。 -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
 

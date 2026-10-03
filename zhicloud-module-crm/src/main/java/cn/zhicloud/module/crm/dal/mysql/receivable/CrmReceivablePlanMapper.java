@@ -11,6 +11,7 @@ import cn.zhicloud.module.crm.enums.common.CrmBizTypeEnum;
 import cn.zhicloud.module.crm.enums.common.CrmSceneTypeEnum;
 import cn.zhicloud.module.crm.util.CrmPermissionUtils;
 import org.apache.ibatis.annotations.Mapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -22,6 +23,13 @@ import java.util.Objects;
  */
 @Mapper
 public interface CrmReceivablePlanMapper extends BaseMapperX<CrmReceivablePlanDO> {
+
+    default int claimReceivableId(Long id, Long receivableId) {
+        return update(null, new LambdaUpdateWrapper<CrmReceivablePlanDO>()
+                .eq(CrmReceivablePlanDO::getId, id)
+                .isNull(CrmReceivablePlanDO::getReceivableId)
+                .set(CrmReceivablePlanDO::getReceivableId, receivableId));
+    }
 
     default CrmReceivablePlanDO selectMaxPeriodByContractId(Long contractId) {
         return selectOne(new MPJLambdaWrapperX<CrmReceivablePlanDO>()

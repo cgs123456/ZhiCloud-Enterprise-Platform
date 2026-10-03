@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /**
@@ -15,6 +16,10 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+// 未配置 TDengine 数据源（spring.datasource.dynamic.datasource.tdengine.url）时不装载本 Runner：
+// 否则设备消息超级表初始化必然失败，而失败路径是 System.exit(1)，会让整个服务端起不来。
+// 此时产品/设备/物模型/告警等 MySQL 侧功能仍可用，只有依赖 TDengine 的消息与属性接口不可用。
+@ConditionalOnProperty(prefix = "spring.datasource.dynamic.datasource.tdengine", name = "url")
 public class TDengineTableInitRunner implements ApplicationRunner {
 
     private final IotDeviceMessageService deviceMessageService;

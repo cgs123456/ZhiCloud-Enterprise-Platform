@@ -1,6 +1,6 @@
 package cn.zhicloud.framework.inventory.dal.dataobject;
 
-import cn.zhicloud.framework.mybatis.core.dataobject.BaseDO;
+import cn.zhicloud.framework.tenant.core.db.TenantBaseDO;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -31,7 +31,7 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class InventoryItemDO extends BaseDO {
+public class InventoryItemDO extends TenantBaseDO {
 
     /**
      * 主键编号（DB 自增）
@@ -85,9 +85,5 @@ public class InventoryItemDO extends BaseDO {
      */
     private BigDecimal lockedCount;
 
-    /**
-     * 租户编号
-     */
-    private Long tenantId;
 
 }

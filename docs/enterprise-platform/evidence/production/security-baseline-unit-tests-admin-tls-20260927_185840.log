@@ -1,0 +1,52 @@
+test_airag_secret_missing_app_key_fails (scripts.production.tests.test_security_baseline_scan.ControlTest.test_airag_secret_missing_app_key_fails) ... ok
+test_missing_bootstrap_job_password_secret_fails (scripts.production.tests.test_security_baseline_scan.ControlTest.test_missing_bootstrap_job_password_secret_fails) ... ok
+test_missing_bootstrap_job_truststore_fails (scripts.production.tests.test_security_baseline_scan.ControlTest.test_missing_bootstrap_job_truststore_fails) ... ok
+test_missing_file_is_reported (scripts.production.tests.test_security_baseline_scan.ControlTest.test_missing_file_is_reported) ... ok
+test_missing_job_truststore_fails (scripts.production.tests.test_security_baseline_scan.ControlTest.test_missing_job_truststore_fails) ... ok
+test_missing_k8s_truststore_fails (scripts.production.tests.test_security_baseline_scan.ControlTest.test_missing_k8s_truststore_fails) ... ok
+test_partial_pattern_is_failed (scripts.production.tests.test_security_baseline_scan.ControlTest.test_partial_pattern_is_failed) ... ok
+test_passing_controls (scripts.production.tests.test_security_baseline_scan.ControlTest.test_passing_controls) ... ok
+test_clean_repo_passes (scripts.production.tests.test_security_baseline_scan.ReportTest.test_clean_repo_passes)
+������ + �ĸ���������뱸�������� status=passed�� ... ok
+test_main_writes_output_and_returns_failed (scripts.production.tests.test_security_baseline_scan.ReportTest.test_main_writes_output_and_returns_failed) ... ok
+test_p0_finding_makes_status_failed (scripts.production.tests.test_security_baseline_scan.ReportTest.test_p0_finding_makes_status_failed) ... ok
+test_report_carries_disclaimers (scripts.production.tests.test_security_baseline_scan.ReportTest.test_report_carries_disclaimers) ... ok
+test_report_records_scanned_files_and_rules (scripts.production.tests.test_security_baseline_scan.ReportTest.test_report_records_scanned_files_and_rules) ... ok
+test_clean_file_has_no_finding (scripts.production.tests.test_security_baseline_scan.RuleHitTest.test_clean_file_has_no_finding) ... ok
+test_r10_literal_oauth2_seed_secret (scripts.production.tests.test_security_baseline_scan.RuleHitTest.test_r10_literal_oauth2_seed_secret) ... ok
+test_r10_literal_social_client_seed_secret (scripts.production.tests.test_security_baseline_scan.RuleHitTest.test_r10_literal_social_client_seed_secret) ... ok
+test_r10_placeholder_secret_is_not_a_literal_seed (scripts.production.tests.test_security_baseline_scan.RuleHitTest.test_r10_placeholder_secret_is_not_a_literal_seed) ... ok
+test_r1_jdbc_tls_disabled (scripts.production.tests.test_security_baseline_scan.RuleHitTest.test_r1_jdbc_tls_disabled) ... ok
+test_r2_public_key_retrieve (scripts.production.tests.test_security_baseline_scan.RuleHitTest.test_r2_public_key_retrieve) ... ok
+test_r3_default_credential (scripts.production.tests.test_security_baseline_scan.RuleHitTest.test_r3_default_credential) ... ok
+test_r3_env_fallback_chain_is_not_a_default_credential (scripts.production.tests.test_security_baseline_scan.RuleHitTest.test_r3_env_fallback_chain_is_not_a_default_credential)
+${A:${B}} �Ǳ�����������Ĭ��ֵ��������Ӳ������ ... ok
+test_r3_required_placeholder_is_not_a_default_credential (scripts.production.tests.test_security_baseline_scan.RuleHitTest.test_r3_required_placeholder_is_not_a_default_credential)
+${ENV:?required} �ǡ�ȱʧ��ʧ�ܡ��ı���ռλ������Ĭ�Ͽ�� ... ok
+test_r4_placeholder_secret (scripts.production.tests.test_security_baseline_scan.RuleHitTest.test_r4_placeholder_secret) ... ok
+test_r5_empty_secret_value (scripts.production.tests.test_security_baseline_scan.RuleHitTest.test_r5_empty_secret_value) ... ok
+test_r6_literal_weak_secret (scripts.production.tests.test_security_baseline_scan.RuleHitTest.test_r6_literal_weak_secret) ... ok
+test_r7_bootstrap_placeholder_is_not_a_seed_account (scripts.production.tests.test_security_baseline_scan.RuleHitTest.test_r7_bootstrap_placeholder_is_not_a_seed_account) ... ok
+test_r7_insert_ignore_test_account_seed (scripts.production.tests.test_security_baseline_scan.RuleHitTest.test_r7_insert_ignore_test_account_seed) ... ok
+test_r7_non_whitelisted_production_seed_account (scripts.production.tests.test_security_baseline_scan.RuleHitTest.test_r7_non_whitelisted_production_seed_account) ... ok
+test_r7_sqlserver_n_literal_seed_account (scripts.production.tests.test_security_baseline_scan.RuleHitTest.test_r7_sqlserver_n_literal_seed_account) ... ok
+test_r7_test_account_seed (scripts.production.tests.test_security_baseline_scan.RuleHitTest.test_r7_test_account_seed) ... ok
+test_r8_demo_mode_enabled (scripts.production.tests.test_security_baseline_scan.RuleHitTest.test_r8_demo_mode_enabled) ... ok
+test_r9_comment_only_is_not_a_finding (scripts.production.tests.test_security_baseline_scan.RuleHitTest.test_r9_comment_only_is_not_a_finding) ... ok
+test_r9_deprecated_identity_verification_disabled (scripts.production.tests.test_security_baseline_scan.RuleHitTest.test_r9_deprecated_identity_verification_disabled) ... ok
+test_r9_ssl_mode_required_is_not_identity_verification (scripts.production.tests.test_security_baseline_scan.RuleHitTest.test_r9_ssl_mode_required_is_not_identity_verification) ... ok
+test_r9_ssl_mode_verify_ca_is_not_identity_verification (scripts.production.tests.test_security_baseline_scan.RuleHitTest.test_r9_ssl_mode_verify_ca_is_not_identity_verification) ... ok
+test_r9_verify_identity_is_allowed (scripts.production.tests.test_security_baseline_scan.RuleHitTest.test_r9_verify_identity_is_allowed) ... ok
+test_unscanned_suffix_is_ignored (scripts.production.tests.test_security_baseline_scan.RuleHitTest.test_unscanned_suffix_is_ignored) ... ok
+test_non_prod_path_is_downgraded (scripts.production.tests.test_security_baseline_scan.SeverityTest.test_non_prod_path_is_downgraded) ... ok
+test_non_sql_test_account_is_p1 (scripts.production.tests.test_security_baseline_scan.SeverityTest.test_non_sql_test_account_is_p1) ... ok
+test_prod_path_credential_is_p0 (scripts.production.tests.test_security_baseline_scan.SeverityTest.test_prod_path_credential_is_p0) ... ok
+test_production_flyway_seed_is_p0 (scripts.production.tests.test_security_baseline_scan.SeverityTest.test_production_flyway_seed_is_p0) ... ok
+test_sql_install_path_is_p0 (scripts.production.tests.test_security_baseline_scan.SeverityTest.test_sql_install_path_is_p0) ... ok
+
+----------------------------------------------------------------------
+Ran 42 tests in 1.151s
+
+OK
+ɨ���ļ� 1������ 1 ��{'P0': 1}�����������ʧ�� 18
+status=failed

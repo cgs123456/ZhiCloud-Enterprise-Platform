@@ -5,6 +5,11 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.common.util.number.MoneyUtils;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
+import cn.zhicloud.framework.tenant.core.context.TenantContextHolder;
+import cn.zhicloud.framework.integration.api.EventAppendReq;
+import cn.zhicloud.framework.integration.contract.ErpSaleOutApprovedEvent;
+import cn.zhicloud.framework.integration.contract.IntegrationEventTypes;
+import cn.zhicloud.framework.integration.service.EventOutboxService;
 import cn.zhicloud.module.erp.controller.admin.sale.vo.out.ErpSaleOutPageReqVO;
 import cn.zhicloud.module.erp.controller.admin.sale.vo.out.ErpSaleOutSaveReqVO;
 import cn.zhicloud.module.erp.dal.dataobject.product.ErpProductDO;
@@ -16,6 +21,9 @@ import cn.zhicloud.module.erp.dal.mysql.sale.ErpSaleOutMapper;
 import cn.zhicloud.module.erp.dal.redis.no.ErpNoRedisDAO;
 import cn.zhicloud.module.erp.enums.ErpAuditStatus;
 import cn.zhicloud.module.erp.enums.stock.ErpStockRecordBizTypeEnum;
+import cn.zhicloud.module.erp.service.accounting.ErpAccountingEventService;
+import cn.zhicloud.module.erp.service.accounting.bo.ErpAccountingEventCreateReqBO;
+import cn.zhicloud.module.erp.service.accounting.bo.ErpAccountingEventReverseReqBO;
 import cn.zhicloud.module.erp.service.finance.ErpAccountService;
 import cn.zhicloud.module.erp.service.product.ErpProductService;
 import cn.zhicloud.module.erp.service.stock.ErpStockRecordService;
@@ -28,6 +36,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -37,6 +47,8 @@ import java.util.Map;
 import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.zhicloud.framework.common.util.collection.CollectionUtils.*;
 import static cn.zhicloud.module.erp.enums.ErrorCodeConstants.*;
+import static cn.zhicloud.framework.integration.enums.ErrorCodeConstants.EVENT_TENANT_MISMATCH;
+import static cn.zhicloud.framework.integration.enums.ErrorCodeConstants.EVENT_TENANT_REQUIRED;
 
 // 操作日志已通过 @OperateLog 注解自动记录（bizlog-sdk 通过 AOP 自动记录）
 
@@ -66,6 +78,15 @@ public class ErpSaleOutServiceImpl implements ErpSaleOutService {
     private ErpAccountService accountService;
     @Resource
     private ErpStockRecordService stockRecordService;
+    @Resource
+    private ErpAccountingEventService accountingEventService;
+
+    /**
+     * V101：跨域事件发件箱。审核通过时与业务同事务登记事件（业务回滚则事件一并消失），
+     * 投递由集成 Starter 的中继任务异步完成，本方法不做任何跨模块远程调用。
+     */
+    @Resource
+    private EventOutboxService eventOutboxService;
 
     @Resource
     private AdminUserApi adminUserApi;
@@ -165,14 +186,20 @@ public class ErpSaleOutServiceImpl implements ErpSaleOutService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateSaleOutStatus(Long id, Integer status) {
-        boolean approve = ErpAuditStatus.APPROVE.getStatus().equals(status);
-        // 1.1 校验存在
-        ErpSaleOutDO saleOut = validateSaleOutExists(id);
-        // 1.2 校验状态
-        if (saleOut.getStatus().equals(status)) {
-            throw exception(approve ? SALE_OUT_APPROVE_FAIL : SALE_OUT_PROCESS_FAIL);
+        if (!ErpAuditStatus.isValid(status)) {
+            throw exception(ERP_AUDIT_STATUS_INVALID, status);
         }
-        // 1.3 校验已退款
+        boolean approve = ErpAuditStatus.APPROVE.getStatus().equals(status);
+        // 1.1 当前操作必须租户明确，且只能操作当前租户自己的单据；缺失或冲突时在副作用前拒绝。
+        Long tenantId = requireCurrentTenantId();
+        // 1.2 校验存在
+        ErpSaleOutDO saleOut = validateSaleOutExists(id);
+        validateSaleOutTenant(saleOut, tenantId);
+        // 1.3 幂等处理：目标状态与当前状态一致时，返回同一业务结果
+        if (status.equals(saleOut.getStatus())) {
+            return;
+        }
+        // 1.4 校验已退款
         if (!approve && saleOut.getReceiptPrice().compareTo(BigDecimal.ZERO) > 0) {
             throw exception(SALE_OUT_PROCESS_FAIL_EXISTS_RECEIPT);
         }
@@ -181,6 +208,10 @@ public class ErpSaleOutServiceImpl implements ErpSaleOutService {
         int updateCount = saleOutMapper.updateByIdAndStatus(id, saleOut.getStatus(),
                 new ErpSaleOutDO().setStatus(status));
         if (updateCount == 0) {
+            ErpSaleOutDO latest = saleOutMapper.selectOneForUpdate(ErpSaleOutDO::getId, id);
+            if (latest != null && status.equals(latest.getStatus())) {
+                return;
+            }
             throw exception(approve ? SALE_OUT_APPROVE_FAIL : SALE_OUT_PROCESS_FAIL);
         }
 
@@ -199,6 +230,145 @@ public class ErpSaleOutServiceImpl implements ErpSaleOutService {
         mergedCountMap.forEach((key, count) -> stockRecordService.createStockRecord(new ErpStockRecordCreateReqBO(
                 key.get(0), key.get(1), count,
                 bizType, id, firstItemIdMap.get(key), saleOut.getNo())));
+
+        // 4. 审核通过时生成销售出库收入与成本结转会计事件；事件与库存流水处于同一事务。
+        // 反审核只对已审核单据生成冲销事件，避免从未过账的单据在驳回时被误冲销。
+        if (approve) {
+            accountingEventService.postEvent(buildSaleShipmentEvent(saleOut, saleOutItems));
+        } else if (ErpAuditStatus.APPROVE.getStatus().equals(saleOut.getStatus())) {
+            accountingEventService.reverseEvent(buildSaleShipmentReversalRequest(saleOut));
+        }
+
+        // 5. 审核通过时登记跨域事件（与库存流水、会计事件同事务）。
+        //    为什么放在事务内而不是提交后：提交后登记会留下「业务成功但事件没登记」的窗口；
+        //    同一事务内登记则随业务回滚一起消失，宁可少发也不要发出未发生的业务事实。
+        //    这里只登记不投递：投递由可靠集成数据面（V100）的中继任务异步完成，失败重试并最终进死信。
+        if (approve) {
+            eventOutboxService.append(buildSaleOutApprovedEventAppendReq(saleOut, saleOutItems, tenantId));
+        }
+    }
+
+    /**
+     * 构造「ERP 销售出库审核通过」事件的登记请求。
+     *
+     * <p>eventId 由业务主键推导（{@code erp-sale-out-{id}-approved}）而不是随机数：
+     * 同一单据重复触发时得到相同 eventId，消费侧才能靠 event_inbox 唯一键去重。
+     *
+     * <p>tenantId 使用审核时验证过的当前租户，禁止静默回退租户 0。
+     */
+    private EventAppendReq buildSaleOutApprovedEventAppendReq(ErpSaleOutDO saleOut,
+                                                            List<ErpSaleOutItemDO> saleOutItems,
+                                                            Long tenantId) {
+        ErpSaleOutApprovedEvent event = ErpSaleOutApprovedEvent.builder()
+                .no(saleOut.getNo())
+                .saleOutId(saleOut.getId())
+                .customerId(saleOut.getCustomerId())
+                .outTime(saleOut.getOutTime())
+                .totalPrice(saleOut.getTotalPrice())
+                .items(convertList(saleOutItems, item -> ErpSaleOutApprovedEvent.Item.builder()
+                        .productId(item.getProductId())
+                        .warehouseId(item.getWarehouseId())
+                        .count(item.getCount())
+                        .price(item.getProductPrice())
+                        .build()))
+                .build();
+        return EventAppendReq.builder()
+                .eventId(ErpSaleOutApprovedEvent.eventIdOf(saleOut.getId()))
+                .tenantId(tenantId)
+                .aggregateType(ErpSaleOutApprovedEvent.AGGREGATE_TYPE)
+                .aggregateId(String.valueOf(saleOut.getId()))
+                .eventType(IntegrationEventTypes.ERP_SALE_OUT_APPROVED)
+                .schemaVersion("v1")
+                .payload(event.toJson())
+                .occurredAt(saleOut.getOutTime() == null ? LocalDateTime.now() : saleOut.getOutTime())
+                .build();
+    }
+
+    private Long requireCurrentTenantId() {
+        Long tenantId = TenantContextHolder.getTenantId();
+        if (tenantId == null) {
+            throw exception(EVENT_TENANT_REQUIRED);
+        }
+        return tenantId;
+    }
+
+    private void validateSaleOutTenant(ErpSaleOutDO saleOut, Long tenantId) {
+        if (saleOut.getTenantId() == null || !tenantId.equals(saleOut.getTenantId())) {
+            throw exception(EVENT_TENANT_MISMATCH);
+        }
+    }
+
+    private ErpAccountingEventCreateReqBO buildSaleShipmentEvent(ErpSaleOutDO saleOut,
+                                                                 List<ErpSaleOutItemDO> saleOutItems) {
+        LocalDate eventDate = saleOut.getOutTime() == null
+                ? LocalDate.now() : saleOut.getOutTime().toLocalDate();
+        BigDecimal amountWithTax = defaultZero(saleOut.getTotalPrice());
+        BigDecimal taxAmount = defaultZero(saleOut.getTotalTaxPrice());
+        // 折扣和其他费用会改变价税合计，但当前单据不单独拆分其税额影响，先以最终价税合计倒算不含税金额
+        BigDecimal amountWithoutTax = amountWithTax.subtract(taxAmount);
+        return ErpAccountingEventCreateReqBO.builder()
+                .eventType("SALES_SHIPMENT_POSTED")
+                .sourceDocType("SALE_OUT")
+                .sourceDocId(saleOut.getId())
+                .sourceDocNo(saleOut.getNo())
+                .sourceDocLineId(0L)
+                .sourceRevision(1)
+                .eventDate(eventDate)
+                .accountingDate(eventDate)
+                .amountWithoutTax(amountWithoutTax)
+                .taxAmount(taxAmount)
+                .amountWithTax(amountWithTax)
+                .docTotalAmount(defaultZero(saleOut.getTotalPrice()))
+                .costAmount(calculateStandardCost(saleOutItems))
+                .currency(null)
+                .exchangeRate(BigDecimal.ONE)
+                .reversalOfEventId(0L)
+                .occurredAt(saleOut.getOutTime() == null ? LocalDateTime.now() : saleOut.getOutTime())
+                .build();
+    }
+
+    private ErpAccountingEventReverseReqBO buildSaleShipmentReversalRequest(ErpSaleOutDO saleOut) {
+        LocalDate eventDate = saleOut.getOutTime() == null
+                ? LocalDate.now() : saleOut.getOutTime().toLocalDate();
+        return ErpAccountingEventReverseReqBO.builder()
+                .eventType("SALES_SHIPMENT_POSTED")
+                .sourceDocType("SALE_OUT")
+                .sourceDocId(saleOut.getId())
+                .sourceDocLineId(0L)
+                .sourceRevision(1)
+                .eventDate(eventDate)
+                // 冲销记在当前会计期，不回写原会计期
+                .accountingDate(LocalDate.now())
+                .occurredAt(LocalDateTime.now())
+                .build();
+    }
+
+    /**
+     * 按产品采购价计算出库成本。
+     *
+     * <p>这是标准成本占位实现：项目当前没有存货计价（移动加权平均或批次成本）底座，
+     * 只能用产品主数据的采购价近似。上线前必须替换为存货计价结果，否则销售成本与
+     * 存货账面价值不可用于正式报表。
+     */
+    private BigDecimal calculateStandardCost(List<ErpSaleOutItemDO> saleOutItems) {
+        if (CollUtil.isEmpty(saleOutItems)) {
+            return BigDecimal.ZERO;
+        }
+        BigDecimal cost = BigDecimal.ZERO;
+        for (ErpSaleOutItemDO item : saleOutItems) {
+            BigDecimal count = defaultZero(item.getCount());
+            if (count.compareTo(BigDecimal.ZERO) == 0 || item.getProductId() == null) {
+                continue;
+            }
+            ErpProductDO product = productService.getProduct(item.getProductId());
+            BigDecimal unitCost = product == null ? BigDecimal.ZERO : defaultZero(product.getPurchasePrice());
+            cost = cost.add(count.multiply(unitCost));
+        }
+        return cost;
+    }
+
+    private static BigDecimal defaultZero(BigDecimal value) {
+        return value == null ? BigDecimal.ZERO : value;
     }
 
     @Override

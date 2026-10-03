@@ -1,6 +1,6 @@
 package cn.zhicloud.module.crm.dal.dataobject.clue;
 
-import cn.zhicloud.framework.mybatis.core.dataobject.BaseDO;
+import cn.zhicloud.framework.tenant.core.db.TenantBaseDO;
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.*;
 
@@ -17,7 +17,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CrmCluePoolConfigDO extends BaseDO {
+public class CrmCluePoolConfigDO extends TenantBaseDO {
 
     /**
      * 编号

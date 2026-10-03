@@ -36,6 +36,18 @@ CREATE_TABLE_RE = re.compile(
     r'CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?[`"]?(\w+)[`"]?\s*\((.*?)\n\)\s*',
     re.IGNORECASE | re.DOTALL,
 )
+ALTER_TABLE_RE = re.compile(
+    r'^\s*ALTER\s+TABLE\s+[`"]?(\w+)[`"]?\s+(.*?);',
+    re.IGNORECASE | re.MULTILINE | re.DOTALL,
+)
+ALTER_ADD_COLUMN_RE = re.compile(
+    r'\bADD\s+(?:COLUMN\s+)?(?:IF\s+NOT\s+EXISTS\s+)?[`"]?(\w+)[`"]?\s+[A-Za-z]',
+    re.IGNORECASE,
+)
+ALTER_NON_COLUMN_TOKENS = {
+    'primary', 'unique', 'key', 'index', 'constraint', 'foreign',
+    'check', 'fulltext', 'spatial', 'partition',
+}
 
 
 def camel_to_snake(name: str) -> str:
@@ -69,10 +81,20 @@ def parse_do(path: Path):
 
 
 def parse_ddl(paths):
-    """解析多个 SQL 文件，返回 {表名: {列名}}。"""
+    """解析多个 SQL 文件，返回 {表名: {列名}}。
+
+    先收集所有 ``CREATE TABLE``，再按文件顺序应用行首的静态
+    ``ALTER TABLE ... ADD [COLUMN]``。迁移文件名可能按字符串排序
+    （例如 V108 排在 V52 前），因此不能边读文件边把 ALTER 应用到
+    尚未解析的 CREATE 上。动态拼接的 ALTER 不在本静态检查器的口径内。
+    """
     tables = {}
+    documents = []
+
+    # Pass 1: collect complete CREATE TABLE models.
     for p in paths:
         text = Path(p).read_text(encoding="utf-8", errors="replace")
+        documents.append(text)
         for m in CREATE_TABLE_RE.finditer(text):
             table = m.group(1).lower()
             cols = set()
@@ -88,6 +110,17 @@ def parse_ddl(paths):
                     continue
                 cols.add(cm.group(1).lower())
             tables.setdefault(table, set()).update(cols)
+
+    # Pass 2: apply direct, line-start ALTER TABLE ADD COLUMN statements.
+    for text in documents:
+        for alter in ALTER_TABLE_RE.finditer(text):
+            table = alter.group(1).lower()
+            cols = tables.setdefault(table, set())
+            for add in ALTER_ADD_COLUMN_RE.finditer(alter.group(2)):
+                token = add.group(1).lower()
+                if token in ALTER_NON_COLUMN_TOKENS:
+                    continue
+                cols.add(token)
     return tables
 
 

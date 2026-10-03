@@ -52,7 +52,7 @@ public class OaKnowledgeCommentServiceImpl implements OaKnowledgeCommentService 
     @Resource
     private OaKnowledgeCommentMapper commentMapper;
     @Resource
-    private OaKnowledgeArticleMapper articleMapper;
+    private OaKnowledgeArticleMapper knowledgeArticleMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -145,14 +145,14 @@ public class OaKnowledgeCommentServiceImpl implements OaKnowledgeCommentService 
         if (articleId == null) {
             return;
         }
-        OaKnowledgeArticleDO article = articleMapper.selectById(articleId);
+        OaKnowledgeArticleDO article = knowledgeArticleMapper.selectById(articleId);
         if (article == null) {
             return;
         }
         OaKnowledgeArticleDO updateObj = new OaKnowledgeArticleDO();
         updateObj.setId(articleId);
         updateObj.setCommentCount((article.getCommentCount() == null ? 0 : article.getCommentCount()) + delta);
-        articleMapper.updateById(updateObj);
+        knowledgeArticleMapper.updateById(updateObj);
     }
 
     private OaKnowledgeCommentDO validateCommentExists(Long id) {

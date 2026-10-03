@@ -32,14 +32,14 @@ public class AppAddressController {
 
     @PostMapping("/create")
     @Operation(summary = "创建用户收件地址")
-    @PreAuthorize("@ss.hasPermission('member:address:create')")
+    @PreAuthorize("isAuthenticated()")
     public CommonResult<Long> createAddress(@Valid @RequestBody AppAddressCreateReqVO createReqVO) {
         return success(addressService.createAddress(getLoginUserId(), createReqVO));
     }
 
     @PutMapping("/update")
     @Operation(summary = "更新用户收件地址")
-    @PreAuthorize("@ss.hasPermission('member:address:update')")
+    @PreAuthorize("isAuthenticated()")
     public CommonResult<Boolean> updateAddress(@Valid @RequestBody AppAddressUpdateReqVO updateReqVO) {
         addressService.updateAddress(getLoginUserId(), updateReqVO);
         return success(true);
@@ -48,7 +48,7 @@ public class AppAddressController {
     @DeleteMapping("/delete")
     @Operation(summary = "删除用户收件地址")
     @Parameter(name = "id", description = "编号", required = true)
-    @PreAuthorize("@ss.hasPermission('member:address:delete')")
+    @PreAuthorize("isAuthenticated()")
     public CommonResult<Boolean> deleteAddress(@RequestParam("id") Long id) {
         addressService.deleteAddress(getLoginUserId(), id);
         return success(true);

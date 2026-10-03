@@ -43,13 +43,20 @@ public interface ErrorCodeConstants {
     ErrorCode RECEIVABLE_UPDATE_AUDIT_STATUS_FAIL_NOT_PROCESS = new ErrorCode(1_020_004_004, "更新回款审核状态失败，原因：回款不是审核中状态");
     ErrorCode RECEIVABLE_NO_EXISTS = new ErrorCode(1_020_004_005, "生成回款序列号重复，请重试");
     ErrorCode RECEIVABLE_CREATE_FAIL_CONTRACT_NOT_APPROVE = new ErrorCode(1_020_004_006, "创建回款失败，原因：合同不是审核通过状态");
-    ErrorCode RECEIVABLE_CREATE_FAIL_PRICE_EXCEEDS_LIMIT = new ErrorCode(1_020_004_007, "创建回款失败，原因：回款金额超出合同金额，目前剩余可退：{} 元");
+    ErrorCode RECEIVABLE_CREATE_FAIL_PRICE_EXCEEDS_LIMIT = new ErrorCode(1_020_004_007, "创建回款失败，原因：回款金额超出合同金额，目前剩余可回款：{} 元");
     ErrorCode RECEIVABLE_DELETE_FAIL_IS_APPROVE = new ErrorCode(1_020_004_008, "删除回款失败，原因：回款审批已通过");
+    ErrorCode RECEIVABLE_CREATE_FAIL_CONTRACT_AMOUNT_INVALID = new ErrorCode(1_020_004_009, "创建回款失败，原因：合同金额未设置");
+    ErrorCode RECEIVABLE_IDEMPOTENCY_KEY_REQUIRED = new ErrorCode(1_020_004_010, "创建回款失败，原因：客户端幂等键不能为空");
+    ErrorCode RECEIVABLE_IDEMPOTENCY_KEY_CONFLICT = new ErrorCode(1_020_004_011, "创建回款失败，原因：幂等键已被不同请求载荷使用");
+    ErrorCode RECEIVABLE_IDEMPOTENCY_KEY_INVALID = new ErrorCode(1_020_004_012, "创建回款失败，原因：客户端幂等键长度不能超过 128 个字符");
+    ErrorCode RECEIVABLE_AMOUNT_INVALID = new ErrorCode(1_020_004_013, "创建回款失败，原因：回款金额必须大于 0");
+    ErrorCode RECEIVABLE_AMOUNT_SCALE_INVALID = new ErrorCode(1_020_004_014, "创建回款失败，原因：回款金额最多保留 2 位小数");
 
     // ========== 回款计划 1-020-005-000 ==========
     ErrorCode RECEIVABLE_PLAN_NOT_EXISTS = new ErrorCode(1_020_005_000, "回款计划不存在");
     ErrorCode RECEIVABLE_PLAN_UPDATE_FAIL = new ErrorCode(1_020_006_000, "更想回款计划失败，原因：已经有对应的还款");
     ErrorCode RECEIVABLE_PLAN_EXISTS_RECEIVABLE = new ErrorCode(1_020_006_001, "回款计划已经有对应的回款，不能使用");
+    ErrorCode RECEIVABLE_PLAN_RELATION_MISMATCH = new ErrorCode(1_020_005_001, "回款计划与合同或客户不一致");
 
     // ========== 客户管理 1_020_006_000 ==========
     ErrorCode CUSTOMER_NOT_EXISTS = new ErrorCode(1_020_000_006, "客户不存在");

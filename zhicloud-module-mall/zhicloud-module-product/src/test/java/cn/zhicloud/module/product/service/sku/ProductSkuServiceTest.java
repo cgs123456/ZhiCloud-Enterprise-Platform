@@ -11,7 +11,6 @@ import cn.zhicloud.module.product.service.property.ProductPropertyService;
 import cn.zhicloud.module.product.service.property.ProductPropertyValueService;
 import cn.zhicloud.module.product.service.spu.ProductSpuService;
 import jakarta.annotation.Resource;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -34,7 +33,6 @@ import static org.mockito.Mockito.verify;
  *
  * @author 智云
  */
-@Disabled // TODO 芋艿：后续 fix 补充的单测
 @Import(ProductSkuServiceImpl.class)
 public class ProductSkuServiceTest extends BaseDbUnitTest {
 

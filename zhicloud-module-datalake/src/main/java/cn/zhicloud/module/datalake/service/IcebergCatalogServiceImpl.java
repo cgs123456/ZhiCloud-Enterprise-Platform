@@ -83,6 +83,12 @@ public class IcebergCatalogServiceImpl implements IcebergCatalogService {
      */
     private static final Duration QUERY_TIMEOUT = Duration.ofSeconds(30);
 
+    /**
+     * Trino 要求每个请求都带查询发起者身份，缺失时 /v1/statement 直接返回 400
+     * 「Basic authentication or X-Trino-Original-User or X-Trino-User must be sent」
+     */
+    private static final String TRINO_USER = "zhicloud-datalake";
+
     private final DataLakeProperties properties;
 
     /**
@@ -162,6 +168,7 @@ public class IcebergCatalogServiceImpl implements IcebergCatalogService {
         try {
             ResponseEntity<String> response = restClient.post()
                     .uri("/v1/statement")
+                    .header("X-Trino-User", TRINO_USER)
                     .contentType(MediaType.TEXT_PLAIN)
                     .body(sql)
                     .retrieve()
@@ -184,6 +191,7 @@ public class IcebergCatalogServiceImpl implements IcebergCatalogService {
         try {
             ResponseEntity<String> response = restClient.get()
                     .uri(URI.create(nextUri))
+                    .header("X-Trino-User", TRINO_USER)
                     .retrieve()
                     .toEntity(String.class);
             return JsonUtils.parseObject(response.getBody(), Map.class);
@@ -199,8 +207,18 @@ public class IcebergCatalogServiceImpl implements IcebergCatalogService {
      * @param response 首次响应
      * @return 所有数据行（每行是一个 Object 数组）
      */
-    @SuppressWarnings("unchecked")
     private List<List<Object>> collectAllData(Map<String, Object> response) {
+        return collectAllData(response, new ArrayList<>());
+    }
+
+    /**
+     * 收集所有分页的 data，并把列名回填到 columnSink。
+     *
+     * <p>列名必须跟着分页一起收：Trino 的首屏响应经常只有 nextUri 而没有 columns
+     * （查询还在排队/编译），只看首屏会得到 0 个列名，于是返回 N 行空 Map —— 数据被静默丢弃。
+     */
+    @SuppressWarnings("unchecked")
+    private List<List<Object>> collectAllData(Map<String, Object> response, List<String> columnSink) {
         List<List<Object>> allData = new ArrayList<>();
         if (response == null || response.isEmpty()) {
             return allData;
@@ -211,6 +229,7 @@ public class IcebergCatalogServiceImpl implements IcebergCatalogService {
             log.warn("[collectAllData][Trino 返回错误: {}]", error);
             return allData;
         }
+        absorbColumnNames(response, columnSink);
         // 2. 收集首屏数据
         Object data = response.get("data");
         if (data instanceof List) {
@@ -229,6 +248,7 @@ public class IcebergCatalogServiceImpl implements IcebergCatalogService {
                 log.warn("[collectAllData][Trino 分页返回错误: {}]", nextError);
                 break;
             }
+            absorbColumnNames(nextResponse, columnSink);
             Object nextData = nextResponse.get("data");
             if (nextData instanceof List) {
                 allData.addAll((List<List<Object>>) nextData);
@@ -237,6 +257,17 @@ public class IcebergCatalogServiceImpl implements IcebergCatalogService {
             pageCount++;
         }
         return allData;
+    }
+
+    /**
+     * 用当前页的列名覆盖 sink（只在该页真的带 columns 时覆盖，避免被空页冲掉）
+     */
+    private void absorbColumnNames(Map<String, Object> page, List<String> columnSink) {
+        List<String> names = extractColumnNames(page);
+        if (!names.isEmpty()) {
+            columnSink.clear();
+            columnSink.addAll(names);
+        }
     }
 
     /**
@@ -304,8 +335,8 @@ public class IcebergCatalogServiceImpl implements IcebergCatalogService {
         if (response.isEmpty()) {
             return Collections.emptyList();
         }
-        List<String> columnNames = extractColumnNames(response);
-        List<List<Object>> data = collectAllData(response);
+        List<String> columnNames = new ArrayList<>();
+        List<List<Object>> data = collectAllData(response, columnNames);
         List<Map<String, Object>> rows = new ArrayList<>(data.size());
         for (List<Object> row : data) {
             Map<String, Object> rowMap = new LinkedHashMap<>();

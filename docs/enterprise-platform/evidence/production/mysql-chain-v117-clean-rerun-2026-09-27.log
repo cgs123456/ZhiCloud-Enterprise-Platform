@@ -1,0 +1,51 @@
+{
+  "generated_at": "2026-09-27T18:10:14.925719+08:00",
+  "host": "127.0.0.1",
+  "port": 53306,
+  "database": "zhicloud_sandbox_v117_clean",
+  "migration_dir": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration",
+  "files_total": 3,
+  "from_version": "V115",
+  "continue_on_error": false,
+  "files_failed": 0,
+  "stopped_at": null,
+  "verify": [
+    {
+      "script": "V115_verify.sql",
+      "file": "V115_verify.sql",
+      "bytes": 8200,
+      "exit_code": 0,
+      "duration_s": 0.049,
+      "stdout": "check_name\tverdict\r\nV115_SEED_USERS_DISABLED\tPASS\r\nV115_SEED_USER_ROLES_REVOKED\tPASS\r\nV115_SEED_USER_POSTS_REVOKED\tPASS\r\nV115_SEED_OAUTH2_ACCESS_REVOKED\tPASS\r\nV115_SEED_OAUTH2_REFRESH_REVOKED\tPASS\r\nV115_SEED_OAUTH2_APPROVES_REVOKED\tPASS\r\nV115_SEED_OAUTH2_CODES_REVOKED\tPASS\r\nV115_SEED_SOCIAL_BINDS_REVOKED\tPASS\r\nV115_DEMO_OAUTH2_CLIENTS_DISABLED\tPASS\r\nV115_DEMO_SOCIAL_CLIENTS_DISABLED\tPASS\r\nV115_NON_SEED_SUPER_ADMIN_PRESENT\tPASS\r\n",
+      "stderr": ""
+    },
+    {
+      "script": "V116_verify.sql",
+      "file": "V116_verify.sql",
+      "bytes": 4882,
+      "exit_code": 0,
+      "duration_s": 0.052,
+      "stdout": "check_name\tverdict\r\nV116_ACTIVE_USERNAME_COLUMN\tPASS\r\ntable_name\tindex_name\texpected_columns\tactual_columns\tnon_unique\tindex_verdict\r\nsystem_users\tuk_system_users_tenant_active_username\ttenant_id,active_username\ttenant_id,active_username\t0\tOK\r\ncheck_name\tverdict\r\nV116_ACTIVE_USERNAME_UNIQUE_INDEX\tPASS\r\ncheck_name\tverdict\r\nV116_ACTIVE_USERNAME_NO_DUPLICATES\tPASS\r\n",
+      "stderr": ""
+    },
+    {
+      "script": "V117_verify.sql",
+      "file": "V117_verify.sql",
+      "bytes": 5611,
+      "exit_code": 0,
+      "duration_s": 0.05,
+      "stdout": "check_name\tverdict\r\nV117_CRM_RECEIVABLE_IDEMPOTENCY_COLUMNS\tPASS\r\ntable_name\tindex_name\texpected_columns\tactual_columns\tnon_unique\tindex_verdict\r\ncrm_receivable\tuk_crm_receivable_idempotency\ttenant_id,idempotency_key\ttenant_id,idempotency_key\t0\tOK\r\ncheck_name\tverdict\r\nV117_CRM_RECEIVABLE_IDEMPOTENCY_INDEX\tPASS\r\ncheck_name\tverdict\r\nV117_CRM_RECEIVABLE_IDEMPOTENCY_DATA\tPASS\r\n",
+      "stderr": ""
+    }
+  ],
+  "server_metrics": {
+    "exit_code": 0,
+    "duration_s": 0.062,
+    "stdout": "VERSION()\t@@sql_mode\t@@collation_server\t@@time_zone\t@@transaction_isolation\r\n8.4.9\tONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION\tutf8mb4_0900_ai_ci\t+08:00\tREPEATABLE-READ\r\n",
+    "stderr": ""
+  },
+  "table_count": "463",
+  "status": "passed"
+}
+
+[summary] files=3 failed=0 stopped_at=None tables=463

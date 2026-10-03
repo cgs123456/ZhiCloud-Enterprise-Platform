@@ -11,6 +11,7 @@ import cn.zhicloud.module.wms.controller.admin.order.movement.vo.order.WmsMoveme
 import cn.zhicloud.module.wms.dal.dataobject.order.movement.WmsMovementOrderDO;
 import cn.zhicloud.module.wms.dal.dataobject.order.movement.WmsMovementOrderDetailDO;
 import cn.zhicloud.module.wms.dal.mysql.order.movement.WmsMovementOrderMapper;
+import cn.zhicloud.module.wms.enums.inventory.WmsInventoryChangeTypeEnum;
 import cn.zhicloud.module.wms.enums.order.WmsOrderTypeEnum;
 import cn.zhicloud.module.wms.enums.order.WmsOrderStatusEnum;
 import cn.zhicloud.module.wms.service.inventory.WmsInventoryService;
@@ -28,6 +29,8 @@ import java.util.List;
 
 import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.*;
+import cn.zhicloud.module.qms.enums.qms.InspectionBizTypeEnum;
+import cn.zhicloud.module.qms.api.InspectionOrderApi;
 
 /**
  * WMS 移库单 Service 实现类
@@ -99,11 +102,23 @@ public class WmsMovementOrderServiceImpl implements WmsMovementOrderService {
         movementOrderDetailService.deleteMovementOrderDetailListByOrderId(id);
     }
 
+    /**
+     * 移库质检卡点：QMS 检验单以 (bizType=MOVEMENT, bizId=移库单 ID) 关联。
+     */
+    @Resource
+    private InspectionOrderApi inspectionOrderApi;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void completeMovementOrder(Long id) {
         // 1.1 校验存在，且草稿
         WmsMovementOrderDO order = validateMovementOrderPrepare(id);
+        // 库存流转质检卡点：与发运（OQC）同一套宽松语义——只拦「明确判废」的移库单，
+        // 没建质检单的移库照常放行；必须全检的仓由 QMS 侧建单后再收紧。
+        // 卡点放在状态 CAS 之前：否则会出现状态已置 FINISHED 却因质检不过而回滚不了库存的半完成。
+        if (inspectionOrderApi.hasFailedInspection(InspectionBizTypeEnum.MOVEMENT.getBizType(), id)) {
+            throw exception(MOVEMENT_ORDER_QC_FAILED, id);
+        }
         // 1.2 校验移库单明细存在
         List<WmsMovementOrderDetailDO> details = movementOrderDetailService.validateMovementOrderDetailListExists(id);
 
@@ -225,20 +240,21 @@ public class WmsMovementOrderServiceImpl implements WmsMovementOrderService {
         for (WmsMovementOrderDetailDO detail : details) {
             BigDecimal detailTotalPrice = getDetailTotalPrice(detail.getQuantity(), detail.getPrice(),
                     detail.getTotalPrice());
+            // 方向由 changeType 决定、quantity 保持正数（与收货 IN / 发运 OUT 同一套约定）：
+            // 不设 changeType 会落到 PLAIN 兼容分支，只动 quantity 不动 available_quantity，
+            // 结果是目标仓的货到了也不可用（available 恒 0）、源仓 available 虚高（可被超卖）
             items.add(BeanUtils.toBean(detail, WmsInventoryChangeReqDTO.Item.class)
-                    .setWarehouseId(detail.getSourceWarehouseId()).setQuantity(detail.getQuantity().negate())
-                    .setTotalPrice(negate(detailTotalPrice)));
+                    .setWarehouseId(detail.getSourceWarehouseId()).setQuantity(detail.getQuantity())
+                    .setTotalPrice(detailTotalPrice)
+                    .setChangeType(WmsInventoryChangeTypeEnum.OUT));
             items.add(BeanUtils.toBean(detail, WmsInventoryChangeReqDTO.Item.class)
                     .setWarehouseId(detail.getTargetWarehouseId()).setQuantity(detail.getQuantity())
-                    .setTotalPrice(detailTotalPrice));
+                    .setTotalPrice(detailTotalPrice)
+                    .setChangeType(WmsInventoryChangeTypeEnum.IN));
         }
         inventoryService.changeInventory(new WmsInventoryChangeReqDTO()
                 .setOrderId(order.getId()).setOrderNo(order.getNo())
                 .setOrderType(WmsOrderTypeEnum.MOVEMENT.getType()).setItems(items));
-    }
-
-    private static BigDecimal negate(BigDecimal value) {
-        return value == null ? null : value.negate();
     }
 
 }

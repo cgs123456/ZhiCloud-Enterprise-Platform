@@ -21,6 +21,15 @@ public enum ErpAuditStatus implements ArrayValuable<Integer> {
     APPROVE(20, "已审核"); // 审核通过
 
     public static final Integer[] ARRAYS = Arrays.stream(values()).map(ErpAuditStatus::getStatus).toArray(Integer[]::new);
+    /**
+     * 判断状态值是否属于已定义的审核状态。
+     *
+     * @param status 状态值
+     * @return 是否合法
+     */
+    public static boolean isValid(Integer status) {
+        return Arrays.stream(values()).anyMatch(value -> value.status.equals(status));
+    }
 
     /**
      * 状态

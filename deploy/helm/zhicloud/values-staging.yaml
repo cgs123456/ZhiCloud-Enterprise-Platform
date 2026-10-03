@@ -35,19 +35,36 @@ ingress:
     enabled: true
     secretName: "zhicloud-staging-tls-secret"
 
+# MySQL TLS：预发布必须与生产使用同一套证书链/主机名校验
+mysqlTls:
+  enabled: true
+  mode: "VERIFY_IDENTITY"
+  truststore:
+    # 预发布部署前必须设置为包含 truststore.p12 与密码键的 Secret
+    existingSecret: ""
+
 # 环境变量：staging profile
 env:
   SPRING_PROFILES_ACTIVE: "staging"
-  MASTER_DATASOURCE_URL: "jdbc:mysql://zhicloud-mysql-staging:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true"
-  SLAVE_DATASOURCE_URL: "jdbc:mysql://zhicloud-mysql-staging:3306/zhicloud_platform?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true"
+  MASTER_DATASOURCE_URL: "jdbc:mysql://zhicloud-mysql-staging:3306/zhicloud_platform?sslMode=VERIFY_IDENTITY&tlsVersions=TLSv1.2,TLSv1.3&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true"
+  SLAVE_DATASOURCE_URL: "jdbc:mysql://zhicloud-mysql-staging:3306/zhicloud_platform?sslMode=VERIFY_IDENTITY&tlsVersions=TLSv1.2,TLSv1.3&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true"
   REDIS_HOST: "zhicloud-redis-staging"
   ZHICLOUD_AIRAG_DATASOURCE_URL: "jdbc:postgresql://zhicloud-postgres-staging:5432/zhicloud_rag"
+  ZHICLOUD_AIRAG_INITIALIZE_SCHEMA: "false"
   OTEL_EXPORTER_OTLP_ENDPOINT: "http://zhicloud-jaeger-staging:4318/v1/traces"
   MANAGEMENT_OTLP_TRACING_ENDPOINT: "http://zhicloud-jaeger-staging:4318/v1/traces"
 
 # 启用迁移 Job（预发布环境验证迁移）
 migration:
   enabled: true
+  baselineMode: existing
+
+# 管理员引导 Job：默认关闭，首次安装/受控轮换时按 runbook 显式开启。
+bootstrapAdmin:
+  enabled: false
+  mode: ensure
+  passwordSecretName: ""
+  passwordSecretKey: "BOOTSTRAP_ADMIN_PASSWORD"
 
 # 优雅停机
 terminationGracePeriodSeconds: 30

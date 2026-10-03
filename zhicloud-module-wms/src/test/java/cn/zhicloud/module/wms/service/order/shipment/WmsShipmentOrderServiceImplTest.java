@@ -16,6 +16,7 @@ import cn.zhicloud.module.wms.service.inventory.dto.WmsInventoryChangeReqDTO;
 import cn.zhicloud.module.wms.service.md.item.WmsItemSkuService;
 import cn.zhicloud.module.wms.service.md.merchant.WmsMerchantService;
 import cn.zhicloud.module.wms.service.md.warehouse.WmsWarehouseService;
+import cn.zhicloud.module.qms.api.InspectionOrderApi;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -32,6 +33,10 @@ import static cn.zhicloud.framework.test.core.util.AssertUtils.assertServiceExce
 import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.SHIPMENT_ORDER_DETAIL_REQUIRED;
 import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.SHIPMENT_ORDER_STATUS_NOT_DELETABLE;
 import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.SHIPMENT_ORDER_STATUS_NOT_PREPARE;
+import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.SHIPMENT_ORDER_QC_FAILED;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -59,6 +64,41 @@ public class WmsShipmentOrderServiceImplTest extends BaseDbUnitTest {
     private WmsItemSkuService itemSkuService;
     @MockitoBean
     private WmsInventoryService inventoryService;
+    /**
+     * QMS 出货检验结论（发运卡点用）
+     */
+    @MockitoBean
+    private InspectionOrderApi inspectionOrderApi;
+
+    @Test
+    public void testShip_blockedByFailedOutgoingInspection() {
+        // 已打包 + 存在「检验不通过」的出货检验单 → 禁止发运，状态不得推进
+        WmsShipmentOrderDO order = createShipmentOrder(100L);
+        order.setStatus(WmsOrderStatusEnum.PACKED.getStatus());
+        shipmentOrderMapper.insert(order);
+        when(inspectionOrderApi.hasFailedInspection(anyString(), anyLong())).thenReturn(true);
+
+        // 断言时要带上门禁参数：错误码模板含 {}，不传参就会拿模板去比对已渲染消息（第一次就这样判红）
+        assertServiceException(() -> shipmentOrderService.ship(order.getId()), SHIPMENT_ORDER_QC_FAILED, order.getId());
+
+        WmsShipmentOrderDO dbOrder = shipmentOrderMapper.selectById(order.getId());
+        assertEquals(WmsOrderStatusEnum.PACKED.getStatus(), dbOrder.getStatus());
+        verify(inventoryService, never()).changeInventory(any());
+    }
+
+    @Test
+    public void testShip_allowedWhenNoFailedInspection() {
+        // 宽松语义：没有判废的出货检验单（含从未做 OQC）时照常发运，不阻断既有流程
+        WmsShipmentOrderDO order = createShipmentOrder(100L);
+        order.setStatus(WmsOrderStatusEnum.PACKED.getStatus());
+        shipmentOrderMapper.insert(order);
+        when(inspectionOrderApi.hasFailedInspection(anyString(), anyLong())).thenReturn(false);
+
+        shipmentOrderService.ship(order.getId());
+
+        WmsShipmentOrderDO dbOrder = shipmentOrderMapper.selectById(order.getId());
+        assertEquals(WmsOrderStatusEnum.SHIPPED.getStatus(), dbOrder.getStatus());
+    }
 
     @Test
     public void testCreateShipmentOrder_calculateTotal() {

@@ -17,6 +17,8 @@ import cn.zhicloud.module.wms.enums.inventory.WmsInventoryChangeTypeEnum;
 import cn.zhicloud.module.wms.service.inventory.WmsInventoryService;
 import cn.zhicloud.module.wms.service.inventory.dto.WmsInventoryChangeReqDTO;
 import cn.zhicloud.module.wms.service.md.merchant.WmsMerchantService;
+import cn.zhicloud.module.qms.api.InspectionOrderApi;
+import cn.zhicloud.module.qms.enums.qms.InspectionBizTypeEnum;
 import cn.zhicloud.module.wms.service.md.warehouse.WmsWarehouseService;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +60,11 @@ public class WmsShipmentOrderServiceImpl implements WmsShipmentOrderService {
     private WmsMerchantService merchantService;
     @Autowired
     private WmsInventoryService inventoryService;
+    /**
+     * 出货检验（OQC）结论查询：QMS 检验单以 (bizType=SHIPMENT, bizId=出库单 ID) 关联。
+     */
+    @Resource
+    private InspectionOrderApi inspectionOrderApi;
 
     /**
      * 是否允许出库单快捷完成（跳过拣货/复核/打包/发运，直接扣库存）。
@@ -183,6 +190,12 @@ public class WmsShipmentOrderServiceImpl implements WmsShipmentOrderService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void ship(Long id) {
+        // 出货质检卡点（OQC）：存在「检验不通过」的出货检验单时禁止发运。
+        // 采用与 MES 完工入库一致的宽松语义——未建 OQC 检验单的出库单不被阻断，只拦明确判废的，
+        // 避免一刀切把既有发货流程全量卡死；需要强制全检的仓/客户由 QMS 侧建单后再收紧。
+        if (inspectionOrderApi.hasFailedInspection(InspectionBizTypeEnum.SHIPMENT.getBizType(), id)) {
+            throw exception(SHIPMENT_ORDER_QC_FAILED, id);
+        }
         transitionStatus(id, WmsOrderStatusEnum.PACKED, WmsOrderStatusEnum.SHIPPED);
     }
 

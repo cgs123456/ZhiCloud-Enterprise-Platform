@@ -18,17 +18,14 @@ jobs:
     env:
       NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
 
-    strategy:
-      matrix:
-        java: [ '21' ]
-
     steps:
     - uses: actions/checkout@v4
-    - name: Set up JDK ${{ matrix.java }}
+    - name: Set up JDK 21.0.9 and Maven 3.9.11
       uses: actions/setup-java@v4
       with:
-        java-version: ${{ matrix.java }}
+        java-version: '21.0.9'
         distribution: 'temurin'
+        maven-version: '3.9.11'
         cache: maven
     # 错误码唯一性门禁：fast-fail 在 mvn verify 之前，避免重复码悄悄合入。
     # 全量严格检查——全仓错误码已通过 scripts/renumber_error_codes.py 去重（140 处历史冲突归零），
@@ -89,8 +86,36 @@ jobs:
           zhicloud-module-infra zhicloud-module-mall zhicloud-module-member zhicloud-module-pay \
           zhicloud-module-mp zhicloud-module-im zhicloud-module-iot zhicloud-module-report \
           zhicloud-module-datalake
+    # 迁移契约门禁：V90+ 已审核迁移的字节哈希、版本唯一性、验证 SQL 与 R1-R5 lint
+    # 必须全部通过。该门禁只证明文本契约，不替代真实 MySQL 影子库/预生产执行。
+    - name: Migration Contract and Lint Gate
+      run: python3 scripts/production/check_migration_contract.py
+    # 重复建表收敛门禁：扫描全部 Flyway 迁移中的重复 CREATE TABLE，与 duplicate_ddl_allowlist.json 比对。
+    # 未登记的重复建表、白名单失效、缺少收敛迁移（V98）均会失败。
+    # 该门禁为静态检查（不连库），不替代 information_schema 真机结构比对与预生产执行。
+    - name: Duplicate DDL Convergence Gate
+      run: python3 scripts/production/check_duplicate_ddl.py
     - name: Build with Maven
-      run: mvn -B verify --file pom.xml
+      shell: bash
+      run: |
+        set -o pipefail
+        mvn -B -V clean verify --file pom.xml | tee maven-build.log
+    - name: Upload Surefire Reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: surefire-reports
+        path: '**/target/surefire-reports/**'
+        if-no-files-found: warn
+        retention-days: 30
+    - name: Upload Maven Build Log
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: maven-build-log
+        path: maven-build.log
+        if-no-files-found: warn
+        retention-days: 30
     - name: Security Check (deploy gate)
       run: |
         chmod +x script/security/security-check.sh
@@ -119,7 +144,60 @@ jobs:
         path: target/dependency-check-report.html
         retention-days: 30
     - name: Generate CycloneDX SBOM (P2-3 软件物料清单)
-      run: mvn org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -DskipTests -q
+      run: mvn -B org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -DskipTests -q
+    # 许可证治理门禁（T-107）：SBOM 只是"清单"，清单本身不等于"合规判定"。
+    # 这里把 CycloneDX BOM + 服务端运行时依赖树喂给 generate_license_inventory.py 生成治理清单，
+    # 再用 check_license_policy.py 做 allow / deny / review 判定，fail-closed：
+    #   1) 未分类（UNMAPPED）与许可证缺失（MISSING）一律 deny；
+    #   2) 弱 Copyleft 按现行策略为 review_and_record，同样计入阻断；
+    #   3) 判定 exit != 0 即本 job 失败 —— 必须由法务在许可证处置台账中逐项处置，
+    #      再将批准项写入 scripts/production/license-policy.json 的 allowlist
+    #      （带 decision / approved_by / approved_on / expires_on / scope）后才能转绿。
+    # 严禁为了"变绿"预先填充 allowlist 或放宽 policy —— 那样门禁等于不存在。
+    #
+    # 两个踩过的坑，勿回退：
+    #   1) dependency:tree 必须带 -am：CI 的 ~/.m2 里没有本仓 SNAPSHOT，
+    #      单跑 -pl zhicloud-server 无法解析兄弟模块；zhicloud-server 聚合了全部业务模块，
+    #      故 -am 产出的并集与服务端运行时闭包等价。
+    #   2) dependency:tree 不能用 -q：解析器只认 "[INFO]" 前缀行，-q 会让运行时闭包退化为空集，
+    #      全部组件被误判为非运行时。
+    - name: Resolve Runtime Dependency Tree (license gate input)
+      shell: bash
+      run: |
+        set -o pipefail
+        mvn -B -pl zhicloud-server -am org.apache.maven.plugins:maven-dependency-plugin:3.7.0:tree \
+          -Dscope=runtime -DskipTests 2>&1 | tee dependency-tree-server-runtime.log
+    - name: Build License Inventory
+      run: |
+        python3 scripts/production/generate_license_inventory.py \
+          --bom target/bom.json \
+          --runtime-tree dependency-tree-server-runtime.log \
+          --output license-inventory.json \
+          --change-note "CI regenerated: aggregate CycloneDX BOM + zhicloud-server runtime tree"
+    # 用 step id 精确定位失败来源：if: failure() 会把前面 Maven 构建失败也误报成许可证问题，
+    # 那是误导性告警，会让真正的构建故障被当成合规问题排查。
+    - name: License Policy Gate (fail-closed)
+      id: license_gate
+      run: |
+        python3 scripts/production/check_license_policy.py \
+          --inventory license-inventory.json \
+          --policy scripts/production/license-policy.json \
+          --output license-policy-gate.json
+    - name: License Gate Failure Guidance
+      if: steps.license_gate.outcome == 'failure'
+      run: |
+        echo "::error title=许可证门禁未通过::denied / review_required 组件在经法务逐项处置前禁止合入。请查看 license-policy-gate.json 的 denied 与 review_required 数组，在 docs/enterprise-platform/evidence/production/license-disposition-register-*.md 中登记处置结论（批准人 / 日期 / 有效期），再写入 license-policy.json 的 allowlist。禁止直接放宽 policy 或预填 allowlist 使其变绿。"
+    - name: Upload License Governance Evidence
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: license-governance
+        path: |
+          license-inventory.json
+          license-policy-gate.json
+          dependency-tree-server-runtime.log
+        if-no-files-found: warn
+        retention-days: 90
     - name: Upload SBOM Artifact
       if: always()
       uses: actions/upload-artifact@v4

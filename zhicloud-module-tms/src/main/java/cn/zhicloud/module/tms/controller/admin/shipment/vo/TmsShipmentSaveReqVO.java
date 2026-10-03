@@ -39,6 +39,9 @@ public class TmsShipmentSaveReqVO {
     @Schema(description = "来源单据号", example = "SO20240101001")
     private String sourceOrderNo;
 
+    @Schema(description = "来源 WMS 出库单编号", example = "1")
+    private Long shipmentOrderId;
+
     @Schema(description = "合计数量", example = "100")
     private BigDecimal totalQuantity;
 

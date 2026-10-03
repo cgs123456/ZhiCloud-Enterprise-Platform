@@ -1,0 +1,40 @@
+spring:
+  main:
+    lazy-initialization: true
+    banner-mode: off
+    allow-bean-definition-overriding: true
+  datasource:
+    url: "jdbc:mysql://127.0.0.1:53306/zhicloud_sandbox_chain?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true"
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password:
+    druid:
+      initial-size: 1
+      max-active: 5
+      validation-query: SELECT 1
+  flyway:
+    enabled: false
+  sql:
+    init:
+      mode: never
+
+mybatis:
+  lazy-initialization: true
+
+mybatis-plus:
+  global-config:
+    db-config:
+      id-type: AUTO
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+zhicloud:
+  info:
+    base-package: cn.zhicloud.module
+  integration:
+    max-retry: 3
+    base-backoff-seconds: 10
+    max-backoff-seconds: 100
+    lease-seconds: 30
+    batch-size: 20
+    relay-enabled: false
