@@ -244,7 +244,10 @@ def build_report(inventory_path: Path, policy_path: Path, today: date | None = N
         category = str(component.get("license_category") or "").strip().lower()
         fallback_rule = None
         if category in MISSING_CATEGORIES:
-            action = "deny"
+            # 判定权交回 policy：代码不再写死 deny，否则"内部自研不分发、许可证不作门禁"这类
+            # 所有者决定只能改源码，且无法从数据文件里审计。
+            # 缺 key 时仍回落到 unmapped_action（默认 deny），保持 fail-closed 语义不变。
+            action = str(category_actions.get(category) or unmapped_action).strip().lower()
             fallback_rule = "LIC-EXT-002"
             default_reason = f"许可证缺失或未映射（license_category={category or 'EMPTY'}）"
         else:
