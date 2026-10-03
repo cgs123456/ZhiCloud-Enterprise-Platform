@@ -303,6 +303,13 @@
       "sha256": "d253c0f28fe5500d3e0113703c1bd747e292b799da938760a6bf4c79d74e9730",
       "verification_file": "V132_verify.sql",
       "verification_sha256": "a0662c5500bd11196b5d3ac1ec5304f832331ff15b20bdacb23b10213cc2bbd6"
+    },
+    {
+      "version": 133,
+      "file": "V133__qms_view_dimension_gap.sql",
+      "sha256": "a541d976b59448c4b2a6a9db4f9c8ebd24e0e6f739996c8f7983137f29bfc32c",
+      "verification_file": "V133_verify.sql",
+      "verification_sha256": "e20320d830021c6e921dae932135fb0eba9c63a86f0386e28b9d7748069479be"
     }
   ]
 }

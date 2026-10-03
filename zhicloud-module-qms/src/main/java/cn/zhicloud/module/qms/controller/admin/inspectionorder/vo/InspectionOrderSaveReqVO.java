@@ -26,6 +26,9 @@ public class InspectionOrderSaveReqVO {
     @InEnum(InspectionTypeEnum.class)
     private Integer type;
 
+    /**
+     * 目标为 erp_supplier.id（ERP 供应商主数据），不要用 wms_receipt_order.merchant_id（商户）回填
+     */
     @Schema(description = "供应商 ID", example = "1024")
     private Long supplierId;
 
