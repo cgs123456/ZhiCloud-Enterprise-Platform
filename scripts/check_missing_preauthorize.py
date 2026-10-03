@@ -41,6 +41,17 @@ WRITE_METHOD_RE = re.compile(
 PREAUTH_RE = re.compile(r'@PreAuthorize\s*\(')
 # @PermitAll 允许匿名访问，出现在写接口上等同于「未鉴权公开写接口」
 PERMITALL_RE = re.compile(r'@PermitAll\b')
+# 会员端接口（controller/app/**）不得挂后台 RBAC 权限点：
+# 会员用户（member_user）在权限模型里结构上拿不到 system_role_menu，写 @ss.hasPermission
+# 只会让接口对会员恒 403 —— 这是设计错配而不是"权限没配全"，所以按零容忍处理。
+SS_PERMISSION_RE = re.compile(r'@ss\.has(?:Any)?Permissions?\s*\(')
+# 会员侧模块（其 controller/app 面向 member_user）：mall 四个子模块、member、pay。
+# 判定范围按模块而不是按目录，是因为 WMS 的 PDA 接口也在 controller/app 下，但它是后台用户登录态。
+MEMBER_SIDE_MODULE_PREFIXES = (
+    'zhicloud-module-member/',
+    'zhicloud-module-mall/',
+    'zhicloud-module-pay/',
+)
 MAPPING_PATH_RE = re.compile(r'@(?:Post|Put|Patch|Delete|Request)Mapping\s*\(([^)]*)\)')
 # 方法签名：允许泛型、数组、注解修饰的返回类型
 METHOD_SIG_RE = re.compile(r'^\s*(?:public|protected|private)\s+[\w<>\[\],.\s?]+\s+(\w+)\s*\(')
@@ -190,11 +201,21 @@ def main():
     allowlist = load_allowlist()
     gaps = []
     permit_all_gaps = []
+    app_rbac_gaps = []
     scanned = 0
     for path, rel in iter_controller_files(args.module, args.include_app):
         scanned += 1
         with open(path, 'r', encoding='utf-8', errors='ignore') as f:
             lines = strip_comments(f.readlines())
+
+        # 只判「会员端」：controller/app 下还住着 PDA 这类以**后台用户**登录的接口
+        # （zhicloud-module-wms 的 controller/app/pda 就是），它们挂 @ss.hasPermission 是正确写法，
+        # 一律按 app 判会把合法用法打成红，也会诱导别人把 PDA 的鉴权一起拆掉。
+        if any(rel.startswith(p) for p in MEMBER_SIDE_MODULE_PREFIXES) and '/controller/app/' in rel:
+            # 会员端接口挂后台权限点，属结构错配而非"漏配权限"（见文件头注释）
+            for idx, line in enumerate(lines, start=1):
+                if SS_PERMISSION_RE.search(line):
+                    app_rbac_gaps.append((rel, idx))
 
         class_start = find_class_decl(lines)
         # 类级注解：严格取 class 声明行之前的部分
@@ -230,11 +251,21 @@ def main():
     if not args.include_app:
         print('[WARN] 未开启 --include-app，controller/app（PDA/移动端）未纳入扫描；CI 应始终传该参数。')
 
-    if not gaps and not permit_all_gaps:
+    if not gaps and not permit_all_gaps and not app_rbac_gaps:
         print(f'[OK] 未发现缺失 @PreAuthorize / 违规 @PermitAll 的写接口（扫描 {scanned} 个 Controller 文件）。')
         return 0
 
     failed = False
+
+    if app_rbac_gaps:
+        # 与 @PermitAll 同级：恒零容忍，不受 --max-gaps 棘轮影响
+        print(f'[APP-RBAC] 发现 {len(app_rbac_gaps)} 处会员端（controller/app）接口使用后台 RBAC 权限点'
+              f'（扫描 {scanned} 个 Controller 文件）：')
+        for rel, ln in app_rbac_gaps:
+            print(f'  {rel}:{ln}')
+        print('  → 会员端应使用 @PreAuthorize("isAuthenticated()")：会员用户结构上拿不到菜单权限，'
+              '挂 @ss.hasPermission 只会让接口对会员恒 403。')
+        failed = True
 
     if permit_all_gaps:
         # 匿名可写 = 阻断级，任何情况下都失败，不受 --max-gaps 影响

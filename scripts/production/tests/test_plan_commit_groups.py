@@ -105,23 +105,39 @@ class RealTreeTests(unittest.TestCase):
         self.assertEqual([], self.plan["violations"],
                          json.dumps(self.plan["violations"], ensure_ascii=False)[:800])
         w = self.plan["worktree"]
-        # 枚举为空就一切"通过"：必须证明它真的量到了当前工作树
-        self.assertGreater(w["committable_items"], 100, f"可提交面异常小：{w}")
-        self.assertGreater(w["evidence_untracked"], 500, f"证据面异常小：{w}")
+        # 枚举为空就等于一切"通过"：必须证明它真的量到了工作树。
+        # 注意这里钉的是"非空"而不是某批的绝对数量：上一批 242 个路径提交完之后，
+        # 可提交面本来就该变小，把 >100 当常量会让工具在每次成功提交后自红。
+        self.assertGreater(w["items_seen"], 0, f"枚举为空，门禁在空转：{w}")
+        self.assertGreater(w["evidence_untracked"], 0,
+                           f"证据面异常小（本仓库按约定始终有未入库证据）：{w}")
+        pending_non_evidence = (w["untracked_total"] - w["evidence_untracked"]) + w["modified_tracked"]
+        if pending_non_evidence:
+            # 有真实待提交项却一个都没分类出去 = 规则集体失灵；
+            # 这里刻意不钉">100"这种某批次的绝对数量：上一批 242 个路径提交完之后
+            # 可提交面本来就该只剩几条，钉绝对值会让工具在每次成功提交后自红。
+            self.assertGreaterEqual(w["committable_items"], 1,
+                                    f"待提交 {pending_non_evidence} 项却分类为空：{w}")
         self.assertEqual(w["committable_items"], sum(g["count"] for g in self.plan["groups"]))
         self.assertEqual(w["git_status_uall_lines"],
                          w["untracked_total"] + w["modified_tracked"])
 
-    def test_scripts_and_tests_are_one_atomic_group_on_the_real_tree(self):
-        """本轮实测出的结论：.ps1、门禁 .py、守卫测试 .py 互相引用，分不开。"""
-        groups = {g["name"]: set(g["paths"]) for g in self.plan["groups"]}
+    def test_scripts_and_tests_are_one_atomic_group(self):
+        """本轮实测出的结论：.ps1、门禁 .py、守卫测试 .py 互相引用，分不开。
+
+        钉在合成输入上而不是真实工作树：那三个文件一旦提交，真树上就没有可判对象了，
+        而这条结论本身与"今天是否脏"无关（钉在真树上会在每次成功提交后自红）。
+        """
+        items = [PS1, TEST_PY, GATE_PY]
+        out = plan(items, {})
+        groups = {g["name"]: set(g["paths"]) for g in out["groups"]}
         tooling = groups["tooling"]
-        for path in (PS1, TEST_PY, GATE_PY):
-            self.assertIn(path, tooling, f"{path} 不在 tooling：分组规则或工作树已漂移")
+        self.assertEqual(set(items), tooling, out["groups"])
+        for path in items:
             in_others = [n for n, s in groups.items() if n != "tooling" and path in s]
             self.assertEqual([], in_others, f"{path} 被两个组同时认领")
         # 分组的"为什么"必须是实测出来的环（互相引用），而不是我的偏好
-        self.assertIn("强连通", next(g["why"] for g in self.plan["groups"] if g["name"] == "tooling"))
+        self.assertIn("强连通", next(g["why"] for g in out["groups"] if g["name"] == "tooling"))
 
     def test_cli_json_is_strict_utf8_and_machine_readable(self):
         # 上一轮真踩：脚本用控制台编码(cp936)打印中文说明，我按 UTF-8 读回得到 U+FFFD，
