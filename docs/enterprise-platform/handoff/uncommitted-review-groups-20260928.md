@@ -4939,3 +4939,51 @@ at `AppMemberUserController.getUserInfo:39`。改为抛既有错误码 `USER_NOT
 **门禁复跑读数**：`check_migration_contract` PASSED tracked=43 scanned=139 findings=0（V132 已登记双向 sha256）、
 `check_duplicate_ddl` PASSED tables=554 findings=0、`check_bare_throws` rc=0、`scan_tx` rc=0、
 `check_error_codes` rc=0。
+
+### 12.108 BIZ-12 静态守卫落地，以及我自己把它做对之前犯的两次判定错误
+
+所有者已确认会员端 35 处授权表达式改 `isAuthenticated()` 的口径，并同意加一条静态守卫。守卫落在
+`scripts/check_missing_preauthorize.py`：会员侧接口的 `@ss.hasPermission` / `@ss.hasAnyPermissions`
+判 `[APP-RBAC]`，与 `@PermitAll` 同级零容忍（不受 `--max-gaps` 棘轮影响）。
+
+**第一版判错了范围（我自己的错）**：规则写成"任何 `controller/app` 目录"，真仓库一跑就把
+`zhicloud-module-wms/.../controller/app/pda/WmsPdaController.java:92,100` 一起判红 ——
+PDA 手持终端的登录态是**后台用户**，它挂 `@ss.hasPermission` 才是正确的。收窄为按**会员侧模块**判定
+（`zhicloud-module-member/`、`zhicloud-module-mall/`、`zhicloud-module-pay/`），并把这条边界钉成回归用例
+（`test_pda_app_under_controller_app_is_not_flagged`）：它同时防两件事 —— 守卫泛化成假红，
+以及有人为了让守卫闭嘴把 PDA 的鉴权拆成 `isAuthenticated()`。
+
+**守卫确实会咬（真仓库变异检查）**：往 `AppCartController.java` 注入一处
+`@PreAuthorize("@ss.hasPermission('trade:cart:mutation-check')")` → 门禁 rc=1 且点名
+`...controller/app/cart/AppCartController.java:35`；还原 → rc=0。三个数字：**基线 0 绿 / 注入 1 红 / 还原 0 绿**。
+新增测试 5 条全绿（含"注释里的权限点不算违规"，防止把注释当代码制造假红）。
+
+**顺手修掉分组器的一处误判维度（也是我提交动作引出来的）**：`plan_commit_groups.py` 的
+`dead-group-rule` 原本要求"每条规则今天必须命中脏文件"。批次提交完成后 4 条规则命中数变 0，
+工具就把整场判红（rc=1）—— 可那些规则是按**路径前缀**写的，下一批同类工件仍要用它们，
+判成死规则只会诱导"删规则"这种错误处置。改为：只有在全仓库都命中不到才算死。
+中途我还错了一次：在 `analyze()` 里现场调 `tracked_files()`，会让合成夹具与真工作树走不同判定
+（该函数的设计前提恰是"夹具与真树同一条代码"）；改回用调用方传入的 `existing`。
+`test_dead_group_rule_is_reported`（真死规则）仍然咬 —— 收窄没有把 fence 弄钝。
+
+同时把三条钉死"本批次绝对数量"的断言改成状态无关形式（`>100 个可提交项`、`>500 个证据项`、
+"三个 tooling 文件必须在真树同一组"），因为判据对象已随提交消失；改为
+"有非证据待提交项则至少分类出 1 条"与"tooling 三文件在**合成输入**上同组"。
+这是换断言对象而不是删检查 —— 删掉的话下一次分组规则失灵就没人报警。
+
+**读数**：`pytest test_plan_commit_groups.py test_check_missing_preauthorize_app_rbac.py` → 14 passed；
+`plan_commit_groups.py --quiet` → rc=0（分组计划自洽）；`check_commit_readiness.py` →
+`PASS required=17 tracked=17 untracked=0 missing=0 warnings=0`（此前 warnings=26，随提交清零）。
+
+**一个必须记下的既有事实（不是本轮引入）**：`scripts/production/tests` 全量跑是
+**51 failed / 605 passed / 2 skipped**，主因是环境 —— 本机 agent shell 的 PATH 里没有 `pwsh`
+（105 处 pwsh、48 处 WinError 2、144 处 FileNotFoundError），红点集中在
+`test_backup_restore_drill`(15) / `test_mysql_sandbox`(10) / `test_verify_build`(9) /
+`test_build_container`(8) / `test_schema_audit`(1) / `test_powershell_portability`(1)。
+其中 `test_plan_commit_groups` 的 3 条是**真红**，已按上文修掉。
+而 `.github/workflows/maven.yml` **没有跑 python 测试的步骤**（只有各门禁 + `mvn verify`），
+所以这 51 条不挡 master；但也意味着这批 python 守护在 CI 侧没有覆盖面 —— 属下一轮该补的账，
+本轮不自扩（主线是业务模块）。
+
+**License 待签清单**已单独成文：`docs/enterprise-platform/license-disposition-proposal-20261003.md`
+（7 个组件的取证结论、进入路径、以及"5 项可靠不引入未核实依赖消掉、2 项需你定取向"）。

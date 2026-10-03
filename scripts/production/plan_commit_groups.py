@@ -238,11 +238,16 @@ def analyze(items: list[str], existing: set[str], read_text, worktree_stats: dic
                                "paths": sorted(targets)[:5],
                                "detail": f"{name_of[a]}(组{a}) 引用了 {name_of[b]}(组{b})，"
                                          f"按当前顺序是**前指**：单独 checkout 组{a} 会缺工件"})
-    # 4) 规则不得空转：每条规则都必须真的命中过
-    for no, name, _rule, _why in GROUP_RULES:
-        if not groups[no]:
+    # 4) 规则不得空转：命中面要落在整个仓库（未跟踪 + 已跟踪），而不是"今天恰好有脏文件"。
+    #    上一批工件提交之后规则今天命中 0 个脏文件是正常状态；把它判成死规则会在每次成功提交后
+    #    把工具自己变红，并诱导"删掉规则"这种错误处置（规则是按路径前缀写的，下一批同类文件仍要归类）。
+    #    宇宙用调用方传进来的 existing（真树=已跟踪∪全部条目，夹具=合成集合），
+    #    绝不能在这里现场调 git，否则合成用例与真树走的就不是同一条判定。
+    universe = set(non_evidence) | set(existing)
+    for no, name, rule, _why in GROUP_RULES:
+        if not groups[no] and not any(rule(p) for p in universe):
             violations.append({"rule": "dead-group-rule", "group": name,
-                               "detail": "该分组规则一个文件都没命中：分组表已失真或删除了工件却没删规则"})
+                               "detail": "该分组规则在全仓库都命中不到文件：分组表已失真或工件被删却没删规则"})
 
     return {
         "generated_at": datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds"),
