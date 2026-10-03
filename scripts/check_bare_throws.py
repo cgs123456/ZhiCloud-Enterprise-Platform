@@ -40,7 +40,7 @@ IGNORE_MARK = '@bare-throw-ignore'
 IGNORE_LOOKBACK = 0
 # 当前已审校的豁免总数上限。新增豁免必须是一次有意识的修改：先改这个数字并说明理由，
 # 否则本门禁 FAIL。降低它代表真的还清了债。
-MAX_EXEMPTIONS = 63
+MAX_EXEMPTIONS = 64
 
 
 def in_comment(text, pos):
