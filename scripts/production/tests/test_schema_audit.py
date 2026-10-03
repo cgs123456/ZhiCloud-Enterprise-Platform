@@ -929,5 +929,25 @@ class SandboxEndToEndTest(unittest.TestCase):
         self.assertNotIn("root_password", json.dumps(report))
 
 
+class DockerRunnerPasswordTransportTest(unittest.TestCase):
+    """R-041/R-044：docker exec 变体不能把口令放进 argv。
+
+    同文件的宿主侧 `mysql_cli_runner` 一直是 `env["MYSQL_PWD"]` 的正确形态，
+    容器侧却写成 `-e MYSQL_PWD=<值>` —— 同一规则的两份实现漂移过一次，
+    而注释还替它辩白说"不写进任何证据文件"。
+    """
+
+    def setUp(self):
+        src = Path(__file__).resolve().parents[1] / "schema_audit.py"
+        self.src = src.read_text(encoding="utf-8")
+
+    def test_password_is_passed_via_child_env_not_argv(self):
+        self.assertIn('argv += ["-e", "MYSQL_PWD"]', self.src)
+        self.assertIn('child_env = {**os.environ, "MYSQL_PWD": password}', self.src)
+        self.assertIn('env=child_env', self.src)
+        self.assertEqual(0, self.src.count('MYSQL_PWD={password}'),
+                         "口令被拼进 docker 命令行，会同时出现在进程表和命令记录里")
+
+
 if __name__ == "__main__":
     unittest.main()

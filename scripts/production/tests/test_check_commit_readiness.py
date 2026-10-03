@@ -35,6 +35,10 @@ class TempRepoTestCase(unittest.TestCase):
         self.assertEqual(git(self.repo, "init", "-q").returncode, 0)
         git(self.repo, "config", "user.email", "test@example.com")
         git(self.repo, "config", "user.name", "test")
+        # 契约基线：一个自身就自洽（存在且已跟踪）的清单。
+        # 否则每个用例都会多出一条 contract_manifest_unreadable 告警，
+        # 而"没有清单=无从证明"本来就该是告警，不是静默通过。
+        self.seed_contract(tracked=True)
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -44,6 +48,33 @@ class TempRepoTestCase(unittest.TestCase):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8")
         return path
+
+    def seed_contract(self, *, migrations=None, tracked: bool = True) -> None:
+        """写入契约清单；migrations 为 None 时使用一条自洽条目。"""
+        if migrations is None:
+            migrations = [{
+                "version": 122,
+                "file": "V900__baseline.sql",
+                "sha256": "a",
+                "verification_file": "V900_verify.sql",
+                "verification_sha256": "b",
+            }]
+            for subdir, name in ((cr.MIGRATION_DIR, "V900__baseline.sql"),
+                                 (cr.VERIFICATION_DIR, "V900_verify.sql")):
+                self.write((subdir / name).as_posix())
+        self.write(cr.MIGRATION_CONTRACT.as_posix(), json.dumps({
+            "schema_version": 1, "contract_start_version": 90,
+            "purpose": "fixture", "migrations": migrations,
+        }))
+        if tracked:
+            for rel in (cr.MIGRATION_CONTRACT.as_posix(),
+                        (cr.MIGRATION_DIR / "V900__baseline.sql").as_posix(),
+                        (cr.VERIFICATION_DIR / "V900_verify.sql").as_posix()):
+                if (self.repo / rel).is_file():
+                    self.assertEqual(git(self.repo, "add", rel).returncode, 0)
+
+    def drop_contract(self) -> None:
+        (self.repo / cr.MIGRATION_CONTRACT).unlink(missing_ok=True)
 
 
 class RequiredTrackingTests(TempRepoTestCase):
@@ -216,8 +247,116 @@ class RealRepoWarningTests(unittest.TestCase):
         report = cr.build_report(REPO_ROOT, [])
         self.assertIn("warnings", report)
         for item in report["warnings"]:
-            self.assertIn(item["status"], ("untracked_tree", "temp_residue"))
+            self.assertIn(item["status"], (
+                "untracked_tree", "temp_residue",
+                "contract_file_untracked", "contract_file_missing",
+                "contract_manifest_unreadable",
+            ))
             self.assertTrue(item["action"])
+
+    def test_real_repo_contract_warnings_equal_independently_computed_set(self):
+        """告警集合必须等于"磁盘存在但未跟踪"的契约文件全集，由磁盘与 index 独立算出。
+
+        早先这题只做反向断言（已跟踪者不误报），一旦 V119-V121 被 git add，
+        两个循环都会变空、测试永久绿——那正是本检查要推动的动作，等于自己把自己测没了。
+        """
+        report = cr.build_report(REPO_ROOT, [])
+        contract = json.loads(
+            (REPO_ROOT / cr.MIGRATION_CONTRACT).read_text(encoding="utf-8-sig"))
+        tracked = cr.tracked_files(REPO_ROOT)
+        expected = set()
+        for entry in contract["migrations"]:
+            for subdir, key in ((cr.MIGRATION_DIR, "file"),
+                                (cr.VERIFICATION_DIR, "verification_file")):
+                rel = (subdir / entry[key]).as_posix()
+                if (REPO_ROOT / rel).is_file() and rel not in tracked:
+                    expected.add(rel)
+        warned = {w["path"] for w in report["warnings"]
+                  if w["status"] == "contract_file_untracked"}
+        self.assertEqual(expected, warned)
+        missing = {w["path"] for w in report["warnings"]
+                   if w["status"] == "contract_file_missing"}
+        self.assertEqual(set(), missing)
+        for w in report["warnings"]:
+            if w["status"] == "contract_file_untracked":
+                self.assertIn("C5", w["action"])
+
+
+class ContractFileTrackingTests(TempRepoTestCase):
+    # 用例自己的条目必须避开 setUp 基线占用的 V900 名字，否则基线已跟踪的文件
+    # 会被误当成用例条目，告警数与预期不符。
+    MIG = "V123__x.sql"
+    VER = "V123_verify.sql"
+
+    def write_contract(self, migration_name: str, verification_name: str) -> None:
+        manifest = {
+            "schema_version": 1,
+            "contract_start_version": 90,
+            "purpose": "fixture",
+            "migrations": [{
+                "version": 123,
+                "file": migration_name,
+                "sha256": "a",
+                "verification_file": verification_name,
+                "verification_sha256": "b",
+            }],
+        }
+        self.write(cr.MIGRATION_CONTRACT.as_posix(), json.dumps(manifest))
+
+    def test_untracked_contract_sql_warns_without_blocking(self):
+        self.write_contract(self.MIG, self.VER)
+        # 契约登记的 SQL 在磁盘上存在（与当前工作树的 V119-V121 同形），只是未 git 跟踪
+        self.write((cr.MIGRATION_DIR / self.MIG).as_posix())
+        self.write((cr.VERIFICATION_DIR / self.VER).as_posix())
+        report = cr.build_report(self.repo, [])
+        statuses = {w["status"] for w in report["warnings"]}
+        self.assertEqual(statuses, {"contract_file_untracked"})
+        self.assertEqual(report["counts"]["contract_files_untracked"], 2)
+        # 契约与 SQL 必须同批或 SQL 先行，否则只提交契约会造出 C5 自败提交
+        self.assertIn("C5", report["warnings"][0]["action"])
+        self.assertEqual(report["decision"], "pass")
+
+    def test_tracked_contract_sql_is_not_warned(self):
+        self.write_contract(self.MIG, self.VER)
+        self.write((cr.MIGRATION_DIR / self.MIG).as_posix())
+        self.write((cr.VERIFICATION_DIR / self.VER).as_posix())
+        for rel in (cr.MIGRATION_CONTRACT.as_posix(),
+                    (cr.MIGRATION_DIR / self.MIG).as_posix(),
+                    (cr.VERIFICATION_DIR / self.VER).as_posix()):
+            self.assertEqual(git(self.repo, "add", rel).returncode, 0)
+        report = cr.build_report(self.repo, [])
+        self.assertEqual(report["counts"]["contract_files_untracked"], 0)
+        self.assertEqual(report["counts"]["contract_files_missing"], 0)
+
+    def test_contract_file_absent_on_disk_is_reported_as_missing(self):
+        self.write_contract(self.MIG, self.VER)
+        self.write((cr.MIGRATION_DIR / self.MIG).as_posix())
+        report = cr.build_report(self.repo, [])
+        missing = [w for w in report["warnings"] if w["status"] == "contract_file_missing"]
+        self.assertEqual([w["path"] for w in missing],
+                         [(cr.VERIFICATION_DIR / self.VER).as_posix()])
+
+    def test_repo_without_contract_manifest_warns_instead_of_passing(self):
+        """契约读不到时不得静默通过：静默 no-op 的守卫与没有守卫无法区分。"""
+        self.drop_contract()
+        report = cr.build_report(self.repo, [])
+        self.assertEqual([w["status"] for w in report["warnings"]],
+                         ["contract_manifest_unreadable"])
+        self.assertEqual(report["counts"]["contract_manifest_unreadable"], 1)
+        self.assertEqual(report["decision"], "pass")  # 仍是告警，不阻断
+
+    def test_empty_migrations_array_warns(self):
+        self.seed_contract(migrations=[], tracked=False)
+        report = cr.build_report(self.repo, [])
+        self.assertIn("contract_manifest_unreadable",
+                      [w["status"] for w in report["warnings"]])
+
+    def test_unparseable_manifest_warns_instead_of_crashing(self):
+        self.write(cr.MIGRATION_CONTRACT.as_posix(), "{not json")
+        report = cr.build_report(self.repo, [])
+        warns = [w for w in report["warnings"] if w["status"] == "contract_manifest_unreadable"]
+        self.assertEqual(1, len(warns))
+        self.assertIn("解析失败", warns[0]["action"])
 
 
 if __name__ == "__main__":

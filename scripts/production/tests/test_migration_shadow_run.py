@@ -88,5 +88,48 @@ class SandboxGuardTest(unittest.TestCase):
         self.assertIn("V92_verify.sql", joined)
 
 
+class ShadowRunPasswordTransportTest(unittest.TestCase):
+    """R-041/R-044：shadow runner 的 `argv` 前 6 项会被整体写进证据 JSON，
+    所以 `-e MYSQL_PWD=<值>` 那种写法不是"只在进程表里可见"，而是**把明文口令落进证据文件**。
+    这里既做静态断言，也把 run_docker 打桩做一次真调用。
+    """
+
+    def setUp(self):
+        self.module = Path(__file__).resolve().parents[1] / "migration_shadow_run.py"
+        self.src = self.module.read_text(encoding="utf-8")
+
+    def test_argv_template_no_longer_interpolates_the_password(self):
+        self.assertIn('"-e", "MYSQL_PWD",', self.src)
+        self.assertEqual(0, self.src.count("MYSQL_PWD={state['root_password']}"))
+
+    def test_built_command_line_carries_no_secret(self):
+        import importlib.util
+
+        spec = importlib.util.spec_from_file_location("msr_under_test", str(self.module))
+        self.assertIsNotNone(spec)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+
+        captured = {}
+
+        def fake_run_docker(args, stdin_bytes=None, timeout=1800, env=None):
+            captured["args"] = list(args)
+            captured["env"] = dict(env or {})
+            return {"exit_code": 0, "stdout": "", "stderr": ""}
+
+        mod.run_docker = fake_run_docker
+        state = {"container_name": "zhicloud-mysql-sandbox-deadbeef", "root_password": "SECRET-VALUE"}
+
+        mod.mysql_exec(state, "SELECT 1")
+        self.assertNotIn("SECRET-VALUE", " ".join(captured["args"]))
+        self.assertIn("-e", captured["args"])
+        self.assertIn("MYSQL_PWD", captured["args"])
+        self.assertEqual("SECRET-VALUE", captured["env"].get("MYSQL_PWD"))
+
+        mod.mysql_pipe(state, "echo x")
+        self.assertNotIn("SECRET-VALUE", " ".join(captured["args"]))
+        self.assertEqual("SECRET-VALUE", captured["env"].get("MYSQL_PWD"))
+
+
 if __name__ == "__main__":
     unittest.main()

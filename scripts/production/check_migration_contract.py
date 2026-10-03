@@ -26,12 +26,12 @@ DEFAULT_MANIFEST = Path(__file__).resolve().parent / "migration-contract.json"
 MIGRATION_RE = re.compile(r"^V(?P<version>\d+(?:\.\d+)*)__(?P<description>[A-Za-z0-9_]+)\.sql$")
 
 
-def sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+def sha256_file(path: Path, *, normalize_lf: bool = False) -> str:
+    """Hash a file, optionally normalizing CRLF to LF for canonical text bytes."""
+    data = path.read_bytes()
+    if normalize_lf:
+        data = data.replace(b"\r\n", b"\n")
+    return hashlib.sha256(data).hexdigest()
 
 
 def _version_key(version: str) -> tuple[int, ...]:
@@ -135,7 +135,7 @@ def build_report(migrations_dir: Path, verification_dir: Path, manifest_path: Pa
         verification_path = verification_dir / verification_file
         if not verification_path.is_file():
             findings.append(_finding("C4", verification_path, "verification SQL file is missing"))
-        elif sha256_file(verification_path) != verification_hash:
+        elif sha256_file(verification_path, normalize_lf=True) != verification_hash:
             findings.append(_finding("C4", verification_path, "verification SQL SHA-256 differs from manifest"))
 
     for path, version in migration_files:
@@ -150,7 +150,8 @@ def build_report(migrations_dir: Path, verification_dir: Path, manifest_path: Pa
         "tracked_migrations": len(tracked),
         "findings": findings,
         "limits": [
-            "SHA-256 locks reviewed bytes; it does not prove MySQL execution.",
+            "SHA-256 locks reviewed bytes; verification SQL is hashed after LF normalization to match .gitattributes eol=lf, while migration SQL remains byte-exact.",
+            "This gate does not prove MySQL execution.",
             "Semantic backfill correctness still requires pre-production data validation.",
         ],
     }

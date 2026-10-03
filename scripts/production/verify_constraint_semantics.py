@@ -50,10 +50,11 @@ DEFAULT_DATABASE = "zhicloud_sandbox_constraint_semantics"
 
 CAVEATS = [
     "Synthetic minimal schema and synthetic row counts; this is not a production-scale migration proof.",
-    "MySQL 8.4.9 only; non-MySQL dialects and their equivalent constraints remain unverified.",
+    "isolated MySQL 8.4.x sandbox only; exact server version is recorded in evidence; non-MySQL dialects and their equivalent constraints remain unverified.",
     "No replication, backup/restore, production traffic, long-running DML, or MDL contention was exercised.",
     "InnoDB DATA_LENGTH/INDEX_LENGTH are approximate and timings are single-run observations.",
     "This evidence does not prove Flyway parser behavior, application transaction rollback, BPM/Flowable behavior, or production readiness.",
+    "Repository metadata records HEAD plus a dirty-worktree digest; a dirty worktree is not a frozen release, so verifier_sha256 identifies the executed script.",
 ]
 
 
@@ -98,6 +99,43 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def git_output(*args: str) -> str | None:
+    """Return stripped git output, or None when git cannot answer."""
+    try:
+        completed = subprocess.run(
+            ["git", "-C", str(REPO_ROOT), *args],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            check=False,
+        )
+    except OSError:
+        return None
+    if completed.returncode != 0:
+        return None
+    return completed.stdout.strip()
+
+
+def repository_metadata() -> dict[str, Any]:
+    """Record the exact script hash and the commit/worktree context of the run."""
+    commit = git_output("rev-parse", "HEAD")
+    branch = git_output("branch", "--show-current")
+    status = git_output("status", "--porcelain=v1", "-uall")
+    verifier = Path(__file__).resolve()
+    return {
+        "repo_commit": commit,
+        "repo_branch": branch or None,
+        "repo_worktree_dirty": bool(status),
+        "repo_worktree_status_count": len(status.splitlines()) if status is not None else None,
+        "repo_worktree_status_sha256": (
+            hashlib.sha256(status.encode("utf-8")).hexdigest() if status is not None else None
+        ),
+        "verifier_path": str(verifier),
+        "verifier_sha256": sha256(verifier),
+    }
+
+
 def build_evidence(
     server: dict[str, Any],
     artifacts: dict[str, Any],
@@ -117,6 +155,7 @@ def build_evidence(
         "r011_status": "OPEN",
         "r029_status": "OPEN",
         "independent_review": False,
+        "repository": repository_metadata(),
         "scope": (
             "MySQL sandbox behavior only: V116 active-username uniqueness and "
             "soft-delete recreation; V117 idempotency-key uniqueness and "

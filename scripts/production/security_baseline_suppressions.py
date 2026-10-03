@@ -400,6 +400,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--report", type=Path, default=None,
                     help="可选：security_baseline_scan 报告，用于 stale 核对")
     ap.add_argument("--max-expiry-days", type=int, default=DEFAULT_MAX_EXPIRY_DAYS)
+    ap.add_argument("--today", default="",
+                    help="以指定日期（YYYY-MM-DD）判定过期与窗口；留空表示取系统当天。"
+                         "R-G7-1：日历炸弹的根因是测试只能跟随真实时钟，这里给它一个可注入的时钟。")
     ap.add_argument("--known-rules", default="",
                     help="逗号分隔的合法规则 ID；留空表示不校验规则名")
     ap.add_argument("--output", type=Path, default=None)
@@ -424,6 +427,7 @@ def main(argv: list[str] | None = None) -> int:
         stale_check = "enabled"
 
     result = apply_suppressions(findings, entries,
+                                today=(args.today or None),
                                 max_expiry_days=args.max_expiry_days,
                                 known_rules=known)
     if stale_check == "skipped":

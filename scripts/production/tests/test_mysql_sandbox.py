@@ -100,7 +100,19 @@ class SandboxArgumentGuardTest(unittest.TestCase):
         self.assertIn("digest", (completed.stdout + completed.stderr).lower())
 
     def test_default_image_is_locked_to_digest(self):
-        completed = run_script("start", "-DryRun", "-RepoRoot", str(Path(__file__).resolve().parents[3]))
+        with tempfile.TemporaryDirectory() as temp_dir:
+            state = Path(temp_dir) / "state.json"
+            evidence = Path(temp_dir) / "evidence.json"
+            completed = run_script(
+                "start",
+                "-DryRun",
+                "-RepoRoot",
+                str(Path(__file__).resolve().parents[3]),
+                "-StateFile",
+                str(state),
+                "-EvidenceFile",
+                str(evidence),
+            )
         self.assertEqual(0, completed.returncode, completed.stdout + completed.stderr)
         payload = json.loads(completed.stdout)
         self.assertTrue(payload["image"].startswith("mysql:8.4@sha256:"))
@@ -116,7 +128,15 @@ class SandboxArgumentGuardTest(unittest.TestCase):
         subprocess.run([docker, "volume", "rm", "-f", volume], capture_output=True, check=False)
         subprocess.run([docker, "volume", "create", volume], capture_output=True, check=True)
         try:
-            completed = run_script("start", "-DryRun", "-Volume", volume)
+            with tempfile.TemporaryDirectory() as temp_dir:
+                state = Path(temp_dir) / "state.json"
+                evidence = Path(temp_dir) / "evidence.json"
+                completed = run_script(
+                    "start", "-StateFile", str(state), "-EvidenceFile", str(evidence), "-Volume", volume
+                )
+
+                self.assertFalse(state.exists(), "a rejected start must not leave sandbox state")
+                self.assertFalse(evidence.exists(), "a rejected start must not leave sandbox evidence")
         finally:
             subprocess.run([docker, "volume", "rm", "-f", volume], capture_output=True, check=False)
 

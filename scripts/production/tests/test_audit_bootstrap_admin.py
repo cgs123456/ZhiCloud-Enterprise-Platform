@@ -62,6 +62,33 @@ class BootstrapAuditTest(unittest.TestCase):
         self.assertNotIn("-p", command)
         self.assertEqual("super-secret", environment["MYSQL_PWD"])
 
+    def test_docker_container_mode_keeps_password_out_of_argv_and_off_the_host(self):
+        namespace = args(password_env="ZHICLOUD_DB_PASSWORD")
+        namespace.docker_container = "zhicloud-mysql-sandbox-abcdef01"
+        with mock.patch.dict(os.environ, {"ZHICLOUD_DB_PASSWORD": "super-secret"}, clear=False):
+            command = auditor.mysql_command(namespace, "zhicloud_runner_clean_test")
+            environment = auditor.mysql_env(namespace)
+
+        self.assertEqual("docker", command[0])
+        self.assertIn("zhicloud-mysql-sandbox-abcdef01", command)
+        # -e MYSQL_PWD（不带 =）由 docker 从进程环境取值：口令既不在 argv，也不在容器命令日志里
+        self.assertIn("-e", command)
+        self.assertIn("MYSQL_PWD", command)
+        self.assertNotIn("MYSQL_PWD=super-secret", command)
+        self.assertNotIn("super-secret", command)
+        # 命名空间形态里连库端点必须是容器内真实回环，而不是宿主的发布端口
+        self.assertIn("--host=127.0.0.1", command)
+        self.assertIn("--port=3306", command)
+        self.assertNotIn(f"--port={namespace.port}", command)
+        self.assertEqual("super-secret", environment["MYSQL_PWD"])
+
+    def test_default_command_is_unchanged_without_docker_container(self):
+        namespace = args(password_env="ZHICLOUD_DB_PASSWORD")
+        command = auditor.mysql_command(namespace, "zhicloud_runner_clean_test")
+        self.assertEqual(namespace.mysql_client, command[0])
+        self.assertNotIn("docker", command)
+        self.assertIn(f"--port={namespace.port}", command)
+
     def test_collect_evidence_passes_for_expected_admin(self):
         evidence = auditor.collect_evidence(args(), query_func=passing_query)
         self.assertEqual("passed", evidence["status"])

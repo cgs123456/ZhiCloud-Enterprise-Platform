@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 import time
@@ -52,7 +53,7 @@ MAX_OUTPUT_CHARS = 8000
 # docker / mysql 原语
 # --------------------------------------------------------------------------
 def run_docker(args: list[str], stdin_bytes: bytes | None = None,
-               timeout: int = 1800) -> dict[str, Any]:
+               timeout: int = 1800, env: dict[str, str] | None = None) -> dict[str, Any]:
     started = time.perf_counter()
     proc = subprocess.run(
         ["docker", *args],
@@ -60,6 +61,7 @@ def run_docker(args: list[str], stdin_bytes: bytes | None = None,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         timeout=timeout,
+        env=env,
     )
     return {
         "argv": ["docker", *args[:6]],
@@ -72,19 +74,23 @@ def run_docker(args: list[str], stdin_bytes: bytes | None = None,
 
 def mysql_exec(state: dict[str, Any], sql: str, database: str | None = None,
                timeout: int = 1800) -> dict[str, Any]:
-    cmd = ["exec", "-i", "-e", f"MYSQL_PWD={state['root_password']}",
+    # 口令只进子进程环境：本函数的返回值会被整体写进证据 JSON，而 "argv" 记录取的是 args 前 6 项，
+    # 也就是 `-e MYSQL_PWD=<值>` 恰好落在被记录的那一段里（R-041/R-044）。
+    cmd = ["exec", "-i", "-e", "MYSQL_PWD",
            state["container_name"], "mysql", "-uroot",
            "--default-character-set=utf8mb4", "-B", "-N", "--raw"]
     if database:
         cmd += ["--database", database]
-    return run_docker(cmd, stdin_bytes=sql.encode("utf-8"), timeout=timeout)
+    return run_docker(cmd, stdin_bytes=sql.encode("utf-8"), timeout=timeout,
+                      env={**os.environ, "MYSQL_PWD": state["root_password"]})
 
 
 def mysql_pipe(state: dict[str, Any], shell_cmd: str,
                timeout: int = 1800) -> dict[str, Any]:
-    env = ["exec", "-e", f"MYSQL_PWD={state['root_password']}",
+    cmd = ["exec", "-e", "MYSQL_PWD",
            state["container_name"], "sh", "-c", shell_cmd]
-    return run_docker(env, timeout=timeout)
+    return run_docker(cmd, timeout=timeout,
+                      env={**os.environ, "MYSQL_PWD": state["root_password"]})
 
 
 def parse_tsv(stdout: str) -> list[list[str]]:

@@ -107,6 +107,45 @@ class PowerShellScriptPortabilityTest(unittest.TestCase):
                 f"{host} could not parse every PowerShell script in the repository",
             )
 
+    def test_parse_helper_reports_a_script_that_is_not_parseable(self):
+        """本门禁自己的"会咬"证明：一份确定不可解析的 .ps1 必须让 helper 报出至少一行。
+
+        为什么单独立这条：`parse_errors()` 的返回值是"行列表"，`[]` 既可以是"全部可解析"，
+        也可以是"helper 根本没把错误收集起来"（例如 `[ref]` 变量未初始化时，
+        PowerShell 会抛 `InvalidOperation: [ref] cannot be applied to a variable that does
+        not exist`，而调用方只看 stdout —— 于是**坏文件也报 0 错**）。
+        计划 §验证 第 7 条那种一行式 `[ref]\$null, [ref]\$e` 就是这种假绿：实测把一份语法错误的
+        文件喂给它，输出仍是 `PARSE_ERRORS=0`。没有这条负向用例，整仓库"两宿主 parse_errors=0"
+        的所有读数都可能建立在同一个静默失败上。
+        """
+        broken = "function Broken {\n  $value = 1\n"          # 少一个右大括号：确定性语法错误
+        good = "function Fine {\n  param([string]$Name)\n}\n"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            bad_file = Path(temp_dir) / "broken.ps1"
+            bad_file.write_text(broken, encoding="utf-8")
+            good_file = Path(temp_dir) / "good.ps1"
+            good_file.write_text(good, encoding="utf-8")
+            hosts = ["pwsh"] + ([WINDOWS_POWERSHELL] if WINDOWS_POWERSHELL else [])
+            for host in hosts:
+                with self.subTest(host=host):
+                    lines = parse_errors(host, [bad_file])
+                    self.assertTrue(lines,
+                                    f"{host} 对一份语法错误的 .ps1 报 0 错：门禁在静默失败")
+                    self.assertIn(str(bad_file), lines[0])
+                    self.assertEqual([], parse_errors(host, [good_file]),
+                                     f"{host} 对合法文件报错：判定过严会淹没真信号")
+
+    def test_parse_helper_command_form_initializes_the_error_variable(self):
+        """钉住 helper 的写法本身：`$errors = $null` 必须在每个文件的 ParseFile 之前出现。
+
+        只测行为不测写法，将来有人"顺手简化"成 `[ref]$null` 就又回到假绿；
+        而这正是我在计划 §验证 里抄到的那个形状。
+        """
+        self.assertIn("$errors = $null", PARSE_HELPER)
+        self.assertIn("[ref]$errors", PARSE_HELPER)
+        self.assertNotIn("[ref]$null", PARSE_HELPER.replace("[ref]$tokens", ""),
+                         "错误收集变量必须显式初始化，不能传 [ref]$null")
+
 
 if __name__ == "__main__":
     unittest.main()

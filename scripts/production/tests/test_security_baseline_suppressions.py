@@ -14,6 +14,7 @@ demo-data 下的 160 条 R7（P1）与 V1.1 种子里的 32 条 P0 无法区分�
 """
 
 import json
+from datetime import date, timedelta
 import sys
 import tempfile
 import unittest
@@ -44,6 +45,13 @@ def finding(file="demo-data/a.sql", rule="R7", line=9, severity="P1",
     }
 
 
+# 抑制有效期必须相对"当天"生成：写死绝对日期会让套件在跨过该日期后自己变红
+# （2026-10-02 实测：夹具 expires_on=2026-10-01，而 sb.main / sec.build_report 走真实系统日期，
+#  只有 validate_entries 那组注入 today=TODAY）。窗口取 3 天，与原作者设计一致，
+# 且必须 <= DEFAULT_MAX_EXPIRY_DAYS(180)，否则会被 expiry_too_far 判无效 —— 我第一次就是改成 365 天，
+# 结果从 5 红变成 15 红 + 4 错。"过期必须失效"这条真守卫仍由下面的显式过期用例守着。
+FUTURE_EXPIRY = (date.today() + timedelta(days=3)).isoformat()
+
 def entry(**kw):
     """一条默认合格的抑制条目；测试用 kw 破坏其中某一项来断言 fail-closed。"""
     base = {
@@ -56,7 +64,7 @@ def entry(**kw):
         "reason": "演示数据集，不进生产镜像",
         "owner": "platform-ops",
         "approved_by": "ciso",
-        "expires_on": "2026-10-01",
+        "expires_on": FUTURE_EXPIRY,
         "evidence": "发布流水线排除 demo-data，见 release-pipeline 配置",
     }
     base.update(kw)
@@ -250,7 +258,7 @@ class ApplyTest(unittest.TestCase):
         self.assertEqual(kept["evidence"], FINDING_EVIDENCE)
         self.assertEqual(kept["severity"], "P0")
         self.assertEqual(kept["suppression"]["approved_by"], "ciso")
-        self.assertEqual(kept["suppression"]["expires_on"], "2026-10-01")
+        self.assertEqual(kept["suppression"]["expires_on"], FUTURE_EXPIRY)
 
     def test_invalid_entry_suppresses_nothing(self):
         bad = entry()
@@ -355,7 +363,7 @@ class ScannerIntegrationTest(unittest.TestCase):
             "reason": "已在 values-prod 用 sslMode=VERIFY_IDENTITY 覆盖",
             "owner": "platform-ops",
             "approved_by": "ciso",
-            "expires_on": "2026-10-01",
+            "expires_on": FUTURE_EXPIRY,
             "evidence": "见 deploy/helm/values-prod.yaml",
         }
         data.update(kw)
@@ -442,6 +450,67 @@ class CliTest(unittest.TestCase):
             payload = json.loads(out.read_text(encoding="utf-8"))
             self.assertEqual(payload["suppression"]["entries"], 1)
             self.assertEqual(payload["suppression"]["stale_check"], "skipped")
+
+
+class FixtureDateHygieneTest(unittest.TestCase):
+    """日历炸弹的机检：测试夹具不得再写死"绝对日期 + 真实系统时钟"的组合。
+
+    2026-10-02 实测：夹具 `expires_on: 2026-10-01` 跨过零点后让 5 例自红，
+    而失败信息（"合格条目被判无效"）看起来完全像产品缺陷。
+    显式过期用例保留固定过去/未来日期是刻意的 —— 它们注入 today=TODAY，不依赖真实时钟。
+    """
+
+    PAST_OR_FUTURE_PROBE = {"2020-01-01", "2030-01-01"}
+
+    def test_no_wall_clock_absolute_expiry_literals(self):
+        """本文件的两组用例走真实系统时钟（sb.main 无 --today、build_report 未注入 today），
+        所以这里的夹具不能写死绝对日期。
+
+        范围刻意只限本文件：`test_check_license_policy.py` 等同目录测试把 `TODAY` 注入
+        `build_report(inventory, policy, TODAY)`，绝对日期对它们是**确定值**；
+        把它们一起判红就是"守卫咬错东西"，比不设守卫更糟。
+        """
+        import re
+        text = Path(__file__).resolve().read_text(encoding="utf-8")
+        offenders = [m.group(1) for m in
+                     re.finditer(r'"expires_on":\s*"(\d{4}-\d{2}-\d{2})"', text)
+                     if m.group(1) not in self.PAST_OR_FUTURE_PROBE]
+        self.assertEqual([], offenders,
+                         "写死的绝对 expires_on 会让本文件在跨过该日期后自己变红；"
+                         "改用 FUTURE_EXPIRY，或像过期探针那样注入 today")
+
+    def test_future_expiry_window_stays_inside_policy(self):
+        import datetime as _dt
+        limit = _dt.date.fromisoformat(FUTURE_EXPIRY) - _dt.date.today()
+        self.assertGreater(limit.days, 0, "夹具日期不能已经过期")
+        self.assertLessEqual(limit.days, 180,
+                             "必须落在 DEFAULT_MAX_EXPIRY_DAYS 之内，否则被 expiry_too_far 判无效")
+
+
+class TodayInjectionTest(unittest.TestCase):
+    """§12.53 记的残留：CliTest 组此前只能靠"夹具相对当天"免疫，而不是真的注入时钟。
+    这两例把那条依赖关掉：同一个绝对日期，配不同的 --today 必须给出不同的判定。"""
+
+    def test_today_flag_decides_the_verdict_instead_of_the_wall_clock(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = write_json(Path(tmp) / "s.json", [entry(expires_on="2026-10-01")])
+            self.assertEqual(0, sb.main(["--check", str(path), "--today", "2026-09-28"]),
+                             "2026-09-28 时该条目尚未过期，必须通过")
+            self.assertEqual(1, sb.main(["--check", str(path), "--today", "2026-10-02"]),
+                             "2026-10-02 时已过期，必须 fail-closed")
+
+    def test_main_forwards_the_flag_into_the_policy_check(self):
+        text = Path(sb.__file__).read_text(encoding="utf-8")
+        self.assertIn('ap.add_argument("--today"', text)
+        self.assertIn("today=(args.today or None),", text)
+
+    def test_empty_today_still_falls_back_to_the_system_clock(self):
+        # 不传 --today 时行为与改动前一致：默认值必须是 None（而不是 1970 或字符串空值）
+        import inspect
+        sig = inspect.signature(sb.apply_suppressions)
+        self.assertIsNone(sig.parameters["today"].default)
+        text = Path(sb.__file__).read_text(encoding="utf-8")
+        self.assertIn('ap.add_argument("--today", default=""', text)
 
 
 if __name__ == "__main__":

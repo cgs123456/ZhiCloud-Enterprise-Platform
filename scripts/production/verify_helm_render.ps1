@@ -7,8 +7,13 @@ param(
     [string]$Kubeconform = 'C:\Users\Administrator\AppData\Local\zhicloud-tools\kubeconform\v0.8.0\kubeconform.exe',
     [string]$SchemaRoot134 = 'C:\Users\Administrator\AppData\Local\zhicloud-tools\k8s-schemas\v1.34.0',
     [string]$SchemaRoot136 = 'C:\Users\Administrator\AppData\Local\zhicloud-tools\k8s-schemas\v1.36.1',
-    [string]$OutputDir
+    [string]$OutputDir,
+    [int]$TimeoutSeconds = 600
 )
+if ($TimeoutSeconds -le 0) {
+    throw 'TimeoutSeconds 必须大于 0：渲染与 schema 校验都不允许无硬超时'
+}
+$script:NativeTimeoutSeconds = $TimeoutSeconds
 
 $ErrorActionPreference = 'Stop'
 $script:FailureReasons = @()
@@ -50,6 +55,13 @@ function Get-RelativeEvidencePath {
     return $full
 }
 
+# 唯一的原生进程执行器（硬超时 + 杀进程树）。这里此前是第三份自造实现，且有两个缺陷：
+# 1) `$process.WaitForExit()` 无超时——helm/kubeconform 挂住时门禁既不红也不绿，只是不返回；
+# 2) `ProcessStartInfo.ArgumentList` 在 .NET Framework（Windows PowerShell 5.1）上不存在，
+#    实测 5.1 直接抛"不能对 Null 值表达式调用方法"，即本脚本只能在 pwsh 7 下跑，而它并未声明这一点。
+#    改走执行器后两个问题一起消失（执行器用命令行字符串 + 自做引号化，5.1/7 一致）。
+. (Join-Path (Get-ScriptDirectory) 'SandboxNative.ps1')
+
 function Invoke-CapturedProcess {
     param(
         [Parameter(Mandatory = $true)][string]$FilePath,
@@ -65,28 +77,13 @@ function Invoke-CapturedProcess {
     if (-not [string]::IsNullOrWhiteSpace($stderrDirectory)) {
         New-Item -ItemType Directory -Path $stderrDirectory -Force | Out-Null
     }
-    $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
-    $startInfo.FileName = $FilePath
-    $startInfo.UseShellExecute = $false
-    $startInfo.CreateNoWindow = $true
-    $startInfo.RedirectStandardOutput = $true
-    $startInfo.RedirectStandardError = $true
-    $startInfo.StandardOutputEncoding = [System.Text.UTF8Encoding]::new($false)
-    $startInfo.StandardErrorEncoding = [System.Text.UTF8Encoding]::new($false)
-    foreach ($argument in $Arguments) {
-        [void]$startInfo.ArgumentList.Add($argument)
-    }
-    $process = [System.Diagnostics.Process]::Start($startInfo)
-    try {
-        $stdoutTask = $process.StandardOutput.ReadToEndAsync()
-        $stderrTask = $process.StandardError.ReadToEndAsync()
-        $process.WaitForExit()
-        [System.IO.File]::WriteAllText($StdoutPath, $stdoutTask.GetAwaiter().GetResult(), [System.Text.UTF8Encoding]::new($false))
-        [System.IO.File]::WriteAllText($StderrPath, $stderrTask.GetAwaiter().GetResult(), [System.Text.UTF8Encoding]::new($false))
-        return [int]$process.ExitCode
-    } finally {
-        $process.Dispose()
-    }
+    $run = Invoke-BoundedNative -FilePath $FilePath -Arguments $Arguments `
+        -TimeoutSeconds $script:NativeTimeoutSeconds -Stage 'helm-render'
+    # 两条流分别落盘，与原实现字节一致（用 Raw* 而不是 Trim 过的值：
+    # 少一个结尾换行就会让 37 份渲染证据与改动前不等价）。下游按 .out 解析渲染结果、按 .err 判定失败原因。
+    [System.IO.File]::WriteAllText($StdoutPath, $run.RawStdOut, [System.Text.UTF8Encoding]::new($false))
+    [System.IO.File]::WriteAllText($StderrPath, $run.RawStdErr, [System.Text.UTF8Encoding]::new($false))
+    return $run.ExitCode
 }
 
 function Read-TextIfExists {
@@ -234,9 +231,9 @@ $rotationRecord = [ordered]@{ status = 'not_run'; app_revision_changes_template 
 if ($script:FailureReasons.Count -eq 0) {
     $toolVersionOut = Join-Path $runDir 'tool-versions.out'
     $toolVersionErr = Join-Path $runDir 'tool-versions.err'
-    $toolVersions.helm3 = (& $Helm3 version --short).Trim()
-    $toolVersions.helm4 = (& $Helm4 version --short).Trim()
-    $toolVersions.kubeconform = (& $Kubeconform -v).Trim()
+    $toolVersions.helm3 = (Invoke-BoundedNative -FilePath $Helm3 -Arguments @('version', '--short') -TimeoutSeconds $script:NativeTimeoutSeconds -Stage 'helm-version').StdOut.Trim()
+    $toolVersions.helm4 = (Invoke-BoundedNative -FilePath $Helm4 -Arguments @('version', '--short') -TimeoutSeconds $script:NativeTimeoutSeconds -Stage 'helm-version').StdOut.Trim()
+    $toolVersions.kubeconform = (Invoke-BoundedNative -FilePath $Kubeconform -Arguments @('-v') -TimeoutSeconds $script:NativeTimeoutSeconds -Stage 'kubeconform-version').StdOut.Trim()
     [System.IO.File]::WriteAllText($toolVersionOut, ("helm3=$($toolVersions.helm3)`nhelm4=$($toolVersions.helm4)`nkubeconform=$($toolVersions.kubeconform)`n"), [System.Text.UTF8Encoding]::new($false))
     [System.IO.File]::WriteAllText($toolVersionErr, '', [System.Text.UTF8Encoding]::new($false))
 

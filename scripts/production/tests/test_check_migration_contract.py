@@ -70,6 +70,20 @@ class MigrationContractTest(unittest.TestCase):
         self.assertEqual(report["status"], "passed", report["findings"])
         self.assertEqual(report["tracked_migrations"], 1)
 
+    def test_crlf_verification_matches_lf_contract(self):
+        self.verify_sql.write_bytes(b"SELECT 1 AS ok;\r\n")
+        report = self.report()
+        self.assertEqual(report["status"], "passed", report["findings"])
+
+    def test_migration_hash_remains_byte_exact(self):
+        self.migration.write_bytes(b"SELECT 1;\r\n")
+        report = self.report()
+        self.assertEqual(report["status"], "failed")
+        self.assertIn(
+            "C1",
+            {finding["rule"] for finding in report["findings"]},
+        )
+
     def test_modified_migration_fails_checksum_contract(self):
         write(self.migration, "SELECT 2;\n")
         report = self.report()

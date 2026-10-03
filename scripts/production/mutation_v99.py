@@ -66,7 +66,7 @@ for label, old, new in MUTATIONS:
     impl.write_bytes(data.replace(old, new))
     print("\n### MUTATION:", label, "| replacements:", n)
     proc = subprocess.run(
-        ["mvn.cmd", "-o", "-pl", "zhicloud-module-erp", "test",
+        ["mvn.cmd", "-o", "-pl", "zhicloud-module-erp", "test",  # 无 -am：被改文件就在该模块内，见 §12.39
          "-Dtest=ErpAccountingEventServiceTest", "-DfailIfNoTests=false"],
         cwd=str(root), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     text = proc.stdout.decode("gbk", errors="replace")

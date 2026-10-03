@@ -203,5 +203,30 @@ class LiveDictionaryCompareTest(unittest.TestCase):
         self.assertIn("erp_customer", joined)
 
 
+class PasswordTransportTest(unittest.TestCase):
+    """R-041：口令只能经进程环境继承给 `-e MYSQL_PWD`，不能出现在 docker 命令行里。
+
+    这条断言之所以需要单独存在：同一个缺陷形态曾被别的测试**反向钉住**（改好脚本反而变红），
+    所以这里既断言安全形态存在，也断言泄漏形态不存在。
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        if not SCRIPT.is_file():
+            raise unittest.SkipTest(f'missing {SCRIPT}')
+        cls.text = SCRIPT.read_text(encoding='utf-8-sig')
+
+    def test_root_password_never_enters_argv(self):
+        self.assertEqual(0, self.text.count('MYSQL_PWD=$'), '口令被拼进 docker exec 的 -e 参数值')
+        self.assertIn("[Environment]::SetEnvironmentVariable('MYSQL_PWD', $RootPassword, 'Process')", self.text)
+        self.assertIn("'-e', 'MYSQL_PWD',", self.text)
+
+    def test_every_container_call_site_declares_its_own_env(self):
+        # 三个容器调用点（SQL / mysqldump / shell）各自声明；漏一处就是漏一处缺陷，
+        # 而只在入口设置一次会让将来新增的宿主侧客户端静默继承 MYSQL_PWD。
+        self.assertEqual(3, self.text.count('Set-DrillMysqlPasswordEnv -RootPassword $script:RootPassword'))
+        self.assertEqual(3, self.text.count("'-e', 'MYSQL_PWD',"))
+
+
 if __name__ == "__main__":
     unittest.main()

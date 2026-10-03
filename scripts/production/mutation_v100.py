@@ -143,7 +143,7 @@ for label, ops in MUTATIONS:
         continue
     print("\n### MUTATION:", label, "| replacements:", len(ops))
     proc = subprocess.run(
-        ["mvn.cmd", "-o", "-pl", "zhicloud-framework/zhicloud-spring-boot-starter-biz-integration", "test"],
+        ["mvn.cmd", "-o", "-pl", "zhicloud-framework/zhicloud-spring-boot-starter-biz-integration", "test"],  # 无 -am：被改文件就在该模块内
         cwd=str(root), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     text = proc.stdout.decode("gbk", errors="replace")
     kept = [line for line in text.splitlines() if KEEP.search(line)]

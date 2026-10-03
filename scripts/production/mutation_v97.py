@@ -80,6 +80,8 @@ for label, path, old, new, module, tests in MUTATIONS:
     print("\n### MUTATION:", label, "| replacements:", n)
     try:
         r = subprocess.run(
+            # 故意不加 -am：本探针改的就是 -pl 模块自己的源码/资源（见 test_dynamic_datasource_verifier
+            # 里的归属守卫），reactor 已经从工作树编译它；加 -am 只会多编 21 个上游模块而不改变覆盖面。
             f"mvn -B -o -pl {module} -Dtest={tests} -Dsurefire.failIfNoSpecifiedTests=false test",
             cwd=str(root), shell=True, capture_output=True)
         out = (r.stdout + r.stderr).decode("gbk", errors="replace")

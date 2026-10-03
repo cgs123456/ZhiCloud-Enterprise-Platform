@@ -81,8 +81,16 @@ class EvidenceTest(unittest.TestCase):
         self.assertEqual(evidence["r011_status"], "OPEN")
         self.assertEqual(evidence["r029_status"], "OPEN")
         self.assertFalse(evidence["independent_review"])
+        self.assertIn("repository", evidence)
+        self.assertIn("repo_commit", evidence["repository"])
+        self.assertEqual(len(evidence["repository"]["verifier_sha256"]), 64)
         self.assertIn("FAKE-SIMULATED-DATA", evidence["disclaimer"])
         self.assertEqual(evidence["caveats"], ["synthetic volume only"])
+
+    def test_default_caveats_do_not_hard_code_mysql_patch_version(self):
+        caveats = " ".join(verifier.CAVEATS)
+        self.assertIn("exact server version is recorded in evidence", caveats)
+        self.assertNotIn("MySQL 8.4.9", caveats)
 
     def test_any_failed_scenario_fails_evidence(self):
         evidence = verifier.build_evidence(

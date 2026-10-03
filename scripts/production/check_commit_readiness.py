@@ -53,6 +53,11 @@ TEMP_RESIDUE_GLOB = "_tmp_*.py"
 # 证据目录：文档会按路径引用这些文件，被 .gitignore 静默排除就会变成悬空引用。
 EVIDENCE_DIR = Path("docs") / "enterprise-platform" / "evidence" / "production"
 
+# 迁移契约与其锁定的 SQL 文件：契约先入库、SQL 后入库会造出一笔自败提交。
+MIGRATION_CONTRACT = Path("scripts") / "production" / "migration-contract.json"
+MIGRATION_DIR = Path("zhicloud-server") / "src" / "main" / "resources" / "db" / "migration"
+VERIFICATION_DIR = Path("zhicloud-server") / "src" / "main" / "resources" / "db" / "verification"
+
 FLAGS = {
     "production_ready": False,
     "gate3_passed": False,
@@ -146,6 +151,68 @@ def check_untracked_trees(repo: Path, trees: list[str]) -> list[dict]:
     return warnings
 
 
+def tracked_files(repo: Path) -> set[str]:
+    """一次性取出全仓已跟踪文件集合。
+
+    逐条 `git ls-files --error-unmatch` 会为 32 条契约条目起 64 次子进程，
+    把这个守卫拖成整套门禁里最慢的一步。
+    """
+    proc = run_git(repo, ["ls-files"])
+    if proc.returncode != 0:
+        raise GitError(f"git ls-files 失败: {proc.stderr.strip()}")
+    return {line.strip() for line in proc.stdout.splitlines() if line.strip()}
+
+
+def check_contract_files_tracked(repo: Path, tracked: set[str]) -> list[dict]:
+    """契约登记的迁移 SQL 与校验 SQL 必须已被 Git 跟踪。
+
+    不判阻断：check_migration_contract.py 用磁盘 glob 发现文件，未跟踪时本地照样 PASS，
+    但只提交契约 JSON 的那一笔在干净检出下会因 C5（tracked migration file is missing）失败。
+    契约与 SQL 的入库顺序自败必须在这里被看见，而不是靠人记住分组顺序。
+
+    契约读不到、不是对象、或 migrations 为空时**必须告警**：一个静默 no-op 的守卫
+    与没有守卫无法区分，而它看起来是绿的。
+    """
+    warnings: list[dict] = []
+    manifest_path = repo / MIGRATION_CONTRACT
+    unreadable = "契约清单不可读，本项检查无法证明任何事"
+    if not manifest_path.is_file():
+        return [{"path": MIGRATION_CONTRACT.as_posix(), "status": "contract_manifest_unreadable",
+                 "action": unreadable + "（文件不存在）"}]
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+    except (OSError, ValueError) as exc:
+        return [{"path": MIGRATION_CONTRACT.as_posix(), "status": "contract_manifest_unreadable",
+                 "action": unreadable + f"（解析失败：{type(exc).__name__}）"}]
+    migrations = manifest.get("migrations")
+    if not isinstance(manifest, dict) or not isinstance(migrations, list) or not migrations:
+        return [{"path": MIGRATION_CONTRACT.as_posix(), "status": "contract_manifest_unreadable",
+                 "action": unreadable + "（缺少非空 migrations 数组）"}]
+
+    for entry in migrations:
+        if not isinstance(entry, dict):
+            continue
+        for subdir, key in ((MIGRATION_DIR, "file"), (VERIFICATION_DIR, "verification_file")):
+            name = entry.get(key)
+            if not name:
+                continue
+            rel = (subdir / name).as_posix()
+            if not (repo / rel).is_file():
+                warnings.append({
+                    "path": rel,
+                    "status": "contract_file_missing",
+                    "action": f"契约 V{entry.get('version')} 登记了该文件但磁盘上不存在",
+                })
+            elif rel not in tracked:
+                warnings.append({
+                    "path": rel,
+                    "status": "contract_file_untracked",
+                    "action": f"契约 V{entry.get('version')} 已锁定该文件，必须与契约同批或先行 git add，"
+                              "否则单独提交契约会在干净检出下触发 C5",
+                })
+    return warnings
+
+
 def check_temp_residue(repo: Path) -> list[dict]:
     """仓库根临时脚本残留 -> 告警（不阻断）。"""
     warnings: list[dict] = []
@@ -162,9 +229,11 @@ def check_temp_residue(repo: Path) -> list[dict]:
 
 def build_report(repo: Path, required: list[str]) -> dict:
     ensure_repo(repo)
+    tracked = tracked_files(repo)
     required_findings = check_required(repo, required)
     evidence_findings = check_evidence(repo)
     warnings = check_untracked_trees(repo, REQUIRED_TRACKED_TREES) \
+        + check_contract_files_tracked(repo, tracked) \
         + check_temp_residue(repo)
     blocking = [f for f in required_findings + evidence_findings if f["status"] != "tracked"]
     counts = {
@@ -175,6 +244,10 @@ def build_report(repo: Path, required: list[str]) -> dict:
         "required_missing": sum(1 for f in required_findings if f["status"] == "missing"),
         "ignored_evidence_logs": len(evidence_findings),
         "untracked_trees": sum(1 for w in warnings if w["status"] == "untracked_tree"),
+        "contract_files_untracked": sum(1 for w in warnings if w["status"] == "contract_file_untracked"),
+        "contract_files_missing": sum(1 for w in warnings if w["status"] == "contract_file_missing"),
+        "contract_manifest_unreadable": sum(
+            1 for w in warnings if w["status"] == "contract_manifest_unreadable"),
         "temp_residue": sum(1 for w in warnings if w["status"] == "temp_residue"),
         "warnings": len(warnings),
         "blocking": len(blocking),

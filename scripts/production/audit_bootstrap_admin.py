@@ -43,17 +43,35 @@ def validate_username(username: str) -> None:
 
 def mysql_command(args: argparse.Namespace, database: str | None) -> list[str]:
     """构造不把口令放进 argv 的 mysql 客户端命令。"""
-    cmd = [
-        args.mysql_client,
-        "--protocol=TCP",
-        f"--host={args.host}",
-        f"--port={args.port}",
-        f"--user={args.user}",
+    tail = [
         "--batch",
         "--raw",
         "--skip-column-names",
         "--connect-timeout=10",
     ]
+    container = getattr(args, "docker_container", None)
+    if container:
+        # 命名空间形态：审计查询也走 mysqld 自己的网络命名空间，宿主到数据库不再有网络路径。
+        # `-e MYSQL_PWD`（不带 =）让 docker 从本进程环境里取值传给容器，口令因此不进 argv，
+        # 也不会出现在任何命令行日志里 —— 比宿主侧 mysql.exe 那条路径更严格，不是更松。
+        cmd = [
+            "docker", "exec", "-i",
+            "-e", "MYSQL_PWD",
+            container,
+            "mysql",
+            "--protocol=TCP",
+            "--host=127.0.0.1",
+            "--port=3306",
+            f"--user={args.user}",
+        ] + tail
+    else:
+        cmd = [
+            args.mysql_client,
+            "--protocol=TCP",
+            f"--host={args.host}",
+            f"--port={args.port}",
+            f"--user={args.user}",
+        ] + tail
     if database:
         cmd.append(database)
     return cmd
@@ -230,10 +248,20 @@ def collect_evidence(args: argparse.Namespace, query_func=None) -> dict:
         "mysql": {
             "database_reported": server[0],
             "server_version": server[1],
-            "host": args.host,
-            "port": args.port,
+            "host": ("127.0.0.1" if getattr(args, "docker_container", None) else args.host),
+            "port": (3306 if getattr(args, "docker_container", None) else args.port),
+            # 三个字段必须分开读：host/port 是"实际连到哪"，requested_* 是"调用方当初要连哪"。
+            # 之前两者合一，命名空间形态下会在证据里同时出现"端口=宿主中继端口"和
+            # "transport=容器内 3306"，自相矛盾还看不出来。
+            "requested_host": args.host,
+            "requested_port": args.port,
             "user": args.user,
             "client": args.mysql_client,
+            "transport": (
+                f"docker_exec_in_namespace:{args.docker_container}"
+                if getattr(args, "docker_container", None)
+                else f"host_client:{args.host}:{args.port}"
+            ),
         },
         "bootstrap": {
             "username": args.username,
@@ -288,6 +316,11 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="只读审计 bootstrap 管理员并输出 JSON 证据")
     ap.add_argument("--mysql-client", required=True, help="mysql.exe 绝对路径")
     ap.add_argument("--host", default="127.0.0.1")
+    ap.add_argument(
+        "--docker-container",
+        default=None,
+        help="在指定容器内执行 mysql 查询（用于沙箱网络命名空间形态）；给出时 --host/--port 不再用于连库。",
+    )
     ap.add_argument("--port", type=int, default=3306)
     ap.add_argument("--database", required=True)
     ap.add_argument("--user", default="root")

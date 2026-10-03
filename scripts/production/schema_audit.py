@@ -689,12 +689,16 @@ def docker_exec_runner(
     口令通过 ``MYSQL_PWD`` 环境变量传入容器，不写进任何证据文件。
     """
     argv: list[str] = [docker_bin, "exec", "-i"]
+    child_env: dict[str, str] | None = None
     if password:
-        argv += ["-e", f"MYSQL_PWD={password}"]
+        # 口令只进子进程环境，由 docker CLI 继承给 `-e MYSQL_PWD`（不带 =值）。
+        # 拼成 `-e MYSQL_PWD=<值>` 会把它同时放进进程命令行和任何"命令记录"里（R-041/R-044）。
+        argv += ["-e", "MYSQL_PWD"]
+        child_env = {**os.environ, "MYSQL_PWD": password}
     argv += [container, "mysql", *MYSQL_CLI_FLAGS, f"-u{user}"]
     if database:
         argv.append(database)
-    return make_process_runner(argv, label=f"docker exec {container} mysql")
+    return make_process_runner(argv, label=f"docker exec {container} mysql", env=child_env)
 
 
 def mysql_cli_runner(

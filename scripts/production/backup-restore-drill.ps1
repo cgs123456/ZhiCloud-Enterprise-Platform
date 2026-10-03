@@ -20,11 +20,15 @@ param(
     [string]$EvidenceFile,
     [string]$BeforeSnapshot,
     [string]$AfterSnapshot,
+    [int]$TimeoutSeconds = 900,
     [switch]$DryRun,
     [switch]$SkipCleanup
 )
 
 $ErrorActionPreference = 'Stop'
+if ($TimeoutSeconds -le 0) {
+    throw 'TimeoutSeconds 必须大于 0：本演练会执行 dump 与全量恢复，不允许无硬超时'
+}
 
 $script:Container = $null
 $script:RootPassword = $null
@@ -33,6 +37,34 @@ function Get-DrillScriptDirectory {
     if (-not [string]::IsNullOrWhiteSpace($PSScriptRoot)) { return $PSScriptRoot }
     if (-not [string]::IsNullOrWhiteSpace($PSCommandPath)) { return (Split-Path -Parent $PSCommandPath) }
     throw 'Unable to resolve script directory.'
+}
+
+# 唯一的原生进程执行器。演练会跑 mysqldump 与全量恢复导入——这两步恰恰是最容易长时间不动的，
+# 而 `& docker ... 2>&1` 没有原生超时：恢复卡住时门禁既不失败也不通过，只是永远不返回。
+. (Join-Path (Get-DrillScriptDirectory) 'SandboxNative.ps1')
+
+function Split-NativeLines {
+    param([string]$Text)
+    return @($Text -split "\r?\n" | Where-Object { $_.Length -gt 0 })
+}
+
+function Invoke-BoundedDocker {
+    param(
+        [Parameter(Mandatory = $true)][string[]]$Arguments,
+        [string]$StandardInput,
+        [string]$Stage = 'docker'
+    )
+    $run = Invoke-BoundedNative -FilePath 'docker' -Arguments $Arguments `
+        -StandardInput $StandardInput -TimeoutSeconds $TimeoutSeconds -Stage $Stage
+    return [pscustomobject]@{
+        ExitCode = $run.ExitCode
+        # Output 继续合并两条流（stdout 在前）：十余处调用点用 `$x.Output -join ' '` 组装报错文本，
+        # 只留 stdout 会把 mysql/mysqldump 的真实错误吞成空串。
+        Output   = @(Split-NativeLines ($run.StdOut + [Environment]::NewLine + $run.StdErr))
+        # 解析**值**的调用点必须用 StdOut：混在 Output 里的 stderr 告警会污染
+        # `[int64]$x.Output[0]`、行数比对与 CHECKSUM 逐行解析。
+        StdOut   = @(Split-NativeLines $run.StdOut)
+    }
 }
 
 function ConvertTo-DrillJson {
@@ -61,14 +93,24 @@ function Read-DrillJsonFile {
     return ([System.IO.File]::ReadAllText($Path) | ConvertFrom-Json)
 }
 
+function Set-DrillMysqlPasswordEnv {
+    param([Parameter(Mandatory = $true)][string]$RootPassword)
+    # 口令只进本进程环境，由 docker CLI 继承给 `-e MYSQL_PWD`（不带 =值）。
+    # 写成 `-e MYSQL_PWD=<值>` 会把它放进 docker 进程的命令行，任何进程监视器都能读到（R-041）。
+    # 刻意在每个使用点各自声明，而不是在脚本入口一次性设置：本脚本目前唯一的原生调用面是 docker
+    # （Invoke-BoundedDocker），将来若加入宿主侧 mysql 客户端，全局 MYSQL_PWD 会静默成为它的取值来源。
+    [Environment]::SetEnvironmentVariable('MYSQL_PWD', $RootPassword, 'Process')
+}
+
 function Invoke-SandboxSql {
     param(
         [Parameter(Mandatory = $true)][string]$SqlText,
         [string]$Database
     )
+    Set-DrillMysqlPasswordEnv -RootPassword $script:RootPassword
     $arguments = @(
         'exec', '-i',
-        '-e', "MYSQL_PWD=$script:RootPassword",
+        '-e', 'MYSQL_PWD',
         $script:Container,
         'mysql', '--batch', '--raw', '--skip-column-names',
         '-uroot', '--default-character-set=utf8mb4'
@@ -76,12 +118,7 @@ function Invoke-SandboxSql {
     if (-not [string]::IsNullOrWhiteSpace($Database)) {
         $arguments += $Database
     }
-    $output = $SqlText | & docker @arguments 2>&1
-    $exitCode = $LASTEXITCODE
-    return [pscustomobject]@{
-        ExitCode = $exitCode
-        Output   = @($output | ForEach-Object { [string]$_ })
-    }
+    return Invoke-BoundedDocker -Arguments $arguments -StandardInput $SqlText -Stage 'sandbox-sql'
 }
 
 function Invoke-Mysqldump {
@@ -90,9 +127,10 @@ function Invoke-Mysqldump {
         [Parameter(Mandatory = $true)][string]$ResultFile,
         [string[]]$Tables = @()
     )
+    Set-DrillMysqlPasswordEnv -RootPassword $script:RootPassword
     $arguments = @(
         'exec',
-        '-e', "MYSQL_PWD=$script:RootPassword",
+        '-e', 'MYSQL_PWD',
         $script:Container,
         'mysqldump', '-uroot',
         '--single-transaction', '--routines', '--triggers',
@@ -101,28 +139,19 @@ function Invoke-Mysqldump {
     )
     $arguments += $Database
     if ($Tables.Count -gt 0) { $arguments += $Tables }
-    $output = & docker @arguments 2>&1
-    $exitCode = $LASTEXITCODE
-    return [pscustomobject]@{
-        ExitCode = $exitCode
-        Output   = @($output | ForEach-Object { [string]$_ })
-    }
+    return Invoke-BoundedDocker -Arguments $arguments -Stage 'mysqldump'
 }
 
 function Invoke-SandboxShell {
     param([Parameter(Mandatory = $true)][string]$ShellCommand)
+    Set-DrillMysqlPasswordEnv -RootPassword $script:RootPassword
     $arguments = @(
         'exec',
-        '-e', "MYSQL_PWD=$script:RootPassword",
+        '-e', 'MYSQL_PWD',
         $script:Container,
         'sh', '-c', $ShellCommand
     )
-    $output = & docker @arguments 2>&1
-    $exitCode = $LASTEXITCODE
-    return [pscustomobject]@{
-        ExitCode = $exitCode
-        Output   = @($output | ForEach-Object { [string]$_ })
-    }
+    return Invoke-BoundedDocker -Arguments $arguments -Stage 'sandbox-shell'
 }
 
 function ConvertTo-DrillChecksumKey {
@@ -148,7 +177,7 @@ ORDER BY TABLE_NAME;
     if ($generated.ExitCode -ne 0) {
         throw "failed to generate row count SQL: $($generated.Output -join ' ')"
     }
-    $fragments = @($generated.Output | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    $fragments = @($generated.StdOut | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
     if ($fragments.Count -eq 0) {
         return [ordered]@{}
     }
@@ -159,7 +188,7 @@ ORDER BY TABLE_NAME;
         throw "failed to collect row counts: $($result.Output -join ' ')"
     }
     $counts = [ordered]@{}
-    foreach ($line in $result.Output) {
+    foreach ($line in $result.StdOut) {
         if ([string]::IsNullOrWhiteSpace($line)) { continue }
         $parts = $line.Split("`t")
         if ($parts.Count -lt 2) { continue }
@@ -182,7 +211,7 @@ function Get-TableChecksums {
         if ($result.ExitCode -ne 0) {
             throw "failed to checksum batch: $($result.Output -join ' ')"
         }
-        foreach ($line in $result.Output) {
+        foreach ($line in $result.StdOut) {
             if ([string]::IsNullOrWhiteSpace($line)) { continue }
             $parts = $line.Split("`t")
             if ($parts.Count -lt 2) { continue }
@@ -202,7 +231,7 @@ SELECT CONCAT((SELECT COUNT(*) FROM flyway_schema_history), CHAR(9),
     if ($result.ExitCode -ne 0) {
         return [ordered]@{ history_rows = 0; max_version = 'none'; collected = $false }
     }
-    $line = @($result.Output | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) | Select-Object -First 1
+    $line = @($result.StdOut | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) | Select-Object -First 1
     if ($null -eq $line) {
         return [ordered]@{ history_rows = 0; max_version = 'none'; collected = $true }
     }
@@ -475,12 +504,12 @@ CREATE TABLE ``$ProbeTableName`` (
         $backupCompletedAt = [DateTimeOffset]::UtcNow
 
         $size = Invoke-SandboxShell -ShellCommand "stat -c %s $backupFile"
-        if ($size.ExitCode -eq 0 -and $size.Output.Count -gt 0) {
-            $backupSizeBytes = [int64]([string]$size.Output[0]).Trim()
+        if ($size.ExitCode -eq 0 -and $size.StdOut.Count -gt 0) {
+            $backupSizeBytes = [int64]([string]$size.StdOut[0]).Trim()
         }
         $hash = Invoke-SandboxShell -ShellCommand "sha256sum $backupFile | cut -d ' ' -f 1"
-        if ($hash.ExitCode -eq 0 -and $hash.Output.Count -gt 0) {
-            $backupSha256 = ([string]$hash.Output[0]).Trim()
+        if ($hash.ExitCode -eq 0 -and $hash.StdOut.Count -gt 0) {
+            $backupSha256 = ([string]$hash.StdOut[0]).Trim()
         }
 
         $afterValues = @()
@@ -518,7 +547,7 @@ CREATE TABLE ``$ProbeTableName`` (
         $recovered = 0
         $lost = 0
         if ($probeStats.ExitCode -eq 0) {
-            foreach ($line in $probeStats.Output) {
+            foreach ($line in $probeStats.StdOut) {
                 if ([string]::IsNullOrWhiteSpace($line)) { continue }
                 $parts = ([string]$line).Split("`t")
                 if ($parts[0] -eq 'seeded') { $recovered = [int]$parts[1] }
