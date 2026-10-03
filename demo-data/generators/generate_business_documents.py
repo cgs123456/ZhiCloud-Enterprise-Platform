@@ -905,10 +905,10 @@ def build_erp(b: Builder):
             price = money(b.rnd.uniform(10, 900))
             amt = money(cnt * price)
             total += amt
-            lines.append({"product_id": b.m_id("erp_product", i * 2 + k),
+            lines.append({"product_id": b.m_id("erp_product", i * 3 + k + 2),
                           "purchase_count": cnt, "purchase_price": price, "total_price": amt})
         pi_heads.append({
-            "id": pi_ids[i], "no": b.biz_no("PIN", i), "supplier_id": b.m_id("erp_supplier", i),
+            "id": pi_ids[i], "no": b.biz_no("PIN", i), "supplier_id": po_heads[i % len(po_heads)]["supplier_id"],
             "in_time": biz_datetime(i * 9 + 6, 15, 30),
             "status": ERP_STOCK_STATUS[i % len(ERP_STOCK_STATUS)],
             "payment_status": ERP_PAY_STATUS[i % len(ERP_PAY_STATUS)],
@@ -1526,18 +1526,23 @@ def build_qms(b: Builder):
     ii_ids = [r["id"] for r in b.own("qms_inspection_item")]
     inst_ids = [r["id"] for r in b.own("qms_instrument")]
     wo_ids = [r["id"] for r in b.own("mes_pro_work_order")]
+    po_rows = b.own("erp_purchase_order")
+    po_item_rows = b.own("erp_purchase_order_items")
 
     # --- 检验单 + 记录
     n_io = 8 * s
     io_ids = b.alloc("qms_inspection_order", n_io)
     io_heads, io_recs = [], []
     for i in range(n_io):
+        po = po_rows[i % len(po_rows)]
+        po_lines = [r for r in po_item_rows if r["master_id"] == po["id"]]
+        po_line = po_lines[0] if po_lines else None
         io_heads.append({
             "id": io_ids[i], "order_no": b.biz_no("QC", i),
             "type": QMS_INSP_TYPE[i % len(QMS_INSP_TYPE)],
-            "supplier_id": b.m_id("erp_supplier", i), "batch_no": "DEMO-BATCH-%04d" % (i + 1),
+            "supplier_id": po["supplier_id"], "batch_no": "DEMO-BATCH-%04d" % (i + 1),
             "work_order_id": wo_ids[i % len(wo_ids)] if wo_ids and i % 2 == 0 else None,
-            "product_id": b.m_id("erp_product", i),
+            "product_id": po_line["product_id"] if po_line else b.m_id("erp_product", i),
             "inspector": "DEMO_质检员%02d" % (i % 5 + 1),
             "inspect_time": biz_datetime(i * 6 + 4, 14, 0),
             "status": QMS_INSP_ORDER_STATUS[i % len(QMS_INSP_ORDER_STATUS)],
@@ -1568,7 +1573,8 @@ def build_qms(b: Builder):
         "source": 10,
         "defect_description": "DEMO_演示不合格描述%d：外观划伤超出允收范围" % (i + 1),
         "inspection_order_id": io_ids[i % len(io_ids)],
-        "product_id": b.m_id("erp_product", i), "supplier_id": b.m_id("erp_supplier", i),
+        "product_id": io_heads[i % len(io_heads)]["product_id"],
+        "supplier_id": io_heads[i % len(io_heads)]["supplier_id"],
         "work_order_id": wo_ids[i % len(wo_ids)] if wo_ids else None,
         "defect_level": QMS_SEVERITY[i % len(QMS_SEVERITY)],
         "quantity": qty(b.rnd.uniform(1, 60)),
@@ -1605,8 +1611,8 @@ def build_qms(b: Builder):
         "id": cc_ids[i], "complaint_no": b.biz_no("CC", i),
         "customer_id": b.m_id("crm_customer", i),
         "customer_name": b.m_name("crm_customer", i, "name"),
-        "product_id": b.m_id("erp_product", i),
-        "product_name": b.m_name("erp_product", i, "name"),
+        "product_id": io_heads[i % len(io_heads)]["product_id"],
+        "product_name": "DEMO_演示投诉产品%03d" % (i + 1),
         "complaint_content": "DEMO_演示投诉内容%d：交付批次存在外观缺陷" % (i + 1),
         "complaint_date": biz_date(i * 12 + 5),
         "root_cause": "DEMO_演示根因：过程检验漏检",
@@ -1690,7 +1696,7 @@ def build_crm(b: Builder):
         total = money(sum(r["total_price"] for r in mine))
         biz_rows.append({
             "id": biz_ids[i], "name": "DEMO_商机%03d" % (i + 1),
-            "customer_id": b.m_id("crm_customer", i + 1),
+            "customer_id": b.m_id("crm_customer", i),
             "follow_up_status": 1 if i % 2 == 0 else 0,
             "contact_last_time": biz_datetime(i * 5 + 2, 11, 0),
             "contact_next_time": biz_datetime(i * 5 + 12, 15, 0),
@@ -1759,7 +1765,7 @@ def build_crm(b: Builder):
         ctr_rows.append({
             "id": ctr_ids[i], "name": "DEMO_合同%03d" % (i + 1),
             "no": "DEMO-HT-%05d" % (i + 1),
-            "customer_id": b.m_id("crm_customer", i + 2),
+            "customer_id": b.m_id("crm_customer", i),
             "business_id": b.own_id("crm_business", i),
             "contact_last_time": biz_datetime(i * 8 + 3, 10, 0),
             "owner_user_id": None,
@@ -1846,7 +1852,7 @@ def build_crm(b: Builder):
         inv_rows.append({
             "id": inv_ids[i], "no": "DEMO-INV-%05d" % (i + 1),
             "contract_id": b.own_id("crm_contract", i),
-            "customer_id": b.m_id("crm_customer", i + 3),
+            "customer_id": b.m_id("crm_customer", i),
             "contact_id": b.own_id("crm_contact", i + 2),
             "invoice_type": CRM_INVOICE_TYPE[i % len(CRM_INVOICE_TYPE)],
             "invoice_no": "DEMO-INVNO-%08d" % (i + 1),
