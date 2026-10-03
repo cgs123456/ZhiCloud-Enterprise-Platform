@@ -310,6 +310,13 @@
       "sha256": "a541d976b59448c4b2a6a9db4f9c8ebd24e0e6f739996c8f7983137f29bfc32c",
       "verification_file": "V133_verify.sql",
       "verification_sha256": "e20320d830021c6e921dae932135fb0eba9c63a86f0386e28b9d7748069479be"
+    },
+    {
+      "version": 134,
+      "file": "V134__hr_qms_menu_seed.sql",
+      "sha256": "3848e11262b0977117bf97b66edfec58c922bd51f06fe25548df79e4a5644a80",
+      "verification_file": "V134_verify.sql",
+      "verification_sha256": "c27b8794d517566daa0dd1af887beac549916f9b0c66628480ed88bc723f9217"
     }
   ]
 }
