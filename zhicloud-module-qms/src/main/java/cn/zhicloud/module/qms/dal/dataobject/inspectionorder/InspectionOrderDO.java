@@ -48,6 +48,9 @@ public class InspectionOrderDO extends TenantBaseDO {
     private Integer type;
     /**
      * 供应商 ID
+     *
+     * <p>关联 ERP 供应商主数据 {@code erp_supplier.id}（ErpSupplierDO#getId()），与 ERP/MES 侧 supplierId 同一口径。
+     * 注意不要拿 {@code wms_receipt_order.merchant_id}（那是 WmsMerchantDO 商户）回填这里，两者不是同一实体。
      */
     private Long supplierId;
     /**
@@ -60,6 +63,10 @@ public class InspectionOrderDO extends TenantBaseDO {
     private Long workOrderId;
     /**
      * 产品 ID
+     *
+     * <p>关联 MES 物料主数据 {@code mes_md_item.id}（MesMdItemDO#getId()）——与 MES 侧
+     * {@code MesProWorkOrderDO.productId} 同口径，追溯链路里也是把它当物料（materialId）使用的。
+     * 它不是商城的 product_spu / product_sku，也不是 WMS 的 wms_item，跨系统取数时不要混用。
      */
     private Long productId;
     /**

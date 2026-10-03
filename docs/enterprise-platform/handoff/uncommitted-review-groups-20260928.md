@@ -5066,3 +5066,38 @@ PDA 手持终端的登录态是**后台用户**，它挂 `@ss.hasPermission` 才
 **留了一个不随本决定消失的问题**：`gui.ava:html2image:2.0.1` 在 Maven Central 上 404、
 只有 `huaweicloud` 镜像有、jar 与 POM 都无许可证声明 —— 这是**来源不可核实**，属供应链面，
 不是许可面；已在提案文档顶部单独标出，建议从 report 链路剔掉或换成 Central 可核实的坐标（另列任务）。
+
+### 12.112 BIZ-17 契约按项目内既有声明定下，并让报表的"0"不再冒充结论
+
+所有者把判断交给我，所以契约不是我发明的，是从项目里读出来的：
+
+- `supplier_id → erp_supplier.id`：全仓 5 个模块共 **9 处 `supplierId` 的 javadoc 关联 `ErpSupplierDO`**；
+  另有 1 处是 `WmsMerchantDO`（`wms_receipt_order.merchant_id`）—— **商户 ≠ 供应商**，
+  所以不能拿来料单的 merchant 回填 QMS 的 supplier，这一点专门写进注释里防混用。
+- `product_id → mes_md_item.id`：`MesProWorkOrderDO.productId` 的 javadoc 明写「关联 `MesMdItemDO#getId()`」，
+  而 QMS 追溯服务 `QualityTraceabilityServiceImpl:127` 把 `productId` 当 `materialId` 用 —— 两边一致，
+  都不是商城的 `product_spu/product_sku`，也不是 `wms_item`。
+- 跨模块引用只用 `{@code 表名}` 书写，不用 `{@link 类}`：QMS 不依赖 ERP/MES，写 @link 会指向 classpath 上不存在的类。
+  （WMS 里那种 @link 能用，是因为 WMS 真的依赖了 QMS。）
+
+已落地：DO/VO 契约注释（含"不要用 merchant 回填"）、`InspectionOrderDO`/`InspectionOrderSaveReqVO` 编译 rc=0；
+`V133__qms_view_dimension_gap.sql` 给 `v_qms_inspection_status_daily` **在末尾追加** `dimension_missing_count`
+（原 8 列语义与列位不变，消费方不位移），真机读数：
+
+| stat_date | type | status | order_count | product_count | supplier_count | dimension_missing_count |
+|---|---|---|---|---|---|---|
+| 2026-10-02 | 10 | 30 | 4 | 0 | 0 | **4** |
+| 2026-10-02 | 10 | 40 | 2 | 0 | 0 | **2** |
+| 2026-10-02 | 30 | 30 | 1 | 0 | 0 | **1** |
+| 2026-10-02 | 30 | 40 | 1 | 0 | 0 | **1** |
+| 2026-10-03 | 30 | 40 | 1 | 0 | 0 | **1** |
+
+`V133_verify` 3/3 PASS（视图可读、新列在第 9 位、缺口确实被量出来 = 检验单总数 9）；迁移幂等（重跑 rc=0）；
+契约 tracked=44 scanned=140 findings=0，`check_duplicate_ddl` findings=0，`check_bare_throws` rc=0。
+
+**为什么到此为止，不继续"补数据"**：`erp_supplier` 与 `mes_md_item` 在本库里都是 **0 行** ——
+不是"有主数据没关联上"，而是**这两类主数据从没录入**。我不伪造供应商与物料：
+真实动作应是各租户自行录入 ERP 供应商 / MES 物料，之后由创建检验单的入口带上 ID。
+可自动派生的部分也有限：来料侧只有商户与 SKU，要派生供应商就得引入 QMS→ERP 依赖（新增模块边），
+而 WMS→QMS 的调用方向已存在，硬加会制造循环依赖 —— 所以按现状停在"契约 + 可见性"，
+把"录入主数据后回填空列"留作运营动作（任务 BIZ-17 仍开着，判据已写明）。
