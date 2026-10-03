@@ -47,6 +47,7 @@ public interface ErrorCodeConstants {
     ErrorCode HR_LEAVE_BALANCE_NOT_ENOUGH = new ErrorCode(1_050_007_002, "假期余额不足");
     ErrorCode HR_LEAVE_REQUEST_NOT_EXISTS = new ErrorCode(1_050_007_003, "请假单不存在");
     ErrorCode HR_LEAVE_REQUEST_STATUS_INVALID = new ErrorCode(1_050_007_004, "请假单状态非法，无法操作");
+    ErrorCode HR_LEAVE_REQUEST_ALREADY_SUBMITTED = new ErrorCode(1_050_007_006, "请假单已提交流程审批，不能重复提交");
     ErrorCode HR_LEAVE_BALANCE_NOT_EXISTS = new ErrorCode(1_050_007_005, "假期余额记录不存在");
 
     // ========== HR 社保（1-050-008-000） ==========

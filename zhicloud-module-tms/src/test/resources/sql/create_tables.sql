@@ -134,6 +134,8 @@ CREATE TABLE IF NOT EXISTS "tms_shipment" (
     "destination_address" varchar(255),
     "shipment_type" int,
     "source_order_no" varchar(255),
+"shipment_order_id" bigint DEFAULT NULL,
+"sign_time" timestamp DEFAULT NULL,
     "total_quantity" decimal(20,2),
     "total_weight" decimal(20,2),
     "total_volume" decimal(20,2),

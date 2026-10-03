@@ -94,19 +94,19 @@ public class EventRelayTenantFailClosedTest {
         }
 
         @Override
-        public boolean claim(Long id, LocalDateTime now) {
+        public String claim(Long id, LocalDateTime now) {
             claimCalls.incrementAndGet();
-            return true;
+            return "relay-tenant-owner";
         }
 
         @Override
-        public boolean markPublished(Long id) {
+        public boolean markPublished(Long id, String owner) {
             markPublishedCalls.incrementAndGet();
             return true;
         }
 
         @Override
-        public void markRetryOrDead(Long id, Throwable cause) {
+        public void markRetryOrDead(Long id, String owner, Throwable cause) {
         }
 
         @Override

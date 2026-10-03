@@ -93,6 +93,8 @@ public interface ErrorCodeConstants {
     ErrorCode MOVEMENT_ORDER_STATUS_NOT_DELETABLE = new ErrorCode(1_060_202_005, "移库单状态不是草稿或已作废，不能删除");
     ErrorCode MOVEMENT_ORDER_DETAIL_NOT_EXISTS = new ErrorCode(1_060_202_006, "移库单明细不存在");
     ErrorCode MOVEMENT_ORDER_WAREHOUSE_SAME = new ErrorCode(1_060_202_007, "来源仓库和目标仓库不能相同");
+    /** 库存流转（移库）存在检验不通过的记录时禁止完成移库；参数为检验业务号（移库单 ID） */
+    ErrorCode MOVEMENT_ORDER_QC_FAILED = new ErrorCode(1_060_202_008, "移库单存在检验不通过的质检记录，禁止完成移库（检验业务号：{}）");
 
     // ========== WMS 盘库单 1-060-203-000 ==========
     ErrorCode CHECK_ORDER_NOT_EXISTS = new ErrorCode(1_060_203_000, "盘库单不存在");
@@ -156,6 +158,10 @@ public interface ErrorCodeConstants {
     ErrorCode CHECK_CYCLE_PLAN_ABC_INVALID = new ErrorCode(1_060_111_003, "ABC 分类不合法，仅支持 A/B/C");
 
     // ========== WMS 出库单状态机扩展 1-060-112-000 ==========
+    /** 出货检验（OQC）已判废时禁止发运；参数为检验业务号（出库单 ID） */
+    ErrorCode SHIPMENT_ORDER_QC_FAILED = new ErrorCode(1_060_201_010, "出库单存在检验不通过的出货检验记录，禁止发运（检验业务号：{}）");
+    /** 出库单不在「已发货」状态时不能被运单承运或签收；参数为出库单编号 */
+    ErrorCode SHIPMENT_ORDER_NOT_SHIPPED_FOR_WAYBILL = new ErrorCode(1_060_201_011, "出库单不在已发货状态，不能被运单承运或签收回传（出库单：{}）");
     ErrorCode SHIPMENT_ORDER_STATUS_INVALID = new ErrorCode(1_060_112_000, "出库单状态流转不合法，当前状态：{}，目标状态：{}");
     ErrorCode SHIPMENT_ORDER_NOT_PICKABLE = new ErrorCode(1_060_112_001, "出库单不在可拣货状态");
     ErrorCode SHIPMENT_ORDER_NOT_REVIEWABLE = new ErrorCode(1_060_112_002, "出库单不在可复核状态");

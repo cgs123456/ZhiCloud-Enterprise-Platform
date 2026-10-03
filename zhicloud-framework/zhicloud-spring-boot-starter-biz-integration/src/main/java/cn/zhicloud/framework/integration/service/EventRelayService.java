@@ -1,6 +1,7 @@
 package cn.zhicloud.framework.integration.service;
 
 import cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil;
+import cn.zhicloud.framework.integration.api.ConsumeResult;
 import cn.zhicloud.framework.integration.api.EventConsumer;
 import cn.zhicloud.framework.integration.config.IntegrationProperties;
 import cn.zhicloud.framework.integration.enums.ErrorCodeConstants;
@@ -65,33 +66,38 @@ public class EventRelayService {
                 log.error("[relayOnce][事件缺少租户，拒绝投递 id={} eventId={}]", event.getId(), event.getEventId());
                 continue;
             }
-            boolean claimed;
+            String owner;
             try {
-                claimed = executeWithTenant(event.getTenantId(),
+                owner = executeWithTenant(event.getTenantId(),
                         () -> eventOutboxService.claim(event.getId(), now));
             } catch (Exception ex) {
                 log.error("[relayOnce][事件领取异常 id={} eventId={} tenantId={}]",
                         event.getId(), event.getEventId(), event.getTenantId(), ex);
                 continue;
             }
-            if (!claimed) {
+            if (owner == null) {
                 // 已被其他节点/线程领走，或在上一轮扫描后被推入退避窗口
                 continue;
             }
             try {
-                executeWithTenant(event.getTenantId(), () -> {
-                    dispatch(event);
-                    return null;
-                });
+                boolean settled = executeWithTenant(event.getTenantId(), () -> dispatch(event));
+                if (!settled) {
+                    log.info("[relayOnce][事件仍在处理中，不确认也不重试 id={} eventId={} tenantId={}]",
+                            event.getId(), event.getEventId(), event.getTenantId());
+                    continue;
+                }
                 boolean marked = executeWithTenant(event.getTenantId(),
-                        () -> eventOutboxService.markPublished(event.getId()));
+                        () -> eventOutboxService.markPublished(event.getId(), owner));
                 if (marked) {
                     published++;
+                } else {
+                    log.error("[relayOnce][事件确认被 owner fencing 拒绝 id={} eventId={} tenantId={} owner={}]",
+                            event.getId(), event.getEventId(), event.getTenantId(), owner);
                 }
             } catch (Exception ex) {
                 try {
                     executeWithTenant(event.getTenantId(), () -> {
-                        eventOutboxService.markRetryOrDead(event.getId(), ex);
+                        eventOutboxService.markRetryOrDead(event.getId(), owner, ex);
                         return null;
                     });
                 } catch (Exception settleEx) {
@@ -110,19 +116,29 @@ public class EventRelayService {
      * <p>消费者漏注册、事件类型写错或对应模块未部署时，绝不能把事件标记为投递成功。
      * 抛出异常后由 {@link #relayOnce(int)} 按统一策略退避重试，最终进入死信并触发告警。
      */
-    private void dispatch(EventOutboxDO event) throws Exception {
+    private boolean dispatch(EventOutboxDO event) throws Exception {
         boolean matched = false;
+        boolean settled = true;
         for (EventConsumer consumer : consumers) {
             if (consumer.supports(event.getEventType())) {
                 matched = true;
-                eventInboxService.consume(consumer.name(), event.getEventId(), event.getEventType(),
-                        event.getTenantId(), () -> consumer.handle(event));
+                ConsumeResult result = eventInboxService.consume(consumer.name(), event.getEventId(),
+                        event.getEventType(), event.getTenantId(), () -> consumer.handle(event));
+                if (result == null) {
+                    throw new IllegalStateException("Inbox returned null result for eventId="  // @bare-throw-ignore 刻意 fail-closed 的基础设施信号，异常类型已被现有测试断言；改成 ServiceException 会同时改变对外语义与这些测试结果，是否统一属人工裁决
+                            + event.getEventId() + ", consumer=" + consumer.name());
+                }
+                if (result == ConsumeResult.IN_PROGRESS) {
+                    // 其他线程/节点仍在处理：本轮既不能确认 Outbox，也不能计入失败重试。
+                    settled = false;
+                }
             }
         }
         if (!matched) {
-            throw new IllegalStateException("No matching event consumer for eventId="
+            throw new IllegalStateException("No matching event consumer for eventId="  // @bare-throw-ignore 刻意 fail-closed 的基础设施信号，异常类型已被现有测试断言；改成 ServiceException 会同时改变对外语义与这些测试结果，是否统一属人工裁决
                     + event.getEventId() + ", eventType=" + event.getEventType());
         }
+        return settled;
     }
 
 

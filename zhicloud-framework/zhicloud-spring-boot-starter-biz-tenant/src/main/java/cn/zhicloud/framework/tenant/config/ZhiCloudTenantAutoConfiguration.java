@@ -32,6 +32,7 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.cache.BatchStrategies;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
@@ -73,6 +74,7 @@ public class ZhiCloudTenantAutoConfiguration {
     // ========== DB ==========
 
     @Bean
+    @Lazy(false)
     public TenantLineInnerInterceptor tenantLineInnerInterceptor(TenantProperties properties,
                                                                  MybatisPlusInterceptor interceptor) {
         TenantLineInnerInterceptor inner = new TenantLineInnerInterceptor(new TenantDatabaseInterceptor(properties));

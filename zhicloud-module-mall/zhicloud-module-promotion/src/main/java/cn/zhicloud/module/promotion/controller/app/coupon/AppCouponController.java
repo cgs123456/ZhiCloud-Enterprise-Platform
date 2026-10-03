@@ -41,7 +41,7 @@ public class AppCouponController {
     @PostMapping("/take")
     @Operation(summary = "领取优惠劵")
     @Parameter(name = "templateId", description = "优惠券模板编号", required = true, example = "1024")
-    @PreAuthorize("@ss.hasPermission('promotion:coupon:take')")
+    @PreAuthorize("isAuthenticated()")
     public CommonResult<Boolean> takeCoupon(@Valid @RequestBody AppCouponTakeReqVO reqVO) {
         // 1. 领取优惠劵
         Long userId = getLoginUserId();

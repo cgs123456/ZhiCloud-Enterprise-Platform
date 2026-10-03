@@ -855,5 +855,5 @@ CREATE TABLE IF NOT EXISTS "inventory_item" (
     "update_time" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deleted" bit NOT NULL DEFAULT FALSE,
     PRIMARY KEY ("id"),
-    CONSTRAINT "uk_inventory_item_warehouse_location_area_batch" UNIQUE ("item_id", "warehouse_id", "location_id", "area_id", "batch_id")
+    CONSTRAINT "uk_inventory_item_tenant_composite" UNIQUE ("tenant_id", "item_id", "warehouse_id", "location_id", "area_id", "batch_id")
 );

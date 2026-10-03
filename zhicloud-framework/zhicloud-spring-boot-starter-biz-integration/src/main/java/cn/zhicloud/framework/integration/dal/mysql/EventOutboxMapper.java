@@ -63,50 +63,58 @@ public interface EventOutboxMapper extends BaseMapperX<EventOutboxDO> {
     LocalDateTime selectOldestPendingOccurredAt();
 
     /**
-     * 扫描可被领取的事件主键：NEW 与 PUBLISHING 都可再领取（PUBLISHING 覆盖「领取后进程崩溃」的残留），
-     * 且 next_retry_at 为空或已到期。
+     * 扫描可被领取的事件主键：NEW 用 next_retry_at 控制退避，PUBLISHING 用 lease_until 控制租约。
+     * PUBLISHING 租约过期后允许接管，覆盖领取后进程崩溃/失联的残留。
      */
-    @Select("SELECT id FROM event_outbox WHERE deleted = 0 AND status IN ('" + OUTBOX_NEW + "','" + OUTBOX_PUBLISHING + "') "
-            + "AND (next_retry_at IS NULL OR next_retry_at <= #{now}) ORDER BY id LIMIT #{limit}")
+    @Select("SELECT id FROM event_outbox WHERE deleted = 0 AND ("
+            + "(status = '" + OUTBOX_NEW + "' AND (next_retry_at IS NULL OR next_retry_at <= #{now})) "
+            + "OR (status = '" + OUTBOX_PUBLISHING + "' AND (lease_until IS NULL OR lease_until <= #{now}))) "
+            + "ORDER BY id LIMIT #{limit}")
     List<Long> selectClaimableIds(@Param("now") LocalDateTime now, @Param("limit") int limit);
 
     /**
-     * DB 层 CAS 领取：返回 1 表示领取成功，0 表示已被其他节点领走或仍在退避窗口内。
-     * 领取成功时把 {@code next_retry_at} 推到租约到期时刻。
+     * DB 层 CAS 领取：返回 1 表示领取成功，0 表示已被其他节点领走或仍在退避/租约窗口内。
+     * 领取成功时写入本次 owner，并把 {@code lease_until} 推到租约到期时刻。
      */
-    @Update("UPDATE event_outbox SET status = '" + OUTBOX_PUBLISHING + "', next_retry_at = #{leaseAt} "
-            + "WHERE id = #{id} AND tenant_id = #{tenantId} AND deleted = 0 "
-            + "AND status IN ('" + OUTBOX_NEW + "','" + OUTBOX_PUBLISHING + "') "
-            + "AND (next_retry_at IS NULL OR next_retry_at <= #{now})")
-    int claim(@Param("id") Long id, @Param("tenantId") Long tenantId,
-              @Param("now") LocalDateTime now, @Param("leaseAt") LocalDateTime leaseAt);
+    @Update("UPDATE event_outbox SET status = '" + OUTBOX_PUBLISHING + "', processing_owner = #{owner}, "
+            + "lease_until = #{leaseUntil} "
+            + "WHERE id = #{id} AND tenant_id = #{tenantId} AND deleted = 0 AND ("
+            + "(status = '" + OUTBOX_NEW + "' AND (next_retry_at IS NULL OR next_retry_at <= #{now})) "
+            + "OR (status = '" + OUTBOX_PUBLISHING + "' AND (lease_until IS NULL OR lease_until <= #{now})))")
+    int claim(@Param("id") Long id, @Param("tenantId") Long tenantId, @Param("owner") String owner,
+              @Param("now") LocalDateTime now, @Param("leaseUntil") LocalDateTime leaseUntil);
 
     /**
-     * 标记投递完成（只允许从 PUBLISHING 迁移）
+     * 标记投递完成；只有当前 owner 仍持有 PUBLISHING 事件时才能结算。
      */
-    @Update("UPDATE event_outbox SET status = '" + OUTBOX_PUBLISHED + "', published_at = #{now}, last_error = NULL "
+    @Update("UPDATE event_outbox SET status = '" + OUTBOX_PUBLISHED + "', published_at = #{now}, last_error = NULL, "
+            + "processing_owner = NULL, lease_until = NULL, next_retry_at = NULL "
             + "WHERE id = #{id} AND tenant_id = #{tenantId} AND deleted = 0 "
-            + "AND status = '" + OUTBOX_PUBLISHING + "'")
+            + "AND status = '" + OUTBOX_PUBLISHING + "' AND processing_owner = #{owner}")
     int markPublished(@Param("id") Long id, @Param("tenantId") Long tenantId,
-                      @Param("now") LocalDateTime now);
+                      @Param("owner") String owner, @Param("now") LocalDateTime now);
 
     /**
-     * 标记重试：重试次数 +1、计算下次可领取时间、保留失败原因
+     * 标记重试：重试次数 +1、计算下次可领取时间、保留失败原因；只有当前 owner 能结算。
      */
     @Update("UPDATE event_outbox SET status = '" + OUTBOX_NEW + "', retry_count = retry_count + 1, "
-            + "next_retry_at = #{nextRetryAt}, last_error = #{error} "
+            + "next_retry_at = #{nextRetryAt}, last_error = #{error}, "
+            + "processing_owner = NULL, lease_until = NULL "
             + "WHERE id = #{id} AND tenant_id = #{tenantId} AND deleted = 0 "
-            + "AND status = '" + OUTBOX_PUBLISHING + "'")
-    int markRetry(@Param("id") Long id, @Param("tenantId") Long tenantId,
+            + "AND status = '" + OUTBOX_PUBLISHING + "' AND processing_owner = #{owner}")
+    int markRetry(@Param("id") Long id, @Param("tenantId") Long tenantId, @Param("owner") String owner,
                   @Param("nextRetryAt") LocalDateTime nextRetryAt, @Param("error") String error);
 
     /**
-     * 标记死信：停止自动重试，等待人工重放
+     * 标记死信：停止自动重试，等待人工重放；只有当前 owner 能结算。
      */
-    @Update("UPDATE event_outbox SET status = '" + OUTBOX_DEAD + "', retry_count = retry_count + 1, last_error = #{error} "
+    @Update("UPDATE event_outbox SET status = '" + OUTBOX_DEAD + "', retry_count = retry_count + 1, "
+            + "last_error = #{error}, next_retry_at = NULL, "
+            + "processing_owner = NULL, lease_until = NULL "
             + "WHERE id = #{id} AND tenant_id = #{tenantId} AND deleted = 0 "
-            + "AND status = '" + OUTBOX_PUBLISHING + "'")
-    int markDead(@Param("id") Long id, @Param("tenantId") Long tenantId, @Param("error") String error);
+            + "AND status = '" + OUTBOX_PUBLISHING + "' AND processing_owner = #{owner}")
+    int markDead(@Param("id") Long id, @Param("tenantId") Long tenantId, @Param("owner") String owner,
+                 @Param("error") String error);
 
 
     /**
@@ -116,7 +124,7 @@ public interface EventOutboxMapper extends BaseMapperX<EventOutboxDO> {
      * 清空 published_at，避免状态已回到 NEW 但投递时间仍显示为已完成的矛盾。
      */
     @Update("UPDATE event_outbox SET status = '" + OUTBOX_NEW + "', retry_count = 0, next_retry_at = NULL, "
-            + "last_error = NULL, published_at = NULL "
+            + "last_error = NULL, published_at = NULL, processing_owner = NULL, lease_until = NULL "
             + "WHERE event_id = #{eventId} AND tenant_id = #{tenantId} AND deleted = 0 "
             + "AND status IN ('" + OUTBOX_DEAD + "','" + OUTBOX_PUBLISHED + "')")
     int requeueForReplay(@Param("eventId") String eventId, @Param("tenantId") Long tenantId);

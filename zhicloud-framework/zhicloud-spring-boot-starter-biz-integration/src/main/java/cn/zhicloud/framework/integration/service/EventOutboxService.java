@@ -29,19 +29,19 @@ public interface EventOutboxService {
     List<EventOutboxDO> selectClaimable(LocalDateTime now, int limit);
 
     /**
-     * CAS 领取：多节点并发下只有一个节点能领到
+     * CAS 领取：多节点并发下只有一个节点能领到；成功返回本次 owner，失败返回 {@code null}。
      */
-    boolean claim(Long id, LocalDateTime now);
+    String claim(Long id, LocalDateTime now);
 
     /**
-     * 标记投递完成（仅 PUBLISHING 可迁移）
+     * 标记投递完成（仅当前 owner 持有的 PUBLISHING 可迁移）
      */
-    boolean markPublished(Long id);
+    boolean markPublished(Long id, String owner);
 
     /**
-     * 失败结算：未达阈值则按指数退避重新入队，达到阈值则转死信
+     * 失败结算：只有当前 owner 能按指数退避重新入队或转死信
      */
-    void markRetryOrDead(Long id, Throwable cause);
+    void markRetryOrDead(Long id, String owner, Throwable cause);
 
     /**
      * 待投递堆积量（NEW + PUBLISHING），供监控告警

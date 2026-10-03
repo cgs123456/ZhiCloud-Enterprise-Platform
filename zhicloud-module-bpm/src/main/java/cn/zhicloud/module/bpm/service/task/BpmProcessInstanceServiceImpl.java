@@ -782,6 +782,7 @@ public class BpmProcessInstanceServiceImpl implements BpmProcessInstanceService 
         if (tenantId == null) {
             throw exception(PROCESS_INSTANCE_IDEMPOTENCY_TENANT_REQUIRED);
         }
+        // 已完成登记走无锁快路径，避免普通重试对幂等行加写锁。
         BpmProcessInstanceIdempotencyDO idempotency = processInstanceIdempotencyMapper
                 .selectByUniqueKey(tenantId, createReqDTO.getProcessDefinitionKey(), createReqDTO.getBusinessKey());
         if (idempotency != null) {
@@ -790,19 +791,25 @@ public class BpmProcessInstanceServiceImpl implements BpmProcessInstanceService 
             }
             return idempotency.getProcessInstanceId();
         }
+
         BpmProcessInstanceIdempotencyDO claim = new BpmProcessInstanceIdempotencyDO();
         claim.setTenantId(tenantId);
         claim.setProcessDefinitionKey(createReqDTO.getProcessDefinitionKey());
         claim.setBusinessKey(createReqDTO.getBusinessKey());
-        try {
-            processInstanceIdempotencyMapper.insert(claim);
-        } catch (DuplicateKeyException ex) {
-            idempotency = processInstanceIdempotencyMapper
-                    .selectByUniqueKey(tenantId, createReqDTO.getProcessDefinitionKey(), createReqDTO.getBusinessKey());
-            if (idempotency == null || cn.hutool.core.util.StrUtil.isBlank(idempotency.getProcessInstanceId())) {
-                throw exception(PROCESS_INSTANCE_IDEMPOTENCY_PENDING);
-            }
-            return idempotency.getProcessInstanceId();
+        claim.setClaimToken(UUID.randomUUID().toString());
+        // 使用 INSERT ... ON DUPLICATE KEY UPDATE 作为唯一排他锁，避免“失败插入共享锁 -> FOR UPDATE 升级排他锁”的死锁。
+        processInstanceIdempotencyMapper.insertOrLockUniqueKey(claim);
+        final BpmProcessInstanceIdempotencyDO persisted = processInstanceIdempotencyMapper
+                .selectByUniqueKeyForUpdate(tenantId, createReqDTO.getProcessDefinitionKey(), createReqDTO.getBusinessKey());
+        if (persisted == null) {
+            throw new IllegalStateException("幂等登记抢占后无法读取登记行");  // @bare-throw-ignore 刻意 fail-closed 的基础设施信号，异常类型已被现有测试断言；改成 ServiceException 会同时改变对外语义与这些测试结果，是否统一属人工裁决
+        }
+        if (cn.hutool.core.util.StrUtil.isNotBlank(persisted.getProcessInstanceId())) {
+            return persisted.getProcessInstanceId();
+        }
+        if (!Objects.equals(claim.getClaimToken(), persisted.getClaimToken())) {
+            // 命中了其他事务或 legacy/blank 登记；不得依赖 affected rows 猜测 ownership。
+            throw exception(PROCESS_INSTANCE_IDEMPOTENCY_PENDING);
         }
         return FlowableUtils.executeAuthenticatedUserId(userId, () -> {
             // 获得流程定义
@@ -812,8 +819,8 @@ public class BpmProcessInstanceServiceImpl implements BpmProcessInstanceService 
             String processInstanceId = createProcessInstance0(userId, definition, createReqDTO.getVariables(),
                     createReqDTO.getBusinessKey(),
                     createReqDTO.getStartUserSelectAssignees());
-            claim.setProcessInstanceId(processInstanceId);
-            processInstanceIdempotencyMapper.updateById(claim);
+            persisted.setProcessInstanceId(processInstanceId);
+            processInstanceIdempotencyMapper.updateById(persisted);
             return processInstanceId;
         });
     }

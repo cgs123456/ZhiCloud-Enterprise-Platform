@@ -126,30 +126,58 @@ public class EventOutboxServiceTest {
         assertEquals(0L, countAll());
     }
 
-    // -------------------- 领取租约 --------------------
+    // -------------------- 领取租约与 owner fencing --------------------
 
     @Test
     public void testClaimLeaseBlocksConcurrentTakeover() {
         Long id = append("evt-lease-1");
         LocalDateTime now = LocalDateTime.now();
-        assertTrue(eventOutboxService.claim(id, now));
-        assertEquals(OUTBOX_PUBLISHING, eventOutboxMapper.selectById(id).getStatus());
+        String owner = assertClaimed(id, now);
+        EventOutboxDO claimed = eventOutboxMapper.selectById(id);
+        assertEquals(OUTBOX_PUBLISHING, claimed.getStatus());
+        assertEquals(owner, claimed.getProcessingOwner());
+        assertNotNull(claimed.getLeaseUntil());
 
-        assertFalse(eventOutboxService.claim(id, now), "租约内不允许二次领取");
-        assertFalse(eventOutboxService.claim(id, now.plusSeconds(properties.getLeaseSeconds() - 1)));
-        assertTrue(eventOutboxService.claim(id, now.plusSeconds(properties.getLeaseSeconds() + 1)),
-                "租约过期后 PUBLISHING 事件必须能被重新领取，否则领取方崩溃会导致事件永久悬挂");
+        assertNull(eventOutboxService.claim(id, now), "租约内不允许二次领取");
+        assertNull(eventOutboxService.claim(id, now.plusSeconds(properties.getLeaseSeconds() - 1)));
+        String takeoverOwner = assertClaimed(id, now.plusSeconds(properties.getLeaseSeconds() + 1));
+        assertFalse(owner.equals(takeoverOwner), "租约过期后接管必须生成新的 owner");
     }
 
     @Test
-    public void testMarkPublishedOnlyFromPublishing() {
+    public void testStaleOwnerCannotSettleAfterTakeover() {
+        Long id = append("evt-stale-owner");
+        LocalDateTime now = LocalDateTime.now();
+        String oldOwner = assertClaimed(id, now);
+        String newOwner = assertClaimed(id, now.plusSeconds(properties.getLeaseSeconds() + 1));
+
+        assertFalse(eventOutboxService.markPublished(id, oldOwner),
+                "租约过期并接管后，旧 owner 不得把事件标记为已投递");
+        eventOutboxService.markRetryOrDead(id, oldOwner, new IllegalStateException("stale"));
+        EventOutboxDO afterStaleSettlement = eventOutboxMapper.selectById(id);
+        assertEquals(OUTBOX_PUBLISHING, afterStaleSettlement.getStatus());
+        assertEquals(0, afterStaleSettlement.getRetryCount());
+        assertEquals(newOwner, afterStaleSettlement.getProcessingOwner());
+
+        assertTrue(eventOutboxService.markPublished(id, newOwner));
+        EventOutboxDO published = eventOutboxMapper.selectById(id);
+        assertEquals(OUTBOX_PUBLISHED, published.getStatus());
+        assertNull(published.getProcessingOwner());
+        assertNull(published.getLeaseUntil());
+    }
+
+    @Test
+    public void testMarkPublishedOnlyFromPublishingAndCurrentOwner() {
         Long id = append("evt-pub-1");
-        assertFalse(eventOutboxService.markPublished(id), "未被领取的事件不能直接标记完成");
-        assertTrue(eventOutboxService.claim(id, LocalDateTime.now()));
-        assertTrue(eventOutboxService.markPublished(id));
+        assertFalse(eventOutboxService.markPublished(id, null), "未被领取的事件不能直接标记完成");
+        String owner = assertClaimed(id, LocalDateTime.now());
+        assertFalse(eventOutboxService.markPublished(id, "stale-owner"), "非当前 owner 不能确认事件");
+        assertTrue(eventOutboxService.markPublished(id, owner));
         EventOutboxDO row = eventOutboxMapper.selectById(id);
         assertEquals(OUTBOX_PUBLISHED, row.getStatus());
         assertNotNull(row.getPublishedAt());
+        assertNull(row.getProcessingOwner());
+        assertNull(row.getLeaseUntil());
     }
 
     // -------------------- 退避与死信 --------------------
@@ -158,12 +186,14 @@ public class EventOutboxServiceTest {
     public void testBackoffWindowBlocksRescan() {
         Long id = append("evt-backoff-1");
         LocalDateTime before = LocalDateTime.now();
-        assertTrue(eventOutboxService.claim(id, before));
-        eventOutboxService.markRetryOrDead(id, new IllegalStateException("boom"));
+        String owner = assertClaimed(id, before);
+        eventOutboxService.markRetryOrDead(id, owner, new IllegalStateException("boom"));
 
         EventOutboxDO row = eventOutboxMapper.selectById(id);
         assertEquals(OUTBOX_NEW, row.getStatus(), "失败后回到待投递，等待退避窗口");
         assertEquals(1, row.getRetryCount());
+        assertNull(row.getProcessingOwner());
+        assertNull(row.getLeaseUntil());
         long backoff = Duration.between(before, row.getNextRetryAt()).getSeconds();
         assertTrue(backoff >= 9 && backoff <= 11, "首次退避应为 baseBackoffSeconds=10，实际 " + backoff);
 
@@ -176,12 +206,12 @@ public class EventOutboxServiceTest {
     public void testBackoffGrowsExponentially() {
         Long id = append("evt-backoff-2");
         LocalDateTime t1 = LocalDateTime.now();
-        assertTrue(eventOutboxService.claim(id, t1));
-        eventOutboxService.markRetryOrDead(id, new IllegalStateException("boom-1"));
+        String owner1 = assertClaimed(id, t1);
+        eventOutboxService.markRetryOrDead(id, owner1, new IllegalStateException("boom-1"));
 
         LocalDateTime t2 = forceReady(id);
-        assertTrue(eventOutboxService.claim(id, t2));
-        eventOutboxService.markRetryOrDead(id, new IllegalStateException("boom-2"));
+        String owner2 = assertClaimed(id, t2);
+        eventOutboxService.markRetryOrDead(id, owner2, new IllegalStateException("boom-2"));
 
         long backoff = Duration.between(t2, eventOutboxMapper.selectById(id).getNextRetryAt()).getSeconds();
         assertTrue(backoff >= 19 && backoff <= 21, "第二次退避应为 base * 2 = 20，实际 " + backoff);
@@ -194,22 +224,24 @@ public class EventOutboxServiceTest {
         // maxRetry=3：前两次失败回到 NEW，第三次失败转 DEAD
         for (int i = 1; i <= 2; i++) {
             assertEquals(OUTBOX_NEW, eventOutboxMapper.selectById(id).getStatus());
-            assertTrue(eventOutboxService.claim(id, forceReady(id)));
-            eventOutboxService.markRetryOrDead(id, new IllegalStateException("fail-" + i));
+            String owner = assertClaimed(id, forceReady(id));
+            eventOutboxService.markRetryOrDead(id, owner, new IllegalStateException("fail-" + i));
         }
         assertEquals(2, eventOutboxMapper.selectById(id).getRetryCount());
         assertEquals(0L, eventOutboxService.countDead());
 
-        assertTrue(eventOutboxService.claim(id, forceReady(id)));
-        eventOutboxService.markRetryOrDead(id, new IllegalStateException("fail-3"));
+        String owner = assertClaimed(id, forceReady(id));
+        eventOutboxService.markRetryOrDead(id, owner, new IllegalStateException("fail-3"));
 
         EventOutboxDO dead = eventOutboxMapper.selectById(id);
         assertEquals(OUTBOX_DEAD, dead.getStatus());
         assertEquals(3, dead.getRetryCount());
+        assertNull(dead.getProcessingOwner());
+        assertNull(dead.getLeaseUntil());
         assertEquals(1L, eventOutboxService.countDead());
         assertTrue(eventOutboxService.selectClaimable(LocalDateTime.now(), 10).isEmpty(),
                 "死信事件不应再被扫描");
-        assertFalse(eventOutboxService.markPublished(id), "死信事件不应被标记为投递完成");
+        assertFalse(eventOutboxService.markPublished(id, owner), "死信事件不应被标记为投递完成");
     }
 
     // -------------------- 失败原因落库 --------------------
@@ -217,8 +249,8 @@ public class EventOutboxServiceTest {
     @Test
     public void testLastErrorTruncatedToColumnWidth() {
         Long id = append("evt-err-1");
-        assertTrue(eventOutboxService.claim(id, LocalDateTime.now()));
-        eventOutboxService.markRetryOrDead(id, new IllegalStateException("x".repeat(5000)));
+        String owner = assertClaimed(id, LocalDateTime.now());
+        eventOutboxService.markRetryOrDead(id, owner, new IllegalStateException("x".repeat(5000)));
         String lastError = eventOutboxMapper.selectById(id).getLastError();
         assertEquals(2000, lastError.length(), "超长异常信息必须截断到列宽，否则整个 UPDATE 会失败");
         assertTrue(lastError.startsWith("java.lang.IllegalStateException"));
@@ -227,8 +259,9 @@ public class EventOutboxServiceTest {
     @Test
     public void testLastErrorUsesRootCause() {
         Long id = append("evt-err-2");
-        assertTrue(eventOutboxService.claim(id, LocalDateTime.now()));
-        eventOutboxService.markRetryOrDead(id, new RuntimeException("outer", new IllegalStateException("inner")));
+        String owner = assertClaimed(id, LocalDateTime.now());
+        eventOutboxService.markRetryOrDead(id, owner,
+                new RuntimeException("outer", new IllegalStateException("inner")));
         String lastError = eventOutboxMapper.selectById(id).getLastError();
         assertTrue(lastError.contains("java.lang.IllegalStateException: inner"),
                 "应记录根因而非最外层包装，实际：" + lastError);
@@ -242,9 +275,9 @@ public class EventOutboxServiceTest {
         Long a = append("evt-cnt-1");
         append("evt-cnt-2");
         assertEquals(2L, eventOutboxService.countBacklog());
-        assertTrue(eventOutboxService.claim(a, LocalDateTime.now()));
+        String owner = assertClaimed(a, LocalDateTime.now());
         assertEquals(2L, eventOutboxService.countBacklog(), "PUBLISHING 仍在堆积口径内，避免漏报");
-        assertTrue(eventOutboxService.markPublished(a));
+        assertTrue(eventOutboxService.markPublished(a, owner));
         assertEquals(1L, eventOutboxService.countBacklog());
         assertEquals(0L, eventOutboxService.countDead());
 
@@ -257,8 +290,8 @@ public class EventOutboxServiceTest {
     @Test
     public void testOldestPendingSecondsUsesOldestUnfinishedOccurredAt() {
         Long published = append("evt-age-published");
-        assertTrue(eventOutboxService.claim(published, LocalDateTime.now()));
-        assertTrue(eventOutboxService.markPublished(published));
+        String owner = assertClaimed(published, LocalDateTime.now());
+        assertTrue(eventOutboxService.markPublished(published, owner));
 
         Long oldestPending = append("evt-age-pending-old");
         EventOutboxDO oldestRow = eventOutboxMapper.selectById(oldestPending);
@@ -278,12 +311,13 @@ public class EventOutboxServiceTest {
     @Test
     public void testOldestPendingSecondsIsZeroWhenNothingPending() {
         Long published = append("evt-age-empty");
-        assertTrue(eventOutboxService.claim(published, LocalDateTime.now()));
-        assertTrue(eventOutboxService.markPublished(published));
+        String owner = assertClaimed(published, LocalDateTime.now());
+        assertTrue(eventOutboxService.markPublished(published, owner));
 
         assertEquals(0L, eventOutboxService.oldestPendingSeconds(),
                 "没有待投递事件时最老年龄必须是 0，不能把 PUBLISHED 历史事件算成堆积");
     }
+
     // -------------------- 辅助方法 --------------------
 
     private Long append(String eventId) {
@@ -316,10 +350,16 @@ public class EventOutboxServiceTest {
         return LocalDateTime.now();
     }
 
+    private String assertClaimed(Long id, LocalDateTime now) {
+        String owner = eventOutboxService.claim(id, now);
+        assertNotNull(owner, "claim 成功时必须返回本次 owner");
+        return owner;
+    }
+
     private void makeDead(Long id) {
         for (int i = 0; i < properties.getMaxRetry(); i++) {
-            assertTrue(eventOutboxService.claim(id, forceReady(id)));
-            eventOutboxService.markRetryOrDead(id, new IllegalStateException("fail"));
+            String owner = assertClaimed(id, forceReady(id));
+            eventOutboxService.markRetryOrDead(id, owner, new IllegalStateException("fail"));
         }
         assertEquals(OUTBOX_DEAD, eventOutboxMapper.selectById(id).getStatus());
     }

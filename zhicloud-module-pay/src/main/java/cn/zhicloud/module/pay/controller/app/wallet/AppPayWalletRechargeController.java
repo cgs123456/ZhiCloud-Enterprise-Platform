@@ -49,7 +49,7 @@ public class AppPayWalletRechargeController {
 
     @PostMapping("/create")
     @Operation(summary = "创建钱包充值记录（发起充值）")
-    @PreAuthorize("@ss.hasPermission('pay:wallet-recharge:create')")
+    @PreAuthorize("isAuthenticated()")
     public CommonResult<AppPayWalletRechargeCreateRespVO> createWalletRecharge(
             @Valid @RequestBody  AppPayWalletRechargeCreateReqVO reqVO) {
         PayWalletRechargeDO walletRecharge = walletRechargeService.createWalletRecharge(

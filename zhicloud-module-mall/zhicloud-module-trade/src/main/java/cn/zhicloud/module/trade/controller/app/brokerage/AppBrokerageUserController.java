@@ -68,7 +68,7 @@ public class AppBrokerageUserController {
 
     @PutMapping("/bind")
     @Operation(summary = "绑定推广员")
-    @PreAuthorize("@ss.hasPermission('trade:brokerage-user:update')")
+    @PreAuthorize("isAuthenticated()")
     public CommonResult<Boolean> bindBrokerageUser(@Valid @RequestBody AppBrokerageUserBindReqVO reqVO) {
         return success(brokerageUserService.bindBrokerageUser(getLoginUserId(), reqVO.getBindUserId()));
     }

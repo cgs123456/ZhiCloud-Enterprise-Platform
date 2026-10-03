@@ -28,6 +28,7 @@ import static cn.zhicloud.module.tms.enums.ErrorCodeConstants.TMS_SHIPMENT_DISPA
 import static cn.zhicloud.module.tms.enums.ErrorCodeConstants.TMS_SHIPMENT_DISPATCH_FAIL_VEHICLE;
 import static cn.zhicloud.module.tms.enums.ErrorCodeConstants.TMS_SHIPMENT_NOT_EXISTS;
 import static cn.zhicloud.module.tms.enums.ErrorCodeConstants.TMS_SHIPMENT_STATUS_INVALID;
+import cn.zhicloud.module.wms.api.WmsShipmentOrderApi;
 
 /**
  * TMS 运单 Service 实现类
@@ -75,6 +76,12 @@ public class TmsShipmentServiceImpl implements TmsShipmentService {
     private TmsVehicleMapper vehicleMapper;
     @Resource
     private TmsDriverMapper driverMapper;
+    /**
+     * WMS 出库单 API：运单从已发货的出库单发起，签收后回传把出库单推进到已完成。
+     * 仅依赖 api 包，禁止 import WMS 的 dal/service（P1-3 模块边界治理）。
+     */
+    @Resource
+    private WmsShipmentOrderApi shipmentOrderApi;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -82,6 +89,10 @@ public class TmsShipmentServiceImpl implements TmsShipmentService {
         TmsShipmentDO shipment = BeanUtils.toBean(createReqVO, TmsShipmentDO.class);
         if (shipment.getStatus() == null) {
             shipment.setStatus(STATUS_PENDING);
+        }
+        // 挂了出库单的运单必须能在 WMS 里找到「已发货」的单子，否则签收时无处回传
+        if (shipment.getShipmentOrderId() != null) {
+            shipmentOrderApi.validateShippableForWaybill(shipment.getShipmentOrderId());
         }
         shipmentMapper.insert(shipment);
         return shipment.getId();
@@ -198,7 +209,13 @@ public class TmsShipmentServiceImpl implements TmsShipmentService {
         TmsShipmentDO updateObj = new TmsShipmentDO();
         updateObj.setId(id);
         updateObj.setStatus(STATUS_SIGNED);
+        updateObj.setSignTime(LocalDateTime.now());
         shipmentMapper.updateById(updateObj);
+        // 回传 WMS：出库单推进到已完成（含库存扣减）。放在状态落库之后，
+        // 回传失败时本方法的事务一起回滚，不会出现「WMS 完成而运单还是已到达」的半签收。
+        if (shipment.getShipmentOrderId() != null) {
+            shipmentOrderApi.signShipmentOrderByWaybill(shipment.getShipmentOrderId(), id);
+        }
     }
 
     private void validateShipmentExists(Long id) {

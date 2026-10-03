@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS "bpm_process_instance_idempotency" (
     "process_definition_key" varchar(64) NOT NULL,
     "business_key" varchar(128) NOT NULL,
     "process_instance_id" varchar(255),
+    "claim_token" varchar(64),
     "creator" varchar(64) DEFAULT '',
     "create_time" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updater" varchar(64) DEFAULT '',

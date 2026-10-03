@@ -32,5 +32,11 @@ public class HrLeaveRequestDO extends TenantBaseDO {
     private Long approverId;
     private LocalDateTime approveTime;
     private String approveRemark;
+    /**
+     * BPM 流程实例编号
+     *
+     * 由 submitLeaveRequest 发起流程后回填；NULL 表示该单据未经流程引擎审批
+     */
+    private String processInstanceId;
 
 }

@@ -28,4 +28,5 @@ public class BpmProcessInstanceIdempotencyDO extends TenantBaseDO {
     private String processDefinitionKey;
     private String businessKey;
     private String processInstanceId;
+    private String claimToken;
 }

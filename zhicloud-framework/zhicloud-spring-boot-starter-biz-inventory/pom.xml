@@ -41,6 +41,11 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- 租户隔离依赖：生产代码使用 TenantBaseDO，必须参与主代码编译 -->
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-spring-boot-starter-biz-tenant</artifactId>
+        </dependency>
         <!-- 测试 H2 上下文加载需要安全 starter（ZhiCloudMybatisAutoConfiguration 的 DefaultDBFieldHandler 引用 SecurityFrameworkUtils） -->
         <dependency>
             <groupId>cn.zhicloud</groupId>

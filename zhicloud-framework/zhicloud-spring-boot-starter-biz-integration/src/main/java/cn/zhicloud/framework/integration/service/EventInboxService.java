@@ -22,7 +22,10 @@ public interface EventInboxService {
      * @param eventType    事件类型（冗余落库，便于按类型排查）
      * @param tenantId     租户编号
      * @param handler      业务处理器；为空则只做去重登记
-     * @return 本次是否真正执行了业务处理器
+     * @return {@link ConsumeResult#PROCESSED} 表示本次执行业务处理器成功；
+     *         {@link ConsumeResult#DUPLICATE} 表示此前已成功处理；
+     *         {@link ConsumeResult#IN_PROGRESS} 表示其他线程/节点持有未过期租约或发生状态争用，
+     *         调用方不得确认 Outbox，应稍后重试
      * @throws Exception 业务处理器抛出的原异常会先落库再原样抛出，由调用方决定重试策略
      */
     ConsumeResult consume(String consumerName, String eventId, String eventType, Long tenantId,
@@ -53,7 +56,7 @@ public interface EventInboxService {
     /**
      * 最老待消费事件已等待秒数（RECEIVED + FAILED），供监控告警。
      *
-     * <p>没有待消费事件时返回 0；DEAD 已停止自动消费，不计入该口径。
+     * <p>没有待消费事件时返回 0；统计 RECEIVED + PROCESSING + FAILED，DEAD 已停止自动消费，不计入该口径。
      */
     long oldestPendingSeconds();
 

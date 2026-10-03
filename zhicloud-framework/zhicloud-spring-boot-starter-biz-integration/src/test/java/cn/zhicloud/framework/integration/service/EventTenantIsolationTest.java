@@ -180,11 +180,12 @@ public class EventTenantIsolationTest {
         Long retryId = insertOutbox(2L, "evt-tenant-retry-other", OUTBOX_PUBLISHING);
 
         TenantContextHolder.setTenantId(1L);
-        assertFalse(eventOutboxService.claim(claimableId, LocalDateTime.now()),
+        assertNull(eventOutboxService.claim(claimableId, LocalDateTime.now()),
                 "租户 1 的上下文不得领取租户 2 的事件");
-        assertFalse(eventOutboxService.markPublished(publishingId),
+        assertFalse(eventOutboxService.markPublished(publishingId, "tenant-1-owner"),
                 "租户 1 的上下文不得确认租户 2 的事件");
-        eventOutboxService.markRetryOrDead(retryId, new IllegalStateException("cross-tenant"));
+        eventOutboxService.markRetryOrDead(retryId, "tenant-1-owner",
+                new IllegalStateException("cross-tenant"));
 
         TenantUtils.executeIgnore(() -> {
             assertEquals(OUTBOX_NEW, eventOutboxMapper.selectById(claimableId).getStatus(),
@@ -207,13 +208,14 @@ public class EventTenantIsolationTest {
         Long deadId = insertInbox(2L, "cross-tenant-consumer", "evt-inbox-dead-other", INBOX_FAILED);
 
         TenantContextHolder.setTenantId(1L);
-        assertEquals(0, eventInboxMapper.claim(claimableId, 1L),
+        assertEquals(0, eventInboxMapper.claim(claimableId, 1L, "tenant-1-owner",
+                LocalDateTime.now(), LocalDateTime.now().plusMinutes(1)),
                 "租户 1 不得抢占租户 2 的收件箱记录");
-        assertEquals(0, eventInboxMapper.markProcessed(processedId, 1L, LocalDateTime.now()),
+        assertEquals(0, eventInboxMapper.markProcessed(processedId, 1L, "tenant-1-owner", LocalDateTime.now()),
                 "租户 1 不得完成租户 2 的收件箱记录");
-        assertEquals(0, eventInboxMapper.markFailed(failedId, 1L, "cross-tenant"),
+        assertEquals(0, eventInboxMapper.markFailed(failedId, 1L, "tenant-1-owner", "cross-tenant"),
                 "租户 1 不得把租户 2 的记录标记为失败");
-        assertEquals(0, eventInboxMapper.markDead(deadId, 1L, "cross-tenant"),
+        assertEquals(0, eventInboxMapper.markDead(deadId, 1L, "tenant-1-owner", "cross-tenant"),
                 "租户 1 不得把租户 2 的记录标记为死信");
 
         TenantUtils.executeIgnore(() -> {

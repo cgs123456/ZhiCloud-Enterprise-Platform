@@ -23,6 +23,7 @@ import org.springframework.ai.document.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -70,6 +71,7 @@ public class RagEvalBatchService {
     public static final int REPORT_STATUS_FAILED = 2;
 
     @Resource
+    @Lazy // 该 Bean 因 @Async/@Transactional 会被代理，直接注入原始实例会让 Spring 在循环依赖检查时判定「raw 版本已被包装」而启动失败
     private RagEvalBatchService self; // 自注入：走代理调用，同类内 @Async 方法自调用会被绕过代理导致同步执行
 
     @Resource

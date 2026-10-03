@@ -24,6 +24,8 @@ public interface EventStatusConstants {
     // ========== event_inbox 状态 ==========
     /** 已接收：已去重落库，等待业务处理器执行 */
     String INBOX_RECEIVED = "RECEIVED";
+    /** 处理中：已被某个 owner 领取并持有租约，未过期时其他实例不得执行 */
+    String INBOX_PROCESSING = "PROCESSING";
     /** 已处理：业务处理器执行成功 */
     String INBOX_PROCESSED = "PROCESSED";
     /** 处理失败：可随下一次投递重试 */

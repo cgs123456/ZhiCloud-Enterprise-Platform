@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import static cn.zhicloud.framework.integration.enums.EventStatusConstants.OUTBOX_DEAD;
 import static cn.zhicloud.framework.integration.enums.EventStatusConstants.OUTBOX_NEW;
@@ -94,27 +95,30 @@ public class EventOutboxServiceImpl implements EventOutboxService {
     }
 
     @Override
-    public boolean claim(Long id, LocalDateTime now) {
+    public String claim(Long id, LocalDateTime now) {
         if (id == null) {
-            return false;
+            return null;
         }
         LocalDateTime base = now == null ? LocalDateTime.now() : now;
         Long tenantId = currentTenantId();
+        String owner = UUID.randomUUID().toString();
         // 租约：领取后 leaseSeconds 内不可再领取，过期后 PUBLISHING 事件重新可见（崩溃恢复）
-        return eventOutboxMapper.claim(id, tenantId, base, base.plusSeconds(leaseSeconds())) == 1;
+        int claimed = eventOutboxMapper.claim(id, tenantId, owner, base,
+                base.plusSeconds(leaseSeconds()));
+        return claimed == 1 ? owner : null;
     }
 
     @Override
-    public boolean markPublished(Long id) {
-        if (id == null) {
+    public boolean markPublished(Long id, String owner) {
+        if (id == null || EventTextUtils.isBlank(owner)) {
             return false;
         }
-        return eventOutboxMapper.markPublished(id, currentTenantId(), LocalDateTime.now()) == 1;
+        return eventOutboxMapper.markPublished(id, currentTenantId(), owner, LocalDateTime.now()) == 1;
     }
 
     @Override
-    public void markRetryOrDead(Long id, Throwable cause) {
-        if (id == null) {
+    public void markRetryOrDead(Long id, String owner, Throwable cause) {
+        if (id == null || EventTextUtils.isBlank(owner)) {
             return;
         }
         Long tenantId = currentTenantId();
@@ -125,15 +129,26 @@ public class EventOutboxServiceImpl implements EventOutboxService {
         String error = EventTextUtils.truncate(EventTextUtils.rootMessage(cause), EventTextUtils.MAX_ERROR_LEN);
         int nextRetry = (event.getRetryCount() == null ? 0 : event.getRetryCount()) + 1;
         if (nextRetry >= maxRetry()) {
-            eventOutboxMapper.markDead(id, tenantId, error);
-            log.error("[markRetryOrDead][事件进入死信 id={} eventId={} retryCount={} error={}]",
-                    id, event.getEventId(), nextRetry, error);
+            int updated = eventOutboxMapper.markDead(id, tenantId, owner, error);
+            if (updated == 1) {
+                log.error("[markRetryOrDead][事件进入死信 id={} eventId={} retryCount={} owner={} error={}]",
+                        id, event.getEventId(), nextRetry, owner, error);
+            } else {
+                log.error("[markRetryOrDead][owner fencing 拒绝死信结算 id={} eventId={} owner={}]",
+                        id, event.getEventId(), owner);
+            }
             return;
         }
         long backoff = backoffSeconds(nextRetry);
-        eventOutboxMapper.markRetry(id, tenantId, LocalDateTime.now().plusSeconds(backoff), error);
-        log.warn("[markRetryOrDead][事件重试入队 id={} eventId={} retryCount={} backoffSeconds={}]",
-                id, event.getEventId(), nextRetry, backoff);
+        int updated = eventOutboxMapper.markRetry(id, tenantId, owner,
+                LocalDateTime.now().plusSeconds(backoff), error);
+        if (updated == 1) {
+            log.warn("[markRetryOrDead][事件重试入队 id={} eventId={} retryCount={} owner={} backoffSeconds={}]",
+                    id, event.getEventId(), nextRetry, owner, backoff);
+        } else {
+            log.error("[markRetryOrDead][owner fencing 拒绝重试结算 id={} eventId={} owner={}]",
+                    id, event.getEventId(), owner);
+        }
     }
 
     @Override

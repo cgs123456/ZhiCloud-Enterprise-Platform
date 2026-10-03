@@ -94,7 +94,7 @@ public class InventoryServiceImpl implements InventoryService {
         InventoryItemDO n = InventoryItemDO.builder()
                 .itemId(itemId).warehouseId(warehouseId).locationId(locationId)
                 .areaId(areaId).batchId(batchId).batchCode(batchCode)
-                .quantity(BigDecimal.ZERO).lockedCount(BigDecimal.ZERO).tenantId(0L)
+                .quantity(BigDecimal.ZERO).lockedCount(BigDecimal.ZERO)
                 .build();
         try {
             inventoryItemMapper.insert(n);

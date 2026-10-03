@@ -14,13 +14,15 @@ import java.util.List;
 import static cn.zhicloud.framework.integration.enums.EventStatusConstants.INBOX_DEAD;
 import static cn.zhicloud.framework.integration.enums.EventStatusConstants.INBOX_FAILED;
 import static cn.zhicloud.framework.integration.enums.EventStatusConstants.INBOX_PROCESSED;
+import static cn.zhicloud.framework.integration.enums.EventStatusConstants.INBOX_PROCESSING;
 import static cn.zhicloud.framework.integration.enums.EventStatusConstants.INBOX_RECEIVED;
 
 /**
  * 事件收件箱 Mapper（V100）
  *
  * <p>去重由 {@code uk_consumer_tenant_event} 唯一键保证：插入冲突后回查，已 PROCESSED 的跳过，
- * 处于 RECEIVED / FAILED 的走 CAS 抢占（防止同一事件被两个线程同时执行业务）。
+ * 处于 RECEIVED / FAILED / 已过期 PROCESSING 的走 CAS 抢占。领取和结算都带 processing_owner
+ * fencing，避免旧 worker 在租约被接管后覆盖新 worker 的状态。
  *
  * @author 智云集成治理
  */
@@ -42,47 +44,62 @@ public interface EventInboxMapper extends BaseMapperX<EventInboxDO> {
     /**
      * 查询最老待消费事件的接收时间；没有待消费事件时返回 null。
      *
-     * <p>只统计 RECEIVED/FAILED，不把已完成的 PROCESSED 或停止自动消费的 DEAD 计入。
+     * <p>统计 RECEIVED/PROCESSING/FAILED，不把已完成的 PROCESSED 或停止自动消费的 DEAD 计入。
+     * PROCESSING 可能是崩溃/失联节点留下的记录，必须计入滞留监控，否则卡死事件不可见。
      */
     @Select("SELECT MIN(received_at) FROM event_inbox WHERE deleted = 0 "
-            + "AND status IN ('" + INBOX_RECEIVED + "','" + INBOX_FAILED + "')")
+            + "AND status IN ('" + INBOX_RECEIVED + "','" + INBOX_PROCESSING + "','" + INBOX_FAILED + "')")
     LocalDateTime selectOldestPendingReceivedAt();
 
     /**
-     * CAS 抢占未完成的记录：仅当状态仍为 RECEIVED / FAILED 时可执行
+     * CAS 抢占未完成或租约已过期的记录，并写入本次 owner/租约。
+     *
+     * <p>RECEIVED/FAILED 可直接领取；PROCESSING 只有在 lease_until 为空或已到期时才允许接管。
      */
-    @Update("UPDATE event_inbox SET status = '" + INBOX_RECEIVED + "' "
+    @Update("UPDATE event_inbox SET status = '" + INBOX_PROCESSING + "', processing_owner = #{owner}, "
+            + "claimed_at = #{now}, lease_until = #{leaseUntil} "
             + "WHERE id = #{id} AND tenant_id = #{tenantId} AND deleted = 0 "
-            + "AND status IN ('" + INBOX_RECEIVED + "','" + INBOX_FAILED + "')")
-    int claim(@Param("id") Long id, @Param("tenantId") Long tenantId);
+            + "AND (status IN ('" + INBOX_RECEIVED + "','" + INBOX_FAILED + "') "
+            + "OR (status = '" + INBOX_PROCESSING + "' "
+            + "AND (lease_until IS NULL OR lease_until <= #{now})))")
+    int claim(@Param("id") Long id, @Param("tenantId") Long tenantId, @Param("owner") String owner,
+              @Param("now") LocalDateTime now, @Param("leaseUntil") LocalDateTime leaseUntil);
 
     /**
-     * 标记处理成功
+     * 标记处理成功；只有当前 owner 仍持有 PROCESSING 记录时才能结算。
      */
-    @Update("UPDATE event_inbox SET status = '" + INBOX_PROCESSED + "', processed_at = #{now}, error = NULL "
-            + "WHERE id = #{id} AND tenant_id = #{tenantId} AND deleted = 0")
-    int markProcessed(@Param("id") Long id, @Param("tenantId") Long tenantId,
+    @Update("UPDATE event_inbox SET status = '" + INBOX_PROCESSED + "', processed_at = #{now}, error = NULL, "
+            + "processing_owner = NULL, lease_until = NULL, claimed_at = NULL "
+            + "WHERE id = #{id} AND tenant_id = #{tenantId} AND deleted = 0 "
+            + "AND status = '" + INBOX_PROCESSING + "' AND processing_owner = #{owner}")
+    int markProcessed(@Param("id") Long id, @Param("tenantId") Long tenantId, @Param("owner") String owner,
                       @Param("now") LocalDateTime now);
 
     /**
-     * 标记处理失败并递增重试次数
+     * 标记处理失败并递增重试次数；只有当前 owner 仍持有 PROCESSING 记录时才能结算。
      */
-    @Update("UPDATE event_inbox SET status = '" + INBOX_FAILED + "', retry_count = retry_count + 1, error = #{error} "
-            + "WHERE id = #{id} AND tenant_id = #{tenantId} AND deleted = 0")
-    int markFailed(@Param("id") Long id, @Param("tenantId") Long tenantId, @Param("error") String error);
+    @Update("UPDATE event_inbox SET status = '" + INBOX_FAILED + "', retry_count = retry_count + 1, "
+            + "error = #{error}, processing_owner = NULL, lease_until = NULL, claimed_at = NULL "
+            + "WHERE id = #{id} AND tenant_id = #{tenantId} AND deleted = 0 "
+            + "AND status = '" + INBOX_PROCESSING + "' AND processing_owner = #{owner}")
+    int markFailed(@Param("id") Long id, @Param("tenantId") Long tenantId, @Param("owner") String owner,
+                   @Param("error") String error);
 
     /**
-     * 标记死信并递增重试次数
+     * 标记死信并递增重试次数；只有当前 owner 仍持有 PROCESSING 记录时才能结算。
      */
-    @Update("UPDATE event_inbox SET status = '" + INBOX_DEAD + "', retry_count = retry_count + 1, error = #{error} "
-            + "WHERE id = #{id} AND tenant_id = #{tenantId} AND deleted = 0")
-    int markDead(@Param("id") Long id, @Param("tenantId") Long tenantId, @Param("error") String error);
-
+    @Update("UPDATE event_inbox SET status = '" + INBOX_DEAD + "', retry_count = retry_count + 1, "
+            + "error = #{error}, processing_owner = NULL, lease_until = NULL, claimed_at = NULL "
+            + "WHERE id = #{id} AND tenant_id = #{tenantId} AND deleted = 0 "
+            + "AND status = '" + INBOX_PROCESSING + "' AND processing_owner = #{owner}")
+    int markDead(@Param("id") Long id, @Param("tenantId") Long tenantId, @Param("owner") String owner,
+                 @Param("error") String error);
 
     /**
-     * 租户内人工重放：更新条件同时校验 id、tenant_id 与 DEAD 状态。
+     * 租户内人工重放：更新条件同时校验 id、tenant_id 与 DEAD 状态，并清理残留 owner/租约。
      */
-    @Update("UPDATE event_inbox SET status = '" + INBOX_FAILED + "', retry_count = 0, error = NULL "
+    @Update("UPDATE event_inbox SET status = '" + INBOX_FAILED + "', retry_count = 0, error = NULL, "
+            + "processing_owner = NULL, lease_until = NULL, claimed_at = NULL "
             + "WHERE id = #{id} AND tenant_id = #{tenantId} AND deleted = 0 AND status = '" + INBOX_DEAD + "'")
     int replayByTenantId(@Param("id") Long id, @Param("tenantId") Long tenantId);
 
@@ -98,4 +115,3 @@ public interface EventInboxMapper extends BaseMapperX<EventInboxDO> {
     }
 
 }
-

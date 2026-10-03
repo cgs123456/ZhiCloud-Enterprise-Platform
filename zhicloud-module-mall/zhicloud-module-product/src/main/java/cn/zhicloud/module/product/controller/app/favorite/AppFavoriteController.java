@@ -36,14 +36,14 @@ public class AppFavoriteController {
 
     @PostMapping(value = "/create")
     @Operation(summary = "添加商品收藏")
-    @PreAuthorize("@ss.hasPermission('product:favorite:create')")
+    @PreAuthorize("isAuthenticated()")
     public CommonResult<Long> createFavorite(@RequestBody @Valid AppFavoriteReqVO reqVO) {
         return success(productFavoriteService.createFavorite(getLoginUserId(), reqVO.getSpuId()));
     }
 
     @DeleteMapping(value = "/delete")
     @Operation(summary = "取消单个商品收藏")
-    @PreAuthorize("@ss.hasPermission('product:favorite:delete')")
+    @PreAuthorize("isAuthenticated()")
     public CommonResult<Boolean> deleteFavorite(@RequestBody @Valid AppFavoriteReqVO reqVO) {
         productFavoriteService.deleteFavorite(getLoginUserId(), reqVO.getSpuId());
         return success(Boolean.TRUE);

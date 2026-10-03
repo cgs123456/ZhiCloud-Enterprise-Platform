@@ -113,6 +113,11 @@ public class CrmContractServiceImpl implements CrmContractService {
 
         // 2.1 插入合同
         CrmContractDO contract = BeanUtils.toBean(createReqVO, CrmContractDO.class).setNo(no);
+        // submitContract 只接受 DRAFT，而 audit_status 列没有库级默认值：不在此落 DRAFT 的话，
+        // 新建合同永远提交不了审批（回款/发票两处创建都是这么写的）
+        if (contract.getAuditStatus() == null) {
+            contract.setAuditStatus(CrmAuditStatusEnum.DRAFT.getStatus());
+        }
         calculateTotalPrice(contract, contractProducts);
         contractMapper.insert(contract);
         // 2.2 插入合同关联商品

@@ -3,7 +3,9 @@ package cn.zhicloud.module.iot.service.rule.scene;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
+import org.springframework.web.util.HtmlUtils;
 import cn.zhicloud.framework.common.enums.CommonStatusEnum;
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
@@ -70,6 +72,7 @@ public class IotSceneRuleServiceImpl implements IotSceneRuleService {
     @CacheEvict(value = RedisKeyConstants.SCENE_RULE_LIST, allEntries = true)
     public Long createSceneRule(IotSceneRuleSaveReqVO createReqVO) {
         IotSceneRuleDO sceneRule = BeanUtils.toBean(createReqVO, IotSceneRuleDO.class);
+        normalizeConditions(sceneRule);
         sceneRuleMapper.insert(sceneRule);
 
         // 注册定时触发器
@@ -85,10 +88,37 @@ public class IotSceneRuleServiceImpl implements IotSceneRuleService {
         validateSceneRuleExists(updateReqVO.getId());
         // 更新
         IotSceneRuleDO updateObj = BeanUtils.toBean(updateReqVO, IotSceneRuleDO.class);
+        normalizeConditions(updateObj);
         sceneRuleMapper.updateById(updateObj);
 
         // 更新定时触发器
         timerHandler.updateTimerTriggers(updateObj);
+    }
+
+    /**
+     * 还原被 XSS 过滤器转义的比较符与阈值。
+     * <p>
+     * 全局 XSS 清理（{@code XssStringJsonDeserializer}）会把请求体里所有字符串过一遍 HTML 转义，
+     * 于是 ">" 落成 "&gt;" —— 场景联动的 operator 与阈值比较永远不匹配，规则静默失效。
+     * 这里只在 iot 规则自身入参上做反向还原，不放宽全局 XSS 清理。
+     */
+    private void normalizeConditions(IotSceneRuleDO sceneRule) {
+        if (sceneRule == null) {
+            return;
+        }
+        CollUtil.emptyIfNull(sceneRule.getTriggers()).forEach(trigger -> {
+            trigger.setOperator(unescapeIfPresent(trigger.getOperator()));
+            trigger.setValue(unescapeIfPresent(trigger.getValue()));
+            CollUtil.emptyIfNull(trigger.getConditionGroups())
+                    .forEach(group -> CollUtil.emptyIfNull(group).forEach(condition -> {
+                        condition.setOperator(unescapeIfPresent(condition.getOperator()));
+                        condition.setParam(unescapeIfPresent(condition.getParam()));
+                    }));
+        });
+    }
+
+    private String unescapeIfPresent(String value) {
+        return StrUtil.isBlank(value) ? value : HtmlUtils.htmlUnescape(value);
     }
 
     @Override

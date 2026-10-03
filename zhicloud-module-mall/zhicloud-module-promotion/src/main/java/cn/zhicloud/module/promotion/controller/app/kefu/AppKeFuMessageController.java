@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,7 +42,7 @@ public class AppKeFuMessageController {
 
     @PostMapping("/send")
     @Operation(summary = "发送客服消息")
-    @PreAuthorize("@ss.hasPermission('promotion:kefu-message:create')")
+    @PreAuthorize("isAuthenticated()")
     public CommonResult<Long> sendKefuMessage(@Valid @RequestBody AppKeFuMessageSendReqVO sendReqVO) {
         sendReqVO.setSenderId(getLoginUserId()).setSenderType(UserTypeEnum.MEMBER.getValue()); // 设置用户编号和类型
         return success(kefuMessageService.sendKefuMessage(sendReqVO));
@@ -50,7 +51,7 @@ public class AppKeFuMessageController {
     @PutMapping("/update-read-status")
     @Operation(summary = "更新客服消息已读状态")
     @Parameter(name = "conversationId", description = "会话编号", required = true)
-    @PreAuthorize("@ss.hasPermission('promotion:kefu-message:update')")
+    @PreAuthorize("isAuthenticated()")
     public CommonResult<Boolean> updateKefuMessageReadStatus(@RequestParam("conversationId") Long conversationId) {
         kefuMessageService.updateKeFuMessageReadStatus(conversationId, getLoginUserId(), UserTypeEnum.MEMBER.getValue());
         return success(true);

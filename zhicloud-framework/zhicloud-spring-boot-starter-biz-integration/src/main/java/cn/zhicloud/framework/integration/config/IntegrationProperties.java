@@ -42,6 +42,12 @@ public class IntegrationProperties {
     private Long leaseSeconds = 60L;
 
     /**
+     * 收件箱处理租约秒数：PROCESSING 记录在该窗口内不得被其他实例接管，
+     * 过期后允许接管以恢复崩溃/失联节点留下的残留。该值必须覆盖单条消费者处理耗时上限。
+     */
+    private Long inboxLeaseSeconds = 60L;
+
+    /**
      * 单次中继扫描的批大小
      */
     private Integer batchSize = 50;

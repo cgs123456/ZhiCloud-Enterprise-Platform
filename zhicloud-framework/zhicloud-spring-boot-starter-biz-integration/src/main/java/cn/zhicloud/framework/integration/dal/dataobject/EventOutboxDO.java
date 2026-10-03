@@ -85,6 +85,16 @@ public class EventOutboxDO extends BaseDO {
     private String status;
 
     /**
+     * 当前投递 owner（每次领取生成，终态或重放时清空）
+     */
+    private String processingOwner;
+
+    /**
+     * 当前领取租约到期时间；过期后 PUBLISHING 可被其他实例接管
+     */
+    private LocalDateTime leaseUntil;
+
+    /**
      * 已重试次数
      */
     private Integer retryCount;

@@ -41,7 +41,7 @@ public class OaKnowledgeCategoryServiceImpl implements OaKnowledgeCategoryServic
     @Resource
     private OaKnowledgeCategoryMapper categoryMapper;
     @Resource
-    private OaKnowledgeArticleMapper articleMapper;
+    private OaKnowledgeArticleMapper knowledgeArticleMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -82,7 +82,7 @@ public class OaKnowledgeCategoryServiceImpl implements OaKnowledgeCategoryServic
             throw exception(OA_KNOWLEDGE_CATEGORY_HAS_CHILDREN);
         }
         // 校验分类下是否存在文章
-        if (articleMapper.selectCountByCategoryId(id) > 0) {
+        if (knowledgeArticleMapper.selectCountByCategoryId(id) > 0) {
             throw exception(OA_KNOWLEDGE_CATEGORY_HAS_ARTICLES);
         }
         // 删除分类

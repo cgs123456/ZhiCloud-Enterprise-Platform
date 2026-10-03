@@ -47,7 +47,7 @@ public class OaKnowledgeArticleServiceImpl implements OaKnowledgeArticleService 
     private static final int INITIAL_COUNT = 0;
 
     @Resource
-    private OaKnowledgeArticleMapper articleMapper;
+    private OaKnowledgeArticleMapper knowledgeArticleMapper;
     @Resource
     private OaKnowledgeVersionMapper versionMapper;
     @Resource
@@ -70,7 +70,7 @@ public class OaKnowledgeArticleServiceImpl implements OaKnowledgeArticleService 
         article.setViewCount(INITIAL_COUNT);
         article.setLikeCount(INITIAL_COUNT);
         article.setCommentCount(INITIAL_COUNT);
-        articleMapper.insert(article);
+        knowledgeArticleMapper.insert(article);
         // 自动记录版本
         saveVersion(article, createReqVO.getChangeLog());
         return article.getId();
@@ -82,16 +82,16 @@ public class OaKnowledgeArticleServiceImpl implements OaKnowledgeArticleService 
         // 校验存在
         OaKnowledgeArticleDO article = validateArticleExists(updateReqVO.getId());
         // 原子递增版本号（带乐观锁），避免并发更新导致版本号丢失自增
-        int updateCount = articleMapper.incrementVersionWithOptimisticLock(updateReqVO.getId(), article.getCurrentVersion());
+        int updateCount = knowledgeArticleMapper.incrementVersionWithOptimisticLock(updateReqVO.getId(), article.getCurrentVersion());
         if (updateCount == 0) {
             throw exception(OA_KNOWLEDGE_ARTICLE_STATUS_INVALID, "文章已被其他用户更新，请刷新后重试");
         }
         // 更新文章内容（不含版本号，版本号已原子递增）
         OaKnowledgeArticleDO updateObj = BeanUtils.toBean(updateReqVO, OaKnowledgeArticleDO.class);
         updateObj.setCurrentVersion(null); // 避免覆盖已原子递增的版本号
-        articleMapper.updateById(updateObj);
+        knowledgeArticleMapper.updateById(updateObj);
         // 自动记录版本（使用最新内容与版本号）
-        OaKnowledgeArticleDO latest = articleMapper.selectById(updateReqVO.getId());
+        OaKnowledgeArticleDO latest = knowledgeArticleMapper.selectById(updateReqVO.getId());
         saveVersion(latest, updateReqVO.getChangeLog());
     }
 
@@ -102,17 +102,17 @@ public class OaKnowledgeArticleServiceImpl implements OaKnowledgeArticleService 
         // 级联清理：版本快照 + 评论，避免孤儿数据
         versionMapper.deleteByArticleId(id);
         commentMapper.deleteByArticleId(id);
-        articleMapper.deleteById(id);
+        knowledgeArticleMapper.deleteById(id);
     }
 
     @Override
     public OaKnowledgeArticleDO getArticle(Long id) {
-        return articleMapper.selectById(id);
+        return knowledgeArticleMapper.selectById(id);
     }
 
     @Override
     public PageResult<OaKnowledgeArticleDO> getArticlePage(OaKnowledgeArticlePageReqVO pageReqVO) {
-        return articleMapper.selectPage(pageReqVO);
+        return knowledgeArticleMapper.selectPage(pageReqVO);
     }
 
     @Override
@@ -126,12 +126,12 @@ public class OaKnowledgeArticleServiceImpl implements OaKnowledgeArticleService 
         OaKnowledgeArticleDO updateObj = new OaKnowledgeArticleDO();
         updateObj.setId(id);
         updateObj.setStatus(STATUS_PUBLISHED);
-        articleMapper.updateById(updateObj);
+        knowledgeArticleMapper.updateById(updateObj);
     }
 
     @Override
     public PageResult<OaKnowledgeArticleDO> searchArticles(PageParam pageParam, String keyword) {
-        return articleMapper.searchPage(pageParam, keyword);
+        return knowledgeArticleMapper.searchPage(pageParam, keyword);
     }
 
     /**
@@ -155,7 +155,7 @@ public class OaKnowledgeArticleServiceImpl implements OaKnowledgeArticleService 
     }
 
     private OaKnowledgeArticleDO validateArticleExists(Long id) {
-        OaKnowledgeArticleDO article = articleMapper.selectById(id);
+        OaKnowledgeArticleDO article = knowledgeArticleMapper.selectById(id);
         if (article == null) {
             throw exception(OA_KNOWLEDGE_ARTICLE_NOT_EXISTS);
         }

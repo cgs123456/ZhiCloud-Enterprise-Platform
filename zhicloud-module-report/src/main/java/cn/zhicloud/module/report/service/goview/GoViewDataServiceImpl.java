@@ -1,6 +1,9 @@
 package cn.zhicloud.module.report.service.goview;
 
 import cn.zhicloud.module.report.controller.admin.goview.vo.data.GoViewDataRespVO;
+
+import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static cn.zhicloud.module.report.enums.ErrorCodeConstants.GO_VIEW_SQL_NOT_READ_ONLY;
 import com.google.common.collect.Maps;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -9,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import jakarta.annotation.Resource;
+import java.util.regex.Pattern;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Map;
@@ -26,11 +30,23 @@ import java.util.Map;
 @Validated
 public class GoViewDataServiceImpl implements GoViewDataService {
 
+    /** 行注释：-- 到行尾 */
+    private static final Pattern LINE_COMMENT = Pattern.compile("(?m)--[^\n]*");
+    /** 块注释：C-style */
+    private static final Pattern BLOCK_COMMENT = Pattern.compile("/\\*[\\s\\S]*?\\*/");
+    /** 必须以 SELECT 或 WITH（只读 CTE）开头 */
+    private static final Pattern SELECT_PREFIX = Pattern.compile("(?i)^(SELECT|WITH)\\b");
+    /** 禁止 SELECT ... INTO（含 OUTFILE / DUMPFILE） */
+    private static final Pattern INTO = Pattern.compile("(?i)\\bINTO\\b");
+
     @Resource
     private JdbcTemplate jdbcTemplate;
 
     @Override
     public GoViewDataRespVO getDataBySQL(String sql) {
+        // 0. 只读校验：本方法是「把调用方给的 SQL 直接交给 jdbcTemplate」的入口，
+        //    不加守卫就等于给管理端一个任意 SQL 执行器（改数据、多语句、INTO OUTFILE 落盘）。
+        validateReadOnlySql(sql);
         // 1. 执行查询
         SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sql);
 
@@ -50,6 +66,28 @@ public class GoViewDataServiceImpl implements GoViewDataService {
             respVO.getSource().add(data);
         }
         return respVO;
+    }
+
+    /**
+     * 只读 SQL 校验：先去注释再判断，避免 "-- 说明
+DROP TABLE x" 这种绕法。
+     *
+     * @param sql 调用方提交的 SQL
+     */
+    static void validateReadOnlySql(String sql) {
+        if (sql == null) {
+            throw exception(GO_VIEW_SQL_NOT_READ_ONLY);
+        }
+        String stripped = LINE_COMMENT.matcher(BLOCK_COMMENT.matcher(sql).replaceAll(" ")).replaceAll(" ").trim();
+        // 末尾分号允许；中间出现分号就是多条语句，JDBC 一次执行可以携带 DML
+        String body = stripped.endsWith(";") ? stripped.substring(0, stripped.length() - 1).trim() : stripped;
+        if (body.indexOf(';') >= 0 || !SELECT_PREFIX.matcher(body).find()) {
+            throw exception(GO_VIEW_SQL_NOT_READ_ONLY);
+        }
+        // SELECT ... INTO（含 OUTFILE / DUMPFILE）会把数据写到数据库所在主机的磁盘
+        if (INTO.matcher(body).find()) {
+            throw exception(GO_VIEW_SQL_NOT_READ_ONLY);
+        }
     }
 
 }

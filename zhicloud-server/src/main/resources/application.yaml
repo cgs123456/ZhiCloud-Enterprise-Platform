@@ -446,6 +446,11 @@ zhicloud:
   info:
     version: 1.0.0
     base-package: cn.zhicloud
+  bpm:
+    process-definition-seed: # 流程定义播种：为指定租户补齐「按 KEY 发起审批」所缺失的流程定义，无需人工进管理后台配置
+      enabled: false # 默认关闭，避免每个环境的每次启动都部署流程；需要补齐时显式改为 true
+      tenant-ids: [] # 需要播种的租户编号数组，例如说 [1, 101]
+      definitions: [] # 需要播种的流程定义数组，例如说 [{key: oa_reimburse, name: 员工报销审批}, {key: hr_leave_request, name: 员工请假申请}]
   web:
     admin-ui:
       url: http://dashboard.zhicloud.zhicloud.cn # Admin 管理后台 UI 的地址

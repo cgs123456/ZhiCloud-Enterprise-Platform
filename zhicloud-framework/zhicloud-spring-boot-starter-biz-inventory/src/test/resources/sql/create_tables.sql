@@ -16,5 +16,5 @@ CREATE TABLE IF NOT EXISTS "inventory_item" (
     "update_time" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deleted" bit NOT NULL DEFAULT FALSE,
     PRIMARY KEY ("id"),
-    UNIQUE KEY "uk_item_warehouse_location_area_batch" ("item_id", "warehouse_id", "location_id", "area_id", "batch_id")
+    UNIQUE KEY "uk_inventory_item_tenant_composite" ("tenant_id", "item_id", "warehouse_id", "location_id", "area_id", "batch_id")
 );

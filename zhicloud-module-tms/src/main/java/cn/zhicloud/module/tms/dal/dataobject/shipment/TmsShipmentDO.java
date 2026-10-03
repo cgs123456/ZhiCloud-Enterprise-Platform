@@ -102,4 +102,17 @@ public class TmsShipmentDO extends BaseDO {
      */
     private String remark;
 
+    /**
+     * 来源 WMS 出库单编号
+     *
+     * 关联 WmsShipmentOrderDO#getId()；NULL 表示手工建单（不经 WMS 出库联动）
+     */
+    private Long shipmentOrderId;
+    /**
+     * 签收时间
+     *
+     * 此前 confirmSign 只把状态推到「已签收」而不记时间，签收时刻在库里不可追溯
+     */
+    private LocalDateTime signTime;
+
 }

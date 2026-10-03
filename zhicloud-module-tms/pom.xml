@@ -18,6 +18,13 @@
     </description>
 
     <dependencies>
+        <!-- 业务组件：跨模块消费 WMS 出库单（仅依赖 api 包，禁止 import dal/service） -->
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-module-wms</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
         <!-- 业务组件 -->
         <dependency>
             <groupId>cn.zhicloud</groupId>

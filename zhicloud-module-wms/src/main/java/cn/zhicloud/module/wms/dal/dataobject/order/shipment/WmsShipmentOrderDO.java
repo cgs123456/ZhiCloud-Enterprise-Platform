@@ -89,4 +89,11 @@ public class WmsShipmentOrderDO extends TenantBaseDO {
      */
     private BigDecimal totalPrice;
 
+    /**
+     * 承运 TMS 运单编号
+     *
+     * 关联 TmsShipmentDO#getId()；NULL 表示该出库单尚未由运单承运（历史数据 / 不走 TMS 的仓）
+     */
+    private Long waybillId;
+
 }

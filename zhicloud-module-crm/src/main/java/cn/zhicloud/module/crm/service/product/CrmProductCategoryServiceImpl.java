@@ -31,7 +31,7 @@ import static cn.zhicloud.module.crm.enums.LogRecordConstants.*;
 public class CrmProductCategoryServiceImpl implements CrmProductCategoryService {
 
     @Resource(name = "crmProductCategoryMapper")
-    private CrmProductCategoryMapper productCategoryMapper;
+    private CrmProductCategoryMapper crmProductCategoryMapper;
 
     @Resource
     @Lazy // 延迟加载，解决循环依赖问题
@@ -48,7 +48,7 @@ public class CrmProductCategoryServiceImpl implements CrmProductCategoryService 
 
         // 2. 插入分类
         CrmProductCategoryDO category = BeanUtils.toBean(createReqVO, CrmProductCategoryDO.class);
-        productCategoryMapper.insert(category);
+        crmProductCategoryMapper.insert(category);
 
         // 3. 记录操作日志上下文
         LogRecordContext.putVariable("productCategoryId", category.getId());
@@ -68,11 +68,11 @@ public class CrmProductCategoryServiceImpl implements CrmProductCategoryService 
 
         // 2. 更新分类
         CrmProductCategoryDO updateObj = BeanUtils.toBean(updateReqVO, CrmProductCategoryDO.class);
-        productCategoryMapper.updateById(updateObj);
+        crmProductCategoryMapper.updateById(updateObj);
     }
 
     private void validateProductCategoryExists(Long id) {
-        if (productCategoryMapper.selectById(id) == null) {
+        if (crmProductCategoryMapper.selectById(id) == null) {
             throw exception(PRODUCT_CATEGORY_NOT_EXISTS);
         }
     }
@@ -83,7 +83,7 @@ public class CrmProductCategoryServiceImpl implements CrmProductCategoryService 
             return;
         }
         // 父分类不存在
-        CrmProductCategoryDO category = productCategoryMapper.selectById(id);
+        CrmProductCategoryDO category = crmProductCategoryMapper.selectById(id);
         if (category == null) {
             throw exception(PRODUCT_CATEGORY_PARENT_NOT_EXISTS);
         }
@@ -94,7 +94,7 @@ public class CrmProductCategoryServiceImpl implements CrmProductCategoryService 
     }
 
     private void validateProductNameExists(Long id, Long parentId, String name) {
-        CrmProductCategoryDO category = productCategoryMapper.selectByParentIdAndName(parentId, name);
+        CrmProductCategoryDO category = crmProductCategoryMapper.selectByParentIdAndName(parentId, name);
         if (category == null
             || category.getId().equals(id)) {
             return;
@@ -109,7 +109,7 @@ public class CrmProductCategoryServiceImpl implements CrmProductCategoryService 
         // 1.1 校验存在
         validateProductCategoryExists(id);
         // 1.2 校验是否还有子分类
-        if (productCategoryMapper.selectCountByParentId(id) > 0) {
+        if (crmProductCategoryMapper.selectCountByParentId(id) > 0) {
             throw exception(PRODUCT_CATEGORY_EXISTS_CHILDREN);
         }
         // 1.3 校验是否被产品使用
@@ -117,22 +117,22 @@ public class CrmProductCategoryServiceImpl implements CrmProductCategoryService 
             throw exception(PRODUCT_CATEGORY_USED);
         }
         // 2. 删除
-        productCategoryMapper.deleteById(id);
+        crmProductCategoryMapper.deleteById(id);
     }
 
     @Override
     public CrmProductCategoryDO getProductCategory(Long id) {
-        return productCategoryMapper.selectById(id);
+        return crmProductCategoryMapper.selectById(id);
     }
 
     @Override
     public List<CrmProductCategoryDO> getProductCategoryList(CrmProductCategoryListReqVO listReqVO) {
-        return productCategoryMapper.selectList(listReqVO);
+        return crmProductCategoryMapper.selectList(listReqVO);
     }
 
     @Override
     public List<CrmProductCategoryDO> getProductCategoryList(Collection<Long> ids) {
-        return productCategoryMapper.selectByIds(ids);
+        return crmProductCategoryMapper.selectByIds(ids);
     }
 
 }

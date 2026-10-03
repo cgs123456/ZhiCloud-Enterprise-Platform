@@ -33,7 +33,6 @@ import cn.zhicloud.module.trade.service.price.TradePriceServiceImpl;
 import cn.zhicloud.module.trade.service.price.calculator.TradePriceCalculator;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -46,6 +45,31 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import cn.zhicloud.module.promotion.api.discount.DiscountActivityApi;
+import cn.zhicloud.module.promotion.api.reward.RewardActivityApi;
+import org.junit.jupiter.api.Disabled;
+import org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration;
+import cn.zhicloud.module.trade.service.price.calculator.TradeBargainActivityPriceCalculator;
+import cn.zhicloud.module.trade.service.price.calculator.TradeCombinationActivityPriceCalculator;
+import cn.zhicloud.module.trade.service.price.calculator.TradeCouponPriceCalculator;
+import cn.zhicloud.module.trade.service.price.calculator.TradeDeliveryPriceCalculator;
+import cn.zhicloud.module.trade.service.price.calculator.TradeDiscountActivityPriceCalculator;
+import cn.zhicloud.module.trade.service.price.calculator.TradePointActivityPriceCalculator;
+import cn.zhicloud.module.trade.service.price.calculator.TradePointGiveCalculator;
+import cn.zhicloud.module.trade.service.price.calculator.TradePointUsePriceCalculator;
+import cn.zhicloud.module.trade.service.price.calculator.TradeRewardActivityPriceCalculator;
+import cn.zhicloud.module.trade.service.price.calculator.TradeSeckillActivityPriceCalculator;
+import cn.zhicloud.module.promotion.api.bargain.BargainRecordApi;
+import cn.zhicloud.module.promotion.api.combination.CombinationRecordApi;
+import cn.zhicloud.module.trade.service.delivery.DeliveryExpressTemplateService;
+import cn.zhicloud.module.trade.service.delivery.DeliveryPickUpStoreService;
+import cn.zhicloud.module.member.api.config.MemberConfigApi;
+import cn.zhicloud.module.member.api.level.MemberLevelApi;
+import cn.zhicloud.module.promotion.api.point.PointActivityApi;
+import cn.zhicloud.module.promotion.api.seckill.SeckillActivityApi;
+import cn.zhicloud.module.trade.service.config.TradeConfigService;
+import cn.zhicloud.module.trade.service.order.TradeOrderQueryService;
+import org.junit.jupiter.api.Disabled;
 
 /**
  * {@link TradeOrderUpdateServiceImpl} 的单元测试类
@@ -53,10 +77,17 @@ import static org.mockito.Mockito.when;
  * @author LeeYan9
  * @since 2022-09-07
  */
-@Disabled // TODO 芋艿：后续 fix 补充的单测
 @Import({TradeOrderUpdateServiceImpl.class, TradeOrderConfig.class, CartServiceImpl.class, TradePriceServiceImpl.class,
-        DeliveryExpressServiceImpl.class, TradeMessageServiceImpl.class
+        DeliveryExpressServiceImpl.class, TradeMessageServiceImpl.class,
+        // 价格计算链：TradePriceServiceImpl 按类型注入这些计算器，缺一个就起不了上下文
+        TradeDiscountActivityPriceCalculator.class, TradeRewardActivityPriceCalculator.class,
+        TradeCouponPriceCalculator.class, TradeDeliveryPriceCalculator.class, TradeBargainActivityPriceCalculator.class,
+        TradeCombinationActivityPriceCalculator.class, TradePointActivityPriceCalculator.class,
+        TradePointGiveCalculator.class, TradePointUsePriceCalculator.class, TradeSeckillActivityPriceCalculator.class,
+        // 方法级 @Validated 需要真实 Validator（用 mock 会让参数校验静默失效）
+        ValidationAutoConfiguration.class
 })
+@Disabled // TODO 上游标注"后续 fix 补充的单测"。本轮已把价格计算链（10 个计算器）与一批跨模块 API 替身补齐、并接入真实 Validator（不再用 mock 把参数校验变成空转）；还差 system 侧 SocialClientApi 等替身，见 handoff §12.92 的实测清单
 public class TradeOrderUpdateServiceTest extends BaseDbUnitTest {
 
     @Resource
@@ -67,35 +98,82 @@ public class TradeOrderUpdateServiceTest extends BaseDbUnitTest {
     @Resource
     private TradeOrderItemMapper tradeOrderItemMapper;
 
+    // 价格计算链与跨模块 API 的替身：每个字段恰好一个 @MockitoBean（曾有插入错位，导致注解堆叠）
     @MockitoBean
     private MemberUserApi memberUserApi;
+
     @MockitoBean
     private ProductSpuApi productSpuApi;
+
     @MockitoBean
     private ProductSkuApi productSkuApi;
+
     @MockitoBean
     private ProductCommentApi productCommentApi;
-    //    @MockitoBean
-//    private PriceApi priceApi;
+
     @MockitoBean
     private PayOrderApi payOrderApi;
+
     @MockitoBean
     private MemberAddressApi addressApi;
+
     @MockitoBean
     private CouponApi couponApi;
 
     @MockitoBean
     private TradeOrderProperties tradeOrderProperties;
+
     @MockitoBean
     private TradeNoRedisDAO tradeNoRedisDAO;
+
     @MockitoBean
     private TradeOrderHandler tradeOrderHandler;
-    @MockitoBean
-    private TradePriceCalculator tradePriceCalculator;
+
     @MockitoBean
     private NotifyMessageSendApi notifyMessageSendApi;
+
     @MockitoBean
     private DeliveryExpressService deliveryExpressService;
+
+    @MockitoBean
+    private DiscountActivityApi discountActivityApi;
+
+    @MockitoBean
+    private TradeOrderQueryService tradeOrderQueryService;
+
+    @MockitoBean
+    private TradeConfigService tradeConfigService;
+
+    @MockitoBean
+    private SeckillActivityApi seckillActivityApi;
+
+    @MockitoBean
+    private PointActivityApi pointActivityApi;
+
+    @MockitoBean
+    private MemberLevelApi memberLevelApi;
+
+    @MockitoBean
+    private MemberConfigApi memberConfigApi;
+
+    @MockitoBean
+    private DeliveryPickUpStoreService deliveryPickUpStoreService;
+
+    @MockitoBean
+    private DeliveryExpressTemplateService deliveryExpressTemplateService;
+
+    @MockitoBean
+    private CombinationRecordApi combinationRecordApi;
+
+    @MockitoBean
+    private BargainRecordApi bargainRecordApi;
+
+    @MockitoBean
+    private RewardActivityApi rewardActivityApi;
+
+
+    //    @MockitoBean
+//    private PriceApi priceApi;   // 上游注释掉的替身，原样保留
 
     @BeforeEach
     public void setUp() {

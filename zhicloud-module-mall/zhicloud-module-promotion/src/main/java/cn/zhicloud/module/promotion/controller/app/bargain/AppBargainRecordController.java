@@ -156,7 +156,7 @@ public class AppBargainRecordController {
 
     @PostMapping("/create")
     @Operation(summary = "创建砍价记录", description = "参与砍价活动")
-    @PreAuthorize("@ss.hasPermission('promotion:bargain-record:create')")
+    @PreAuthorize("isAuthenticated()")
     public CommonResult<Long> createBargainRecord(@RequestBody AppBargainRecordCreateReqVO reqVO) {
         Long recordId = bargainRecordService.createBargainRecord(getLoginUserId(), reqVO);
         return success(recordId);

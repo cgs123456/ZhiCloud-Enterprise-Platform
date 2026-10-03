@@ -41,7 +41,7 @@ import java.util.zip.CRC32;
  * <ul>
  *   <li>{@code existing}（默认）：目标库必须已经由历史安装脚本初始化，Flyway 只建立 V1 基线并执行增量迁移；</li>
  *   <li>{@code clean}：仅允许空 MySQL schema。先校验并执行无公开账号/无演示数据的 V1.1 clean baseline，
- *       再让 Flyway 以 V1.1 为基线继续执行 V2..V117。</li>
+ *       再让 Flyway 以 V1.1 为基线继续执行 V2..V121。</li>
  * </ul>
  *
  * <p>clean 模式必须通过环境变量 {@code MIGRATION_BASELINE_MODE=clean} 显式开启，绝不能成为默认行为。</p>
@@ -64,6 +64,9 @@ public final class DatabaseMigrationRunner {
     static final String V116_VERIFICATION_RESOURCE = "db/verification/V116_verify.sql";
     static final String V117_VERIFICATION_RESOURCE = "db/verification/V117_verify.sql";
     static final String V118_VERIFICATION_RESOURCE = "db/verification/V118_verify.sql";
+    static final String V119_VERIFICATION_RESOURCE = "db/verification/V119_verify.sql";
+    static final String V120_VERIFICATION_RESOURCE = "db/verification/V120_verify.sql";
+    static final String V121_VERIFICATION_RESOURCE = "db/verification/V121_verify.sql";
 
     /**
      * 已发布 V1.1 的 Flyway checksum。该值来自 Flyway 11.7.2 的 CRC32 行拼接算法，
@@ -74,7 +77,7 @@ public final class DatabaseMigrationRunner {
 
     /**
      * Flyway 只能证明脚本“执行成功”，不能证明关键结构约束与数据不变量已经满足。
-     * 这里把 V116-V118 的只读语义检查登记为迁移退出码的硬门禁；任何一项缺失、
+     * 这里把 V116-V121 的只读语义检查登记为迁移退出码的硬门禁；任何一项缺失、
      * 失败或额外漂移都会让 PreSync Job 失败，阻止业务 Deployment 继续发布。
      */
     static final List<VerificationSpec> POST_MIGRATION_VERIFICATIONS = List.of(
@@ -88,7 +91,19 @@ public final class DatabaseMigrationRunner {
                     "V117_CRM_RECEIVABLE_IDEMPOTENCY_DATA")),
             new VerificationSpec(V118_VERIFICATION_RESOURCE, Set.of(
                     "V118_PROCESS_INSTANCE_IDEMPOTENCY_TABLE",
-                    "V118_PROCESS_INSTANCE_IDEMPOTENCY_INDEX")));
+                    "V118_PROCESS_INSTANCE_IDEMPOTENCY_INDEX")),
+            new VerificationSpec(V119_VERIFICATION_RESOURCE, Set.of(
+                    "V119_INVENTORY_ITEM_TENANT_COLUMNS",
+                    "V119_INVENTORY_ITEM_TENANT_UNIQUE_INDEX",
+                    "V119_INVENTORY_ITEM_LEGACY_INDEX_REMOVED",
+                    "V119_INVENTORY_ITEM_TENANT_UNIQUE_DATA")),
+            new VerificationSpec(V120_VERIFICATION_RESOURCE, Set.of(
+                    "V120_EVENT_INBOX_OWNER_COLUMNS",
+                    "V120_EVENT_OUTBOX_OWNER_COLUMNS",
+                    "V120_EVENT_INBOX_LEASE_INDEX",
+                    "V120_EVENT_OUTBOX_LEASE_INDEX")),
+            new VerificationSpec(V121_VERIFICATION_RESOURCE, Set.of(
+                    "V121_BPM_IDEMPOTENCY_CLAIM_TOKEN_COLUMN")));
 
     record VerificationSpec(String resource, Set<String> expectedChecks) {
     }
@@ -297,7 +312,7 @@ public final class DatabaseMigrationRunner {
         String script = new String(readRequiredResource(resource), StandardCharsets.UTF_8);
         List<String> statements = SqlScriptSplitter.split(script);
         if (statements.isEmpty()) {
-            throw new IllegalStateException("验证脚本没有可执行语句: " + resource);
+            throw new IllegalStateException("验证脚本没有可执行语句: " + resource);  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
         }
 
         Map<String, String> verdicts = new LinkedHashMap<>();
@@ -331,14 +346,14 @@ public final class DatabaseMigrationRunner {
             String checkName = resultSet.getString(checkNameIndex);
             String verdict = resultSet.getString(verdictIndex);
             if (checkName == null || checkName.isBlank()) {
-                throw new IllegalStateException("验证脚本返回了空检查项名称");
+                throw new IllegalStateException("验证脚本返回了空检查项名称");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
             }
             String normalizedName = checkName.trim();
             String normalizedVerdict = verdict == null
                     ? "" : verdict.trim().toUpperCase(Locale.ROOT);
             String previous = verdicts.putIfAbsent(normalizedName, normalizedVerdict);
             if (previous != null) {
-                throw new IllegalStateException("验证脚本返回了重复检查项: " + normalizedName);
+                throw new IllegalStateException("验证脚本返回了重复检查项: " + normalizedName);  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
             }
         }
     }
@@ -382,7 +397,7 @@ public final class DatabaseMigrationRunner {
         if (!failed.isEmpty()) {
             message.append("，失败=").append(failed);
         }
-        throw new IllegalStateException(message.toString());
+        throw new IllegalStateException(message.toString());  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
     }
     private static Flyway configureFlyway(
             String url, String username, String password, String mode,
@@ -449,7 +464,7 @@ public final class DatabaseMigrationRunner {
                 return value;
             }
         }
-        throw new IllegalStateException("缺少必需的环境变量: " + String.join(" 或 ", names));
+        throw new IllegalStateException("缺少必需的环境变量: " + String.join(" 或 ", names));  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
     }
 
     static String resolveBaselineMode(String value) {
@@ -491,20 +506,20 @@ public final class DatabaseMigrationRunner {
         Objects.requireNonNull(existingColumns, "existingColumns");
         Objects.requireNonNull(existingIndexes, "existingIndexes");
         if (tableNames.isEmpty()) {
-            throw new IllegalStateException(
+            throw new IllegalStateException(  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
                     "existing 模式拒绝空库：请先执行历史安装脚本，或显式设置 MIGRATION_BASELINE_MODE=clean");
         }
 
         Set<String> missingTables = missingRequiredTables(tableNames);
         if (!missingTables.isEmpty()) {
-            throw new IllegalStateException(
+            throw new IllegalStateException(  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
                     "existing 模式目标库缺少关键系统表: " + String.join(", ", missingTables)
                             + "；请确认连接的是历史安装脚本初始化的 schema，"
                             + "或显式设置 MIGRATION_BASELINE_MODE=clean 重建空库");
         }
 
         if (!successfulBaselineRecorded) {
-            throw new IllegalStateException(
+            throw new IllegalStateException(  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
                     "existing 模式目标库缺少 flyway_schema_history 中成功的 V1.1 记录；"
                             + "拒绝自动建立 V1.1 baseline，请先完成受控历史库基线修复");
         }
@@ -513,7 +528,7 @@ public final class DatabaseMigrationRunner {
         collectMissingStructure(existingColumns, REQUIRED_EXISTING_COLUMNS, missingStructure);
         collectMissingStructure(existingIndexes, REQUIRED_EXISTING_INDEXES, missingStructure);
         if (!missingStructure.isEmpty()) {
-            throw new IllegalStateException(
+            throw new IllegalStateException(  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
                     "existing 模式目标库缺少关键结构: " + String.join(", ", missingStructure)
                             + "；拒绝在结构不完整的历史库上继续迁移");
         }
@@ -582,11 +597,11 @@ public final class DatabaseMigrationRunner {
         try {
             Map<Integer, HistoryRow> locked = readHistoryRows(connection, true);
             if (!locked.equals(before)) {
-                throw new IllegalStateException("V1.1 checksum 对齐前 flyway_schema_history 发生变化，拒绝继续");
+                throw new IllegalStateException("V1.1 checksum 对齐前 flyway_schema_history 发生变化，拒绝继续");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
             }
             HistoryRow lockedV11 = requireV11HistoryRow(locked);
             if (classifyV11HistoryRow(lockedV11) != V11ChecksumDisposition.LEGACY_REPAIR_REQUIRED) {
-                throw new IllegalStateException("V1.1 checksum 对齐状态发生变化，拒绝继续");
+                throw new IllegalStateException("V1.1 checksum 对齐状态发生变化，拒绝继续");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
             }
 
             int updated;
@@ -602,7 +617,7 @@ public final class DatabaseMigrationRunner {
                 updated = statement.executeUpdate();
             }
             if (updated != 1) {
-                throw new IllegalStateException("V1.1 checksum 对齐必须恰好更新一行，实际=" + updated);
+                throw new IllegalStateException("V1.1 checksum 对齐必须恰好更新一行，实际=" + updated);  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
             }
 
             Map<Integer, HistoryRow> after = readHistoryRows(connection, false);
@@ -623,7 +638,7 @@ public final class DatabaseMigrationRunner {
             if (ex instanceof RuntimeException runtimeEx) {
                 throw runtimeEx;
             }
-            throw new IllegalStateException("V1.1 checksum 对齐失败", ex);
+            throw new IllegalStateException("V1.1 checksum 对齐失败", ex);  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
         } finally {
             connection.setAutoCommit(true);
         }
@@ -639,24 +654,24 @@ public final class DatabaseMigrationRunner {
                 .filter(row -> "1".equals(row.version()))
                 .toList();
         if (rows.size() != 1) {
-            throw new IllegalStateException(
+            throw new IllegalStateException(  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
                     "V1.1 legacy checksum 修复前必须存在恰好一条成功的 V1 基线记录，实际=" + rows.size());
         }
         HistoryRow row = rows.get(0);
         if (!row.success()) {
-            throw new IllegalStateException("flyway_schema_history 中 V1 基线记录不是成功迁移");
+            throw new IllegalStateException("flyway_schema_history 中 V1 基线记录不是成功迁移");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
         }
         if (row.installedRank() >= v11.installedRank()) {
-            throw new IllegalStateException("flyway_schema_history 中 V1 基线记录必须早于 V1.1");
+            throw new IllegalStateException("flyway_schema_history 中 V1 基线记录必须早于 V1.1");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
         }
         if ("BASELINE".equals(row.type())) {
             if (!"<< Flyway Baseline >>".equals(row.script())) {
-                throw new IllegalStateException("flyway_schema_history 中 V1 BASELINE 记录的脚本不符合 Flyway 基线行");
+                throw new IllegalStateException("flyway_schema_history 中 V1 BASELINE 记录的脚本不符合 Flyway 基线行");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
             }
             return;
         }
         if (!"SQL".equals(row.type()) || !"V1__baseline.sql".equals(row.script())) {
-            throw new IllegalStateException(
+            throw new IllegalStateException(  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
                     "flyway_schema_history 中 V1 基线记录既不是 Flyway BASELINE，也不是 V1__baseline.sql");
         }
     }
@@ -666,7 +681,7 @@ public final class DatabaseMigrationRunner {
                 .filter(row -> EXISTING_BASELINE_VERSION.equals(row.version()))
                 .toList();
         if (rows.size() != 1) {
-            throw new IllegalStateException("flyway_schema_history 中 V1.1 记录必须恰好一行，实际=" + rows.size());
+            throw new IllegalStateException("flyway_schema_history 中 V1.1 记录必须恰好一行，实际=" + rows.size());  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
         }
         HistoryRow row = rows.get(0);
         classifyV11HistoryRow(row);
@@ -695,12 +710,12 @@ public final class DatabaseMigrationRunner {
                         resultSet.getLong("execution_time"),
                         resultSet.getBoolean("success"));
                 if (rows.put(installedRank, row) != null) {
-                    throw new IllegalStateException("flyway_schema_history 存在重复 installed_rank=" + installedRank);
+                    throw new IllegalStateException("flyway_schema_history 存在重复 installed_rank=" + installedRank);  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
                 }
             }
         }
         if (rows.isEmpty()) {
-            throw new IllegalStateException("flyway_schema_history 为空，无法确认 V1.1 基线");
+            throw new IllegalStateException("flyway_schema_history 为空，无法确认 V1.1 基线");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
         }
         return rows;
     }
@@ -708,17 +723,17 @@ public final class DatabaseMigrationRunner {
     static V11ChecksumDisposition classifyV11HistoryRow(HistoryRow row) {
         Objects.requireNonNull(row, "row");
         if (!row.success()) {
-            throw new IllegalStateException("flyway_schema_history 中 V1.1 记录不是成功迁移");
+            throw new IllegalStateException("flyway_schema_history 中 V1.1 记录不是成功迁移");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
         }
         if (isCleanBaselineRow(row)) {
             return V11ChecksumDisposition.CLEAN_BASELINE;
         }
         if (!"SQL".equals(row.type())
                 || !"V1.1__system_base_schema.sql".equals(row.script())) {
-            throw new IllegalStateException("flyway_schema_history 中 V1.1 记录既不是 clean BASELINE，也不是正式 SQL 迁移");
+            throw new IllegalStateException("flyway_schema_history 中 V1.1 记录既不是 clean BASELINE，也不是正式 SQL 迁移");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
         }
         if (row.checksum() == null) {
-            throw new IllegalStateException("flyway_schema_history 中 V1.1 SQL 迁移 checksum 不能为空");
+            throw new IllegalStateException("flyway_schema_history 中 V1.1 SQL 迁移 checksum 不能为空");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
         }
         return classifyV11Checksum(row.checksum());
     }
@@ -739,7 +754,7 @@ public final class DatabaseMigrationRunner {
         if (appliedChecksum == LEGACY_V11_CHECKSUM) {
             return V11ChecksumDisposition.LEGACY_REPAIR_REQUIRED;
         }
-        throw new IllegalStateException(
+        throw new IllegalStateException(  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
                 "未知 V1.1 checksum: " + appliedChecksum + "；只允许当前或已发布 legacy checksum");
     }
 
@@ -756,10 +771,10 @@ public final class DatabaseMigrationRunner {
         Objects.requireNonNull(before, "before");
         Objects.requireNonNull(after, "after");
         if (expectedChecksum != CURRENT_V11_CHECKSUM) {
-            throw new IllegalStateException("V1.1 checksum 对齐目标不是当前源码 checksum");
+            throw new IllegalStateException("V1.1 checksum 对齐目标不是当前源码 checksum");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
         }
         if (!before.keySet().equals(after.keySet())) {
-            throw new IllegalStateException("V1.1 checksum 对齐不得增删 flyway_schema_history 行");
+            throw new IllegalStateException("V1.1 checksum 对齐不得增删 flyway_schema_history 行");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
         }
 
         int changedRows = 0;
@@ -771,21 +786,21 @@ public final class DatabaseMigrationRunner {
             }
             changedRows++;
             if (installedRank != repairedRank) {
-                throw new IllegalStateException("V1.1 checksum 对齐修改了非目标 history 行: " + installedRank);
+                throw new IllegalStateException("V1.1 checksum 对齐修改了非目标 history 行: " + installedRank);  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
             }
             if (beforeRow == null || afterRow == null || !beforeRow.sameExceptChecksum(afterRow)) {
-                throw new IllegalStateException("V1.1 checksum 对齐修改了 checksum 以外的字段");
+                throw new IllegalStateException("V1.1 checksum 对齐修改了 checksum 以外的字段");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
             }
             if (!Objects.equals(beforeRow.checksum(), LEGACY_V11_CHECKSUM)
                     || !Objects.equals(afterRow.checksum(), CURRENT_V11_CHECKSUM)
                     || !afterRow.success()
                     || !EXISTING_BASELINE_VERSION.equals(afterRow.version())
                     || !"V1.1__system_base_schema.sql".equals(afterRow.script())) {
-                throw new IllegalStateException("V1.1 checksum 对齐结果不符合受控契约");
+                throw new IllegalStateException("V1.1 checksum 对齐结果不符合受控契约");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
             }
         }
         if (changedRows != 1) {
-            throw new IllegalStateException("V1.1 checksum 对齐必须恰好修改一行，实际=" + changedRows);
+            throw new IllegalStateException("V1.1 checksum 对齐必须恰好修改一行，实际=" + changedRows);  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
         }
     }
 
@@ -912,7 +927,7 @@ public final class DatabaseMigrationRunner {
                 tableNames.add(matcher.group(1).toLowerCase(Locale.ROOT));
             }
             if (tableNames.isEmpty()) {
-                throw new IllegalStateException("clean baseline 未声明任何基础表");
+                throw new IllegalStateException("clean baseline 未声明任何基础表");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
             }
             return List.copyOf(tableNames);
         } catch (IOException ex) {
@@ -942,11 +957,11 @@ public final class DatabaseMigrationRunner {
         verifyCleanBaselineManifest(sourceHash, baselineHash);
         String script = new String(baselineBytes, StandardCharsets.UTF_8);
         if (TARGET_SEED_INSERT.matcher(script).find()) {
-            throw new IllegalStateException("clean baseline 包含公开种子/演示数据 INSERT，拒绝执行");
+            throw new IllegalStateException("clean baseline 包含公开种子/演示数据 INSERT，拒绝执行");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
         }
         List<String> statements = SqlScriptSplitter.split(script);
         if (statements.isEmpty()) {
-            throw new IllegalStateException("clean baseline 没有可执行语句");
+            throw new IllegalStateException("clean baseline 没有可执行语句");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
         }
 
         try (Connection connection = openConnection(url, username, password, jdbcProperties)) {
@@ -1000,7 +1015,7 @@ public final class DatabaseMigrationRunner {
         if (cleanBaselineRecorded) {
             return false;
         }
-        throw new IllegalStateException(
+        throw new IllegalStateException(  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
                 "clean baseline 只允许空 schema，或已记录成功 V1.1 的 clean schema；实际已有 "
                         + tableCount + " 张表");
     }
@@ -1034,17 +1049,17 @@ public final class DatabaseMigrationRunner {
         String expectedSourceHash = extractHash(JSON_HASH, manifest, "source_sha256");
         String expectedBaselineHash = extractHash(JSON_CLEAN_HASH, manifest, "clean_baseline_sha256");
         if (!Objects.equals(sourceHash, expectedSourceHash)) {
-            throw new IllegalStateException("clean baseline 源文件 SHA-256 与 manifest 不一致");
+            throw new IllegalStateException("clean baseline 源文件 SHA-256 与 manifest 不一致");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
         }
         if (!Objects.equals(baselineHash, expectedBaselineHash)) {
-            throw new IllegalStateException("clean baseline SHA-256 与 manifest 不一致");
+            throw new IllegalStateException("clean baseline SHA-256 与 manifest 不一致");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
         }
     }
 
     private static String extractHash(Pattern pattern, String text, String field) {
         Matcher matcher = pattern.matcher(text);
         if (!matcher.find()) {
-            throw new IllegalStateException("clean baseline manifest 缺少 " + field);
+            throw new IllegalStateException("clean baseline manifest 缺少 " + field);  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
         }
         return matcher.group(1).toLowerCase(Locale.ROOT);
     }
@@ -1090,7 +1105,7 @@ public final class DatabaseMigrationRunner {
         try {
             return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));
         } catch (NoSuchAlgorithmException ex) {
-            throw new IllegalStateException("JVM 不支持 SHA-256", ex);
+            throw new IllegalStateException("JVM 不支持 SHA-256", ex);  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
         }
     }
 

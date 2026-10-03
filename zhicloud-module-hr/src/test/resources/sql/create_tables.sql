@@ -153,6 +153,7 @@ CREATE TABLE IF NOT EXISTS "hr_leave_request" (
     "approver_id" bigint,
     "approve_time" timestamp,
     "approve_remark" varchar(255),
+    "process_instance_id" varchar(64) DEFAULT NULL,
     "creator" varchar(64) DEFAULT '',
     "create_time" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updater" varchar(64) DEFAULT '',

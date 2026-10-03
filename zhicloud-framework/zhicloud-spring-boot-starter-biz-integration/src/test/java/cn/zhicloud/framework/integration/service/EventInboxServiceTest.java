@@ -20,11 +20,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.time.LocalDateTime;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static cn.zhicloud.framework.integration.enums.EventStatusConstants.INBOX_DEAD;
@@ -51,6 +53,7 @@ public class EventInboxServiceTest {
             ZhiCloudDataSourceAutoConfiguration.class,
             DataSourceAutoConfiguration.class,
             DataSourceTransactionManagerAutoConfiguration.class,
+            JdbcTemplateAutoConfiguration.class,
             DruidDataSourceAutoConfigure.class,
             SqlInitializationTestConfiguration.class,
             ZhiCloudMybatisAutoConfiguration.class,
@@ -104,7 +107,8 @@ public class EventInboxServiceTest {
         EventInboxDO processed = eventInboxService.selectByConsumerAndEvent("c-dup", "e-dup", 0L);
         assertEquals(INBOX_PROCESSED, processed.getStatus());
 
-        assertEquals(0, eventInboxMapper.claim(processed.getId(), 0L), "已完成的记录不允许被再次抢占");
+        assertEquals(0, eventInboxMapper.claim(processed.getId(), 0L, "test-owner",
+                LocalDateTime.now(), LocalDateTime.now().plusMinutes(1)), "已完成的记录不允许被再次抢占");
         assertEquals(INBOX_PROCESSED, eventInboxService.selectByConsumerAndEvent("c-dup", "e-dup", 0L).getStatus());
         assertEquals(1, calls.get());
     }

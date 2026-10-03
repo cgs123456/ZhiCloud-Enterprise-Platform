@@ -100,7 +100,7 @@ public class ProductSkuDO extends BaseDO {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class Property {
+    public static class Property implements java.io.Serializable {
 
         /**
          * 属性编号

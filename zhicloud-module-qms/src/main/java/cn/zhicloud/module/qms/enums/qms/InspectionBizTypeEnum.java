@@ -20,6 +20,8 @@ public enum InspectionBizTypeEnum implements ArrayValuable<String> {
 
     PURCHASE_IN("PURCHASE_IN", "采购入库"),
     PRODUCTION_OUT("PRODUCTION_OUT", "生产完工入库"),
+    SHIPMENT("SHIPMENT", "发运出库"),
+    MOVEMENT("MOVEMENT", "库存流转"),
     STOCK_COUNT("STOCK_COUNT", "库存盘点"),
     OTHER("OTHER", "其他"),
     ;

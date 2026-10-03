@@ -117,7 +117,7 @@ public final class BootstrapAdminRunner {
 
         List<ExistingUser> users = findActiveUsers(connection, config);
         if (users.size() > 1) {
-            throw new IllegalStateException("同一租户存在多个同名活跃管理员，拒绝自动选择或覆盖");
+            throw new IllegalStateException("同一租户存在多个同名活跃管理员，拒绝自动选择或覆盖");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
         }
 
         if (users.isEmpty()) {
@@ -129,16 +129,16 @@ public final class BootstrapAdminRunner {
 
         ExistingUser user = users.get(0);
         if (user.status != 0) {
-            throw new IllegalStateException("管理员账号已存在但处于停用状态，拒绝自动启用");
+            throw new IllegalStateException("管理员账号已存在但处于停用状态，拒绝自动启用");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
         }
 
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(config.bcryptCost);
         boolean passwordMatches = encoder.matches(config.password, user.passwordHash);
         if (!ENSURE_MODE.equals(config.mode) && !ROTATE_MODE.equals(config.mode)) {
-            throw new IllegalStateException("不支持的管理员引导模式: " + config.mode);
+            throw new IllegalStateException("不支持的管理员引导模式: " + config.mode);  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
         }
         if (ENSURE_MODE.equals(config.mode) && !passwordMatches) {
-            throw new IllegalStateException("管理员账号已存在且口令不匹配；ensure 模式拒绝覆盖，需受控 rotate");
+            throw new IllegalStateException("管理员账号已存在且口令不匹配；ensure 模式拒绝覆盖，需受控 rotate");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
         }
 
         boolean bindingsChanged = false;
@@ -171,7 +171,7 @@ public final class BootstrapAdminRunner {
             statement.setLong(2, tenantId);
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (!resultSet.next()) {
-                    throw new IllegalStateException(label + "不存在、已停用或不属于目标租户: id=" + id);
+                    throw new IllegalStateException(label + "不存在、已停用或不属于目标租户: id=" + id);  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
                 }
             }
         }
@@ -274,7 +274,7 @@ public final class BootstrapAdminRunner {
 
         long activeCount = rows.stream().filter(row -> row.deleted == 0).count();
         if (activeCount > 1) {
-            throw new IllegalStateException(table + " 存在重复活跃绑定，拒绝自动修复");
+            throw new IllegalStateException(table + " 存在重复活跃绑定，拒绝自动修复");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
         }
         if (activeCount == 1) {
             return false;
@@ -339,7 +339,7 @@ public final class BootstrapAdminRunner {
             value = environment.get(fallback);
         }
         if (value == null || value.isBlank()) {
-            throw new IllegalStateException("缺少必要环境变量: " + primary + " 或 " + fallback);
+            throw new IllegalStateException("缺少必要环境变量: " + primary + " 或 " + fallback);  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
         }
         return value;
     }
@@ -389,27 +389,27 @@ public final class BootstrapAdminRunner {
                     environment, "MASTER_DATASOURCE_URL", "SPRING_DATASOURCE_URL");
             String mode = environment.getOrDefault(MODE_ENV, ENSURE_MODE).trim().toLowerCase(Locale.ROOT);
             if (!ENSURE_MODE.equals(mode) && !ROTATE_MODE.equals(mode)) {
-                throw new IllegalStateException("不支持的管理员引导模式: " + mode);
+                throw new IllegalStateException("不支持的管理员引导模式: " + mode);  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
             }
 
             String username = environment.getOrDefault(USERNAME_ENV, DEFAULT_USERNAME);
             if (!USERNAME_PATTERN.matcher(username).matches()) {
-                throw new IllegalStateException(
+                throw new IllegalStateException(  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
                         "管理员用户名必须为 3-30 位字母开头，且只能包含字母、数字、点、下划线和连字符");
             }
             if (KNOWN_SEED_USERNAMES.contains(username.toLowerCase(Locale.ROOT))) {
-                throw new IllegalStateException("管理员用户名不得复用 V1.1/V115 公开种子账号名");
+                throw new IllegalStateException("管理员用户名不得复用 V1.1/V115 公开种子账号名");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
             }
 
             String password = environment.get(PASSWORD_ENV);
             if (password == null || password.isEmpty()) {
-                throw new IllegalStateException("缺少必要环境变量: " + PASSWORD_ENV);
+                throw new IllegalStateException("缺少必要环境变量: " + PASSWORD_ENV);  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
             }
             if (password.length() < MIN_PASSWORD_LENGTH) {
-                throw new IllegalStateException("管理员口令至少需要 " + MIN_PASSWORD_LENGTH + " 个字符");
+                throw new IllegalStateException("管理员口令至少需要 " + MIN_PASSWORD_LENGTH + " 个字符");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
             }
             if (password.getBytes(StandardCharsets.UTF_8).length > MAX_PASSWORD_BYTES) {
-                throw new IllegalStateException("管理员口令 UTF-8 长度不得超过 " + MAX_PASSWORD_BYTES + " 字节");
+                throw new IllegalStateException("管理员口令 UTF-8 长度不得超过 " + MAX_PASSWORD_BYTES + " 字节");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
             }
 
             long tenantId = parsePositiveLong(environment, TENANT_ID_ENV, DEFAULT_TENANT_ID);
@@ -417,7 +417,7 @@ public final class BootstrapAdminRunner {
             long postId = parsePositiveLong(environment, POST_ID_ENV, DEFAULT_POST_ID);
             int bcryptCost = parsePositiveInt(environment, BCRYPT_COST_ENV, DEFAULT_BCRYPT_COST);
             if (bcryptCost < MIN_BCRYPT_COST || bcryptCost > MAX_BCRYPT_COST) {
-                throw new IllegalStateException(
+                throw new IllegalStateException(  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
                         "BCrypt cost 必须在 " + MIN_BCRYPT_COST + "-" + MAX_BCRYPT_COST + " 之间");
             }
             return new BootstrapConfig(
@@ -437,7 +437,7 @@ public final class BootstrapAdminRunner {
                 }
                 return value;
             } catch (NumberFormatException ex) {
-                throw new IllegalStateException(key + " 必须为正整数");
+                throw new IllegalStateException(key + " 必须为正整数");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
             }
         }
 
@@ -454,7 +454,7 @@ public final class BootstrapAdminRunner {
                 }
                 return value;
             } catch (NumberFormatException ex) {
-                throw new IllegalStateException(key + " 必须为正整数");
+                throw new IllegalStateException(key + " 必须为正整数");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
             }
         }
     }

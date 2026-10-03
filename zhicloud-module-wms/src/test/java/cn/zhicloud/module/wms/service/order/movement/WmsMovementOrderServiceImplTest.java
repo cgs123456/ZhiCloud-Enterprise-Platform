@@ -7,11 +7,13 @@ import cn.zhicloud.module.wms.dal.dataobject.order.movement.WmsMovementOrderDO;
 import cn.zhicloud.module.wms.dal.dataobject.order.movement.WmsMovementOrderDetailDO;
 import cn.zhicloud.module.wms.dal.mysql.order.movement.WmsMovementOrderDetailMapper;
 import cn.zhicloud.module.wms.dal.mysql.order.movement.WmsMovementOrderMapper;
+import cn.zhicloud.module.wms.enums.inventory.WmsInventoryChangeTypeEnum;
 import cn.zhicloud.module.wms.enums.order.WmsOrderTypeEnum;
 import cn.zhicloud.module.wms.enums.order.WmsOrderStatusEnum;
 import cn.zhicloud.module.wms.service.inventory.WmsInventoryService;
 import cn.zhicloud.module.wms.service.inventory.dto.WmsInventoryChangeReqDTO;
 import cn.zhicloud.module.wms.service.md.item.WmsItemSkuService;
+import cn.zhicloud.module.qms.api.InspectionOrderApi;
 import cn.zhicloud.module.wms.service.md.warehouse.WmsWarehouseService;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
@@ -27,6 +29,7 @@ import java.util.List;
 import static cn.zhicloud.framework.test.core.util.AssertUtils.assertServiceException;
 import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.MOVEMENT_ORDER_DETAIL_REQUIRED;
 import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.MOVEMENT_ORDER_STATUS_NOT_DELETABLE;
+import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.MOVEMENT_ORDER_QC_FAILED;
 import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.MOVEMENT_ORDER_STATUS_NOT_PREPARE;
 import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.MOVEMENT_ORDER_WAREHOUSE_SAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 
 @Import({WmsMovementOrderServiceImpl.class, WmsMovementOrderDetailServiceImpl.class})
@@ -53,6 +57,8 @@ public class WmsMovementOrderServiceImplTest extends BaseDbUnitTest {
     private WmsItemSkuService itemSkuService;
     @MockitoBean
     private WmsInventoryService inventoryService;
+    @MockitoBean
+    private InspectionOrderApi inspectionOrderApi;
 
     @Test
     public void testCreateMovementOrder_calculateTotal() {
@@ -123,12 +129,48 @@ public class WmsMovementOrderServiceImplTest extends BaseDbUnitTest {
         assertEquals(2, inventoryReqDTO.getItems().size());
         assertEquals(skuId, inventoryReqDTO.getItems().get(0).getSkuId());
         assertEquals(sourceWarehouseId, inventoryReqDTO.getItems().get(0).getWarehouseId());
-        assertEquals(0, new BigDecimal("-2.00").compareTo(inventoryReqDTO.getItems().get(0).getQuantity()));
-        assertEquals(0, new BigDecimal("-40.00").compareTo(inventoryReqDTO.getItems().get(0).getTotalPrice()));
+        // 方向由 changeType 决定、数量保持正数（与收货 IN / 发运 OUT 同一套约定）：
+        // 走 PLAIN 只改 quantity 会漏改 available_quantity，目标仓货到了不可用、源仓 available 虚高
+        assertEquals(0, new BigDecimal("2.00").compareTo(inventoryReqDTO.getItems().get(0).getQuantity()));
+        assertEquals(0, new BigDecimal("40.00").compareTo(inventoryReqDTO.getItems().get(0).getTotalPrice()));
+        assertEquals(WmsInventoryChangeTypeEnum.OUT, inventoryReqDTO.getItems().get(0).getChangeType());
         assertEquals(skuId, inventoryReqDTO.getItems().get(1).getSkuId());
         assertEquals(targetWarehouseId, inventoryReqDTO.getItems().get(1).getWarehouseId());
         assertEquals(0, new BigDecimal("2.00").compareTo(inventoryReqDTO.getItems().get(1).getQuantity()));
         assertEquals(0, new BigDecimal("40.00").compareTo(inventoryReqDTO.getItems().get(1).getTotalPrice()));
+        assertEquals(WmsInventoryChangeTypeEnum.IN, inventoryReqDTO.getItems().get(1).getChangeType());
+    }
+
+    @Test
+    public void testCompleteMovementOrder_blockedByFailedInspection() {
+        // mock 数据：一张草稿移库单 + 明细
+        Long sourceWarehouseId = 100L;
+        Long targetWarehouseId = 200L;
+        WmsMovementOrderDO order = createMovementOrder(sourceWarehouseId, targetWarehouseId);
+        movementOrderMapper.insert(order);
+        movementOrderDetailMapper.insert(createMovementOrderDetail(order.getId(), 300L,
+                sourceWarehouseId, targetWarehouseId));
+        // QMS 侧该移库单存在「检验不通过」的质检记录
+        when(inspectionOrderApi.hasFailedInspection("MOVEMENT", order.getId())).thenReturn(true);
+
+        // 调用 & 断言：报错，且状态与库存都不能动
+        assertServiceException(() -> movementOrderService.completeMovementOrder(order.getId()),
+                MOVEMENT_ORDER_QC_FAILED, order.getId());
+        assertEquals(WmsOrderStatusEnum.PREPARE.getStatus(), movementOrderMapper.selectById(order.getId()).getStatus());
+        verify(inventoryService, never()).changeInventory(any());
+    }
+
+    @Test
+    public void testCompleteMovementOrder_checksMovementBizTypeOnly() {
+        // 卡点必须按 (bizType=MOVEMENT, bizId=移库单 ID) 去问 QMS：
+        // 问错业务类型会让移库卡在别的单据的质检结论上
+        WmsMovementOrderDO order = createMovementOrder(100L, 200L);
+        movementOrderMapper.insert(order);
+        movementOrderDetailMapper.insert(createMovementOrderDetail(order.getId(), 300L, 100L, 200L));
+
+        movementOrderService.completeMovementOrder(order.getId());
+
+        verify(inspectionOrderApi).hasFailedInspection("MOVEMENT", order.getId());
     }
 
     @Test

@@ -5,7 +5,6 @@ import cn.zhicloud.framework.test.core.ut.BaseDbUnitTest;
 import cn.zhicloud.module.trade.controller.admin.brokerage.vo.user.BrokerageUserPageReqVO;
 import cn.zhicloud.module.trade.dal.dataobject.brokerage.BrokerageUserDO;
 import cn.zhicloud.module.trade.dal.mysql.brokerage.BrokerageUserMapper;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Import;
 
@@ -16,6 +15,10 @@ import static cn.zhicloud.framework.common.util.object.ObjectUtils.cloneIgnoreId
 import static cn.zhicloud.framework.test.core.util.AssertUtils.assertPojoEquals;
 import static cn.zhicloud.framework.test.core.util.RandomUtils.randomPojo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import cn.zhicloud.module.trade.service.config.TradeConfigService;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import cn.zhicloud.module.member.api.user.MemberUserApi;
+import org.junit.jupiter.api.Disabled;
 
 // TODO @芋艿：单测后续看看
 /**
@@ -23,8 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * @author owen
  */
-@Disabled // TODO 芋艿：后续 fix 补充的单测
 @Import(BrokerageUserServiceImpl.class)
+    // 见下方注解说明。修复方向是给缺失的跨模块 API/服务补 @MockitoBean，不是放宽断言。
+@Disabled // TODO 上游 "后续 fix 补充的单测"：上下文还缺 MemberUserApi / TradeConfigService 替身
 public class BrokerageUserServiceImplTest extends BaseDbUnitTest {
 
     @Resource
@@ -32,9 +36,12 @@ public class BrokerageUserServiceImplTest extends BaseDbUnitTest {
 
     @Resource
     private BrokerageUserMapper brokerageUserMapper;
+    @MockitoBean
+    private TradeConfigService tradeConfigService;
+    @MockitoBean
+    private MemberUserApi memberUserApi;
 
     @Test
-    @Disabled  // TODO 请修改 null 为需要的值，然后删除 @Disabled 注解
     public void testGetBrokerageUserPage() {
         // mock 数据
         BrokerageUserDO dbBrokerageUser = randomPojo(BrokerageUserDO.class, o -> { // 等会查询到

@@ -69,7 +69,7 @@ public class Bm25LexicalRetriever {
             }, String.valueOf(knowledgeId), String.valueOf(tenantId));
         } catch (Exception e) {
             // 不允许把数据库/底表故障伪装成“无命中”；由调用方显式降级并记录告警。
-            throw new IllegalStateException(
+            throw new IllegalStateException(  // @bare-throw-ignore 刻意 fail-closed 的基础设施信号，异常类型已被现有测试断言；改成 ServiceException 会同时改变对外语义与这些测试结果，是否统一属人工裁决
                     "BM25 词法检索失败，knowledgeId=" + knowledgeId + ", tenantId=" + tenantId
                             + ", table=" + vectorTableName,
                     e);

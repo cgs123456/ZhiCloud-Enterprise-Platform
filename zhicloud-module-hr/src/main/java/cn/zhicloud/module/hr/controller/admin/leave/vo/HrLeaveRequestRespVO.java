@@ -35,6 +35,9 @@ public class HrLeaveRequestRespVO {
     @Schema(description = "状态", example = "0")
     private Integer status;
 
+    @Schema(description = "流程实例编号", example = "8fc340dc-be5d-11f1-aa08-00155dcc8dd6")
+    private String processInstanceId;
+
     @Schema(description = "审批人 ID", example = "1024")
     private Long approverId;
 

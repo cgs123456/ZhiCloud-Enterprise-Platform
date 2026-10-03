@@ -108,7 +108,7 @@ public class MesInventoryReconciliationTest {
         return InventoryItemDO.builder()
                 .itemId(itemId).warehouseId(warehouseId).locationId(locationId)
                 .areaId(areaId).batchId(batchId).batchCode(batchCode)
-                .quantity(qty).lockedCount(BigDecimal.ZERO).tenantId(0L).build();
+                .quantity(qty).lockedCount(BigDecimal.ZERO).build();
     }
 
 }
