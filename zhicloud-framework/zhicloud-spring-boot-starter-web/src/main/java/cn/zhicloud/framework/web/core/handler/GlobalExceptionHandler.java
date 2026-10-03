@@ -43,6 +43,8 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.Map;
 import java.util.Set;
 
@@ -385,89 +387,69 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * 表名前缀 → 该模块的建表文档。命中只用来给出"该去看哪份文档"的线索。
+     */
+    private record ModuleDoc(String prefix, String module, String docUrl) {
+    }
+
+    private static final List<ModuleDoc> MISSING_TABLE_DOCS = List.of(
+            new ModuleDoc("report_", "zhicloud-module-report", "https://cloud.zhicloud.cn/report/"),
+            new ModuleDoc("bpm_", "zhicloud-module-bpm", "https://cloud.zhicloud.cn/bpm/"),
+            new ModuleDoc("mp_", "zhicloud-module-mp", "https://cloud.zhicloud.cn/mp/build/"),
+            new ModuleDoc("product_", "zhicloud-module-mall", "https://cloud.zhicloud.cn/mall/build/"),
+            new ModuleDoc("promotion_", "zhicloud-module-mall", "https://cloud.zhicloud.cn/mall/build/"),
+            new ModuleDoc("trade_", "zhicloud-module-mall", "https://cloud.zhicloud.cn/mall/build/"),
+            new ModuleDoc("erp_", "zhicloud-module-erp", "https://cloud.zhicloud.cn/erp/build/"),
+            new ModuleDoc("wms_", "zhicloud-module-wms", "https://doc.zhicloud.cn/wms/build/"),
+            new ModuleDoc("crm_", "zhicloud-module-crm", "https://cloud.zhicloud.cn/crm/build/"),
+            new ModuleDoc("mes_", "zhicloud-module-mes", "https://doc.zhicloud.cn/mes/build/"),
+            new ModuleDoc("im_", "zhicloud-module-im", "https://doc.zhicloud.cn/im/build/"),
+            new ModuleDoc("pay_", "zhicloud-module-pay", "https://cloud.zhicloud.cn/pay/build/"),
+            new ModuleDoc("ai_", "zhicloud-module-ai", "https://cloud.zhicloud.cn/ai/build/"),
+            new ModuleDoc("iot_", "zhicloud-module-iot", "https://doc.zhicloud.cn/iot/build/"));
+
+    /**
+     * 匹配 {@code Table 'db.tbl' doesn't exist}，取出不存在的表名
+     */
+    private static final Pattern TABLE_NOT_EXISTS_PATTERN = Pattern.compile("Table '([^']+)' doesn't exist");
+
+    /**
      * 处理 Table 不存在的异常情况
      *
      * @param ex 异常
-     * @return 如果是 Table 不存在的异常，则返回对应的 CommonResult
+     * @return 如果表名能对上某个模块的文档，则返回带该线索的 CommonResult；否则返回 null 交给通用处理
      */
     private CommonResult<?> handleTableNotExists(Throwable ex) {
         String message = ExceptionUtil.getRootCauseMessage(ex);
         if (!message.contains("doesn't exist")) {
             return null;
         }
-        // 1. 数据报表
-        if (message.contains("report_")) {
-            log.error("[报表模块 zhicloud-module-report - 表结构未导入][参考 https://cloud.zhicloud.cn/report/ 开启]");
-            return CommonResult.error(NOT_IMPLEMENTED.getCode(),
-                    "[报表模块 zhicloud-module-report - 表结构未导入][参考 https://cloud.zhicloud.cn/report/ 开启]");
+        String table = extractMissingTableName(message);
+        ModuleDoc doc = table == null ? null : MISSING_TABLE_DOCS.stream()
+                .filter(d -> table.startsWith(d.prefix())).findFirst().orElse(null);
+        if (doc == null) {
+            // 与改造前一致：认不出归属模块就不替用户下结论，交给通用异常处理
+            return null;
         }
-        // 2. 工作流
-        if (message.contains("bpm_")) {
-            log.error("[工作流模块 zhicloud-module-bpm - 表结构未导入][参考 https://cloud.zhicloud.cn/bpm/ 开启]");
-            return CommonResult.error(NOT_IMPLEMENTED.getCode(),
-                    "[工作流模块 zhicloud-module-bpm - 表结构未导入][参考 https://cloud.zhicloud.cn/bpm/ 开启]");
+        // 措辞只陈述"这张表不存在"并给出该查的文档，不断言模块"已禁用/未启用"：
+        // 模块是否启用取决于 Bean 与迁移是否执行，真机上模块正在跑却被报成"已禁用"会把排查带去完全错误的方向。
+        String text = StrUtil.format("数据库表 {} 不存在（可能对应 {} 的迁移未执行到位，参考 {} 开启）",
+                table, doc.module(), doc.docUrl());
+        log.error("[handleTableNotExists][{}] 原始异常: {}", text, message);
+        return CommonResult.error(NOT_IMPLEMENTED.getCode(), text);
+    }
+
+    /**
+     * 从异常文案里取出不存在的表名（去掉 {@code db.} 前缀），取不到返回 null
+     */
+    private static String extractMissingTableName(String message) {
+        Matcher matcher = TABLE_NOT_EXISTS_PATTERN.matcher(message);
+        if (!matcher.find()) {
+            return null;
         }
-        // 3. 微信公众号
-        if (message.contains("mp_")) {
-            log.error("[微信公众号 zhicloud-module-mp - 表结构未导入][参考 https://cloud.zhicloud.cn/mp/build/ 开启]");
-            return CommonResult.error(NOT_IMPLEMENTED.getCode(),
-                    "[微信公众号 zhicloud-module-mp - 表结构未导入][参考 https://cloud.zhicloud.cn/mp/build/ 开启]");
-        }
-        // 4. 商城系统
-        if (StrUtil.containsAny(message, "product_", "promotion_", "trade_")) {
-            log.error("[商城系统 zhicloud-module-mall - 已禁用][参考 https://cloud.zhicloud.cn/mall/build/ 开启]");
-            return CommonResult.error(NOT_IMPLEMENTED.getCode(),
-                    "[商城系统 zhicloud-module-mall - 已禁用][参考 https://cloud.zhicloud.cn/mall/build/ 开启]");
-        }
-        // 5. ERP 系统
-        if (message.contains("erp_")) {
-            log.error("[ERP 系统 zhicloud-module-erp - 表结构未导入][参考 https://cloud.zhicloud.cn/erp/build/ 开启]");
-            return CommonResult.error(NOT_IMPLEMENTED.getCode(),
-                    "[ERP 系统 zhicloud-module-erp - 表结构未导入][参考 https://cloud.zhicloud.cn/erp/build/ 开启]");
-        }
-        // 6. WMS 仓库管理系统
-        if (message.contains("wms_")) {
-            log.error("[WMS 仓库管理系统 zhicloud-module-wms - 表结构未导入][参考 https://doc.zhicloud.cn/wms/build/ 开启]");
-            return CommonResult.error(NOT_IMPLEMENTED.getCode(),
-                    "[WMS 仓库管理系统 zhicloud-module-wms - 表结构未导入][参考 https://doc.zhicloud.cn/wms/build/ 开启]");
-        }
-        // 7. CRM 系统
-        if (message.contains("crm_")) {
-            log.error("[CRM 系统 zhicloud-module-crm - 表结构未导入][参考 https://cloud.zhicloud.cn/crm/build/ 开启]");
-            return CommonResult.error(NOT_IMPLEMENTED.getCode(),
-                    "[CRM 系统 zhicloud-module-crm - 表结构未导入][参考 https://cloud.zhicloud.cn/crm/build/ 开启]");
-        }
-        // 8. MES 系统
-        if (message.contains("mes_")) {
-            log.error("[MES 系统 zhicloud-module-mes - 表结构未导入][参考 https://doc.zhicloud.cn/mes/build/ 开启]");
-            return CommonResult.error(NOT_IMPLEMENTED.getCode(),
-                    "[MES 系统 zhicloud-module-mes - 表结构未导入][参考 https://doc.zhicloud.cn/mes/build/ 开启]");
-        }
-        // 9. IM 即时通讯
-        if (message.contains("im_")) {
-            log.error("[IM 即时通讯 zhicloud-module-im - 表结构未导入][参考 https://doc.zhicloud.cn/im/build/ 开启]");
-            return CommonResult.error(NOT_IMPLEMENTED.getCode(),
-                    "[IM 即时通讯 zhicloud-module-im - 表结构未导入][参考 https://doc.zhicloud.cn/im/build/ 开启]");
-        }
-        // 10. 支付平台
-        if (message.contains("pay_")) {
-            log.error("[支付模块 zhicloud-module-pay - 表结构未导入][参考 https://cloud.zhicloud.cn/pay/build/ 开启]");
-            return CommonResult.error(NOT_IMPLEMENTED.getCode(),
-                    "[支付模块 zhicloud-module-pay - 表结构未导入][参考 https://cloud.zhicloud.cn/pay/build/ 开启]");
-        }
-        // 11. AI 大模型
-        if (message.contains("ai_")) {
-            log.error("[AI 大模型 zhicloud-module-ai - 表结构未导入][参考 https://cloud.zhicloud.cn/ai/build/ 开启]");
-            return CommonResult.error(NOT_IMPLEMENTED.getCode(),
-                    "[AI 大模型 zhicloud-module-ai - 表结构未导入][参考 https://cloud.zhicloud.cn/ai/build/ 开启]");
-        }
-        // 12. IoT 物联网
-        if (message.contains("iot_")) {
-            log.error("[IoT 物联网 zhicloud-module-iot - 表结构未导入][参考 https://doc.zhicloud.cn/iot/build/ 开启]");
-            return CommonResult.error(NOT_IMPLEMENTED.getCode(),
-                    "[IoT 物联网 zhicloud-module-iot - 表结构未导入][参考 https://doc.zhicloud.cn/iot/build/ 开启]");
-        }
-        return null;
+        String table = matcher.group(1);
+        int dot = table.lastIndexOf('.');
+        return dot >= 0 && dot + 1 < table.length() ? table.substring(dot + 1) : table;
     }
 
 }
