@@ -5101,3 +5101,54 @@ PDA 手持终端的登录态是**后台用户**，它挂 `@ss.hasPermission` 才
 可自动派生的部分也有限：来料侧只有商户与 SKU，要派生供应商就得引入 QMS→ERP 依赖（新增模块边），
 而 WMS→QMS 的调用方向已存在，硬加会制造循环依赖 —— 所以按现状停在"契约 + 可见性"，
 把"录入主数据后回填空列"留作运营动作（任务 BIZ-17 仍开着，判据已写明）。
+
+### 12.113 BIZ-6 收口：HR/QMS 后台菜单种子按**代码里真实声明的权限点**生成，并顺手修掉一条无父权限点
+
+前端路由契约的最后一块拼图。菜单不再靠人手抄，而是从 `@PreAuthorize` 反向生成：
+
+- 口径来源：HR 控制器 13 个资源、QMS 控制器 23 个资源，逐个取类上/方法上的权限点字符串；
+  列集合、`type`、`component` 命名**逐条比对仓库既有 WMS 菜单行**后沿用（`component='wms/cross-dock-order/index'`、目录 type=1 `path=/wms`），不是我发明的写法。
+- `V134__hr_qms_menu_seed.sql`：186 条声明行 = 2 目录 + 36 菜单 + 148 按钮，一条 `INSERT ... SELECT ... WHERE NOT EXISTS` 批量幂等，外加一条修复性 `UPDATE`。
+- **刻意不写 `system_role_menu`**：超级管理员走角色旁路即可见；给普通角色授权是运营动作，种子里伪造授权会让"谁能审批人事"这种事看起来像我做的主。
+
+三处只有**真跑**才会暴露的自造错误（都在实库执行后才被抓到）：
+
+1. `system_menu` **没有 `tenant_id` 列** —— 菜单是全局表，租户可见性由角色决定。带上这列时整条 INSERT 直接失败，不是我以为的"部分成功"。
+2. 派生表里第一行没起别名，`UNION ALL` 撞出 `Duplicate column name '1'` —— 首行必须逐列 `AS`。
+3. 幂等预检只认 `deleted = b'0'` 的行，所以**已软删的权限点会重新建行**而不是被静默跳过 —— 这条是设计决定，写进注释。
+
+顺带查出并修复的一处**既有缺陷**（不是本轮引入）：`system_menu id=6740 qms:capa:transition` 的 `parent_id=0`，
+即一个游离在目录树之外的按钮 —— 前端永远渲染不到它，等于该权限点不可配置。`V134` 末尾把它 `UPDATE` 到 `qms/capa/index` 菜单下。
+副作用是本轮声明的 `7525`（同一 `permission + type`）被幂等预检正确跳过，所以**落库 185 行而非 186 行**；
+这个差值是设计行为（权限点唯一），不是丢数据 —— 若不解释，下次复跑数到 185 会被当成故障排查一遍。
+
+真机证据（当前运行中的服务端 + 沙箱库，全部本轮重跑）：
+
+| 判据 | 读数 |
+|---|---|
+| 首次执行 / 重跑 | rc=0 / rc=0（幂等） |
+| `V134_verify.sql` | **5 PASS / 0 FAIL**（目录、菜单数 13+23、component 口径、`(permission,type)` 唯一、按钮有父） |
+| 库内落库行 | id 7200–7734 共 185 行，`creator='system'`，单批 create_time |
+| `GET /admin-api/system/menu/list` | `code=0`，1808 节点；`/hr`(7200) → 13 菜单 + 51 按钮；`/qms`(7500) → 23 菜单 + 97 按钮（含被回收的 6740） |
+| 6740 现状 | `parent_id=7520`、`permission=qms:capa:transition`、`deleted=0` —— 不再是孤儿 |
+| 门禁 | `check_migration_contract` tracked=**45** scanned=141 findings=0；`check_duplicate_ddl` findings=0 |
+
+接口形态顺带记一笔，避免下次误读：`/menu/list` 返回的是**扁平 1808 条**（按 `parentId` 组树），
+不是嵌套 children —— 用 `children` 计数会得到"0 个子菜单"的假结论。
+
+仍未闭合的部分（诚实交代）：种子只保证**权限点在后端存在且可被角色勾选**；
+HR/QMS 的 Vue 页面是否真按 `hr/<resource>/index` 的约定落地，属于前端仓库范围，本仓无源码可判 —— 菜单能渲染 ≠ 点进去有页面。
+
+**执行通道的口径澄清（写这条是因为它很容易被后来人读成"已走 Flyway"）**：沙箱库
+`flyway_schema_history` 的 `MAX(version)=131`、138 行历史，即 **V132/V133/V134 是我用 mysql 客户端直接执行验证的，
+不是应用自带 Flyway 执行的**。所以本轮证据支持"SQL 在真 MySQL 8.4.11 + 真数据上跑通且幂等"，
+不支持"Flyway 通道已验证"。三条都是幂等写法（NOT EXISTS 预检 / `CREATE OR REPLACE`），
+下次真机重启时 Flyway 会自行补执行 —— 这是按设计的**推断**，未实测，不记成 PASS。
+
+**本轮跑到的一条既有门禁红（不在我改动面上，逐条交代）**：`check_evidence_citations.py` `exit=1`，
+1 条 `hash-unattributable` —— `08-测试与证据.md:64` 为 2026-09-29 的 MySQL 物理复制沙箱证据记了
+「执行脚本 SHA-256 `842D3FFC…`」，而 `scripts/production/verify_mysql_physical_replication_sandbox.ps1`
+当前字节是 `A280B14B…`，**全仓 17 个 .ps1 都不再匹配那个旧值**（脚本在证据产出后被改过，旧身份已不可从仓库归因）。
+门禁把这条判红而不是静默通过是对的；但修哪一侧（改文档记今天哈希，还是承认那份证据的执行脚本已不可复现）
+是"由人决定"的口径问题，且该文件本轮未被我改动、该门禁不在 CI 里（`maven.yml` 只跑 `check_migration_contract.py`），
+所以我只登记不动笔。
