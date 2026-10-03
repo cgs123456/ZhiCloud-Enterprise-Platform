@@ -4860,3 +4860,41 @@ B: 带 X-Trino-User: zc-sandbox-agent → 正常返回 id/nextUri/columns
 
 **环境留档**：`zc-datalake-trino`（healthy）、`zc-live-mysql/redis/rabbit` 均在跑，服务端 JVM 仍在 48080 上运行（未停，便于后续复跑）；
 自建容器一律只 `docker stop`、不 `rm`，卷与库保留；湖侧口令在 `Temp/zc-trino/secrets/`（未入库、未进 argv）。全部改动仍**未提交**。
+
+### 12.106 ⑤ datalake 归档半程：三处缺陷与隔离验证（不动业务数据）
+
+§12.104 把"归档 DELETE 半程没跑"记成未验。本轮把它补完了，方式是**建一个隔离探针库** `zhicloud_archive_probe`，
+业务库 `zhicloud_platform` 一根手指都没碰（归档会真删数据，绝不能在演示库上试）。
+授权只给 `zc_trino_ro@172.31.99.20` 增加 `SELECT/DELETE/UPDATE ON zhicloud_archive_probe.*`（限这一个库、限那个静态 IP）。
+
+跑出来的是**三处真缺陷**：
+
+1. **对象名不是三段式**（`DataArchivalServiceImpl`）：原 SQL 是
+   `INSERT INTO iceberg.${tableName} SELECT * FROM mysql.${tableName} WHERE ...`。
+   Iceberg 侧会把表名当成 schema，MySQL 侧会把表名当成数据库名 —— 对 `archive-tables: mes_pro_work_order`
+   这种配置**任何表名都必然失败**。改为 `iceberg.<namespace>.<table>` 与 `mysql.<sourceDatabase>.<table>`，
+   两个新配置项 `zhicloud.datalake.iceberg-namespace`（默认 ods）、`zhicloud.datalake.source-database`（默认 zhicloud_platform），
+   并与表名共用同一套标识符白名单校验。
+2. **DML 从没跟到底**（`IcebergCatalogServiceImpl.executeUpdate`）：Trino 的 DML 是异步的，
+   实测页序 `QUEUED → QUEUED → QUEUED → RUNNING(有列无数据) → RUNNING(data=[[5]]) → FINISHED(数据空)`。
+   原实现只看首屏就返回，于是**报 SUCCESS 但一条都没归档**（探针上表现为湖内 0 行、源表 9 行原封不动，
+   而接口却回 `status=SUCCESS`）。新增 `driveToCompletion` 跟进 `nextUri` 到结束，错误改判最后一页。
+3. **受影响行数取错了地方**：`extractUpdateCount` 读的是 `stats.processedRows`（扫描行数，不等于受影响行数），
+   而 Trino 把行数放在结果集列 `rows` 里、且**只在中间页出现**，最后一页是空的。
+   因此改成边翻页边收数据页（`absorbData`），优先取 `rows`，`processedRows` 仅兜底。
+   这一处的判定是先把原始分页响应逐页打出来才确认的，不是照文档猜的。
+
+**闭环数值（全部由模块自己的 `DataArchivalServiceImpl.archiveTable` 产出，探针程序直接 new 生产类）**
+
+| 步骤 | 湖内 `iceberg.ods.qms_probe` | 源表 `zhicloud_archive_probe.qms_probe` | `archivedRows` |
+|---|---|---|---|
+| 复位 | 0 行 | total=9, cold=5（create_time < 2026-01-01） | — |
+| 修复前跑一次 | **0 行** | total=9, cold=5 | 0（且仍报 SUCCESS） |
+| 修复后跑一次 | **5 行** | **total=4, cold=0** | **5** |
+
+即：冷数据 5 行确实进了 Iceberg、源表里确实被删掉、剩 4 行热数据一行未动、计数不再是 0。
+中间还实测了一次手工分页 `INSERT ... WHERE create_time < DATE '2026-01-01'` 返回 `columns=['rows'], data=[[5]]`，
+与修复后的模块行为一致。
+
+**仍未做的**：`scheduleArchive` 的 cron 定时触发（依赖 `TaskScheduler` Bean，探针里显式传了一个"不可用"的
+`ObjectProvider`，只验证了 `archiveTable` 这条实际归档路径）；以及把 `zhicloud.datalake.enabled` 写进 local 配置。
