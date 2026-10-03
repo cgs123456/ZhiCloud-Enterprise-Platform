@@ -5152,3 +5152,45 @@ HR/QMS 的 Vue 页面是否真按 `hr/<resource>/index` 的约定落地，属于
 门禁把这条判红而不是静默通过是对的；但修哪一侧（改文档记今天哈希，还是承认那份证据的执行脚本已不可复现）
 是"由人决定"的口径问题，且该文件本轮未被我改动、该门禁不在 CI 里（`maven.yml` 只跑 `check_migration_contract.py`），
 所以我只登记不动笔。
+
+### 12.114 BIZ-17 后半程：用仓库自己的 demo 通道把"录入主数据 → QMS 维度回填 → 报表数字变真实"这条链跑通
+
+所有者要我"去网上搜资料模拟填入"。**我没有把网上搜到的真实公司名当供应商主数据填进去** ——
+那些是第三方真实主体的名称，落进 `erp_supplier` 就成了"看起来像真租户录入的数据"，
+事后无法与真实业务数据区分。仓库本来就有一条正式的模拟通道（`demo-data/`，三重隔离：
+`tenant_id>=9001` + `DEMO_` 前缀 + `creator='demo-seed'` + 邮箱 `.invalid`），所以走它。
+
+一处**必须先说清的覆盖缺口**：`demo-data` 的 19 张主数据表里 **一张 MES 都没有**
+（`erp_*`/`wms_*`/`hr_*`/`tms_*`/`crm_*` 都有），而 §12.112 刚定下的契约是
+`product_id → mes_md_item.id`。也就是说：**供应商维度仓库能生成，物料维度不能生成**。
+本轮物料侧的 4 行是**按同一套 demo 约定手写**的（`DEMO_ITEM*` / 租户 9001 / `demo-seed` / `remark` 明写用途），
+没有去改 `generate_master_data.py` —— 一改就会重造 `demo_master_data.sql`，
+而 `demo-data/README.md` §3 用 SHA-256 钉住了 4 个产物字节、文档 07 还记着"19 张表 / 267 行"，
+`generate_business_documents.py` 又依赖主数据 SHA，**牵一发动到一整条哈希链**；
+是否值得为 MES 主数据重钉这条链，是一次独立决定，留给人裁决。
+
+验证全部在**独立探针库** `zc_demo_qms_probe` 里做（表用 `CREATE TABLE ... LIKE zhicloud_platform.*` 取真实结构，
+视图直接复用 `V133` 的 SQL 原文）：
+
+| 维度 | 结果 |
+|---|---|
+| demo 供应商 / 物料 / 检验单落库 | 10 / 4 / 6 行 |
+| 视图读数（type=10,status=30） | `order_count=3`、`product_count=1`、`supplier_count=2`、`dimension_missing_count=1` |
+| 视图读数（type=10,status=40） | `order_count=1`、`product_count=1`、`supplier_count=1`、`dimension_missing_count=`**0** |
+| 视图读数（type=30,status=30） | `order_count=2`、`product_count=2`、`supplier_count=1`、`dimension_missing_count=1` |
+
+对照设计：6 张检验单里 3 张两维齐全、1 张只缺供应商、1 张两维全空（＝真实租户当前形态）、1 张是**风险探针**。
+`dimension_missing_count` 只在含 NULL 的那两组各计 1、齐全组计 0 —— V133 追加这列的目的（把"真没有"与"没填"分开）达成；
+`supplier_count`/`product_count` 从真实租户的恒 0 变成 1/2 的真数，说明**只要主数据存在且被带上，报表不需要改代码就会变真实**。
+
+**探针量出来的一处真实风险（本轮新问题）**：`qms_inspection_order` 上**没有任何外键约束**
+（`information_schema.KEY_COLUMN_USAGE` 查 `REFERENCED_TABLE_NAME` 为空），
+所以我故意写的那条 `supplier_id=999999`（`erp_supplier` 里不存在的 id）**被数据库照常接受**，
+而报表那一组 `supplier_count=2` —— 悬空 id 被当成一个真实供应商计进了 distinct 数。
+含义：`0 → N` 的改善本身不构成"数据可信"的证据，回填入口写错 id 时报表会安静地虚高。
+可选的三种收口（都不在本轮范围，按代价排）：视图再追加一列 `dimension_dangling_count`（与 V133 同思路，不改已有列语义）、
+写入侧按契约校验 id 存在、或给 `supplier_id/product_id` 加外键（跨模块边 + 存量脏数据风险最大）。
+
+业务库零污染已复核：`zhicloud_platform` 里 tenant 1 仍是 9 张检验单、9 张全部无供应商，
+视图仍 5 行 / `dimension_missing_count` 合计 9，`erp_supplier WHERE creator='demo-seed'` = **0 行**。
+探针库 `zc_demo_qms_probe` 保留在沙箱容器内（不复现时可直查），它不在应用连接的任何数据源里。
