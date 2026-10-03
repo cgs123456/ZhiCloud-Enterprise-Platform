@@ -5019,3 +5019,28 @@ PDA 手持终端的登录态是**后台用户**，它挂 `@ss.hasPermission` 才
 
 **没做**：code 仍是 501（`NOT_IMPLEMENTED`）。改成 4xx/5xx 会影响前端与既有断言口径，
 且真正需要的是"别把假设写成结论"，已达成；若要改状态码需单列决策。
+
+### 12.110 新发现并**故意没有动手**的一处：质检单的报表维度全空（需要外键契约，不能猜）
+
+复核 ① 时发现：`qms_inspection_order` 有效 9 行里，`product_id / supplier_id / work_order_id`
+**三列全部为 NULL（9/9）**，而 `biz_type/biz_id` 是齐的（9/9 非空）。也就是说：
+
+- 卡点判定本身能跑（它按 `bizType + bizId` 查，见 §12.98 的真机双向往返）；
+- 但 V126 的报表视图 `v_qms_inspection_status_daily` 里 `product_count / supplier_count / work_order_id`
+  三个 `COUNT(DISTINCT …)` 恒为 **0** —— 我此前把这读成"检验单没关联产品"，其实更准确的说法是
+  **报表在看得到数据的前提下静默给出 0**，这正是"代理指标"最危险的形状：视图有行、字段有值、结论是错的。
+
+为什么本轮不自动补齐：想从 `biz_id` 反查来源单，字段身份对不上，而**代码没有声明它们指向哪张表**：
+
+- `InspectionOrderDO` 上三列的注释只有"供应商 ID / 工单 ID / 产品 ID"，没有外键目标；
+  追溯服务把 `productId` 当 `materialId` 用（`QualityTraceabilityServiceImpl:127`），
+  这又把"产品"滑成"物料"；
+- 来料单侧 `wms_receipt_order` 用的是 `merchant_id`（不是 supplier_id），明细侧是 `sku_id`（不是 product_id）；
+  系统里同时存在 `erp_supplier`、`crm_product`、`wms_item`、`product_spu` 四类候选主数据。
+
+在没有外键契约的情况下写 `UPDATE … JOIN` 或"自动派生"，等于**伪造一条业务关联**，
+比留 NULL 更糟（NULL 至少可被报表识别为"缺维度"）。所以本轮只登记，不动手（任务 BIZ-17）。
+
+需要的所有者决定，一句话即可：QMS 的 `supplier_id` 指向哪张表、`product_id` 指的是 SPU、SKU 还是 WMS 物料？
+定了之后我再做三件事：给列补上外键语义（DO 注释 + 迁移注释）、按契约派生或校验、
+并把 V126 视图的 `product_count=0` 从"看起来正常"改成人能看出问题（例如视图层加一个维度可用性计数）。
