@@ -78,6 +78,20 @@ public class DataLakeProperties {
     private Integer batchSize = 10000;
 
     /**
+     * 归档目标命名空间（Iceberg 的 schema）
+     *
+     * <p>归档写入的完整对象名为 {@code iceberg.<icebergNamespace>.<tableName>}。
+     */
+    private String icebergNamespace = "ods";
+
+    /**
+     * 源业务库在 Trino {@code mysql} catalog 下的 schema 名，即 MySQL 数据库名
+     *
+     * <p>归档读取的完整对象名为 {@code mysql.<sourceDatabase>.<tableName>}。
+     */
+    private String sourceDatabase = "zhicloud_platform";
+
+    /**
      * 需要归档的表列表
      *
      * <p>配置后，归档调度任务会按表名依次执行归档。

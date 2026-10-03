@@ -405,7 +405,11 @@ public class IcebergCatalogServiceImpl implements IcebergCatalogService {
             result.put("error", "Trino 不可达或响应为空");
             return result;
         }
-        Object error = response.get("error");
+        // Trino 的 DML 是异步的：首屏常常只是 QUEUED，真正的执行结果（含 error 与受影响行数）
+        // 只在后续分页里。只看首屏就返回会既漏掉失败、又漏掉整条语句——归档因此"报成功但一行都没动"。
+        List<List<Object>> updateResult = new ArrayList<>();
+        Map<String, Object> lastPage = driveToCompletion(response, updateResult);
+        Object error = lastPage.get("error");
         if (error != null) {
             result.put("success", false);
             result.put("updateCount", 0L);
@@ -413,20 +417,61 @@ public class IcebergCatalogServiceImpl implements IcebergCatalogService {
             return result;
         }
         result.put("success", true);
-        result.put("updateCount", extractUpdateCount(response));
+        result.put("updateCount", extractUpdateCount(lastPage, updateResult));
         result.put("error", null);
         log.info("[executeUpdate][执行成功：updateCount={}]", result.get("updateCount"));
         return result;
     }
 
     /**
-     * 从 Trino DML 响应中提取影响行数
-     *
-     * <p>Trino INSERT/DELETE 响应结构：{@code {"updateType":"DELETE","stats":{"processedRows":N}}}
+     * 跟进 nextUri 直到语句执行结束，返回最后一页，并把带数据的页收进 dataSink
+     */
+    private Map<String, Object> driveToCompletion(Map<String, Object> firstPage, List<List<Object>> dataSink) {
+        Map<String, Object> page = firstPage;
+        absorbData(page, dataSink);
+        Object nextUri = page.get("nextUri");
+        int pageCount = 0;
+        while (nextUri instanceof String && pageCount < MAX_NEXT_PAGES) {
+            Map<String, Object> next = fetchNext((String) nextUri);
+            if (next.isEmpty()) {
+                break;
+            }
+            page = next;
+            absorbData(page, dataSink);
+            nextUri = page.get("nextUri");
+            pageCount++;
+        }
+        return page;
+    }
+
+    /**
+     * DML 的受影响行数出现在中间页：实测 Trino 的页序是 QUEUED→RUNNING(带 rows 数据)→FINISHED(数据为空)，
+     * 所以只认最后一页会把行数丢掉，必须边翻页边收。
      */
     @SuppressWarnings("unchecked")
-    private long extractUpdateCount(Map<String, Object> response) {
-        Object stats = response.get("stats");
+    private void absorbData(Map<String, Object> page, List<List<Object>> dataSink) {
+        Object data = page.get("data");
+        if (data instanceof List && !((List<Object>) data).isEmpty()) {
+            dataSink.clear();
+            dataSink.addAll((List<List<Object>>) data);
+        }
+    }
+
+    /**
+     * 从 Trino DML 响应中提取受影响行数
+     *
+     * <p>Trino 的 INSERT/UPDATE/DELETE 把受影响行数作为结果集返回（列名 {@code rows}）。
+     * {@code stats.processedRows} 量的是扫描行数，不等于受影响行数，只在没有结果集时兜底。
+     */
+    @SuppressWarnings("unchecked")
+    private long extractUpdateCount(Map<String, Object> lastPage, List<List<Object>> data) {
+        if (!data.isEmpty() && data.get(0) instanceof List) {
+            List<Object> cells = (List<Object>) data.get(0);
+            if (!cells.isEmpty() && cells.get(0) instanceof Number) {
+                return ((Number) cells.get(0)).longValue();
+            }
+        }
+        Object stats = lastPage.get("stats");
         if (stats instanceof Map) {
             Object processedRows = ((Map<String, Object>) stats).get("processedRows");
             if (processedRows instanceof Number) {

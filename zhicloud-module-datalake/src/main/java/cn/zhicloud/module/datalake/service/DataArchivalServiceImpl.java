@@ -23,8 +23,10 @@ import java.util.regex.Pattern;
 /**
  * 历史数据归档服务实现
  *
- * <p>通过 Trino REST API 执行 {@code INSERT INTO iceberg.${tableName} SELECT * FROM mysql.${tableName}
+ * <p>通过 Trino REST API 执行 {@code INSERT INTO iceberg.<namespace>.<table> SELECT * FROM mysql.<sourceDatabase>.<table>
  * WHERE create_time < ?} 将 MySQL 业务库冷数据归档到 Iceberg 数据湖仓，归档成功后删除源表已归档数据。
+ * 命名空间取 {@code zhicloud.datalake.iceberg-namespace}（默认 ods），源库名取
+ * {@code zhicloud.datalake.source-database}（默认 zhicloud_platform）。
  *
  * <p>归档状态记录在内存 {@link ConcurrentHashMap} 中（{@link #archiveStatusStore}），
  * 进程重启后状态丢失。生产环境建议替换为 Redis 或 MySQL 持久化存储（如 erp_archive_log 表）。
@@ -65,8 +67,10 @@ public class DataArchivalServiceImpl implements DataArchivalService {
 
     @Override
     public String archiveTable(String tableName, LocalDate beforeDate) {
-        // 1. 输入校验：表名白名单，防止 ${} 拼接注入
+        // 1. 输入校验：表名/命名空间/源库名共用同一套标识符白名单，防止 ${} 拼接注入
         validateTableName(tableName);
+        validateIdentifier(properties.getIcebergNamespace(), "归档命名空间");
+        validateIdentifier(properties.getSourceDatabase(), "源库名");
         if (beforeDate == null) {
             throw new IllegalArgumentException("beforeDate 不能为空");
         }
@@ -84,12 +88,16 @@ public class DataArchivalServiceImpl implements DataArchivalService {
         archiveStatusStore.put(tableName, status);
 
         // 3. 构建 SQL：通过 Trino 将 MySQL 冷数据归档到 Iceberg，再删除源表已归档数据
+        // 两端都必须是 catalog.schema.table 三段式：只写 catalog.table 时，Iceberg 侧会把表名当成 schema，
+        // MySQL 侧会把表名当成数据库名，两条语句都定位不到对象（原写法对任何配置的表名都必然失败）。
+        String target = "iceberg." + properties.getIcebergNamespace() + "." + tableName;
+        String source = "mysql." + properties.getSourceDatabase() + "." + tableName;
         String insertSql = String.format(
-                "INSERT INTO iceberg.%s SELECT * FROM mysql.%s WHERE create_time < DATE '%s'",
-                tableName, tableName, beforeDate.toString());
+                "INSERT INTO %s SELECT * FROM %s WHERE create_time < DATE '%s'",
+                target, source, beforeDate.toString());
         String deleteSql = String.format(
-                "DELETE FROM mysql.%s WHERE create_time < DATE '%s'",
-                tableName, beforeDate.toString());
+                "DELETE FROM %s WHERE create_time < DATE '%s'",
+                source, beforeDate.toString());
 
         try {
             // 3.1 执行 INSERT 归档（通过 IcebergCatalogService 调用 Trino REST API）
@@ -171,8 +179,15 @@ public class DataArchivalServiceImpl implements DataArchivalService {
      * 校验表名：仅允许字母/数字/下划线，防止 ${} 拼接 SQL 注入
      */
     private void validateTableName(String tableName) {
-        if (tableName == null || !TABLE_NAME_PATTERN.matcher(tableName).matches()) {
-            throw new IllegalArgumentException("非法表名：" + tableName + "，仅允许字母/数字/下划线");
+        validateIdentifier(tableName, "表名");
+    }
+
+    /**
+     * 标识符白名单：所有要拼进 Trino SQL 的名字都过这一关
+     */
+    private void validateIdentifier(String value, String field) {
+        if (value == null || !TABLE_NAME_PATTERN.matcher(value).matches()) {
+            throw new IllegalArgumentException("非法" + field + "：" + value + "，仅允许字母/数字/下划线");
         }
     }
 
