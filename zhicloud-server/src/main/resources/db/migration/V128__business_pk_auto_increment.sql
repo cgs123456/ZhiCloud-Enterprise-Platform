@@ -1,0 +1,205 @@
+-- ======================== 存量业务表主键补自增 ========================
+-- 作者：zhicloud
+-- 背景：
+--   application.yaml 的 mybatis-plus.global-config.db-config.id-type 是 NONE，
+--   IdTypeEnvironmentPostProcessor 对 MySQL 解析成 AUTO —— 插入时不传 id，由数据库生成。
+--   但 V10/V11/V13/V25-V31/V48-V51/V14 等一批基础 DDL 写的是 "id BIGINT PRIMARY KEY"（没有 AUTO_INCREMENT），
+--   真机 INSERT 会死在 Field 'id' doesn't have a default value。
+--   这些模块的单元测试各用自己 src/test/resources/sql/create_tables.sql 里的 H2 建表脚本，
+--   所以这条差异从来没被测试跑到。本轮为了 "WMS 出库 / QMS 检验 / HR / ERP / AI" 这些业务流程真的能跑，补齐。
+-- 语义：
+--   * 只改 id 一列，保留原注释；MODIFY 会重建列，MySQL 8 对已有数据表是表重建（INPLACE 不可用时 COPY），
+--     生产执行要按维护窗口逐表评估——这也是为什么单独成一个迁移而不是混进业务迁移。
+--   * AUTO_INCREMENT 起始值由 MySQL 按现有最大 id 自动续，历史行不受影响。
+--   * 若某表的 DO 显式指定了 IdType.ASSIGN_ID/INPUT，传入的 id 依然被接受，自增只是兜底。
+
+-- 原定义（V85__aimultiagent_checkpoint.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE aimultiagent_checkpoint MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V3__aimultiagent_init.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE aimultiagent_execution_log MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V89__aimultiagent_trace.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE aimultiagent_execution_span MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V87__aimultiagent_skill.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE aimultiagent_skill MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V87__aimultiagent_skill.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE aimultiagent_skill_group MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V3__aimultiagent_init.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE aimultiagent_topology MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V86__airag_eval_dataset.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE airag_eval_dataset MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V86__airag_eval_dataset.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE airag_eval_question MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V86__airag_eval_dataset.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE airag_eval_report MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_account MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_cost_allocation MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_cost_center MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_currency MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_customer MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_exchange_rate MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_finance_payment MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_finance_payment_item MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_finance_receipt MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_finance_receipt_item MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_product MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_product_category MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_product_unit MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_profit_center MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_profitability_analysis MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_purchase_in MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_purchase_in_items MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_purchase_order MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_purchase_order_items MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_purchase_return MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_purchase_return_items MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_sale_order MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_sale_order_items MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_sale_out MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_sale_out_items MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_sale_return MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_sale_return_items MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_stock MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_stock_batch MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_stock_check MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_stock_check_item MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_stock_in MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_stock_in_item MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_stock_move MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_stock_move_item MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_stock_out MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_stock_out_item MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_stock_record MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_stock_serial MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_supplier MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V10__erp_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE erp_warehouse MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V83__hr_base_tables.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE hr_attendance MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V83__hr_base_tables.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE hr_department MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V83__hr_base_tables.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE hr_employee MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V83__hr_base_tables.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE hr_performance MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V83__hr_base_tables.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE hr_position MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V83__hr_base_tables.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE hr_salary MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V2__qms_init.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE qms_capa_document MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V34__qms_complaint.sql）：`id` BIGINT NOT NULL COMMENT '主键'
+ALTER TABLE qms_customer_complaint MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V32__qms_eight_d.sql）：`id` BIGINT NOT NULL COMMENT '主键'
+ALTER TABLE qms_eight_d_report MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V13__qms_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE qms_electronic_signature_log MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V13__qms_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE qms_fmea_document MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V13__qms_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE qms_fmea_item MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V2__qms_init.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE qms_inspection_item MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V2__qms_init.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE qms_inspection_order MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V2__qms_init.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE qms_inspection_record MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V13__qms_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE qms_msa_measurement MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V13__qms_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE qms_msa_study MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V13__qms_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE qms_ncr_document MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V13__qms_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE qms_ncr_mrb_record MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V33__qms_training.sql）：`id` BIGINT NOT NULL COMMENT '主键'
+ALTER TABLE qms_qualification MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V47__qms_quality_cost.sql）：`id` BIGINT NOT NULL COMMENT '主键'
+ALTER TABLE qms_quality_cost MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V35__qms_sqm.sql）：`id` BIGINT NOT NULL COMMENT '主键'
+ALTER TABLE qms_scar MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V35__qms_sqm.sql）：`id` BIGINT NOT NULL COMMENT '主键'
+ALTER TABLE qms_supplier_audit MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V35__qms_sqm.sql）：`id` BIGINT NOT NULL COMMENT '主键'
+ALTER TABLE qms_supplier_rating MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V33__qms_training.sql）：`id` BIGINT NOT NULL COMMENT '主键'
+ALTER TABLE qms_training_plan MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V33__qms_training.sql）：`id` BIGINT NOT NULL COMMENT '主键'
+ALTER TABLE qms_training_record MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V11__wms_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE wms_check_order MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V11__wms_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE wms_check_order_detail MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V11__wms_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE wms_inventory MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V11__wms_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE wms_inventory_batch MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V11__wms_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE wms_inventory_history MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V11__wms_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE wms_item MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V11__wms_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE wms_item_brand MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V11__wms_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE wms_item_category MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V11__wms_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE wms_item_sku MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V11__wms_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE wms_merchant MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V11__wms_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE wms_movement_order MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V11__wms_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE wms_movement_order_detail MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V11__wms_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE wms_receipt_order MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V11__wms_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE wms_receipt_order_detail MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V11__wms_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE wms_shipment_order MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V11__wms_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE wms_shipment_order_detail MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V11__wms_ddl.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE wms_warehouse MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V4__wms_wave_init.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE wms_wave_order MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';
+-- 原定义（V4__wms_wave_init.sql）：id BIGINT PRIMARY KEY COMMENT '主键'
+ALTER TABLE wms_wave_order_detail MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键';

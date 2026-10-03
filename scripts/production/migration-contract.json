@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "contract_start_version": 90,
-  "purpose": "Reviewed V90-V118 migration and verification bytes; execution evidence includes a MySQL 8.4.9 sandbox clean baseline with V2-V118 applied, V115-V118 executed and verified, idempotent clean-mode rerun, MySQL bootstrap success with repeat fail-closed, a Flyway 11.7.2 parser/execution check for V108, V107 fail-closed negative scenarios, and full ERP-to-WMS integration evidence including cross-tenant identical WMS order numbers. The existing-database chain remains correctly blocked by V115 until bootstrap ordering is completed. V116/V117 concurrency, soft-delete semantics, large-table DDL cost, non-MySQL equivalents, and BPM rollback remain pending.",
+  "purpose": "Reviewed V90-V121 migration and verification bytes; V119 is registered and has isolated MySQL 8.4.11 sandbox execution evidence (4/4 scenarios passed) but this is not production validation. V120 is registered and byte-locked; V120 owner/lease migration has isolated MySQL 8.4.11 sandbox evidence (first execution and idempotent rerun succeeded, V120_verify 4/4 checks passed, and an incompatible pre-existing lease index failed closed), but this is not production validation. Current owner fencing application semantics have isolated MySQL 8.4.11 sandbox evidence (9 tests, 0 failures/errors/skipped, minimal V100→V104→V107→V120 chain), but this is not production validation; production topology, failover, scale, DLQ/replay/compensation and reconciliation remain pending. Execution evidence includes a MySQL 8.4.x sandbox clean baseline with V2-V118 applied, V115-V118 executed and verified, idempotent clean-mode rerun, MySQL bootstrap success with repeat fail-closed, a Flyway 11.7.2 parser/execution check for V108, V107 fail-closed negative scenarios, and full ERP-to-WMS integration evidence including cross-tenant identical WMS order numbers. The existing-database chain remains correctly blocked by V115 until bootstrap ordering is completed. V116/V117 concurrency, soft-delete semantics, and synthetic large-table DDL cost have isolated MySQL sandbox evidence but are not production validation; V118 real BPM service-chain transaction and same-businessKey concurrency have isolated MySQL 8.4.11 evidence but are not production validation. Non-MySQL equivalent constraints, production dynamic data-source routing, production failure injection, production-scale migration, and BPM outbox/compensation/reconciliation remain pending.",
   "migrations": [
     {
       "version": 90,
@@ -148,35 +148,35 @@
       "file": "V110__erp_cost_mps_tables.sql",
       "sha256": "b7100805a8804c4dc9e52fd4ebbcb975c634539790d9888d7c762ca091561fb2",
       "verification_file": "V110_verify.sql",
-      "verification_sha256": "eb9a234a49e5845a542fe1fa6a3c7bc626fa40633cabe56bb97c06196c7c06f5"
+      "verification_sha256": "6335e40f18e2c479c01e9742bb3c0a2d964c5e3932abccc58c9a5a1bdeb61bd6"
     },
     {
       "version": 111,
       "file": "V111__mes_tpm_rework_tables.sql",
       "sha256": "028b3ded48bfbfcaac447c6931e0b520f2ccbb87a31933fff17132e84ac8d5d3",
       "verification_file": "V111_verify.sql",
-      "verification_sha256": "7eddbcdcf2c168f0e4a874e69fa095724c980dde4b98de91912b9c9d07f60205"
+      "verification_sha256": "cf1e22a19dcc58c9ef95b68a384b9ba4cab224fdd76683e2d7a15097d2eef444"
     },
     {
       "version": 112,
       "file": "V112__qms_document_audit_instrument_tables.sql",
       "sha256": "e0442b668d5ba9709a6105295fee1653f0ffd6102045eac5060e7d182eafa80d",
       "verification_file": "V112_verify.sql",
-      "verification_sha256": "ccddcacb160be925828967c49f61b850029d0403ccf30bb4cc8e346f35e9003f"
+      "verification_sha256": "10d3654ea0d63de104cf5270b17c2582725b4e13f2c60612f9fe1dcf6391fed5"
     },
     {
       "version": 113,
       "file": "V113__tenant_indexes.sql",
       "sha256": "43579610d795b21769c148fb26dedf3dc355bc88c57ca159203256000a5743c9",
       "verification_file": "V113_verify.sql",
-      "verification_sha256": "6da7d0ac0f85827b85ddfddc680d13c8720b79413f6b7147f9581decce1264b1"
+      "verification_sha256": "277de3de7875784ab8c236f83bf759d7890b0a65549b85d8dba07a65837418da"
     },
     {
       "version": 114,
       "file": "V114__ai_metadata_tables.sql",
       "sha256": "987ddd58029e882bbda1d2d59062d1a444fa8545f099f8dbf1a44f63ac98d20e",
       "verification_file": "V114_verify.sql",
-      "verification_sha256": "19f96881a440a0e8f02269bbfbcc15a9ee12af4fdf7d3f4a53be05df0a8430c5"
+      "verification_sha256": "aca57b21daca994e4b2695c45b5f9975f0e8ef53163feb771335796d9d7cdc2d"
     },
     {
       "version": 115,
@@ -205,6 +205,97 @@
       "sha256": "f57dc75a5e731e17d3978a459d4f722b039c07d0d5d36b9f1bc1cec9652db8db",
       "verification_file": "V118_verify.sql",
       "verification_sha256": "35f2a5e3065352d71148b4da7108726051a8cb638d246ffdc33b383d5e3d9824"
+    },
+    {
+      "version": 119,
+      "file": "V119__inventory_item_tenant_unique.sql",
+      "sha256": "0e59f833ff2f988f249f8d2f505ea5657a52fa82b34bcf5e5607a3acc0a8281d",
+      "verification_file": "V119_verify.sql",
+      "verification_sha256": "e9ae7f063547328a901d37d3463eda82f6bc83ea3e8e47bd5d80b634bff952ad"
+    },
+    {
+      "version": 120,
+      "file": "V120__event_outbox_inbox_owner_lease.sql",
+      "sha256": "a8fe907f2cc383e3523c10134926e3cc826554474171212317e83e3cba0c747e",
+      "verification_file": "V120_verify.sql",
+      "verification_sha256": "5f6398298799319121630d4a295b4d60805da6a563d6f3e61fc38c0f2bac4e08"
+    },
+    {
+      "version": 121,
+      "file": "V121__bpm_process_instance_idempotency_claim_token.sql",
+      "sha256": "9597f047324b1a7f7348a050eebf302f6fabf505c642cf4ede5f60a54f8093e0",
+      "verification_file": "V121_verify.sql",
+      "verification_sha256": "23760521d1fbb2dc0c4388fcd798e4278019287a34a82cdc4372817070cd61d2"
+    },
+    {
+      "version": 122,
+      "file": "V122__iot_ddl.sql",
+      "sha256": "77141d8e28d63872c9a903fdccd28578991cdcb45e702a5640aa3f892ac365ed",
+      "verification_file": "V122_verify.sql",
+      "verification_sha256": "e0a850f0f57f185cc3f46afd27901e8a757aef7b27b5262bfaf3e0d266b44d54"
+    },
+    {
+      "version": 123,
+      "file": "V123__mall_pay_ddl.sql",
+      "sha256": "f5f24557653c1553050ef8b879cb587aaaeb6feb15ec247f7e0381fd5030a6d3",
+      "verification_file": "V123_verify.sql",
+      "verification_sha256": "9c147a94ba22165bf6e3736628f8850861ef4f5168ca40127e029d7ef37c4548"
+    },
+    {
+      "version": 124,
+      "file": "V124__tms_wms_shipment_link.sql",
+      "sha256": "57b201b319fe000af41a251a0a4e39ea7ba4366cf90f845e4446e2a4f41f2c63",
+      "verification_file": "V124_verify.sql",
+      "verification_sha256": "5b657cf34eab12aad0ab1f766e17fc2ae17b7caaca1f0609baf06e7654bef71f"
+    },
+    {
+      "version": 125,
+      "file": "V125__member_ddl.sql",
+      "sha256": "2fe7d8b52f6e4e62f98825b763c45aa21286b51d132c525716750f6f330c3b08",
+      "verification_file": "V125_verify.sql",
+      "verification_sha256": "f513b2e50100ca3030de6c18568ac36ef0bfea8afd466b064c7cbadf409fdbe8"
+    },
+    {
+      "version": 126,
+      "file": "V126__business_report_views.sql",
+      "sha256": "02d0f2137d307074ccbdf8479f039e53dc3ff42f742f7420ecdcd20502687c27",
+      "verification_file": "V126_verify.sql",
+      "verification_sha256": "a8970ce40884845cc217b36c6be8f9de4cb9815ecf6385e2b2393cd92041aa2e"
+    },
+    {
+      "version": 127,
+      "file": "V127__hr_leave_request_bpm_link.sql",
+      "sha256": "7cedcaf32c09a86530866b336dd16ba12d457560448b3e8a25f3c39cf77a38d5",
+      "verification_file": "V127_verify.sql",
+      "verification_sha256": "e18955f0ff848d01594a72b3bf3b71c02c4c1774a0c9eabdea1f896d632ff2e4"
+    },
+    {
+      "version": 128,
+      "file": "V128__business_pk_auto_increment.sql",
+      "sha256": "f2eb658f6bb99d05dcbcc8b1e45aa9377b11ecf2322030a688e1b46febea0236",
+      "verification_file": "V128_verify.sql",
+      "verification_sha256": "8103d48b7f4946158fced308d4f150d2b7397d6bc0f4c98ef24740d37ece9a3b"
+    },
+    {
+      "version": 129,
+      "file": "V129__report_ddl.sql",
+      "sha256": "37870315f5f2c6a0260077b151e71e84186c44141e662dac1e4ac55bcb770289",
+      "verification_file": "V129_verify.sql",
+      "verification_sha256": "cd8aab2b575e0b114b8d044b9c78317d17ca7f23eb2b05d3e228d915fdee0f75"
+    },
+    {
+      "version": 130,
+      "file": "V130__bpm_inflight_view_fix.sql",
+      "sha256": "d429693bc78b72b2d1e8a31b70a822c108cabcc4fa1a795570e733b9ddc8e853",
+      "verification_file": "V130_verify.sql",
+      "verification_sha256": "c738313feba452663dce7213e14aa6b0fcbd740e0dea548c427575962fab4e54"
+    },
+    {
+      "version": 131,
+      "file": "V131__hr_leave_type_seed.sql",
+      "sha256": "c7ae7f699a6c4a41b00185de48a823aaf977fe63f4b13f80adefdc2eb06bb28c",
+      "verification_file": "V131_verify.sql",
+      "verification_sha256": "88e7ef4d9e975d507441aa92299f60c9312051946c4ca616d85206af44dc4c68"
     }
   ]
 }
