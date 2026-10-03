@@ -1,4 +1,14 @@
-# 许可证待签清单（License Policy Gate 判红处置提案）
+# 许可证待签清单（已按所有者决定关闭，仅留档）
+
+> **2026-10-03 处置结果**：所有者决定 —— 本项目为内部自研、不对外分发，**许可证合规不作为发布门禁**。
+> 落实方式：`license-policy.json` 把 `missing`/`unmapped` 两类降为 `allow`，并去掉
+> `check_license_policy.py` 里对这两类**写死 deny** 的分支（否则决定无法只由 policy 表达、也审计不到）；
+> 其余已识别出许可证的类别（strong_or_restrictive / custom_or_non_spdx / weak_copyleft / expression_or_dual）
+> 判定不变，且 **policy 里删掉键时默认仍回落 deny**（实测 rc=1），fence 没有被拆。
+> 下面这份清单保留作为事实记录 —— 其中第 4 项是**与许可证无关的供应链问题**，请单独看：
+> `gui.ava:html2image:2.0.1` 在 Maven Central 上 404，只在 `huaweicloud` 镜像里有，
+> jar 与 POM 都没有许可证声明，等于"来源无法核实"。这条不会因为"许可证不需要"而消失，
+> 建议要么从 report 模块剔掉这条链路，要么至少换成 Central 上可核实的坐标。
 
 生成时间：2026-10-03。触发点：CI 的 `License Policy Gate (fail-closed)` 对 7 个组件判 `LIC-EXT-002 DENY`，
 全部由本轮启用 `report/pay` 等模块后进入运行时依赖树。**本文件只列证据与建议，不做合规结论**；

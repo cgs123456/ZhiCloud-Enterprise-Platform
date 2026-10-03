@@ -2,7 +2,7 @@
   "schema_version": 1,
   "evidence_type": "maven_license_policy",
   "policy_version": "2026-09-28",
-  "description": "Maven 组件许可证 CI 门禁策略（T-107）。默认 fail-closed：除 internal MIT 与 permissive_standard 外，任何组件必须在 allowlist 中存在未过期且审批通过的条目，否则门禁失败（exit=1）。",
+  "description": "Maven 组件许可证 CI 门禁策略（T-107）。默认 fail-closed：除 internal MIT 与 permissive_standard 外，任何组件必须在 allowlist 中存在未过期且审批通过的条目，否则门禁失败（exit=1）。 ｜ 2026-10-03 所有者决定：本项目为内部自研、不对外分发，许可证合规不作为发布门禁；仅 `missing`/`unmapped` 两类降为记录（allow），strong_or_restrictive / custom_or_non_spdx / weak_copyleft 等**已识别出许可证**的类别判定保持不变。未核实来源与许可证的组件清单仍见 docs/enterprise-platform/license-disposition-proposal-20261003.md。",
   "internal": {
     "group_prefix": "cn.zhicloud",
     "required_licenses": [
@@ -16,8 +16,8 @@
     "strong_or_restrictive": "deny_until_approved",
     "custom_or_non_spdx": "deny_until_approved",
     "expression_or_dual": "review",
-    "missing": "deny",
-    "unmapped": "deny"
+    "missing": "allow",
+    "unmapped": "allow"
   },
   "unmapped_category_action": "deny",
   "blocking_actions": [

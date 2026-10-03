@@ -5044,3 +5044,25 @@ PDA 手持终端的登录态是**后台用户**，它挂 `@ss.hasPermission` 才
 需要的所有者决定，一句话即可：QMS 的 `supplier_id` 指向哪张表、`product_id` 指的是 SPU、SKU 还是 WMS 物料？
 定了之后我再做三件事：给列补上外键语义（DO 注释 + 迁移注释）、按契约派生或校验、
 并把 V126 视图的 `product_count=0` 从"看起来正常"改成人能看出问题（例如视图层加一个维度可用性计数）。
+
+### 12.111 许可证门禁按所有者决定降级（并修掉"决定只能改代码"的设计缺陷）
+
+决定是"内部自研、许可证不要"。落实时发现只改 `license-policy.json` **不生效**：
+`check_license_policy.py:246` 对 `missing/unmapped` 两类把 `action="deny"` 写死在代码里，
+根本不看 policy。也就是说这类所有者决定只能改源码，事后从数据文件里读不出决定过 —— 把它改成
+`action = category_actions.get(category) or unmapped_action`：**决定写在 policy 里，代码只在缺省时回落 deny**。
+
+实测三条（合成 inventory，7 个组件正是 CI 判红的那 7 个）：
+
+| 配置 | 结果 |
+|---|---|
+| `missing/unmapped = allow`（当前 policy） | `ALLOW components=7 allowed=7` rc=0 |
+| 把 `missing` 改回 `deny` | rc=1，`allowed=2 denied=5`（fence 仍会咬） |
+| **删掉这两个键**（模拟 policy 没写决定） | rc=1 —— 默认仍 fail-closed，没有"忘了配就放行"的洞 |
+
+其余判定类别（strong_or_restrictive / custom_or_non_spdx / weak_copyleft / expression_or_dual）一律没动；
+`scripts/production/tests/test_check_license_policy.py` 22 条仍全绿。
+
+**留了一个不随本决定消失的问题**：`gui.ava:html2image:2.0.1` 在 Maven Central 上 404、
+只有 `huaweicloud` 镜像有、jar 与 POM 都无许可证声明 —— 这是**来源不可核实**，属供应链面，
+不是许可面；已在提案文档顶部单独标出，建议从 report 链路剔掉或换成 Central 可核实的坐标（另列任务）。
