@@ -4,8 +4,8 @@
 > 日期：2026-09-27
 > 适用仓库：`ZhiCloud-Enterprise-Platform`
 > 当前分支：`upgrade/production-readiness`
-> 当前 HEAD：`d7994f60e12ef1b93baede2ad811b15cc3f533f1`
-> 交付状态：00-14 方案基线已形成；V115-V117 已在 MySQL 8.4.9 clean 沙箱全新库端到端执行并通过验证与重跑幂等；V116/V117 的并发重复拒绝、软删除语义和 100,000 行合成 DDL 成本已通过 MySQL 沙箱证据；MySQL bootstrap runner 已通过沙箱创建/noop/fail-closed/rotate 与只读审计；存量生产库全链、非 MySQL、生产规模 MDL/复制影响、BPM 回滚、TLS/K8s/灾备仍未闭环，生产就绪结论不变
+> 当前 HEAD：`d0ebc96c9f864450c9c293094e114aff0e4e8588`
+> 交付状态：00-14 方案基线已形成；V115-V118 已在隔离 MySQL clean 沙箱路径执行并验证重跑幂等；V119 库存租户唯一约束、V120 Outbox/Inbox owner/lease 迁移和 V121 BPM claim-token ownership 另有隔离 MySQL 8.4.11 沙箱/静态证据（V119 4/4；V120 首次/幂等重跑 exit=0、4/4 验证及不兼容索引 fail-closed；V121 claim-token unit 4/0/0/0、真实链 fail-closed 2/0/0/0、10 并发 1/0/0/0、SQL lint 2 文件 0 违规），不属于 V115-V118 clean 全链；V116/V117 的并发重复拒绝、软删除语义和 100,000 行合成 DDL 成本已有历史沙箱证据，当前 T-000 约束语义复跑使用 MySQL 8.4.11 并 5/5 通过；MySQL bootstrap runner 已通过历史沙箱创建/noop/fail-closed/rotate 与只读审计；H2/历史单实例 MySQL 回滚，以及隔离 MySQL 8.4.11 的 CRM→真实 BPM→Flowable 事务链 2/2、同 `businessKey` 10 并发 1/1、动态数据源路由/事务绑定 3/3 已有证据，但生产 `DynamicRoutingDataSource`/物理主从/真实读写分离/多租户物理连接、生产故障、生产规模、Outbox/补偿对账、存量生产库全链、非 MySQL、TLS/K8s/灾备仍未闭环，生产就绪结论不变
 
 ## 0. 一句话结论
 
@@ -59,8 +59,48 @@
 | HR Controller | 13 |
 | OA Controller | 12 |
 | TMS Controller | 9 |
+| IoT Controller（iot-biz） | 18 |
+| Pay Controller | 19 |
+| Member Controller | 20 |
+| 商城 Controller（product/promotion/trade/statistics） | 13 / 37 / 19 / 4 |
 | Java 测试文件总数 | 385（当前工作区统计） |
-| 最近迁移版本 | V117（已在 MySQL 8.4.9 clean 沙箱执行；存量库全链尚未通过） |
+| 最近迁移版本 | V131 hr_leave_type_seed（V122 iot 15 表 / V123 商城+支付 63 表 / V124 TMS↔WMS 关联列 / V125 member 11 表 / V126 三张查询视图 / V127 请假流程编号列 / V128 95 张存量表自增主键 / V129 report 建表 / V130 在途审批视图口径修正 / V131 HR 假期类型参照数据；均已登记进迁移契约，V1..V131 全链在隔离 MySQL 8.4.11 实跑，见下） |
+
+2026-10-02 起 `zhicloud-module-iot`、`zhicloud-module-pay`、`zhicloud-module-member`、`zhicloud-module-mall`
+进入构建（根 pom 与 `zhicloud-server/pom.xml` 的对应注释已放开；根 pom 里那行 `zhicloud-member` 是失效目录名，实际是 `zhicloud-module-member`）。
+此前这些模块**代码在库内但不参与构建**，且**没有任何 MySQL 建表脚本**（只有模块自带的 H2 测试建表，且 iot 那份已过期），
+所以"模块不存在"的旧结论不准确；真实缺口是构建参与 + DDL + 多租户列。详见 handoff 清单 §12.80、§12.81。
+
+**业务模块齐全度本轮已知的"还不能跑"部分**（不粉饰）：
+- ~~仓库内没有任何 `.bpmn` 流程定义，端到端还差按租户部署流程定义~~ → **本条已被实测推翻**：
+  `BpmProcessDefinitionSeedService` 按「租户 + KEY」播种最小流程定义，本轮在同一进程、真 Flowable、真 MySQL 上
+  跑通 **OA 报销** 与 **HR 请假** 两条完整审批链（播种 → 建单 → 提交 → 引擎待办 → 审批 → 业务行状态翻转 + 假期余额扣减）。
+  仍未跑通的只剩 `crm-contract-audit` 这一条（同一条链路，缺一次真机复跑，不是缺代码）。
+- **服务端此前从未成功启动**，本轮第一次 `Started ZhiCloudServerApplication`。启动期三个真阻塞已全部修掉：
+  ai-rag 自注入缺 `@Lazy`、OA mapper 字段名 `articleMapper` 与商城 `promotion.ArticleMapper` 的 bean 名撞车
+  （同类形状全仓扫过，另命中 CRM 一处）、无口令 Redis 下 Redisson 仍发 `AUTH`。详见 handoff §12.95.2。
+- **HR 主数据缺口已补一半**：`hr_leave_type` 原本是空表（没有假期类型就建不出请假单），V131 幂等补 8 个常用类型
+  （含"事假 = 不带薪"，否则扣余额分支在初始系统里永远走不到）；`hr_employee`/`hr_leave_balance` 属组织数据，不由迁移伪造。
+  **HR / QMS 的菜单权限种子仍缺**：代码里 HR 有 51 个、QMS 有 97 个 `@PreAuthorize` 权限串，而 `system_menu` 里分别只有
+  **0 条和 1 条**（对照 mes 324 / erp 188 / promotion 72 / crm 77 / wms 85 / iot 55 / oa 43 / bpm 42 / product 22 / trade 20 /
+  statistics 5 / report 6）—— 普通角色授权不到这两个模块，现在能用只因为 super_admin 绕过校验。
+  本轮没有硬编菜单行：path/component 必须对齐前端路由，而前端不在本仓库，这批数据要等前端契约（见 handoff §12.96.3）。
+- TDengine 数据源在 `application-local.yaml` 整段注释；`TDengineTableInitRunner` 已加
+  `@ConditionalOnProperty`，未配置时服务端能正常启动，但**设备消息/属性接口不可用**（调用才报错，不静默返回空）。
+- 审批动作与短信链路**硬耦合**：待办短信在同一事务内同步发送，`system_users.mobile` 为空时整笔审批被回滚
+  （本轮真机撞到，给了手机号才通过）。这不是"通知失败降级"，是业务动作失败，见 §12.95.3。
+- `zhicloud-server` 的 fat jar 有个静默陷阱：不 `clean` 时 `mvn -pl zhicloud-server package`
+  会打印 `Replacing main artifact` 且 BUILD SUCCESS，但 jar 字节没变（本轮实测 nested md5 未变）；
+  根 `mvn -o install` 会在 `zhicloud-module-iot-gateway` 断（vertx 4.5.26 从未下载，离线不可解析），全量构建需联网一次。
+- 商城上游测试大面积 `@Disabled`（"TODO 后续 fix 补充的单测"）。放开后 product 从 0 条在跑变成 29 条在跑，
+  并修掉三处真实缺陷：H2 fixture 是 MySQL 直导且列集合落后于 DO、`ProductSkuDO$Property` 不可序列化
+  （JDK 序列化缓存路径在生产也会炸）、新建 SPU 的销量/浏览数业务默认值被随机入参比掉。
+  仍禁用并写明原因的含下单主链路 `TradeOrderUpdateServiceTest` 等 4 个类（缺跨模块 API 的 `@MockitoBean` 替身）。
+  数字：product 33 跑/29 通过/4 禁用，trade 49 跑/39 通过/10 禁用，promotion 79 跑/18 通过/61 条上游自留禁用，statistics 无用例。
+- `zhicloud-module-report` 仍未进构建；`zhicloud-module-datalake` 的查询能力全部挂在 Trino 上（`zhicloud.datalake.enabled` 默认 false）。
+- 存量基础 DDL（V10/V11/V13 等）里 `id BIGINT PRIMARY KEY` 没有 AUTO_INCREMENT，
+  而 `id-type` 对 MySQL 解析为 `AUTO`（插入不传 id）——这类表在真机 INSERT 会失败；
+  本轮新增的 V122-V127 已按自增主键写，**存量那批本轮已量化并修掉**：按"`id` 不是 auto_increment"扫全 135 个迁移命中 **95 张表**（erp 41 / wms 19 / qms 20 / hr 6 / aimultiagent 6 / airag 3，含业务流程要写的 `wms_shipment_order`、`qms_inspection_order`），`V128` 用 95 条 `MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT` 补齐；隔离 MySQL 8.4.11 全链实跑（V1..V128 一次跑完）后 `V128_PK_AUTO_INCREMENT_COVERAGE PASS 95/95` 且残余检查 `V128_RESIDUAL_BIGINT_PK_WITHOUT_AUTO PASS NULL`。
 
 模块测试分布严重不均，QMS、CRM、HR、OA、TMS 的测试文件明显不足。详见 `01-平台现状核验.md`。
 
@@ -69,30 +109,78 @@
 | 门禁 | 当前结果 | 说明 |
 |---|---|---|
 | Maven CRM 定向测试（V117） | 16 tests passed | 回款并发、幂等和余额保护定向用例通过；不等于全量模块或生产部署通过 |
-| Maven CRM 模块测试（V117） | 42 tests passed | 包含上述 16 个定向用例，不能与定向结果相加；不等于生产验证 |
+| Maven CRM 模块测试（当前） | 48 tests passed（0 失败 / 5 skipped） | 包含上述 16 个定向用例，不能与定向结果相加；不等于生产验证 |
+| CRM→真实 BPM→Flowable（隔离 MySQL 8.4.11） | 2/2 passed | 真实 `CrmReceivableServiceImpl → BpmProcessInstanceApiImpl → BpmProcessInstanceServiceImpl → 真实 Mapper → Flowable`；流程定义查询等非目标依赖为 mock；非生产 |
+| BPM 同 `businessKey` 10 并发（隔离 MySQL 8.4.11） | 1/1 passed | 10/10 请求成功、同一实例、仅一条幂等登记/Flowable 历史；历史失败证据保留；非生产 |
+| CRM/BPM 动态数据源路由/事务绑定（隔离 MySQL 8.4.11） | 3/3 passed | `DynamicRoutingDataSource` 仅暴露 master/slave 两个同实例逻辑库；`transactionManager` 绑定动态数据源，Flowable `TransactionAwareDataSourceProxy` 指向同一数据源；`CONNECTION_ID()`/`DATABASE()` 验证同一事务连接；非生产物理主从；证据 `crm-bpm-dynamic-datasource-mysql-20260929_141551.json` |
 | Maven 迁移 runner（V117） | 7 tests passed | runner 单元/组件测试通过，另有 clean 沙箱端到端执行；均不等于生产迁移通过 |
-| Python 全量生产门禁 | 303 tests OK（skipped=3） | 3 个 skip 均为 Docker daemon 不可用；当前证据 `python-full-20260927_215221.log`；另有 81 个专项测试 OK |
-| Helm 3/4 本地渲染与离线校验 | `status=passed` | 6 个正向、8 个负向 fail-closed、12 个 kubeconform 用例通过；server-side dry-run=not_run，不证明外部 Secret 或真实集群部署 |
-| MySQL runner + bootstrap 只读审计（沙箱） | `status=passed` | 迁移、ensure/noop/fail-closed/rotate、账号/租户/角色/岗位/BCrypt 形态和唯一索引一致；仅证明该沙箱库状态，`independent_review=false`，不证明生产目标库、事务、并发或其余 7 套方言 |
-| V116/V117 约束语义（MySQL 沙箱） | 5/5 scenarios passed | 并发重复拒绝为 MySQL 1062、软删除语义、100,000 行合成 DDL；V116 2.401s、V117 0.599s；仅隔离沙箱单次观测，不证明生产规模 MDL/复制、非 MySQL 或 BPM 回滚 |
-| 迁移契约 | `status=passed` | tracked=28、scanned=124、findings=0、exit=0；仅锁迁移字节，实库证据另见当前 MySQL runner 证据 |
-| 租户隔离 | `status=passed`（默认阈值） | 仍有 360 条 P1（T5=258、T4=102），不能写成零风险 |
-| 安全基线扫描 | `status=failed` | 463 文件、248 发现、P0=32、P1=216、exit=1 |
+| Python 全量生产门禁 | **`Ran 634 tests ... OK`（退出码 0，2026-10-02 本机复跑，用时 269.5 s）**；历史 `Ran 532 tests OK`（2026-09-30 补链后）、`Ran 573/575/578/583/589/590/591/594/596/598/616 tests`（§12.44–§12.65 各批次）与 `474 tests OK`（2026-09-29）、`481/47 errors`（补链前）均降级为追溯。**该结论要求 pwsh/mysql 在 PATH 中**：2026-10-02 有一次跑出 `errors=47`，根因是当次调用未导出 pwsh PATH（环境缺失、非回归），带 PATH 复跑即 OK（handoff §12.67 末）| 不代表 Java 全量或生产验证；证据面见 `08-测试与证据.md` |
+| 分组提交计划门禁（R-045，新增） | `plan_commit_groups.py` `exit=0`：当前 122 项可提交面分成 6 个有序组，证据 1249 项不入库；四条判定（证据不入库 / 每项仅认领一次 / 引用不许前指 / 规则不许空转）| **不产生提交**，也不碰索引。实测结论：`.ps1`、门禁 `.py`、守卫 `.py` 互成强连通分量，必须并成一次提交；`docs-platform` 规则若写成 `docs/**.md` 会把 10 份证据旁车扫进提交。它只回答"按这个顺序提交后每笔单独 checkout 会不会缺仓库内工件"，**不回答那笔提交能否构建成功**。详见 handoff §12.66 |
+| 证据面凭据门禁（R-046，新增） | `check_evidence_credentials.py` `exit=0`：1649 份证据 / 25.6 MB 全扫，命中 **0**；无活沙箱时 `live_layer=not-exercised` 自曝，不记成"扫过且干净" | 补的是 `security_baseline_scan.py` 只扫**已跟踪**文件、而证据按 §3.4 一律不入库造成的**零覆盖**。判定只针对随机生成的沙箱凭据形状，弱口令示例仍归安全基线扫描。例外表按 `(path + SHA-256)` 锚定：文件被改过 → `allowlist-drift` 判红；登记未命中 → `dead-allowlist-entry` 判红。详见 handoff §12.67 |
+| Helm 3/4 本地渲染与离线校验 | `status=passed` | 6 个正向、10 个负向 fail-closed、12 个 kubeconform 用例通过；证据 `helm-render-20260929_202001.json`；server-side dry-run=not_run，不证明外部 Secret 或真实集群部署 |
+| MySQL runner + bootstrap 只读审计（沙箱） | **2026-09-30 本机实跑 `status=failed`**（`mysql-runner-sandbox-20260930_124102.json`，SHA-256 `0cd8070da478e29a095dcead…`）：脚本只授 `@'127.0.0.1'`，而 Docker 把宿主连接呈现为 `172.17.0.1`，Java runner Access denied。历史 `status=passed` 为 2026-09-28 MySQL 8.4.9 沙箱口径，仅作追溯；未放宽任何授权。详见 handoff 清单 §9.5 与风险 R-033 | | 迁移、ensure/noop/fail-closed/rotate、账号/租户/角色/岗位/BCrypt 形态和唯一索引一致；仅证明该沙箱库状态，`independent_review=false`，不证明生产目标库、事务、并发或其余 7 套方言 |
+| V116/V117 约束语义（T-000 MySQL 沙箱） | 5/5 scenarios passed | MySQL 8.4.11；并发重复拒绝为 MySQL 1062、软删除语义；历史 MySQL 8.4.9 证据另有 100,000 行合成 DDL 成本观测；仅隔离沙箱，不证明生产规模 MDL/复制、非 MySQL、生产物理主从/真实读写分离/多租户数据源路由或生产故障/补偿对账 |
+| 迁移契约 | `status=passed` | tracked=32、scanned=128、findings=0、exit=0；仅锁迁移字节，实库证据另见当前 MySQL runner 证据 |
+| 租户隔离 | `status=passed`（默认阈值） | 仍有 361 条 P1（T5=259、T4=102），不能写成零风险 |
+| 安全基线扫描 | `status=passed` | 当前（2026-09-30 复跑）：494 文件、216 发现、P0=0、P1=216、controls_failed=0；证据 `security-baseline-t000-20260930_113027.json`（SHA-256 `284e9d7fd767405b…`）；487 口径（`security-baseline-t000-20260929_095135.json`）已降级为追溯；历史 2026-09-27：463 文件、248 发现、P0=32、P1=216、exit=1，仅作追溯 |
+| 业务模块 DDL 全链（V1..V129，136 个迁移） | 隔离 MySQL 8.4.11 实跑 0 错误 | V122 iot 15 表 / V123 商城+支付 63 表 / V124 TMS↔WMS 关联列 / V125 member 11 表 / V126 三张查询视图 / V127 请假流程编号列 / V128 95 张存量表补自增主键 / V129 report 建表；10 份 V12x 复核脚本全 PASS，其中 `V128_RESIDUAL_BIGINT_PK_WITHOUT_AUTO PASS NULL` 表示库内不再有 bigint 主键无自增的表。不证明生产库、事务、并发或生产规模 |
+| 业务模块单测（本轮新接入部分） | 见说明 | iot-biz 269、pay 167、member 35、product 33、promotion 79、trade 49、statistics 0、wms+qms 相关 32、tms 5、oa 监听器 5、hr BPM 12、report 16，均 0 失败 0 错误（禁用用例逐条写明原因）。不等于端到端业务流跑通：BPM 无流程定义、TDengine/Trino 未部署 |
+| ② iot：产品→物模型→设备→规则→告警 真机 | **部分通过，最后一步被框架缺陷卡住** | 真实 API 建成 product/物模型(temperature)/device/scene-rule/alert-config；`thing.property.post` 上行消息经真实 Redis Stream 总线被两个消费者消费，规则引擎执行到属性值比较。**`iot_alert_record` 仍 0 行**：库里存 `"operator":">"`，运行时读到的是 `operator(&gt;)` → `operatorOf` 判无效 → 规则永不触发；清缓存、删旧规则、重投消息均复现。根因是 `ZhiCloudXssAutoConfiguration:50` 把 XSS 清理挂到**全局 ObjectMapper**，JSON 列反序列化时被二次转义（业务侧已加 `normalizeConditions(htmlUnescape)` 修好写入侧）。详见 handoff §12.100 |
+| ② iot：产品→物模型→设备→规则→告警 真机 | **PASS** | 真实 API 建 product/物模型(`temperature`)/device/scene-rule/alert-config；`thing.property.post` 上行消息走真实 Redis Stream 总线被消费者取走；规则命中并 **`iot_alert_record total=1`**（含 configId/configName/productId/deviceId 与原始 deviceMessage）。此前卡住的是框架级 XSS 污染（见下一行），修完即通过 |
+| 框架级：全局 XSS 反序列化污染 JSON 列（已修） | **已修 + 真机对照** | `ZhiCloudXssAutoConfiguration` 把 XSS 清理注册到 Spring 全局 ObjectMapper，而 `ZhiCloudMybatisAutoConfiguration:97` 又把该 mapper 交给 `JacksonTypeHandler` → 库里存 `>`、读出来变 `&gt;`，IoT 场景比较符被静默改写、规则永不命中。改为只在 `extendMessageConverters` 里用 `mapper.copy().registerModule(...)` 给 MVC 消息转换器挂 XSS。真机三重验证：① 新写规则读回 `>`（同库旧规则仍是 `&gt;`，天然对照组）；② 告警落库 total=1；③ **XSS 未被削弱** —— 请求体传 `<script>alert(1)</script>LiveXssCheck…` 读回只剩 `LiveXssCheck…`。web starter `install` Tests run 4 / 0 失败；OA、mall 两条真机链复跑仍 PASS |
+| ② mall：商品→购物车→下单→支付 真机 | **PASS** | 会员端 API 全程：`/app-api/trade/cart/add`+`/list` `code=0`；`/app-api/trade/order/create` 自提与快递均 `code=0`（快递运费 `delivery_price=1500` 由运费模板算出），生成 `pay_order`；`/app-api/pay/order/submit`（`channelCode=mock`）`code=0 status=10` 且 `success_time` 落库；回调 `/app-api/trade/order/update-paid` 后 `trade_order.status 0→10 待发货`、`pay_time` 落库 |
+| 会员端全线 403（结构性缺陷，已修） | **已修 35 处 / 17 个 app 控制器** | `controller/app/**` 的写接口挂着后台 RBAC `@ss.hasPermission('trade:cart:create')` 等，而会员（`member_user`）在 `system_user_role` 里不存在 → 任何真实会员调商城/会员端写接口必 403（购物车、下单、售后、分销、收藏、客服、优惠券、签到、地址、钱包、支付提交）。分布：trade 5 文件/15、member 4/9、promotion 4/5、product 2/4、pay 2/2、iot 0。改为 `@PreAuthorize("isAuthenticated()")`：**仍要求登录**，只是把不可能满足的后台权限换成会员端应有的"已登录 + 资源按 `getLoginUserId()` 归属"；`@PermitAll` 公开接口未动，残留 `@ss.hasPermission` 复核为 0；5 个模块带测试 `install` rc=0 |
+| 服务端真启动（隔离容器，非生产） | `Started ZhiCloudServerApplication`，Tomcat 48080 应答 200 | 2026-10-02 首次。MySQL 8.4.11（`zc-live-mysql`，宿主 55101）+ Redis（16380，必须带口令）+ RabbitMQ（56721）全部自建隔离；数据链 = 导入 `sql/mysql/zhicloud_platform.sql`+`quartz.sql` 后由应用自带 Flyway **applied 135 migrations / 0 error**。启动耗时约 19 分钟，其中 spring-modulith 的 ArchUnit 扫描约 4.5 分钟。管理员账号由仓库脚本 `init_bootstrap_admin.py` 渲染生成（seed dump 内没有 `system_users` 数据，不建号则任何 `@PreAuthorize` 都 403）。详见 handoff §12.95.1/§12.95.2 |
+| OA 报销 → BPM → 审批（同一进程真跑） | **PASS** | 播种 `oa_reimburse`（真部署 `oa_reimburse:1:73ef4d8d…`）→ 建单 id=3 → submit `status=20` 且流程实例 `6f21a391…` → `todo-page` 取引擎任务 → `PUT /bpm/task/approve` → 业务行 **`status=30`**、流程实例 `status=2`、引擎耗时 575 ms。中途撞到"待办短信缺手机号导致整笔审批回滚"，属真实耦合风险 |
+| HR 请假 → BPM → 审批（同一进程真跑） | **PASS** | 播种 `hr_leave_request` → 建单 → submit（流程实例号落库）→ approve → **`status=1` APPROVED、`approve_time` 落库，余额 10 → used 2 → remaining 8**。前置主数据（假期类型/员工/余额）库内为空，本轮用 SQL 造数据。同时补 `HrLeaveRequestRespVO.processInstanceId`（原来缺，前端跳不了流程图） |
+| QMS 收货/流转卡点（真服务端，含放行对照） | **PASS** | 五个判定实测：`receipt_blocked=1060200008`（带 `qcBizId` 但无检验单 → 未检验也拒收，fail-closed 生效）、建合格检验单后 `receipt_released=0`（入库单 99、库存 +5）；`movement_no_inspection=0`（宽松语义：没检验单不卡既有流程）、判废检验单后 `movement_blocked=1060202008`、换单复检合格后 `movement_released=0` |
+| 移库不维护可用库存（真机读出的缺陷，已修） | **已修 + 真机对照** | 根因：`WmsMovementOrderServiceImpl` 构造库存变更项时**没设 `changeType`**，还把源仓数量写成负数 → 落进 `WmsInventoryServiceImpl` 的 `PLAIN` 兼容分支（"只动 quantity，不动三维字段"），表现为移库后目标仓 `quantity=4 / available=0`（货到了不可用）、源仓 `quantity=51 / available=55`（available 虚高、可超卖）。改为源仓 `OUT`/目标仓 `IN` + 数量保持正数（与收货/发运同一套 P0-7 约定），删掉不再使用的 `negate`。全仓 5 个 `changeInventory` 调用点已枚举：收货 IN、发运 OUT、PDA 按场景、移库（原先缺失）。真机对照：修复后源仓 **51/51**、目标仓 **4/4**，五个卡点判定一字不变；变异检查（临时删掉 `setChangeType`）→ 测试报 `expected: <OUT> but was: <null>`，恢复后全绿 |
+| QMS 发运质检卡点（真服务端双向） | **PASS** | 出库单由 API 链产生：create→start-pick→complete-pick→review→pack 全 `code=0` → 建 OQC 检验单并提交「不合格+致命」→ 检验单自动判 **40 检验不通过** → `PUT /wms/shipment-order/ship` 被拦 `1060201010`（状态原地不动，卡点在流转之前）→ 换单复检「合格」→ 判 **30 检验通过** → 再 ship `code=0`，出库单 **40→50**。并确认 QMS 语义：判出结果后不能原地重判（`1044000012`），改判必须换单复检 |
+| ①+④ 连成一条 API 驱动的链 | **PASS** | 沿用上面那张单：TMS create(`shipmentOrderId=4`)→dispatch→confirm-arrival→confirm-sign 全 `code=0` → 出库单 **50→99** + `waybill_id=4` 回写、运单 `status=40`+`sign_time`、库存 `100→97`（扣的正是明细 3 件）、⑤ 视图 `order_finished=1/has_waybill=1`。SQL 预制只剩主数据（仓库/物料/SKU/检验项目/库存行）；另实测 `wms_warehouse`/`wms_item`/`wms_item_sku`/`qms_inspection_item` **零种子** |
+| TMS 调度 → WMS 出库签收回传 | **PASS**（上游 WMS 内部链除外） | 同进程真跑 create→dispatch→confirm-arrival→confirm-sign 四步 code=0：出库单 **50→99** 且 `waybill_id=3` 回写、运单 `status=40` + `sign_time` 落库、库存 `100→94`（OUT 变更，available 同步）、库存流水 +1；⑤ 的 `v_wms_shipment_waybill_sign` 同一行同时可见（`order_finished=1`、`has_waybill=1`）。口径：SHIPPED 出库单/明细/库存为 SQL 预制，未跑 入库→…→发货 内部链 |
+| CRM 合同审批 → BPM（真机） | **PASS**（先修了一个真缺陷） | 首跑 submit 直接失败 `1020000002 合同不是未提交状态`：`createContract` 没写 `auditStatus`，而 `crm_contract.audit_status` 无库级默认值 → 新建合同恒为 NULL → **API 建出来的合同永远提交不了审批**（同模块回款/发票都写了 DRAFT，唯独合同漏）。补 DRAFT 默认后重跑：合同 id=2 → submit → 引擎任务 → approve → `audit_status=20`（审核通过）+ 流程实例号落库 |
+| 在途审批视图口径（V130） | 6/6 PASS（真机） | V126 的 `v_bpm_approval_inflight` 只过滤 `deleted=0`，把已批准/已驳回也算进"在途"，且 hr 分支的流程实例号写成常量 NULL；V130 用 `CREATE OR REPLACE` 改为按业务审批中状态过滤（oa 20 / crm 10 / hr 0）并透传 hr 流程实例。真机行数 4 → 2（只剩在途）。`check_migration_contract` tracked=41 findings=0、`check_duplicate_ddl`、`check_tenant_isolation` 均 passed |
+| ⑤ datalake：湖侧查询视图（真跑通，模块层+行级证据） | **PASS**（又修掉两处真 Trino 才现形的缺陷） | Trino 483 真环境（镜像源 `docker.m.daocloud.io`；网络 `zc-datalake`，宿主 `127.0.0.1:55133`；catalog `mysql`+`iceberg`）。业务表 `qms_inspection_order` 经 CTAS 入湖 **9 行 == MySQL 9 行**（真 parquet）；湖视图 `iceberg.ads.v_qms_inspection_daily` **5 行与 MySQL 报表视图 `v_qms_inspection_status_daily` 逐行相等**。用模块自己的生产类打真 Trino：namespaces/tables/table-schema/queryTable 全部返回真数据。修掉的缺陷：① `IcebergCatalogServiceImpl` 缺 `X-Trino-User`（含分页跟进）→ 真 Trino 一律 400；② `queryTable` 只读首屏 `columns`，而 Trino 首屏常只给 `nextUri` → 返回"N 行"却全是空 Map（日志写着"查询返回 5 行, 0 列"，数据被静默丢弃），改为边翻页边吸收列名；同一探针对照：修复前 `[{}, {}]` → 修复后 `[{tenant_id=1, stat_date=2026-10-02, order_count=4, ...}]`。两条都是全 mock 单测结构上看不到的。环境事实（复现必需）：Trino 483 已删除 `hive.metastore=file`；Iceberg JDBC 元数据表要手工建且必须按 **V1 布局**（命名空间属性 `property_key`/`property_value` 分行、`iceberg_tables` 含 `previous_metadata_location`）；写本地路径要 `fs.local.enabled=true`。归档 DELETE 半程未跑（会删业务数据；冷数据口径实测命中 0 行）。**管理端点也已真机复跑**（服务端 485 秒起来、`DataLakeAutoConfiguration` 按 catalogUri=127.0.0.1:55133 初始化）：`/admin-api/datalake/namespaces` 返回 4 个真实命名空间、`/tables?namespace=ads` 返回 `v_qms_inspection_daily`、`/table-schema` 返回 8 列类型、`/tables?namespace=ods` 返回入湖表；`/archive-status` 如实返回 `UNKNOWN`（没跑归档就不编造 SUCCESS）。详见 handoff §12.102/§12.104 |
 | 生产就绪标记 | 未通过 | `production_ready=false` |
 | Gate3 | 未通过 | `gate3_passed=false` |
 
-### 3.3 安全扫描 P0
+### 3.3 安全扫描 P0 口径
 
-当前 P0 由两类组成：
+当前 T-000 证据为 `security-baseline-t000-20260929_095135.json`：
+
+```text
+status = passed
+scanned_files = 494
+finding_count = 216
+P0 = 0
+P1 = 216
+controls_failed = 0
+```
+
+这里的 `P0=0` 只表示当前静态规则集未命中阻断项，不表示 Secret、认证、TLS 或依赖漏洞已经关闭。历史 2026-09-27 扫描曾为 463 文件、248 发现、P0=32；历史 P0 的规则来源为：
 
 - 20 条生产 Flyway 种子账号：`R7`
 - 12 条 SQL 明文客户端凭据：`R10`；其中 8 套安装脚本的 96 条已移除
 
-此前 3 条 `existingSecret` 空值命中已确认是扫描器假阳性并修复，R5 当前为 0，不得继续计入 P0。
+此前 3 条 `existingSecret` 空值命中已确认是扫描器假阳性并修复，R5 当前为 0，不得继续计入 P0。具体位置、规则和修复边界见 `13-安全基线扫描证据.md`。当前工作树仍有 1378 项（81 个 tracked 修改 + 1297 个未跟踪文件；不带 `-uall` 折叠为 588 行）未提交/未跟踪。仍未关闭项的可执行清单（每项写清需要谁做什么、证据锚点、不得过度解读的边界）见 `handoff/uncommitted-review-groups-20260928.md` §12.58。
+§12.20–§12.24 各批次（方向3 中继实现、两次经中继的 harness 尝试、首连预检、以及**已整体撤销**的 R-036 过期探针）
+把该数从 927 推到 933：净增 6 个未跟踪文件全是 harness 证据与旁车，代码类新增只有
+`mysql-sandbox.ps1`（tracked 修改，计数不变）与 `test_mysql_sandbox_relay.py`；探针的 2 个文件已删除并记于 §12.24.3。R4 批次增量（硬止损收敛 R-G4-2/R-G3.5-2）：untracked 608→613 = 3 个新代码文件（`scripts/production/SandboxNative.ps1`、`test_sandbox_native_seam.py`、`test_sandbox_native_behavior.py`）+ 2 份 §11.1 可行性实验旁车（`demo-data-timeout-verified/demo-data-mysql-20260930_153509.json` 与同戳 `-migration.log`）；tracked 修改数不变（改动的 6 个 `.ps1` 里 4 个本就是未跟踪新文件，另 2 个已在 65 项内）。本轮真链路 IT 复跑增量（861→864）：untracked 793→796 = 1 个证据目录里的 2 份 Maven 日志 + 1 份 `FILES.sha256`（明细见 `handoff/uncommitted-review-groups-20260928.md` §12.18），tracked 修改数不变，未新增任何代码文件。§12.19 的 R-033 回环中继可行性实验再增 2 项（864→866）：
+`evidence/production/r033-loopback-relay-probe-20260930_221131/probe-record.txt` 与其 `.sha256` 旁车，仍属证据类、按 3.4 节不入库。该数随编辑漂移，冻结前必须重测，且不得写入提交说明。R1–R3 批次增量可对账：tracked 56→65 = 前序既有 56 项 + 本轮 9 项（4 个门禁脚本与测试、`mysql-sandbox.ps1` 探针修复、`verify_mysql_runner_sandbox.ps1` 断言扩充、`migration-contract.json` purpose、以及加入行尾豁免注释的 `BootstrapAdminRunner`/`Bm25LexicalRetriever`/`ErpInventoryDualWriter`/`MesInventoryDualWriter`）；untracked 521→582 = 3 个新测试文件 + 1 份新安全基线 JSON 及旁车 + Helm 复现包 + runner 沙箱实跑产物 + Maven 日志及旁车，证据类全部按第 3.4 节保持不入库。非 MySQL 已有静态升级脚本，但尚未在目标实库执行等价约束验证。因此 T-101、T-102、T-107 仍保持 OPEN。
 
-具体位置、规则和修复边界见 `13-安全基线扫描证据.md`。V115-V117 已在 MySQL 8.4.9 clean 沙箱执行并通过验证与重跑幂等；V116/V117 的并发重复拒绝、软删除语义和 100,000 行合成 DDL 成本已通过隔离沙箱证据，但该证据不覆盖生产规模、MDL/复制影响、非 MySQL 方言或 BPM 回滚，存量生产库全链尚未闭环。非 MySQL 方言仍没有等价的活跃账号唯一约束或 CRM 回款幂等迁移。当前安全扫描为 463 文件、248 发现、P0=32、P1=216，安全门禁仍为失败。
+管理员 SQL 模板资产覆盖 8 套方言并按 `tenant_id=1 + username`、`role_id=1`、`post_id=4` 做静态契约校验；生产 K8s 入口是 `BootstrapAdminRunner`。历史 MySQL 8.4.9 沙箱 runner 和只读审计确认了 ensure 创建、相同密码 noop、不同密码 fail-closed 且哈希不变、rotate 成功、旧密码失效、新密码 noop，以及账号唯一性、租户、角色、岗位、BCrypt 形态和 `uk_system_users_tenant_active_username` 索引一致；`independent_review=false`。当前 T-000 history-lock 证据使用 MySQL 8.4.11 并观察到锁与 history 不变。该 bootstrap 证据只覆盖隔离 MySQL 沙箱库，不证明生产目标库、事务边界、并发或其余 7 套方言。V116/V117 的并发/软删除/合成 DDL 证据同样仅限隔离沙箱，不证明生产规模迁移、非 MySQL 并发唯一性、生产物理主从/真实读写分离/多租户数据源路由、生产故障/补偿对账或生产可用；其余 7 套尚未在目标实库执行。
 
-管理员 SQL 模板资产覆盖 8 套方言并按 `tenant_id=1 + username`、`role_id=1`、`post_id=4` 做静态契约校验；生产 K8s 入口是 `BootstrapAdminRunner`。当前 MySQL 8.4.9 clean 沙箱 runner 和只读审计确认了 ensure 创建、相同密码 noop、不同密码 fail-closed 且哈希不变、rotate 成功、旧密码失效、新密码 noop，以及账号唯一性、租户、角色、岗位、BCrypt 形态和 `uk_system_users_tenant_active_username` 索引一致；`independent_review=false`。该 bootstrap 证据只覆盖 MySQL 沙箱库，不证明生产目标库、事务边界、并发或其余 7 套方言。V116/V117 的并发/软删除/合成 DDL 证据同样仅限隔离沙箱，不证明生产规模迁移、非 MySQL 并发唯一性、BPM 回滚或生产可用。其余 7 套尚未在目标实库执行。
+### 3.4 证据存放约定（2026-09-30 确立）
+
+`docs/enterprise-platform/evidence/production/**` 下的执行证据**不入版本库**，仅本地留存。当前该目录有 582 个未跟踪文件（2026-09-30 实测；本轮实跑新增 Helm 渲染包、runner 沙箱日志与 Maven 日志及其 `.sha256` 旁车），而 `docs/enterprise-platform` 已有 415 个跟踪文件——`check_commit_readiness.py` 因此不会告警，门禁也不会变红；代价是干净检出的仓库里不含这些文件，文档中的证据路径对第三方是悬空的。为让结论仍可核验，约定如下：
+
+- 凡被文档引用的证据，引用处必须内联六要素：**相对路径 / SHA-256 / 生成时间（取 JSON 的 `generated_at`，不得用文件名时间戳代替）/ 生成命令 / 保留期 / 责任人**。缺任一要素的结论只能写作"待验证"，不得写成"已通过"。
+- 有 `.sha256` 旁车的，旁车值必须与文档所写一致；本轮新增的 `security-baseline-t000-20260930_113027.json` 即按此格式登记。
+- 文档中的任何计数（`scanned_files`、测试数、工作树项数）都必须标注其来源证据 SHA，并注明"证据不在版本库内，数值为本地复跑结果，非 CI、非独立复核"。
+- `.gitignore:109` 的反忽略 `!docs/enterprise-platform/evidence/production/**/*.log` **必须保留**：它使证据日志处于 untracked-but-not-ignored 状态，是上述"按 SHA 本地校验"成立的前提。删除它会让证据被静默忽略，比不入库更糟（`R-G6-5`）。
+- 脱敏缺口如实登记，不假装已处理：**下列子计数是 2026-09-28 时点、针对当时 498 份证据的扫描结果，本轮新增的 84 份证据未重扫**：227 个 MySQL JDBC URL（11 种 `host:port`，含 `zhicloud-mysql*`、`db:3306` 等内部/模板主机名）、47 个文件含本机用户路径（524 次）、10 个文件含 Unix home 路径（52 次）。新跑的 Helm/runner 产物必然再引入本机路径与连接串，因此该缺口只扩大未缩小，正式脱敏前必须全量重扫。证据保留/脱敏政策的**责任人和保留期至今未指定**，因此 `R-G6-2` 保持 OPEN；在指定责任人之前，不得把这些文件提交到任何共享仓库。
+- "所有 `.md` 保持 UTF-8 无 BOM、LF 行尾"这条规则**只适用于手写文档**（`docs/enterprise-platform/*.md` 与 `handoff/*.md`）。`evidence/**` 下的 Markdown 是被按 SHA-256 引用的生成产物，其 CR/BOM 属真实字节，归一会打断证据链，禁止"顺手清理"。
+- 下一阶段的**第一笔提交对象**是 `docs/enterprise-platform/handoff/` 下 4 份文档（含 88,516 字节（约 87KB）的分组 review 清单本身）。它们目前 100% 未跟踪，是唯一"计划只存在于这块磁盘上"的丢失风险；文档与证据、文档与代码仍须分开提交。
 
 ## 4. 文档索引
 
@@ -119,7 +207,7 @@
 
 下一步必须先完成：
 
-1. 在 MySQL 沙箱证据基础上，进入预发/生产等量库验证 V116/V117 的 MDL、锁等待、复制延迟、磁盘空间、回滚和真实业务数据，并修复存量库的 bootstrap 顺序闭环。
+1. 在 MySQL 沙箱证据基础上，进入预发/生产等量库验证 V115-V121 的 MDL、锁等待、复制延迟、磁盘空间、回滚和真实业务数据，并对 V121 的空白登记/legacy NULL 回收、lease/expiry/recovery/reconciliation 及 `ADD COLUMN` 影响做生产等价验证，同时修复存量库的 bootstrap 顺序闭环。
 2. 为非 MySQL 方言补齐活跃账号并发唯一约束和存量 MFA schema 升级路径。
 3. 生产迁移中的客户端 Secret 轮换和外部 Secret 的实际注入、对象存在性、键名、权限和挂载验证。
 4. 真实 TLS 握手、证书链、主机名验证，以及 K8s 服务端 dry-run。
