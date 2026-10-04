@@ -5405,3 +5405,57 @@ V123 只建表不种数据。所以**干净检出的库跑不了商城→支付�
 另一处仓库既有事实，登记但不动：`docs/enterprise-platform/evidence` 下有 **400 份文件是被 git 跟踪的**
 （124 log / 72 err / 68 json / 54 out / 48 sha256 …），与 §3.4"证据不入库"的约定相抵；
 `git log --since=2026-10-03 -- 该路径` 为空，说明不是本轮批次造成的，是 2026-09-30 立约之前就在仓里的历史存量。
+
+### 12.121 参照数据厚度量完后，捡到一条真缺陷：干净库里 `trade_config` 是空表，分销绑定路径直接 NPE
+
+用 §12.119 那台**干净链跑库**（`zhicloud_sandbox_v135`，不是我手工造过数据的机器库）
+枚举 `product_* / promotion_* / trade_*` 共 49 张表的行数：**全部 0 行**。
+先把两类东西分开，否则会把"运营该录的"当成"系统该种的"：
+
+| 类别 | 表 | 判定 |
+|---|---|---|
+| 真·运营主数据 | `product_spu/sku/category/brand/property`、`promotion_*`（券/活动/秒杀/客服…）、`trade_order/cart/after_sale` | **不该种**。任何默认值都是在替商户决定卖什么、搞什么活动 |
+| 运费与自提 | `trade_delivery_express_template(+_charge/_free)`、`trade_delivery_pick_up_store` | **不该种**。运费是商业决策；上一轮 mall 跑通时这两类我是按当次场景造的 |
+| 系统配置 | `trade_config`（一行：支付超时、是否全局包邮、分销开关与启用条件…） | 值得讨论，见下 |
+
+`trade_config` 空表本身不阻断下单 —— 这点是读代码确认的，不是假设：
+`TradeDeliveryPriceCalculator#isGlobalExpressFree` 遇到 `config == null` 直接返回"不包邮"，
+`BrokerageRecordServiceImpl#addBrokerage` 同样把"配置缺失"当作"分销未启用"并 return。
+**但同一个类的第三处没有这个保护**：
+
+```java
+// BrokerageUserServiceImpl:133（修复前）
+if (brokerageUser == null && ObjUtil.equal(BrokerageEnabledConditionEnum.ALL.getCondition(),
+        tradeConfigService.getTradeConfig().getBrokerageEnabledCondition())) {   // ← 空表时 NPE
+// 同一文件 :194（bindBrokerageUser 里）也是同样的直接解引用
+```
+
+后果是一条真实业务动作在初始化后的系统里会 500：**会员绑定推荐人**（`bindBrokerageUser` →
+`validateCanBindUser` → `getOrCreateBrokerageUser`）以及任何走"人人分销"判断的路径。
+这类缺陷单测结构上看不到 —— mock 出来的 `TradeConfigService` 默认返回一个对象，
+空表分支永远不执行；而真库里那行是我上一轮手工建的（`creator=225`），所以真机冒烟也照不出来。
+
+修法沿用**模块自己的既有语义**（配置缺失＝该功能未启用），不替运营猜默认值：
+新增 `getBrokerageEnabledCondition()` 做空值保护，两处调用点改用它。
+
+顺带把 `BrokerageUserServiceImplTest` 从 `@Disabled` 复活（3 个用例）：
+
+1. 那条禁用注释的理由**已经过时** —— 它写"上下文还缺 MemberUserApi / TradeConfigService 替身"，
+   而这两个 `@MockitoBean` 其实都在。真正挡住它的是**又一处 H2 测试 DDL 漂移**：
+   `trade_brokerage_user` 里写的是 `"price" int NOT NULL`，生产列是 `brokerage_price int NULL`
+   （`bind_user_id`/`brokerage_enabled` 在 H2 里还是 NOT NULL，生产可空）。
+   按真库 `information_schema` 对齐后，3 个 error → 1 个 failure。
+2. 剩下的 `testGetBrokerageUserPage` 是**上游写法自相矛盾**，不是环境问题：
+   `BrokerageUserMapper#selectPage` 只按 `brokerageEnabled / createTime / bindUserTime` 过滤
+   （`bindUserId` 不在查询条件里，只有配 `level` 走 childIds 才生效），
+   而原用例把"应查到"那行的 `createTime` 设成 null、又拿 `bindUserId` 制造"不匹配"，
+   结果只可能是 0 或 4，断言却写死 `1`。我按 mapper 真实过滤列重造夹具（三条各区分一个维度），
+   **保留 `assertEquals(1, ...)` 不动** —— 改数据让断言为真，而不是把断言改成迎合 bug。
+
+读数：`BrokerageUserServiceImplTest` 3/3 绿；变异检查（把 :133 改回直接解引用）→
+**恰好** `testGetOrCreateBrokerageUser_whenTradeConfigMissing` 报 NPE，另两条仍绿，恢复后 3/3；
+`zhicloud-module-trade` 全模块 `51 tests / 0 failures / 0 errors / 9 skipped`（改前 49 个用例、该类整类被禁）。
+
+**留给所有者决定的一条**：要不要给 `trade_config` 也种一行默认配置（＝替所有租户决定"分销关、包邮关、支付超时 X 分钟"）。
+本轮我选择只修 NPE、不种配置 —— 种下去就等于把这三个开关的初值写死成我的猜测；
+`pay_app` 不一样，它不种就**必然**让主流程报错，而 `trade_config` 缺失只在分销这条支路报错，且报错已修。
