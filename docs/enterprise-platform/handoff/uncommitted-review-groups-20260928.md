@@ -5490,3 +5490,43 @@ SocialClientApi  →  PayRefundApi  →  …
 `BrokerageWithdrawServiceImplTest`、本条）没做同类实测，判据要实测才写；
 另有 2 个 `Kd100/KdNiao ExpressClientIntegrationTest` 是直连第三方物流真网关的调试脚手架，
 与 §12.116 那 3 个支付网关脚手架同形，复活它们需要假网关而不是补注解。
+
+### 12.123 把"手工建的那两行"换成 V135 种出来的两行，同一条 mall 链再跑一遍（A/B 对照）
+
+§12.118 说过上轮跑通依赖我手工建的 `pay_app`/`pay_channel`。光有种子不等于流程真能跑，
+所以在**同一台库**里做一次替换实验：把那两行**软删**（`deleted=b'1'`，可逆），
+重新执行 V135 让它自己长出来，再把操作动作（启用 mock 渠道）补上，复跑 mall 脚本。
+
+替换结果（`creator` 一眼能分清谁是谁的行）：
+
+| 行 | 手工期 | 种子期 |
+|---|---|---|
+| `pay_app`（租户 1） | id=1，`creator='225'` | id=5，`creator='1'`（迁移写的），`status=0` |
+| `pay_channel` mock | id=1，`status=0`（我当时就启用了） | id=5，`status=1`（种子按设计停用），随后由"运营动作"置 0 |
+
+同一次运行里 121/122 的应用与渠道仍由同一条迁移补齐，且**没有**把已存在的两组重复插进去
+（上一轮 live 执行已建过，`NOT EXISTS` 正确跳过）。
+
+流程读数（**行级断言**，不是脚本自报）：
+
+```
+trade_order 7   status=10（已支付，待发货）  pay_time=2026-10-04 12:42:46
+pay_order   7   app_id=5  channel_id=5  status=10  success_time=2026-10-04 12:42:46
+pay_notify_task 3  app_id=5  type=1  data_id=7  status=10  notify_times=1
+pay_notify_log   3  status=10  response={"code":0,"msg":"","data":true}
+```
+
+**同一张表里留着手工期那条**：`pay_notify_log` id=2（`app_id=1`）响应也是 `code=0`。
+也就是说"手工行"和"种子行"走的是同一条回调路径、拿到同一个成功回执，
+BIZ-13 那个缺口的**功能性影响**被这条对照直接封住 —— 干净检出不再需要有人手工建这两行。
+
+两处如实交代：
+
+1. `zc_live_mall.py` 里那段 `---- state ----` 用了不存在的列名（`order_no`），
+   所以它自报的 `verdict=PASS` 只来自 pay submit 的 code，**不是**行级断言。
+   上面的读数是我为它补的独立查询；脚本本身的这个哑穴没修（它是本机临时冒烟脚本，不入库）。
+2. 这条链**仍未在"全新库 + 应用内 Flyway"上跑过**：本次用的是我已经手工造过参照数据（商品/SKU/地址/会员）
+   的那台库，只是把 pay 的两行换成种子。全新安装的端到端验收还欠一次
+   "dump 导入 → 应用自带 Flyway → bootstrap admin → 造参照数据 → 跑流程"，
+   需要停掉当前 48080 上的服务另起一次启动（约 8–19 分钟），且那台服务可能被其它会话在用，
+   所以这一步**等所有者点头再做**。
