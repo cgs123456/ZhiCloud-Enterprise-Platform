@@ -92,6 +92,9 @@ public class PayWalletRechargeServiceImpl implements PayWalletRechargeService {
         // 1.2 插入充值记录
         PayWalletDO wallet = payWalletService.getOrCreateWallet(userId, userType);
         PayWalletRechargeDO recharge = INSTANCE.convert(wallet.getId(), payPrice, bonusPrice, reqVO.getPackageId());
+        // 建单即未支付：这一列不能留 null，到账回调既 `if (recharge.getPayStatus())` 直接 unbox，
+        // 幂等 CAS 又是 `pay_status = 0`（null 与任何值都不相等），两者都会把充值永远挡在到账之前
+        recharge.setPayStatus(false);
         walletRechargeMapper.insert(recharge);
 
         // 2.1 创建支付单

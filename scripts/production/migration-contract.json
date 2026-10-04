@@ -324,6 +324,27 @@
       "sha256": "202991053758c3e265cd46eab9fa61446e90c6984efe6e8503fa46c0fe720ea9",
       "verification_file": "V135_verify.sql",
       "verification_sha256": "f038ed8b021b27cd44ccc92df3697dcdd62c7a68733483249bd792e9bd502556"
+    },
+    {
+      "version": 136,
+      "file": "V136__wallet_app_channels_and_notify_url_fix.sql",
+      "sha256": "bf303cef2556f8b6c0f136a16baf556d4031b0f1233c1dd7c9e898a540a09c00",
+      "verification_file": "V136_verify.sql",
+      "verification_sha256": "8a50f36d70f21e54107b6eaa0e62023f85b986284893097e1803e727734ea29a"
+    },
+    {
+      "version": 137,
+      "file": "V137__wallet_recharge_pay_status_default.sql",
+      "sha256": "15cd9cfe272d8d82b8984741061cf04136fbafbfecfee5feda18bc5712493ca4",
+      "verification_file": "V137_verify.sql",
+      "verification_sha256": "7b3fdd80aedb03eae24f083532ec62a8715e61f6b79453b81e5c3f5bbb84ccd2"
+    },
+    {
+      "version": 138,
+      "file": "V138__brokerage_withdraw_status_default.sql",
+      "sha256": "24014d4ab48aef41d6376cf4dca7137141084019e9629d32c58ab5e2f7fa0078",
+      "verification_file": "V138_verify.sql",
+      "verification_sha256": "14656623949122c9e92e75f2118a3e0e32b45dffaed6306a2376225d44717bdf"
     }
   ]
 }

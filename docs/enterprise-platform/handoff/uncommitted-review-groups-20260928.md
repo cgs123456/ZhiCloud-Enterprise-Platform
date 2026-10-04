@@ -5644,3 +5644,89 @@ Exception in thread "notify-task-1" java.lang.ArrayIndexOutOfBoundsException: In
 
 读数：`PayNotifyServiceTest` **连续 5 次 11/11 绿**（每轮 randomPojo 值不同），
 `zhicloud-module-pay` 全模块 `167 tests / 0 失败 / 0 错误 / 10 跳过`。
+
+### 12.126 资金三链真跑：充值到账、余额支付、佣金提现——三条都在**建单那一步**断，V136/V137/V138 收口
+
+按 §12.124 的全新安装库继续往钱的方向走：钱包充值 → 余额支付下单 → 佣金提现打款。
+结论是三条链**没有一条走得通**，而且三处断点形状一样——建单方漏写字段或漏配数据，
+不是支付逻辑本身有问题。逐条量：
+
+**断点一：`pay_app` 的回调地址指向 pay 自己。**
+V135 种出的 mall 应用，`refund_notify_url` / `transfer_notify_url` 都是
+`/admin-api/pay/notify/...`（pay 网关回调的形态），而这两列按
+`PayRefundServiceImpl:118`、`PayTransferServiceImpl:85` 的用法是**业务方**的收款地址。
+后果：售后退款与佣金提现即便在支付侧成功，业务侧永远收不到"已到账"。
+同时 `wallet` 这个支付应用根本不存在（`TradeOrderProperties.payAppKey` 之外的
+`PayProperties.walletPayAppKey` 默认 `wallet`），余额支付/充值的第一帧就是
+`PAY_APP_NOT_FOUND`。**V136** 补齐：wallet 应用（按租户）、mall→wallet 渠道（启用）、
+wallet→mock 渠道（**停用**，与 V135 的负向对照口径一致）、并把 mall 的 refund/transfer
+两列改指 `/admin-api/trade/after-sale/update-refunded` 与
+`/admin-api/trade/brokerage-withdraw/update-transferred`。
+
+**断点二：`pay_wallet_recharge.pay_status` 建单时为 NULL，到账回调必炸。**
+`/admin-api/pay/wallet-recharge/update-paid` 返回 500，日志：
+`NullPointerException: Cannot invoke "java.lang.Boolean.booleanValue()" ... PayWalletRechargeDO.getPayStatus() is null`。
+列是 `bit(1) NULL` 且无默认值，而 `createWalletRecharge` 的
+`INSTANCE.convert(...)` 从不写它。绕过 NPE 也没用——幂等 CAS 是 `pay_status = 0`，
+SQL 里 `NULL = 0` 恒不成立。**即：会员钱包充值从来没有可能到账。**
+**V137** 先 UPDATE 填平存量 NULL 再 ALTER 成 `NOT NULL DEFAULT b'0'`（顺序反了 NOT NULL 会在存量行上失败），
+服务侧同时补 `recharge.setPayStatus(false)`。
+
+**断点三：`trade_brokerage_withdraw.status` 建单时为 NULL，审核永远过不去。**
+申请成功返回 id，但 `/admin-api/trade/brokerage-withdraw/approve` 返回
+`code=1011008001`（提现申请不为待审核状态）。库里两行 status 全是 NULL。
+根因同形：`createBrokerageWithdraw` 只 `BeanUtils.toBean(reqVO, DO).setUserId().setFeePrice()` 就 insert，
+`status` 既不在 `AppBrokerageWithdrawCreateReqVO` 字段里也没显式赋值，列又是 `int NULL` 无默认值。
+而审核有两道依赖它的关卡：`ObjectUtil.notEqual(AUDITING(0), null)` 为真直接抛错，
+后面的 `updateByIdAndStatus` 生成 `WHERE status = NULL` 恒不命中。
+**即：佣金提现从来没有可能被审核通过并打款**，与 pay_transfer、转账渠道、回调地址怎么配都无关。
+**V138** 同 V137 形状收口（`status int NOT NULL DEFAULT 0` + 服务显式赋 AUDITING）。
+同表 `total_price`（DO 注释"当前总佣金"快照）也是 NULL，但它不在任何校验或 CAS 条件里，
+只影响列表展示，**本轮没动**，留给所有者决定是否要在建单时快照。
+
+**跑通后的读数**（`zhicloud_sandbox_clean`，脚本 `AppData/Local/Temp/zc_money_flows.py`，15/15 PASS）：
+- 充值：建单 id=7/payOrderId=15 → mock 渠道支付 → 余额 18255→**48255**，流水 `biz_type=1`；
+- 余额支付：下单 id=10 → `channelCode=wallet` → `trade_order.status=10`（待发货）→ 余额扣到 **31340**，流水 `biz_type=3`；
+- 提现：申请 id=5（审核中）→ 审核通过 → `pay_transfer.status=10`、渠道单号 `W202610041615541`
+  → 转账回调 1 条记录 → `trade_brokerage_withdraw.status=11`（提现成功），余额回到 **40340**，流水 `biz_type=6`。
+三行余额算术自洽（31340+9000=40340），`pay_wallet_transaction` 三种 `biz_type` 各有其位。
+
+**必须说清的取证边界**：这轮跑在的是 V134 时代的 jar，**不含**本轮两行 Java 改动
+（`setPayStatus(false)` / `setStatus(AUDITING)`）。也就是说上面 15/15 证明的是
+**"列的默认值"这一层护栏有效**（MyBatis-Plus 对 null 字段不生成列，所以 DEFAULT 生效），
+服务侧那两行只是把同一件事在代码里也说一遍，其效果**尚未被真机证明**，要在下次重打包后复跑。
+
+**顺带量到的一条运行期事实（见 §12.127）**：中途有一次充值回调遇到
+`ConnectException: Connection timed out`，`pay_notify_task` 停在 `status=22`（请求失败）、
+`notify_times=1`，此后 8 分钟没有第 2 次投递——因为重投依赖的调度器在这个 profile 里是关的。
+
+### 12.127 支付通知只有"第一次"：重投依赖的调度器在 local profile 被整条关掉，一次瞬时网络失败即永久失败
+
+上节那次 `Connection timed out` 之后我没有立刻归因，先把投递机制量清：
+
+1. **首次投递不依赖调度器。** `createPayNotifyTask` 建完任务就内联调
+   `SpringUtil.getBean(PayNotifyServiceImpl.class).executeNotify0(task)`
+   （`PayNotifyServiceTest` 里 `verify(payNotifyService).executeNotify0(...)` 断的正是这个）。
+   所以网络正常时"到账"看起来是即时的——这也是为什么同一脚本前三次跑都绿。
+2. **重投只依赖 `payNotifyJob`。** `next_notify_time` 到了没人扫，就不会再投。
+3. **而 `payNotifyJob` 在这个库里跑不起来**，两层原因叠加：
+   - `infra_job` 18 条任务**全部 `status=2`**（`JobStatusEnum.STOP`），不只是支付；
+   - 更硬的一层：`application-local.yaml:9` 把
+     `org.springframework.boot.autoconfigure.quartz.QuartzAutoConfiguration`
+     整条 exclude 了，Scheduler bean 压根不存在。手工调 `PUT /admin-api/infra/job/trigger?id=5`
+     实测返回 `code=501 "[定时任务 - 已禁用]"`。
+
+所以口径要摆正：**这不是 pay 模块的局部缺陷，而是"当前部署形态没有异步重试"这个整体事实**，
+在支付链上的表现就是——业务回调只要失败一次（哪怕只是本机一次连接超时），
+这笔充值/退款/提现就永久停在已建单、未到账的中间态，且**没有任何可见化**：
+既没有"待重投通知"的计数，也没有告警，运营只看得到"钱付了但没到账"。
+
+本轮**没有**改这件事，理由：打开它需要同时决定"18 条任务里哪些该跑"和"quartz 要不要随包启动"，
+那是部署形态决策，不是补一个默认值能收口的；而且 §12.126 的三链已经证明
+在**首投成功**的前提下业务是对的。留裁决的两个问题：
+- 演示/单机形态是否接受"无重投"？接受的话，至少要把 `pay_notify_task` 里
+  `status IN (20,21,22)` 的行数暴露成一个能看见的数（现在只能人肉查库）。
+- 若不接受，`infra_job.status` 与 local profile 的 quartz exclude 要一起定，别只放开一半。
+
+与 §12.125 记录的 `notify_times` 下标钳制是同一张表的不同问题：那条管"重试别打崩线程"，
+这条管"根本没有重试"。两条都不该被对方掩盖。
