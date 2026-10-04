@@ -5145,6 +5145,10 @@ HR/QMS 的 Vue 页面是否真按 `hr/<resource>/index` 的约定落地，属于
 不支持"Flyway 通道已验证"。三条都是幂等写法（NOT EXISTS 预检 / `CREATE OR REPLACE`），
 下次真机重启时 Flyway 会自行补执行 —— 这是按设计的**推断**，未实测，不记成 PASS。
 
+> **2026-10-04 更新**：这条推断已被实测收掉。新建 `zhicloud_sandbox_clean`（导 dump、无 flyway 历史）
+> 由应用自带 Flyway 从零建历史，`applied_total=142 / SUM(success=1)=142`，V132/V133/V134/V135 均 `success=1`；
+> 读数与命令见 §12.124 与 `evidence/production/clean-install-mall-e2e-20261004_1515/`。
+
 **本轮跑到的一条既有门禁红（不在我改动面上，逐条交代）**：`check_evidence_citations.py` `exit=1`，
 1 条 `hash-unattributable` —— `08-测试与证据.md:64` 为 2026-09-29 的 MySQL 物理复制沙箱证据记了
 「执行脚本 SHA-256 `842D3FFC…`」，而 `scripts/production/verify_mysql_physical_replication_sandbox.ps1`
@@ -5344,6 +5348,11 @@ V123 只建表不种数据。所以**干净检出的库跑不了商城→支付�
 **本轮没有顺手加 V135**：这条链的验收需要"干净库上跑通 mall 下单→支付→回调"，
 而现在唯一可复现的库是我手工建过行的那一台；先把缺口登记成判据，别把未验证的种子混进正在跑的 CI。
 
+
+> **更正（2026-10-04，见 §12.124）**：本节说的「那两行是我用管理员 API 手工建的」机制是错的 ——
+> 实际来自本机临时 seed 文件 `zc-mall-seed.sql`（`creator='225'` 只是字面量）。
+> 「仓库里没有这两行、干净检出跑不通」的结论不变。
+
 ### 12.119 V135 把 §12.118 的缺口补上，并第一次让 V132–V135 走通"从零跑整链"这条路
 
 种子按**现存租户**生成（`INSERT ... SELECT FROM system_tenant`），不写死 tenant_id=1：
@@ -5530,3 +5539,61 @@ BIZ-13 那个缺口的**功能性影响**被这条对照直接封住 —— 干�
    "dump 导入 → 应用自带 Flyway → bootstrap admin → 造参照数据 → 跑流程"，
    需要停掉当前 48080 上的服务另起一次启动（约 8–19 分钟），且那台服务可能被其它会话在用，
    所以这一步**等所有者点头再做**。
+
+
+> **更正（2026-10-04，见 §12.124）**：本节说的「那两行是我用管理员 API 手工建的」机制是错的 ——
+> 实际来自本机临时 seed 文件 `zc-mall-seed.sql`（`creator='225'` 只是字面量）。
+> 「仓库里没有这两行、干净检出跑不通」的结论不变。
+
+### 12.124 全新安装端到端跑通：应用自带 Flyway 建到 V135，mall→pay→回调 8/8 断言通过（BIZ-13 结）
+
+窗口按所有者确认执行。链路一步没跳：
+
+1. **重打 jar**：`mvn -B -pl zhicloud-server -am clean package -DskipTests` → `BUILD SUCCESS`，
+   jar 610,628,915 B（新时间戳），并按"repackage 可能字节不变"的老坑**开包核对**
+   `BOOT-INF/classes/db/migration/` 里确有 `V132…V135`。
+2. **只停我自己起的进程**：先 `netstat` 取 48080 的 PID，再读它的 `Win32_Process.CommandLine`
+   确认是本轮 `zc-live-boot.sh` 起的 `zhicloud-server.jar`，才 `taskkill /F /PID 35712`。
+3. **建全新库** `zhicloud_sandbox_clean`：导入 `sql/mysql/zhicloud_platform.sql` + `quartz.sql`
+   （59 张表，**没有** `flyway_schema_history`；quartz 那份带 BOM，得先剥掉）。
+4. **应用自带 Flyway 从零建历史**：`Successfully baselined schema with version: 1` →
+   `validated 142 migrations` → 启动后 `applied_total=142 / SUM(success=1)=142`，
+   且 `V132 member level group seed / V133 qms view dimension gap / V134 hr qms menu seed /
+   V135 pay app mock channel seed` 四行 `success=1`；`system_menu` 里 7200–7999 段有 185 行。
+   约 9 分钟后 `Started ZhiCloudServerApplication`。
+   → **这条把 §12.113 与 §12.119 挂着的"V132–V135 未走应用内 Flyway"未验证面关掉。**
+5. **端到端**（`pay_app`/`pay_channel` 全部来自迁移，`creator='1'`，库里没有任何我手工建的支付行）：
+
+| 断言（都落在行上） | 结果 |
+|---|---|
+| 加购 `cart/add` → 用 `cartId` 下单（自提） | `code=0`，`trade_order 6` / `pay_order 6` |
+| **负向对照**：mock 渠道仍是种子默认的停用态时提交支付 | `code=1007001001 支付渠道已经禁用` —— 安全默认真拦得住 |
+| 运营启用后提交 | `code=0 status=10` |
+| `trade_order.status==10` 且 `pay_time` 落库 | PASS（`2026-10-04 15:15:36` 起） |
+| `pay_order.status==10`、`success_time`、`app_id=1`（迁移行）、`channel_id=1` | PASS |
+| `pay_notify_task.status==10` | PASS |
+| `pay_notify_log.response` 含 `"code":0`（trade 回调真的被接受） | PASS |
+| 购物车已清 | PASS（`deleted=b'0'` 过滤后 0 行） |
+
+**三处我自己的资产缺陷（在本机临时 seed 里，不在仓库），以及由此纠正的一条台账错记**
+
+1. `product_spu.slider_pic_urls` 是 `JacksonTypeHandler` 的 JSON 列。seed 写裸 URL
+   → 下单读 SPU 抛 `JsonParseException: Unrecognized token 'http'` → 接口只回 `500 系统异常`。
+2. `trade_delivery_pick_up_store.verify_user_ids` 用的是 **`LongListTypeHandler`（逗号分隔文本）**，
+   seed 写了 JSON 数组 `'[225]'` → `NumberFormatException: Unparseable number: "[225]"` → 同样 500。
+   同一个模块里并存两套 list 列约定（JSON 数组 vs 逗号文本），写种子/迁移数据的人极易挑错；
+   这也是 `demo-data/` 生成器将来要**按列的 typeHandler 分派**而不是按列名猜的理由。
+3. 老 seed 里 `pay_app.order_notify_url` 写的是 `/admin-api/pay/notify/order`（pay 自己的渠道回调入口），
+   而不是 trade 的 `/app-api/trade/order/update-paid`。
+   → **§12.118 / §12.123 把这两行说成"我用 mock 管理员调 API 手工建的"是错的**：
+   它们来自这个 seed 文件（`creator='225'` 只是文件里的字面量）。
+   结论不变（仓库里没有这两行、干净检出跑不通），但机制必须记对，否则下一个人会去查一条不存在的 API 调用。
+4. 我自己写错的两条断言也改了（改断言，不动应用）：`COUNT(*)` 没带 `deleted=b'0'`
+   （逻辑删除的购物车行被当成"没清"），以及 `rows()` 把表头 `| COUNT(*) |` 当数据行。
+
+**顺带实测到的两条应用行为**（只记录，不改）：重复提交支付被 `1007002002 订单已支付，请刷新页面` 挡住
+（真链路上的幂等保护生效）；DB 列值不合法时读取路径直接 500 而不是可诊断的业务码
+—— "数据损坏要大声"是合理选择，但接口只给"系统异常"，排障得回日志找栈。
+
+**当前环境状态**：48080 上现在跑的是**干净库**那个实例（`zc-clean-boot.sh`）；
+`zhicloud_platform` 那台库**没删也没改结构**，只是不再被服务，§12.123 的行级证据仍在里面。
