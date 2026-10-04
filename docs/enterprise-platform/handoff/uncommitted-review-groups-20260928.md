@@ -5597,3 +5597,50 @@ BIZ-13 那个缺口的**功能性影响**被这条对照直接封住 —— 干�
 
 **当前环境状态**：48080 上现在跑的是**干净库**那个实例（`zc-clean-boot.sh`）；
 `zhicloud_platform` 那台库**没删也没改结构**，只是不再被服务，§12.123 的行级证据仍在里面。
+
+### 12.125 我复活的用例在 CI 上随机红了一次：根因不是我改坏了，是它本来就在抛硬币
+
+`6f91e828`（只比上一次的绿 head 多一个 docs 提交）在 `Build with Maven` 步骤判红：
+
+```
+[ERROR] PayNotifyServiceTest.testProcessNotifyResult_success -- FAILURE!
+org.opentest4j.AssertionFailedError: expected: not equal but was: <2026-10-26T07:24:06>
+```
+
+同一分支再推一次（`8a20ecbc`）**又绿了**。同一份代码一次红一次绿 —— 这就是随机红的定义性证据，
+不用去猜环境差异。
+
+根因在断言的形状上（上游写死，被 `@Disabled` 遮着）：
+
+```java
+assertEquals(task.getNextNotifyTime(), dbTask.getNextNotifyTime());        // 成功分支不更新这一列 ⇒ 断"没变"
+assertNotEquals(task.getLastExecuteTime(), dbTask.getNextNotifyTime());    // 两句合起来 = 断"两个随机值不相等"
+```
+
+`randomPojo` 每轮 JVM 给 `nextNotifyTime` / `lastExecuteTime` 各填一个随机时间，两次相等就红
+（CI 那次两边都是 `2026-10-26T07:24:06`）。6 条用例同一个形状。
+**说法要摆正**：不是我复活才引入 flake，而是这条断言从来就不成立，只是过去没人跑它。
+
+修法是把"跟随机值比"换成"跟契约比"：加一个 2000 年的 `STALE_TIME` 哨兵钉住两个时间字段，然后
+- 不安排重试的分支（成功 / 已达最大次数）→ `assertEquals(STALE_TIME, dbTask.getNextNotifyTime())`；
+- 要重试的分支 → `assertTrue(dbTask.getNextNotifyTime().isAfter(LocalDateTime.now()))`；
+- 所有分支 → `assertNotNull(dbTask.getLastExecuteTime())`（执行时间必须被盖章，这才是原断言想说的）。
+哨兵不参与时钟，也不会跨午夜漂移；`lastExecuteTime` 由随机改为显式 `null` 起步。
+
+**顺带量到的一条真实代码观察（本轮没改，留作裁决）**：
+`processNotifyResult` 用 `task.getNotifyTimes() + 1` 直接当下标取 `NOTIFY_FREQUENCY[...]`，
+而 `>= NOTIFY_FREQUENCY.length` 的守卫**挡不住负数**。CI 日志里同时出现两条
+
+```
+Exception in thread "notify-task-1" java.lang.ArrayIndexOutOfBoundsException: Index -1564220316 out of bounds for length 8
+    at PayNotifyServiceImpl.processNotifyResult(PayNotifyServiceImpl.java:294)
+```
+
+起因是测试夹具给了 `notifyTimes` 一个随机大整数，`+1` 溢出成负数。
+线上该列从 0 递增、到 8 就置 `FAILURE`，正常走不到溢出，所以**这不是线上缺陷**；
+但"只要有一行脏 `notify_times`（超大值）就会把通知线程打崩、且日志只留一个负数下标"是事实。
+要不要在写入侧或取下标处加区间钳制，留给所有者决定（与 §12.121 的 `trade_config` 同类：
+不是把测试弄绿为止，而是把"谁该为这个数负责"说清）。
+
+读数：`PayNotifyServiceTest` **连续 5 次 11/11 绿**（每轮 randomPojo 值不同），
+`zhicloud-module-pay` 全模块 `167 tests / 0 失败 / 0 错误 / 10 跳过`。
