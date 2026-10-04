@@ -336,6 +336,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--policy", type=Path, default=DEFAULT_POLICY, help="license policy JSON 路径")
     parser.add_argument("--output", type=Path, help="决策 JSON 输出路径")
     parser.add_argument("--json", action="store_true", help="在 stdout 打印完整决策 JSON")
+    parser.add_argument("--record-only", action="store_true",
+                        help="只记录不阻断：判定与 denied/review_required 数组照常产出并写盘，退出码恒 0。"
+                             "供策略所有者把许可证降为非阻断项时使用（见 license-policy.json description）")
     args = parser.parse_args(argv)
 
     try:
@@ -343,6 +346,10 @@ def main(argv: list[str] | None = None) -> int:
     except InputError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
+
+    # blocking 是**所有者决定的落点**，不是判定的一部分：判定照常算，
+    # 只是记不记账由调用方声明。写在 report 里，保证 JSON 证据自身能说明"这次没阻断是声明的，不是漏判"。
+    report["blocking"] = not args.record_only
 
     payload = json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True)
     if args.output:
@@ -353,6 +360,9 @@ def main(argv: list[str] | None = None) -> int:
         print(payload)
     else:
         _print_summary(report)
+    if args.record_only and report["decision"] != "allow":
+        print("RECORD-ONLY：本次判定为 fail 但按 --record-only 不阻断（denied/review_required 数组未清空，见 --output JSON）。")
+        return 0
     return 0 if report["decision"] == "allow" else 1
 
 

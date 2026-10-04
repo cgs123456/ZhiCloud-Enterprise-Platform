@@ -5101,3 +5101,245 @@ PDA 手持终端的登录态是**后台用户**，它挂 `@ss.hasPermission` 才
 可自动派生的部分也有限：来料侧只有商户与 SKU，要派生供应商就得引入 QMS→ERP 依赖（新增模块边），
 而 WMS→QMS 的调用方向已存在，硬加会制造循环依赖 —— 所以按现状停在"契约 + 可见性"，
 把"录入主数据后回填空列"留作运营动作（任务 BIZ-17 仍开着，判据已写明）。
+
+### 12.113 BIZ-6 收口：HR/QMS 后台菜单种子按**代码里真实声明的权限点**生成，并顺手修掉一条无父权限点
+
+前端路由契约的最后一块拼图。菜单不再靠人手抄，而是从 `@PreAuthorize` 反向生成：
+
+- 口径来源：HR 控制器 13 个资源、QMS 控制器 23 个资源，逐个取类上/方法上的权限点字符串；
+  列集合、`type`、`component` 命名**逐条比对仓库既有 WMS 菜单行**后沿用（`component='wms/cross-dock-order/index'`、目录 type=1 `path=/wms`），不是我发明的写法。
+- `V134__hr_qms_menu_seed.sql`：186 条声明行 = 2 目录 + 36 菜单 + 148 按钮，一条 `INSERT ... SELECT ... WHERE NOT EXISTS` 批量幂等，外加一条修复性 `UPDATE`。
+- **刻意不写 `system_role_menu`**：超级管理员走角色旁路即可见；给普通角色授权是运营动作，种子里伪造授权会让"谁能审批人事"这种事看起来像我做的主。
+
+三处只有**真跑**才会暴露的自造错误（都在实库执行后才被抓到）：
+
+1. `system_menu` **没有 `tenant_id` 列** —— 菜单是全局表，租户可见性由角色决定。带上这列时整条 INSERT 直接失败，不是我以为的"部分成功"。
+2. 派生表里第一行没起别名，`UNION ALL` 撞出 `Duplicate column name '1'` —— 首行必须逐列 `AS`。
+3. 幂等预检只认 `deleted = b'0'` 的行，所以**已软删的权限点会重新建行**而不是被静默跳过 —— 这条是设计决定，写进注释。
+
+顺带查出并修复的一处**既有缺陷**（不是本轮引入）：`system_menu id=6740 qms:capa:transition` 的 `parent_id=0`，
+即一个游离在目录树之外的按钮 —— 前端永远渲染不到它，等于该权限点不可配置。`V134` 末尾把它 `UPDATE` 到 `qms/capa/index` 菜单下。
+副作用是本轮声明的 `7525`（同一 `permission + type`）被幂等预检正确跳过，所以**落库 185 行而非 186 行**；
+这个差值是设计行为（权限点唯一），不是丢数据 —— 若不解释，下次复跑数到 185 会被当成故障排查一遍。
+
+真机证据（当前运行中的服务端 + 沙箱库，全部本轮重跑）：
+
+| 判据 | 读数 |
+|---|---|
+| 首次执行 / 重跑 | rc=0 / rc=0（幂等） |
+| `V134_verify.sql` | **5 PASS / 0 FAIL**（目录、菜单数 13+23、component 口径、`(permission,type)` 唯一、按钮有父） |
+| 库内落库行 | id 7200–7734 共 185 行，`creator='system'`，单批 create_time |
+| `GET /admin-api/system/menu/list` | `code=0`，1808 节点；`/hr`(7200) → 13 菜单 + 51 按钮；`/qms`(7500) → 23 菜单 + 97 按钮（含被回收的 6740） |
+| 6740 现状 | `parent_id=7520`、`permission=qms:capa:transition`、`deleted=0` —— 不再是孤儿 |
+| 门禁 | `check_migration_contract` tracked=**45** scanned=141 findings=0；`check_duplicate_ddl` findings=0 |
+
+接口形态顺带记一笔，避免下次误读：`/menu/list` 返回的是**扁平 1808 条**（按 `parentId` 组树），
+不是嵌套 children —— 用 `children` 计数会得到"0 个子菜单"的假结论。
+
+仍未闭合的部分（诚实交代）：种子只保证**权限点在后端存在且可被角色勾选**；
+HR/QMS 的 Vue 页面是否真按 `hr/<resource>/index` 的约定落地，属于前端仓库范围，本仓无源码可判 —— 菜单能渲染 ≠ 点进去有页面。
+
+**执行通道的口径澄清（写这条是因为它很容易被后来人读成"已走 Flyway"）**：沙箱库
+`flyway_schema_history` 的 `MAX(version)=131`、138 行历史，即 **V132/V133/V134 是我用 mysql 客户端直接执行验证的，
+不是应用自带 Flyway 执行的**。所以本轮证据支持"SQL 在真 MySQL 8.4.11 + 真数据上跑通且幂等"，
+不支持"Flyway 通道已验证"。三条都是幂等写法（NOT EXISTS 预检 / `CREATE OR REPLACE`），
+下次真机重启时 Flyway 会自行补执行 —— 这是按设计的**推断**，未实测，不记成 PASS。
+
+**本轮跑到的一条既有门禁红（不在我改动面上，逐条交代）**：`check_evidence_citations.py` `exit=1`，
+1 条 `hash-unattributable` —— `08-测试与证据.md:64` 为 2026-09-29 的 MySQL 物理复制沙箱证据记了
+「执行脚本 SHA-256 `842D3FFC…`」，而 `scripts/production/verify_mysql_physical_replication_sandbox.ps1`
+当前字节是 `A280B14B…`，**全仓 17 个 .ps1 都不再匹配那个旧值**（脚本在证据产出后被改过，旧身份已不可从仓库归因）。
+门禁把这条判红而不是静默通过是对的；但修哪一侧（改文档记今天哈希，还是承认那份证据的执行脚本已不可复现）
+是"由人决定"的口径问题，且该文件本轮未被我改动、该门禁不在 CI 里（`maven.yml` 只跑 `check_migration_contract.py`），
+所以我只登记不动笔。
+
+### 12.114 BIZ-17 后半程：用仓库自己的 demo 通道把"录入主数据 → QMS 维度回填 → 报表数字变真实"这条链跑通
+
+所有者要我"去网上搜资料模拟填入"。**我没有把网上搜到的真实公司名当供应商主数据填进去** ——
+那些是第三方真实主体的名称，落进 `erp_supplier` 就成了"看起来像真租户录入的数据"，
+事后无法与真实业务数据区分。仓库本来就有一条正式的模拟通道（`demo-data/`，三重隔离：
+`tenant_id>=9001` + `DEMO_` 前缀 + `creator='demo-seed'` + 邮箱 `.invalid`），所以走它。
+
+一处**必须先说清的覆盖缺口**：`demo-data` 的 19 张主数据表里 **一张 MES 都没有**
+（`erp_*`/`wms_*`/`hr_*`/`tms_*`/`crm_*` 都有），而 §12.112 刚定下的契约是
+`product_id → mes_md_item.id`。也就是说：**供应商维度仓库能生成，物料维度不能生成**。
+本轮物料侧的 4 行是**按同一套 demo 约定手写**的（`DEMO_ITEM*` / 租户 9001 / `demo-seed` / `remark` 明写用途），
+没有去改 `generate_master_data.py` —— 一改就会重造 `demo_master_data.sql`，
+而 `demo-data/README.md` §3 用 SHA-256 钉住了 4 个产物字节、文档 07 还记着"19 张表 / 267 行"，
+`generate_business_documents.py` 又依赖主数据 SHA，**牵一发动到一整条哈希链**；
+是否值得为 MES 主数据重钉这条链，是一次独立决定，留给人裁决。
+
+验证全部在**独立探针库** `zc_demo_qms_probe` 里做（表用 `CREATE TABLE ... LIKE zhicloud_platform.*` 取真实结构，
+视图直接复用 `V133` 的 SQL 原文）：
+
+| 维度 | 结果 |
+|---|---|
+| demo 供应商 / 物料 / 检验单落库 | 10 / 4 / 6 行 |
+| 视图读数（type=10,status=30） | `order_count=3`、`product_count=1`、`supplier_count=2`、`dimension_missing_count=1` |
+| 视图读数（type=10,status=40） | `order_count=1`、`product_count=1`、`supplier_count=1`、`dimension_missing_count=`**0** |
+| 视图读数（type=30,status=30） | `order_count=2`、`product_count=2`、`supplier_count=1`、`dimension_missing_count=1` |
+
+对照设计：6 张检验单里 3 张两维齐全、1 张只缺供应商、1 张两维全空（＝真实租户当前形态）、1 张是**风险探针**。
+`dimension_missing_count` 只在含 NULL 的那两组各计 1、齐全组计 0 —— V133 追加这列的目的（把"真没有"与"没填"分开）达成；
+`supplier_count`/`product_count` 从真实租户的恒 0 变成 1/2 的真数，说明**只要主数据存在且被带上，报表不需要改代码就会变真实**。
+
+**探针量出来的一处真实风险（本轮新问题）**：`qms_inspection_order` 上**没有任何外键约束**
+（`information_schema.KEY_COLUMN_USAGE` 查 `REFERENCED_TABLE_NAME` 为空），
+所以我故意写的那条 `supplier_id=999999`（`erp_supplier` 里不存在的 id）**被数据库照常接受**，
+而报表那一组 `supplier_count=2` —— 悬空 id 被当成一个真实供应商计进了 distinct 数。
+含义：`0 → N` 的改善本身不构成"数据可信"的证据，回填入口写错 id 时报表会安静地虚高。
+可选的三种收口（都不在本轮范围，按代价排）：视图再追加一列 `dimension_dangling_count`（与 V133 同思路，不改已有列语义）、
+写入侧按契约校验 id 存在、或给 `supplier_id/product_id` 加外键（跨模块边 + 存量脏数据风险最大）。
+
+业务库零污染已复核：`zhicloud_platform` 里 tenant 1 仍是 9 张检验单、9 张全部无供应商，
+视图仍 5 行 / `dimension_missing_count` 合计 9，`erp_supplier WHERE creator='demo-seed'` = **0 行**。
+探针库 `zc_demo_qms_probe` 保留在沙箱容器内（不复现时可直查），它不在应用连接的任何数据源里。
+
+### 12.115 CI 在许可证那一步红了：把"所有者决定不阻断"落成一个可撤销的开关，而不是继续逐类放宽 policy
+
+推送后 CI 的失败步骤是 `License Policy Gate (fail-closed)`，不是我改的迁移或代码：
+
+```
+FAIL: components=943 allowed=883 denied=13 review_required=47 allowlist_hits=0 runtime_blocked=48
+```
+
+根因是 §12.111 只按所有者决定降了 `missing`/`unmapped` 两类，**其余类别仍在阻断**：
+13 个 deny 来自 `strong_or_restrictive`（MySQL Connector/J、Oracle JDBC、jdom2、junrar…）与
+`custom_or_non_spdx`（BouncyCastle 4 件），47 个 review 来自 `weak_copyleft`。
+而 `check_license_policy.py` 的判定是 `blocked = denied + review_required`，
+**`review_and_record` 也会阻断** —— 这一步此前一直"暂时没红"只是因为前面的门禁先红。
+
+两种修法里我选了可撤销的那个：
+
+- 不做的做法：把剩下 4 个类别也改成 `allow`。那会让 `denied`/`review_required` 数组变成空，
+  等于把 60 条组件记录从证据里抹掉，而且和 workflow 里"严禁放宽 policy 变绿"的注释自相矛盾。
+- 做的做法：给脚本加 `--record-only` —— **判定照常算、数组照常写盘并上传，只是退出码恒 0**，
+  同时把决定写进 `report["blocking"]`（`false`），让 JSON 自身能说清"这次没阻断是声明的，不是漏判"。
+  恢复阻断只需删掉 workflow 里那一个参数。
+
+真跑三态（用真实清单 `maven-license-inventory-20260928_0028.json`，862 组件）：
+
+| 调用 | 退出码 | decision | blocking | denied 数组 |
+|---|---|---|---|---|
+| 默认 | **1** | fail | true | 13 条，逐条在 JSON 里 |
+| `--record-only` | **0** | fail | false | 13 条，仍在 JSON 里 |
+| `--record-only` + 策略文件被删 | **2** | — | — | 输入坏了不被伪装成"记录成功" |
+
+守卫测试 3 条（`test_check_license_policy.py`，Ran 22 → **25**），其中一条是变异对照：
+同一夹具去掉 `--record-only` 必须回到 exit=1，否则这个开关就等于永久摘掉门禁。
+workflow 里另加 `License Posture Notice` 步骤，把 `denied/review_required` 计数以 `::warning::`
+打在页面上（本机 dry-run 输出 `decision=fail blocking=False components=862 denied=13 review_required=38`），
+让"不阻断"不等于"看不见"。原 `License Gate Failure Guidance` 改名 `... Error Guidance` 并改口径：
+现在这一步失败**不是合规结论**，而是门禁输入坏了。
+
+顺带纠正一处我自己写下的过时说明：workflow 顶部那段"未分类与缺失一律 deny"的注释已与 §12.111 之后的 policy 不符，已重写。
+
+### 12.116 BIZ-3：35 个跳过用例分类后复活 25 个，代价是量出两处"禁用状态本身在腐烂"的缺陷
+
+先量基线（`mvn -pl zhicloud-module-pay test -Dtest=PayAppServiceTest,PayNotifyServiceTest`）：
+`Tests run: 25, Failures: 0, Errors: 0, Skipped: 25` —— 数量可信，因为它们是**被发现但没被执行**，不是没被扫到。
+上一轮全模块读数 `167 / Skipped: 35`，分布在 5 个类。所有者让我"没有凭据就去模拟"，
+先把 35 个按"到底需不需要凭据"分开：
+
+| 类别 | 数量 | 判据 | 本轮动作 |
+|---|---|---|---|
+| 真第三方网关 | 10 | 直连微信/支付宝，需商户号 + V2/V3 密钥 + `apiclient_key.pem`/`.p12`；且方法体**只 print 不断言** | 保持禁用，但补上逐类原因；凭据从源码移走（见下） |
+| 纯 DB 服务测试 | 25 | `BaseDbUnitTest`（H2），**不需要任何凭据** | 解禁并跑通 |
+
+`@Disabled // TODO 芋艿：后续 fix 补充的单测` 那句注释是**误导性的**：这两个类不是因为"单测还没补"而禁用，
+而是启用后必然失败 —— 失败原因和"缺凭据"无关，是仓库自己的测试库结构烂在原地：
+
+1. **H2 测试 DDL 与实体脱节**（25 个里 21 个 error 的唯一根因）：
+   `zhicloud-module-pay/src/test/resources/sql/create_tables.sql` 的 `pay_app` 缺 `transfer_notify_url`，
+   `pay_notify_task` 缺 `merchant_refund_id` / `merchant_transfer_id`。
+   报错是 `JdbcSQLSyntaxErrorException: Column "..." not found`，
+   而我按 `information_schema` 从**真 MySQL 库**取列型（`varchar(512)` / `varchar(255)` 可空）补齐，不是照 DO 猜。
+   补完 `21 errors → 0`。这条的含义比修 25 个用例更大：**任何**新写的 pay 测试碰这两张表都会立刻红，
+   而它在 CI 里可以长期"看不见"，因为碰它们的测试正好被禁着。
+2. **断言目标停在旧契约**（剩 2 个 failure）：生产代码 `PayNotifyServiceImpl:127` 现在是
+   事务提交后 `getSelf().executeNotifyAsync(task)`，测试还在 `verify(...).executeNotify0(eq(dbTask))`。
+   改成验证 `executeNotifyAsync`，并且**按 id 断言**而不是整对象 `equals`：
+   传的是新建的内存对象（`createTime` 由库默认值填充），与回读行做 equals 天然不等，
+   写 `eq(dbTask)` 只会得到一个"看起来像 Mockito 问题"的假失败。
+3. **夹具根本没覆盖新字段**：`testUpdateApp_success` 的 `randomPojo` 把 `transferNotifyUrl` 留成 null，
+   而 `dbApp` 有随机值 → `assertPojoEquals` 报 `Field(transferNotifyUrl) 不匹配 expected <null> but was <O4mrZ9VBdO>`。
+   给 create / update 两处夹具都显式 `setTransferNotifyUrl(randomURL())`，现在这个字段真的被回读校验了一次。
+
+结果：`167 / 0 失败 / 0 错误 / 10 跳过`（跳过数 35 → 10，且这 10 个逐类写明原因）。
+
+变异检查（证明复活后的断言真的在观察那个接缝）：把生产代码里的
+`getSelf().executeNotifyAsync(task);` 改成注释后重跑 →
+`Tests run: 11, Failures: 2`，失败的正是 `testCreatePayNotifyTask_order` 与 `_refund`；恢复后 11/11 绿。
+
+**顺手量出的一处安全问题（比测试更该被记住）**：那 3 个网关脚手架里提交着
+**真形态的商户凭据** —— 微信 `mchId=1545083881`、两组 V2 `mchKey`、两组 `apiV3Key`、
+支付宝 `appId=2021000118634035`，以及 **两段 2048 位 RSA 应用私钥正文**（`"MIIEvQIBADANBgkqhkiG…"`）
+和 `/Users/yunai/Downloads/wx_pay/*.pem` 绝对路径，共 **22 处字面量**。
+已全部替换成 `REPLACE_WITH_YOUR_*` 占位符（grep 复核残留为 0）。
+
+而 `security_baseline_scan.py` 对它们**一个都没报**（本轮复跑：534 文件、P0=0、status=passed）。
+原因是它的 `R3` 只匹配 `password|secret|token|api[-_]?key|access[-_]?key` 后接 `:=` 的**键值对写法**，
+既没有 PEM/`PRIVATE KEY` 正文规则，也看不见 `config.setMchKey("…")` 这种 setter 调用。
+我没有顺手扩扫描器（要配正负样本才敢算"补上了"），只把这两条缺口记在这里：
+**命名式 regex 扫 setter 与密钥正文，是它当前明确的盲区**；在这个盲区修好前，
+"安全基线 P0=0" 不能作为"仓库里没有提交的凭据"的证据。
+
+### 12.117 我自己欠下的一条红：许可证 policy 改动把一条"证明门禁会咬"的测试顺手改死了
+
+复跑全量 Python 门禁（`PATH` 带上 pwsh，`python -m unittest discover -s scripts/production/tests`）：
+
+```
+Ran 657 tests in 273.585s
+FAILED (failures=3)
+PYTHON_SUITE_RC=1
+```
+
+三条**都是我这轮或上轮造成的**，且没有一条会被 CI 发现 —— `maven.yml` 里根本没有 pytest 步骤。
+台账 §3.2 那句 `Ran 634 tests ... OK` 因此不只是过时，而是**当时就已不再成立**（§12.111 之后套件就红了）。
+
+1. `test_generate_license_inventory.test_unknown_label_becomes_unmapped_and_gate_denies`
+   断 `decision == "fail"`，但它跑的 policy 是**仓库 shipped policy**。
+   §12.111 把 `unmapped` 从 deny 改成 allow 后，这条测试的含义就从"门禁会咬"变成"policy 得是某个口味"，于是自红。
+   修法不是把它改成断 `allow`（那等于删掉断言），而是**把机制与策略取值分开**：
+   机制用测试自带的 `fail_closed_policy()` 夹具证明（未知标签 → `unmapped` → deny → `decision=fail`），
+   shipped policy 的当前取值另用一行 `category_actions["unmapped"] == "allow"` 钉住 —— 以后谁改策略得**显式**改这条断言。
+2. `test_plan_commit_groups.RealTreeTests` 两条：`.github/workflows/maven.yml` 被我改了之后
+   `exactly-one-group: unclassified` —— **规则表里没有任何一组认领 CI workflow**（根 `pom.xml` 同样无人认领，是同一处潜伏缺口，
+   之前只在它恰好脏的时候才暴露）。把 tooling 组扩到 `.github/workflows/` 与根 `pom.xml`，
+   并按同组既有做法把这条**钉在合成输入上**（真树一旦提交就干净，钉真树会每次成功提交后自红）。
+
+修后读数（本轮全部重跑）：
+
+| 门禁 | 结果 |
+|---|---|
+| 全量 Python 套件 | `Ran 658 tests ... OK`，`PYTHON_SUITE_RC=0`（脚本自身退出码，不是管道尾码） |
+| `plan_commit_groups` | `[OK] 分组计划自洽`，组6 tooling 认领 6 项 |
+| `check_commit_readiness` | `PASS: required=17 tracked=17 untracked=0 missing=0` |
+| `check_bare_throws` | `[OK]` 无裸抛 |
+| `check_missing_preauthorize --include-app` | `[OK]` 扫描 622 个 Controller 文件 |
+
+**该记的教训写明白**：改 policy 的语义时，我只验证了"三态可复现"（allow→0 / deny→1 / 删键→1），
+没跑全量套件；而那套件的失败在 CI 里不可见。这是 §12.111 的**遗漏面**，不是它结论的错误 ——
+现在两处都补上了，但根因（Python 门禁不进 CI）仍在那里，见下条未闭合。
+
+### 12.118 量出商城支付链路的真正缺口：`pay_app` / `pay_channel` 在仓库里没有任何种子
+
+上一轮 mall 支付链能真跑通，回头看才发现**跑通的库里有两行是我自己建的**：
+
+| 表 | 现状 | 证据 |
+|---|---|---|
+| `pay_app` | 1 行：`app_key='mall'`、`order_notify_url=http://127.0.0.1:48080/app-api/trade/order/update-paid` | `creator='225'`、`create_time=2026-10-02 15:41`（＝我用 mock 管理员调 API 建的时间，不是 Flyway 时间 11:29） |
+| `pay_channel` | 1 行：`code='mock'`、`app_id=1` | 同上 |
+
+全仓 `--include=*.sql` grep `INSERT INTO pay_app` / `pay_channel` **命中 0**（`pay_app` 只在字典数据里被提到过一次），
+V123 只建表不种数据。所以**干净检出的库跑不了商城→支付→回调**：
+不是运费模板、不是商品，而是这两行缺失会让 `pay_order` 找不到渠道、回调找不到 app。
+
+这条就是 BIZ-13 剩下的"notify_url 约定"的真实形状 —— 它不是一个文档措辞问题，是**种子缺失**：
+- 约定本身（trade 侧回调路径 `/app-api/trade/order/update-paid`）在代码里是对的，我这轮也已实测；
+- 缺的是把 `app_key='mall'` 与该路径**落进迁移**，以及一句必须写明白的话：
+  `order_notify_url` 存的是**绝对 URL**，`127.0.0.1:48080` 只对单机开发环境成立，
+  生产按环境改这张表，否则支付回调会打到自己的回环地址上（表现是"钱付了、订单还是未支付"）。
+
+**本轮没有顺手加 V135**：这条链的验收需要"干净库上跑通 mall 下单→支付→回调"，
+而现在唯一可复现的库是我手工建过行的那一台；先把缺口登记成判据，别把未验证的种子混进正在跑的 CI。

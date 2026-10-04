@@ -385,5 +385,48 @@ class CheckLicensePolicyTest(unittest.TestCase):
         )
 
 
+    # ---------- --record-only：所有者决定降为非阻断，但判定与数组必须原样留下 ----------
+
+    def deny_fixture(self):
+        self.write_inventory([
+            component("pkg:maven/com.mysql/mysql-connector-j@9.7.0", "com.mysql",
+                      "mysql-connector-j", "9.7.0", "strong_or_restrictive", "GPL-2.0"),
+            component("pkg:maven/org.slf4j/slf4j-api@2.0.9", "org.slf4j", "slf4j-api",
+                      "2.0.9", "permissive_standard", "MIT"),
+        ])
+        self.write_policy()
+
+    def run_cli_with(self, extra):
+        return gate.main([
+            "--inventory", str(self.inventory_path),
+            "--policy", str(self.policy_path),
+            "--output", str(self.output_path),
+        ] + extra)
+
+    def test_record_only_exits_zero_but_keeps_the_denied_array(self):
+        self.deny_fixture()
+        self.assertEqual(self.run_cli_with(["--record-only"]), 0)
+        written = json.loads(self.output_path.read_text(encoding="utf-8"))
+        # 只记录 ≠ 判定被改写：decision 仍是 fail，被拒组件仍可复核
+        self.assertEqual(written["decision"], "fail")
+        self.assertFalse(written["blocking"])
+        self.assertEqual(written["counts"]["denied"], 1)
+        self.assertEqual(len(written["denied"]), 1)
+        self.assertEqual(written["denied"][0]["purl"], "pkg:maven/com.mysql/mysql-connector-j@9.7.0")
+
+    def test_same_fixture_without_record_only_still_blocks(self):
+        # 变异对照：同一个夹具去掉 --record-only 必须回落到 exit=1，
+        # 否则"只记录"就等价于把门禁永久摘掉，而不是一次可撤销的声明。
+        self.deny_fixture()
+        self.assertEqual(self.run_cli_with([]), 1)
+        written = json.loads(self.output_path.read_text(encoding="utf-8"))
+        self.assertTrue(written["blocking"])
+
+    def test_record_only_does_not_swallow_gate_errors(self):
+        # 输入坏了（exit=2）不能被 --record-only 伪装成"记录成功"
+        self.deny_fixture()
+        self.policy_path.unlink()
+        self.assertEqual(self.run_cli_with(["--record-only"]), 2)
+
 if __name__ == "__main__":
     unittest.main()

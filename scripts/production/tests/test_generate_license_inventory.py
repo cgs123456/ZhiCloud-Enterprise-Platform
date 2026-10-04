@@ -6,7 +6,9 @@
 #    此前该步骤由未入库的一次性脚本完成, CI 第 4 步无法复现。
 # 2. 与已审核基线一致: 862/36/826, 类别桶一致, 门禁 deny/review purl 集合一致。
 # 3. 带 classifier 的 6 字段坐标必须被识别 (基线漏统计 12 个 netty 构件)。
-# 4. 未知/缺失许可证归一为 UNMAPPED / MISSING, 由门禁 fail-closed 处理。
+# 4. 未知/缺失许可证归一为 UNMAPPED / MISSING；"归一类"由本文件断言，"类别怎么处理"来自 policy。
+#    机制用测试自带的 fail-closed 策略验证，shipped policy 自 2026-10-03 按所有者决定
+#    把 unmapped/missing 记为 allow，CI 侧另用 --record-only 把整个许可证步骤降为只记录。
 # 5. 输入缺失或非 CycloneDX 一律 exit=2, 不得被误判为通过。
 #
 # 本文件不宣称任何许可证已获法务审批, 也不构成法律意见。
@@ -98,11 +100,40 @@ def generate(components, tree_lines, **kwargs):
         return gen.build_report(bom_path, tree_path, **kwargs)
 
 
-def run_gate(inventory):
+def run_gate(inventory, policy_path=None):
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp) / "inventory.json"
         path.write_text(json.dumps(inventory, ensure_ascii=False), encoding="utf-8")
-        return gate.build_report(path, REAL_POLICY, TODAY)
+        return gate.build_report(path, policy_path or REAL_POLICY, TODAY)
+
+
+def fail_closed_policy(tmp_dir: Path) -> Path:
+    """一张**测试自己的** fail-closed 策略：只用于验证"未知标签 → unmapped → deny → 判定 fail"这条机制。
+
+    不借用仓库真实策略：2026-10-03 所有者把本项目定为内部自研、许可证不作为合入门禁，
+    真实策略里 `unmapped` 已是 allow。把机制断言钉在 shipped policy 上，等于让一条
+    "证明门禁会咬"的测试随策略口味翻转而自红（这条测试踩过一次）。
+    """
+    data = {
+        "schema_version": 1,
+        "evidence_type": "maven_license_policy",
+        "internal": {"group_prefix": "cn.zhicloud", "required_licenses": ["MIT"]},
+        "category_actions": {
+            "permissive_standard": "allow",
+            "weak_copyleft": "review_and_record",
+            "strong_or_restrictive": "deny_until_approved",
+            "custom_or_non_spdx": "deny_until_approved",
+            "expression_or_dual": "review",
+            "missing": "deny",
+            "unmapped": "deny",
+        },
+        "unmapped_category_action": "deny",
+        "maintenance": {"max_entry_validity_days": 365},
+        "allowlist": [],
+    }
+    path = tmp_dir / "fail-closed-policy.json"
+    path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+    return path
 
 
 def category_of(report, purl):
@@ -207,9 +238,15 @@ class NormalisationRules(unittest.TestCase):
         item = category_of(report, comp["purl"])
         self.assertEqual(item["normalized_licenses"], ["UNMAPPED:FooCorp Corporate License"])
         self.assertEqual(item["license_category"], "unmapped")
-        gate_report = run_gate(report)
+        with tempfile.TemporaryDirectory() as tmp:
+            gate_report = run_gate(report, fail_closed_policy(Path(tmp)))
         self.assertEqual(gate_report["decision"], "fail")
         self.assertIn(comp["purl"], [x["purl"] for x in gate_report["denied"]])
+        # shipped policy 的当前口径也要钉住：所有者 2026-10-03 决定内部自研项目许可证不作为门禁，
+        # 所以 unmapped 走 allow。断言这条**不是**把上面那条换成"永不阻断"——
+        # 机制（有类别动作 → 能判 deny → decision=fail）由上面的夹具证明，这里只记录策略取值。
+        shipped = json.loads(REAL_POLICY.read_text(encoding="utf-8"))
+        self.assertEqual(shipped["category_actions"].get("unmapped"), "allow")
 
     def test_expression_label_is_dual_category(self):
         comp = make_component("javax.annotation", "javax.annotation-api", "1.3.2",

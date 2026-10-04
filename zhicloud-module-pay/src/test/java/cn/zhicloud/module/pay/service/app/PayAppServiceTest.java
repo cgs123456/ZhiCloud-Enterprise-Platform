@@ -36,7 +36,6 @@ import static org.mockito.Mockito.when;
  *
  * @author aquan
  */
-@Disabled // TODO 芋艿：后续 fix 补充的单测
 @Import(PayAppServiceImpl.class)
 public class PayAppServiceTest extends BaseDbUnitTest {
 
@@ -57,7 +56,8 @@ public class PayAppServiceTest extends BaseDbUnitTest {
         PayAppCreateReqVO reqVO = randomPojo(PayAppCreateReqVO.class, o ->
                 o.setStatus((RandomUtil.randomEle(CommonStatusEnum.values()).getStatus()))
                         .setOrderNotifyUrl(randomURL())
-                        .setRefundNotifyUrl(randomURL()));
+                        .setRefundNotifyUrl(randomURL())
+                        .setTransferNotifyUrl(randomURL()));
 
         // 调用
         Long appId = appService.createApp(reqVO);
@@ -76,6 +76,7 @@ public class PayAppServiceTest extends BaseDbUnitTest {
         PayAppUpdateReqVO reqVO = randomPojo(PayAppUpdateReqVO.class, o -> {
             o.setStatus(CommonStatusEnum.ENABLE.getStatus());
             o.setOrderNotifyUrl(randomURL()).setRefundNotifyUrl(randomURL());
+            o.setTransferNotifyUrl(randomURL());
             o.setId(dbApp.getId()); // 设置更新的 ID
         });
 

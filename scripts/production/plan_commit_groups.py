@@ -57,9 +57,11 @@ GROUP_RULES = [
      lambda p: p.startswith("demo-data/"),
      "演示数据生成器与种子 SQL：被沙箱脚本按路径读取，因此必须早于 tooling。"),
     (6, "tooling",
-     lambda p: p.startswith("scripts/"),
-     "门禁脚本 + 沙箱 .ps1 + 守卫测试。原本按这三类分开列组，实测是**互相引用的一个强连通分量**"
-     "（.ps1 ↔ 门禁 .py ↔ tests .py），分开提交会让其中任意一笔单独 checkout 时缺工件，故并为一组。"),
+     lambda p: (p.startswith("scripts/") or p.startswith(".github/workflows/") or p == "pom.xml"),
+     "门禁脚本 + 沙箱 .ps1 + 守卫测试 + CI 与根构建配置。原本按这三类分开列组，实测是**互相引用的一个强连通分量**"
+     "（.ps1 ↔ 门禁 .py ↔ tests .py），分开提交会让其中任意一笔单独 checkout 时缺工件，故并为一组。"
+     "CI workflow 与根 pom.xml 也归这组：它们是**调用**门禁脚本的那一侧，且此前没有任何规则认领它们"
+     "（真树上一 dirty 就报 unclassified，是实测踩到的）。"),
 ]
 
 # 一条引用文本里可能出现的"工件名"。只用于把引用落到具体仓库文件上，不做语义猜测。

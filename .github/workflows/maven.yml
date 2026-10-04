@@ -145,15 +145,16 @@ jobs:
         retention-days: 30
     - name: Generate CycloneDX SBOM (P2-3 软件物料清单)
       run: mvn -B org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -DskipTests -q
-    # 许可证治理门禁（T-107）：SBOM 只是"清单"，清单本身不等于"合规判定"。
+    # 许可证治理（T-107）：SBOM 只是"清单"，清单本身不等于"合规判定"。
     # 这里把 CycloneDX BOM + 服务端运行时依赖树喂给 generate_license_inventory.py 生成治理清单，
-    # 再用 check_license_policy.py 做 allow / deny / review 判定，fail-closed：
-    #   1) 未分类（UNMAPPED）与许可证缺失（MISSING）一律 deny；
-    #   2) 弱 Copyleft 按现行策略为 review_and_record，同样计入阻断；
-    #   3) 判定 exit != 0 即本 job 失败 —— 必须由法务在许可证处置台账中逐项处置，
-    #      再将批准项写入 scripts/production/license-policy.json 的 allowlist
-    #      （带 decision / approved_by / approved_on / expires_on / scope）后才能转绿。
-    # 严禁为了"变绿"预先填充 allowlist 或放宽 policy —— 那样门禁等于不存在。
+    # 再用 check_license_policy.py 做 allow / deny / review 判定。
+    # 2026-10-03 所有者决定：本项目为内部自研、不对外分发，**许可证不作为合入门禁**，
+    # 因此本步骤带 --record-only —— 判定照常算、denied/review_required 数组照常写盘并上传，
+    # 但退出码恒 0。这不是"放宽 policy 变绿"（那会让判定数组被清空、风险消失）：
+    # 证据仍在 license-policy-gate.json 与 license-governance 产物里，随时可复核。
+    # 要恢复阻断：去掉 --record-only 即可，判定逻辑一行未动。
+    # 仍需人工注意：本步骤 exit=2 表示**输入坏了**（BOM/清单/策略读不出、日期格式错），
+    # 那不是合规问题而是门禁自身故障，下面的 License Gate Error Guidance 会指出来。
     #
     # 两个踩过的坑，勿回退：
     #   1) dependency:tree 必须带 -am：CI 的 ~/.m2 里没有本仓 SNAPSHOT，
@@ -176,17 +177,36 @@ jobs:
           --change-note "CI regenerated: aggregate CycloneDX BOM + zhicloud-server runtime tree"
     # 用 step id 精确定位失败来源：if: failure() 会把前面 Maven 构建失败也误报成许可证问题，
     # 那是误导性告警，会让真正的构建故障被当成合规问题排查。
-    - name: License Policy Gate (fail-closed)
+    - name: License Policy Gate (record-only per owner 2026-10-03)
       id: license_gate
       run: |
         python3 scripts/production/check_license_policy.py \
           --inventory license-inventory.json \
           --policy scripts/production/license-policy.json \
-          --output license-policy-gate.json
-    - name: License Gate Failure Guidance
+          --output license-policy-gate.json \
+          --record-only
+    - name: License Gate Error Guidance
       if: steps.license_gate.outcome == 'failure'
       run: |
-        echo "::error title=许可证门禁未通过::denied / review_required 组件在经法务逐项处置前禁止合入。请查看 license-policy-gate.json 的 denied 与 review_required 数组，在 docs/enterprise-platform/evidence/production/license-disposition-register-*.md 中登记处置结论（批准人 / 日期 / 有效期），再写入 license-policy.json 的 allowlist。禁止直接放宽 policy 或预填 allowlist 使其变绿。"
+        echo "::error title=许可证门禁自身故障::本步骤已按所有者决定改为只记录不阻断，因此它失败**不是**合规结论，而是门禁输入坏了（license-inventory.json / license-policy.json 读不出、evidence_type 不符、allowlist 日期格式非法，即脚本 exit=2）。请查这一步的 stdout 与 license-inventory.json，别去放宽 policy 找绿。"
+    - name: License Posture Notice（不阻断，只把风险留在页面上）
+      if: steps.license_gate.outcome == 'success'
+      run: |
+        python3 - <<'PY'
+        import json, pathlib
+        p = pathlib.Path("license-policy-gate.json")
+        if not p.is_file():
+            print("::warning title=许可证只记录模式::没产出 license-policy-gate.json，判定面空转")
+            raise SystemExit(0)
+        r = json.loads(p.read_text(encoding="utf-8"))
+        c = r.get("counts", {})
+        print("::warning title=许可证只记录模式（所有者决定 2026-10-03）::"
+              f"decision={r.get('decision')} blocking={r.get('blocking')} "
+              f"components={c.get('components')} denied={c.get('denied')} "
+              f"review_required={c.get('review_required')} runtime_blocked={c.get('runtime_blocked')}"
+              " —— 逐项清单见 license-governance 产物里的 license-policy-gate.json 的 denied / review_required 数组；"
+              "恢复阻断：给该步骤去掉 --record-only")
+        PY
     - name: Upload License Governance Evidence
       if: always()
       uses: actions/upload-artifact@v4

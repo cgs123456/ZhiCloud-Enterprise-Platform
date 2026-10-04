@@ -139,6 +139,23 @@ class RealTreeTests(unittest.TestCase):
         # 分组的"为什么"必须是实测出来的环（互相引用），而不是我的偏好
         self.assertIn("强连通", next(g["why"] for g in out["groups"] if g["name"] == "tooling"))
 
+    def test_ci_workflow_and_root_pom_are_classified(self):
+        """真树踩到的形状：改了 CI workflow 后分组器直接报 unclassified 并让门禁红。
+
+        规则表此前只认 scripts/，`.github/workflows/*.yml` 与根 pom.xml 谁都不认领 ——
+        它们一旦出现在工作树里就必然判红，而"判红的原因是我改了 CI"这件事很反直觉。
+        钉在合成输入上：这两个文件提交后真树就干净了，结论与"今天是否脏"无关。
+        """
+        items = [".github/workflows/maven.yml", "pom.xml", GATE_PY]
+        out = plan(items, {})
+        self.assertEqual([], [v for v in out["violations"] if v["rule"] == "exactly-one-group"],
+                         out["violations"])
+        groups = {g["name"]: set(g["paths"]) for g in out["groups"]}
+        for path in (".github/workflows/maven.yml", "pom.xml"):
+            self.assertIn(path, groups["tooling"], path)
+            self.assertEqual([], [n for n, s in groups.items()
+                                  if n != "tooling" and path in s], f"{path} 被两个组同时认领")
+
     def test_cli_json_is_strict_utf8_and_machine_readable(self):
         # 上一轮真踩：脚本用控制台编码(cp936)打印中文说明，我按 UTF-8 读回得到 U+FFFD，
         # JSON 解析直接崩。一份"给人看还行、给机器读会坏"的证据面不算证据。

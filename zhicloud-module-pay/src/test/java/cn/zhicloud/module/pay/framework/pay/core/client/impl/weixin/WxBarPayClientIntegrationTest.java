@@ -25,7 +25,7 @@ import static cn.zhicloud.module.pay.framework.pay.core.client.impl.weixin.Abstr
  *
  * @author 智云
  */
-@Disabled
+@Disabled("调试脚手架：直连微信支付条码支付真网关（需商户号 + V2 密钥 + apiclient_cert.p12），只 print 不断言。凭据已于 2026-10-04 换成 REPLACE_WITH_YOUR_* 占位符。")
 public class WxBarPayClientIntegrationTest {
 
     @Test
@@ -62,7 +62,7 @@ public class WxBarPayClientIntegrationTest {
         client.setConfig(config);
 
         // 执行解析
-        String xml = "<xml><return_code>SUCCESS</return_code><appid><![CDATA[wx62056c0d5e8db250]]></appid><mch_id><![CDATA[1545083881]]></mch_id><nonce_str><![CDATA[ed8f02c21d15635cede114a42d0525a0]]></nonce_str><req_info><![CDATA[bGp+wB9DAHjoOO9Nw1iSmmIFdN2zZDhsoRWZBYdf/8bcpjowr4T8i2qjLsbMtvKQeVC5kBZOL/Agal3be6UPwnoantil+L+ojZgvLch7dXFKs/AcoxIYcVYyGka+wmnRJfUmuFRBgzt++8HOFsmJz6e2brYv1EAz+93fP2AsJtRuw1FEzodcg8eXm52hbE0KhLNqC2OyNVkn8AbOOrwIxSYobg2jVbuJ4JllYbEGIQ/6kWzNbVmMKhGJGYBy/NbUGKoQsoe4QeTQqcqQqVp08muxaOfJGThaN3B9EEMFSrog/3yT7ykVV6WQ5+Ygt89LplOf5ucWa4Ird7VJhHWtzI92ZePj4Omy1XkT1TRlwtDegA0S5MeQpM4WZ1taMrhxgmNkTUJ0JXFncx5e2KLQvbvD/HOcccx48Xv1c16JBz6G3501k8E++LWXgZ2TeNXwGsk6FyRZb0ApLyQHIx5ZtPo/UET9z3AmJCPXkrUsZ4WK46fDtbzxVPU2r8nTOcGCPbO0LUsGT6wpsuQVC4CisXDJwoZmL6kKwHfKs6mmUL2YZYzNfgoB/KgpJYSpC96kcpQyFvw+xuwqK2SXGZbAl9lADT+a83z04feQHSSIG3PCrX4QEWzpCZZ4+ySEz1Y34aoU20X9GtX+1LSwUjmQgwHrMBSvFm3/B7+IFM8OUqDB+Uvkr9Uvy7P2/KDvfy3Ih7GFcGd0C5NXpSvVTTfu1IlK/T3/t6MR/8iq78pp/2ZTYvO6eNDRJWaXYU+x6sl2dTs9n+2Z4W4AfYTvEyuxlx+aI19SqCJh7WmaFcAxidFl/9iqDjWiplb9+C6ijZv2hJtVjSCuoptIWpGDYItH7RAqlKHrx6flJD+M/5BceMHBv2w4OWCD9vPRLo8gl9o06ip0iflzO1dixhOAgLFjsQmQHNGFtR3EvCID+iS4FUlilwK+hcKNxrr0wp9Btkl9W1R9aTo289CUiIxx45skfCYzHwb+7Hqj3uTiXnep6zhCKZBAnPsDOvISXfBgXKufcFsTNtts09jX8H5/uMc9wyJ179H1cp+At1mIK2duwfo4Q9asfEoffl6Zn1olGdtEruxHGeVU0NwJ8V7RflC/Cx5RXtJ3sPJ/sHmVnBlVyR0=]]></req_info></xml>";
+        String xml = "<xml><return_code>SUCCESS</return_code><appid><![CDATA[REPLACE_WITH_YOUR_WX_APPID]]></appid><mch_id><![CDATA[REPLACE_WITH_YOUR_WX_MCHID]]></mch_id><nonce_str><![CDATA[ed8f02c21d15635cede114a42d0525a0]]></nonce_str><req_info><![CDATA[bGp+wB9DAHjoOO9Nw1iSmmIFdN2zZDhsoRWZBYdf/8bcpjowr4T8i2qjLsbMtvKQeVC5kBZOL/Agal3be6UPwnoantil+L+ojZgvLch7dXFKs/AcoxIYcVYyGka+wmnRJfUmuFRBgzt++8HOFsmJz6e2brYv1EAz+93fP2AsJtRuw1FEzodcg8eXm52hbE0KhLNqC2OyNVkn8AbOOrwIxSYobg2jVbuJ4JllYbEGIQ/6kWzNbVmMKhGJGYBy/NbUGKoQsoe4QeTQqcqQqVp08muxaOfJGThaN3B9EEMFSrog/3yT7ykVV6WQ5+Ygt89LplOf5ucWa4Ird7VJhHWtzI92ZePj4Omy1XkT1TRlwtDegA0S5MeQpM4WZ1taMrhxgmNkTUJ0JXFncx5e2KLQvbvD/HOcccx48Xv1c16JBz6G3501k8E++LWXgZ2TeNXwGsk6FyRZb0ApLyQHIx5ZtPo/UET9z3AmJCPXkrUsZ4WK46fDtbzxVPU2r8nTOcGCPbO0LUsGT6wpsuQVC4CisXDJwoZmL6kKwHfKs6mmUL2YZYzNfgoB/KgpJYSpC96kcpQyFvw+xuwqK2SXGZbAl9lADT+a83z04feQHSSIG3PCrX4QEWzpCZZ4+ySEz1Y34aoU20X9GtX+1LSwUjmQgwHrMBSvFm3/B7+IFM8OUqDB+Uvkr9Uvy7P2/KDvfy3Ih7GFcGd0C5NXpSvVTTfu1IlK/T3/t6MR/8iq78pp/2ZTYvO6eNDRJWaXYU+x6sl2dTs9n+2Z4W4AfYTvEyuxlx+aI19SqCJh7WmaFcAxidFl/9iqDjWiplb9+C6ijZv2hJtVjSCuoptIWpGDYItH7RAqlKHrx6flJD+M/5BceMHBv2w4OWCD9vPRLo8gl9o06ip0iflzO1dixhOAgLFjsQmQHNGFtR3EvCID+iS4FUlilwK+hcKNxrr0wp9Btkl9W1R9aTo289CUiIxx45skfCYzHwb+7Hqj3uTiXnep6zhCKZBAnPsDOvISXfBgXKufcFsTNtts09jX8H5/uMc9wyJ179H1cp+At1mIK2duwfo4Q9asfEoffl6Zn1olGdtEruxHGeVU0NwJ8V7RflC/Cx5RXtJ3sPJ/sHmVnBlVyR0=]]></req_info></xml>";
         WxPayRefundNotifyResult response = client.parseRefundNotifyResult(xml);
         System.out.println(response.getReqInfo());
     }
@@ -112,11 +112,11 @@ public class WxBarPayClientIntegrationTest {
 
     private WxPayConfig buildWxPayConfigV2() {
         WxPayConfig config = new WxPayConfig();
-        config.setAppId("wx62056c0d5e8db250");
-        config.setMchId("1545083881");
-        config.setMchKey("dS1ngeN63JLr3NRbvPH9AJy3MyUxZdim");
+        config.setAppId("REPLACE_WITH_YOUR_WX_APPID");
+        config.setMchId("REPLACE_WITH_YOUR_WX_MCHID");
+        config.setMchKey("REPLACE_WITH_YOUR_WX_V2_MCH_KEY");
 //        config.setSignType(WxPayConstants.SignType.MD5);
-        config.setKeyPath("/Users/yunai/Downloads/wx_pay/apiclient_cert.p12");
+        config.setKeyPath("REPLACE_WITH_YOUR_WX_APICLIENT_P12_PATH");
         return config;
     }
 
