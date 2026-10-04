@@ -5384,3 +5384,24 @@ V123 只建表不种数据。所以**干净检出的库跑不了商城→支付�
 仍未闭合（别把上面读成 BIZ-13 已验收）：**干净库上把"商品→购物车→下单→支付→回调→待发货"整条流程
 跑一遍**需要一次真应用启动（上一轮量过：约 8–19 分钟），本轮只证明到"缺的两行现在有了、且形状对"。
 参照数据厚度（SKU/运费模板等）也仍在 BIZ-13 名下。
+
+### 12.120 两条新证据差点记成悬空引用：链跑器默认把证据写到**仓库外面**
+
+补 §3.3 台账时，`check_evidence_citations.py` 先报了 `missing-path: 2` —— 我刚写进去的两条路径解析不到。
+原因不是笔误：`mysql_chain_run.py` 的 `DEFAULT_OUTPUT` 是
+`REPO_ROOT.parent / "docs" / "enterprise-platform" / "evidence" / "production"`，
+而我这轮用 `--output ../docs/...` 显式沿用了同一个"仓库上一级"的位置，
+于是文件真的落到了 `Desktop/zhicloud/docs/...`，而文档里的引用一律按**仓库内**
+`docs/enterprise-platform/evidence/...` 解析（门禁就在那里查）。两处都存在同名结构的目录树，
+肉眼 ls 都能"看见文件在"，但引用不成立 —— 这类缺陷只有把引用再跑一遍机检才会暴露，靠读文档发现不了。
+已把两份 JSON 移进仓库内的证据树（移动，不是复制，避免两份真相），复跑后
+`paths_resolved 198 → 200`、`hash_citations_verified_match 94 → 96`（两条新 SHA 都对得上）。
+
+顺带纠一个我自己差点说错的数：JSON 里 `advisories` 列表被截到 80 条，
+我第一次数出 "untracked-but-present 76" 以为删掉了 37 份证据；
+真实计数在 `advisory_kind_counts`，是 113 → **115**（正好 +2，就是我新加的那两条）。
+读被截断的列表当计数用，就会把"我没看全"报告成"数据丢了"。
+
+另一处仓库既有事实，登记但不动：`docs/enterprise-platform/evidence` 下有 **400 份文件是被 git 跟踪的**
+（124 log / 72 err / 68 json / 54 out / 48 sha256 …），与 §3.4"证据不入库"的约定相抵；
+`git log --since=2026-10-03 -- 该路径` 为空，说明不是本轮批次造成的，是 2026-09-30 立约之前就在仓里的历史存量。
