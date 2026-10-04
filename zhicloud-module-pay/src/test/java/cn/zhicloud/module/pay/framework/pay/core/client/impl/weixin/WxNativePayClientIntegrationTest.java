@@ -23,7 +23,7 @@ import static cn.zhicloud.module.pay.framework.pay.core.client.impl.weixin.Abstr
  *
  * @author 智云
  */
-@Disabled
+@Disabled("调试脚手架：直连微信支付 V3 Native 真网关（需 APIv3 密钥 + 商户私钥证书），只 print 不断言。凭据已于 2026-10-04 换成 REPLACE_WITH_YOUR_* 占位符。")
 public class WxNativePayClientIntegrationTest {
 
     @Test
@@ -72,12 +72,12 @@ public class WxNativePayClientIntegrationTest {
 
     private WxPayConfig buildWxPayConfigV3() {
         WxPayConfig config = new WxPayConfig();
-        config.setAppId("wx62056c0d5e8db250");
-        config.setMchId("1545083881");
-        config.setApiV3Key("459arNsYHl1mgkiO6H9ZH5KkhFXSxaA4");
+        config.setAppId("REPLACE_WITH_YOUR_WX_APPID");
+        config.setMchId("REPLACE_WITH_YOUR_WX_MCHID");
+        config.setApiV3Key("REPLACE_WITH_YOUR_WX_API_V3_KEY");
 //        config.setCertSerialNo(serialNo);
-        config.setPrivateCertPath("/Users/yunai/Downloads/wx_pay/apiclient_cert.pem");
-        config.setPrivateKeyPath("/Users/yunai/Downloads/wx_pay/apiclient_key.pem");
+        config.setPrivateCertPath("REPLACE_WITH_YOUR_WX_APICLIENT_CERT_PEM_PATH");
+        config.setPrivateKeyPath("REPLACE_WITH_YOUR_WX_APICLIENT_KEY_PEM_PATH");
         return config;
     }
 

@@ -22,7 +22,7 @@ import java.io.FileNotFoundException;
  *
  * @author 智云
  */
-@Disabled
+@Disabled("调试脚手架：用真实商户配置构造微信/支付宝客户端，网络调用已被注释、方法体没有任何断言。启用它既不会验证任何东西，又需要本机商户证书；若要复活请改成断言「工厂按 channelCode 返回正确客户端类型」的单元测试。原提交的商户号/密钥/私钥已于 2026-10-04 换成 REPLACE_WITH_YOUR_* 占位符。")
 public class PayClientFactoryImplIntegrationTest {
 
     private static final String SERVER_URL_SANDBOX = "https://openapi.alipaydev.com/gateway.do";
@@ -36,10 +36,10 @@ public class PayClientFactoryImplIntegrationTest {
     public void testCreatePayClient_WX_PUB_V2() {
         // 创建配置
         WxPayClientConfig config = new WxPayClientConfig();
-        config.setAppId("wx041349c6f39b268b");
-        config.setMchId("1545083881");
+        config.setAppId("REPLACE_WITH_YOUR_WX_APPID");
+        config.setMchId("REPLACE_WITH_YOUR_WX_MCHID");
         config.setApiVersion(WxPayClientConfig.API_VERSION_V2);
-        config.setMchKey("0alL64UDQdlCwiKZ73ib7ypaIjMns06p");
+        config.setMchKey("REPLACE_WITH_YOUR_WX_V2_MCH_KEY");
         // 创建客户端
         Long channelId = RandomUtil.randomLong();
         payClientFactory.createOrUpdatePayClient(channelId, PayChannelEnum.WX_PUB.getCode(), config);
@@ -57,12 +57,12 @@ public class PayClientFactoryImplIntegrationTest {
     public void testCreatePayClient_WX_PUB_V3() throws FileNotFoundException {
         // 创建配置
         WxPayClientConfig config = new WxPayClientConfig();
-        config.setAppId("wx041349c6f39b268b");
-        config.setMchId("1545083881");
+        config.setAppId("REPLACE_WITH_YOUR_WX_APPID");
+        config.setMchId("REPLACE_WITH_YOUR_WX_MCHID");
         config.setApiVersion(WxPayClientConfig.API_VERSION_V3);
-        config.setPrivateKeyContent(IoUtil.readUtf8(new FileInputStream("/Users/yunai/Downloads/wx_pay/apiclient_key.pem")));
-//        config.setPrivateCertContent(IoUtil.readUtf8(new FileInputStream("/Users/yunai/Downloads/wx_pay/apiclient_cert.pem")));
-        config.setApiV3Key("joerVi8y5DJ3o4ttA0o1uH47Xz1u2Ase");
+        config.setPrivateKeyContent(IoUtil.readUtf8(new FileInputStream("REPLACE_WITH_YOUR_WX_APICLIENT_KEY_PEM_PATH")));
+//        config.setPrivateCertContent(IoUtil.readUtf8(new FileInputStream("REPLACE_WITH_YOUR_WX_APICLIENT_CERT_PEM_PATH")));
+        config.setApiV3Key("REPLACE_WITH_YOUR_WX_API_V3_KEY");
         // 创建客户端
         Long channelId = RandomUtil.randomLong();
         payClientFactory.createOrUpdatePayClient(channelId, PayChannelEnum.WX_PUB.getCode(), config);
@@ -81,10 +81,10 @@ public class PayClientFactoryImplIntegrationTest {
     public void testCreatePayClient_ALIPAY_QR() {
         // 创建配置
         AlipayPayClientConfig config = new AlipayPayClientConfig();
-        config.setAppId("2021000118634035");
+        config.setAppId("REPLACE_WITH_YOUR_ALIPAY_APPID");
         config.setServerUrl(SERVER_URL_SANDBOX);
         config.setSignType(AlipayPayClientConfig.SIGN_TYPE_DEFAULT);
-        config.setPrivateKey("MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCHsEV1cDupwJv890x84qbppUtRIfhaKSwSVN0thCcsDCaAsGR5MZslDkO8NCT9V4r2SVXjyY7eJUZlZd1M0C8T01Tg4UOx5LUbic0O3A1uJMy6V1n9IyYwbAW3AEZhBd5bSbPgrqvmv3NeWSTQT6Anxnllf+2iDH6zyA2fPl7cYyQtbZoDJQFGqr4F+cGh2R6akzRKNoBkAeMYwoY6es2lX8sJxCVPWUmxNUoL3tScwlSpd7Bxw0q9c/X01jMwuQ0+Va358zgFiGERTE6yD01eu40OBDXOYO3z++y+TAYHlQQ2toMO63trepo88X3xV3R44/1DH+k2pAm2IF5ixiLrAgMBAAECggEAPx3SoXcseaD7rmcGcE0p4SMfbsUDdkUSmBBbtfF0GzwnqNLkWa+mgE0rWt9SmXngTQH97vByAYmLPl1s3G82ht1V7Sk7yQMe74lhFllr8eEyTjeVx3dTK1EEM4TwN+936DTXdFsr4TELJEcJJdD0KaxcCcfBLRDs2wnitEFZ9N+GoZybVmY8w0e0MI7PLObUZ2l0X4RurQnfG9ZxjXjC7PkeMVv7cGGylpNFi3BbvkRhdhLPDC2E6wqnr9e7zk+hiENivAezXrtxtwKovzCtnWJ1r0IO14Rh47H509Ic0wFnj+o5YyUL4LdmpL7yaaH6fM7zcSLFjNZPHvZCKPwYcQKBgQDQFho98QvnL8ex4v6cry4VitGpjSXm1qP3vmMQk4rTsn8iPWtcxPjqGEqOQJjdi4Mi0VZKQOLFwlH0kl95wNrD/isJ4O1yeYfX7YAXApzHqYNINzM79HemO3Yx1qLMW3okRFJ9pPRzbQ9qkTpsaegsmyX316zOBhzGRYjKbutTYwKBgQCm7phr9XdFW5Vh+XR90mVs483nrLmMiDKg7YKxSLJ8amiDjzPejCn7i95Hah08P+2MIZLIPbh2VLacczR6ltRRzN5bg5etFuqSgfkuHyxpoDmpjbe08+Q2h8JBYqcC5Nhv1AKU4iOUhVLHo/FBAQliMcGc/J3eiYTFC7EsNx382QKBgClb20doe7cttgFTXswBvaUmfFm45kmla924B7SpvrQpDD/f+VDtDZRp05fGmxuduSjYdtA3aVtpLiTwWu22OUUvZZqHDGruYOO4Hvdz23mL5b4ayqImCwoNU4bAZIc9v18p/UNf3/55NNE3oGcf/bev9rH2OjCQ4nM+Ktwhg8CFAoGACSgvbkShzUkv0ZcIf9ppu+ZnJh1AdGgINvGwaJ8vQ0nm/8h8NOoFZ4oNoGc+wU5Ubops7dUM6FjPR5e+OjdJ4E7Xp7d5O4J1TaIZlCEbo5OpdhaTDDcQvrkFu+Z4eN0qzj+YAKjDAOOrXc4tbr5q0FsgXscwtcNfaBuzFVTUrUkCgYEAwzPnMNhWG3zOWLUs2QFA2GP4Y+J8cpUYfj6pbKKzeLwyG9qBwF1NJpN8m+q9q7V9P2LY+9Lp9e1mGsGeqt5HMEA3P6vIpcqLJLqE/4PBLLRzfccTcmqb1m71+erxTRhHBRkGS+I7dZEb3olQfnS1Y1tpMBxiwYwR3LW4oXuJwj8=");
+        config.setPrivateKey("REPLACE_WITH_YOUR_ALIPAY_APP_PRIVATE_KEY");
         config.setAlipayPublicKey("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnq90KnF4dTnlzzmxpujbI05OYqi5WxAS6cL0gnZFv2gK51HExF8v/BaP7P979PhFMgWTqmOOI+Dtno5s+yD09XTY1WkshbLk6i4g2Xlr8fyW9ODnkU88RI2w9UdPhQU4cPPwBNlrsYhKkVK2OxwM3kFqjoBBY0CZoZCsSQ3LDH5WeZqPArlsS6xa2zqJBuuoKjMrdpELl3eXSjP8K54eDJCbeetCZNKWLL3DPahTPB7LZikfYmslb0QUvCgGapD0xkS7eVq70NaL1G57MWABs4tbfWgxike4Daj3EfUrzIVspQxj7w8HEj9WozJPgL88kSJSits0pqD3n5r8HSuseQIDAQAB");
         // 创建客户端
         Long channelId = RandomUtil.randomLong();
@@ -105,10 +105,10 @@ public class PayClientFactoryImplIntegrationTest {
     public void testCreatePayClient_ALIPAY_WAP() {
         // 创建配置
         AlipayPayClientConfig config = new AlipayPayClientConfig();
-        config.setAppId("2021000118634035");
+        config.setAppId("REPLACE_WITH_YOUR_ALIPAY_APPID");
         config.setServerUrl(SERVER_URL_SANDBOX);
         config.setSignType(AlipayPayClientConfig.SIGN_TYPE_DEFAULT);
-        config.setPrivateKey("MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCHsEV1cDupwJv890x84qbppUtRIfhaKSwSVN0thCcsDCaAsGR5MZslDkO8NCT9V4r2SVXjyY7eJUZlZd1M0C8T01Tg4UOx5LUbic0O3A1uJMy6V1n9IyYwbAW3AEZhBd5bSbPgrqvmv3NeWSTQT6Anxnllf+2iDH6zyA2fPl7cYyQtbZoDJQFGqr4F+cGh2R6akzRKNoBkAeMYwoY6es2lX8sJxCVPWUmxNUoL3tScwlSpd7Bxw0q9c/X01jMwuQ0+Va358zgFiGERTE6yD01eu40OBDXOYO3z++y+TAYHlQQ2toMO63trepo88X3xV3R44/1DH+k2pAm2IF5ixiLrAgMBAAECggEAPx3SoXcseaD7rmcGcE0p4SMfbsUDdkUSmBBbtfF0GzwnqNLkWa+mgE0rWt9SmXngTQH97vByAYmLPl1s3G82ht1V7Sk7yQMe74lhFllr8eEyTjeVx3dTK1EEM4TwN+936DTXdFsr4TELJEcJJdD0KaxcCcfBLRDs2wnitEFZ9N+GoZybVmY8w0e0MI7PLObUZ2l0X4RurQnfG9ZxjXjC7PkeMVv7cGGylpNFi3BbvkRhdhLPDC2E6wqnr9e7zk+hiENivAezXrtxtwKovzCtnWJ1r0IO14Rh47H509Ic0wFnj+o5YyUL4LdmpL7yaaH6fM7zcSLFjNZPHvZCKPwYcQKBgQDQFho98QvnL8ex4v6cry4VitGpjSXm1qP3vmMQk4rTsn8iPWtcxPjqGEqOQJjdi4Mi0VZKQOLFwlH0kl95wNrD/isJ4O1yeYfX7YAXApzHqYNINzM79HemO3Yx1qLMW3okRFJ9pPRzbQ9qkTpsaegsmyX316zOBhzGRYjKbutTYwKBgQCm7phr9XdFW5Vh+XR90mVs483nrLmMiDKg7YKxSLJ8amiDjzPejCn7i95Hah08P+2MIZLIPbh2VLacczR6ltRRzN5bg5etFuqSgfkuHyxpoDmpjbe08+Q2h8JBYqcC5Nhv1AKU4iOUhVLHo/FBAQliMcGc/J3eiYTFC7EsNx382QKBgClb20doe7cttgFTXswBvaUmfFm45kmla924B7SpvrQpDD/f+VDtDZRp05fGmxuduSjYdtA3aVtpLiTwWu22OUUvZZqHDGruYOO4Hvdz23mL5b4ayqImCwoNU4bAZIc9v18p/UNf3/55NNE3oGcf/bev9rH2OjCQ4nM+Ktwhg8CFAoGACSgvbkShzUkv0ZcIf9ppu+ZnJh1AdGgINvGwaJ8vQ0nm/8h8NOoFZ4oNoGc+wU5Ubops7dUM6FjPR5e+OjdJ4E7Xp7d5O4J1TaIZlCEbo5OpdhaTDDcQvrkFu+Z4eN0qzj+YAKjDAOOrXc4tbr5q0FsgXscwtcNfaBuzFVTUrUkCgYEAwzPnMNhWG3zOWLUs2QFA2GP4Y+J8cpUYfj6pbKKzeLwyG9qBwF1NJpN8m+q9q7V9P2LY+9Lp9e1mGsGeqt5HMEA3P6vIpcqLJLqE/4PBLLRzfccTcmqb1m71+erxTRhHBRkGS+I7dZEb3olQfnS1Y1tpMBxiwYwR3LW4oXuJwj8=");
+        config.setPrivateKey("REPLACE_WITH_YOUR_ALIPAY_APP_PRIVATE_KEY");
         config.setAlipayPublicKey("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnq90KnF4dTnlzzmxpujbI05OYqi5WxAS6cL0gnZFv2gK51HExF8v/BaP7P979PhFMgWTqmOOI+Dtno5s+yD09XTY1WkshbLk6i4g2Xlr8fyW9ODnkU88RI2w9UdPhQU4cPPwBNlrsYhKkVK2OxwM3kFqjoBBY0CZoZCsSQ3LDH5WeZqPArlsS6xa2zqJBuuoKjMrdpELl3eXSjP8K54eDJCbeetCZNKWLL3DPahTPB7LZikfYmslb0QUvCgGapD0xkS7eVq70NaL1G57MWABs4tbfWgxike4Daj3EfUrzIVspQxj7w8HEj9WozJPgL88kSJSits0pqD3n5r8HSuseQIDAQAB");
         // 创建客户端
         Long channelId = RandomUtil.randomLong();
