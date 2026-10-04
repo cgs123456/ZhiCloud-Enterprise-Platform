@@ -5145,6 +5145,10 @@ HR/QMS 的 Vue 页面是否真按 `hr/<resource>/index` 的约定落地，属于
 不支持"Flyway 通道已验证"。三条都是幂等写法（NOT EXISTS 预检 / `CREATE OR REPLACE`），
 下次真机重启时 Flyway 会自行补执行 —— 这是按设计的**推断**，未实测，不记成 PASS。
 
+> **2026-10-04 更新**：这条推断已被实测收掉。新建 `zhicloud_sandbox_clean`（导 dump、无 flyway 历史）
+> 由应用自带 Flyway 从零建历史，`applied_total=142 / SUM(success=1)=142`，V132/V133/V134/V135 均 `success=1`；
+> 读数与命令见 §12.124 与 `evidence/production/clean-install-mall-e2e-20261004_1515/`。
+
 **本轮跑到的一条既有门禁红（不在我改动面上，逐条交代）**：`check_evidence_citations.py` `exit=1`，
 1 条 `hash-unattributable` —— `08-测试与证据.md:64` 为 2026-09-29 的 MySQL 物理复制沙箱证据记了
 「执行脚本 SHA-256 `842D3FFC…`」，而 `scripts/production/verify_mysql_physical_replication_sandbox.ps1`
