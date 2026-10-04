@@ -5194,3 +5194,130 @@ HR/QMS 的 Vue 页面是否真按 `hr/<resource>/index` 的约定落地，属于
 业务库零污染已复核：`zhicloud_platform` 里 tenant 1 仍是 9 张检验单、9 张全部无供应商，
 视图仍 5 行 / `dimension_missing_count` 合计 9，`erp_supplier WHERE creator='demo-seed'` = **0 行**。
 探针库 `zc_demo_qms_probe` 保留在沙箱容器内（不复现时可直查），它不在应用连接的任何数据源里。
+
+### 12.115 CI 在许可证那一步红了：把"所有者决定不阻断"落成一个可撤销的开关，而不是继续逐类放宽 policy
+
+推送后 CI 的失败步骤是 `License Policy Gate (fail-closed)`，不是我改的迁移或代码：
+
+```
+FAIL: components=943 allowed=883 denied=13 review_required=47 allowlist_hits=0 runtime_blocked=48
+```
+
+根因是 §12.111 只按所有者决定降了 `missing`/`unmapped` 两类，**其余类别仍在阻断**：
+13 个 deny 来自 `strong_or_restrictive`（MySQL Connector/J、Oracle JDBC、jdom2、junrar…）与
+`custom_or_non_spdx`（BouncyCastle 4 件），47 个 review 来自 `weak_copyleft`。
+而 `check_license_policy.py` 的判定是 `blocked = denied + review_required`，
+**`review_and_record` 也会阻断** —— 这一步此前一直"暂时没红"只是因为前面的门禁先红。
+
+两种修法里我选了可撤销的那个：
+
+- 不做的做法：把剩下 4 个类别也改成 `allow`。那会让 `denied`/`review_required` 数组变成空，
+  等于把 60 条组件记录从证据里抹掉，而且和 workflow 里"严禁放宽 policy 变绿"的注释自相矛盾。
+- 做的做法：给脚本加 `--record-only` —— **判定照常算、数组照常写盘并上传，只是退出码恒 0**，
+  同时把决定写进 `report["blocking"]`（`false`），让 JSON 自身能说清"这次没阻断是声明的，不是漏判"。
+  恢复阻断只需删掉 workflow 里那一个参数。
+
+真跑三态（用真实清单 `maven-license-inventory-20260928_0028.json`，862 组件）：
+
+| 调用 | 退出码 | decision | blocking | denied 数组 |
+|---|---|---|---|---|
+| 默认 | **1** | fail | true | 13 条，逐条在 JSON 里 |
+| `--record-only` | **0** | fail | false | 13 条，仍在 JSON 里 |
+| `--record-only` + 策略文件被删 | **2** | — | — | 输入坏了不被伪装成"记录成功" |
+
+守卫测试 3 条（`test_check_license_policy.py`，Ran 22 → **25**），其中一条是变异对照：
+同一夹具去掉 `--record-only` 必须回到 exit=1，否则这个开关就等于永久摘掉门禁。
+workflow 里另加 `License Posture Notice` 步骤，把 `denied/review_required` 计数以 `::warning::`
+打在页面上（本机 dry-run 输出 `decision=fail blocking=False components=862 denied=13 review_required=38`），
+让"不阻断"不等于"看不见"。原 `License Gate Failure Guidance` 改名 `... Error Guidance` 并改口径：
+现在这一步失败**不是合规结论**，而是门禁输入坏了。
+
+顺带纠正一处我自己写下的过时说明：workflow 顶部那段"未分类与缺失一律 deny"的注释已与 §12.111 之后的 policy 不符，已重写。
+
+### 12.116 BIZ-3：35 个跳过用例分类后复活 25 个，代价是量出两处"禁用状态本身在腐烂"的缺陷
+
+先量基线（`mvn -pl zhicloud-module-pay test -Dtest=PayAppServiceTest,PayNotifyServiceTest`）：
+`Tests run: 25, Failures: 0, Errors: 0, Skipped: 25` —— 数量可信，因为它们是**被发现但没被执行**，不是没被扫到。
+上一轮全模块读数 `167 / Skipped: 35`，分布在 5 个类。所有者让我"没有凭据就去模拟"，
+先把 35 个按"到底需不需要凭据"分开：
+
+| 类别 | 数量 | 判据 | 本轮动作 |
+|---|---|---|---|
+| 真第三方网关 | 10 | 直连微信/支付宝，需商户号 + V2/V3 密钥 + `apiclient_key.pem`/`.p12`；且方法体**只 print 不断言** | 保持禁用，但补上逐类原因；凭据从源码移走（见下） |
+| 纯 DB 服务测试 | 25 | `BaseDbUnitTest`（H2），**不需要任何凭据** | 解禁并跑通 |
+
+`@Disabled // TODO 芋艿：后续 fix 补充的单测` 那句注释是**误导性的**：这两个类不是因为"单测还没补"而禁用，
+而是启用后必然失败 —— 失败原因和"缺凭据"无关，是仓库自己的测试库结构烂在原地：
+
+1. **H2 测试 DDL 与实体脱节**（25 个里 21 个 error 的唯一根因）：
+   `zhicloud-module-pay/src/test/resources/sql/create_tables.sql` 的 `pay_app` 缺 `transfer_notify_url`，
+   `pay_notify_task` 缺 `merchant_refund_id` / `merchant_transfer_id`。
+   报错是 `JdbcSQLSyntaxErrorException: Column "..." not found`，
+   而我按 `information_schema` 从**真 MySQL 库**取列型（`varchar(512)` / `varchar(255)` 可空）补齐，不是照 DO 猜。
+   补完 `21 errors → 0`。这条的含义比修 25 个用例更大：**任何**新写的 pay 测试碰这两张表都会立刻红，
+   而它在 CI 里可以长期"看不见"，因为碰它们的测试正好被禁着。
+2. **断言目标停在旧契约**（剩 2 个 failure）：生产代码 `PayNotifyServiceImpl:127` 现在是
+   事务提交后 `getSelf().executeNotifyAsync(task)`，测试还在 `verify(...).executeNotify0(eq(dbTask))`。
+   改成验证 `executeNotifyAsync`，并且**按 id 断言**而不是整对象 `equals`：
+   传的是新建的内存对象（`createTime` 由库默认值填充），与回读行做 equals 天然不等，
+   写 `eq(dbTask)` 只会得到一个"看起来像 Mockito 问题"的假失败。
+3. **夹具根本没覆盖新字段**：`testUpdateApp_success` 的 `randomPojo` 把 `transferNotifyUrl` 留成 null，
+   而 `dbApp` 有随机值 → `assertPojoEquals` 报 `Field(transferNotifyUrl) 不匹配 expected <null> but was <O4mrZ9VBdO>`。
+   给 create / update 两处夹具都显式 `setTransferNotifyUrl(randomURL())`，现在这个字段真的被回读校验了一次。
+
+结果：`167 / 0 失败 / 0 错误 / 10 跳过`（跳过数 35 → 10，且这 10 个逐类写明原因）。
+
+变异检查（证明复活后的断言真的在观察那个接缝）：把生产代码里的
+`getSelf().executeNotifyAsync(task);` 改成注释后重跑 →
+`Tests run: 11, Failures: 2`，失败的正是 `testCreatePayNotifyTask_order` 与 `_refund`；恢复后 11/11 绿。
+
+**顺手量出的一处安全问题（比测试更该被记住）**：那 3 个网关脚手架里提交着
+**真形态的商户凭据** —— 微信 `mchId=1545083881`、两组 V2 `mchKey`、两组 `apiV3Key`、
+支付宝 `appId=2021000118634035`，以及 **两段 2048 位 RSA 应用私钥正文**（`"MIIEvQIBADANBgkqhkiG…"`）
+和 `/Users/yunai/Downloads/wx_pay/*.pem` 绝对路径，共 **22 处字面量**。
+已全部替换成 `REPLACE_WITH_YOUR_*` 占位符（grep 复核残留为 0）。
+
+而 `security_baseline_scan.py` 对它们**一个都没报**（本轮复跑：534 文件、P0=0、status=passed）。
+原因是它的 `R3` 只匹配 `password|secret|token|api[-_]?key|access[-_]?key` 后接 `:=` 的**键值对写法**，
+既没有 PEM/`PRIVATE KEY` 正文规则，也看不见 `config.setMchKey("…")` 这种 setter 调用。
+我没有顺手扩扫描器（要配正负样本才敢算"补上了"），只把这两条缺口记在这里：
+**命名式 regex 扫 setter 与密钥正文，是它当前明确的盲区**；在这个盲区修好前，
+"安全基线 P0=0" 不能作为"仓库里没有提交的凭据"的证据。
+
+### 12.117 我自己欠下的一条红：许可证 policy 改动把一条"证明门禁会咬"的测试顺手改死了
+
+复跑全量 Python 门禁（`PATH` 带上 pwsh，`python -m unittest discover -s scripts/production/tests`）：
+
+```
+Ran 657 tests in 273.585s
+FAILED (failures=3)
+PYTHON_SUITE_RC=1
+```
+
+三条**都是我这轮或上轮造成的**，且没有一条会被 CI 发现 —— `maven.yml` 里根本没有 pytest 步骤。
+台账 §3.2 那句 `Ran 634 tests ... OK` 因此不只是过时，而是**当时就已不再成立**（§12.111 之后套件就红了）。
+
+1. `test_generate_license_inventory.test_unknown_label_becomes_unmapped_and_gate_denies`
+   断 `decision == "fail"`，但它跑的 policy 是**仓库 shipped policy**。
+   §12.111 把 `unmapped` 从 deny 改成 allow 后，这条测试的含义就从"门禁会咬"变成"policy 得是某个口味"，于是自红。
+   修法不是把它改成断 `allow`（那等于删掉断言），而是**把机制与策略取值分开**：
+   机制用测试自带的 `fail_closed_policy()` 夹具证明（未知标签 → `unmapped` → deny → `decision=fail`），
+   shipped policy 的当前取值另用一行 `category_actions["unmapped"] == "allow"` 钉住 —— 以后谁改策略得**显式**改这条断言。
+2. `test_plan_commit_groups.RealTreeTests` 两条：`.github/workflows/maven.yml` 被我改了之后
+   `exactly-one-group: unclassified` —— **规则表里没有任何一组认领 CI workflow**（根 `pom.xml` 同样无人认领，是同一处潜伏缺口，
+   之前只在它恰好脏的时候才暴露）。把 tooling 组扩到 `.github/workflows/` 与根 `pom.xml`，
+   并按同组既有做法把这条**钉在合成输入上**（真树一旦提交就干净，钉真树会每次成功提交后自红）。
+
+修后读数（本轮全部重跑）：
+
+| 门禁 | 结果 |
+|---|---|
+| 全量 Python 套件 | `Ran 658 tests ... OK`，`PYTHON_SUITE_RC=0`（脚本自身退出码，不是管道尾码） |
+| `plan_commit_groups` | `[OK] 分组计划自洽`，组6 tooling 认领 6 项 |
+| `check_commit_readiness` | `PASS: required=17 tracked=17 untracked=0 missing=0` |
+| `check_bare_throws` | `[OK]` 无裸抛 |
+| `check_missing_preauthorize --include-app` | `[OK]` 扫描 622 个 Controller 文件 |
+
+**该记的教训写明白**：改 policy 的语义时，我只验证了"三态可复现"（allow→0 / deny→1 / 删键→1），
+没跑全量套件；而那套件的失败在 CI 里不可见。这是 §12.111 的**遗漏面**，不是它结论的错误 ——
+现在两处都补上了，但根因（Python 门禁不进 CI）仍在那里，见下条未闭合。
