@@ -5459,3 +5459,34 @@ if (brokerageUser == null && ObjUtil.equal(BrokerageEnabledConditionEnum.ALL.get
 **留给所有者决定的一条**：要不要给 `trade_config` 也种一行默认配置（＝替所有租户决定"分销关、包邮关、支付超时 X 分钟"）。
 本轮我选择只修 NPE、不种配置 —— 种下去就等于把这三个开关的初值写死成我的猜测；
 `pay_app` 不一样，它不种就**必然**让主流程报错，而 `trade_config` 缺失只在分销这条支路报错，且报错已修。
+
+### 12.122 试着再复活一条 trade 用例，量到它不是一步就能启用，于是**原样收回**
+
+`TradeOrderUpdateServiceTest` 的禁用注释写着"还差 system 侧 SocialClientApi 等替身"。
+我把它去掉跑了一次：Spring 上下文**每次只报第一个缺失 bean**，于是按顺序量到
+
+```
+SocialClientApi  →  PayRefundApi  →  …
+```
+
+对照 `TradeOrderUpdateServiceImpl` 的全部注入字段（`public` 声明的那几个也算，
+`PayRefundApi` 正是 `:126 public` 字段，只看 `private` 会漏），
+测试类**实际缺 5 个替身**：
+
+| 缺失依赖 | 该 mock 还是该 @Import | 判据 |
+|---|---|---|
+| `SocialClientApi` | `@MockitoBean` | 跨模块 system API |
+| `PayRefundApi` | `@MockitoBean` | 跨模块 pay API（售后退款要它） |
+| `CartService` | 待定 | 本模块服务：mock 会把"下单清购物车"这条业务动作变成空转 |
+| `TradePriceService` | 待定 | 上一轮**专门**把 10 个价格计算器和真实 Validator 接进来（§12.92），mock 掉它等于把那次修复作废 |
+| `TradeMessageService` | 待定 | 本模块服务，涉及发货/签收消息发送 |
+
+也就是说它不是"补一个注解就能绿"，而是要为 `CartService/TradePriceService/TradeMessageService`
+逐个决定**导入真身还是打替身** —— 决定错了就会得到一条"看着绿、其实在空转"的用例。
+这正是所有者让我别再干的事（一轮门禁式地把测试树全铺绿），所以我**把这个文件原样恢复到提交前状态**
+（`git status` 对该路径 clean），只把上面这张表留在台账里。
+
+`zhicloud-module-trade` 目前仍被禁的 3 个服务类用例（`AfterSaleServiceTest`、
+`BrokerageWithdrawServiceImplTest`、本条）没做同类实测，判据要实测才写；
+另有 2 个 `Kd100/KdNiao ExpressClientIntegrationTest` 是直连第三方物流真网关的调试脚手架，
+与 §12.116 那 3 个支付网关脚手架同形，复活它们需要假网关而不是补注解。
