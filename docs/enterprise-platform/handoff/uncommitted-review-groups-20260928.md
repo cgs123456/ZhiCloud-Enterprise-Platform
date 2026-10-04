@@ -5343,3 +5343,44 @@ V123 只建表不种数据。所以**干净检出的库跑不了商城→支付�
 
 **本轮没有顺手加 V135**：这条链的验收需要"干净库上跑通 mall 下单→支付→回调"，
 而现在唯一可复现的库是我手工建过行的那一台；先把缺口登记成判据，别把未验证的种子混进正在跑的 CI。
+
+### 12.119 V135 把 §12.118 的缺口补上，并第一次让 V132–V135 走通"从零跑整链"这条路
+
+种子按**现存租户**生成（`INSERT ... SELECT FROM system_tenant`），不写死 tenant_id=1：
+
+- `pay_app` `app_key='mall'` —— 这个键不是我起的：`TradeOrderProperties:23` 的 `payAppKey` 默认值就是 `"mall"`
+  （可用 `zhicloud.trade.order.pay-app-key` 覆盖），trade 建支付单时按它查应用。
+- `pay_channel` `code='mock'` **种成停用态**：启用它等于任何人无需付款即可把订单标为已支付。
+  停用是否真拦得住提交有代码依据 —— `PayOrderServiceImpl.validateChannelCanSubmit` → `validPayChannel` →
+  `CommonStatusEnum.DISABLE` 分支抛 `PAY_CHANNEL_IS_DISABLE`（`PayChannelServiceImpl:149`）。
+  生产该建真实渠道（wx_lite / alipay_pc…），不是打开 mock。
+- 两个通知地址语义不同，注释里写死了：`order_notify_url` 是**目标端点本身**
+  （`AppTradeOrderController` 的 `/trade/order` + `/update-paid`），
+  `refund_notify_url` 是**基址** —— `genChannelOrderNotifyUrl` 会再拼 `"/" + channelId`，
+  把它写成带 channelId 的完整地址反而打不通。
+
+干净库真机（`mysql_chain_run.py`，端口 55101，库名 `zhicloud_sandbox_v135`，该脚本只允许 `zhicloud_sandbox*` 前缀）：
+
+| 判据 | 读数 |
+|---|---|
+| 整链 | `status=passed`，files=142，files_failed=0，table_count=557 |
+| V135 内自检 | `APP_PER_TENANT / NOTIFY_CONVENTION / MOCK_CHANNEL_DISABLED / CHANNEL_LINKED` 全 PASS |
+| `V135_verify` | **5/5 PASS**（无重复应用、无重复渠道、租户覆盖、应用启用、URL 是绝对地址） |
+| 静默零复核 | `tenants=3 → mall_apps=3 → mock_channels=3，其中 enabled=0` —— 覆盖计数不是 0=0 的假通过 |
+| 幂等复跑 | `--from-version V135 --no-drop` 再跑一次 rc=0，仍 3/3，两条 NO_DUPLICATE 检查仍 PASS |
+| 门禁 | 契约 tracked=45 → **46**、scanned=142、findings=0；`sql_migration_lint` 2 文件 0 违规；`check_duplicate_ddl` findings=0 |
+
+**顺带把 §12.113 交代过的"没走迁移通道"补了一半**：这一轮是**从零开始按版本序**把 V1..V135 全跑一遍，
+所以 V132/V133/V134/V135 现在被证明"能在干净库上按序执行且不撞号"。
+口径仍要说清：跑的是仓库自带的链跑器，**不是应用内 Flyway**（后者还要一次真启动才能证）。
+
+**已存在安装的另一条形状（真机跑到，且我没"顺手修绿"）**：同一份 V135 打到 `zhicloud_platform`
+（那台里 tenant 1 的 mock 渠道是我上轮手工建的、**是启用态**）时：
+`pay_app` 只补了 121/122（tenant 1 被 `NOT EXISTS` 正确跳过），新渠道按设计是停用态，
+但内自检 3 如实报 `V135_MOCK_CHANNEL_DISABLED FAIL enabled=1`。
+迁移**没有**去把别人显式启用过的开关关掉 —— 那是运营决定，不是种子的权限；
+所以这条 FAIL 是"这台库里有一条被启用的模拟渠道"的准确读数，不是脚本坏了。
+
+仍未闭合（别把上面读成 BIZ-13 已验收）：**干净库上把"商品→购物车→下单→支付→回调→待发货"整条流程
+跑一遍**需要一次真应用启动（上一轮量过：约 8–19 分钟），本轮只证明到"缺的两行现在有了、且形状对"。
+参照数据厚度（SKU/运费模板等）也仍在 BIZ-13 名下。
