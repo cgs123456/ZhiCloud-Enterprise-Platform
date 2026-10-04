@@ -130,7 +130,7 @@ public class BrokerageUserServiceImpl implements BrokerageUserService {
         BrokerageUserDO brokerageUser = brokerageUserMapper.selectById(id);
         // 特殊：人人分销的情况下，如果分销人为空则创建分销人
         if (brokerageUser == null && ObjUtil.equal(BrokerageEnabledConditionEnum.ALL.getCondition(),
-                tradeConfigService.getTradeConfig().getBrokerageEnabledCondition())) {
+                getBrokerageEnabledCondition())) {
             brokerageUser = new BrokerageUserDO().setId(id).setBrokerageEnabled(true).setBrokeragePrice(0)
                     .setBrokerageTime(LocalDateTime.now()).setFrozenPrice(0);
             brokerageUserMapper.insert(brokerageUser);
@@ -191,7 +191,7 @@ public class BrokerageUserServiceImpl implements BrokerageUserService {
         validateCanBindUser(brokerageUser, bindUserId);
         // 2.3 绑定用户
         if (isNewBrokerageUser) {
-            Integer enabledCondition = tradeConfigService.getTradeConfig().getBrokerageEnabledCondition();
+            Integer enabledCondition = getBrokerageEnabledCondition();
             if (BrokerageEnabledConditionEnum.ALL.getCondition().equals(enabledCondition)) { // 人人分销：用户默认就有分销资格
                 brokerageUser.setBrokerageEnabled(true).setBrokerageTime(LocalDateTime.now());
             } else {
@@ -381,6 +381,20 @@ public class BrokerageUserServiceImpl implements BrokerageUserService {
             return brokerageUserMapper.selectIdListByBindUserIdIn(bindUserIds);
         }
         throw exception(BROKERAGE_USER_LEVEL_NOT_SUPPORT);
+    }
+
+    /**
+     * 读取分销启用条件。
+     *
+     * trade_config 在干净初始化的库里是空表（仓库没有这一行的种子），而本类原先两处直接
+     * {@code getTradeConfig().getXxx()} 解引用 —— 会员绑定推荐人或创建分销记录会抛 NPE 变 500。
+     * 同模块的 {@code TradeDeliveryPriceCalculator#isGlobalExpressFree} 与
+     * {@code BrokerageRecordServiceImpl#addBrokerage} 都按"配置缺失＝该功能未启用"处理，
+     * 这里沿用同一语义而不是替运营猜默认值。
+     */
+    private Integer getBrokerageEnabledCondition() {
+        TradeConfigDO config = tradeConfigService.getTradeConfig();
+        return config == null ? null : config.getBrokerageEnabledCondition();
     }
 
 }
