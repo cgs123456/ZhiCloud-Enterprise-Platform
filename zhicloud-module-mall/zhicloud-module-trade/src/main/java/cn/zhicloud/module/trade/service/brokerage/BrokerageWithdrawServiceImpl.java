@@ -191,8 +191,11 @@ public class BrokerageWithdrawServiceImpl implements BrokerageWithdrawService {
         // 2.1 计算手续费
         Integer feePrice = calculateFeePrice(createReqVO.getPrice(), tradeConfig.getBrokerageWithdrawFeePercent());
         // 2.2 创建佣金提现记录
+        // 建单即审核中：这一列不能留 null。审核校验是 notEqual(AUDITING, status)，
+        // 后面的状态 CAS 是 `WHERE status = 0`——null 两边都命中不了，提现单会永久卡在待审核之前
         BrokerageWithdrawDO withdraw = BeanUtils.toBean(createReqVO, BrokerageWithdrawDO.class)
-                .setUserId(userId).setFeePrice(feePrice);
+                .setUserId(userId).setFeePrice(feePrice)
+                .setStatus(BrokerageWithdrawStatusEnum.AUDITING.getStatus());
         brokerageWithdrawMapper.insert(withdraw);
 
         // 3. 创建用户佣金记录
