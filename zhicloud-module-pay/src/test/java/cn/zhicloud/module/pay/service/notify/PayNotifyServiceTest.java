@@ -28,6 +28,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static cn.zhicloud.framework.common.exception.enums.GlobalErrorCodeConstants.BAD_REQUEST;
@@ -49,6 +50,16 @@ import static org.mockito.Mockito.*;
  */
 @Import({PayJobConfiguration.class, PayNotifyServiceImpl.class, PayNotifyLockRedisDAO.class})
 public class PayNotifyServiceTest extends BaseDbUnitTest {
+
+    /**
+     * 夹具用的「陈旧时间」哨兵。
+     *
+     * 原来这几条用例把 nextNotifyTime / lastExecuteTime 留给 randomPojo 填，
+     * 再用 assertNotEquals(随机值A, 随机值B) 断言"被改写了"—— 同一轮随机里两个
+     * LocalDateTime 相等时（CI 上真发生过：两边都是 2026-10-26T07:24:06）用例就随机红。
+     * 哨兵固定在 2000 年，不参与时钟也不跨午夜漂移；"有没有被改写"改成对它做确定比较。
+     */
+    private static final LocalDateTime STALE_TIME = LocalDateTime.of(2000, 1, 1, 0, 0, 0);
 
     @Resource
     private PayNotifyServiceImpl notifyService;
@@ -143,27 +154,27 @@ public class PayNotifyServiceTest extends BaseDbUnitTest {
         // mock 数据（notify）
         PayNotifyTaskDO dbTask01 = randomPojo(PayNotifyTaskDO.class,
                 o -> o.setStatus(PayNotifyStatusEnum.WAITING.getStatus())
-                        .setNextNotifyTime(addTime(Duration.ofMinutes(-1))));
+                        .setNextNotifyTime(addTime(Duration.ofMinutes(-1))).setNotifyTimes(0).setMaxNotifyTimes(9).setLastExecuteTime(null));
         notifyTaskMapper.insert(dbTask01);
         PayNotifyTaskDO dbTask02 = randomPojo(PayNotifyTaskDO.class,
                 o -> o.setStatus(PayNotifyStatusEnum.REQUEST_SUCCESS.getStatus())
-                        .setNextNotifyTime(addTime(Duration.ofMinutes(-1))));
+                        .setNextNotifyTime(addTime(Duration.ofMinutes(-1))).setNotifyTimes(0).setMaxNotifyTimes(9).setLastExecuteTime(null));
         notifyTaskMapper.insert(dbTask02);
         PayNotifyTaskDO dbTask03 = randomPojo(PayNotifyTaskDO.class,
                 o -> o.setStatus(PayNotifyStatusEnum.REQUEST_FAILURE.getStatus())
-                        .setNextNotifyTime(addTime(Duration.ofMinutes(-1))));
+                        .setNextNotifyTime(addTime(Duration.ofMinutes(-1))).setNotifyTimes(0).setMaxNotifyTimes(9).setLastExecuteTime(null));
         notifyTaskMapper.insert(dbTask03);
         PayNotifyTaskDO dbTask04 = randomPojo(PayNotifyTaskDO.class, // 不满足状态
                 o -> o.setStatus(PayNotifyStatusEnum.FAILURE.getStatus())
-                        .setNextNotifyTime(addTime(Duration.ofMinutes(-1))));
+                        .setNextNotifyTime(addTime(Duration.ofMinutes(-1))).setNotifyTimes(0).setMaxNotifyTimes(9).setLastExecuteTime(null));
         notifyTaskMapper.insert(dbTask04);
         PayNotifyTaskDO dbTask05 = randomPojo(PayNotifyTaskDO.class, // 不满足状态
                 o -> o.setStatus(PayNotifyStatusEnum.SUCCESS.getStatus())
-                        .setNextNotifyTime(addTime(Duration.ofMinutes(-1))));
+                        .setNextNotifyTime(addTime(Duration.ofMinutes(-1))).setNotifyTimes(0).setMaxNotifyTimes(9).setLastExecuteTime(null));
         notifyTaskMapper.insert(dbTask05);
         PayNotifyTaskDO dbTask06 = randomPojo(PayNotifyTaskDO.class, // 不满足时间
                 o -> o.setStatus(PayNotifyStatusEnum.SUCCESS.getStatus())
-                        .setNextNotifyTime(addTime(Duration.ofMinutes(1))));
+                        .setNextNotifyTime(addTime(Duration.ofMinutes(1))).setNotifyTimes(0).setMaxNotifyTimes(9).setLastExecuteTime(null));
         notifyTaskMapper.insert(dbTask06);
         // mock 方法（lock）
         mockLock(dbTask01.getId());
@@ -180,15 +191,17 @@ public class PayNotifyServiceTest extends BaseDbUnitTest {
     public void testExecuteNotify0_exception() {
         // mock 数据（task）
         PayNotifyTaskDO task = randomPojo(PayNotifyTaskDO.class, o -> o.setType(-1)
-                .setNotifyTimes(0).setMaxNotifyTimes(9));
+                .setNotifyTimes(0).setMaxNotifyTimes(9)
+                .setNextNotifyTime(STALE_TIME).setLastExecuteTime(null));
         notifyTaskMapper.insert(task);
 
         // 调用
         notifyService.executeNotify0(task);
         // 断言，task
         PayNotifyTaskDO dbTask = notifyTaskMapper.selectById(task.getId());
-        assertNotEquals(task.getNextNotifyTime(), dbTask.getNextNotifyTime());
-        assertNotEquals(task.getLastExecuteTime(), dbTask.getNextNotifyTime());
+        assertTrue(dbTask.getNextNotifyTime().isAfter(LocalDateTime.now()),
+                "未知类型走异常分支，也要安排下一次重试而不是停在哨兵时间");
+        assertNotNull(dbTask.getLastExecuteTime());
         assertEquals(dbTask.getNotifyTimes(), 1);
         assertEquals(dbTask.getStatus(), PayNotifyStatusEnum.REQUEST_FAILURE.getStatus());
         // 断言，log
@@ -203,7 +216,8 @@ public class PayNotifyServiceTest extends BaseDbUnitTest {
     public void testProcessNotifyResult_success() {
         // mock 数据（task）
         PayNotifyTaskDO task = randomPojo(PayNotifyTaskDO.class,
-                o -> o.setNotifyTimes(0).setMaxNotifyTimes(9));
+                o -> o.setNotifyTimes(0).setMaxNotifyTimes(9)
+                        .setNextNotifyTime(STALE_TIME).setLastExecuteTime(null));
         notifyTaskMapper.insert(task);
         // 准备参数
         CommonResult<?> invokeResult = CommonResult.success(randomString());
@@ -212,8 +226,8 @@ public class PayNotifyServiceTest extends BaseDbUnitTest {
         notifyService.processNotifyResult(task, invokeResult, null);
         // 断言
         PayNotifyTaskDO dbTask = notifyTaskMapper.selectById(task.getId());
-        assertEquals(task.getNextNotifyTime(), dbTask.getNextNotifyTime());
-        assertNotEquals(task.getLastExecuteTime(), dbTask.getNextNotifyTime());
+        assertEquals(STALE_TIME, dbTask.getNextNotifyTime()); // 成功分支不再安排下一次重试
+        assertNotNull(dbTask.getLastExecuteTime());           // 但执行时间必须被盖章
         assertEquals(dbTask.getNotifyTimes(), 1);
         assertEquals(dbTask.getStatus(), PayNotifyStatusEnum.SUCCESS.getStatus());
     }
@@ -222,7 +236,8 @@ public class PayNotifyServiceTest extends BaseDbUnitTest {
     public void testProcessNotifyResult_failure() {
         // mock 数据（task）
         PayNotifyTaskDO task = randomPojo(PayNotifyTaskDO.class,
-                o -> o.setNotifyTimes(8).setMaxNotifyTimes(9));
+                o -> o.setNotifyTimes(8).setMaxNotifyTimes(9)
+                        .setNextNotifyTime(STALE_TIME).setLastExecuteTime(null));
         notifyTaskMapper.insert(task);
         // 准备参数
         CommonResult<?> invokeResult = CommonResult.error(BAD_REQUEST);
@@ -231,8 +246,8 @@ public class PayNotifyServiceTest extends BaseDbUnitTest {
         notifyService.processNotifyResult(task, invokeResult, null);
         // 断言
         PayNotifyTaskDO dbTask = notifyTaskMapper.selectById(task.getId());
-        assertEquals(task.getNextNotifyTime(), dbTask.getNextNotifyTime());
-        assertNotEquals(task.getLastExecuteTime(), dbTask.getNextNotifyTime());
+        assertEquals(STALE_TIME, dbTask.getNextNotifyTime()); // 已达最大次数，不再安排重试
+        assertNotNull(dbTask.getLastExecuteTime());
         assertEquals(dbTask.getNotifyTimes(), 9);
         assertEquals(dbTask.getStatus(), PayNotifyStatusEnum.FAILURE.getStatus());
     }
@@ -241,7 +256,8 @@ public class PayNotifyServiceTest extends BaseDbUnitTest {
     public void testProcessNotifyResult_requestFailure() {
         // mock 数据（task）
         PayNotifyTaskDO task = randomPojo(PayNotifyTaskDO.class,
-                o -> o.setNotifyTimes(0).setMaxNotifyTimes(9));
+                o -> o.setNotifyTimes(0).setMaxNotifyTimes(9)
+                        .setNextNotifyTime(STALE_TIME).setLastExecuteTime(null));
         notifyTaskMapper.insert(task);
         // 准备参数
         CommonResult<?> invokeResult = CommonResult.error(BAD_REQUEST);
@@ -250,8 +266,9 @@ public class PayNotifyServiceTest extends BaseDbUnitTest {
         notifyService.processNotifyResult(task, invokeResult, null);
         // 断言
         PayNotifyTaskDO dbTask = notifyTaskMapper.selectById(task.getId());
-        assertNotEquals(task.getNextNotifyTime(), dbTask.getNextNotifyTime());
-        assertNotEquals(task.getLastExecuteTime(), dbTask.getNextNotifyTime());
+        assertTrue(dbTask.getNextNotifyTime().isAfter(LocalDateTime.now()),
+                "未达最大次数时，重试应被安排到未来，而不是留在陈旧哨兵");
+        assertNotNull(dbTask.getLastExecuteTime());
         assertEquals(dbTask.getNotifyTimes(), 1);
         assertEquals(dbTask.getStatus(), PayNotifyStatusEnum.REQUEST_SUCCESS.getStatus());
     }
@@ -260,7 +277,8 @@ public class PayNotifyServiceTest extends BaseDbUnitTest {
     public void testProcessNotifyResult_requestSuccess() {
         // mock 数据（task）
         PayNotifyTaskDO task = randomPojo(PayNotifyTaskDO.class,
-                o -> o.setNotifyTimes(0).setMaxNotifyTimes(9));
+                o -> o.setNotifyTimes(0).setMaxNotifyTimes(9)
+                        .setNextNotifyTime(STALE_TIME).setLastExecuteTime(null));
         notifyTaskMapper.insert(task);
         // 准备参数
         CommonResult<?> invokeResult = CommonResult.error(BAD_REQUEST);
@@ -270,8 +288,9 @@ public class PayNotifyServiceTest extends BaseDbUnitTest {
         notifyService.processNotifyResult(task, invokeResult, invokeException);
         // 断言
         PayNotifyTaskDO dbTask = notifyTaskMapper.selectById(task.getId());
-        assertNotEquals(task.getNextNotifyTime(), dbTask.getNextNotifyTime());
-        assertNotEquals(task.getLastExecuteTime(), dbTask.getNextNotifyTime());
+        assertTrue(dbTask.getNextNotifyTime().isAfter(LocalDateTime.now()),
+                "异常分支同样要安排下一次重试");
+        assertNotNull(dbTask.getLastExecuteTime());
         assertEquals(dbTask.getNotifyTimes(), 1);
         assertEquals(dbTask.getStatus(), PayNotifyStatusEnum.REQUEST_FAILURE.getStatus());
     }
