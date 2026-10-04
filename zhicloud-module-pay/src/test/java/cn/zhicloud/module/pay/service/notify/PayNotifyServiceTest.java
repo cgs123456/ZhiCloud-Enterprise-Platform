@@ -19,8 +19,8 @@ import cn.zhicloud.module.pay.service.order.PayOrderService;
 import cn.zhicloud.module.pay.service.refund.PayRefundService;
 import cn.zhicloud.module.pay.service.refund.PayRefundServiceImpl;
 import jakarta.annotation.Resource;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -47,7 +47,6 @@ import static org.mockito.Mockito.*;
  *
  * @author 芋艿
  */
-@Disabled // TODO 芋艿：后续 fix 补充的单测
 @Import({PayJobConfiguration.class, PayNotifyServiceImpl.class, PayNotifyLockRedisDAO.class})
 public class PayNotifyServiceTest extends BaseDbUnitTest {
 
@@ -94,7 +93,12 @@ public class PayNotifyServiceTest extends BaseDbUnitTest {
                     .containsExactly(type, dataId, PayNotifyStatusEnum.WAITING.getStatus(), 0, 9,
                             order.getAppId(), order.getMerchantOrderId(), order.getNotifyUrl());
             // 断言，调用
-            verify(payNotifyService).executeNotify0(eq(dbTask));
+            // 断言，调用：任务落库后要发起一次通知；现契约是事务提交后异步执行，
+            // 且传入的是新建内存对象（createTime 由库默认值填充，与回读行不等），
+            // 所以按 id 断言"通知的就是这条刚落库的任务"，不做整对象 equals。
+            ArgumentCaptor<PayNotifyTaskDO> notifyTaskCaptor = ArgumentCaptor.forClass(PayNotifyTaskDO.class);
+            verify(payNotifyService).executeNotifyAsync(notifyTaskCaptor.capture());
+            assertEquals(dbTask.getId(), notifyTaskCaptor.getValue().getId());
         }
     }
 
@@ -125,7 +129,12 @@ public class PayNotifyServiceTest extends BaseDbUnitTest {
                     .containsExactly(type, dataId, PayNotifyStatusEnum.WAITING.getStatus(), 0, 9,
                             refund.getAppId(), refund.getMerchantOrderId(), refund.getNotifyUrl());
             // 断言，调用
-            verify(payNotifyService).executeNotify0(eq(dbTask));
+            // 断言，调用：任务落库后要发起一次通知；现契约是事务提交后异步执行，
+            // 且传入的是新建内存对象（createTime 由库默认值填充，与回读行不等），
+            // 所以按 id 断言"通知的就是这条刚落库的任务"，不做整对象 equals。
+            ArgumentCaptor<PayNotifyTaskDO> notifyTaskCaptor = ArgumentCaptor.forClass(PayNotifyTaskDO.class);
+            verify(payNotifyService).executeNotifyAsync(notifyTaskCaptor.capture());
+            assertEquals(dbTask.getId(), notifyTaskCaptor.getValue().getId());
         }
     }
 
