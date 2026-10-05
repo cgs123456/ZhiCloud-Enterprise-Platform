@@ -51,8 +51,9 @@ GROUP_RULES = [
                 or p.startswith("scripts/production/migration-contract")),
      "T2 的自败点：契约 JSON 与 V1xx 迁移、验证 SQL 必须**同组**，否则单独 checkout 必 C5。"),
     (4, "business-code",
-     lambda p: p.startswith(("zhicloud-framework/", "zhicloud-module-", "zhicloud-server/")),
-     "Java 生产/测试代码与测试资源 SQL。"),
+     lambda p: p.startswith(("zhicloud-framework/", "zhicloud-module-", "zhicloud-server/", "zhicloud-ui/")),
+     "Java 生产/测试代码与测试资源 SQL，以及前端 zhicloud-ui（此前从未 dirty，"
+     "商业域移除删除其商城目录后才首次被认领，实测踩到 unclassified）。"),
     (5, "demo-data",
      lambda p: p.startswith("demo-data/"),
      "演示数据生成器与种子 SQL：被沙箱脚本按路径读取，因此必须早于 tooling。"),

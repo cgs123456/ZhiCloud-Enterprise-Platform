@@ -352,6 +352,13 @@
       "sha256": "dad11acd1b6d21a0333054335323629569b1adb5b87f364129316e3af40ef53d",
       "verification_file": "V139_verify.sql",
       "verification_sha256": "839f82ad0ffcec29b66917a5707560cc8b0c632715b45c3a048552a4e9679e5d"
+    },
+    {
+      "version": 140,
+      "file": "V140__drop_commercial_domain.sql",
+      "sha256": "bde293ba6446ac95bc5597f576744e6a8d5f4ddcb106f96c7fc3d8cdc49ec1a3",
+      "verification_file": "V140_verify.sql",
+      "verification_sha256": "aec2dfab0ced25e527eb0682012d9b9ef2c01e3df37bf0ccb0bbd70d5f1e5c70"
     }
   ]
 }

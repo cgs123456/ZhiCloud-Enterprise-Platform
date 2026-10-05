@@ -525,21 +525,6 @@ zhicloud:
     send-maximum-quantity-per-day: 10
     begin-code: ${SMS_CODE_BEGIN:1000} # 验证码起始值（生产环境通过环境变量注入）
     end-code: ${SMS_CODE_END:9999} # 验证码结束值（生产环境通过环境变量注入）
-  trade:
-    order:
-      pay-expire-time: 2h # 支付的过期时间
-      receive-expire-time: 14d # 收货的过期时间
-      comment-expire-time: 7d # 评论的过期时间
-      status-sync-to-wxa-enable: true # 是否同步订单状态到微信小程序
-    express:
-      client: kd_100
-      kd-niao:
-        api-key: ${KD_NIAO_API_KEY:} # 快递鸟 API Key（必须通过环境变量注入，无默认值）
-        business-id: ${KD_NIAO_BUSINESS_ID:}
-        request-type: 1002 # 免费版 1002；付费版 8001
-      kd100:
-        key: ${KD100_KEY:} # 快递 100 Key（必须通过环境变量注入，无默认值）
-        customer: ${KD100_CUSTOMER:}
   iot:
     message-bus:
       type: redis # 消息总线的类型

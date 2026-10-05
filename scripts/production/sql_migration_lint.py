@@ -17,6 +17,9 @@
   R2 PREPARE_FROM_LOCAL_VAR    PREPARE ... FROM 使用了非 @ 变量 / 非字面量
   R3 DELIMITER_UNBALANCED      DELIMITER 指令数量不是偶数，或未成对收尾
   R4 DESTRUCTIVE_STATEMENT     出现 DROP TABLE / TRUNCATE / 无 WHERE 的 DELETE
+                               （DROP 业务表可经 destructive_ddl_allowlist.json 按
+                               「文件×表名」登记豁免；登记了却没出现在对应迁移的
+                               DROP 里同样报错——豁免不许空转）
   R5 MISSING_TRAILING_NEWLINE  文件末尾没有换行
 """
 from __future__ import annotations
@@ -26,6 +29,22 @@ import json
 import re
 import sys
 from pathlib import Path
+
+DESTRUCTIVE_ALLOWLIST_PATH = Path(__file__).resolve().parent / "destructive_ddl_allowlist.json"
+
+
+def _load_destructive_allowlist() -> dict[str, set[str]]:
+    """返回 {迁移文件名: {表名小写}}。文件缺失或结构不合法都按空处理——
+    豁免必须显式登记才存在，不会因为登记文件损坏而悄悄放宽（fail closed）。"""
+    try:
+        data = json.loads(DESTRUCTIVE_ALLOWLIST_PATH.read_text(encoding="utf-8"))
+        return {
+            str(entry["file"]): {str(t).lower() for t in entry.get("tables", [])}
+            for entry in data.get("entries", [])
+            if isinstance(entry, dict) and entry.get("file")
+        }
+    except (OSError, ValueError, TypeError, KeyError):
+        return {}
 
 RE_DELIMITER = re.compile(r"^\s*DELIMITER\s+(\S+)(.*)$", re.IGNORECASE)
 RE_PREPARE = re.compile(r"\bPREPARE\s+(\w+)\s+FROM\s+([^\s;]+)", re.IGNORECASE)
@@ -99,6 +118,12 @@ def lint_text(text: str, name: str = "<memory>") -> list[dict[str, object]]:
     # 迁移自建的临时表允许 TRUNCATE / DROP / 全表 DELETE
     temp_tables = {m.group(1).lower() for m in RE_TEMP_CREATE.finditer(text)}
 
+    # R4 豁免：destructive_ddl_allowlist.json 按「文件×表名」登记的 DROP TABLE。
+    # 双向 fail-closed：未登记的 DROP 照报；登记了的表若没真的出现在该迁移的
+    # DROP 里，也报"豁免条目失效"——防止豁免被当成永久免检牌（规则不许空转）。
+    allowlisted = _load_destructive_allowlist().get(name, set())
+    allowlist_seen: set[str] = set()
+
     code = strip_sql_comments(text)
     for no, line in enumerate(code.splitlines(), start=1):
         for m in RE_PREPARE.finditer(line):
@@ -113,9 +138,15 @@ def lint_text(text: str, name: str = "<memory>") -> list[dict[str, object]]:
         for m in RE_DROP_TABLE.finditer(line):
             if m.group(1) or m.group(2).lower() in temp_tables:
                 continue
+            table = m.group(2).lower()
+            if table in allowlisted:
+                allowlist_seen.add(table)
+                continue
             findings.append({
                 "rule": "R4", "code": RULES["R4"], "file": name, "line": no,
-                "message": f"迁移中 DROP 了业务表 {m.group(2)}", "evidence": line.strip()[:160],
+                "message": f"迁移中 DROP 了业务表 {m.group(2)}（如确需破坏性变更，"
+                           f"在 scripts/production/destructive_ddl_allowlist.json 按 文件×表名 登记）",
+                "evidence": line.strip()[:160],
             })
         for m in RE_TRUNCATE.finditer(line):
             if m.group(1).lower() in temp_tables:
@@ -131,6 +162,14 @@ def lint_text(text: str, name: str = "<memory>") -> list[dict[str, object]]:
                 "rule": "R4", "code": RULES["R4"], "file": name, "line": no,
                 "message": f"DELETE FROM {m.group(1)} 未带 WHERE", "evidence": line.strip()[:160],
             })
+
+    for table in sorted(allowlisted - allowlist_seen):
+        findings.append({
+            "rule": "R4", "code": RULES["R4"], "file": name, "line": 0,
+            "message": f"豁免条目失效：{table} 登记在 destructive_ddl_allowlist.json "
+                       f"但未出现在本迁移的 DROP 里（豁免不许空转，请清理登记）",
+            "evidence": "",
+        })
 
     if text and not text.endswith("\n"):
         findings.append({

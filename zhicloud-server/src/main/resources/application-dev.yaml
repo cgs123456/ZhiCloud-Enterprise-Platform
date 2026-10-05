@@ -179,10 +179,6 @@ zhicloud:
   web:
     cors:
       allowed-origins: http://localhost:48080,http://127.0.0.1:48080 # P1 安全修复：CORS 白名单，避免默认 * + allowCredentials 的安全风险
-  pay:
-    order-notify-url: http://yunai.natapp1.cc/admin-api/pay/notify/order # 支付渠道的【支付】回调地址
-    refund-notify-url: http://yunai.natapp1.cc/admin-api/pay/notify/refund # 支付渠道的【退款】回调地址
-    transfer-notify-url: https://yunai.natapp1.cc/admin-api/pay/notify/transfer # 支付渠道的【转账】回调地址
   demo: false # 开启演示模式
   tencent-lbs-key: ${TENCENT_LBS_KEY:} # QQ 地图的密钥（通过环境变量注入）
 

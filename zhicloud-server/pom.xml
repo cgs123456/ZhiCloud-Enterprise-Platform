@@ -32,12 +32,6 @@
             <version>${revision}</version>
         </dependency>
 
-        <!-- 会员中心。已启用：商城四个模块均依赖 member api -->
-        <dependency>
-            <groupId>cn.zhicloud</groupId>
-            <artifactId>zhicloud-module-member</artifactId>
-            <version>${revision}</version>
-        </dependency>
 
         <!-- 数据报表。已进构建（模块测试 16 条在跑、V129 建表已登记），但**暂不接进 server**：
              zhicloud-module-report 会带入 jimureport-spring-boot3-starter 与 jimubi-spring-boot3-starter
@@ -56,12 +50,6 @@
             <artifactId>zhicloud-module-bpm</artifactId>
             <version>${revision}</version>
         </dependency>
-        <!-- 支付服务。已启用：商城下单-支付闭环依赖 -->
-        <dependency>
-            <groupId>cn.zhicloud</groupId>
-            <artifactId>zhicloud-module-pay</artifactId>
-            <version>${revision}</version>
-        </dependency>
 
         <!-- 微信公众号模块。默认注释，保证编译速度 -->
 <!--        <dependency>-->
@@ -70,27 +58,6 @@
 <!--            <version>${revision}</version>-->
 <!--        </dependency>-->
 
-        <!-- 商城相关模块。已启用：商品/营销/交易/统计（购物车→下单→支付闭环） -->
-        <dependency>
-            <groupId>cn.zhicloud</groupId>
-            <artifactId>zhicloud-module-product</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>cn.zhicloud</groupId>
-            <artifactId>zhicloud-module-promotion</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>cn.zhicloud</groupId>
-            <artifactId>zhicloud-module-trade</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>cn.zhicloud</groupId>
-            <artifactId>zhicloud-module-statistics</artifactId>
-            <version>${revision}</version>
-        </dependency>
 
         <!-- CRM 相关模块。B5 启用：客户关系管理 -->
         <dependency>
