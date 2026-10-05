@@ -5781,3 +5781,66 @@ SQL 里 `NULL = 0` 恒不成立。**即：会员钱包充值从来没有可能�
 `zc_after_sale.py` 首跑暴露两处**脚本管道缺陷**（读取回执的 SQL 括号不配对必抛 1064；
 `cell()` 只认数字首格，回执 `{` 开头必被丢）：只修读取管道，断言未动，
 失败项也没有因此放水——2 个 FAIL 复跑后以 PASS 收口。
+
+### 12.129 商业域整体移除：所有者裁决"会员/积分/充值/钱包/佣金不保留"，依赖探测零波及，V140 反向清理落地
+
+所有者在两轮澄清后把口径定死：**「商业层面」= 会员账号、积分、充值、钱包、佣金提现、
+商城资金交易这一整域，个人自研不商用，不保留**；「业务功能层面」= 企业域
+（ERP/MES/WMS/QMS/CRM/OA/HR/TMS/BPM/IoT/报表）。本轮任务从"资金侧延伸"转为"移除"。
+
+**先探测，后动手（全部实测）**：
+1. 企业域 15 个模块（erp/mes/wms/qms/crm/hr/oa/tms/iot/bpm/report/datalake/ai/im/mp）
+   对 `member/pay/trade/product/promotion` 的 **import 数 = 0**；member/pay 自身只依赖
+   system/infra——商业域是座"孤岛"，移除不需要任何替代接线（"取代"方案因此不成立）。
+2. iot 与 mall **没有接线**："② iot+mall 最小闭环"是两条独立验证，不是集成。
+3. 全库视图无一 `FROM` 商业表：正则初筛命中的 `v_qms_inspection_status_daily`
+   只是 QMS 表上有个名叫 `product_id` 的**列**——列名误报，逐一排除。
+   （同一类误报在 §12.128 的盘点里也出现过一次：grep 词面 ≠ 依赖。）
+4. 租户套餐 `menu_ids` CSV 对商业菜单引用 = 0；`demo-data/` 对商城/会员/积分零命中
+   （商城演示数据全部在 V123 迁移内种子，不散落在外）。
+
+**移除面**：后端 `zhicloud-module-member/pay/mall` 三个模块目录、根 pom 3 行、
+server pom 6 个依赖块、CI 事务门禁的模块清单、permitall allowlist 25 条、
+商城购物车 RBAC 守卫测试退役（-5 用例）；前端 `zhicloud-ui-mall-uniapp` 整包、
+admin-vue3 的 api/{mall,member,pay}、views/{mall,member,pay}、remaining.ts 的
+五段静态路由、`DiyEditor`/`AppLinkInput` 两个商城组件族（确认无外部使用者）、
+`store/modules/mall`；application 三份 yaml 的 trade/pay 配置块与 5 行 mapper 日志。
+CI 的 `plan_commit_groups` business-code 组借此补认领了 `zhicloud-ui/`
+（前端此前从未 dirty，规则没覆盖，实测撞出 unclassified）。
+
+**V140 的形状**：既有迁移正文被哈希钉住不许改，所以用"反向清理"——
+DROP 74 张表（清单直接从 information_schema 实测生成，不手抄；V123 的 63 张 + V125 的 11 张）、
+商业菜单用**递归 CTE 闭包**删除（目录命中 + 全部子孙，不依赖每个子菜单都命中前缀）、
+商业字典按 `SUBSTRING_INDEX` 前缀删（避开 LIKE 通配符转义）。自检 5 项 + `V140_verify` 6 项。
+R4 破坏性语句门禁为此新增 `destructive_ddl_allowlist.json` **登记豁免**，
+双向 fail-closed：未登记的 DROP 照拦；登记了的表没出现在迁移的 DROP 里，报"豁免失效"。
+
+**真机两次踩坑，都留了痕**：
+1. 递归 CTE 从"基础命中"与"父链递归"两条路产出**同一个 id**（真机
+   `Duplicate entry '1132'`）→ `SELECT DISTINCT` 收口。
+2. `system_dict_data` 没有 `dict_type_id` 列——yudao 用**字符串 `dict_type`** 关联，
+   我按 id 关联的猜测被 MySQL 当场拒绝（`Unknown column 'dd.dict_type_id'`）。
+   改成按前缀直删，并在回滚事务里先验证……结果又踩了一脚自己的坑：
+   `sql()` 每次调用是独立会话，"事务内验证"实际逐条 autocommit，
+   字典行**已经真删了**（范围与 V140 完全一致，目标状态没错）。
+3. 顺带验证了 Flyway 事务语义：字典步失败时，菜单删除（DML）整体回滚、
+   DROP（DDL 自动提交）留存——所以出现"表没了、菜单还在"的中间态，
+   修复后重跑全部收敛。失败的历史行按口径手工清除后重跑。
+
+**跑通后的读数**（新 jar 16:2x 构建，应用自带 Flyway 应用 V140）：
+- 迁移内自检 5 项 PASS（表/菜单/孤儿/字典清零 + 企业域 459 表完好），
+  `V140_verify` 6 项 PASS（含 `V140_FLYWAY_APPLIED`）。
+- 商业端点：`/app-api/member/**` → `code=404 请求地址不存在`；
+  `/admin-api/trade|pay/**` → `code=501 "[商城系统/支付模块 - 已禁用]"`
+  （上游为"模块未启用"设计的显式语义，比裸 404 更诚实）。
+- 企业域冒烟：ERP 库存分页、QMS 检验单分页均 `code=0`；菜单/权限 Redis 缓存无残留键。
+- 门禁：契约 `tracked=51 scanned=147 findings=0`、duplicate_ddl PASS、
+  V140 lint 0 违规、credentials OK、commit_readiness PASS、python 全量
+  `Ran 653 tests OK`（658 − 商城 RBAC 守卫 5 条）。
+
+**取证边界**：字典删除在本库是"语句验证阶段先行生效、迁移执行时空操作"，
+从零建库由迁移完成（语句本身已在真机验证有效）；vue2/vben 两套 UI 的同构商城目录
+未清（所有者未定，后端已死，纯展示残留）；服务进程 2026-10-05 14:54 曾无错误无声退出
+一次（日志止于正常 DEBUG，无停机记录），原因未查明，构建重启即恢复，不影响证据链。
+上一轮的 V136–V139 与本轮的 V140 都保留在契约里：历史迁移记录的是"当时做过什么"，
+V140 记录的是"把它收掉"。

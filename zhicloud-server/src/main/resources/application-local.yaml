@@ -169,15 +169,9 @@ logging:
     cn.zhicloud.module.infra.dal.mysql.logger.ApiErrorLogMapper: INFO # 配置 ApiErrorLogMapper 的日志级别为 info，避免和 GlobalExceptionHandler 重复打印
     cn.zhicloud.module.infra.dal.mysql.job.JobLogMapper: INFO # 配置 JobLogMapper 的日志级别为 info
     cn.zhicloud.module.infra.dal.mysql.file.FileConfigMapper: INFO # 配置 FileConfigMapper 的日志级别为 info
-    cn.zhicloud.module.pay.dal.mysql: debug
-    cn.zhicloud.module.pay.dal.mysql.notify.PayNotifyTaskMapper: INFO # 配置 PayNotifyTaskMapper 的日志级别为 info
     cn.zhicloud.module.system.dal.mysql: debug
     cn.zhicloud.module.system.dal.mysql.sms.SmsChannelMapper: INFO # 配置 SmsChannelMapper 的日志级别为 info
     cn.zhicloud.module.tool.dal.mysql: debug
-    cn.zhicloud.module.member.dal.mysql: debug
-    cn.zhicloud.module.trade.dal.mysql: debug
-    cn.zhicloud.module.promotion.dal.mysql: debug
-    cn.zhicloud.module.statistics.dal.mysql: debug
     cn.zhicloud.module.crm.dal.mysql: debug
     cn.zhicloud.module.erp.dal.mysql: debug
     cn.zhicloud.module.mes.dal.mysql: debug
@@ -225,10 +219,6 @@ zhicloud:
       # P1 安全修复：CORS 白名单，避免默认 * + allowCredentials 的安全风险。
       # 末尾两项为 HSK 内网穿透分配的公网域名（前端站点 / 后端隧道），随隧道重建会变化，需同步更新。
       allowed-origins: http://localhost,http://127.0.0.1,http://localhost:48080,http://127.0.0.1:48080,https://f9979cc73c50.hz-1.aicp.space,https://12do07.gicp.fun
-  pay:
-    order-notify-url: https://yutou.mynatapp.cc/admin-api/pay/notify/order # 支付渠道的【支付】回调地址
-    refund-notify-url: https://yutou.mynatapp.cc/admin-api/pay/notify/refund # 支付渠道的【退款】回调地址
-    transfer-notify-url: https://yutou.mynatapp.cc/admin-api/pay/notify/transfer # 支付渠道的【转账】回调地址
   access-log: # 访问日志的配置项
     enable: false
   demo: false # 关闭演示模式
