@@ -5844,3 +5844,58 @@ R4 破坏性语句门禁为此新增 `destructive_ddl_allowlist.json` **登记�
 一次（日志止于正常 DEBUG，无停机记录），原因未查明，构建重启即恢复，不影响证据链。
 上一轮的 V136–V139 与本轮的 V140 都保留在契约里：历史迁移记录的是"当时做过什么"，
 V140 记录的是"把它收掉"。
+
+### 12.130 ③ 补完：全新安装库上 BPM 定义为空，公文"发起后没人接结论"补上监听器，三流程真机端到端
+
+V140 全新库建好后重走 ③，第一步就撞出**全新安装的真实断点**：`ACT_RE_PROCDEF` 为空——
+§12.93 的播种器是流程定义的唯一入口，而它的白名单只有
+`[hr_leave_request, oa_reimburse, crm-contract-audit]`，**没有公文**（白名单写于公文接线之前）。
+也就是说：任何新库上，oa_document 的 submit 必然起不了流程。
+
+**修复两处**：
+1. `OaDocumentStatusListener`（新增，形状与报销监听器一致）：BPM 通过 → **25 待签发**，
+   驳回/撤销 → **10 草稿**。映射理由写进了代码：公文状态机 20 核稿 → 25 签发 → 30 发布，
+   发布接口强制校验 25→30 禁止跳过签发，所以 BPM 通过只能走到"待签发"，签发必须由人完成；
+   驳回/撤销回草稿，与手工核稿驳回（落 10）同档。
+   幂等口径：**只有审核中(20)才落一次**——BPM 结果事件至少一次投递，
+   重复投递不能把已核稿/已签发的公文倒退（与 §12.83 请假"从 PENDING 才落一次"同口径）。
+   测试 `OaDocumentStatusListenerTest` 6 条：通过/驳回/撤销/RUNNING 不倒写/**重投不倒退已发布单**/别的 KEY 不越界。
+2. 播种白名单补 `oa_document`。
+
+**全新库端到端读数**（`zhicloud_sandbox_v140`，bootstrap 管理员 225 + mobile，
+`hr_leave_type/employee/balance` 与车辆司机为 SQL 造数，如实记录）：
+- 报销：建单 → submit（流程实例落库）→ BPM 待办审批 → **status=30 已通过**；
+- 请假：建单 → submit → 审批 → **status=1 已批准，余额 total 10 → used 1.0 / remaining 9.0**（扣减真发）；
+- 公文：建单 → submit → 审批 → **status 20→25（新监听器回写）→ 签发 30 → 归档 50**，9/9 PASS。
+  过程中一次误判要记：探测脚本自身把 `wait_until` 的查询改成两列后拿第一列（id）当状态比，
+  报了假 FAIL——真实状态用服务端状态机反证（sign 若不是 25 会直接抛 OA_DOCUMENT_STATUS_INVALID）。
+  修正断言后 9/9 全绿；教训同 §12.128：**改了读数形状，断言必须跟着核**。
+
+顺带一条好消息：§12.95.3 记过的"审批短信失败回滚业务动作"耦合，现状已是
+`sendSmsQuietly`（18:05:33 真机日志：`短信通知发送失败，业务动作不受影响：原因=手机号不存在`），
+该风险已由改动收掉。
+
+### 12.131 ④ 补完：出库全链 + TMS 签收回传（§12.95.5 停下的那一段真机闭环）
+
+§12.95.5 当时的边界："出库单是 SQL 造的、confirm-sign 被『出库单至少包含一条明细』挡住，
+签收回传 → 出库单完成 → 库存扣减 未真机验证"。本轮在全新库上把整条链走完：
+
+- **WMS 出库细化状态机全链**：建单（含明细，type=201 销售出库）→ start-pick(10)
+  → complete-pick(20) → review(30) → pack(40) → ship(50)，全程 API、逐级推进；
+- **TMS 运单**：建单挂 `shipmentOrderId`（validateShippableForWaybill 放行）→
+  dispatch → confirm-arrival → **confirm-sign**；
+- **签收回传读数**（断言全部落行）：`tms_shipment.status=40 已签收` + `sign_time` 落库；
+  `wms_shipment_order.status=99 已完成` + **`waybill_id` 回填**（signShipmentOrderByWaybill
+  先登记运单号再 finish，顺序防"完成了却查不到运单"）；**库存 quantity 10 → 6**（扣减真发）。
+
+**过程坑（同仓参数形态不一致 + 业务约束）**：
+1. `/tms/shipment/dispatch` 是 `@RequestBody`，`confirm-arrival/confirm-sign` 是 `@RequestParam`——
+   同一 Controller 三种绑定形态并存（§12.95 坑 4 的又一例）；
+2. dispatch **必须指派车辆与司机**（两个都空直接抛"调度失败"），且二者 status=10 才可用；
+3. 入库/出库 type 是枚举范围校验（`@InEnum`）：101 采购入库、201 销售出库，传 1 直接 400；
+4. 出库单 `no` 等编号字段在 VO 层 @NotEmpty，探测脚本逐个补传。
+
+**取证边界**：主数据（仓库/分类/物料/SKU/车辆/司机）与 HR 主数据均为 SQL 造数（"probe-" 前缀），
+业务单据与全部状态推进走真实 API；探测脚本与日志留在本机 Temp（document 9 项 `b1b5012d…`、
+receipt 4 项 `214fcdba…`、shipment 11 项 `b227fc13…`），不入库。
+python 全量 `Ran 653 tests OK`。
