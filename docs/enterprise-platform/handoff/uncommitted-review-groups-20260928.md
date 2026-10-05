@@ -5899,3 +5899,55 @@ V140 全新库建好后重走 ③，第一步就撞出**全新安装的真实断
 业务单据与全部状态推进走真实 API；探测脚本与日志留在本机 Temp（document 9 项 `b1b5012d…`、
 receipt 4 项 `214fcdba…`、shipment 11 项 `b227fc13…`），不入库。
 python 全量 `Ran 653 tests OK`。
+
+### 12.132 重审 R-009/R-010：登记册滞后——主缺陷早被修掉，本轮补上残留缺口并真机闭环
+
+按所有者指示逐项处理业务缺口。**重审第一发现：登记册滞后于代码**——
+R-009 的三条主缺陷（工单状态机卡死、报工超产、发料超 BOM）与 R-010 的旁路
+（`completeShipmentOrder` 直跳 FINISHED）**在现行代码里已经全部修掉**：
+- `finishWorkOrder` 放行 CONFIRMED/DISPATCHED/REPORTING（拦截 PREPARE/CANCELED/FINISHED/CLOSED），
+  注释留痕"原实现仅允许 CONFIRMED 导致已派工或报工中的工单被永久卡死"；
+- `updateProducedQuantity` 走 Mapper 层 CAS（影响 0 行即累计超计划产量，抛 PRO_WORK_ORDER_OVER_PRODUCED）；
+- 发料有 BOM 累计上限校验（历史已发+本次待发 ≤ 应发总量，工单无 BOM 时跳过）；
+- `completeShipmentOrder` 挂 `wms.shipment.allow-fast-complete` 开关（默认 **false**，fail-closed，
+  错误信息直接指路完整状态机）。登记册 OPEN 的描述停在修复前，本轮以读数为准登记，状态翻转留所有者。
+
+**本轮真正修的两个残留缺口**：
+1. **MES 取消转换死锁**：枚举转换图允许 PREPARE/CONFIRMED/DISPATCHED/REPORTING 取消，
+   代码只放行 CONFIRMED——已派工/报工中的废弃单既不能取消又只能硬完工。改为按转换图放行四态、
+   拦截 FINISHED/CLOSED/CANCELED（新错误码 1040502010）；
+2. **派工/开工/报工/关闭没有 API 面**：服务层与状态机早有这四步，Controller 却只暴露
+   confirm/finish/cancel——API 上工单只能「确认→完工」，DISPATCHED/REPORTING 是死状态、
+   超产 CAS 无入口。补 `/dispatch`、`/start`、`/close`、`/report` 四个端点（复用既有 update 权限）。
+
+**真机读数**（`zhicloud_sandbox_v140`，15/15，探测日志 `r910-mes.log`）：
+- 主链：建单 → 确认(0→1) → **派工(1→4，新端点)** → **开工(4→5，新端点)** → **报工 +6（累计 6/10）**
+  → **超产报工被拒（code=1040502009）** → 完工(5→2，REPORTING 不再卡死) → **关闭(2→6，新端点)**，
+  行上 `quantity_produced=6.000000`；
+- 取消三态：**已派工取消(4→3)**、**草稿取消(0→3)**、**已完成取消被拒(1040502010)**。
+- MES 全量回归 829 条 0 失败（含 1 条与本轮无关的 Redis 瞬时超时，重跑 5/5 过）。
+- 探测脚本自坑两处照实记：产量列 decimal 断言写成裸整数、拒绝码 1060201008 抄成
+  1040201008——实际行为以服务端响应为准（日志留有原始 code/msg）。
+
+### 12.133 R-010 负向真机证明：旁路已 fail-closed
+
+草稿出库单调 `/admin-api/wms/shipment-order/complete`：
+`code=1060201008 "出库单快捷完成（跳过拣货/复核/打包/发运）已禁用，请走完整状态机流程…"`，
+草稿状态未被改动（仍 0）。旁路收口的负向断言补齐（此前只有代码事实）。
+
+### 12.134 R-007 专项第一步：V141 三本账总览视图（对账入口从无到有，边界诚实）
+
+R-007 的实质是三本账物料键分属三个 id 空间（erp product_id / wms sku_id / mes item_id，
+连仓库表都各自独立）——**建立跨模块物料映射之前，行级对账在语义上不成立**。
+第一步照 §12.84 的打法"先让缺口可见"：**V141 `v_inventory_ledgers_overview`**
+把 ERP/WMS/MES 三本账归一成统一形态（source、ledger_table、warehouse_id、item_key、
+quantity、held_quantity、is_frozen、tenant_id），过滤 deleted=0、租户透传。
+
+- 迁移内自检 3 项（视图存在/三本账都在定义里/可查询）+ `V141_verify` 5 项
+  （Flyway 通道、来源枚举合法、WMS 探测行可见 quantity=6.0、ERP/MES 空账如实可见、租户透传）全 PASS；
+- 真机踩坑照旧留痕：自检第一版把 information_schema 的列名写成 PostgreSQL 的 `definition`
+  （实为 **`view_definition`**）——§12.130 刚记过 V130 的同类教训，又付一次学费，修复注进迁移注释。
+- 后续路径（需所有者定优先级）：建立物料映射表 → 行级对账视图 → 漂移告警。
+
+**取证边界**：MES 物料主数据 SQL 造数（`probe-` 前缀）；python 全量 `Ran 653 tests OK`；
+探测日志 `r910-mes.log`/`r010-guard.log`/`v141-view.log` 留本机 Temp 不入库。

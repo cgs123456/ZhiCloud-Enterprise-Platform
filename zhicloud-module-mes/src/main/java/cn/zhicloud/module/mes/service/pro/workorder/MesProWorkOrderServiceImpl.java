@@ -248,13 +248,18 @@ public class MesProWorkOrderServiceImpl implements MesProWorkOrderService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void cancelWorkOrder(Long id) {
-        // 1. 校验存在 + 只有已确认状态才能取消
+        // 1. 校验存在 + 状态机：草稿/已确认/已派工/报工中可取消（与枚举转换图一致）。
+        //    原实现仅允许 CONFIRMED：已派工/报工中的工单被废弃时既不能取消也不能永久挂着，
+        //    只能硬完工——生产事实被假单据污染。已完成/已关闭/已取消不可再取消。
         MesProWorkOrderDO workOrder = validateWorkOrderExists(id);
-        if (ObjUtil.notEqual(workOrder.getStatus(), MesProWorkOrderStatusEnum.CONFIRMED.getStatus())) {
-            throw exception(PRO_WORK_ORDER_NOT_CONFIRMED);
+        Integer status = workOrder.getStatus();
+        if (ObjUtil.equal(status, MesProWorkOrderStatusEnum.FINISHED.getStatus())
+                || ObjUtil.equal(status, MesProWorkOrderStatusEnum.CLOSED.getStatus())
+                || ObjUtil.equal(status, MesProWorkOrderStatusEnum.CANCELED.getStatus())) {
+            throw exception(PRO_WORK_ORDER_NOT_CANCELLABLE);
         }
 
-        // 2. 级联取消所有关联任务
+        // 2. 级联取消所有关联任务（草稿态尚无任务，调用为无害空操作）
         taskService.cancelTaskByOrderId(id);
 
         // 3. 更新工单状态为已取消
