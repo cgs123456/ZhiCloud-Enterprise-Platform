@@ -281,6 +281,22 @@ public class OaDocumentServiceImpl implements OaDocumentService {
         documentMapper.update(null, updateWrapper);
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateDocumentStatus(Long id, Integer status, String processInstanceId) {
+        OaDocumentDO document = validateDocumentExists(id);
+        // BPM 结果事件是至少一次投递：只有审批中(20)的公文才落一次结果，
+        // 否则重复投递会把已核稿(25)/已签发(30)的公文倒退回上一档
+        if (!Integer.valueOf(STATUS_REVIEWING).equals(document.getStatus())) {
+            return;
+        }
+        OaDocumentDO updateObj = new OaDocumentDO();
+        updateObj.setId(id);
+        updateObj.setStatus(status);
+        updateObj.setProcessInstanceId(processInstanceId);
+        documentMapper.updateById(updateObj);
+    }
+
     private void updateStatus(Long id, Integer status) {
         OaDocumentDO updateObj = new OaDocumentDO();
         updateObj.setId(id);

@@ -105,6 +105,17 @@ public interface OaDocumentService {
     void archiveDocument(Long id, String archiveNo);
 
     /**
+     * 回写 BPM 审批结果（由 {@link cn.zhicloud.module.oa.service.document.listener.OaDocumentStatusListener} 调用）：
+     * 通过 -> 待签发(25)，驳回/撤销 -> 草稿(10)。只有审批中(20)的公文才落一次，
+     * BPM 结果事件是至少一次投递，重复投递不能把已核稿/已签发的公文倒退。
+     *
+     * @param id                编号
+     * @param status            公文状态（25 或 10）
+     * @param processInstanceId 流程实例编号
+     */
+    void updateDocumentStatus(Long id, Integer status, String processInstanceId);
+
+    /**
      * 增加阅读量
      *
      * @param id 编号
