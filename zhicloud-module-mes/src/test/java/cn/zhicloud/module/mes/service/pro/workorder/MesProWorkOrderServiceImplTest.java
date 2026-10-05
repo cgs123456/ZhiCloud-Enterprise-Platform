@@ -359,9 +359,49 @@ public class MesProWorkOrderServiceImplTest extends BaseDbUnitTest {
     }
 
     @Test
-    public void testCancelWorkOrder_notConfirmed() {
+    public void testCancelWorkOrder_fromPrepare_success() {
         when(workOrderMapper.selectById(100L)).thenReturn(buildWorkOrder());
-        assertServiceException(() -> workOrderService.cancelWorkOrder(100L), PRO_WORK_ORDER_NOT_CONFIRMED);
+
+        workOrderService.cancelWorkOrder(100L);
+
+        verify(workOrderMapper).updateById(any(MesProWorkOrderDO.class));
+    }
+
+    @Test
+    public void testCancelWorkOrder_fromDispatched_success() {
+        when(workOrderMapper.selectById(100L)).thenReturn(
+                buildWorkOrder().setStatus(MesProWorkOrderStatusEnum.DISPATCHED.getStatus()));
+
+        workOrderService.cancelWorkOrder(100L);
+
+        verify(taskService).cancelTaskByOrderId(100L);
+        verify(workOrderMapper).updateById(any(MesProWorkOrderDO.class));
+    }
+
+    @Test
+    public void testCancelWorkOrder_fromReporting_success() {
+        when(workOrderMapper.selectById(100L)).thenReturn(
+                buildWorkOrder().setStatus(MesProWorkOrderStatusEnum.REPORTING.getStatus()));
+
+        workOrderService.cancelWorkOrder(100L);
+
+        verify(taskService).cancelTaskByOrderId(100L);
+        verify(workOrderMapper).updateById(any(MesProWorkOrderDO.class));
+    }
+
+    @Test
+    public void testCancelWorkOrder_notCancellable() {
+        // 已完成/已关闭/已取消不可再取消；原实现用「仅 CONFIRMED 可取消」，
+        // 把已派工/报工中的废弃工单逼进死锁（既不能取消也只能硬完工）
+        when(workOrderMapper.selectById(100L)).thenReturn(
+                buildWorkOrder().setStatus(MesProWorkOrderStatusEnum.FINISHED.getStatus()));
+        assertServiceException(() -> workOrderService.cancelWorkOrder(100L), PRO_WORK_ORDER_NOT_CANCELLABLE);
+        when(workOrderMapper.selectById(100L)).thenReturn(
+                buildWorkOrder().setStatus(MesProWorkOrderStatusEnum.CLOSED.getStatus()));
+        assertServiceException(() -> workOrderService.cancelWorkOrder(100L), PRO_WORK_ORDER_NOT_CANCELLABLE);
+        when(workOrderMapper.selectById(100L)).thenReturn(
+                buildWorkOrder().setStatus(MesProWorkOrderStatusEnum.CANCELED.getStatus()));
+        assertServiceException(() -> workOrderService.cancelWorkOrder(100L), PRO_WORK_ORDER_NOT_CANCELLABLE);
         verify(taskService, never()).cancelTaskByOrderId(anyLong());
     }
 

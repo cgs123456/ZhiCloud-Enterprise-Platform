@@ -280,6 +280,7 @@ public interface ErrorCodeConstants {
     ErrorCode PRO_WORK_ORDER_NOT_REPORTING = new ErrorCode(1_040_502_007, "只有已派工或报工中状态的工单才能开工/完工");
     ErrorCode PRO_WORK_ORDER_NOT_CLOSED = new ErrorCode(1_040_502_008, "只有已完成状态的工单才能关闭");
     ErrorCode PRO_WORK_ORDER_OVER_PRODUCED = new ErrorCode(1_040_502_009, "报工累计产量已超过工单计划产量，禁止超产");
+    ErrorCode PRO_WORK_ORDER_NOT_CANCELLABLE = new ErrorCode(1_040_502_010, "只有草稿/已确认/已派工/报工中状态的工单才能取消");
     ErrorCode PRO_WORK_ORDER_BOM_NOT_EXISTS = new ErrorCode(1_040_502_100, "生产工单BOM不存在");
     ErrorCode PRO_KITTING_ANALYSIS_WORK_ORDER_BOM_EMPTY = new ErrorCode(1_040_502_200, "生产工单BOM为空，无法执行齐套分析");
 

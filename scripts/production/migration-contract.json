@@ -359,6 +359,13 @@
       "sha256": "bde293ba6446ac95bc5597f576744e6a8d5f4ddcb106f96c7fc3d8cdc49ec1a3",
       "verification_file": "V140_verify.sql",
       "verification_sha256": "aec2dfab0ced25e527eb0682012d9b9ef2c01e3df37bf0ccb0bbd70d5f1e5c70"
+    },
+    {
+      "version": 141,
+      "file": "V141__inventory_ledgers_overview_view.sql",
+      "sha256": "98b6742887fe40c4804c2f8c2b09bb81ff4e51ebdf63baa783f9294944264a00",
+      "verification_file": "V141_verify.sql",
+      "verification_sha256": "3708c26a6db02dc0f3b470f70d5219e6b711064c92ba89820d0043c0c1bd106e"
     }
   ]
 }

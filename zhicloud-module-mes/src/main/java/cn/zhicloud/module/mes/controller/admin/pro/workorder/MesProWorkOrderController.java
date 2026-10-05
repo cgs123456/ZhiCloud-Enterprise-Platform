@@ -139,6 +139,47 @@ public class MesProWorkOrderController {
         return success(true);
     }
 
+    @PutMapping("/dispatch")
+    @Operation(summary = "派工工单")
+    @Parameter(name = "id", description = "编号", required = true)
+    @PreAuthorize("@ss.hasPermission('mes:pro-work-order:update')")
+    public CommonResult<Boolean> dispatchWorkOrder(@RequestParam("id") Long id) {
+        // 服务层与状态机早已有 DISPATCHED/REPORTING，但 API 面此前没有这几个入口，
+        // 工单只能「确认→完工」，派工/开工/报工是死状态（§12.132 复核发现）
+        workOrderService.dispatchWorkOrder(id);
+        return success(true);
+    }
+
+    @PutMapping("/start")
+    @Operation(summary = "工单开工")
+    @Parameter(name = "id", description = "编号", required = true)
+    @PreAuthorize("@ss.hasPermission('mes:pro-work-order:update')")
+    public CommonResult<Boolean> startWorkOrder(@RequestParam("id") Long id) {
+        workOrderService.startWorkOrder(id);
+        return success(true);
+    }
+
+    @PutMapping("/close")
+    @Operation(summary = "关闭工单")
+    @Parameter(name = "id", description = "编号", required = true)
+    @PreAuthorize("@ss.hasPermission('mes:pro-work-order:update')")
+    public CommonResult<Boolean> closeWorkOrder(@RequestParam("id") Long id) {
+        workOrderService.closeWorkOrder(id);
+        return success(true);
+    }
+
+    @PutMapping("/report")
+    @Operation(summary = "工单报工")
+    @Parameter(name = "id", description = "编号", required = true)
+    @Parameter(name = "incrQuantity", description = "本次报工数量（累计）", required = true)
+    @PreAuthorize("@ss.hasPermission('mes:pro-work-order:update')")
+    public CommonResult<Boolean> reportProducedQuantity(@RequestParam("id") Long id,
+                                                        @RequestParam("incrQuantity") java.math.BigDecimal incrQuantity) {
+        // Mapper 层 CAS 拦截超产：累计产量超过计划产量时抛 PRO_WORK_ORDER_OVER_PRODUCED
+        workOrderService.updateProducedQuantity(id, incrQuantity);
+        return success(true);
+    }
+
     // ==================== 拼接 VO ====================
 
     private List<MesProWorkOrderRespVO> buildWorkOrderRespVOList(List<MesProWorkOrderDO> list) {
