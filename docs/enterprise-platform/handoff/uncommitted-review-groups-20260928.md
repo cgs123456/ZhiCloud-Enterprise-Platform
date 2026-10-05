@@ -5730,3 +5730,54 @@ SQL 里 `NULL = 0` 恒不成立。**即：会员钱包充值从来没有可能�
 
 与 §12.125 记录的 `notify_times` 下标钳制是同一张表的不同问题：那条管"重试别打崩线程"，
 这条管"根本没有重试"。两条都不该被对方掩盖。
+
+### 12.128 售后退款链真跑：回调地址修对之后，业务回包 500——`trade_order.refund_point` 建单为 NULL，unbox NPE，V139 收口
+
+§12.126 的 V136 把 `refund_notify_url` 指回了业务侧，但那条链当时**没有真实走过**
+（交接脚本 `zc_after_sale.py` 一次没跑）。本轮真跑：申请仅退款(way=10) → 商家同意(40)
+→ 确认退款 → `pay_refund` → 业务回调 → 售后完成(50)。结果 8/10——
+**支付侧全对，断在业务回调**：
+
+1. 前半条全绿：售后单 10→40、`pay_refund` 建单并成功(status=10)、退款 16915 分到账
+   （余额 62425→79340）、钱包流水 `biz_type=4` 有记录。V136 的地址修正被证明是对的：
+   `pay_notify_task(type=2)` 建了、也真打到了 `/admin-api/trade/after-sale/update-refunded`。
+2. 但回执是 `{"code":500,"msg":"系统异常"}`，售后单停在 40。启动日志：
+   `NullPointerException: Cannot invoke "java.lang.Integer.intValue()" because the return value of
+   "TradeOrderDO.getRefundPoint()" is null`，栈在
+   `TradeOrderUpdateServiceImpl.updateOrderItemWhenAfterSaleSuccess:825`。
+
+**实测根因**：V123 把该列建成 `refund_point INT`（可空、无默认），而建单侧
+`createOrder` 只显式写了孪生的 `refundPrice(0)`（:219），`refundPoint` 从不写
+⇒ 每张订单落地即为 NULL；退款成功回调里 `order.getRefundPoint() + orderItem.getUsePoint()`
+直接 unbox，NPE 后 @Transactional 整体回滚（时间线上能看到 40→50 的 CAS
+`Updates: 1` 随即被回滚）。**即：售后退款从来没有可能被标记为完成**——钱退了，
+单据断在最后一环。与 V137/V138 同族，这是同一族断点的第三层。
+
+**改法与 V137/V138 同形**：V139 先 `UPDATE` 填平存量 NULL 再 `ALTER` 成
+`NOT NULL DEFAULT 0`（顺序反了会在存量行上失败），服务侧建单处补显式
+`setRefundPoint(0)`。同路径其余拆箱逐一量过：`trade_order_item.use_point` 行上 0、
+`trade_order.pay_status` 行上非 NULL、分销/优惠券 handler 均有 null 防御——
+只有这一列是漏的。同批可空列（`refund_price/use_point/give_point/pay_status`）建单代码在写、
+只是没上形状护栏，**记录不动**，与 §12.126 的 `total_price` 同口径。
+
+**跑通后的读数**（`zhicloud_sandbox_clean`，新 jar 14:10/610644171 字节）：
+- 修复前证据：500 回执与 NPE 堆栈见 `%TEMP%\npe-refund-callback-evidence.log`
+  （sha256 `0687d8614808f38fa936cab0149e4c08d2bb3fe6fec47996c7d283a67c17c48e`）。
+- 卡住的 1 号售后单补发同请求体回调 → `code=0`，痊愈：`trade_after_sale.status=50`、
+  订单 11 `status=40`（已取消）/`cancel_type=20`（售后关闭）/`refund_status=20`（全额）、
+  订单项 `after_sale_status=20`。**全额退款→自动取消订单**这条后续路径也顺带证明走通。
+- 新订单全链：`zc_money_flows.py` 复跑 15/15（余额 79340→109340→92425，money8.log
+  sha256 `d432b7a71377f78b5a9a2c4837fc8567e4bbdab12f37fe229dc8de90f92047d7`）→
+  `zc_after_sale.py` 复跑 **10/10**：真实 pay 回调 1 条、回执 `code=0`、售后单 50。
+- 代码层变异检查：把列默认值拔成 `NULL DEFAULT NULL` 后走 API 建单（请求不含该字段），
+  行上 `refund_point=0` ⇒ 是 `setRefundPoint(0)` 写的；列已还原。类哈希
+  `27bf1a6a…`→`ad7e81c0…` CHANGED，修复确认进包。
+- Flyway 通道：`flyway_schema_history` 里 V136/137/138/139 全部 `success=1`——
+  **本库上"应用自带 Flyway 走新迁移"已被证明**（交接文档 §3.3 的"没走过应用 Flyway"
+  口径过时一半：现有库走过了，"新库一次性建到 V139"仍待下次建库顺手覆盖）。
+
+**取证边界**：本轮跑在含修复的新 jar 上；1 号单是"手工补发与 pay 相同请求体"，
+不是 pay 重投——重投机制仍不存在，§12.127 的口径不变。
+`zc_after_sale.py` 首跑暴露两处**脚本管道缺陷**（读取回执的 SQL 括号不配对必抛 1064；
+`cell()` 只认数字首格，回执 `{` 开头必被丢）：只修读取管道，断言未动，
+失败项也没有因此放水——2 个 FAIL 复跑后以 PASS 收口。

@@ -217,6 +217,9 @@ public class TradeOrderUpdateServiceImpl implements TradeOrderUpdateService {
         // 支付 + 退款信息
         order.setAdjustPrice(0).setPayStatus(false);
         order.setRefundStatus(TradeOrderRefundStatusEnum.NONE.getStatus()).setRefundPrice(0);
+        // 建单即 0：这一列不能留 null，退款成功回调里 `order.getRefundPoint() + item.getUsePoint()`
+        // 直接 unbox——null 会让售后单永远停在"等待平台退款"（V123 把该列建成可空无默认）
+        order.setRefundPoint(0);
         // 物流信息
         order.setDeliveryType(createReqVO.getDeliveryType());
         if (Objects.equals(createReqVO.getDeliveryType(), DeliveryTypeEnum.EXPRESS.getType())) {
