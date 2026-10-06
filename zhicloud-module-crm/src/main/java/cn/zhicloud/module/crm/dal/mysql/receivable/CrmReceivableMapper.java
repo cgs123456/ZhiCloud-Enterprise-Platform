@@ -86,6 +86,16 @@ public interface CrmReceivableMapper extends BaseMapperX<CrmReceivableDO> {
                 .in(CrmReceivableDO::getAuditStatus, auditStatuses));
     }
 
+    default List<CrmReceivableDO> selectListByContractIdAndStatusForUpdate(Long contractId, Collection<Integer> auditStatuses) {
+        // 并发超收修复的另一半：合同行的 FOR UPDATE 只保证"同时只有一个事务在做校验"，
+        // 但 RR 隔离下先到事务的普通一致性读快照可能早于后到事务的提交建立——
+        // 锁读（FOR UPDATE）永远读最新已提交版本，先到事务刚提交的回款必须可见
+        return selectList(new LambdaQueryWrapperX<CrmReceivableDO>()
+                .eq(CrmReceivableDO::getContractId, contractId)
+                .in(CrmReceivableDO::getAuditStatus, auditStatuses)
+                .last("FOR UPDATE"));
+    }
+
     default Map<Long, BigDecimal> selectReceivablePriceMapByContractId(Collection<Long> contractIds) {
         if (CollUtil.isEmpty(contractIds)) {
             return Collections.emptyMap();
