@@ -1,7 +1,10 @@
 package cn.zhicloud.framework.mdm.dal.mysql;
 
+import cn.zhicloud.framework.common.pojo.PageResult;
+import cn.zhicloud.framework.mdm.api.MdmCrossRefPageReqVO;
 import cn.zhicloud.framework.mdm.dal.dataobject.MdmCrossRefDO;
 import cn.zhicloud.framework.mybatis.core.mapper.BaseMapperX;
+import cn.zhicloud.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -45,6 +48,21 @@ public interface MdmCrossRefMapper extends BaseMapperX<MdmCrossRefDO> {
                 .eq(MdmCrossRefDO::getSourceSystem, sourceSystem)
                 .eq(MdmCrossRefDO::getSourceEntity, sourceEntity)
                 .eq(MdmCrossRefDO::getSourceId, sourceId));
+    }
+
+    /**
+     * 运维分页查询：字段均为可选过滤（空不参与条件）。
+     * 不加 tenant_id 显式条件——{@code mdm_cross_ref} 是租户表且不在 ignore-tables 名单，
+     * 租户拦截器会按当前上下文自动加 tenant_id 过滤，运维看到的正是本租户的映射（真机验证）。
+     */
+    default PageResult<MdmCrossRefDO> selectPage(MdmCrossRefPageReqVO reqVO) {
+        return selectPage(reqVO, new LambdaQueryWrapperX<MdmCrossRefDO>()
+                .eqIfPresent(MdmCrossRefDO::getSourceSystem, reqVO.getSourceSystem())
+                .eqIfPresent(MdmCrossRefDO::getSourceEntity, reqVO.getSourceEntity())
+                .eqIfPresent(MdmCrossRefDO::getTargetSystem, reqVO.getTargetSystem())
+                .eqIfPresent(MdmCrossRefDO::getTargetEntity, reqVO.getTargetEntity())
+                .eqIfPresent(MdmCrossRefDO::getStatus, reqVO.getStatus())
+                .orderByDesc(MdmCrossRefDO::getId));
     }
 
 }

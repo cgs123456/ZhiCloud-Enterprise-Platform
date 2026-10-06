@@ -366,6 +366,27 @@
       "sha256": "98b6742887fe40c4804c2f8c2b09bb81ff4e51ebdf63baa783f9294944264a00",
       "verification_file": "V141_verify.sql",
       "verification_sha256": "3708c26a6db02dc0f3b470f70d5219e6b711064c92ba89820d0043c0c1bd106e"
+    },
+    {
+      "version": 142,
+      "file": "V142__mdm_cross_ref_menu_seed.sql",
+      "sha256": "950baf77215bd47810c14a52800cc80bd8a050cb44bbad7e6a5f206476775451",
+      "verification_file": "V142_verify.sql",
+      "verification_sha256": "092760d8b1c5b238226c1040a32df670216821e19c31e76694c3ea8236fe56d8"
+    },
+    {
+      "version": 143,
+      "file": "V143__inventory_reconcile_erp_wms_view.sql",
+      "sha256": "9f31097daa27a8d713d66351677482766c0a9a1ee26b40b4faad570828fd8cb1",
+      "verification_file": "V143_verify.sql",
+      "verification_sha256": "df5186a7cbafb12296dbecea8aefb939392fb1ce5fa4f6ba3aaaa4a30bc00461"
+    },
+    {
+      "version": 144,
+      "file": "V144__mdm_menu_selfcheck_fix.sql",
+      "sha256": "a4f19ba331b4e194c863bbeb6579a9695bb694f2ce13b5a7cab32d30bfa132cc",
+      "verification_file": "V144_verify.sql",
+      "verification_sha256": "0265c648521c26d097bcad1209c00652691a174b3f2a7e904d4c6b5b399d5731"
     }
   ]
 }

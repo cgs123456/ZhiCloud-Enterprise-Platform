@@ -1,9 +1,12 @@
 package cn.zhicloud.framework.mdm.service;
 
 import cn.zhicloud.framework.common.exception.ServiceException;
+import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.datasource.config.ZhiCloudDataSourceAutoConfiguration;
+import cn.zhicloud.framework.mdm.api.MdmCrossRefPageReqVO;
 import cn.zhicloud.framework.mdm.api.MdmCrossRefUpsertReq;
 import cn.zhicloud.framework.mdm.config.MdmAutoConfiguration;
+import cn.zhicloud.framework.mdm.dal.dataobject.MdmCrossRefDO;
 import cn.zhicloud.framework.mdm.dal.mysql.MdmCrossRefMapper;
 import cn.zhicloud.framework.mybatis.config.ZhiCloudMybatisAutoConfiguration;
 import cn.zhicloud.framework.test.config.SqlInitializationTestConfiguration;
@@ -209,6 +212,45 @@ public class MdmCrossRefServiceTest {
                 .targetSystem(SYSTEM_WMS).targetEntity(ENTITY_SKU).targetId(wmsSkuId)
                 .remark("模拟数据：ERP 产品 -> WMS SKU")
                 .build();
+    }
+
+    @Test
+    public void testPageRequiresTenantContext() {
+        // 分页交给拦截器按上下文过滤，因此没上下文时必须 fail-closed——
+        // 否则 selectPage 不带 tenant_id 条件会读到全部租户的映射（危险默认）
+        TenantContextHolder.clear();
+        MdmCrossRefPageReqVO req = new MdmCrossRefPageReqVO();
+        req.setPageNo(1);
+        req.setPageSize(10);
+
+        ServiceException ex = assertThrows(ServiceException.class, () -> mdmCrossRefService.page(req));
+        assertEquals(MDM_CROSS_REF_TENANT_REQUIRED.getCode(), ex.getCode());
+    }
+
+    @Test
+    public void testPageFiltersBySourceEntity() {
+        mdmCrossRefService.upsert(productRef("100", "9001"));
+        mdmCrossRefService.upsert(MdmCrossRefUpsertReq.builder()
+                .tenantId(0L)
+                .sourceSystem(SYSTEM_ERP).sourceEntity(ENTITY_WAREHOUSE).sourceId("100")
+                .targetSystem(SYSTEM_WMS).targetEntity(ENTITY_WAREHOUSE).targetId("77")
+                .build());
+
+        MdmCrossRefPageReqVO onlyProduct = new MdmCrossRefPageReqVO();
+        onlyProduct.setPageNo(1);
+        onlyProduct.setPageSize(10);
+        onlyProduct.setSourceEntity(ENTITY_PRODUCT);
+
+        PageResult<MdmCrossRefDO> page = mdmCrossRefService.page(onlyProduct);
+        assertEquals(1L, page.getTotal(), "按源实体过滤后只剩 PRODUCT 一条");
+        assertEquals(1, page.getList().size());
+        assertEquals(ENTITY_PRODUCT, page.getList().get(0).getSourceEntity());
+
+        // 不加过滤 = 两条都在（本租户）
+        MdmCrossRefPageReqVO all = new MdmCrossRefPageReqVO();
+        all.setPageNo(1);
+        all.setPageSize(10);
+        assertEquals(2L, mdmCrossRefService.page(all).getTotal());
     }
 
 }

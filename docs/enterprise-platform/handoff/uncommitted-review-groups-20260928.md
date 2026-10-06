@@ -6027,3 +6027,55 @@ X-Trino-User 结构性缺陷修复确认已在库（两处调用点）。容器�
 **一处我差点写错的归因（自纠）**：中途给 `JmReportConfiguration` 加了 `@MapperScan("cn.zhicloud.framework.mdm.dal.mysql")` 以为 MDM mapper 没被扫描——日志 `Skipping MapperFactoryBean ... already defined` 证明 `ZhiCloudMybatisAutoConfiguration` 的 `@MapperScan(value=cn.zhicloud, annotationClass=Mapper.class)` 早就注册了它；**真正缺的是租户 1 的映射数据，不是扫描**。已 revert 该文件，不污染无关模块。
 
 **回归/门禁**：ERP 161/161、CRM 0 失败、inventory starter 12/12（含新加的 null 键回归用例）、python 全量 `Ran 653 tests OK`、`check_commit_readiness PASS(required=17)`。**取证边界**：R-012 端到端只覆盖 收款单↔销售出库↔会计↔GL↔期间 这一条事件驱动链；采购侧（PURCHASE_RECEIPT_ACCRUAL/PAYMENT_POSTED）、成本核算、发票税务未覆盖。R-012 登记册措辞"过账/冲销/期间关闭不满足财务一致性"中，过账/冲销/期间这三段的**机制**经本轮端到端证明是对的（护栏也确实在），R-012 该收口的部分是"链跑通了"，不是"财务一致性全部达成"。
+
+### 12.140 R-014：主数据映射从"只能手写 SQL"到有维护 API（V142/V144，权限点必须与接口同批落地）
+
+§12.139 收尾时把 R-014 登记成"MDM 映射有表有消费方、但没有维护入口"——真机上补一条映射只能 `INSERT INTO mdm_cross_ref`。
+本轮把这条缺口补上：
+
+- **服务层**：`MdmCrossRefService` 原只有 upsert/invalidate/map/find（写+单点读），补 `page`（分页查询本租户映射）。
+  Mapper 加 `selectPage`（字段可选过滤、`orderByDesc(id)`）；**不加显式 tenant_id 条件**——
+  `mdm_cross_ref` 是租户表且不在 ignore-tables，拦截器按上下文自动过滤；但 `page` 入口显式 `resolveTenant(null)`
+  fail-closed，避免"无上下文 = 看到全部租户"的危险默认（与写路径同口径）。
+- **管理 API**：`MdmCrossRefController` 三个端点——`GET /system/mdm-cross-ref/page`、
+  `POST /system/mdm-cross-ref/save`（upsert，create/update 合一）、`DELETE /system/mdm-cross-ref/invalidate`。
+  放在 `zhicloud-server` 的 `controller.admin.mdm` 包下（该包路径由 `WebProperties.adminApi` 自动加 `/admin-api` 前缀）；
+  server pom 补 `zhicloud-spring-boot-starter-biz-mdm` 直接依赖（运行期 bean 本就在，缺的是编译期可见）。
+- **权限点必须与接口同批种**：三个新权限串 `system:mdm-cross-ref:{query,create,delete}` 在 **V142** 种进
+  `system_menu`（挂 id=1「系统管理」目录下）——凭空造权限串会因无菜单行而恒 403（§12.95.3 的教训）。
+
+**真机读数**（`zhicloud_sandbox_v140`，探测日志 `r014-probe.log`，7/7）：
+- `page` → code=0、total=3；`save` upsert 落库（target_id=555/status=VALID）；
+  二次 upsert 同源键 → **仍 1 行且 target=556（幂等覆盖，不新增）**；`invalidate` → 状态转 INVALID。
+
+**两处自纠，都记**：
+1. V142 迁移正文里有一行注释 `--（与 V134 一致）`——`--` 后紧跟全角括号，MySQL **不认作注释**，
+   Flyway 真机 1064 打脸（正确写法是 `-- （…）`，`--` 后必须有空白）。修注释后重跑，V142 应用成功。
+2. V142 的迁移内自检写的是 `COUNT(*) = 3`，而 `system:mdm-cross-ref:query` 同时出现在菜单行(7900)
+   与按钮行(7901)，总数是 4 → 自检报 FAIL，**数据其实是对的**。已应用的迁移正文受哈希契约钉住不能回改，
+   按仓规**新增 V144** 补正确断言（"每点各自 ≥1 行"）并写明口径问题；V144 真机双 PASS。
+
+### 12.141 R-007 第二步：经 MDM 映射的 ERP↔WMS 行级库存对账视图（V143）
+
+§12.134 交付的 V141 是"三本账总览"（统一形态、**不 JOIN**），并写明边界：物料键分属三个 id 空间，
+建映射之前行级对账在语义上不成立。R-014 把映射维护入口补齐后，本轮落地那一步：
+
+**V143 `v_inventory_reconcile_erp_wms`**：以 `mdm_cross_ref`（ERP.PRODUCT → WMS.SKU，status=VALID）为桥，
+把 `erp_stock` 与 `wms_inventory` 按「同一产品 + 同租户」对到一行，输出两侧数量、差异、以及
+`MATCHED / QUANTITY_DIFF / WMS_LEDGER_MISSING` 三态。口径与边界（写进迁移注释）：
+- 只对**已映射**物料做行级对账；无映射产品不进本视图（那是 R-014 的数据缺口，由 V141 孤儿行暴露）；
+- **不 JOIN 仓库映射**——两侧 warehouse_id 都保留原始值供人判断，只按"ERP 仓库映射存在"做前置 LEFT JOIN
+  透出 wms_warehouse_id；把两侧都换成"逻辑仓库"会引入第三层 JOIN 并掩盖"某侧缺仓库映射"的真实缺口；
+- 映射的 `source_id/target_id` 是 VARCHAR、库存键是 BIGINT → JOIN 处**显式 `CAST(... AS SIGNED)`**
+  （隐式转换既可能错配又让索引失效）；
+- 过滤两侧 deleted=0、映射 status=VALID、tenant_id 透传。
+
+**真机读数**（探测日志 `r007-probe.log`，V143_verify 5/5 PASS）：对账视图读出一行
+`ERP 产品1 库存 55.0000 vs WMS SKU1 库存 8.0000 → diff=47.0000，reconcile_status=QUANTITY_DIFF`
+——这正是 R-007 说的"三套账账实必然背离"，**现在一眼可见且能追到具体产品**；V141 总览的同一组
+读数（ERP 55 / WMS 8）与之互相印证。
+
+**回归/门禁**：biz-mdm 测试含新增 2 条 page 用例全过；python 全量 `Ran 653 tests OK`；
+`check_commit_readiness PASS`、`check_missing_preauthorize` 扫描 511 个 Controller 无缺口、
+契约 `tracked=55 scanned=151 findings=0`。**取证边界**：对账视图只覆盖 ERP↔WMS 的 PRODUCT/SKU 维度，
+MES 物料账（item_id 空间）未纳入（缺 MES 侧映射消费方）；仓库维度的行级对账仍靠人工看两侧 id。

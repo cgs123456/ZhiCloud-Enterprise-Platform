@@ -1,6 +1,9 @@
 package cn.zhicloud.framework.mdm.service;
 
+import cn.zhicloud.framework.common.pojo.PageResult;
+import cn.zhicloud.framework.mdm.api.MdmCrossRefPageReqVO;
 import cn.zhicloud.framework.mdm.api.MdmCrossRefUpsertReq;
+import cn.zhicloud.framework.mdm.dal.dataobject.MdmCrossRefDO;
 
 /**
  * 主数据跨域对照 Service（V101）
@@ -50,5 +53,12 @@ public interface MdmCrossRefService {
      */
     boolean invalidate(Long tenantId, String sourceSystem, String sourceEntity, String sourceId,
                        String targetSystem, String targetEntity);
+
+    /**
+     * 运维分页查询本租户的对照关系（R-014）：
+     * 之前映射只能靠 SQL 手工种，没有可读的维护入口——集成断链时运营无法自查缺哪条映射。
+     * 由租户拦截器按当前上下文过滤，只看本租户。
+     */
+    PageResult<MdmCrossRefDO> page(MdmCrossRefPageReqVO reqVO);
 
 }

@@ -180,6 +180,12 @@
             <artifactId>zhicloud-spring-boot-starter-biz-integration</artifactId>
         </dependency>
 
+        <!-- 主数据跨域对照 Starter（V101/R-014）：暴露 MdmCrossRefService 供 server 侧运维管理 API 注入 -->
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-spring-boot-starter-biz-mdm</artifactId>
+        </dependency>
+
         <!-- 监控相关：Spring Boot Actuator + Micrometer Prometheus -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

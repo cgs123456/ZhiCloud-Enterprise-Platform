@@ -2,6 +2,8 @@ package cn.zhicloud.framework.mdm.service;
 
 import cn.hutool.core.util.StrUtil;
 import cn.zhicloud.framework.common.exception.ServiceException;
+import cn.zhicloud.framework.common.pojo.PageResult;
+import cn.zhicloud.framework.mdm.api.MdmCrossRefPageReqVO;
 import cn.zhicloud.framework.mdm.api.MdmCrossRefUpsertReq;
 import cn.zhicloud.framework.mdm.dal.dataobject.MdmCrossRefDO;
 import cn.zhicloud.framework.mdm.dal.mysql.MdmCrossRefMapper;
@@ -107,6 +109,14 @@ public class MdmCrossRefServiceImpl implements MdmCrossRefService {
                 .status(STATUS_INVALID)
                 .build());
         return true;
+    }
+
+    @Override
+    public PageResult<MdmCrossRefDO> page(MdmCrossRefPageReqVO reqVO) {
+        // 租户过滤交给拦截器（resolveTenant 只用于写路径）；这里仅要求有租户上下文，
+        // 没有上下文时拦截器不加 tenant_id 条件 = 会看到全部租户，属危险默认，故显式 fail-closed
+        resolveTenant(null);
+        return mdmCrossRefMapper.selectPage(reqVO);
     }
 
     private MdmCrossRefDO selectValidRef(Long tenantId, String sourceSystem, String sourceEntity, String sourceId,
