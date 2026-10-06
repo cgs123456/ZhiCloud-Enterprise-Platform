@@ -194,8 +194,10 @@ public class CrmReceivableServiceImpl implements CrmReceivableService {
         if (contract.getTotalPrice() == null) {
             throw exception(RECEIVABLE_CREATE_FAIL_CONTRACT_AMOUNT_INVALID);
         }
-        // 草稿、审批中、审批通过均占用合同回款额度，避免重复创建导致超额
-        List<CrmReceivableDO> receivables = receivableMapper.selectListByContractIdAndStatus(reqVO.getContractId(),
+        // 草稿、审批中、审批通过均占用合同回款额度，避免重复创建导致超额。
+        // 这里必须是锁读：真机并发实测（codes [0,0]、累计 1600>1000），合同行的 FOR UPDATE
+        // 只串行化校验者，RR 快照读看不到先到事务刚提交的回款；锁读才保证看到最新已提交额度
+        List<CrmReceivableDO> receivables = receivableMapper.selectListByContractIdAndStatusForUpdate(reqVO.getContractId(),
                 Arrays.asList(CrmAuditStatusEnum.DRAFT.getStatus(), CrmAuditStatusEnum.PROCESS.getStatus(),
                         CrmAuditStatusEnum.APPROVE.getStatus()));
         if (reqVO.getId() != null) {

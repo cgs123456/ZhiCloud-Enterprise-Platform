@@ -5951,3 +5951,52 @@ quantity、held_quantity、is_frozen、tenant_id），过滤 deleted=0、租户�
 
 **取证边界**：MES 物料主数据 SQL 造数（`probe-` 前缀）；python 全量 `Ran 653 tests OK`；
 探测日志 `r910-mes.log`/`r010-guard.log`/`v141-view.log` 留本机 Temp 不入库。
+
+### 12.135 R-008 重审+真机：入库质检卡点双向验证（登记册又滞后）
+
+R-008 "质检结论无人消费" 已被先前工作修掉：入库 `checkQualityGate` → `InspectionOrderApiImpl.isQualified`
+（**fail-closed：无检验单或非检验通过一律不放行**），且 `zhicloud-module-qms/api` 包已存在（当时记的"无 api 包"不再成立）。
+真机双向读数（`zhicloud_sandbox_v140`，探测日志 `r008-probe.log`，8/8）：
+- 挂 **FAILED** 检验单（SQL 造数，status=40, biz_type=PURCHASE_IN）的入库单 complete →
+  `code=1060200008 "入库单已关联质检业务（qcBizId=777701），但对应 QMS 检验单未通过，禁止入库"`，单据保持草稿；
+- 挂**不存在**检验单（qcBizId=999999）→ 同码拒绝（fail-closed 负控）；
+- 挂 **PASSED** 检验单（status=30）→ 放行入账，库存 6→**8.0000**（正控）。
+探测脚本自坑照实记：正控断言把库存预期算成 12（忘了此前出库已扣到 6）——实际 8 才是对的。
+
+### 12.136 R-011 真缺陷抓到并修复：FOR UPDATE 锁了合同，SUM 却是快照读——并发双过
+
+P2 TOCTOU 修复（锁合同行）在真机并发下**不生效**：两线程并发建 800 回款对 1000 合同，
+`codes=[0,0]`，库内累计 1600。实测根因：合同行的 FOR UPDATE 只串行化了校验者，
+但"累计已回款"的 SUM 是普通一致性读——RR 隔离下后到事务的快照在等待锁之前就已建立，
+看不到先到事务**刚提交**的回款。
+**修复**：`selectListByContractIdAndStatusForUpdate`（额度 SUM 也加锁读——锁读永远读最新已提交版本），
+锁序恒为"合同行 → 该合同回款行"，无死锁面。配套把 `CrmReceivableServiceConcurrencyTest` 的
+stub 换成锁读变体（旧 stub 因 Mockito 严格模式报 UnnecessaryStubbing）。
+真机复测（探测日志 `r011-probe8.log`，5/5）：并发 `codes=[0, 1020004007]` **恰一成一拒**，
+库内累计回款 **800** ≤ 合同 1000。
+探测过程坑（照实记）：合同 `totalPrice` 被服务端按产品明细重算（直传被忽略，落 0.00）；
+明细金额 = `contractPrice × count`（内嵌 Product 缺 `@Valid` 级联，缺字段竟也建单成功——
+**潜伏校验缺口，已登记**）；`discountPercent=100` 是"打 100% 折"（总额归零）而非不打折；
+幂等键跨轮重复触发 `1020004011`。
+
+### 12.137 #47 ⑤ datalake 半边验收通过：lake_build 全链 FINISHED、逐行对数 5==5
+
+§12.102 留下的可测假设**被证伪**：`iceberg.jdbc-catalog.schema-properties.<ns>` 不是 Trino 483 的合法属性，
+启动即退（`Configuration property ... was not used`，容器两次 crash 的代价）。真正的机制是
+**`CREATE SCHEMA iceberg.ods WITH (location = 'file:///data/trino/warehouse/ods')`**——
+位置在 SQL 里声明，Iceberg JDBC catalog 把它写进 `iceberg_namespace_properties`。
+修复后真机全链（`zc_lake_build.py`，日志 `lake-build2.log`，LAKE_BUILD verdict=PASS）：
+1. `CREATE SCHEMA iceberg.ods/.ads WITH(location)` FINISHED（§12.102 失败点通过）；
+2. CTAS `iceberg.ods.qms_inspection_status_daily AS SELECT * FROM mysql.zhicloud_platform.v_qms_inspection_status_daily` FINISHED；
+3. `iceberg.ads.v_qms_inspection_daily` 视图建立；
+4. **逐行对数：湖侧 5 == MySQL 侧 5**。
+X-Trino-User 结构性缺陷修复确认已在库（两处调用点）。容器配置变更用
+`docker cp` 外部编辑再回填（运行中的容器 sed 赶不上 crash 循环，exec 两次扑空——照实记）。
+
+### 12.138 R-012 重审：会计事件机制已有过账/冲销护栏，端到端专项留下一轮
+
+重审发现 R-012 "不满足财务一致性" 的描述部分滞后：`ErpAccountingEventService` 已有
+过账监听器推进（审核后 POSTED）、冲销防重（同一原事件不可重复冲销）、分录完整性校验
+（借贷至少各一条）、悬空引用拦截（冲销引用必须存在且已过账）、上界一致拒绝过账。
+**但"凭证→审核→过账→冲销→期间关闭"的端到端真机探测需要成套会计规则与期初数据，
+是特性级专项**，本轮不假装完成——留作下一轮的首项，打法照 §12.132–§12.137。

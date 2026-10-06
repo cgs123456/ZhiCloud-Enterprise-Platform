@@ -72,7 +72,8 @@ public class CrmReceivableServiceConcurrencyTest {
 
         when(receivableMapper.selectById(RECEIVABLE_ID)).thenReturn(oldReceivable);
         when(contractMapper.selectByIdForUpdate(CONTRACT_ID)).thenReturn(contract);
-        when(receivableMapper.selectListByContractIdAndStatus(eq(CONTRACT_ID), anyCollection()))
+        // 并发超收修复后，额度校验改用锁读变体（RR 快照读看不到先到事务刚提交的回款）
+        when(receivableMapper.selectListByContractIdAndStatusForUpdate(eq(CONTRACT_ID), anyCollection()))
                 .thenReturn(Collections.emptyList());
         when(receivableMapper.updateById(org.mockito.ArgumentMatchers.<CrmReceivableDO>any())).thenReturn(0);
 
