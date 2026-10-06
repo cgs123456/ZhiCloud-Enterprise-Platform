@@ -93,7 +93,11 @@ public class ErpAccountingEventServiceImpl implements ErpAccountingEventService 
                 : inheritDocTotalAmount(request, reversalOriginal);
 
         ErpPostingRuleDO rule = selectPostingRule(request.getEventType());
-        List<ErpPostingRuleLineDO> ruleLines = postingRuleLineMapper.selectListByRuleId(rule.getId());
+        // 分录行必须与所选规则同租户读取：规则选择会回退到平台模板（tenant_id=0），
+        // 而分录行查询带着当前租户拦截器——平台模板的分录行对业务租户不可见，
+        // 任何走平台模板的过账都会在这里报「过账规则没有分录行」（真机踩过）
+        List<ErpPostingRuleLineDO> ruleLines = TenantUtils.execute(rule.getTenantId(),
+                () -> postingRuleLineMapper.selectListByRuleId(rule.getId()));
         List<ErpGlVoucherEntryReqVO> entries = buildVoucherEntries(request, ruleLines);
         BigDecimal debitTotal = sumDebit(entries);
         BigDecimal creditTotal = sumCredit(entries);

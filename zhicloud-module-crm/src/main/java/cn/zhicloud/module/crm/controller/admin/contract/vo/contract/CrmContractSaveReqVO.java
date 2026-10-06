@@ -6,6 +6,7 @@ import cn.zhicloud.module.crm.framework.operatelog.core.CrmCustomerParseFunction
 import cn.zhicloud.module.crm.framework.operatelog.core.SysAdminUserParseFunction;
 import com.mzt.logapi.starter.annotation.DiffLogField;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -85,6 +86,7 @@ public class CrmContractSaveReqVO {
     private List<String> fileUrls;
 
     @Schema(description = "产品列表")
+    @Valid
     private List<Product> products;
 
     @Schema(description = "产品列表")

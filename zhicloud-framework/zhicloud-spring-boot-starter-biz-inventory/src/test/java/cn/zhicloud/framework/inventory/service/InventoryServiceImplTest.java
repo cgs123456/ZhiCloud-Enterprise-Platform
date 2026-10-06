@@ -110,6 +110,23 @@ public class InventoryServiceImplTest {
     }
 
     @Test
+    public void testNullCompositeKeys_normalizeToZeroAndFindExistingRow() {
+        // 接口约定「ERP 传 null 由框架按 0L 处理」：null 键必须命中 location/area/batch=0 的已有行。
+        // 缺陷形态（真机踩过）：eq(field, null) 生成 `= NULL` 永不匹配 → 已有行查不到 →
+        // 每次增量都走 INSERT → 撞 uk_inventory_item_tenant_composite → 业务审核 500/假性库存不足
+        inventoryService.add(9L, 1L, null, null, null, null, new BigDecimal("10"));
+        inventoryService.add(9L, 1L, null, null, null, null, new BigDecimal("5"));
+
+        assertEquals(0, new BigDecimal("15").compareTo(
+                inventoryService.getAvailableQuantity(9L, 1L, null, null, null)));
+        // null 键与显式 0L 必须是同一本账：0L 读到的也是 15，且只有一行
+        assertEquals(0, new BigDecimal("15").compareTo(
+                inventoryService.getAvailableQuantity(9L, 1L, 0L, 0L, 0L)));
+        assertEquals(1, inventoryItemMapper.selectList(null).stream()
+                .filter(item -> Long.valueOf(9L).equals(item.getItemId())).count());
+    }
+
+    @Test
     public void testReserveAndRelease() {
         inventoryService.add(3L, 1L, 0L, 0L, 0L, "B3", new BigDecimal("100"));
         inventoryService.reserve(3L, 1L, 0L, 0L, 0L, new BigDecimal("30"));

@@ -169,6 +169,11 @@ public class ErpSaleOutServiceImpl implements ErpSaleOutService {
         if (saleOut.getDiscountPercent() == null) {
             saleOut.setDiscountPercent(BigDecimal.ZERO);
         }
+        // otherPrice（其他费用）缺省按 0 处理：不传该字段时直接 add(null) 会 NPE（真机踩过），
+        // 与上面 discountPercent 的缺省口径保持一致
+        if (saleOut.getOtherPrice() == null) {
+            saleOut.setOtherPrice(BigDecimal.ZERO);
+        }
         saleOut.setDiscountPrice(MoneyUtils.priceMultiplyPercent(saleOut.getTotalPrice(), saleOut.getDiscountPercent()));
         saleOut.setTotalPrice(saleOut.getTotalPrice().subtract(saleOut.getDiscountPrice().add(saleOut.getOtherPrice())));
     }
@@ -374,7 +379,9 @@ public class ErpSaleOutServiceImpl implements ErpSaleOutService {
     @Override
     public void updateSaleInReceiptPrice(Long id, BigDecimal receiptPrice) {
         ErpSaleOutDO saleOut = saleOutMapper.selectById(id);
-        if (saleOut.getReceiptPrice().equals(receiptPrice)) {
+        // receipt_price 建单从不写（V141 时代的列无默认值），首次回款时为 null——
+        // 按未回款(0)处理，否则第一笔回款就在这里 NPE（真机踩过）
+        if (defaultZero(saleOut.getReceiptPrice()).equals(receiptPrice)) {
             return;
         }
         if (receiptPrice.compareTo(saleOut.getTotalPrice()) > 0) {
