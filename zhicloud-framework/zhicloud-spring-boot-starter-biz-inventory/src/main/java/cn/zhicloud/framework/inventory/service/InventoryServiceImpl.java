@@ -70,7 +70,8 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     public BigDecimal getAvailableQuantity(Long itemId, Long warehouseId, Long locationId, Long areaId, Long batchId) {
-        InventoryItemDO stock = inventoryItemMapper.selectByCompositeKey(itemId, warehouseId, locationId, areaId, batchId);
+        InventoryItemDO stock = inventoryItemMapper.selectByCompositeKey(itemId, warehouseId,
+                normalize(locationId), normalize(areaId), normalize(batchId));
         if (stock == null) {
             return BigDecimal.ZERO;
         }
@@ -87,6 +88,12 @@ public class InventoryServiceImpl implements InventoryService {
      */
     private InventoryItemDO getOrCreate(Long itemId, Long warehouseId, Long locationId, Long areaId,
                                         Long batchId, String batchCode) {
+        // 规范键空值归一：接口约定 ERP 传 null 由框架按 0L 处理（DB 列 NOT NULL DEFAULT 0）。
+        // 不归一的话 eq(field, null) 生成 `= NULL` 永不匹配——已有行查不到 → 永远走 INSERT →
+        // 撞 uk_inventory_item_tenant_composite（真机踩过：出库审核 500、库存不足两种假象）
+        locationId = normalize(locationId);
+        areaId = normalize(areaId);
+        batchId = normalize(batchId);
         InventoryItemDO existing = inventoryItemMapper.selectByCompositeKey(itemId, warehouseId, locationId, areaId, batchId);
         if (existing != null) {
             return existing;
@@ -108,6 +115,10 @@ public class InventoryServiceImpl implements InventoryService {
             }
             throw e;
         }
+    }
+
+    private static Long normalize(Long compositeKeyPart) {
+        return compositeKeyPart == null ? 0L : compositeKeyPart;
     }
 
 }

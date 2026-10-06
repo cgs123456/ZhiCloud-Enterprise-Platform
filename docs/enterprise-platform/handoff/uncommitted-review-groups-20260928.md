@@ -6000,3 +6000,30 @@ X-Trino-User 结构性缺陷修复确认已在库（两处调用点）。容器�
 （借贷至少各一条）、悬空引用拦截（冲销引用必须存在且已过账）、上界一致拒绝过账。
 **但"凭证→审核→过账→冲销→期间关闭"的端到端真机探测需要成套会计规则与期初数据，
 是特性级专项**，本轮不假装完成——留作下一轮的首项，打法照 §12.132–§12.137。
+
+### 12.139 R-012 专项：端到端业务链上抓出 5 个真缺陷（会计事件跨租户 / 框架库存 null 键 / 三处 @Valid 级联 / 金额 NPE / 时间戳反序列化），全修+真机闭环
+
+接续 §12.138 把 R-012 端到端跑通。**这条链本身没有现成可跑的样例（登记册从没验过它），所以第一次真跑就在每一层各撞出一个真缺陷**——不是登记册滞后（那类已确认“早修好”），而是**实打实的新缺陷**，逐个记录、逐个修：
+
+**链的形状**（全新库 `zhicloud_sandbox_v140`，全部走真实 API + 真 Flowable/MyBatis/MySQL）：
+销售订单→审核→销售出库→审核（→会计事件 SALES_SHIPMENT_POSTED→WMS 建出库单，经 MDM 映射）→收款单→审核→会计事件 RECEIPT_POSTED→GL 凭证草稿→审核→反审核→重审→收款单反审核→冲销事件→期间关闭负向。
+
+**五个真缺陷 + 修法**：
+1. **会计事件跨租户断裂（结构性）**：`selectPostingRule` 会回退到平台模板（tenant_id=0），但紧随的 `selectListByRuleId` 带**当前租户拦截器**——平台模板的分录行（租户 0）对业务租户永远不可见，任何走平台模板的过账都报"过账规则没有分录行"。修：`TenantUtils.execute(rule.getTenantId(), ...)` 按所选规则租户取分录行（`ErpAccountingEventServiceImpl:96`）。**这是会计引擎对所有非平台租户 100% 不可用的级别**，不是配置能绕的。
+2. **框架库存 `getOrCreate` null 键归一缺失（结构性）**：`InventoryDualWriter` 契约说"ERP 传 null 由框架按 0L 处理"，但 `selectByCompositeKey` 把 null 丢进 `eq()`→SQL `= NULL` 永不匹配→已有行查不到→每次增量都 INSERT→撞 `uk_inventory_item_tenant_composite`。表现是出库审核 500（真机踩），且 `isSufficient`/`getAvailableQuantity` 同查不到→假性"库存不足"。修：`normalize()` null→0L 统一在 getOrCreate 与 getAvailableQuantity 入口。
+3. **三处 @Valid 级联缺失（潜伏校验缺口）**：`CrmContractSaveReqVO.products`、`ErpSaleOrderSaveReqVO.items`、`ErpSaleOutSaveReqVO.items` 的内嵌明细类都有 @NotNull 字段，但列表缺 `@Valid`→明细缺字段照单全收，落库金额算成 0（出库单 totalPrice=0 → 凭证全 0 分录 → "必须至少一借一贷"拒绝）。修：三处补 `@Valid`，真机负向：缺字段的明细现在 400"产品数量/单位不能为空"。
+4. **金额字段 NPE（同族缺陷第五例）**：`updateSaleInReceiptPrice` 里 `saleOut.getReceiptPrice().equals()`——`receipt_price` 建单从不写、列无默认，首次回款即 null unbox。修：`defaultZero(saleOut.getReceiptPrice()).equals()`（与本仓 discountPercent 缺省同口径）。
+5. **时间戳反序列化（口径，非缺陷）**：本 app 的 LocalDateTime 走 `TimestampLocalDateTimeDeserializer`(epoch 毫秒)，探测脚本传字符串被强转成 1970（out_time 全落 1970-01-01 07:30→resolvePeriod 拿 accountingDate=1970→"会计期间不存在"）。改探测脚本发 epoch 毫秒。这条是**我的脚本错**，不是产品缺陷，但记下来防再踩。
+
+**探测期环境补齐（如实登记为 SQL 造数，非产品改动）**：平台模板的分录行引用了租户 0 的科目，业务租户要有一份覆盖才能过 `createGlVoucher` 的末级校验——补种了租户 1 的 9 个 GL 科目；MDM 映射表（ERP 产品/仓库/客户 ↔ WMS SKU/仓库/商家）租户 1 一份、大写实体名（消费方用 `ERP/PRODUCT/SKU` 常量，我第一次种成小写 `erp/product/item_sku` 不命中）；WMS `wms_merchant` 种一条 type=1 客户。这些都属"链要跑通必须先有主数据映射"——正是 R-014（主数据口径不统一）的实感。
+
+**真机读数（chain + period 两个探测，日志 `r012-final2.log`/`r012-period3.log`）**：
+- 收款审核→`RECEIPT_POSTED` 事件生成(status=10)→GL 凭证草稿(2 条分录、借贷平衡)→
+  审核(10→20)→反审核(20→10)→重审(→20)→收款单反审核→**冲销事件已生成（同单事件数=2）**；
+- **期间关闭负向 6/6**：期间关闭(20)后收款审核被拒（`GL_VOUCHER_PERIOD_CLOSED`，"期间"在 msg 里）、
+  收款单状态未被改、期间还原(10)后审核成功、过账事件已生成。
+- 期间负向第一次 FAIL 的原因是我建单金额 2600 超了出库单 2500（建单就被拒，没走到审核）——改挂一张有额度的已审核出库单重跑，6/6 全过。**断言不迁就结果，这条也记。**
+
+**一处我差点写错的归因（自纠）**：中途给 `JmReportConfiguration` 加了 `@MapperScan("cn.zhicloud.framework.mdm.dal.mysql")` 以为 MDM mapper 没被扫描——日志 `Skipping MapperFactoryBean ... already defined` 证明 `ZhiCloudMybatisAutoConfiguration` 的 `@MapperScan(value=cn.zhicloud, annotationClass=Mapper.class)` 早就注册了它；**真正缺的是租户 1 的映射数据，不是扫描**。已 revert 该文件，不污染无关模块。
+
+**回归/门禁**：ERP 161/161、CRM 0 失败、inventory starter 12/12（含新加的 null 键回归用例）、python 全量 `Ran 653 tests OK`、`check_commit_readiness PASS(required=17)`。**取证边界**：R-012 端到端只覆盖 收款单↔销售出库↔会计↔GL↔期间 这一条事件驱动链；采购侧（PURCHASE_RECEIPT_ACCRUAL/PAYMENT_POSTED）、成本核算、发票税务未覆盖。R-012 登记册措辞"过账/冲销/期间关闭不满足财务一致性"中，过账/冲销/期间这三段的**机制**经本轮端到端证明是对的（护栏也确实在），R-012 该收口的部分是"链跑通了"，不是"财务一致性全部达成"。
