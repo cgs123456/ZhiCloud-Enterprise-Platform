@@ -387,6 +387,20 @@
       "sha256": "a4f19ba331b4e194c863bbeb6579a9695bb694f2ce13b5a7cab32d30bfa132cc",
       "verification_file": "V144_verify.sql",
       "verification_sha256": "0265c648521c26d097bcad1209c00652691a174b3f2a7e904d4c6b5b399d5731"
+    },
+    {
+      "version": 145,
+      "file": "V145__inventory_reconcile_mes_wms_view.sql",
+      "sha256": "572b3c76509785e985a62ed85b698b024ef6f7f31ad7212e4264054c95a2a3ac",
+      "verification_file": "V145_verify.sql",
+      "verification_sha256": "f03e9948720a0f328439f82354c5fad620daa975e28b0fbaa3a4f1b780c93ef1"
+    },
+    {
+      "version": 146,
+      "file": "V146__drop_commercial_jobs.sql",
+      "sha256": "fc83115f2b9feb567cf6adb1c53c16533a7396ec8fbb1d14ac26364e35269b49",
+      "verification_file": "V146_verify.sql",
+      "verification_sha256": "29a3ab5ba6e6460c18c909f429859af99406da5bafd26a6b277b6cbc44e5a0ad"
     }
   ]
 }

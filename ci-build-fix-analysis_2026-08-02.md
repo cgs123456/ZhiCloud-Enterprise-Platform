@@ -1,5 +1,8 @@
 # CI Build #21 失败根因分析
 
+> **[历史档案 · 2026-08-02/17]** 本文档是项目早期的代码/架构复查与优化计划，其中包含**已过时的定位表述与工程化待办**（如"政企/金融客户""招聘要求对标"等）。
+> 当前口径以 `docs/enterprise-platform/00-README.md` 与台账 `docs/enterprise-platform/handoff/uncommitted-review-groups-20260928.md` 为准：个人自研项目、工程化点到即止、重心是业务功能模块齐全度。本文保留仅为可追溯。
+
 **时间**: 2026-08-02 21:51 CST
 **退出码**: exit 1
 

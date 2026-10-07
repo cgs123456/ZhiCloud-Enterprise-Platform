@@ -6104,3 +6104,43 @@ MES 物料账（item_id 空间）未纳入（缺 MES 侧映射消费方）；仓
 
 **回归/门禁**：ERP 161/161、python 全量 `Ran 653 tests OK`、契约 `tracked=55`、`check_commit_readiness PASS`。
 **取证边界**：`cell()` 小数首格丢弃坑第四次（`payment_price=1000.0000` 被整数正则丢弃，断言须 CAST 或取数字列优先）——探测脚本自坑，非产品缺陷。
+
+### 12.143 收尾批次：采购退货链真机、MES 物料账纳入对账、V140 漏网的调度任务孤儿、历史档案标注
+
+接续 §12.142，把"剩余待做全部做完"，五件事：
+
+**1. 采购退货冲销链真机跑通**：`PURCHASE_RETURN_POSTED` 事件、退货凭证借贷平衡全过；
+建退货单即触发 `updatePurchaseOrderReturnCount`——正是 §12.142 修的 `return_count` null NPE
+（第七例）的第一次真机验证：订单项 `return_count` 从 NULL 正确更新为 2.0000，链没炸。
+另发现 `ErpPurchaseReturnSaveReqVO.items` 也缺 `@Valid` 级联（§12.139/§12.142 同款，
+补级联后明细缺字段会被 400 拒而非静默吞）。至此 ERP 出入库/退货/订单四张 VO 全部补齐级联。
+（探测脚本一次 TypeError 是我用错 id——20 是销售订单的，采购订单实为 5；改 id 重跑全绿。）
+
+**2. MES 物料账纳入对账（R-007 第三步）**：先用 **R-014 新 API**（`POST /system/mdm-cross-ref/save`）
+登记 `MES.ITEM 1 → WMS.SKU 1` 映射（而非手写 INSERT——这正是 §12.140 补维护入口的第一个真实用例），
+SQL 种 MES 库存行（item_id=1, quantity=3），然后 **V145 `v_inventory_reconcile_mes_wms`**
+把 MES↔WMS 物料账行级对到一行。真机：MES=3.0000 vs WMS=8.0000 → diff=-5.0000 QUANTITY_DIFF，
+V145_verify 3/3 PASS。至此 ERP↔WMS（V143）与 MES↔WMS（V145）两条行级对账都在，
+配合 V141 总览，三本账"哪个物料几件、账实差多少"在真机上一眼可见
+（ERP 73 / WMS 8 / MES 3）。
+
+**3. V140 漏网的调度任务孤儿（V146）**：对账 infra_job 现存 18 条与全仓 16 个 JobHandler 实现，
+发现 **12 条商业域任务**（pay×5、tradeOrder×3、brokerage/combination/coupon/productStatistics×4）
+的 handler bean 已随模块删除——是"点了会找不到 bean"的孤儿配置，V140 清表/菜单/字典时漏了这张。
+V146 按 handler_name 精确删除（连带 job_log 历史），保留 6 个现存 handler（清理类×3 + demo + iot×2）。
+V146_verify 3/3（幸存者集合精确匹配名单字符串）。这也把 §12.127「支付通知无重投」裁决项**实质收口**：
+pay 模块与 payNotifyJob 已一并移除，重投议题随模块消失——不需要再为它放开调度器或改 quartz 排除。
+
+**4. 历史档案标注**：五份 2026-08 的评审/计划文档（code-review-report、FULL-MARKS-PLAN、
+zhiyun-review、ci-build-fix-analysis、business-optimization-plan）全仓引用核对——对外零引用
+（仅根目录两份互引）。不删（保留可追溯），每份顶部加 3 行"历史档案·定位表述已过时"状态头，
+指向现行口径（00-README + 台账）。删除/保留的最终决定仍归所有者。
+
+**5. 证据保留物责任人（R-G3.5-4）——维持"登记不动"**：此项在 §12.14 起就是**需要所有者定义**的
+（"证据是否绑定留存资源、保留期、清库存流程"），无代码面、无人替所有者拍板，故不动，
+仅在此重申其状态：风险登记册 OPEN 中，等所有者。
+
+**回归/门禁**：ERP 161/161；python 全量 `Ran 653 tests OK`；契约 `tracked=57 scanned=153 findings=0`；
+V146/V145 迁移内自检与 verify 全 PASS；lint 拦下 V146 两条无 WHERE 的 DELETE（`DELETE FROM x
+ WHERE` 换行写法不被 lint 认，R4 假阳性，压成同列后 0 违规——同 §12.135 V140 的 R4 教训，
+已入 destructive_ddl_allowlist 之外无需豁免，因为这次 WHERE 本来就在）。
