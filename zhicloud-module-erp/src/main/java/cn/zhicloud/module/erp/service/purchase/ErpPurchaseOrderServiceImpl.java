@@ -241,7 +241,10 @@ public class ErpPurchaseOrderServiceImpl implements ErpPurchaseOrderService {
         // 1. 更新每个采购订单项
         orderItems.forEach(item -> {
             BigDecimal inCount = inCountMap.getOrDefault(item.getId(), BigDecimal.ZERO);
-            if (item.getInCount().compareTo(inCount) == 0) {
+            // in_count 建单从不写（列可空无默认），首次采购入库时为 null——按 0 处理，
+            // 否则拆箱即 NPE（同族累计数量列缺陷第七例，真机踩过）
+            BigDecimal currentInCount = item.getInCount() == null ? BigDecimal.ZERO : item.getInCount();
+            if (currentInCount.compareTo(inCount) == 0) {
                 return;
             }
             if (inCount.compareTo(item.getCount()) > 0) {
@@ -263,7 +266,9 @@ public class ErpPurchaseOrderServiceImpl implements ErpPurchaseOrderService {
         // 1. 更新每个采购订单项
         orderItems.forEach(item -> {
             BigDecimal returnCount = returnCountMap.getOrDefault(item.getId(), BigDecimal.ZERO);
-            if (item.getReturnCount().compareTo(returnCount) == 0) {
+            // return_count 与 in_count 同族：明细列可空无默认、建单从不写，首次采购退货即 null 拆箱
+            BigDecimal currentReturnCount = item.getReturnCount() == null ? BigDecimal.ZERO : item.getReturnCount();
+            if (currentReturnCount.compareTo(returnCount) == 0) {
                 return;
             }
             if (returnCount.compareTo(item.getInCount()) > 0) {
