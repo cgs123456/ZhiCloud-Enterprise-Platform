@@ -1,5 +1,8 @@
 # ZhiCloud-Enterprise-Platform 代码与架构复查报告
 
+> **[历史档案 · 2026-08-02/17]** 本文档是项目早期的代码/架构复查与优化计划，其中包含**已过时的定位表述与工程化待办**（如"政企/金融客户""招聘要求对标"等）。
+> 当前口径以 `docs/enterprise-platform/00-README.md` 与台账 `docs/enterprise-platform/handoff/uncommitted-review-groups-20260928.md` 为准：个人自研项目、工程化点到即止、重心是业务功能模块齐全度。本文保留仅为可追溯。
+
 > 复查对象：`D:\Desktop\zhicloud`（基于 zhicloud cloud 2026.06.0 的 fork，groupId `cn.zhicloud`）
 > 技术栈：Spring Boot 3.5 / JDK 21 / MyBatis-Plus / Spring Security / Spring Modulith / Flyway
 > 复查日期：2026-08-02 | 性质：只读静态分析 + 公开资料对标，未修改代码
