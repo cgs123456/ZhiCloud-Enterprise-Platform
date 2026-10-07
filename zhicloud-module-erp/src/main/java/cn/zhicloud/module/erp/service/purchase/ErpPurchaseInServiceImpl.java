@@ -147,6 +147,11 @@ public class ErpPurchaseInServiceImpl implements ErpPurchaseInService {
         if (purchaseIn.getDiscountPercent() == null) {
             purchaseIn.setDiscountPercent(BigDecimal.ZERO);
         }
+        // otherPrice（其他费用）缺省按 0 处理：不传该字段时 add(null) 会 NPE（真机踩过，
+        // 与销售出库 calculateTotalPrice 同形缺陷；discountPercent 已有缺省，这里补齐同口径）
+        if (purchaseIn.getOtherPrice() == null) {
+            purchaseIn.setOtherPrice(BigDecimal.ZERO);
+        }
         purchaseIn.setDiscountPrice(MoneyUtils.priceMultiplyPercent(purchaseIn.getTotalPrice(), purchaseIn.getDiscountPercent()));
         purchaseIn.setTotalPrice(purchaseIn.getTotalPrice().subtract(purchaseIn.getDiscountPrice()).add(purchaseIn.getOtherPrice()));
     }
@@ -265,7 +270,9 @@ public class ErpPurchaseInServiceImpl implements ErpPurchaseInService {
     @Override
     public void updatePurchaseInPaymentPrice(Long id, BigDecimal paymentPrice) {
         ErpPurchaseInDO purchaseIn = purchaseInMapper.selectById(id);
-        if (purchaseIn.getPaymentPrice().equals(paymentPrice)) {
+        // payment_price 建单从不写（列无默认），首次付款时为 null——按未付款(0)处理，
+        // 否则第一笔付款回写就在这里 NPE（同族金额 NPE 第八例，真机踩过）
+        if (defaultZero(purchaseIn.getPaymentPrice()).equals(paymentPrice)) {
             return;
         }
         if (paymentPrice.compareTo(purchaseIn.getTotalPrice()) > 0) {

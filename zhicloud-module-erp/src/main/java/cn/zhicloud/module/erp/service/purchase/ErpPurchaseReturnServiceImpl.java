@@ -144,6 +144,10 @@ public class ErpPurchaseReturnServiceImpl implements ErpPurchaseReturnService {
         if (purchaseReturn.getDiscountPercent() == null) {
             purchaseReturn.setDiscountPercent(BigDecimal.ZERO);
         }
+        // otherPrice 缺省按 0：不传该字段时 add(null) 会 NPE（同族第五/六例，真机踩过两处）
+        if (purchaseReturn.getOtherPrice() == null) {
+            purchaseReturn.setOtherPrice(BigDecimal.ZERO);
+        }
         purchaseReturn.setDiscountPrice(MoneyUtils.priceMultiplyPercent(purchaseReturn.getTotalPrice(), purchaseReturn.getDiscountPercent()));
         purchaseReturn.setTotalPrice(purchaseReturn.getTotalPrice().subtract(purchaseReturn.getDiscountPrice()).add(purchaseReturn.getOtherPrice()));
     }

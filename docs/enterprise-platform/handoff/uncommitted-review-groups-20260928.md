@@ -6079,3 +6079,28 @@ X-Trino-User 结构性缺陷修复确认已在库（两处调用点）。容器�
 `check_commit_readiness PASS`、`check_missing_preauthorize` 扫描 511 个 Controller 无缺口、
 契约 `tracked=55 scanned=151 findings=0`。**取证边界**：对账视图只覆盖 ERP↔WMS 的 PRODUCT/SKU 维度，
 MES 物料账（item_id 空间）未纳入（缺 MES 侧映射消费方）；仓库维度的行级对账仍靠人工看两侧 id。
+
+### 12.142 R-012 采购侧端到端：暂估/付款两条事件真机闭环，同族金额 NPE 扫到第八例（三处一次扫净）
+
+§12.139 只验了销售/收款侧。本轮把采购侧（`PURCHASE_RECEIPT_ACCRUAL` 采购入库暂估 + `PAYMENT_POSTED` 付款过账）跑通：
+
+- **链形**：采购订单→审核→采购入库→审核（→暂估事件 `PURCHASE_RECEIPT_ACCRUAL`→GL 凭证）→付款单→审核（→付款事件 `PAYMENT_POSTED`→GL 凭证→回写入库单已付金额）。
+- **真机读数**（`zhicloud_sandbox_v140`，探测日志 `r012p-chain5.log`/`r012p-chain6.log`）：
+  暂估凭证 2 分录（借 1403 原材料 1000 / 贷 2202 应付账款 1000，非税场景进项税额行按 0 金额正确跳过）、借贷平衡；
+  付款凭证借贷平衡；采购入库单 `payment_price` 回写 **1000.0000**；
+  付款单建单曾被**正确的业务校验**拒绝（`1030102007 付款金额(1130)超过采购入库单总金额(1000)`）——是我探测脚本按含税口径写错金额，非产品缺陷，改 1000 后通过。
+
+**链上抓出的同族缺陷（金额字段 null 拆箱，第六/七/八例，一次扫净三处）**：
+1. `ErpPurchaseInServiceImpl.calculateTotalPrice` —— `otherPrice` 建单不写、列无默认，`add(null)` NPE（与 §12.139 销售出库**同形**）。
+   修：`defaultZero` 缺省，并**全仓扫净同族**——`ErpPurchaseReturnServiceImpl` 与 `ErpSaleReturnServiceImpl` 是仅剩的两处未防护，一并补齐（销售/采购订单头不拼 otherPrice，无需改）。
+2. `ErpPurchaseOrderServiceImpl.updatePurchaseOrderInCount:244` —— 采购订单项 `in_count`（列可空无默认、建单从不写）首次采购入库即 null 拆箱。
+   修：读侧 null→0（同族口径）。
+3. `ErpPurchaseOrderServiceImpl.updatePurchaseOrderReturnCount:269` —— 采购订单项 `return_count` 同形，首次采购退货即炸。修：同上。
+4. `ErpPurchaseInServiceImpl.updatePurchaseInPaymentPrice` —— `payment_price` 建单从不写，首次付款回写即 NPE。修：`defaultZero` 收口。
+
+**口径事实（查库核实，修正登记册）**：订单**头**表的累计列（`erp_purchase_order.in_count/return_count`、`erp_sale_order.out_count/return_count`）列默认 0.0000（安全）；**订单明细**表的累计列全部可空无默认（危险面）。销售明细的读侧已有 `ObjectUtil.defaultIfNull` 防护（§12.95.3 时代修的），采购明细本轮补齐——**至此 ERP 订单/出入库的累计数量读侧全部 null-safe**。
+
+**@Valid 级联第三/四处**：`ErpPurchaseInSaveReqVO.items` 与 `ErpPurchaseOrderSaveReqVO.items` 同样缺 `@Valid`（明细字段名对不上时静默忽略——我第一版探测传 `price`，真实字段是 `productPrice`，总价静默落 0）。已补级联；财务收/付两个 VO 的 items 已有 `@Valid`（yudao 原生），无需动。
+
+**回归/门禁**：ERP 161/161、python 全量 `Ran 653 tests OK`、契约 `tracked=55`、`check_commit_readiness PASS`。
+**取证边界**：`cell()` 小数首格丢弃坑第四次（`payment_price=1000.0000` 被整数正则丢弃，断言须 CAST 或取数字列优先）——探测脚本自坑，非产品缺陷。
