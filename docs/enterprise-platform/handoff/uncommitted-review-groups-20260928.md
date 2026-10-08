@@ -6247,3 +6247,38 @@ plan_commit_groups 自洽；V147/V148 迁移内自检与 verify 全 PASS；提�
 - **真机验证**：端点返回结构化报告 `consistent=false, sourceCount=1, projectionCount=2, mismatches=2`——此前只有 log.warn 里的漂移，现在可查询；重复调用结果恒等（只读无副作用）。顺带这份报告把三本账对不上的事实摆明：真值源 100（探测期双写累计）vs ERP 投影 73、MES 投影 3。
 
 **门禁**：ERP 全模块（含新测试 3 条）+ 契约 `tracked=60 scanned=156 findings=0` + V149 lint/自检/verify 全 PASS + 真实链三项验证过；python 全量结果见提交信息。
+
+### 12.147 跨模块物料映射批量补全（MDM batch upsert，`save-batch`）
+
+所有者点名做"跨模块物料映射批量补全"——属**增量特性**（不是缺陷修复）。先核实需求形状，再定最小落点：
+
+**需求核实（真机数据面）**：MDM 此前只有单条 `upsert`（V101）+ §12.140 的 `page/save/invalidate`。
+真机上 ERP 审核事件因**缺映射**进死信的记录有 5 条（`event_outbox.status=DEAD`，`last_error` 全是
+`MDM_CROSS_REF_NOT_FOUND`）——运营补映射只能一条条 POST，批量补全的入口确实缺。
+
+**设计（关键取舍）**：
+- **逐条独立**，不做整批原子：补全场景里"48 成 2 败"若整体回滚等于全废、逼运营重来——部分成功正是本意。
+  实现上逐条复用 `upsert`（校验/幂等/租户规则与单条入口**完全一致**，不另写一套），
+  只捕获 `ServiceException`（可归因的业务校验失败）记入该条；其它异常（DB 故障等）继续抛，
+  不把系统性故障伪装成"某几条失败"。
+- **租户上下文是系统级前置**：显式 `resolveTenant(null)` 在循环**前** fail-closed。
+  （这条是写测试时被抓出来的：第一版把租户缺失也吞成"逐条失败"，返回 200 + 全 false——
+  调用方会把"环境没配好"误判成"数据有问题"。测试 `testUpsertBatch_requiresTenantContext` 变红逼出修复。）
+- **权限复用 `system:mdm-cross-ref:create`**，不新造串：批量 upsert 就是 upsert ×N，语义同一；
+  新串没有菜单行会恒 403（§12.95.3）。
+- 返回 `MdmCrossRefBatchUpsertResult`（successCount/failureCount + 逐条 index/success/id/key/error），
+  `key` 是源键摘要，便于运营定位"第几条错在哪"。
+
+**改动面**：`MdmCrossRefService.upsertBatch`（+`MdmCrossRefBatchUpsertResult` VO）+
+`MdmCrossRefController` 的 `POST /system/mdm-cross-ref/save-batch`。纯框架/服务层，无迁移、无新权限。
+
+**验证**：
+- 单测 5 条并入 `MdmCrossRefServiceTest`（19/19 全绿）：全合法成功、**部分失败隔离**（非法条目单独失败、
+  合法照常落库、失败不落库）、幂等（同源键重投不新增行）、空列表 noop、**无租户上下文 fail-closed**。
+- **真机 7/7**（探测日志 `batch-probe.log`）：一次 POST 3 条（含 1 条故意空 targetId）→
+  `successCount=2, failureCount=1`；9001/9003 落库、9002 不落库；重投修好后 3 条成功且仍 3 行（幂等）；
+  空列表 noop；`page` 反查到 5 条 PRODUCT 映射。
+- 编译 `mvn -pl zhicloud-server -am package` SUCCESS，真机重启服务就绪。
+
+**取证边界**：本入口解决"运营补映射要一条条来"；它**不**自动重投那些已进死信的 outbox 事件
+（死信重放是可靠集成层的另一个入口，§12.144 已记；此处只补"登记映射"这一半）。

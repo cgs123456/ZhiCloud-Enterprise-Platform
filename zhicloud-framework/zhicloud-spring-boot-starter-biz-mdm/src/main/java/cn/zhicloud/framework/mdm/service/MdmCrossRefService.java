@@ -1,9 +1,12 @@
 package cn.zhicloud.framework.mdm.service;
 
 import cn.zhicloud.framework.common.pojo.PageResult;
+import cn.zhicloud.framework.mdm.api.MdmCrossRefBatchUpsertResult;
 import cn.zhicloud.framework.mdm.api.MdmCrossRefPageReqVO;
 import cn.zhicloud.framework.mdm.api.MdmCrossRefUpsertReq;
 import cn.zhicloud.framework.mdm.dal.dataobject.MdmCrossRefDO;
+
+import java.util.List;
 
 /**
  * 主数据跨域对照 Service（V101）
@@ -60,5 +63,15 @@ public interface MdmCrossRefService {
      * 由租户拦截器按当前上下文过滤，只看本租户。
      */
     PageResult<MdmCrossRefDO> page(MdmCrossRefPageReqVO reqVO);
+
+    /**
+     * 批量登记对照（§12.147，补全场景）：**逐条独立**，一条失败不影响其余——
+     * 部分成功正是补全的本意（整体回滚会让"48 成 2 败"变成全废、逼运营重来）。
+     * 每条的校验/幂等/租户规则与 {@link #upsert} 完全一致（内部逐条调它）。
+     *
+     * @param reqs 待登记条目；空列表返回全 0 结果，不报错
+     * @return 逐条结果 + 成功/失败计数（与入参同序）
+     */
+    MdmCrossRefBatchUpsertResult upsertBatch(List<MdmCrossRefUpsertReq> reqs);
 
 }
