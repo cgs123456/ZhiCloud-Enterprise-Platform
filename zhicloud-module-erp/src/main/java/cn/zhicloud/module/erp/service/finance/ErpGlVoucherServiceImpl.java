@@ -17,6 +17,7 @@ import cn.zhicloud.module.erp.dal.mysql.finance.ErpGlAccountMapper;
 import cn.zhicloud.module.erp.dal.mysql.finance.ErpGlVoucherEntryMapper;
 import cn.zhicloud.module.erp.dal.mysql.finance.ErpGlVoucherMapper;
 import cn.zhicloud.framework.security.core.util.SecurityFrameworkUtils;
+import cn.zhicloud.framework.tenant.core.util.TenantUtils;
 import cn.zhicloud.module.erp.enums.accounting.ErpAccountingEventStatusEnum;
 import cn.zhicloud.module.erp.enums.accounting.ErpAccountingPostingStatusEnum;
 import cn.zhicloud.module.erp.enums.finance.ErpGlVoucherStatusEnum;
@@ -94,7 +95,7 @@ public class ErpGlVoucherServiceImpl implements ErpGlVoucherService {
                 throw exception(GL_VOUCHER_ENTRY_DEBIT_CREDIT_ZERO, i + 1);
             }
             // 校验科目存在且为末级
-            ErpGlAccountDO account = glAccountMapper.selectById(entry.getAccountId());
+            ErpGlAccountDO account = selectAccountForVoucher(entry.getAccountId());
             if (account == null) {
                 throw exception(GL_ACCOUNT_NOT_EXISTS);
             }
@@ -160,7 +161,7 @@ public class ErpGlVoucherServiceImpl implements ErpGlVoucherService {
             if (debit.compareTo(BigDecimal.ZERO) == 0 && credit.compareTo(BigDecimal.ZERO) == 0) {
                 throw exception(GL_VOUCHER_ENTRY_DEBIT_CREDIT_ZERO, i + 1);
             }
-            ErpGlAccountDO account = glAccountMapper.selectById(entry.getAccountId());
+            ErpGlAccountDO account = selectAccountForVoucher(entry.getAccountId());
             if (account == null) {
                 throw exception(GL_ACCOUNT_NOT_EXISTS);
             }
@@ -311,7 +312,7 @@ public class ErpGlVoucherServiceImpl implements ErpGlVoucherService {
                 entryDO.setSort(i + 1);
             }
             // 冗余科目编码与名称
-            ErpGlAccountDO account = glAccountMapper.selectById(reqVO.getAccountId());
+            ErpGlAccountDO account = selectAccountForVoucher(reqVO.getAccountId());
             if (account != null) {
                 entryDO.setAccountCode(account.getCode());
                 entryDO.setAccountName(account.getName());
@@ -333,7 +334,7 @@ public class ErpGlVoucherServiceImpl implements ErpGlVoucherService {
      * </ul>
      */
     private void updateAccountBalance(Long accountId, BigDecimal debitAmount, BigDecimal creditAmount, boolean isApprove) {
-        ErpGlAccountDO account = glAccountMapper.selectById(accountId);
+        ErpGlAccountDO account = selectAccountForVoucher(accountId);
         if (account == null) {
             log.warn("[updateAccountBalance][科目({})不存在，跳过余额更新]", accountId);
             return;
@@ -369,7 +370,18 @@ public class ErpGlVoucherServiceImpl implements ErpGlVoucherService {
         update.setCurrentCredit(currentCredit);
         update.setClosingDebit(closingDebit);
         update.setClosingCredit(closingCredit);
-        glAccountMapper.updateById(update);
+        TenantUtils.execute(account.getTenantId(), () -> glAccountMapper.updateById(update));
     }
 
+    private ErpGlAccountDO selectAccountForVoucher(Long accountId) {
+        ErpGlAccountDO account = glAccountMapper.selectById(accountId);
+        if (account != null) {
+            return account;
+        }
+        account = TenantUtils.execute(0L, () -> glAccountMapper.selectById(accountId));
+        if (account != null && Long.valueOf(0L).equals(account.getTenantId())) {
+            return account;
+        }
+        return null;
+    }
 }

@@ -1,0 +1,147 @@
+{
+  "manifest_type": "pre-cleanup",
+  "generated_at": "2026-10-08",
+  "policy": "scripts/production/resource_retention_policy.json",
+  "policy_version": "2026-10-08",
+  "category": "sandbox-runtime",
+  "retention_days": 14,
+  "disposition": "review-then-delete",
+  "owner_approval_required": true,
+  "executed": false,
+  "note": "No deletion performed. This manifest lists all candidates; owner must approve before any destructive action.",
+  "containers": [
+    {
+      "eligible_by_policy": false,
+      "status": "Exited (255) 8 days ago",
+      "created": "2026-09-30",
+      "name": "zhicloud-mysql-sandbox-550d1eaa",
+      "age_days": 8
+    },
+    {
+      "eligible_by_policy": false,
+      "status": "Exited (137) 9 days ago",
+      "created": "2026-09-29",
+      "name": "zhicloud-mysql-sandbox-05df062d",
+      "age_days": 9
+    },
+    {
+      "eligible_by_policy": false,
+      "status": "Exited (255) 8 days ago",
+      "created": "2026-09-30",
+      "name": "zhicloud-mysql-sandbox-18e0f782",
+      "age_days": 8
+    },
+    {
+      "eligible_by_policy": false,
+      "status": "Exited (255) 9 days ago",
+      "created": "2026-09-29",
+      "name": "zhicloud-mysql-sandbox-87323300",
+      "age_days": 9
+    },
+    {
+      "eligible_by_policy": false,
+      "status": "Exited (255) 10 days ago",
+      "created": "2026-09-28",
+      "name": "zhicloud-mysql-sandbox-f29c293d",
+      "age_days": 10
+    },
+    {
+      "eligible_by_policy": false,
+      "status": "Exited (255) 10 days ago",
+      "created": "2026-09-28",
+      "name": "zhicloud-maven-builder",
+      "age_days": 10
+    }
+  ],
+  "volumes": [
+    {
+      "eligible_by_policy": true,
+      "created": "2026-09-24T12:43:11Z",
+      "name": "zhicloud-maven-cache",
+      "age_days": 14
+    },
+    {
+      "eligible_by_policy": true,
+      "created": "2026-09-24T14:30:30Z",
+      "name": "zhicloud-mysql-sandbox-data-f29c293d",
+      "age_days": 14
+    },
+    {
+      "eligible_by_policy": false,
+      "created": "2026-09-29T01:45:52Z",
+      "name": "zhicloud-mysql-sandbox-data-87323300",
+      "age_days": 9
+    },
+    {
+      "eligible_by_policy": false,
+      "created": "2026-09-29T09:34:24Z",
+      "name": "zhicloud-mysql-sandbox-data-18e0f782",
+      "age_days": 9
+    },
+    {
+      "eligible_by_policy": false,
+      "created": "2026-09-29T11:36:01Z",
+      "name": "zhicloud-mysql-repl-source-965821fa",
+      "age_days": 9
+    },
+    {
+      "eligible_by_policy": false,
+      "created": "2026-09-29T11:36:01Z",
+      "name": "zhicloud-mysql-repl-replica-965821fa",
+      "age_days": 9
+    }
+  ],
+  "networks": [
+    {
+      "eligible_by_policy": true,
+      "note": "no active container attached",
+      "name": "zhicloud-mysql-repl-net-965821fa"
+    }
+  ],
+  "excluded": [
+    {
+      "reason": "in use by running service",
+      "scope": "active-service",
+      "items": [
+        "zc-live-mysql",
+        "zc-live-redis",
+        "zc-live-rabbit",
+        "zc-datalake-trino",
+        "zc-live-mysql-data",
+        "zc-datalake"
+      ]
+    },
+    {
+      "reason": "belong to a different project/session",
+      "scope": "other-session",
+      "items": [
+        "amz-erp-p2-perf_default",
+        "amz-mysql",
+        "amz-redis",
+        "amz-mysql-slave",
+        "p13net"
+      ]
+    },
+    {
+      "reason": "system reserved",
+      "scope": "docker-builtin",
+      "items": [
+        "bridge",
+        "host",
+        "none"
+      ]
+    },
+    {
+      "reason": "security scanner cache",
+      "scope": "scanner",
+      "items": [
+        "grype-cache",
+        "grype-db"
+      ]
+    }
+  ],
+  "db_users": {
+    "note": "no sandbox or zhicloud DB user in mysql.user",
+    "found": 0
+  }
+}

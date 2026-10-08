@@ -1,0 +1,45 @@
+{
+  "policy_version": "2026-10-08",
+  "owner": {
+    "type": "human",
+    "display_name": "current task owner",
+    "authorization": "approved by task owner in session 2026-10-08"
+  },
+  "roles": {
+    "approver": "current task owner",
+    "executor": "agent",
+    "reviewer": "optional"
+  },
+  "categories": [
+    {
+      "id": "tracked-baseline",
+      "retention_days": null,
+      "disposition": "retain",
+      "note": "already frozen in git; never recycle"
+    },
+    {
+      "id": "evidence-pinned",
+      "retention_days": null,
+      "disposition": "retain",
+      "note": "referenced by docs or evidence; keep until citation is archived"
+    },
+    {
+      "id": "unreferenced-evidence",
+      "retention_days": 30,
+      "disposition": "review-then-delete",
+      "note": "require pre-cleanup manifest and post-cleanup report"
+    },
+    {
+      "id": "sandbox-runtime",
+      "retention_days": 14,
+      "disposition": "review-then-delete",
+      "note": "containers, volumes, networks and sandbox DB users"
+    }
+  ],
+  "guardrails": [
+    "no destructive action without owner approval",
+    "no deletion without pre-cleanup manifest",
+    "no deletion without post-cleanup report",
+    "tracked baseline and evidence-pinned items are never candidates"
+  ]
+}
