@@ -6144,3 +6144,65 @@ zhiyun-review、ci-build-fix-analysis、business-optimization-plan）全仓引�
 V146/V145 迁移内自检与 verify 全 PASS；lint 拦下 V146 两条无 WHERE 的 DELETE（`DELETE FROM x
  WHERE` 换行写法不被 lint 认，R4 假阳性，压成同列后 0 违规——同 §12.135 V140 的 R4 教训，
 已入 destructive_ddl_allowlist 之外无需豁免，因为这次 WHERE 本来就在）。
+
+### 12.144 B+C 批次收口：历史档案删除、QRTZ 纳入 Flyway（R-031）、MES 仓库维度对账、@Valid 横向扫净、证据保留物盘点工具
+
+接 §12.143 后，所有者授权"剩余待做 BC 全部做"。逐项：
+
+**B-2（删除五份 2026-08 历史档案，提交 `41666fdf`）**：`code-review-report.md`、
+`FULL-MARKS-PLAN.md`、`ci-build-fix-analysis_2026-08-02.md`、`docs/business-optimization-plan.md`、
+`docs/zhiyun-review-2026-08-02.md`——全仓引用核对后 `git rm`（git 历史仍可追溯，不重写历史）。
+同步删 `plan_commit_groups` 规则 7 `docs-archive`（工件删了规则留着会触发 `dead-group-rule`
+自检——规则表与工件必须同步收缩，这是该门禁设计本意）；复跑分组自洽 rc=0。
+注意其中含的"政企/金融客户""招聘要求对标"等定位表述正是所有者明确不再要的层面。
+
+**B-3（R-031 收口：QRTZ 表纳入 Flyway，V147）**：全新库缺 11 张 QRTZ_* 表（只在
+`sql/mysql/quartz.sql`），iot 的 LocalDataSourceJobStore 每分钟报 `QRTZ_LOCKS doesn't exist`
+（本轮探测前 zc-v140-boot.log 反复出现，计数已核对）。V147 纯 DDL 纳入迁移链：
+`CREATE TABLE IF NOT EXISTS`、绝不 DROP；按依赖顺序建（原脚本把子触发器表排在 FK 父表
+`QRTZ_TRIGGERS`/`QRTZ_JOB_DETAILS` **之前**，只有手工跑/FK 检查关闭才成立——迁移里必须重排，
+这是对"安装脚本≠迁移可原样搬"的又一实证）。**不搬 quartz.sql 末尾的 INSERT**：那批
+cron 种子过期（payNotifyJob/tradeOrderAuto*/brokerageRecordUnfreeze 等 V146 已删的商业域
+job）且新库上 FK 会挂；迁移里 DELETE 清掉曾被手工导入库的这些行。自检 3 项 +
+`V147_verify` 3/3；真机重启后 QRTZ 报错计数=0。踩坑复刻：注释 `--（`（破折号紧跟全角括号）
+MySQL 不认注释、1064——§12.140 刚记过，又踩了一次，改 `-- （`。
+
+**C-2（R-007 仓库维度收口，V148）**：V145 只按 (tenant,item→sku) 对 MES 物料账，仓维度未对齐
+（MES 与 WMS 的 warehouse_id 分属两套 id 空间）。V148 加 MES.WAREHOUSE→WMS.WAREHOUSE 第二桥，
+「item+warehouse 双桥」出行；缺仓映射如实给 `WMS_WAREHOUSE_MAPPING_MISSING` 状态
+（由维护入口录入、不在视图伪装）。映射经 **R-014 维护 API** 登记（`POST /system/mdm-cross-ref/save`
+MES.WAREHOUSE 1→WMS.WAREHOUSE 1）——继 §12.141 的 MES.ITEM 后维护入口第二个真实用例。
+真机：V148 视图出仓维度行（mes_item1+mes_wh1→wms_sku1+wms_wh1，diff=-5 QUANTITY_DIFF），
+`V148_verify` 2/2；至此 R-007 三本账对账面完整：V141 总览 + V143 ERP↔WMS（含仓）+
+V145 MES↔WMS 物料 + V148 MES↔WMS 物料×仓。
+
+**C-3（@Valid 级联横向扫净，提交 `9da80ac9`）**：用 Python 直读文件重扫（第一版 shell 管道
+把反斜杠吞了导致 RespVO 全误报——工具坑，修正方法比修结果重要）。真缺口 8 处：
+CRM business/invoice/salesorder + ERP budget/supplier-evaluation/purchase-inquiry/
+purchase-quote/sale-return 的内嵌列表缺 @Valid。复核扫描 remaining=0。
+**金额列拆箱 NPE 的横向扫描**同时做：165 命中里主体是插入即写的 `getType()/getStatus()`
+（读 null 无风险），累减金额的 `totalPrice/discountPrice` 均有 `getSumValue(...,ZERO)`
+或 VO `@NotNull`——**无新增代码点**，不为凑数盲铺 defaultZero（违反"点到即止"）。
+ERP+CRM 模块测试全绿（@Valid 只把"静默吞掉的坏明细"变 400，不改合法请求行为）。
+
+**B-4/C-1（"红字发票"澄清 + 真实缺口如实登记）**：查证 `ERP_PURCHASE_RETURN_POSTED`
+规则分录（贷 1403 原材料 + 贷 22210101 进项税 + 借 2202 应付）——退货的"红字发票"**就是
+该规则的贷记行**，不是独立会计事件；已在 §12.143 验过借贷平衡，无需另做。
+上一轮我口头说"红字发票未验"是措辞不准（台账从未写过，grep 核实），在此更正。
+**真正的缺口**：发票税务（ErpTaxInvoice）与成本核算（ErpCostCalculation/ActualCost/
+WorkOrderCost）**未接会计事件**（grep `postEvent|reverseEvent` 空）——这是特性级缺口
+（成套规则+期初数据的专项，与 R-012 成本核算同族），**如实登记、不臆造实现**，
+留作下一轮与 R-012 剩余面（采购链红冲、成本、发票、期间关闭报表）一起排优先级。
+
+**B-1（证据保留物：能做的是盘点，不能做的是拍板，提交 `5a9f7986`）**：R-G3.5-4 的
+"具名责任人"不可代答——但它长期挂着的真实原因是**没人答得出基础数字**（现在有多少、
+多大、哪些还被引用）。补只读盘点工具 `evidence_retention_inventory.py`：复用
+check_evidence_citations 的同一套解析器定"被引用"（不另写正则防漂移，§12.120 教训），
+按日期批次分档、超保留期且无引用者列回收候选（**不删**）。真机：1660 文件/25.7MB，
+被引用 105，retention=14 天→0 候选（最老才 11 天，符合预期）；降到 3 天→1555 候选/16.1MB
+（分类器非平凡）。测试 2 条锁死"只读"契约（盘点前后文件集恒等，偷删即红）。
+owner/保留期拍板仍留所有者，数字已可随取。
+
+**门禁汇总**：python 全量 `Ran 653 tests OK`；契约 `tracked=59 scanned=155 findings=0`；
+plan_commit_groups 自洽；V147/V148 迁移内自检与 verify 全 PASS；提交链
+`41666fdf`(B-2)→`9da80ac9`(C-3)→`59f7b117`(B-3+C-2)→`5a9f7986`(B-1)，各自 evidence=0。
