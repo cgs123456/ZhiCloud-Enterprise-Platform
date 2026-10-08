@@ -6,6 +6,7 @@ import cn.zhicloud.framework.common.pojo.CommonResult;
 import cn.zhicloud.framework.common.pojo.PageParam;
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.common.util.collection.MapUtils;
+import cn.zhicloud.framework.common.util.number.NumberUtils;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
 import cn.zhicloud.framework.excel.core.util.ExcelUtils;
 import cn.zhicloud.module.erp.controller.admin.product.vo.product.ErpProductRespVO;
@@ -135,14 +136,14 @@ public class ErpStockCheckController {
                 convertSet(stockCheckItemList, ErpStockCheckItemDO::getProductId));
         // 1.3 管理员信息
         Map<Long, AdminUserRespDTO> userMap = adminUserApi.getUserMap(
-                convertSet(pageResult.getList(), stockCheck -> Long.parseLong(stockCheck.getCreator())));
+                convertSet(pageResult.getList(), stockCheck -> NumberUtils.parseLong(stockCheck.getCreator())));
         // 2. 开始拼接
         return BeanUtils.toBean(pageResult, ErpStockCheckRespVO.class, stockCheck -> {
             stockCheck.setItems(BeanUtils.toBean(stockCheckItemMap.get(stockCheck.getId()), ErpStockCheckRespVO.Item.class,
                     item -> MapUtils.findAndThen(productMap, item.getProductId(), product -> item.setProductName(product.getName())
                             .setProductBarCode(product.getBarCode()).setProductUnitName(product.getUnitName()))));
             stockCheck.setProductNames(CollUtil.join(stockCheck.getItems(), "，", ErpStockCheckRespVO.Item::getProductName));
-            MapUtils.findAndThen(userMap, Long.parseLong(stockCheck.getCreator()), user -> stockCheck.setCreatorName(user.getNickname()));
+            MapUtils.findAndThen(userMap, NumberUtils.parseLong(stockCheck.getCreator()), user -> stockCheck.setCreatorName(user.getNickname()));
         });
     }
 

@@ -6305,3 +6305,62 @@ plan_commit_groups 自洽；V147/V148 迁移内自检与 verify 全 PASS；提�
 **证据文件处置的诚实边界**：内层 1209 个未引用文件里，仅 2 个 basename 与外层仓库 `Desktop\zhicloud` 文档引用**同名**（`mysql-sandbox.json`、`powershell-portability.json`）；核实外层**有自己的** `evidence/production/`（129 文件、47 tracked），且**外层是另一会话正在编辑的独立 git 仓库**（`mysql-sandbox.json` 等 4 个文件此刻为 modified）。故这 2 个同名文件外层解析到**自己的副本**，删内层不影响外层。但：**删除不可逆、且跨会话**，在所有者未具名"责任人 + 保留期"前，**我不删任何文件**。
 
 **结论**：`R-G3.5-4` **维持 OPEN、登记不动**——它要的是"责任人 + 保留期 + 清库存流程 + 回收证据"四件**数据所有者裁决**的事，无代码面；能做的是**只读盘点**（已做，工具 + 本次 census）。"1555 超期文件处置"经核实**是伪命题**（无超期对象），且我此前把 evidence 文件误并入该项，现更正：该项对象是沙箱运行资源。
+
+### 12.149 演示主数据真机填充（所有者指示"网上搜资料模拟填充"）：走 demo 通道进沙箱，顺带抓出并修复同族 creator 解析缺陷 32 处
+
+所有者要求"数据相关的内容去网上搜索相关随便模拟一份填充即可"。**先说清落点**：
+外网在本会话不可达（`mcporter` 未装、Google/Jina 均连接超时），但本次不需要它——
+仓库自有一条正式的模拟数据通道 `demo-data/`（三重隔离：tenant≥9001 + `DEMO_` 前缀 +
+`creator=demo-seed` + 邮箱 `.invalid`），§12.114 与 HANDOFF 红线都写明**禁止把真实第三方
+公司名填进供应商/物料主数据**。因此走该通道，把它的官方数据集填进沙箱服务库，
+填充物全部是虚构数据，不碰真实名称——这正是"模拟一份填充"的正确形状。
+
+**为什么不是"扩展 generate_master_data.py 补 MES 主数据"**：§12.114 说"demo 19 张主数据表
+一张 MES 都没有"——但本轮核实**该缺口已被先前工作实质覆盖**：`generate_business_documents.py`
+的"支撑主数据"段（V36 BOM 契约所需）已生成 `mes_md_unit_measure/item_type/item/client/vendor/workshop/
+workstation/bom/bom_detail` 等 13 张 MES 表（small 档 96 行），且 `mes_md_item` 正是 V145/V148 对账视图
+与 `product_id→mes_md_item.id` 契约的引用对象。台账那句只说了"19 张主数据表没有 MES"，没说全
+"业务生成器里有 MES 支撑主数据"——本轮更正口径。故**不动生成器、不重钉被哈希锁死的
+4 个产物字节**（§12.114 裁决：重钉是独立决定），直接消费现有产物。
+
+**填充动作（沙箱服务库 `zhicloud_sandbox_v140`）**：
+- 导入 `demo_master_data.sql`（19 表 267 行）+ `demo_business_documents.sql`（99 表 2,458 行），
+  两条导入 exit=0；导入前确认 demo 号段（910000-928011）与现有数据零碰撞、租户 9001 全空。
+- **补演示租户与账号**（让数据在系统里"可见"而只在库里）：`system_tenant` 注册 9001
+  `DEMO_演示租户`（package_id=0 全权限菜单、2099 到期），`system_users` 900100 `demo_admin` +
+  `system_role` 900101（code=super_admin、tenant 9001）+ `system_user_role` 关联；口令哈希复制自
+  225（同一 BCrypt 值，**未把口令写进 argv 或文件**）。踩坑：`active_username` 是生成列，显式插值
+  报 3105；去掉该列即可。
+- **断言落在 DB 行上**：19 主数据表逐表计数与 manifest 完全一致（product 24/supplier 10/
+  wms_location 48/hr_employee 40…）；六条跨域场景查询非零（S1=4、S2=6、S3=12、S4=64、S5=6、S6=2400）；
+  跨场景 JOIN 在 `tms_shipment`(0900_ai_ci) 与其它表(unicode_ci) 混用时需显式 COLLATE——
+  **这是该表与全库 collation 漂移的又一处显形**（§12.40 已记过），登记不动。
+- **API 层可见性验证**：`validTenant` 有 1 分钟异步缓存，插入租户后首两次请求仍"租户不存在"，
+  缓存刷新后 `demo_admin`（mock token 900100 + tenant-id 9001）读到 `erp/product` total=24 等。
+  **双向隔离复查成立**：demo_admin 打租户 1 → 403；225 打租户 1 只见自己的 1 条产品。
+
+**真机填充当场抓出的同族真缺陷（本轮主要修复）**：
+- 症状：`crm/customer/page`、`erp/sale-order/page`、`erp/purchase-order/page` 等返回 500——
+  `java.lang.NumberFormatException: For input string: "demo-seed"`。**根因**：列表"拼接创建人昵称"
+  的代码假设审计列 `creator` 是数字用户 ID（`Long.parseLong(getCreator())`）；真实运行时写入的
+  creator 本来就是数字，所以**此前从未触发**；而平台自身就会写非数字 creator（bootstrap 账号
+  creator='admin'、demo 通道 creator='demo-seed'），任何这类行进入分页就炸整页。
+- 修复分两层：① `NumberUtils.parseLong/parseInt` 宽松化——非数字串返回 null（语义=解析不出
+  用户编号），与空串同一条降级路径（`convertSet`/`convertSetByFlatMap`/`MapUtils.findAndThen`
+  本来就过滤 null）；② 全仓枚举同族，19 个 controller 里 32 处直接 `Long.parseLong(…getCreator())`
+  统一改走 `NumberUtils.parseLong`（hutool isLong 边界已实测：`+225` 合法、`" 225"`/`1e3`/溢出
+  返回 null，行为不回退）。`ErpPurchaseInquiryController:109` 的 `userMap.get(...)` 为 null-key 时
+  走 `if (user != null)` 跳过昵称，与"该创建人不是真实用户"语义一致。
+- 验证：新增 `NumberUtilsTest` 4/4（数字/非数字/空白/溢出）；common+CRM+ERP 三模块测试
+  **全绿（48+167+新增）**；重打包按记忆口径验证进包（开 BOOT-INF/lib 内层 jar 取
+  `NumberUtils.class` 字节码验含 `isLong`，不靠 jar 级 sha）；真机重启后 **14 个曾 500 的端点
+  code=0**（sale-order 10/purchase-order 8/stock-record 36/mes/pro/work-order 8…）。
+- 登记不动：`crm/follow-up-record/page` 不带 bizId 调用时 `CrmPermissionAspect` 对 null 的
+  `bizId` 表达式直接 `object.toString()` NPE（**租户 1 同样 500，与演示数据无关**，属既有缺陷；
+  修法涉及切面语义，单独裁决——记待做）。
+
+**边界（别读成"demo 已应用层验收"）**：本轮=数据级填充 + 读路径（分页查询）验证；未跑
+demo 数据的写路径/审批/会计过账。清理入口现成：`demo-data/cleanup/cleanup_demo.sql`
+（双谓词 tenant+creator），演示租户/账号三行（9001/900100/900101/900100）如需一并清，
+按 §3.4 走沙箱不入库。证据工件 `demo-data-fill-tenant9001-20261008_162945.json`
+（SHA-256 `f635b06e370b33e9d27c04693a34a924520138f252a5460099fbdbd6724849ab`，含旁车，不入库）。

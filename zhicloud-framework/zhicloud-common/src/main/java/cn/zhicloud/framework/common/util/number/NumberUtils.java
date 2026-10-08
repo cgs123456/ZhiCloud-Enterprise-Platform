@@ -14,12 +14,21 @@ import java.util.List;
  */
 public class NumberUtils {
 
+    /**
+     * 宽松解析 Long：非数字串返回 null，而不是抛 NumberFormatException。
+     *
+     * <p>调用方拿它解析审计列 {@code creator} 这类"通常是用户编号、但并非一定是"的字符串：
+     * 平台自己就会写入非数字值（system_role.creator='admin'、demo 通道 creator='demo-seed'）。
+     * 解析不出用户编号的语义就是"没有对应用户"，与空串走同一条降级路径
+     * （convertSetByFlatMap / MapUtils.findAndThen 均已过滤 null）；
+     * 若在这里抛异常，则一条审计列就能把整个列表接口打成 500。
+     */
     public static Long parseLong(String str) {
-        return StrUtil.isNotEmpty(str) ? Long.valueOf(str) : null;
+        return StrUtil.isNotEmpty(str) && NumberUtil.isLong(str) ? Long.valueOf(str) : null;
     }
 
     public static Integer parseInt(String str) {
-        return StrUtil.isNotEmpty(str) ? Integer.valueOf(str) : null;
+        return StrUtil.isNotEmpty(str) && NumberUtil.isInteger(str) ? Integer.valueOf(str) : null;
     }
 
     public static boolean isAllNumber(List<String> values) {

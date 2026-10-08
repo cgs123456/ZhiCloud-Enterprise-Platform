@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.zhicloud.framework.common.pojo.CommonResult;
 import cn.zhicloud.framework.common.pojo.PageResult;
+import cn.zhicloud.framework.common.util.number.NumberUtils;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
 import cn.zhicloud.module.erp.controller.admin.purchase.inquiry.vo.ErpPurchaseInquiryPageReqVO;
 import cn.zhicloud.module.erp.controller.admin.purchase.inquiry.vo.ErpPurchaseInquiryRespVO;
@@ -102,11 +103,11 @@ public class ErpPurchaseInquiryController {
         Map<Long, ErpSupplierDO> supplierMap = supplierService.getSupplierMap(supplierIds);
         // 创建人信息
         Map<Long, AdminUserRespDTO> userMap = adminUserApi.getUserMap(
-                convertSet(pageResult.getList(), inquiry -> Long.parseLong(inquiry.getCreator())));
+                convertSet(pageResult.getList(), inquiry -> NumberUtils.parseLong(inquiry.getCreator())));
         // 拼接
         return success(BeanUtils.toBean(pageResult, ErpPurchaseInquiryRespVO.class, inquiry -> {
             inquiry.setSupplierNames(buildSupplierNames(inquiry.getSupplierIds(), supplierMap));
-            AdminUserRespDTO user = userMap.get(Long.parseLong(inquiry.getCreator()));
+            AdminUserRespDTO user = userMap.get(NumberUtils.parseLong(inquiry.getCreator()));
             if (user != null) {
                 inquiry.setCreatorName(user.getNickname());
             }

@@ -6,6 +6,7 @@ import cn.zhicloud.framework.common.pojo.CommonResult;
 import cn.zhicloud.framework.common.pojo.PageParam;
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.common.util.collection.MapUtils;
+import cn.zhicloud.framework.common.util.number.NumberUtils;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
 import cn.zhicloud.framework.excel.core.util.ExcelUtils;
 import cn.zhicloud.module.erp.controller.admin.product.vo.product.ErpProductRespVO;
@@ -150,7 +151,7 @@ public class ErpPurchaseReturnController {
                 convertSet(pageResult.getList(), ErpPurchaseReturnDO::getSupplierId));
         // 1.4 管理员信息
         Map<Long, AdminUserRespDTO> userMap = adminUserApi.getUserMap(
-                convertSet(pageResult.getList(), purchaseReturn -> Long.parseLong(purchaseReturn.getCreator())));
+                convertSet(pageResult.getList(), purchaseReturn -> NumberUtils.parseLong(purchaseReturn.getCreator())));
         // 2. 开始拼接
         return BeanUtils.toBean(pageResult, ErpPurchaseReturnRespVO.class, purchaseReturn -> {
             purchaseReturn.setItems(BeanUtils.toBean(purchaseReturnItemMap.get(purchaseReturn.getId()), ErpPurchaseReturnRespVO.Item.class,
@@ -158,7 +159,7 @@ public class ErpPurchaseReturnController {
                             .setProductBarCode(product.getBarCode()).setProductUnitName(product.getUnitName()))));
             purchaseReturn.setProductNames(CollUtil.join(purchaseReturn.getItems(), "，", ErpPurchaseReturnRespVO.Item::getProductName));
             MapUtils.findAndThen(supplierMap, purchaseReturn.getSupplierId(), supplier -> purchaseReturn.setSupplierName(supplier.getName()));
-            MapUtils.findAndThen(userMap, Long.parseLong(purchaseReturn.getCreator()), user -> purchaseReturn.setCreatorName(user.getNickname()));
+            MapUtils.findAndThen(userMap, NumberUtils.parseLong(purchaseReturn.getCreator()), user -> purchaseReturn.setCreatorName(user.getNickname()));
         });
     }
 

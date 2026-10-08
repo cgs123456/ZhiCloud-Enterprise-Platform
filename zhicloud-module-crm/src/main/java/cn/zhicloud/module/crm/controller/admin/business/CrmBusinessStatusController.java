@@ -95,7 +95,7 @@ public class CrmBusinessStatusController {
         }
         // 2. 拼接数据
         Map<Long, AdminUserRespDTO> userMap = adminUserApi.getUserMap(
-                convertSet(pageResult.getList(), statusType -> Long.parseLong(statusType.getCreator())));
+                convertSet(pageResult.getList(), statusType -> NumberUtils.parseLong(statusType.getCreator())));
         Map<Long, DeptRespDTO> deptMap = deptApi.getDeptMap(
                 convertSetByFlatMap(pageResult.getList(), CrmBusinessStatusTypeDO::getDeptIds, Collection::stream));
         return success(BeanUtils.toBean(pageResult, CrmBusinessStatusRespVO.class, statusTypeVO -> {
