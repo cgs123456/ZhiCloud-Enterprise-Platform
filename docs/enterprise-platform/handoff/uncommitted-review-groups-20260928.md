@@ -6206,3 +6206,25 @@ owner/保留期拍板仍留所有者，数字已可随取。
 **门禁汇总**：python 全量 `Ran 653 tests OK`；契约 `tracked=59 scanned=155 findings=0`；
 plan_commit_groups 自洽；V147/V148 迁移内自检与 verify 全 PASS；提交链
 `41666fdf`(B-2)→`9da80ac9`(C-3)→`59f7b117`(B-3+C-2)→`5a9f7986`(B-1)，各自 evidence=0。
+
+### 12.145 后续操作的诚实落点：发票/成本"接入会计事件"经核实是设计边界（不做），转做同族真半截护栏（关账 GL 凭证守卫）
+
+所有者批准"进行后续操作"，对象是 §12.144 登记为"真实缺口"的 **发票税务（ErpTaxInvoice）与成本核算（ErpCost*）未接会计事件**。但**动手前先只读核实——这条"缺口"经核实不成立，我据此改变落点**（避免本会话反复出现的"我以为的缺口其实是设计边界/已修"误判，如 R-009/R-010/红字发票）：
+
+**核实结论（证据）**：
+- 发票服务是**自洽的税务申报子系统**：发票状态机（草稿→开具→作废/红冲）+ 金税接口（`GoldenTaxApi`/Stub/DisabledFallback）+ `ErpVatCalculationService`（销项−进项=应纳税额、期末留抵）。无 TODO、无"本该生成凭证"的半成品痕迹。
+- 成本核算服务 grep 会计意图（`会计|凭证|accountingEvent|postEvent|结转|分配`）**零命中**；`executeProfitLossTransfer`（§12.145 复核）只做销售出库收入 vs 采购入库成本的汇总 + 写 `erp_period_close` 记录，**本就不生成损益结转凭证**——是有意设计。
+- 会计事件引擎合法类型恰是六种**有借贷双重含义的库存/现金单据**（`SALES_SHIPMENT`/`PURCHASE_RECEIPT_ACCRUAL`/`PAYMENT_POSTED`/`RECEIPT_POSTED`/两种 `RETURN`）。发票是**申报义务**、成本是**归集计算**，都不在这条双重记账模型里。
+- **强行接入 = 凭空发明一套"发票→凭证 / 成本→凭证"的科目与借贷映射写进会计系统**——错凭证比没凭证更糟（静默污染账本、事后难追），且是"看着绿其实错"。这直接撞所有者两次强调的"点到即止/不臆造"红线。**故不做，并把这条从"真实缺口"改判为"设计边界"**（§12.144 ④ 措辞据此更正）。
+
+**转向做的：同族的真半截护栏——`closePeriod` 只数业务单据、不数 GL 凭证**：
+复核期间关闭时发现 `closePeriod` 的终局守卫（注释写"校验无未审核单据"）只 `sumUnapproved` 六种**业务单据**（月末检查 summary），**不含 GL 草稿凭证**（凭证状态 DRAFT=10/APPROVED=20/REVERSED=30）。而凭证带 `period_id`、`ErpGlVoucherMapper` 已有 `selectCountByPeriodIdAndStatus`——守卫就是没调它。后果正是我一路在修的"护栏只数一半"族：一张 `postEvent` 产生的**草稿凭证**能存活到关账（损益结转只写 period_close 记录、不强制凭证过账，实测 `existsSuccess(PROFIT_LOSS_TRANSFER)` 不挡草稿），关账后 `resolvePeriod`（L362）拒绝已关闭期间 → 该凭证永久搁死、账在分录不全的情况下关账。
+
+**修复（行为保持、不新增公共面）**：`closePeriod` 业务守卫之后加**步骤 4.5 GL 凭证守卫**：`未过账 = 期间凭证总数 − APPROVED 数`，>0 抛新错误码 `PERIOD_CLOSE_FAIL_EXISTS_UNPOSTED_VOUCHER`（1_030_700_008）。度量正确性经核：`reverseApprove` 把状态翻回 **DRAFT**（非留 APPROVED）、posting 仅 approve 那步置 POSTED（L249-250），故 `APPROVED ⟺ 已过账`成立、被反审核的凭证回到 DRAFT 会**挡住**关账（方向安全，非反向漏判）。复用现有 mapper 方法、不碰月末检查的公共结果 VO（那六项是"业务单据未审核"、语义独立，硬塞凭证会 ripple）。
+
+**验证**：
+- 单测 `ErpPeriodServiceImplCloseGuardTest` 3/3——关账被未过账凭证拒（stub 直达 4.5、验证不 updateById）、全 APPROVED 放行、无凭证放行。`closePeriod` **此前 0 测试**，一并补上。
+- 全模块 `mvn -pl zhicloud-module-erp test` **164/164**（161+3），BUILD SUCCESS。
+- **真实链路**（v140 库）：month-check 记 5 张未审核业务单据 → transfer 成功 → close 被**既有 step4 业务守卫** `1030700004`（"存在 5 张未审核单据"）挡下——既证明关账终局链可达、既有那一半在真实数据上生效，也印证我的 4.5 位置对（业务更脏时先挡，符合 step 顺序）。当前库确有 15 张草稿凭证（我 R-012/R-014 探测产物），若业务单据先清干净即会撞上 4.5 新守卫（由单测覆盖，未在真机强凑）。
+
+**门禁/流程**：契约不变（纯 Java、无迁移）；台账现至 §12.145。教训照记：① 上一轮把发票/成本记成"真实缺口"是我的**口头过度**（grep 只证明了"没接"，没证明"该接"），本轮补验证才判为设计边界——再次说明登记册/自述需以读码证据为准；② `--（` 全角注释、shell 吞斜杠那两类坑本轮未复现（写测试/核实全程谨慎）。

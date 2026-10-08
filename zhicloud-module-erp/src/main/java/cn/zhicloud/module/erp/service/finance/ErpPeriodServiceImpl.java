@@ -3,6 +3,7 @@ package cn.zhicloud.module.erp.service.finance;
 import cn.zhicloud.module.erp.enums.ErpAuditStatus;
 import cn.zhicloud.module.erp.enums.finance.ErpPeriodCloseStatusEnum;
 import cn.zhicloud.module.erp.enums.finance.ErpPeriodCloseTypeEnum;
+import cn.zhicloud.module.erp.enums.finance.ErpGlVoucherStatusEnum;
 import cn.zhicloud.module.erp.enums.finance.ErpPeriodStatusEnum;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -73,6 +74,8 @@ public class ErpPeriodServiceImpl implements ErpPeriodService {
     private ErpFinancePaymentMapper financePaymentMapper;
     @Resource
     private ErpFinanceReceiptMapper financeReceiptMapper;
+    @Resource
+    private ErpGlVoucherMapper glVoucherMapper;
 
     // ==================== 会计期间 CRUD ====================
 
@@ -285,6 +288,18 @@ public class ErpPeriodServiceImpl implements ErpPeriodService {
             if (totalUnapproved > 0) {
                 throw exception(PERIOD_CLOSE_FAIL_EXISTS_UNAPPROVED, period.getCode(), totalUnapproved);
             }
+        }
+        // 4.5 GL 凭证未过账守卫（补全只数一半的护栏）：草稿/已反审核的凭证都是账面上
+        //     未生效的凭证，若放过关账则 resolvePeriod 之后再也写不进（§12.145）。
+        //     未过账 = 期间凭证总数 - APPROVED 数（posting POSTED 仅在凭证审核那一步推进）。
+        //     与上面业务单据的容错 safeCount 不同，这里不吞异常：终局守卫宁可失败也不
+        //     在"看不见的情况下"静默放行。
+        long totalVouchers = glVoucherMapper.selectCountByPeriodId(periodId);
+        long approvedVouchers = glVoucherMapper.selectCountByPeriodIdAndStatus(periodId,
+                ErpGlVoucherStatusEnum.APPROVED.getStatus());
+        int unpostedVouchers = (int) Math.max(0, totalVouchers - approvedVouchers);
+        if (unpostedVouchers > 0) {
+            throw exception(PERIOD_CLOSE_FAIL_EXISTS_UNPOSTED_VOUCHER, period.getCode(), unpostedVouchers);
         }
         // 5. 更新期间状态为 CLOSED
         ErpPeriodDO updateObj = new ErpPeriodDO();
