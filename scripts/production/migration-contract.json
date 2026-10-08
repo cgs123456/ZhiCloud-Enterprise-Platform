@@ -401,6 +401,20 @@
       "sha256": "fc83115f2b9feb567cf6adb1c53c16533a7396ec8fbb1d14ac26364e35269b49",
       "verification_file": "V146_verify.sql",
       "verification_sha256": "29a3ab5ba6e6460c18c909f429859af99406da5bafd26a6b277b6cbc44e5a0ad"
+    },
+    {
+      "version": 147,
+      "file": "V147__quartz_tables.sql",
+      "sha256": "28c1382e769849ab976339058705c825d8182aa026d0453dc34838a3fc9b8090",
+      "verification_file": "V147_verify.sql",
+      "verification_sha256": "94af1bca9ae41de80234655211364c5341763279bfb9504d6d839ac0720ec4af"
+    },
+    {
+      "version": 148,
+      "file": "V148__inventory_reconcile_mes_wms_warehouse.sql",
+      "sha256": "6e369ee9d95e8b80a23df5c2353d75569274c1452998f8cca90973a941db4573",
+      "verification_file": "V148_verify.sql",
+      "verification_sha256": "8f4f8a5634cb13940d7fac4e08da572482e997e27eaaf698c620209c218d6e4c"
     }
   ]
 }
