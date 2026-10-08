@@ -3,6 +3,7 @@ package cn.zhicloud.server.controller.admin.mdm;
 import cn.zhicloud.framework.common.pojo.CommonResult;
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
+import cn.zhicloud.framework.mdm.api.MdmCrossRefBatchUpsertResult;
 import cn.zhicloud.framework.mdm.api.MdmCrossRefPageReqVO;
 import cn.zhicloud.framework.mdm.api.MdmCrossRefUpsertReq;
 import cn.zhicloud.framework.mdm.dal.dataobject.MdmCrossRefDO;
@@ -23,6 +24,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 import static cn.zhicloud.framework.common.pojo.CommonResult.success;
 
@@ -61,6 +64,15 @@ public class MdmCrossRefController {
     public CommonResult<Long> saveCrossRef(@Valid @RequestBody MdmCrossRefUpsertReq reqVO) {
         // upsert 语义：对照表表达「当前映射」，重复登记覆盖 targetId——所以 create 与 update 合为一个入口
         return success(mdmCrossRefService.upsert(reqVO));
+    }
+
+    @PostMapping("/save-batch")
+    @Operation(summary = "批量登记对照（逐条独立：一条失败不影响其余，返回逐条结果）")
+    @PreAuthorize("@ss.hasPermission('system:mdm-cross-ref:create')")
+    public CommonResult<MdmCrossRefBatchUpsertResult> saveCrossRefBatch(
+            @Valid @RequestBody List<MdmCrossRefUpsertReq> reqVOs) {
+        // 复用 create 权限：批量 upsert 就是 upsert ×N，语义同一；新造权限串会因无菜单行恒 403（§12.95.3）
+        return success(mdmCrossRefService.upsertBatch(reqVOs));
     }
 
     @DeleteMapping("/invalidate")

@@ -3,6 +3,7 @@ package cn.zhicloud.framework.mdm.service;
 import cn.zhicloud.framework.common.exception.ServiceException;
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.datasource.config.ZhiCloudDataSourceAutoConfiguration;
+import cn.zhicloud.framework.mdm.api.MdmCrossRefBatchUpsertResult;
 import cn.zhicloud.framework.mdm.api.MdmCrossRefPageReqVO;
 import cn.zhicloud.framework.mdm.api.MdmCrossRefUpsertReq;
 import cn.zhicloud.framework.mdm.config.MdmAutoConfiguration;
@@ -24,6 +25,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
+
+import java.util.List;
 
 import static cn.zhicloud.framework.mdm.enums.ErrorCodeConstants.MDM_CROSS_REF_ARG_INVALID;
 import static cn.zhicloud.framework.mdm.enums.ErrorCodeConstants.MDM_CROSS_REF_NOT_FOUND;
@@ -251,6 +254,68 @@ public class MdmCrossRefServiceTest {
         all.setPageNo(1);
         all.setPageSize(10);
         assertEquals(2L, mdmCrossRefService.page(all).getTotal());
+    }
+
+    @Test
+    public void testUpsertBatch_allValidSucceeds() {
+        MdmCrossRefBatchUpsertResult result = mdmCrossRefService.upsertBatch(List.of(
+                productRef("100", "9001"), productRef("101", "9002")));
+
+        assertEquals(2, result.getSuccessCount());
+        assertEquals(0, result.getFailureCount());
+        assertEquals(2, result.getItems().size());
+        assertTrue(result.getItems().stream().allMatch(MdmCrossRefBatchUpsertResult.Item::isSuccess));
+        // 逐条结果带源键摘要，便于定位
+        assertEquals("ERP.PRODUCT=100 -> WMS.SKU", result.getItems().get(0).getKey());
+    }
+
+    @Test
+    public void testUpsertBatch_partialFailureIsIsolated() {
+        // 第 2 条 targetId 为空 → 该条 ARG_INVALID 失败；第 1、3 条必须照常成功（逐条独立）
+        MdmCrossRefBatchUpsertResult result = mdmCrossRefService.upsertBatch(List.of(
+                productRef("100", "9001"),
+                productRef("101", ""),
+                productRef("102", "9003")));
+
+        assertEquals(2, result.getSuccessCount(), "两条合法条目应成功");
+        assertEquals(1, result.getFailureCount(), "一条非法条目应单独失败");
+        assertTrue(result.getItems().get(1).isSuccess() == false);
+        assertEquals(1, result.getItems().get(1).getIndex());
+        assertNotNull(result.getItems().get(1).getError(), "失败条目要带原因");
+        // 成功条目确实落库，失败条目不落库
+        assertNotNull(mdmCrossRefService.findTargetId(0L, SYSTEM_ERP, ENTITY_PRODUCT, "100",
+                SYSTEM_WMS, ENTITY_SKU));
+        assertNotNull(mdmCrossRefService.findTargetId(0L, SYSTEM_ERP, ENTITY_PRODUCT, "102",
+                SYSTEM_WMS, ENTITY_SKU));
+        assertNull(mdmCrossRefService.findTargetId(0L, SYSTEM_ERP, ENTITY_PRODUCT, "101",
+                SYSTEM_WMS, ENTITY_SKU));
+    }
+
+    @Test
+    public void testUpsertBatch_isIdempotentLikeSingleUpsert() {
+        mdmCrossRefService.upsertBatch(List.of(productRef("100", "9001")));
+        // 再次批量登记同源键（不同 targetId）→ 覆盖同一行，不新增
+        MdmCrossRefBatchUpsertResult second = mdmCrossRefService.upsertBatch(List.of(productRef("100", "9002")));
+
+        assertEquals(1, second.getSuccessCount());
+        assertEquals(1L, mdmCrossRefMapper.selectCount(null), "同源键批量重登不新增行");
+        assertEquals("9002", mdmCrossRefService.mapTargetId(0L, SYSTEM_ERP, ENTITY_PRODUCT, "100",
+                SYSTEM_WMS, ENTITY_SKU));
+    }
+
+    @Test
+    public void testUpsertBatch_emptyIsNoop() {
+        MdmCrossRefBatchUpsertResult result = mdmCrossRefService.upsertBatch(List.of());
+        assertEquals(0, result.getSuccessCount());
+        assertEquals(0, result.getFailureCount());
+        assertTrue(result.getItems().isEmpty());
+    }
+
+    @Test
+    public void testUpsertBatch_requiresTenantContext() {
+        TenantContextHolder.clear();
+        assertThrows(ServiceException.class,
+                () -> mdmCrossRefService.upsertBatch(List.of(productRef("100", "9001"))));
     }
 
 }
