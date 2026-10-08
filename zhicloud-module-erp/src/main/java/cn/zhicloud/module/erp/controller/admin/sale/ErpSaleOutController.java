@@ -6,6 +6,7 @@ import cn.zhicloud.framework.common.pojo.CommonResult;
 import cn.zhicloud.framework.common.pojo.PageParam;
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.common.util.collection.MapUtils;
+import cn.zhicloud.framework.common.util.number.NumberUtils;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
 import cn.zhicloud.framework.excel.core.util.ExcelUtils;
 import cn.zhicloud.module.erp.controller.admin.product.vo.product.ErpProductRespVO;
@@ -150,7 +151,7 @@ public class ErpSaleOutController {
                 convertSet(pageResult.getList(), ErpSaleOutDO::getCustomerId));
         // 1.4 管理员信息
         Map<Long, AdminUserRespDTO> userMap = adminUserApi.getUserMap(
-                convertSet(pageResult.getList(), stockOut -> Long.parseLong(stockOut.getCreator())));
+                convertSet(pageResult.getList(), stockOut -> NumberUtils.parseLong(stockOut.getCreator())));
         // 2. 开始拼接
         return BeanUtils.toBean(pageResult, ErpSaleOutRespVO.class, saleOut -> {
             saleOut.setItems(BeanUtils.toBean(saleOutItemMap.get(saleOut.getId()), ErpSaleOutRespVO.Item.class,
@@ -158,7 +159,7 @@ public class ErpSaleOutController {
                             .setProductBarCode(product.getBarCode()).setProductUnitName(product.getUnitName()))));
             saleOut.setProductNames(CollUtil.join(saleOut.getItems(), "，", ErpSaleOutRespVO.Item::getProductName));
             MapUtils.findAndThen(customerMap, saleOut.getCustomerId(), supplier -> saleOut.setCustomerName(supplier.getName()));
-            MapUtils.findAndThen(userMap, Long.parseLong(saleOut.getCreator()), user -> saleOut.setCreatorName(user.getNickname()));
+            MapUtils.findAndThen(userMap, NumberUtils.parseLong(saleOut.getCreator()), user -> saleOut.setCreatorName(user.getNickname()));
         });
     }
 

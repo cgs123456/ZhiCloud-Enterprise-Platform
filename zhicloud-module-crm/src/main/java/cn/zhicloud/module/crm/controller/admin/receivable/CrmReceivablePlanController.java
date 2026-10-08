@@ -155,7 +155,7 @@ public class CrmReceivablePlanController {
             findAndThen(customerMap, receivablePlanVO.getCustomerId(), customer -> receivablePlanVO.setCustomerName(customer.getName()));
             // 2.2 拼接用户信息
             findAndThen(userMap, receivablePlanVO.getOwnerUserId(), user -> receivablePlanVO.setOwnerUserName(user.getNickname()));
-            findAndThen(userMap, Long.parseLong(receivablePlanVO.getCreator()), user -> receivablePlanVO.setCreatorName(user.getNickname()));
+            findAndThen(userMap, NumberUtils.parseLong(receivablePlanVO.getCreator()), user -> receivablePlanVO.setCreatorName(user.getNickname()));
             // 2.3 拼接合同信息
             findAndThen(contractMap, receivablePlanVO.getContractId(), contract -> receivablePlanVO.setContractNo(contract.getNo()));
             // 2.4 拼接回款信息

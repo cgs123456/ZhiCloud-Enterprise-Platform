@@ -210,7 +210,7 @@ public class CrmContractController {
             // 2.1 设置客户信息
             findAndThen(customerMap, contractVO.getCustomerId(), customer -> contractVO.setCustomerName(customer.getName()));
             // 2.2 设置用户信息
-            findAndThen(userMap, Long.parseLong(contractVO.getCreator()), user -> contractVO.setCreatorName(user.getNickname()));
+            findAndThen(userMap, NumberUtils.parseLong(contractVO.getCreator()), user -> contractVO.setCreatorName(user.getNickname()));
             MapUtils.findAndThen(userMap, contractVO.getOwnerUserId(), user -> {
                 contractVO.setOwnerUserName(user.getNickname());
                 MapUtils.findAndThen(deptMap, user.getDeptId(), dept -> contractVO.setOwnerUserDeptName(dept.getName()));

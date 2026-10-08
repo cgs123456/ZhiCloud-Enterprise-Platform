@@ -192,7 +192,7 @@ public class CrmSaleOrderController {
             // 2.1 设置客户信息
             findAndThen(customerMap, orderVO.getCustomerId(), customer -> orderVO.setCustomerName(customer.getName()));
             // 2.2 设置用户信息
-            findAndThen(userMap, Long.parseLong(orderVO.getCreator()), user -> orderVO.setCreatorName(user.getNickname()));
+            findAndThen(userMap, NumberUtils.parseLong(orderVO.getCreator()), user -> orderVO.setCreatorName(user.getNickname()));
             MapUtils.findAndThen(userMap, orderVO.getOwnerUserId(), user -> {
                 orderVO.setOwnerUserName(user.getNickname());
                 MapUtils.findAndThen(deptMap, user.getDeptId(), dept -> orderVO.setOwnerUserDeptName(dept.getName()));

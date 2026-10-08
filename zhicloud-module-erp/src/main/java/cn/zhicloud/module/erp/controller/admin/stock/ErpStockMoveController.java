@@ -6,6 +6,7 @@ import cn.zhicloud.framework.common.pojo.CommonResult;
 import cn.zhicloud.framework.common.pojo.PageParam;
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.common.util.collection.MapUtils;
+import cn.zhicloud.framework.common.util.number.NumberUtils;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
 import cn.zhicloud.framework.excel.core.util.ExcelUtils;
 import cn.zhicloud.module.erp.controller.admin.product.vo.product.ErpProductRespVO;
@@ -144,7 +145,7 @@ public class ErpStockMoveController {
         // 1.3 TODO 芋艿：搞仓库信息
         // 1.4 管理员信息
         Map<Long, AdminUserRespDTO> userMap = adminUserApi.getUserMap(
-                convertSet(pageResult.getList(), stockMove -> Long.parseLong(stockMove.getCreator())));
+                convertSet(pageResult.getList(), stockMove -> NumberUtils.parseLong(stockMove.getCreator())));
         // 2. 开始拼接
         return BeanUtils.toBean(pageResult, ErpStockMoveRespVO.class, stockMove -> {
             stockMove.setItems(BeanUtils.toBean(stockMoveItemMap.get(stockMove.getId()), ErpStockMoveRespVO.Item.class,
@@ -153,7 +154,7 @@ public class ErpStockMoveController {
             stockMove.setProductNames(CollUtil.join(stockMove.getItems(), "，", ErpStockMoveRespVO.Item::getProductName));
             // TODO 芋艿：
 //            MapUtils.findAndThen(customerMap, stockMove.getCustomerId(), supplier -> stockMove.setCustomerName(supplier.getName()));
-            MapUtils.findAndThen(userMap, Long.parseLong(stockMove.getCreator()), user -> stockMove.setCreatorName(user.getNickname()));
+            MapUtils.findAndThen(userMap, NumberUtils.parseLong(stockMove.getCreator()), user -> stockMove.setCreatorName(user.getNickname()));
         });
     }
 
