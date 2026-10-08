@@ -415,6 +415,13 @@
       "sha256": "6e369ee9d95e8b80a23df5c2353d75569274c1452998f8cca90973a941db4573",
       "verification_file": "V148_verify.sql",
       "verification_sha256": "8f4f8a5634cb13940d7fac4e08da572482e997e27eaaf698c620209c218d6e4c"
+    },
+    {
+      "version": 149,
+      "file": "V149__statement_reconcile_menu_seed.sql",
+      "sha256": "24d84c3931a614220d3ff280903555b00627ed50e99289f2a12ce8182ea8d288",
+      "verification_file": "V149_verify.sql",
+      "verification_sha256": "72dc910fc68d6252215efb76d2c70c4c5a150ab2709d3729ef2456d6e4ee0a17"
     }
   ]
 }

@@ -70,6 +70,12 @@ public class ErpFinancialStatementServiceImpl implements ErpFinancialStatementSe
         BigDecimal totalAssets = BigDecimal.ZERO;
         BigDecimal totalLiabilities = BigDecimal.ZERO;
         BigDecimal totalEquity = BigDecimal.ZERO;
+        // 本期损益未结转额：资产负债表只列资产/负债/权益三类，而损益类（收入 40/费用 50）
+        // 科目在未做结转前不在权益里体现（§12.145：损益结转有意不生成凭证），
+        // 于是只要有一张损益凭证过账，资产 ≠ 负债 + 权益。这里把累计净利润（收入净额 −
+        // 费用净额，与利润表同口径）作为「本年利润/未分配利润」并入权益，令恒等式成立——
+        // 这是把已算好的数字显式呈现，不发明 4103 结转凭证。
+        BigDecimal currentPeriodProfit = BigDecimal.ZERO;
 
         for (Map.Entry<Long, AccountSummary> entry : accountSummaries.entrySet()) {
             ErpGlAccountDO account = accountMap.get(entry.getKey());
@@ -100,7 +106,17 @@ public class ErpFinancialStatementServiceImpl implements ErpFinancialStatementSe
                     equityItems.add(new ErpFinancialStatementItemVO(account.getCode(), account.getName(), balance));
                 }
                 totalEquity = totalEquity.add(balance);
+            } else if (ErpGlAccountTypeEnum.REVENUE.getType().equals(type)) {
+                // 收入类贷方净额计入本期利润
+                currentPeriodProfit = currentPeriodProfit.add(s.credit.subtract(s.debit));
+            } else if (ErpGlAccountTypeEnum.EXPENSE.getType().equals(type)) {
+                // 费用/成本类借方净额从本期利润扣减
+                currentPeriodProfit = currentPeriodProfit.subtract(s.debit.subtract(s.credit));
             }
+        }
+        if (currentPeriodProfit.compareTo(BigDecimal.ZERO) != 0) {
+            equityItems.add(new ErpFinancialStatementItemVO(null, "本年利润（未分配）", currentPeriodProfit));
+            totalEquity = totalEquity.add(currentPeriodProfit);
         }
         respVO.setAssetItems(assetItems);
         respVO.setLiabilityItems(liabilityItems);
