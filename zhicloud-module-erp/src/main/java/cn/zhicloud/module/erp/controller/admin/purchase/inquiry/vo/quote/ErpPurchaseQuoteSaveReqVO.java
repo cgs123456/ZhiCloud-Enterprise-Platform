@@ -1,6 +1,7 @@
 package cn.zhicloud.module.erp.controller.admin.purchase.inquiry.vo.quote;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -31,6 +32,7 @@ public class ErpPurchaseQuoteSaveReqVO {
     private String remark;
 
     @Schema(description = "报价明细列表")
+    @Valid
     private List<Item> items;
 
     @Data

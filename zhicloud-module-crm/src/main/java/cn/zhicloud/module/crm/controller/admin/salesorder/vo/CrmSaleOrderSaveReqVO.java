@@ -1,6 +1,7 @@
 package cn.zhicloud.module.crm.controller.admin.salesorder.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -51,6 +52,7 @@ public class CrmSaleOrderSaveReqVO {
     private String remark;
 
     @Schema(description = "订单明细列表")
+    @Valid
     private List<Item> items;
 
     @Schema(description = "订单明细")

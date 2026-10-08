@@ -1,6 +1,7 @@
 package cn.zhicloud.module.erp.controller.admin.finance.vo.budget;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -37,6 +38,7 @@ public class ErpBudgetSaveReqVO {
 
     @Schema(description = "预算明细列表", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "预算明细不能为空")
+    @Valid
     private List<Detail> details;
 
     @Schema(description = "备注", example = "备注")

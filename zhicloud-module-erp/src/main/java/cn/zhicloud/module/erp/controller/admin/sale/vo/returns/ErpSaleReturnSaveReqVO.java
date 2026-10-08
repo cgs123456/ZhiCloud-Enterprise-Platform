@@ -1,6 +1,7 @@
 package cn.zhicloud.module.erp.controller.admin.sale.vo.returns;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -42,6 +43,7 @@ public class ErpSaleReturnSaveReqVO {
     private String remark;
 
     @Schema(description = "退货清单列表")
+    @Valid
     private List<Item> items;
 
     @Data

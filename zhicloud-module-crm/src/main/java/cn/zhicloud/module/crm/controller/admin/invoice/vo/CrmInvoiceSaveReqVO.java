@@ -1,6 +1,7 @@
 package cn.zhicloud.module.crm.controller.admin.invoice.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -63,6 +64,7 @@ public class CrmInvoiceSaveReqVO {
     private String remark;
 
     @Schema(description = "开票明细列表")
+    @Valid
     private List<Line> lines;
 
     @Schema(description = "开票明细")
