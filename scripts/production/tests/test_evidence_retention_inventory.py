@@ -82,6 +82,49 @@ class InventoryTest(unittest.TestCase):
         self.assertFalse(any("referenced" in c["path"] for c in rep["recycle_candidates"]))
         self.assertEqual(4, len(list(self.ev.iterdir())))  # 仍没删
 
+    def test_tracked_baseline_never_a_candidate(self):
+        """已入库冻结基线（刻意保留）即使老且无引用也绝不进候选。
+
+        这是 §12.148 的口径：400 个 tracked 文件是 `.gitignore:107-109` 刻意入库的
+        审计基线，不是垃圾；把它们当回收候选就是"把入库证据当过期文件删"。
+        用 monkeypatch 注入 tracked 集合，避免测试里真去建 git 仓库。
+        """
+        tracked_rel = "docs/enterprise-platform/evidence/production/old_orphan.json"
+        orig = inv.collect_tracked
+        inv.collect_tracked = lambda repo_root, ev_dir: {tracked_rel}
+        try:
+            buf = io.StringIO(); old = sys.stdout; sys.stdout = buf
+            try:
+                inv.main(["--retention-days", "0", "--repo", str(self.repo), "--json"])
+            finally:
+                sys.stdout = old
+        finally:
+            inv.collect_tracked = orig
+        rep = json.loads(buf.getvalue())
+        self.assertEqual(1, rep["git_tracked_baseline"])
+        self.assertFalse(any(c["path"].endswith("old_orphan.json")
+                             for c in rep["recycle_candidates"]),
+                         "已入库基线不得进回收候选")
+        # 未入库的新孤儿仍应候选（tracked 判定只影响被标记的那一个）
+        self.assertTrue(any(c["path"].endswith("new_orphan.json")
+                            for c in rep["recycle_candidates"]))
+
+    def test_retention_below_age_span_is_flagged(self):
+        """保留期短于证据年龄跨度时必须显式告警——防止"任意阈值即结论"。"""
+        buf = io.StringIO(); old = sys.stdout; sys.stdout = buf
+        try:
+            inv.main(["--retention-days", "3", "--repo", str(self.repo), "--json"])
+        finally:
+            sys.stdout = old
+        rep = json.loads(buf.getvalue())
+        # 合成数据里最老 30 天、最新 1 天 → 跨度 29 天 > 3
+        self.assertTrue(rep["retention_below_age_span"])
+        self.assertGreaterEqual(rep["age_span_days"], 3)
+
+    def test_collect_tracked_degrades_on_non_repo(self):
+        """非 git 目录不得抛异常（CI 裸检出/临时目录）：返回空集而非崩溃。"""
+        self.assertEqual(set(), inv.collect_tracked(self.repo, self.ev))
+
 
 if __name__ == "__main__":
     unittest.main()

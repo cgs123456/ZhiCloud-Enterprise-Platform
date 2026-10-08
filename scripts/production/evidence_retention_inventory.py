@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -26,6 +27,33 @@ from pathlib import Path
 # 复用同一套引用解析，绝不自己再写一份正则（否则与门禁漂移）
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import check_evidence_citations as cite  # noqa: E402
+
+
+def collect_tracked(repo_root: Path, ev_dir: Path) -> set[str]:
+    """返回已被 git 入库的证据文件（仓库相对 posix 路径集合）。
+
+    这些是 `6a47efeb` 冻结基线，由 `.gitignore:107-109` 反忽略 `*.log` **刻意入库**，
+    不是"未清理的垃圾"——因此**永不进回收候选**，必须与普通未入库文件分开统计。
+    git 不可用（非仓库/CI 裸检出）时返回空集：分类退化为"未入库=全部未跟踪"，
+    但绝不因此把已入库基线误报成候选。
+    """
+    try:
+        out = subprocess.run(["git", "-C", str(repo_root), "ls-files", "--",
+                              str(ev_dir)], capture_output=True, text=True, timeout=30)
+        if out.returncode != 0:
+            return set()
+    except (OSError, subprocess.SubprocessError):
+        return set()
+    tracked: set[str] = set()
+    for line in out.stdout.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            tracked.add((repo_root / line).resolve().relative_to(repo_root).as_posix())
+        except ValueError:
+            tracked.add(Path(line).as_posix())
+    return tracked
 
 
 def collect_referenced(repo_root: Path, docs_root: Path) -> set[str]:
@@ -64,21 +92,30 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     referenced = collect_referenced(repo, (repo / "docs" / "enterprise-platform"))
+    tracked = collect_tracked(repo, ev_dir)
     cutoff = datetime.now().timestamp() - timedelta(days=args.retention_days).total_seconds()
     files = sorted(p for p in ev_dir.rglob("*") if p.is_file())
     ext: dict[str, int] = {}
     by_batch: dict[str, dict] = {}
     orphans_within = 0
+    tracked_n = 0
     candidates = []
     for p in files:
         rel = p.relative_to(repo).as_posix()
         e = p.suffix or "(noext)"
         ext[e] = ext.get(e, 0) + 1
         day = datetime.fromtimestamp(p.stat().st_mtime).strftime("%Y-%m-%d")
-        b = by_batch.setdefault(day, {"files": 0, "bytes": 0, "referenced": 0, "unref": 0})
+        b = by_batch.setdefault(day, {"files": 0, "bytes": 0, "referenced": 0,
+                                      "tracked": 0, "unref": 0})
         b["files"] += 1
         b["bytes"] += p.stat().st_size
+        is_tracked = rel in tracked or str(p.resolve()) in tracked
         ref = rel in referenced or str(p.resolve()) in referenced
+        if is_tracked:
+            # 冻结基线：刻意入库，永不作为回收候选（否则会把"入库的审计证据"当垃圾）
+            tracked_n += 1
+            b["tracked"] += 1
+            continue
         if ref:
             b["referenced"] += 1
         else:
@@ -91,6 +128,14 @@ def main(argv: list[str] | None = None) -> int:
 
     total = len(files)
     total_bytes = sum(p.stat().st_size for p in files)
+    untracked_n = total - tracked_n
+    oldest_dt = min((datetime.fromtimestamp(p.stat().st_mtime) for p in files), default=None)
+    newest_dt = max((datetime.fromtimestamp(p.stat().st_mtime) for p in files), default=None)
+    oldest = oldest_dt.strftime("%Y-%m-%d") if oldest_dt else None
+    newest = newest_dt.strftime("%Y-%m-%d") if newest_dt else None
+    # 反"任意阈值即结论"：保留期短于最老文件的年龄时，候选数只反映人为阈值，不是真过期
+    age_span_days = (newest_dt - oldest_dt).days if (oldest_dt and newest_dt) else 0
+    threshold_is_binding = args.retention_days < age_span_days
     report = {
         "tool": "evidence_retention_inventory.py",
         "mode": "READ-ONLY (no deletion, no container/volume touch)",
@@ -98,6 +143,8 @@ def main(argv: list[str] | None = None) -> int:
         "retention_days": args.retention_days,
         "total_files": total,
         "total_bytes": total_bytes,
+        "git_tracked_baseline": tracked_n,
+        "untracked": untracked_n,
         "referenced_files": len([f for f in files
                                  if f.relative_to(repo).as_posix() in referenced
                                  or str(f.resolve()) in referenced]),
@@ -106,20 +153,29 @@ def main(argv: list[str] | None = None) -> int:
         "recycle_candidates_bytes": sum(c["bytes"] for c in candidates),
         "by_ext": dict(sorted(ext.items(), key=lambda x: -x[1])),
         "by_date_batch": dict(sorted(by_batch.items())),
-        "oldest": min((datetime.fromtimestamp(p.stat().st_mtime).strftime("%Y-%m-%d") for p in files), default=None),
-        "newest": max((datetime.fromtimestamp(p.stat().st_mtime).strftime("%Y-%m-%d") for p in files), default=None),
+        "oldest": oldest,
+        "newest": newest,
+        "age_span_days": age_span_days,
+        "retention_below_age_span": threshold_is_binding,
         "recycle_candidates": candidates,
-        "note": "candidates 仅为「超过保留期且未被任何文档引用」；删除仍需具名责任人批准"
-                "（owner=R-G3.5-4 未定），本脚本不执行删除。",
+        "note": "candidates 仅为「未入库 + 超过保留期 + 未被任何文档引用」；已入库冻结基线"
+                "（git_tracked_baseline）刻意保留、永不入候选。删除仍需具名责任人批准"
+                "（owner=R-G3.5-4 未定），本脚本不执行删除。"
+                "retention_below_age_span=true 表示保留期短于证据实际年龄跨度，"
+                "此时候选数只反映人为阈值、不代表真实过期。",
     }
     if args.json:
         print(json.dumps(report, ensure_ascii=False, indent=2, default=str))
     else:
         print(f"证据目录 {report['evidence_dir']}：{total} 个文件、{total_bytes/1e6:.1f} MB，"
-              f"最老 {report['oldest']} / 最新 {report['newest']}")
-        print(f"被引用 {report['referenced_files']}；保留期内未清孤儿 {orphans_within}；"
-              f"超 {args.retention_days} 天且无引用→回收候选 {len(candidates)} 个 "
+              f"最老 {report['oldest']} / 最新 {report['newest']}（跨 {age_span_days} 天）")
+        print(f"已入库冻结基线 {tracked_n}（刻意保留，永不入候选）；未入库 {untracked_n}；"
+              f"被引用 {report['referenced_files']}")
+        print(f"超 {args.retention_days} 天且无引用→回收候选 {len(candidates)} 个 "
               f"({report['recycle_candidates_bytes']/1e6:.1f} MB)")
+        if threshold_is_binding:
+            print(f"[注意] 保留期 {args.retention_days} 天 < 证据年龄跨度 {age_span_days} 天："
+                  f"候选数只反映人为阈值，不代表真实过期，勿据此判定\"超期\"。")
         print("按扩展名：", ", ".join(f"{k}={v}" for k, v in report['by_ext'].items()))
         print("（只读盘点，未删除任何文件/容器/卷；owner 留 R-G3.5-4 责任人）")
     return 0
