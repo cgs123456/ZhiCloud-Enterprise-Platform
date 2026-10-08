@@ -63,13 +63,6 @@ GROUP_RULES = [
      "（.ps1 ↔ 门禁 .py ↔ tests .py），分开提交会让其中任意一笔单独 checkout 时缺工件，故并为一组。"
      "CI workflow 与根 pom.xml 也归这组：它们是**调用**门禁脚本的那一侧，且此前没有任何规则认领它们"
      "（真树上一 dirty 就报 unclassified，是实测踩到的）。"),
-    (7, "docs-archive",
-     lambda p: p in ("code-review-report.md", "FULL-MARKS-PLAN.md", "ci-build-fix-analysis_2026-08-02.md",
-                     "docs/business-optimization-plan.md", "docs/zhiyun-review-2026-08-02.md"),
-     "历史档案（2026-08 的复查/计划文档，对外零引用，§12.143 加状态头不删）。"
-     "不并入 docs-platform：那组带证据排除与台账六要素口径，与这批定型档案无关，混入只会让"
-     "引用图把已过时批次算进判定。精确枚举路径——命中面走全仓 universe，5 份提交后规则仍非空转；"
-     "未来再归档同类文件在此续列。"),
 ]
 
 # 一条引用文本里可能出现的"工件名"。只用于把引用落到具体仓库文件上，不做语义猜测。

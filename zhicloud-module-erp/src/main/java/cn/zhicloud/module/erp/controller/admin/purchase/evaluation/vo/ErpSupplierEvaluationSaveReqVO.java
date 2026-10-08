@@ -1,6 +1,7 @@
 package cn.zhicloud.module.erp.controller.admin.purchase.evaluation.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -48,6 +49,7 @@ public class ErpSupplierEvaluationSaveReqVO {
     private String remark;
 
     @Schema(description = "评估指标项列表")
+    @Valid
     private List<Item> items;
 
     @Schema(description = "评估指标项")
