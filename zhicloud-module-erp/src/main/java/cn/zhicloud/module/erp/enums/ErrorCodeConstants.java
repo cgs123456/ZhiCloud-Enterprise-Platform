@@ -203,6 +203,9 @@ ErrorCode PURCHASE_ORDER_ITEM_RETURN_FAIL_IN_EXCEED = new ErrorCode(1_030_101_00
     ErrorCode PERIOD_CLOSE_FAIL_NOT_DO_MONTH_CHECK = new ErrorCode(1_030_700_005, "会计期间({})未执行月末检查，无法执行调汇/损益结转");
     ErrorCode PERIOD_CLOSE_ALREADY_EXECUTED = new ErrorCode(1_030_700_006, "会计期间({})的{}已执行过，不可重复执行");
     ErrorCode PERIOD_CLOSE_FAIL_NOT_DO_TRANSFER = new ErrorCode(1_030_700_007, "会计期间({})未执行损益结转，无法关账");
+    // 关账前置校验补全：月末检查只数六种业务单据的未审核数，GL 凭证（草稿/已反审核=未过账）
+    // 不在其中——只数一半的护栏，会让草稿凭证存活到关账后被 resolvePeriod 永久搁死（§12.145）
+    ErrorCode PERIOD_CLOSE_FAIL_EXISTS_UNPOSTED_VOUCHER = new ErrorCode(1_030_700_008, "会计期间({})存在 {} 张未过账凭证（草稿/已反审核），无法关账");
 
     // ========== ERP 会计科目 1-030-701-000 (P0-7) ==========
     ErrorCode GL_ACCOUNT_NOT_EXISTS = new ErrorCode(1_030_701_000, "会计科目不存在");
