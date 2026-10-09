@@ -6784,3 +6784,34 @@ DB/Redis/RabbitMQ 复用隔离 `zc-live-*`（MySQL 8.4.11）。
 **仍未闭环（不翻状态）**：第 2 项的生产等价环境验证、第 3 项的真实干净 Windows 机完整安装；其余生产迁移规模、非 MySQL 方言、真实 TLS、灾备/SLO 等仍按 `00-README.md` 的后续清单执行。
 
 **状态不翻**：production_ready=false、gate3_passed=false、independent_review=false、Go/No-Go=No-Go。
+
+---
+
+## 12.164 2026-10-09 第 2/3 项收口：单机多副本生产形态 E2E + 真实干净 Windows 全安装
+
+本节只补证据与边界，不翻任何生产状态。第 1/4/5 项已在 §12.163.7 闭环；本节完成第 2 项可执行部分与第 3 项。
+
+### 一、第 2 项：单机多副本 + Nginx TLS 生产形态 E2E（部分闭环，生产等价仍 OPEN）
+
+- 拓扑：`nginx:1.27-alpine` TLS `https://127.0.0.1:8443`（自签 `CN=localhost`，SAN `localhost/127.0.0.1`，TLSv1.2/1.3），上游 `zc-live-server:48080` + `zc-live-server-2:48080`，`max_fails=2 fail_timeout=5s`；数据层为隔离 MySQL 8.4.11 / Redis / RabbitMQ。
+- 本轮可复验读数（干净 VM 直连 48080，原始 JSON `vm-e2e-results.json` / `vm-reconcile-results.json`）：登录 `code=0, userId=225`；权限 `code=0, user=zcadmin, roles=1, permissions=1232`；刷新令牌 `code=0, userId=225`；库存对账 `code=0, consistent=true, mismatchCount=0`（注入差异已清理）。
+- 注入差异链路：`erp_stock` product/warehouse `990001` 数量 7 + `mdm_cross_ref` 后，`run` 返回 `consistent=false, mismatchCount=1`；人工 `POST /erp/inventory-reconcile/alert` 返回 `alertCode=0, pushed=true`；本地 webhook 收到 `source=inventory-reconcile, consistent=false, mismatches=1`，原始载荷 `webhook.log` SHA-256 `4D826EF0A915F5ABDA2436B3EF437074774E6B867BF5DCACE6938850E5654237`。
+- 故障转移：上一轮同拓扑停止 `zc-live-server` 后经 Nginx TLS 仍取得 `loginCode=0, runCode=0`；这是单机双副本切换，不是多节点/真实网络分区/HA。
+- 边界：单机 Docker 多副本 + 自签 TLS ≠ 生产等价；真实多节点、真实 CA、规模、网络/数据库/进程故障注入、生产网关仍未验证。因此**第 2 项保持 OPEN**，但已从“只有隔离容器读数”推进到“生产形态拓扑 + TLS + 故障转移 + webhook + 干净 VM 登录/对账复验”。
+- 证据目录：`docs/enterprise-platform/evidence/production/prodlike-e2e-20261009/`（README SHA-256 `F1DD62D6CB05AE78DD505E01405890507B3D44768BA26BDD123FD94CAA6907D2`）。
+
+### 二、第 3 项：真实干净 Windows 机 `.bat` 全安装（闭环，限定 Windows Server 2025 Evaluation VM）
+
+- 干净 VM：`ZC-CLEAN`，Windows Server 2025 Datacenter Evaluation `10.0.26100.0`；初始无 Java/Maven/Node/pnpm，联网正常。
+- 工具链：Temurin JDK `21.0.12.1+1`、Maven `3.9.11`、Node `22.22.2`、pnpm `11.25.0`。
+- 后端：`start-backend.bat` 在空 Maven 本地仓库下真实构建。第一次在 2 GB VM 上到 CRM 打包报 `Java heap space`（`build-fail.txt`）；设置 `MAVEN_OPTS=-Xmx2048m` 后同一 `.bat` 重跑 `BUILD SUCCESS`（`Total time: 07:41 min`），Tomcat 48080/48090 启动，`Started ZhiCloudServerApplication in 215.8 seconds`，`http://127.0.0.1:48080/` HTTP 200。
+- 前端：`start-frontend.bat` 在空 `node_modules`、空 pnpm store 下执行，`pnpm install` 下载 1147 包 `Done in 1m 8.6s`，Vite 8.1.4 `ready in 17985 ms`，`http://127.0.0.1/` HTTP 200，响应长度 150471。
+- 边界：Windows Server 2025 Evaluation VM，不是 Windows 10/11 桌面；2 GB 内存必须显式 `MAVEN_OPTS`；数据层仍为宿主隔离 MySQL/Redis/RabbitMQ；不代表生产部署、K8s、HA、备份或独立复核。
+- 证据目录：`docs/enterprise-platform/evidence/production/clean-windows-bat-install-20261009/`（README SHA-256 `5329A5A8B2AA9766B83816323CAFE5E1E3B34BEB92229AB47E0BCA426136F4A8`；前端冷安装 `frontend-wait-result.txt` SHA-256 `D9B4FC16FFD1153743B108E1DCB527AC6FF30D7212411666E5A788DCA6B0D7D1`；启动行 `startup-lines.txt` SHA-256 `651B979CC15EF86B0C0E9558758031BFFBC39FD6AE187EAAEDB823710D7F5756`）。
+
+### 三、第 4/5 项状态确认
+
+- 第 4 项对账告警：仓库内只有 `scripts/production/push_inventory_reconcile_alert_manual.bat`，无 `schtasks`、Quartz、CI cron、K8s CronJob；管理后台保留「执行对账」「手动推送告警」两个按钮，后端 `POST /erp/inventory-reconcile/alert` 仅人工触发。
+- 第 5 项 OAuth2 空 Secret：按 A 方案闭环，非空 secret 必须匹配，公开客户端仍可空；§12.163.7 的 23/23 测试结论保持有效。
+
+**状态不翻**：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、Go/No-Go=`No-Go`。第 2 项生产等价环境验证、真实多节点/规模/故障注入仍为 OPEN；第 3 项已在上述 Windows Server 2025 VM 口径内闭环。

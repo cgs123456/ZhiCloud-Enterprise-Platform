@@ -241,6 +241,7 @@ controls_failed = 0
 
 > 本轮收口：第 1 项 V77 自动幂等已闭环（正文 `information_schema` + 动态 `ALTER TABLE`，旧 checksum `1776434009` 仅做一次性受控对齐，当前 checksum `-282762132`；定向测试 36/36，隔离 MySQL 重复执行与恢复脚本 6/6 通过）；第 4 项对账告警按所有者要求改为**纯手动按钮/手动脚本，无 Quartz、无 Windows Task Scheduler、无 CI 定时**，真实 webhook 推送通过；第 5 项 `validOAuthClientFromCache` 空 Secret 跳过校验按 A 方案闭环（非空 secret 必须匹配，公开客户端仍可空；定向测试 23/23）。第 2 项（生产等价登录/业务 E2E）与第 3 项（真实干净 Windows 机完整安装）只完成隔离容器/空缓存冷启动的可执行部分，仍不能宣称生产等价；前端 `pnpm build:local` 成功、Vite HTTP 200。附带修复 `SkillCatalogValidator` 启动期租户上下文死代码（3/3）。详见 handoff §12.163.7。
 
+> 2026-10-09 第 2/3 项收口补充：第 3 项已在**真实干净 Windows Server 2025 Datacenter Evaluation VM** 上闭环——初始无 Java/Maven/Node/pnpm，`start-backend.bat` 在空 Maven 仓库下构建成功并启动 48080/48090，`start-frontend.bat` 在空 pnpm store 下下载 1147 包并以 Vite 8.1.4 启动，`http://127.0.0.1/` HTTP 200；登录/权限/刷新令牌/库存对账均 `code=0`。边界：2 GB VM 需 `MAVEN_OPTS=-Xmx2048m`，且是 Windows Server 2025 Evaluation，不是 Windows 10/11 桌面。第 2 项在单机多副本 + Nginx TLS 入口 + 故障转移 + webhook 上取得生产形态证据，但真实多节点、真实 CA、规模、网络/数据库/进程故障注入仍未验证，因此**第 2 项保持 OPEN**；第 4 项确认纯手动按钮/手动脚本，无任何自动化。证据目录 `docs/enterprise-platform/evidence/production/prodlike-e2e-20261009/` 与 `docs/enterprise-platform/evidence/production/clean-windows-bat-install-20261009/`；详见 handoff §12.164。状态不翻：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、`Go/No-Go=No-Go`。
 下一步必须先完成：
 
 1. 在 MySQL 沙箱证据基础上，进入预发/生产等量库验证 V115-V121 的 MDL、锁等待、复制延迟、磁盘空间、回滚和真实业务数据，并对 V121 的空白登记/legacy NULL 回收、lease/expiry/recovery/reconciliation 及 `ADD COLUMN` 影响做生产等价验证，同时修复存量库的 bootstrap 顺序闭环。

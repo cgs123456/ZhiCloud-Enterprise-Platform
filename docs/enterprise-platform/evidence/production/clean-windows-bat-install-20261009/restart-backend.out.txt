@@ -1,0 +1,15 @@
+﻿
+
+
+Name           : zhicloud-clean-win2025
+State          : Running
+MemoryAssigned : 2147483648
+MemoryStartup  : 2147483648
+MemoryMinimum  : 2147483648
+MemoryMaximum  : 4294967296
+
+
+
+
+backend_pid=656 maven_opts=-Xmx2048m -Dfile.encoding=UTF-8
+

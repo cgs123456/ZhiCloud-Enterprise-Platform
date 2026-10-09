@@ -1,0 +1,12 @@
+﻿{
+    "loginCode":  0,
+    "refreshCode":  0,
+    "reconcileCode":  0,
+    "consistent":  true,
+    "mismatchCount":  0,
+    "sourceCount":  0,
+    "projectionCount":  0,
+    "PSComputerName":  "zhicloud-clean-win2025",
+    "RunspaceId":  "31da650c-a21c-440c-ae06-284d84fa5324",
+    "PSShowComputerName":  true
+}

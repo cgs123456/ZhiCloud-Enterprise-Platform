@@ -1,0 +1,22 @@
+﻿{
+    "baseUrl":  "http://127.0.0.1:48080/admin-api",
+    "loginCode":  0,
+    "loginUserId":  225,
+    "accessTokenLength":  32,
+    "refreshTokenLength":  32,
+    "permissionCode":  0,
+    "permissionUser":  "zcadmin",
+    "permissionRoles":  1,
+    "permissionCount":  1232,
+    "refreshCode":  0,
+    "refreshUserId":  225,
+    "refreshAccessTokenLength":  32,
+    "reconcileCode":  401,
+    "reconcileConsistent":  null,
+    "reconcileMismatchCount":  1,
+    "reconcileSourceCount":  null,
+    "reconcileProjectionCount":  null,
+    "PSComputerName":  "zhicloud-clean-win2025",
+    "RunspaceId":  "8d33c594-1f40-4d0f-be99-947ab06607c7",
+    "PSShowComputerName":  true
+}

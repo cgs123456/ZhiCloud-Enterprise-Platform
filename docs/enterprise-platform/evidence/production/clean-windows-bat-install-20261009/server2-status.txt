@@ -1,0 +1,143 @@
+﻿=== PORT ===
+
+LocalAddress LocalPort OwningProcess
+------------ --------- -------------
+::               48080          3788
+
+
+
+=== JAVA ===
+
+  Id        CPU StartTime            WSMB
+  --        --- ---------            ----
+3788 408.703125 10/9/2026 7:37:11 PM 2922
+
+
+
+=== SERVER LOG TAIL ===
+2026-10-09 19:40:48.534 [main] [] [] [31mWARN [0;39m [36mio.micrometer.core.instrument.MeterRegistry:170[0;39m - This Gauge has been already registered (MeterId{name='druid.active.connections', tags=[tag(application=zhicloud-server),tag(datasource=slave)]}), the registration will be ignored. Note that subsequent logs will be logged at debug level.
+2026-10-09 19:40:48.701 [main] [] [] [34mINFO [0;39m [36mo.f.j.s.impl.asyncexecutor.AbstractAsyncExecutor:102[0;39m - Starting up the async job executor [org.flowable.spring.job.service.SpringAsyncExecutor] for engine bpmn
+2026-10-09 19:40:48.729 [main] [] [] [34mINFO [0;39m [36morg.apache.coyote.http11.Http11NioProtocol:168[0;39m - Starting ProtocolHandler ["http-nio-48080"]
+2026-10-09 19:40:48.729 [Thread-27] [] [] [34mINFO [0;39m [36mo.f.j.s.i.asyncexecutor.ResetExpiredJobsRunnable:63[0;39m - starting to reset expired jobs for engine bpmn
+2026-10-09 19:40:48.731 [Thread-25] [] [] [34mINFO [0;39m [36mo.f.j.s.i.a.AcquireAsyncJobsDueRunnable:106[0;39m - starting to acquire async jobs due for engine bpmn
+2026-10-09 19:40:48.731 [Thread-26] [] [] [34mINFO [0;39m [36mo.f.j.s.i.asyncexecutor.AcquireTimerJobsRunnable:109[0;39m - starting to acquire async jobs due for engine bpmn
+2026-10-09 19:40:48.759 [main] [] [] [34mINFO [0;39m [36mo.s.boot.web.embedded.tomcat.TomcatWebServer:243[0;39m - Tomcat started on port 48080 (http) with context path '/'
+2026-10-09 19:40:49.200 [main] [] [] [34mINFO [0;39m [36mo.s.boot.web.embedded.tomcat.TomcatWebServer:111[0;39m - Tomcat initialized with port 48090 (http)
+2026-10-09 19:40:49.201 [main] [] [] [34mINFO [0;39m [36morg.apache.coyote.http11.Http11NioProtocol:168[0;39m - Initializing ProtocolHandler ["http-nio-48090"]
+2026-10-09 19:40:49.202 [main] [] [] [34mINFO [0;39m [36morg.apache.catalina.core.StandardService:168[0;39m - Starting service [Tomcat]
+2026-10-09 19:40:49.203 [main] [] [] [34mINFO [0;39m [36morg.apache.catalina.core.StandardEngine:168[0;39m - Starting Servlet engine: [Apache Tomcat/10.1.55]
+2026-10-09 19:40:49.215 [main] [] [] [34mINFO [0;39m [36mo.a.c.c.ContainerBase.[Tomcat-1].[localhost].[/]:168[0;39m - Initializing Spring embedded WebApplicationContext
+2026-10-09 19:40:49.216 [main] [] [] [34mINFO [0;39m [36mo.s.b.w.s.c.ServletWebServerApplicationContext:301[0;39m - Root WebApplicationContext: initialization completed in 414 ms
+2026-10-09 19:40:49.269 [main] [] [] [34mINFO [0;39m [36mo.s.b.actuate.endpoint.web.EndpointLinksResolver:60[0;39m - Exposing 4 endpoints beneath base path '/actuator'
+2026-10-09 19:40:49.415 [main] [] [] [34mINFO [0;39m [36morg.apache.coyote.http11.Http11NioProtocol:168[0;39m - Starting ProtocolHandler ["http-nio-48090"]
+2026-10-09 19:40:49.417 [main] [] [] [34mINFO [0;39m [36mo.s.boot.web.embedded.tomcat.TomcatWebServer:243[0;39m - Tomcat started on port 48090 (http) with context path '/'
+2026-10-09 19:40:49.499 [main] [] [] [34mINFO [0;39m [36mcn.zhicloud.server.ZhiCloudServerApplication:59[0;39m - Started ZhiCloudServerApplication in 215.8 seconds (process running for 217.754)
+2026-10-09 19:40:49.970 [scheduling-2] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.tenant.TenantMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, name, contact_user_id, contact_name, contact_mobile, status, websites, package_id, expire_time, account_count, create_time, update_time, creator, updater, deleted FROM system_tenant WHERE deleted = 0
+2026-10-09 19:40:49.999 [scheduling-2] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.tenant.TenantMapper.selectList:135[0;39m - ==> Parameters: 
+2026-10-09 19:40:50.076 [main] [] [] [34mINFO [0;39m [36mc.z.m.a.service.skill.SkillCatalogValidator:84[0;39m - [SkillCatalogValidator][æŠ€èƒ½ç›®å½•æ ¡éªŒå®Œæˆï¼ŒWorker æ•°=4ï¼Œç¼ºå¤±ç›®å½•çš„å·¥å…·æ•°=0]
+2026-10-09 19:40:50.101 [scheduling-2] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.tenant.TenantMapper.selectList:135[0;39m - <==      Total: 3
+2026-10-09 19:40:50.534 [pool-9-thread-1] [] [] [34mINFO [0;39m [36mc.z.framework.banner.core.BannerApplicationRunner:23[0;39m - 
+----------------------------------------------------------
+	é¡¹ç›®å¯åŠ¨æˆåŠŸï¼
+	æŽ¥å£æ–‡æ¡£: 	https://doc.zhicloud.cn/api-doc/ 
+	å¼€å‘æ–‡æ¡£: 	https://doc.zhicloud.cn 
+	è§†é¢‘æ•™ç¨‹: 	https://t.zsxq.com/02Yf6M7Qn 
+----------------------------------------------------------
+2026-10-09 19:40:50.538 [pool-9-thread-1] [] [] [34mINFO [0;39m [36mc.z.framework.banner.core.BannerApplicationRunner:35[0;39m - [æŠ¥è¡¨æ¨¡å— zhicloud-module-report - å·²ç¦ç”¨][å‚è€ƒ https://doc.zhicloud.cn/report/ å¼€å¯]
+2026-10-09 19:40:50.542 [pool-9-thread-1] [] [] [34mINFO [0;39m [36mc.z.framework.banner.core.BannerApplicationRunner:43[0;39m - [å•†åŸŽç³»ç»Ÿ zhicloud-module-mall - å·²ç¦ç”¨][å‚è€ƒ https://doc.zhicloud.cn/mall/build/ å¼€å¯]
+2026-10-09 19:40:50.550 [pool-9-thread-1] [] [] [34mINFO [0;39m [36mc.z.framework.banner.core.BannerApplicationRunner:63[0;39m - [å¾®ä¿¡å…¬ä¼—å· zhicloud-module-mp - å·²ç¦ç”¨][å‚è€ƒ https://doc.zhicloud.cn/mp/build/ å¼€å¯]
+2026-10-09 19:40:50.553 [pool-9-thread-1] [] [] [34mINFO [0;39m [36mc.z.framework.banner.core.BannerApplicationRunner:67[0;39m - [æ”¯ä»˜ç³»ç»Ÿ zhicloud-module-pay - å·²ç¦ç”¨][å‚è€ƒ https://doc.zhicloud.cn/pay/build/ å¼€å¯]
+2026-10-09 19:40:50.556 [pool-9-thread-1] [] [] [34mINFO [0;39m [36mc.z.framework.banner.core.BannerApplicationRunner:79[0;39m - [IM å³æ—¶é€šè®¯ zhicloud-module-im - å·²ç¦ç”¨][å‚è€ƒ https://doc.zhicloud.cn/im/build/ å¼€å¯]
+2026-10-09 19:41:00.089 [virtual-247] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, machinery_id, iot_device_pk, iot_product_id, protocol_type, point_config, enabled, remark, create_time, update_time, creator, updater, deleted FROM mes_dv_scada_config WHERE deleted = 0 AND (enabled = ?) AND tenant_id = 1
+2026-10-09 19:41:00.105 [virtual-249] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, machinery_id, iot_device_pk, iot_product_id, protocol_type, point_config, enabled, remark, create_time, update_time, creator, updater, deleted FROM mes_dv_scada_config WHERE deleted = 0 AND (enabled = ?) AND tenant_id = 122
+2026-10-09 19:41:00.119 [virtual-245] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, machinery_id, iot_device_pk, iot_product_id, protocol_type, point_config, enabled, remark, create_time, update_time, creator, updater, deleted FROM mes_dv_scada_config WHERE deleted = 0 AND (enabled = ?) AND tenant_id = 121 ORDER BY id DESC
+2026-10-09 19:41:00.121 [virtual-245] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==> Parameters: 0(Integer)
+2026-10-09 19:41:00.123 [virtual-248] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, machinery_id, iot_device_pk, iot_product_id, protocol_type, point_config, enabled, remark, create_time, update_time, creator, updater, deleted FROM mes_dv_scada_config WHERE deleted = 0 AND (enabled = ?) AND tenant_id = 121
+2026-10-09 19:41:00.124 [virtual-248] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==> Parameters: 0(Integer)
+2026-10-09 19:41:00.135 [virtual-244] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, machinery_id, iot_device_pk, iot_product_id, protocol_type, point_config, enabled, remark, create_time, update_time, creator, updater, deleted FROM mes_dv_scada_config WHERE deleted = 0 AND (enabled = ?) AND tenant_id = 1 ORDER BY id DESC
+2026-10-09 19:41:00.136 [virtual-244] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==> Parameters: 0(Integer)
+2026-10-09 19:41:00.138 [virtual-248] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - <==      Total: 0
+2026-10-09 19:41:00.139 [virtual-245] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - <==      Total: 0
+2026-10-09 19:41:00.143 [virtual-246] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, machinery_id, iot_device_pk, iot_product_id, protocol_type, point_config, enabled, remark, create_time, update_time, creator, updater, deleted FROM mes_dv_scada_config WHERE deleted = 0 AND (enabled = ?) AND tenant_id = 122 ORDER BY id DESC
+2026-10-09 19:41:00.146 [virtual-246] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==> Parameters: 0(Integer)
+2026-10-09 19:41:00.147 [virtual-244] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - <==      Total: 0
+2026-10-09 19:41:00.151 [virtual-246] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - <==      Total: 0
+2026-10-09 19:41:00.153 [virtual-247] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==> Parameters: 0(Integer)
+2026-10-09 19:41:00.154 [virtual-249] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==> Parameters: 0(Integer)
+2026-10-09 19:41:00.158 [virtual-247] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - <==      Total: 0
+2026-10-09 19:41:00.160 [virtual-249] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - <==      Total: 0
+2026-10-09 19:41:30.041 [virtual-252] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, machinery_id, iot_device_pk, iot_product_id, protocol_type, point_config, enabled, remark, create_time, update_time, creator, updater, deleted FROM mes_dv_scada_config WHERE deleted = 0 AND (enabled = ?) AND tenant_id = 121
+2026-10-09 19:41:30.042 [virtual-253] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, machinery_id, iot_device_pk, iot_product_id, protocol_type, point_config, enabled, remark, create_time, update_time, creator, updater, deleted FROM mes_dv_scada_config WHERE deleted = 0 AND (enabled = ?) AND tenant_id = 122
+2026-10-09 19:41:30.043 [virtual-252] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==> Parameters: 0(Integer)
+2026-10-09 19:41:30.043 [virtual-253] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==> Parameters: 0(Integer)
+2026-10-09 19:41:30.042 [virtual-251] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, machinery_id, iot_device_pk, iot_product_id, protocol_type, point_config, enabled, remark, create_time, update_time, creator, updater, deleted FROM mes_dv_scada_config WHERE deleted = 0 AND (enabled = ?) AND tenant_id = 1
+2026-10-09 19:41:30.044 [virtual-251] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==> Parameters: 0(Integer)
+2026-10-09 19:41:30.048 [virtual-251] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - <==      Total: 0
+2026-10-09 19:41:30.049 [virtual-253] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - <==      Total: 0
+2026-10-09 19:41:30.048 [virtual-252] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - <==      Total: 0
+2026-10-09 19:41:50.314 [virtual-255] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.tenant.TenantMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, name, contact_user_id, contact_name, contact_mobile, status, websites, package_id, expire_time, account_count, create_time, update_time, creator, updater, deleted FROM system_tenant WHERE deleted = 0
+2026-10-09 19:41:50.315 [virtual-255] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.tenant.TenantMapper.selectList:135[0;39m - ==> Parameters: 
+2026-10-09 19:41:50.320 [virtual-255] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.tenant.TenantMapper.selectList:135[0;39m - <==      Total: 3
+2026-10-09 19:42:00.033 [virtual-265] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, machinery_id, iot_device_pk, iot_product_id, protocol_type, point_config, enabled, remark, create_time, update_time, creator, updater, deleted FROM mes_dv_scada_config WHERE deleted = 0 AND (enabled = ?) AND tenant_id = 121 ORDER BY id DESC
+2026-10-09 19:42:00.034 [virtual-265] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==> Parameters: 0(Integer)
+2026-10-09 19:42:00.037 [virtual-265] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - <==      Total: 0
+2026-10-09 19:42:00.039 [virtual-260] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, machinery_id, iot_device_pk, iot_product_id, protocol_type, point_config, enabled, remark, create_time, update_time, creator, updater, deleted FROM mes_dv_scada_config WHERE deleted = 0 AND (enabled = ?) AND tenant_id = 1
+2026-10-09 19:42:00.039 [virtual-262] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, machinery_id, iot_device_pk, iot_product_id, protocol_type, point_config, enabled, remark, create_time, update_time, creator, updater, deleted FROM mes_dv_scada_config WHERE deleted = 0 AND (enabled = ?) AND tenant_id = 122
+2026-10-09 19:42:00.039 [virtual-260] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==> Parameters: 0(Integer)
+2026-10-09 19:42:00.039 [virtual-262] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==> Parameters: 0(Integer)
+2026-10-09 19:42:00.040 [virtual-261] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, machinery_id, iot_device_pk, iot_product_id, protocol_type, point_config, enabled, remark, create_time, update_time, creator, updater, deleted FROM mes_dv_scada_config WHERE deleted = 0 AND (enabled = ?) AND tenant_id = 121
+2026-10-09 19:42:00.040 [virtual-264] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, machinery_id, iot_device_pk, iot_product_id, protocol_type, point_config, enabled, remark, create_time, update_time, creator, updater, deleted FROM mes_dv_scada_config WHERE deleted = 0 AND (enabled = ?) AND tenant_id = 1 ORDER BY id DESC
+2026-10-09 19:42:00.039 [virtual-266] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, machinery_id, iot_device_pk, iot_product_id, protocol_type, point_config, enabled, remark, create_time, update_time, creator, updater, deleted FROM mes_dv_scada_config WHERE deleted = 0 AND (enabled = ?) AND tenant_id = 122 ORDER BY id DESC
+2026-10-09 19:42:00.040 [virtual-261] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==> Parameters: 0(Integer)
+2026-10-09 19:42:00.040 [virtual-264] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==> Parameters: 0(Integer)
+2026-10-09 19:42:00.041 [virtual-266] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==> Parameters: 0(Integer)
+2026-10-09 19:42:00.042 [virtual-262] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - <==      Total: 0
+2026-10-09 19:42:00.042 [virtual-260] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - <==      Total: 0
+2026-10-09 19:42:00.043 [virtual-264] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - <==      Total: 0
+2026-10-09 19:42:00.043 [virtual-261] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - <==      Total: 0
+2026-10-09 19:42:00.047 [virtual-266] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - <==      Total: 0
+2026-10-09 19:42:30.027 [virtual-268] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, machinery_id, iot_device_pk, iot_product_id, protocol_type, point_config, enabled, remark, create_time, update_time, creator, updater, deleted FROM mes_dv_scada_config WHERE deleted = 0 AND (enabled = ?) AND tenant_id = 1
+2026-10-09 19:42:30.031 [virtual-268] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==> Parameters: 0(Integer)
+2026-10-09 19:42:30.034 [virtual-269] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, machinery_id, iot_device_pk, iot_product_id, protocol_type, point_config, enabled, remark, create_time, update_time, creator, updater, deleted FROM mes_dv_scada_config WHERE deleted = 0 AND (enabled = ?) AND tenant_id = 121
+2026-10-09 19:42:30.035 [virtual-269] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==> Parameters: 0(Integer)
+2026-10-09 19:42:30.036 [virtual-270] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, machinery_id, iot_device_pk, iot_product_id, protocol_type, point_config, enabled, remark, create_time, update_time, creator, updater, deleted FROM mes_dv_scada_config WHERE deleted = 0 AND (enabled = ?) AND tenant_id = 122
+2026-10-09 19:42:30.037 [virtual-270] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==> Parameters: 0(Integer)
+2026-10-09 19:42:30.037 [virtual-268] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - <==      Total: 0
+2026-10-09 19:42:30.040 [virtual-269] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - <==      Total: 0
+2026-10-09 19:42:30.040 [virtual-270] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - <==      Total: 0
+2026-10-09 19:42:50.361 [virtual-272] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.tenant.TenantMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, name, contact_user_id, contact_name, contact_mobile, status, websites, package_id, expire_time, account_count, create_time, update_time, creator, updater, deleted FROM system_tenant WHERE deleted = 0
+2026-10-09 19:42:50.364 [virtual-272] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.tenant.TenantMapper.selectList:135[0;39m - ==> Parameters: 
+2026-10-09 19:42:50.375 [virtual-272] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.tenant.TenantMapper.selectList:135[0;39m - <==      Total: 3
+2026-10-09 19:43:00.041 [virtual-280] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, machinery_id, iot_device_pk, iot_product_id, protocol_type, point_config, enabled, remark, create_time, update_time, creator, updater, deleted FROM mes_dv_scada_config WHERE deleted = 0 AND (enabled = ?) AND tenant_id = 122 ORDER BY id DESC
+2026-10-09 19:43:00.042 [virtual-280] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==> Parameters: 0(Integer)
+2026-10-09 19:43:00.049 [virtual-281] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, machinery_id, iot_device_pk, iot_product_id, protocol_type, point_config, enabled, remark, create_time, update_time, creator, updater, deleted FROM mes_dv_scada_config WHERE deleted = 0 AND (enabled = ?) AND tenant_id = 1
+2026-10-09 19:43:00.048 [virtual-282] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, machinery_id, iot_device_pk, iot_product_id, protocol_type, point_config, enabled, remark, create_time, update_time, creator, updater, deleted FROM mes_dv_scada_config WHERE deleted = 0 AND (enabled = ?) AND tenant_id = 121
+2026-10-09 19:43:00.050 [virtual-282] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==> Parameters: 0(Integer)
+2026-10-09 19:43:00.051 [virtual-281] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==> Parameters: 0(Integer)
+2026-10-09 19:43:00.052 [virtual-280] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - <==      Total: 0
+2026-10-09 19:43:00.056 [virtual-279] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, machinery_id, iot_device_pk, iot_product_id, protocol_type, point_config, enabled, remark, create_time, update_time, creator, updater, deleted FROM mes_dv_scada_config WHERE deleted = 0 AND (enabled = ?) AND tenant_id = 121 ORDER BY id DESC
+2026-10-09 19:43:00.057 [virtual-283] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, machinery_id, iot_device_pk, iot_product_id, protocol_type, point_config, enabled, remark, create_time, update_time, creator, updater, deleted FROM mes_dv_scada_config WHERE deleted = 0 AND (enabled = ?) AND tenant_id = 122
+2026-10-09 19:43:00.057 [virtual-282] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - <==      Total: 0
+2026-10-09 19:43:00.057 [virtual-283] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==> Parameters: 0(Integer)
+2026-10-09 19:43:00.057 [virtual-279] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==> Parameters: 0(Integer)
+2026-10-09 19:43:00.058 [virtual-278] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, machinery_id, iot_device_pk, iot_product_id, protocol_type, point_config, enabled, remark, create_time, update_time, creator, updater, deleted FROM mes_dv_scada_config WHERE deleted = 0 AND (enabled = ?) AND tenant_id = 1 ORDER BY id DESC
+2026-10-09 19:43:00.058 [virtual-281] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - <==      Total: 0
+2026-10-09 19:43:00.059 [virtual-278] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==> Parameters: 0(Integer)
+2026-10-09 19:43:00.060 [virtual-283] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - <==      Total: 0
+2026-10-09 19:43:00.061 [virtual-279] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - <==      Total: 0
+2026-10-09 19:43:00.062 [virtual-278] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - <==      Total: 0
+2026-10-09 19:43:30.018 [virtual-286] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, machinery_id, iot_device_pk, iot_product_id, protocol_type, point_config, enabled, remark, create_time, update_time, creator, updater, deleted FROM mes_dv_scada_config WHERE deleted = 0 AND (enabled = ?) AND tenant_id = 121
+2026-10-09 19:43:30.020 [virtual-286] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==> Parameters: 0(Integer)
+2026-10-09 19:43:30.021 [virtual-287] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, machinery_id, iot_device_pk, iot_product_id, protocol_type, point_config, enabled, remark, create_time, update_time, creator, updater, deleted FROM mes_dv_scada_config WHERE deleted = 0 AND (enabled = ?) AND tenant_id = 122
+2026-10-09 19:43:30.020 [virtual-285] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, machinery_id, iot_device_pk, iot_product_id, protocol_type, point_config, enabled, remark, create_time, update_time, creator, updater, deleted FROM mes_dv_scada_config WHERE deleted = 0 AND (enabled = ?) AND tenant_id = 1
+2026-10-09 19:43:30.036 [virtual-285] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==> Parameters: 0(Integer)
+2026-10-09 19:43:30.036 [virtual-286] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - <==      Total: 0
+2026-10-09 19:43:30.036 [virtual-287] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - ==> Parameters: 0(Integer)
+2026-10-09 19:43:30.040 [virtual-285] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - <==      Total: 0
+2026-10-09 19:43:30.042 [virtual-287] [] [] [39mDEBUG[0;39m [36mc.z.m.m.d.m.d.s.MesDvScadaConfigMapper.selectList:135[0;39m - <==      Total: 0
+
+=== SERVER ERR TAIL ===
+
+=== HTTP ===
+HTTP=200 LEN=38
+

@@ -1,0 +1,264 @@
+﻿=== CONSOLE LAST 260 ===
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-task-service-api/8.0.0/flowable-task-service-api-8.0.0.jar (16 kB at 23 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-job-service/8.0.0/flowable-job-service-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-eventsubscription-service/8.0.0/flowable-eventsubscription-service-8.0.0.jar (72 kB at 98 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-job-service-api/8.0.0/flowable-job-service-api-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-job-service-api/8.0.0/flowable-job-service-api-8.0.0.jar (11 kB at 14 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-batch-service/8.0.0/flowable-batch-service-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-task-service/8.0.0/flowable-task-service-8.0.0.jar (159 kB at 189 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-batch-service-api/8.0.0/flowable-batch-service-api-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-engine-common/8.0.0/flowable-engine-common-8.0.0.jar (822 kB at 921 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-idm-api/8.0.0/flowable-idm-api-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-batch-service/8.0.0/flowable-batch-service-8.0.0.jar (43 kB at 47 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-idm-engine/8.0.0/flowable-idm-engine-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-batch-service-api/8.0.0/flowable-batch-service-api-8.0.0.jar (6.5 kB at 7.0 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-idm-engine-configurator/8.0.0/flowable-idm-engine-configurator-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-idm-api/8.0.0/flowable-idm-api-8.0.0.jar (17 kB at 18 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-cmmn-api/8.0.0/flowable-cmmn-api-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-idm-engine-configurator/8.0.0/flowable-idm-engine-configurator-8.0.0.jar (4.0 kB at 4.1 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-cmmn-model/8.0.0/flowable-cmmn-model-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-job-service/8.0.0/flowable-job-service-8.0.0.jar (329 kB at 325 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-dmn-api/8.0.0/flowable-dmn-api-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-dmn-api/8.0.0/flowable-dmn-api-8.0.0.jar (23 kB at 21 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-dmn-model/8.0.0/flowable-dmn-model-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-idm-engine/8.0.0/flowable-idm-engine-8.0.0.jar (210 kB at 190 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-form-model/8.0.0/flowable-form-model-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-cmmn-model/8.0.0/flowable-cmmn-model-8.0.0.jar (81 kB at 73 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-form-api/8.0.0/flowable-form-api-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-cmmn-api/8.0.0/flowable-cmmn-api-8.0.0.jar (73 kB at 66 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-content-api/8.0.0/flowable-content-api-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-dmn-model/8.0.0/flowable-dmn-model-8.0.0.jar (34 kB at 30 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-http-common/8.0.0/flowable-http-common-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-form-model/8.0.0/flowable-form-model-8.0.0.jar (11 kB at 9.2 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-mail/8.0.0/flowable-mail-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-form-api/8.0.0/flowable-form-api-8.0.0.jar (14 kB at 12 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/eclipse/angus/angus-mail/2.0.5/angus-mail-2.0.5.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-content-api/8.0.0/flowable-content-api-8.0.0.jar (10 kB at 8.6 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/jakarta/mail/jakarta.mail-api/2.1.5/jakarta.mail-api-2.1.5.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-mail/8.0.0/flowable-mail-8.0.0.jar (24 kB at 19 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/joda-time/joda-time/2.14.0/joda-time-2.14.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-http-common/8.0.0/flowable-http-common-8.0.0.jar (61 kB at 49 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-spring/8.0.0/flowable-spring-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-spring/8.0.0/flowable-spring-8.0.0.jar (25 kB at 19 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-job-spring-service/8.0.0/flowable-job-spring-service-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-job-spring-service/8.0.0/flowable-job-spring-service-8.0.0.jar (5.4 kB at 3.8 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/springframework/spring-orm/6.2.19/spring-orm-6.2.19.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/jakarta/mail/jakarta.mail-api/2.1.5/jakarta.mail-api-2.1.5.jar (237 kB at 158 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-spring-boot-starter-actuator/8.0.0/flowable-spring-boot-starter-actuator-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-spring-boot-starter-actuator/8.0.0/flowable-spring-boot-starter-actuator-8.0.0.jar (4.9 kB at 3.1 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-image-generator/8.0.0/flowable-image-generator-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/eclipse/angus/angus-mail/2.0.5/angus-mail-2.0.5.jar (501 kB at 313 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-bpmn-model/8.0.0/flowable-bpmn-model-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/springframework/spring-orm/6.2.19/spring-orm-6.2.19.jar (235 kB at 142 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/tools/jackson/core/jackson-databind/3.0.1/jackson-databind-3.0.1.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/joda-time/joda-time/2.14.0/joda-time-2.14.0.jar (640 kB at 371 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/tools/jackson/core/jackson-core/3.0.1/jackson-core-3.0.1.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-image-generator/8.0.0/flowable-image-generator-8.0.0.jar (87 kB at 50 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-bpmn-layout/8.0.0/flowable-bpmn-layout-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-bpmn-model/8.0.0/flowable-bpmn-model-8.0.0.jar (140 kB at 80 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/com/github/vlsi/mxgraph/jgraphx/4.2.2/jgraphx-4.2.2.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-bpmn-layout/8.0.0/flowable-bpmn-layout-8.0.0.jar (20 kB at 11 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-engine-configurator/8.0.0/flowable-engine-configurator-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-engine-configurator/8.0.0/flowable-engine-configurator-8.0.0.jar (8.3 kB at 4.5 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-spring-configurator/8.0.0/flowable-spring-configurator-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-spring-configurator/8.0.0/flowable-spring-configurator-8.0.0.jar (4.2 kB at 2.2 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-app-engine-spring/8.0.0/flowable-app-engine-spring-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-app-engine-spring/8.0.0/flowable-app-engine-spring-8.0.0.jar (14 kB at 6.8 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-app-engine/8.0.0/flowable-app-engine-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-app-engine/8.0.0/flowable-app-engine-8.0.0.jar (126 kB at 59 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-app-engine-api/8.0.0/flowable-app-engine-api-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-app-engine-api/8.0.0/flowable-app-engine-api-8.0.0.jar (8.6 kB at 3.9 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/com/fasterxml/uuid/java-uuid-generator/5.1.0/java-uuid-generator-5.1.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-engine/8.0.0/flowable-engine-8.0.0.jar (2.4 MB at 1.1 MB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-spring-common/8.0.0/flowable-spring-common-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-spring-common/8.0.0/flowable-spring-common-8.0.0.jar (18 kB at 7.7 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-event-registry-spring-configurator/8.0.0/flowable-event-registry-spring-configurator-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/com/fasterxml/uuid/java-uuid-generator/5.1.0/java-uuid-generator-5.1.0.jar (56 kB at 24 kB/s)
+[INFO] Downloading from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-event-registry-spring/8.0.0/flowable-event-registry-spring-8.0.0.jar
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/com/github/vlsi/mxgraph/jgraphx/4.2.2/jgraphx-4.2.2.jar (832 kB at 355 kB/s)
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/tools/jackson/core/jackson-core/3.0.1/jackson-core-3.0.1.jar (593 kB at 252 kB/s)
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-event-registry-spring-configurator/8.0.0/flowable-event-registry-spring-configurator-8.0.0.jar (4.3 kB at 1.8 kB/s)
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/org/flowable/flowable-event-registry-spring/8.0.0/flowable-event-registry-spring-8.0.0.jar (85 kB at 35 kB/s)
+[INFO] Downloaded from huaweicloud: https://mirrors.huaweicloud.com/repository/maven/tools/jackson/core/jackson-databind/3.0.1/jackson-databind-3.0.1.jar (1.9 MB at 573 kB/s)
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ zhicloud-module-bpm ---
+[INFO] 
+[INFO] --- flatten:1.7.2:clean (flatten.clean) @ zhicloud-module-bpm ---
+[INFO] 
+[INFO] --- jacoco:0.8.12:prepare-agent (prepare-agent) @ zhicloud-module-bpm ---
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-utils/3.0.24/plexus-utils-3.0.24.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-utils/3.0.24/plexus-utils-3.0.24.pom (4.1 kB at 20 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus/4.0/plexus-4.0.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus/4.0/plexus-4.0.pom (22 kB at 104 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/sonatype/forge/forge-parent/10/forge-parent-10.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/sonatype/forge/forge-parent/10/forge-parent-10.pom (14 kB at 66 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-utils/3.4.2/plexus-utils-3.4.2.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-utils/3.4.2/plexus-utils-3.4.2.pom (8.2 kB at 43 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus/8/plexus-8.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus/8/plexus-8.pom (25 kB at 125 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/reporting/maven-reporting-api/3.0/maven-reporting-api-3.0.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/reporting/maven-reporting-api/3.0/maven-reporting-api-3.0.pom (2.4 kB at 11 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/shared/maven-shared-components/15/maven-shared-components-15.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/shared/maven-shared-components/15/maven-shared-components-15.pom (9.3 kB at 48 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/maven-parent/16/maven-parent-16.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/maven-parent/16/maven-parent-16.pom (23 kB at 126 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/doxia/doxia-sink-api/1.0/doxia-sink-api-1.0.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/doxia/doxia-sink-api/1.0/doxia-sink-api-1.0.pom (1.4 kB at 7.8 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/doxia/doxia/1.0/doxia-1.0.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/doxia/doxia/1.0/doxia-1.0.pom (9.6 kB at 50 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/maven-parent/10/maven-parent-10.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/maven-parent/10/maven-parent-10.pom (32 kB at 163 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/apache/4/apache-4.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/apache/4/apache-4.pom (4.5 kB at 24 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/jacoco/org.jacoco.agent/0.8.12/org.jacoco.agent-0.8.12.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/jacoco/org.jacoco.agent/0.8.12/org.jacoco.agent-0.8.12.pom (3.5 kB at 19 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/jacoco/org.jacoco.core/0.8.12/org.jacoco.core-0.8.12.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/jacoco/org.jacoco.core/0.8.12/org.jacoco.core-0.8.12.pom (2.1 kB at 11 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/ow2/asm/asm/9.7/asm-9.7.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/ow2/asm/asm/9.7/asm-9.7.pom (2.4 kB at 13 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/ow2/asm/asm-commons/9.7/asm-commons-9.7.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/ow2/asm/asm-commons/9.7/asm-commons-9.7.pom (2.8 kB at 15 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/ow2/asm/asm-tree/9.7/asm-tree-9.7.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/ow2/asm/asm-tree/9.7/asm-tree-9.7.pom (2.6 kB at 14 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/jacoco/org.jacoco.report/0.8.12/org.jacoco.report-0.8.12.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/jacoco/org.jacoco.report/0.8.12/org.jacoco.report-0.8.12.pom (1.9 kB at 9.8 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-utils/3.0.24/plexus-utils-3.0.24.jar
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-utils/3.0.24/plexus-utils-3.0.24.jar (247 kB at 512 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/reporting/maven-reporting-api/3.0/maven-reporting-api-3.0.jar
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/ow2/asm/asm/9.7/asm-9.7.jar
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/jacoco/org.jacoco.core/0.8.12/org.jacoco.core-0.8.12.jar
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/jacoco/org.jacoco.agent/0.8.12/org.jacoco.agent-0.8.12-runtime.jar
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/doxia/doxia-sink-api/1.0/doxia-sink-api-1.0.jar
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/reporting/maven-reporting-api/3.0/maven-reporting-api-3.0.jar (11 kB at 54 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/ow2/asm/asm-commons/9.7/asm-commons-9.7.jar
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/ow2/asm/asm-commons/9.7/asm-commons-9.7.jar (73 kB at 157 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/ow2/asm/asm-tree/9.7/asm-tree-9.7.jar
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/ow2/asm/asm-tree/9.7/asm-tree-9.7.jar (52 kB at 73 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/jacoco/org.jacoco.report/0.8.12/org.jacoco.report-0.8.12.jar
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/jacoco/org.jacoco.report/0.8.12/org.jacoco.report-0.8.12.jar (131 kB at 105 kB/s)
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/jacoco/org.jacoco.agent/0.8.12/org.jacoco.agent-0.8.12-runtime.jar (302 kB at 240 kB/s)
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/doxia/doxia-sink-api/1.0/doxia-sink-api-1.0.jar (10 kB at 7.0 kB/s)
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/ow2/asm/asm/9.7/asm-9.7.jar (125 kB at 5.7 kB/s)
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/jacoco/org.jacoco.core/0.8.12/org.jacoco.core-0.8.12.jar (210 kB at 9.1 kB/s)
+[INFO] argLine set to -javaagent:C:\\Users\\Administrator\\.m2\\repository\\org\\jacoco\\org.jacoco.agent\\0.8.12\\org.jacoco.agent-0.8.12-runtime.jar=destfile=C:\\zhicloud-src\\zhicloud-module-bpm\\target\\jacoco.exec,includes=cn/zhicloud/zhicloud/module/wms/service/**:cn/zhicloud/zhicloud/module/mes/service/**
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ zhicloud-module-bpm ---
+[INFO] skip non existing resourceDirectory C:\zhicloud-src\zhicloud-module-bpm\src\main\resources
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-module-bpm ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-module-bpm:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-module-bpm ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 230 source files with javac [release 21] to target\classes
+[WARNING] /C:/zhicloud-src/zhicloud-module-bpm/src/main/java/cn/zhicloud/module/bpm/convert/definition/BpmProcessDefinitionConvert.java:[97,10] Unmapped target properties: "type, version, name, key, categoryName, formName, suspensionState, deploymentTime, bpmnXml".
+[WARNING] /C:/zhicloud-src/zhicloud-module-bpm/src/main/java/cn/zhicloud/module/bpm/convert/task/BpmProcessInstanceConvert.java:[124,10] Unmapped target properties: "type, version, name, key, categoryName, formName, suspensionState, deploymentTime, bpmnXml".
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ zhicloud-module-bpm ---
+[INFO] Copying 7 resources from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-module-bpm ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 27 source files with javac [release 21] to target\test-classes
+[INFO] /C:/zhicloud-src/zhicloud-module-bpm/src/test/java/cn/zhicloud/module/bpm/framework/flowable/core/candidate/expression/BpmTaskAssignLeaderExpressionTest.java: C:\zhicloud-src\zhicloud-module-bpm\src\test\java\cn\zhicloud\module\bpm\framework\flowable\core\candidate\expression\BpmTaskAssignLeaderExpressionTest.java uses or overrides a deprecated API.
+[INFO] /C:/zhicloud-src/zhicloud-module-bpm/src/test/java/cn/zhicloud/module/bpm/framework/flowable/core/candidate/expression/BpmTaskAssignLeaderExpressionTest.java: Recompile with -Xlint:deprecation for details.
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-module-bpm ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ zhicloud-module-bpm ---
+[INFO] Building jar: C:\zhicloud-src\zhicloud-module-bpm\target\zhicloud-module-bpm-2026.06.0.jar
+[INFO] 
+[INFO] ------------------< cn.zhicloud:zhicloud-module-crm >-------------------
+[INFO] Building zhicloud-module-crm 2026.06.0                           [24/39]
+[INFO]   from zhicloud-module-crm\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ zhicloud-module-crm ---
+[INFO] 
+[INFO] --- flatten:1.7.2:clean (flatten.clean) @ zhicloud-module-crm ---
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ zhicloud-module-crm ---
+[INFO] Copying 8 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-module-crm ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-module-crm:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-module-crm ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 353 source files with javac [release 21] to target\classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ zhicloud-module-crm ---
+[INFO] Copying 8 resources from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-module-crm ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 14 source files with javac [release 21] to target\test-classes
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-module-crm ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ zhicloud-module-crm ---
+[INFO] Building jar: C:\zhicloud-src\zhicloud-module-crm\target\zhicloud-module-crm-2026.06.0.jar
+[413.444s][warning][gc,alloc] pool-45-thread-4: Retried waiting for GCLocker too often allocating 312502 words
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for zhicloud 2026.06.0:
+[INFO] 
+[INFO] zhicloud ........................................... SUCCESS [  9.179 s]
+[INFO] zhicloud-framework ................................. SUCCESS [  0.353 s]
+[INFO] zhicloud-common .................................... SUCCESS [01:52 min]
+[INFO] zhicloud-spring-boot-starter-web ................... SUCCESS [ 10.699 s]
+[INFO] zhicloud-spring-boot-starter-security .............. SUCCESS [  7.534 s]
+[INFO] zhicloud-spring-boot-starter-mybatis ............... SUCCESS [ 41.970 s]
+[INFO] zhicloud-spring-boot-starter-redis ................. SUCCESS [ 12.180 s]
+[INFO] zhicloud-spring-boot-starter-mq .................... SUCCESS [ 18.221 s]
+[INFO] zhicloud-spring-boot-starter-job ................... SUCCESS [  1.912 s]
+[INFO] zhicloud-spring-boot-starter-test .................. SUCCESS [  5.404 s]
+[INFO] zhicloud-spring-boot-starter-biz-tenant ............ SUCCESS [  4.366 s]
+[INFO] zhicloud-spring-boot-starter-websocket ............. SUCCESS [  3.886 s]
+[INFO] zhicloud-spring-boot-starter-monitor ............... SUCCESS [  5.689 s]
+[INFO] zhicloud-spring-boot-starter-protection ............ SUCCESS [  4.958 s]
+[INFO] zhicloud-spring-boot-starter-biz-ip ................ SUCCESS [  3.697 s]
+[INFO] zhicloud-spring-boot-starter-excel ................. SUCCESS [ 10.695 s]
+[INFO] zhicloud-spring-boot-starter-biz-data-permission ... SUCCESS [  3.897 s]
+[INFO] zhicloud-spring-boot-starter-biz-inventory ......... SUCCESS [  3.328 s]
+[INFO] zhicloud-spring-boot-starter-biz-integration ....... SUCCESS [  4.831 s]
+[INFO] zhicloud-spring-boot-starter-biz-mdm ............... SUCCESS [  3.967 s]
+[INFO] zhicloud-module-infra .............................. SUCCESS [ 25.833 s]
+[INFO] zhicloud-module-system ............................. SUCCESS [ 30.527 s]
+[INFO] zhicloud-module-bpm ................................ SUCCESS [ 54.224 s]
+[INFO] zhicloud-module-crm ................................ FAILURE [ 15.024 s]
+[INFO] zhicloud-module-erp ................................ SKIPPED
+[INFO] zhicloud-module-qms ................................ SKIPPED
+[INFO] zhicloud-module-wms ................................ SKIPPED
+[INFO] zhicloud-module-tms ................................ SKIPPED
+[INFO] zhicloud-module-mes ................................ SKIPPED
+[INFO] zhicloud-module-ai ................................. SKIPPED
+[INFO] zhicloud-module-ai-rag ............................. SKIPPED
+[INFO] zhicloud-module-ai-multiagent ...................... SKIPPED
+[INFO] zhicloud-module-datalake ........................... SKIPPED
+[INFO] zhicloud-module-iot ................................ SKIPPED
+[INFO] zhicloud-module-iot-core ........................... SKIPPED
+[INFO] zhicloud-module-iot-biz ............................ SKIPPED
+[INFO] zhicloud-module-oa ................................. SKIPPED
+[INFO] zhicloud-module-hr ................................. SKIPPED
+[INFO] zhicloud-server .................................... SKIPPED
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  06:51 min
+[INFO] Finished at: 2026-10-09T19:26:46+08:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-jar-plugin:3.4.1:jar (default-jar) on project zhicloud-module-crm: Error assembling JAR: Problem creating jar: Execution exception: Java heap space -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException
+[ERROR] 
+[ERROR] After correcting the problems, you can resume the build with the command
+[ERROR]   mvn <args> -rf :zhicloud-module-crm
+=== ERR LAST 80 ===
+=== TARGET JAR ===
+

@@ -1,0 +1,17 @@
+﻿
+
+
+Hostname       : ZC-CLEAN
+OS             : Microsoft Windows Server 2025 Datacenter Evaluation
+Version        : Microsoft Windows NT 10.0.26100.0
+Java           : 
+Maven          : 
+Node           : 
+Pnpm           : 
+IP             : 172.23.164.58
+WebStatus      : 200
+PSComputerName : zhicloud-clean-win2025
+RunspaceId     : 0a3e6e0e-4fd1-4b93-a88e-4c38db3be0e2
+
+
+
