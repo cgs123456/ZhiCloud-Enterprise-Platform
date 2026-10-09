@@ -6603,3 +6603,23 @@ hr+oa / protection+security / erp 全 exit 0
 ### 前端有后端没有的整个模块（不在本轮修复范围）
 - /fms/* 140 个调用，无后端模块
 - /hrm/* 302 个调用，无后端模块
+
+---
+
+## 12.160 外层文档仓证据回流（2026-10-09）：V107 负向验证 + schema triage + V105–V108 沙箱证据
+
+**背景**：桌面外层 `zhicloud\` 是独立的 docs/script 交付仓（`master@01dfe6b`），其工作树有 6 个已改跟踪文档 + 85 个未跟踪条目从未提交。逐类评估后，其中 13 个制品是 src2 缺失的唯一证据；其余（gate 日志、helm TLS 渲染、security baseline、mysql-chain、maven、python、tenant-isolation、do-ddl-flyway、mutation）已被 src2 更晚/更全的口径覆盖，不回迁。
+
+**已回流**（13 文件，417.4 KB，复制到 `docs/enterprise-platform/evidence/production/`，逐文件 MD5 与源一致；src2 evidence 文件数 1664 → 1677）：
+
+| 类别 | 文件 | src2 此前状态 |
+|---|---|---|
+| V107 负向行为 | `30-V107-event-tenant-unique-key-negative-evidence.md`、`v107-negative-mysql-sandbox.json` | 无。`V107_verify.sql` 只是只读结构校验，不含 fail-closed / 跨租户负向断言 |
+| schema triage | `schema-findings-triage-2026-09-27.md/.json`、`schema-audit-sandbox-2026-09-27.json` | 无。src2 的 `schema-audit-20260927_192127.json` 是另一次审计（132 条 / P0 115 / 463 表），与外层 248 条 / P0 154 / 438 表不同源 |
+| V105–V108 沙箱 | `v105-*`、`v106-*`、`v107-mysql-sandbox.json`、`v108-*` 共 8 件 | 有迁移脚本（`V105__event_dlq_replay_log.sql` … `V108__tenant_isolation_p0.sql`），但无逐版本沙箱证据 |
+
+**文档引用**：`08-测试与证据.md` §3.3 中原有两条占位 bullet（"Flyway 11.7.2 对 V108 的解析/执行检查。"、"V107 fail-closed 负向场景。"）已扩写为含路径 + SHA-256 + `generated_at` 的引用，并新增 V105–V108 与 schema triage 条目。
+
+**未闭环**：这 13 件均**未记录生成命令**，保留期/责任人与全项目同口径未指定（`R-G6-2` OPEN）。按 `00-README.md` §3.4，缺要素的结论只能记"待验证"，因此本次**只登记证据与边界，不据此关闭任何门禁**。`production_ready=false`、`gate3_passed=false`、`independent_review=false`、`Go/No-Go=No-Go` 均不变。
+
+**归档**：外层未提交内容已用 `git bundle`（全 refs）+ 临时索引快照提交 `764485bbf921dcf526e8a100e7fb7cfa8a980922` 完整归档于 `zhicloud\archive\20261009-outer-repo-snapshot\`（38.3 MB，含 `MANIFEST.md` 与 `SHA256SUMS.txt`），并已通过"克隆 bundle → 还原快照 → 哈希比对"的恢复演练。外层工作树未改动，仍保留 6 改 + 85 未跟踪。
