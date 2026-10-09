@@ -6552,3 +6552,34 @@ demo 数据的写路径/审批/会计过账。清理入口现成：`demo-data/cl
 **三、tenant 0 平台科目余额物理共享——关闭**
 - 所有者裁决：项目不商用，多租户独立账簿非当前需求；该项关闭。
 - 台账留存事实：tenant 9001 的 6 笔凭证全部写入 tenant_id=0 平台科目行；tenant 1 有自己的 9 个科目副本不走此路径。若将来多租户商用需另做租户科目初始化（V-migration 副本 + opening 余额）。
+
+
+---
+
+## 12.158 全模块深度 Review——BPM 同族 listener / 签名框架 / 操作日志 / 预算 N+1
+
+**范围**：HR / OA / framework(protection, security) / ERP / MES / System / Infra / IoT 模块的 parseLong 同族缺陷、N+1 循环查询、字符串引用比较。
+
+### 修复（6 文件）
+
+| # | 严重度 | 文件 | 问题 | 修法 |
+|---|---|---|---|---|
+| 1 | HIGH | HrLeaveRequestStatusListener:30 | Long.parseLong(businessKey) 无保护 | NumberUtils.parseLong + null skip |
+| 2 | HIGH | OaDocumentStatusListener:50 | 同上 | 同上 |
+| 3 | HIGH | OaReimburseStatusListener:48 | 同上 | 同上 |
+| 4 | MEDIUM | ApiSignatureAspect:115 | Long.parseLong(timestamp) 客户端垃圾值 → 500 | try-catch → return false |
+| 5 | MEDIUM | LogRecordServiceImpl:63 | Long.parseLong(bizNo) 非数字 → 丢操作日志 | NumberUtils.parseLong |
+| 6 | MEDIUM | ErpBudgetServiceImpl:208 | saveDetails 循环内 selectById N+1 | 批量 selectByIds + Map |
+
+### 核实安全
+
+MesQcIndicatorResultServiceImpl / HrSalaryServiceImpl / IotSceneRuleTimeHelper / SsrfGuard / RagAdvisor / TokenLimitFilter / PersonServiceImpl / MesDvTpKpiServiceImpl / MesProPieceworkSummaryServiceImpl / LiveKitClient / IPUtils / ErpFixedAssetServiceImpl — try-catch 或受控输入。
+
+### 扫描无命中
+
+- N+1: MES/System/Infra/IoT/HR/OA/TMS/CRM/BPM = 0
+- 字符串 ==/!= 引用比较: 全模块 = 0
+
+### 测试
+
+hr+oa / protection+security / erp 全 exit 0

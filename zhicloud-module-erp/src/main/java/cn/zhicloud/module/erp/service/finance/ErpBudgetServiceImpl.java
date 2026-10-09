@@ -20,7 +20,10 @@ import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.zhicloud.module.erp.enums.ErrorCodeConstants.*;
@@ -200,12 +203,21 @@ public class ErpBudgetServiceImpl implements ErpBudgetService {
         if (details == null || details.isEmpty()) {
             return;
         }
+        // 批量查科目信息，避免循环内 N+1
+        List<Long> accountIds = details.stream()
+                .map(ErpBudgetSaveReqVO.Detail::getAccountId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+        Map<Long, ErpGlAccountDO> accountMap = accountIds.isEmpty()
+                ? Map.of() : glAccountMapper.selectByIds(accountIds).stream()
+                .collect(Collectors.toMap(ErpGlAccountDO::getId, Function.identity()));
         for (ErpBudgetSaveReqVO.Detail detail : details) {
             ErpBudgetDetailDO detailDO = BeanUtils.toBean(detail, ErpBudgetDetailDO.class);
             detailDO.setId(null); // 新插入，忽略前端传入的 id
             detailDO.setBudgetId(budgetId);
             // 冗余填充科目编码/名称
-            ErpGlAccountDO account = glAccountMapper.selectById(detail.getAccountId());
+            ErpGlAccountDO account = accountMap.get(detail.getAccountId());
             if (account != null) {
                 detailDO.setAccountCode(account.getCode());
                 detailDO.setAccountName(account.getName());
