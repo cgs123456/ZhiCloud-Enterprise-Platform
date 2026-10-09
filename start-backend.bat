@@ -1,6 +1,32 @@
 @echo off
-rem 智云平台 - 后台启动后端（解包目录方式，绕开 Spring Boot 嵌套 jar 在 Windows 上的类路径扫描性能问题）
-set REDIS_PASSWORD=redis@2026
-set JAVA_HOME=D:\Java\tools\jdk-21.0.11+10
-cd /d D:\Desktop\zhicloud\zhicloud-extracted
-"%JAVA_HOME%\bin\java.exe" -Xms512m -Xmx3g -Dfile.encoding=UTF-8 -cp "BOOT-INF\classes;BOOT-INF\lib\*" cn.zhicloud.server.ZhiCloudServerApplication --spring.profiles.active=local --spring.flyway.baseline-version=82 > "D:\Desktop\zhicloud\server.log" 2>&1 &
+setlocal
+set "ROOT=%~dp0"
+cd /d "%ROOT%"
+
+if defined JAVA_HOME (
+  set "JAVA_EXE=%JAVA_HOME%\bin\java.exe"
+) else (
+  for /f "delims=" %%i in ('where java 2^>nul') do set "JAVA_EXE=%%i"
+)
+if not defined JAVA_EXE (
+  echo [ERROR] Java 21 not found. Set JAVA_HOME or add java.exe to PATH.
+  exit /b 1
+)
+if not exist "%JAVA_EXE%" (
+  echo [ERROR] Java executable not found: "%JAVA_EXE%"
+  exit /b 1
+)
+
+if not exist "zhicloud-server\target\zhicloud-server.jar" (
+  where mvn >nul 2>nul
+  if errorlevel 1 (
+    echo [ERROR] Backend jar missing and Maven not found. Add mvn to PATH first.
+    exit /b 1
+  )
+  echo [INFO] Backend jar missing, building zhicloud-server with local reactor dependencies...
+  call mvn -B -DskipTests -pl zhicloud-server -am clean package
+  if errorlevel 1 exit /b 1
+)
+
+echo [INFO] Starting backend on http://localhost:48080
+"%JAVA_EXE%" -Xms512m -Xmx3g -Dfile.encoding=UTF-8 -jar "zhicloud-server\target\zhicloud-server.jar" --spring.profiles.active=local > "%ROOT%server.log" 2>&1

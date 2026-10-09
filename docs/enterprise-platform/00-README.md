@@ -235,6 +235,8 @@ controls_failed = 0
 
 > 2026-10-08 复核补充：所有者口径已从“工程化收口”收敛为“工程化点到即止，重心是业务功能模块齐全度”。当前商业域已整体移除；演示数据租户 9001 只读链路已验，写路径/审批/过账未跑；生产标记仍 No-Go。R-G3.5-4、CRM follow-up NPE、DLQ 重放、collation 统一、demo 写路径等留所有者裁决或后续验证。下一步先按所有者裁决执行，不自作主张翻状态；继续做业务时以可断言落库的完整链为准。
 
+> 2026-10-09 Issue #1 核实补充：八条中“安全上下文缺失”“MES Job 缺租户”不成立或已闭环；“RAG 缺表”“前端未完整交付”“README 不一致”已补或修正；“模块化构建”“V77 非幂等”“Redis 空密码”本轮落地修复/恢复路径。V77 正文为兼容已成功库 checksum 未回改，新增人工恢复脚本 `scripts/production/repair_v77_aimultiagent_resilience.sql`；Redis 空串归一测试 4/4、迁移 runner 31/31、前端构建与 Vite HTTP 200 均已复验。V77 自动幂等、前端构建告警、后端 48080 登录端到端和干净机器脚本实测仍未闭环，不能据此声称生产就绪。详见 handoff §12.162。
+
 下一步必须先完成：
 
 1. 在 MySQL 沙箱证据基础上，进入预发/生产等量库验证 V115-V121 的 MDL、锁等待、复制延迟、磁盘空间、回滚和真实业务数据，并对 V121 的空白登记/legacy NULL 回收、lease/expiry/recovery/reconciliation 及 `ADD COLUMN` 影响做生产等价验证，同时修复存量库的 bootstrap 顺序闭环。

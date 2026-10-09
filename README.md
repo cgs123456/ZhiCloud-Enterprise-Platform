@@ -180,7 +180,7 @@ zhicloud/
 ├── zhicloud-module-ai-multiagent/  # 多智能体编排
 ├── zhicloud-module-datalake/       # 数据湖仓（Iceberg + Trino）
 ├── zhicloud-ui/                    # 前端 monorepo 目录（Vue3 管理后台）
-│   └── zhicloud-ui-admin-vue3/     # 管理后台前端（Vite dev 端口 80，代理后端 48080）
+│   └── zhicloud-ui-admin-vue3/     # 管理后台前端（Vite dev 端口 80，代理后端 48080；本地覆盖见 .env.dev.local）
 ├── deploy/                      # ArgoCD + Helm Chart
 ├── k8s/                         # K8s 部署（含金丝雀）
 ├── script/                      # Docker/Jenkins/JMeter/Gatling/安全/灾备
@@ -197,33 +197,48 @@ zhicloud/
 - Redis 7+
 - Maven 3.9+
 
-### Docker Compose 一键启动
+### 后端启动（Docker Compose + Maven）
+
+> 重要：`zhicloud-server` 依赖 16 个本地 Maven 模块。根目录只执行 `mvn clean compile` **不会**把模块安装到本地仓库；在 `zhicloud-server` 子目录单独运行前，必须先 `mvn install`，或直接运行 `start-backend.bat`（内部使用 `-am` 构建）。
 
 ```bash
 # 1. 启动中间件
 cd script/docker
 docker-compose --env-file docker.env up -d mysql redis postgres
-
-# 2. 编译
 cd ../..
-mvn clean compile -T 1C
 
-# 3. 启动应用
+# 2. 安装本地模块（首次或模块依赖变化后）
+mvn -B -DskipTests install -T 1C
+
+# 3. 启动后端
 cd zhicloud-server
 mvn spring-boot:run
 ```
 
-访问 `http://localhost:48080`，默认账号 `admin` / `admin123`
+后端 API 地址：`http://localhost:48080`。该地址返回未认证 JSON 是正常行为，不是前端管理界面。
+Docker Compose 会覆盖 `zhicloud.airag.enabled=true` 并提供 PostgreSQL+pgvector；`local` profile 自身默认 `false`。
 
-### Windows 本地开发（计划任务方式）
+### 前端启动（Vue3 + Vite）
 
-```cmd
-schtasks /run /tn ZhiCloudBackend    # 后端约 5 分钟就绪（:48080）
-schtasks /run /tn ZhiCloudFrontend   # 前端约 1 分钟就绪（:80）
+环境要求：Node.js >= 20.19.0，pnpm >= 8.6.0。
+
+```bash
+cd zhicloud-ui/zhicloud-ui-admin-vue3
+pnpm install
+pnpm dev
 ```
 
-浏览器打开 `http://localhost/`，租户`智云` / 账号 `admin` / 密码 `admin123` 登录。
-日志分别见 `server.log`、`frontend.log`；停止服务用任务管理器结束 `java.exe` / 对应 `node.exe` 进程。
+访问 `http://localhost/`，租户 `智云` / 账号 `admin` / 密码 `admin123`。
+前端默认端口 80，Vite 将 `/admin-api` 代理到 `http://127.0.0.1:48080`；本地覆盖配置在 `.env.dev.local`。
+
+### Windows 一键脚本
+
+```cmd
+start-backend.bat
+start-frontend.bat
+```
+
+日志分别见 `server.log`、`frontend.log`。脚本使用项目相对路径，不再依赖 D 盘目录。
 
 ### 关键配置
 
@@ -232,7 +247,7 @@ schtasks /run /tn ZhiCloudFrontend   # 前端约 1 分钟就绪（:80）
 | `server.port` | 应用端口 | 48080 |
 | `spring.threads.virtual.enabled` | 虚拟线程 | true |
 | `spring.flyway.enabled` | Flyway 版本管理 | true |
-| `zhicloud.airag.enabled` | RAG 模块 | true |
+| `zhicloud.airag.enabled` | RAG 模块 | local=false；Docker Compose=true |
 | `zhicloud.datalake.enabled` | 数据湖仓 | false |
 | `management.server.port` | 管理端口 | 48090 |
 

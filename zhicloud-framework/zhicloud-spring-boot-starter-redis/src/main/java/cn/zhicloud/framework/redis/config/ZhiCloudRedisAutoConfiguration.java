@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.redisson.spring.starter.RedissonAutoConfigurationCustomizer;
 import org.redisson.spring.starter.RedissonAutoConfigurationV2;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -18,6 +19,20 @@ import org.springframework.data.redis.serializer.RedisSerializer;
  */
 @AutoConfiguration(before = RedissonAutoConfigurationV2.class) // 目的：使用自己定义的 RedisTemplate Bean
 public class ZhiCloudRedisAutoConfiguration {
+    /**
+     * Redisson 4.x 会在 password 非 null 时发送 AUTH。Spring 的
+     * {@code ${REDIS_PASSWORD:}} 在未设置变量时会绑定为空字符串，而不是 null，
+     * 因此无密码 Redis 也会收到空 AUTH。这里只把空字符串归一化为 null，
+     * 不改变任何已配置的非空密码。
+     */
+    @Bean
+    public RedissonAutoConfigurationCustomizer zhicloudRedisPasswordCustomizer() {
+        return config -> {
+            if (config.getPassword() != null && config.getPassword().isBlank()) {
+                config.setPassword(null);
+            }
+        };
+    }
 
     /**
      * 创建 RedisTemplate Bean，使用 JSON 序列化方式

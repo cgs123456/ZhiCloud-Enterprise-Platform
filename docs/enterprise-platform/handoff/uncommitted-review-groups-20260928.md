@@ -6640,3 +6640,41 @@ hr+oa / protection+security / erp 全 exit 0
 - 仍存在：92 个文件含 `C:\Users\Administrator`、453 个含 `jdbc:mysql://`、576 个含 `127.0.0.1`、198 个含 `zc-live-mysql` / `zhicloud-mysql`。这些按原字节保留，前提是仓库保持 private；若改回 public，必须先脱敏并重算被引用证据的 SHA-256。
 
 **边界**：本次只改变证据入库与仓库可见性，不改变 `production_ready=false`、`gate3_passed=false`、`independent_review=false`、`Go/No-Go=No-Go`。
+
+
+## 12.162 GitHub Issue #1 逐条核实与修复（2026-10-09）
+
+**核实范围**：Issue 创建时基线 `97fc8a1c6128eb2ebeeeb8b18996730152cdc50a` 与当前 `master` 对照；逐条读源码、迁移、配置、前端脚本与运行证据。
+
+| # | Issue 主张 | 核实结论 | 关键依据 |
+|---|---|---|---|
+| 1 | 安全上下文/数据权限源码缺失 | 不成立 | 基线提交已存在 `ZhiCloudSecurityAutoConfiguration`、`ZhiCloudWebSecurityConfigurerAdapter`、`ZhiCloudDataPermissionAutoConfiguration`、`ZhiCloudDeptDataPermissionAutoConfiguration`，`AutoConfiguration.imports` 已登记 |
+| 2 | 模块化构建不可用 | 部分成立，本轮修复 | `zhicloud-server` 依赖 16 个本地模块；README 原先只写 `mvn clean compile` 后进子目录启动，干净机器缺 `mvn install`。已改为 `mvn -B -DskipTests install -T 1C` 前置，并让 `start-backend.bat` 用 `-pl zhicloud-server -am` 构建 |
+| 3 | RAG 缺表 `airag_document` | 创建时成立，当前表已补 | 基线无 V114；当前有 `V114__ai_metadata_tables.sql`（MySQL）与 `sql/postgresql/airag_pgvector.sql`（PostgreSQL+pgvector）。`application-local.yaml` 默认 `zhicloud.airag.enabled=false`，Docker Compose 覆盖为 true，README 已按此口径修正 |
+| 4 | V77 Flyway 不幂等 | 成立，本轮以恢复脚本闭环半失败；正文保持不改 | `V77__aimultiagent_resilience.sql` 仍是裸 `ALTER TABLE ADD COLUMN`。为不让已成功库 checksum 漂移，未回改 V77 正文；新增 `scripts/production/repair_v77_aimultiagent_resilience.sql`，对失败历史做幂等补列并精确更新 V77 `success=1`、`checksum=1776434009` |
+| 5 | Redis 空密码导致无密码 Redis 收到 AUTH | 成立，本轮修复 | `application-dev.yaml` 仍为 `${REDIS_PASSWORD:}`；Redisson 4.6.1 对非 null 空串会发 AUTH。框架层新增 `RedissonAutoConfigurationCustomizer`，仅把空串/纯空白归一为 null，不改变非空密码 |
+| 6 | MES 定时任务缺租户上下文 | 已修复闭环 | 修复提交 `05a0a025a`（2026-09-06）；当前 3 个 MES Job 均有 `@TenantJob` |
+| 7 | 前端未完整交付 | 创建时成立；本轮修复本地启动链 | 前端已并入 monorepo；本轮将 `dev` 与 `build:local` 从错误的 `--mode env.local` 改为 `--mode dev`，补 `.env.dev.local`（端口 80、`/admin-api` 代理），把 `pnpm-workspace.yaml` 的 `allowBuilds` 从占位符改为明确布尔值，并重写 `start-frontend.bat` 去掉 D 盘硬编码 |
+| 8 | README 与实际不一致 | 创建时成立；本轮修复 | README 已区分后端 API `:48080` 与前端 `:80`，补 Node/pnpm 要求、租户登录、RAG 默认值、本地覆盖文件和 Windows 脚本说明 |
+
+**本轮改动文件**
+- Redis：`zhicloud-spring-boot-starter-redis/pom.xml`、`ZhiCloudRedisAutoConfiguration.java`、新增 `ZhiCloudRedisAutoConfigurationTest.java`
+- 前端：`package.json`、`.env.dev.local`、`pnpm-workspace.yaml`
+- 启动/文档：`start-backend.bat`、`start-frontend.bat`、`README.md`
+- V77 恢复：`scripts/production/repair_v77_aimultiagent_resilience.sql`
+
+**验证结果**
+- Redis 定向测试：`Tests run: 4, Failures: 0, Errors: 0, Skipped: 0`，`BUILD SUCCESS`。
+- `DatabaseMigrationRunnerTest`：`Tests run: 31, Failures: 0, Errors: 0, Skipped: 0`；`-pl zhicloud-server -am` 39 个 reactor 模块全部 SUCCESS。
+- 前端：`pnpm build:local` 成功产出 `dist`；`pnpm dev` 启动 Vite 后 `GET http://localhost/` 返回 `HTTP 200 text/html`；验证后已停止 Vite。
+- V77 恢复脚本：MySQL 8.4.11 隔离沙箱中验证 9 个场景（无 Flyway 表 no-op、无 V77 行 no-op、无 V77 行但已有列 fail-closed、半失败补列、两列都缺补列、成功行一致、重复行拒绝、目标表缺失拒绝、成功行缺列拒绝），另验证“只存在一张目标表且已有列”仍 fail-closed；沙箱已删除。
+- 迁移契约：`python scripts/production/check_migration_contract.py` → `PASSED: tracked=61 scanned=157 findings=0`。
+- 附带修复：`start-backend.bat` 原先硬编码 `--spring.flyway.baseline-version=82`，空库会从 82 建基线并跳过 V1–V82；本轮已移除，恢复 `application.yaml` 的默认 `baseline-version=1`。
+
+**边界与后续**
+- V77 正文未改，因此“V77 自身幂等”仍未成立；恢复脚本是人工、先备份、必须用 `mysql` 客户端执行的补救路径，不是自动迁移的一部分。若未来要把 V77 做成真正幂等，需要设计一次受控 checksum 对齐 + 迁移前修复通道，不能在已发布正文上直接改。
+- 前端构建仍有非阻断警告：`.env.dev` 的 `NODE_ENV=production` 被 Vite 拒绝、`%VITE_APP_TITLE%` 未定义、主 chunk 约 18.4 MB、lightningcss 对 `*zoom:1` 报 warning；本次未改业务代码，登记为后续前端构建质量项。
+- RAG `local=false` 与 Docker Compose `true` 是部署差异，不建议为了“一致”强行统一；保持 README 已写明的口径。
+- 未验证面：没有在本机启动后端 48080 做登录端到端；没有在干净机器上实际执行两个 `.bat`；V77 恢复脚本未接入 CI。以上均不能据此声称生产就绪。
+
+**状态不翻**：production_ready=false、gate3_passed=false、independent_review=false、Go/No-Go=No-Go。
