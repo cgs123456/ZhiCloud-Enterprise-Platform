@@ -3,6 +3,9 @@ setlocal
 set "ROOT=%~dp0"
 cd /d "%ROOT%"
 
+set "JAVA_EXE="
+if /I "%~1"=="--check" set "CHECK_ONLY=1"
+
 if defined JAVA_HOME (
   set "JAVA_EXE=%JAVA_HOME%\bin\java.exe"
 ) else (
@@ -15,6 +18,21 @@ if not defined JAVA_EXE (
 if not exist "%JAVA_EXE%" (
   echo [ERROR] Java executable not found: "%JAVA_EXE%"
   exit /b 1
+)
+
+if defined CHECK_ONLY (
+  if not exist "zhicloud-server\target\zhicloud-server.jar" (
+    where mvn >nul 2>nul
+    if errorlevel 1 (
+      echo [ERROR] Backend jar missing and Maven not found. Add mvn to PATH first.
+      exit /b 1
+    )
+    echo [CHECK] Backend jar missing; Maven is available for a real start.
+  ) else (
+    echo [CHECK] Backend jar present.
+  )
+  echo [CHECK] Backend launcher prerequisites OK.
+  exit /b 0
 )
 
 if not exist "zhicloud-server\target\zhicloud-server.jar" (

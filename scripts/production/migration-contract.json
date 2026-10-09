@@ -429,6 +429,13 @@
       "sha256": "27421a0efec23261cc2f10f4f5da71347475db5dba472d615e1ddc412a3c9d94",
       "verification_file": "V150_verify.sql",
       "verification_sha256": "0a4ef4013df82b6dffbd7d8b8e00bab330c3c3f5d888697b237309a4afc1ecda"
+    },
+    {
+      "version": 151,
+      "file": "V151__default_oauth2_client_bootstrap.sql",
+      "sha256": "8a6f498a30f0d65393dcaa3113e6dd99070c478c074516ad61f2aa50507b645a",
+      "verification_file": "V151_verify.sql",
+      "verification_sha256": "c38fa58024ef37fc7ec269159df360169f7abcc15f9187be92d2dd7c6e9bf0d3"
     }
   ]
 }

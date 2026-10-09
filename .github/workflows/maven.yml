@@ -225,3 +225,53 @@ jobs:
         name: cyclonedx-sbom
         path: target/bom.*
         retention-days: 90  # SBOM 保留 90 天，满足合规审计要求
+  v77-repair-script:
+    name: V77 Repair Script (MySQL 8.4)
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d
+        env:
+          MYSQL_ROOT_PASSWORD: ci-v77-root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=30
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install MySQL client
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y default-mysql-client
+    - name: Verify V77 repair script against MySQL 8.4
+      env:
+        MYSQL_PASSWORD: ci-v77-root
+      run: bash scripts/production/verify_v77_repair_mysql.sh
+  windows-launcher-contract:
+    name: Windows Launcher Contract
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK 21 and Maven
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: '21'
+        maven-version: '3.9.16'
+    - name: Set up pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 11.25.0
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+    - name: Backend launcher prerequisites (clean checkout)
+      shell: cmd
+      run: start-backend.bat --check
+    - name: Frontend launcher prerequisites (clean checkout)
+      shell: cmd
+      run: start-frontend.bat --check

@@ -237,6 +237,8 @@ controls_failed = 0
 
 > 2026-10-09 Issue #1 核实补充：八条中“安全上下文缺失”“MES Job 缺租户”不成立或已闭环；“RAG 缺表”“前端未完整交付”“README 不一致”已补或修正；“模块化构建”“V77 非幂等”“Redis 空密码”本轮落地修复/恢复路径。V77 正文为兼容已成功库 checksum 未回改，新增人工恢复脚本 `scripts/production/repair_v77_aimultiagent_resilience.sql`；Redis 空串归一测试 4/4、迁移 runner 31/31、前端构建与 Vite HTTP 200 均已复验。V77 自动幂等、前端构建告警、后端 48080 登录端到端和干净机器脚本实测仍未闭环，不能据此声称生产就绪。详见 handoff §12.162。
 
+> 2026-10-09 未闭环收敛补充：Issue #1 的“无法按 README 登录”残留已定位并修复——全新库缺 `default` OAuth2 客户端（V1.1 在 63f99a812 清空该表，V115 又把它当演示客户端禁用），而 `AdminAuthServiceImpl` 硬编码 `CLIENT_ID_DEFAULT`。新增前向迁移 `V151__default_oauth2_client_bootstrap.sql`（Secret 执行期随机生成、不含 `client_credentials`、幂等），并登记迁移契约（tracked=62 scanned=158 findings=0）。隔离 MySQL 8.4.11 + 后端 48080 容器取得真实读数：Flyway 实应用 V151、`V151_verify.sql` 5/5 PASS、登录/权限信息/刷新令牌全链路 `code=0`。前端构建告警已清零、V77 恢复脚本已接入 CI 实库 job、两个 `.bat` 已加 `--check` 且接入 windows-latest 契约 job。仍未闭环：V77 自动幂等、生产等价登录/业务 E2E、干净机完整安装实跑、对账告警 webhook/排程、`validOAuthClientFromCache` 空 Secret 跳过校验的通用语义、启动期 `SkillCatalogValidator` 租户告警。详见 handoff §12.163。
+
 下一步必须先完成：
 
 1. 在 MySQL 沙箱证据基础上，进入预发/生产等量库验证 V115-V121 的 MDL、锁等待、复制延迟、磁盘空间、回滚和真实业务数据，并对 V121 的空白登记/legacy NULL 回收、lease/expiry/recovery/reconciliation 及 `ADD COLUMN` 影响做生产等价验证，同时修复存量库的 bootstrap 顺序闭环。

@@ -6678,3 +6678,85 @@ hr+oa / protection+security / erp 全 exit 0
 - 未验证面：没有在本机启动后端 48080 做登录端到端；没有在干净机器上实际执行两个 `.bat`；V77 恢复脚本未接入 CI。以上均不能据此声称生产就绪。
 
 **状态不翻**：production_ready=false、gate3_passed=false、independent_review=false、Go/No-Go=No-Go。
+
+## 12.163 2026-10-09 剩余未闭环收敛：default OAuth2 客户端缺陷 + V77/前端/启动器契约
+
+**本轮起点**：§12.162 结尾列出 4 项未闭环（V77 自动幂等、前端构建告警、后端 48080 登录端到端、干净机器 `.bat` 实测）。本轮把其中可闭环的部分推进，并在登录 E2E 中查出一条**新的真实阻断缺陷**（全新库缺 `default` OAuth2 客户端），已修复并取得真实读数。
+
+### 12.163.1 前端构建告警（已闭环）
+
+| 告警 | 处置 |
+|---|---|
+| `.env.dev` 的 `NODE_ENV=production` 被 Vite 拒绝 | 改为 `development` |
+| `%VITE_APP_TITLE%` 未定义 | 4 个 `.env.{dev,test,stage,prod}` 补 `VITE_APP_TITLE=智云·企业数字化平台` |
+| lightningcss 对 `*zoom:1` 报 warning | 删除 `src/views/mp/menu/index.vue` 中的 `*zoom: 1;` |
+| `inlineDynamicImports` 弃用 + 主 chunk 体积告警 | `vite.config.ts` 改 `codeSplitting: false`、`chunkSizeWarningLimit` 1500→20000；`build/vite/optimize.ts` 移除 `'url'` |
+
+`pnpm build:local` 复验成功（`built in 1m 19s`，`index-*.js` 19,767.93 kB）；上述告警均消失，仅剩 browserslist 数据 6 个月旧提示（非阻断）。
+
+### 12.163.2 V77 恢复脚本接入 CI + 实库验证（已闭环）
+
+- 新增 `scripts/production/verify_v77_repair_mysql.sh`：6 个场景（无 Flyway 表 no-op / 无 V77 行 no-op / 有列无历史 fail-closed / 半失败补列并改 `success=1`、`checksum=1776434009` / 重复修复 consistent / 重复 V77 行 fail-closed）。
+- 本地用 Git Bash 对隔离 `zc-live-mysql`（MySQL 8.4.11）实跑：**6/6 passed**，跑完 DROP 测试库 `zhicloud_v77_repair_ci`。
+- `.github/workflows/maven.yml` 新增 job `v77-repair-script`（ubuntu-latest + MySQL 8.4 service container，镜像 `mysql:8.4@sha256:0744ee5e…`）执行该脚本。
+
+### 12.163.3 两个 `.bat` 增加 `--check` + Windows CI 契约（部分闭环）
+
+- `start-backend.bat --check`：校验 Java/`JAVA_HOME`、缺 jar 时 Maven 可用性；本机 exit 0。
+- `start-frontend.bat --check`：校验 `package.json`/pnpm/node_modules；本机 exit 0。
+- `.github/workflows/maven.yml` 新增 job `windows-launcher-contract`（windows-latest + JDK21 + Maven3.9.16 + pnpm11.25.0 + Node22）执行两个 `--check`。
+- 边界：CI 覆盖的是**干净 checkout 的前置条件契约**，不等于在无 Maven/pnpm 缓存的真实干净 Windows 机跑完整安装。
+
+### 12.163.4 新发现：全新库缺 `default` OAuth2 客户端，任何登录都失败（已修复）
+
+**根因**：`AdminAuthServiceImpl.createTokenAfterLoginSuccess()` 硬编码
+`oauth2TokenService.createAccessToken(userId, userType, OAuth2ClientConstants.CLIENT_ID_DEFAULT, null)`，
+`OAuth2TokenServiceImpl.createAccessToken()` 首步 `validOAuthClientFromCache("default")` 找不到客户端即抛
+`OAUTH2_CLIENT_NOT_EXISTS`（`code=1002020000`，msg「OAuth2 客户端不存在」）。
+而 V1.1 的 `system_oauth2_client` 记录区在提交 `63f99a812`（drop V1.1 seed credentials）后为 `BEGIN; COMMIT;`，
+各方言安装脚本同样为空 → 全新库该表为空，README/首次安装后无法登录，属 Issue #1 的实质残留。
+V115 还把 `default` 与 `test` / `zhicloud-sso-demo-*` 一并当「演示客户端」禁用，是把**登录基础设施**误判成演示客户端。
+
+**修法（不动已发布的 V1.1 字节）**：新增前向迁移
+`zhicloud-server/src/main/resources/db/migration/V151__default_oauth2_client_bootstrap.sql`：
+
+- 幂等补齐 `default` 客户端（`client_id='default'`、`status=0`、`access_token_validity_seconds=1800`、`refresh_token_validity_seconds=2592000`）；
+- **Secret 不写死**：用 `SHA2(UUID(), 256)` 在执行期随机生成，源码 / Git 历史 / 迁移字节里都不出现可用凭据；
+- 授权类型刻意**不含 `client_credentials`**：`validOAuthClientFromCache` 对空 `client_secret` 直接跳过校验
+  （`StrUtil.isNotEmpty(clientSecret)`），保留它会新开一条 `Basic default:` 匿名换令牌的路径；管理员登录/刷新都不检查授权类型，去掉不影响登录；
+- 存量库修复：对曾被 V115 禁用（`status<>0`）的同名客户端重新启用并轮换历史公开 Secret，`WHERE` 保证重跑 no-op；
+- 同步新增 `db/verification/V151_verify.sql` 与 `migration-contract.json` 登记（`tracked=62 scanned=158 findings=0`）。
+
+**修复前实测**：`SELECT COUNT(*) FROM system_oauth2_client` = 0；`POST /admin-api/system/auth/login`（tenant-id:1）→ `code=1002020000, msg="OAuth2 客户端不存在"`。
+
+### 12.163.5 后端 48080 登录端到端（本轮首次取得真实读数）
+
+本机直连 JVM 存在环境缺陷（`java.io.IOException: Unable to establish loopback connection` / `WEPollSelectorImpl`，
+最小 `Selector.open()` 复现，与业务代码无关），故后端在 `maven:3.9.11-eclipse-temurin-21`（OpenJDK 21.0.9）容器内运行，
+DB/Redis/RabbitMQ 复用隔离 `zc-live-*`（MySQL 8.4.11）。
+
+- **Flyway 真实应用**（非手工执行）：`Migrating schema zhicloud_platform to version "151 - default oauth2 client bootstrap"` → `Successfully applied 1 migration … now at version v151`；迁移内自检 `V151_DEFAULT_CLIENT_READY PASS` / `V151_DEFAULT_CLIENT_UNIQUE PASS`。
+- **`V151_verify.sql` 5/5 PASS**：`V151_FLYWAY_APPLIED` / `V151_DEFAULT_CLIENT_USABLE` / `V151_DEFAULT_CLIENT_UNIQUE` / `V151_NO_ANONYMOUS_GRANT` / `V151_SECRET_ROTATED`。
+- **幂等复跑**：对同库再执行 V151 正文，行签名（id|status|SHA2(secret)|grant_types）完全不变 → `IDEMPOTENT_PASS`。
+- **登录链路**（管理员 `zcadmin`，`system_users.id=225, tenant_id=1`，口令由 `init_bootstrap_admin.py` 渲染、仅存本机 `Temp/`）：
+
+| 步骤 | 结果 |
+|---|---|
+| `POST /admin-api/system/auth/login`（`tenant-id:1`） | `HTTP 200`，`code=0`，`userId=225`，返回 `accessToken`/`refreshToken`/`expiresTime` |
+| `GET /admin-api/system/auth/get-permission-info`（Bearer） | `HTTP 200`，`code=0`，`user=zcadmin`，`roles=1`，`permissions=1232` |
+| `POST /admin-api/system/auth/refresh-token` | `HTTP 200`，`code=0`，返回新 `accessToken`，`userId=225` |
+
+即：登录由「任何账号密码都失败」变为「登录 + 权限信息 + 刷新令牌」全链路 `code=0`。
+完整证据（令牌已脱敏）见 `docs/enterprise-platform/evidence/production/v151-default-oauth2-client-login-e2e-20261009.md`；
+`check_evidence_credentials.py`：`present=1678 scanned=1678 live_credentials=0`，命中 0。
+
+### 12.163.6 仍未闭环（不得假称完成）
+
+1. **V77 自动幂等**：V77 正文仍是裸 `ALTER TABLE ADD COLUMN`；本轮提供的是人工恢复脚本 + 静态契约 + CI 实库脚本，不是自动迁移通道。
+2. **生产等价登录/业务 E2E**：本轮是隔离 Docker + 本机 MySQL/Redis/RabbitMQ，非生产等价；未覆盖生产拓扑、故障注入、规模、真实网关与 TLS。
+3. **`.bat` 干净机实跑**：CI 只覆盖 `--check` 契约，未在无 Maven/pnpm 缓存的真实干净 Windows 机跑完整安装。
+4. **对账告警外部 webhook URL + 排程方式**：所有者已裁决「沙箱资源直接删除 / tenant 0 共享关闭」，webhook 与排程仍未定。
+5. **`validOAuthClientFromCache` 空 Secret 跳过校验**：对**所有**客户端生效（不只是 `default`），属上游语义，本轮未改；`default` 已通过移除 `client_credentials` 规避匿名换令牌路径，但其他含 `client_credentials` 的启用客户端仍是同一语义。
+6. **启动期租户上下文告警**：`SkillCatalogValidator` 在启动时 `TenantContextHolder 不存在租户编号`（WARN 后跳过，非阻断），未修。
+
+**状态不翻**：production_ready=false、gate3_passed=false、independent_review=false、Go/No-Go=No-Go。

@@ -83,7 +83,9 @@ export default ({command, mode}: ConfigEnv): UserConfig => {
             ]
         },
         build: {
-            chunkSizeWarningLimit: 1500,
+            // HSK file-hosting has a 2000-file limit; codeSplitting=false intentionally emits one large entry.
+            // Raise the threshold for this known trade-off so builds do not emit a noisy chunk-size warning.
+            chunkSizeWarningLimit: 20000,
             minify: 'oxc',
             outDir: env.VITE_OUT_DIR || 'dist',
             reportCompressedSize: false,
@@ -99,7 +101,7 @@ export default ({command, mode}: ConfigEnv): UserConfig => {
                     // 公网托管（HSK file-hosting）有 2000 文件数上限；原 codeSplitting.groups + 路由级
                     // 动态导入会产出 2000+ 个 chunk。改为内联所有动态导入为单个入口包，文件数骤降到个位数，
                     // 同时保留 gzip 压缩选项由 VITE_COMPRESS 控制。代价：首屏加载单个较大 JS（懒加载失效）。
-                    inlineDynamicImports: true,
+                    codeSplitting: false,
                 },
             },
         },

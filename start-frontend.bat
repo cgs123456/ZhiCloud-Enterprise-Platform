@@ -2,6 +2,8 @@
 setlocal
 set "FRONTEND_DIR=%~dp0zhicloud-ui\zhicloud-ui-admin-vue3"
 
+if /I "%~1"=="--check" set "CHECK_ONLY=1"
+
 if not exist "%FRONTEND_DIR%\package.json" (
   echo [ERROR] Frontend package.json not found: "%FRONTEND_DIR%\package.json"
   exit /b 1
@@ -12,6 +14,12 @@ where pnpm >nul 2>nul
 if errorlevel 1 (
   echo [ERROR] pnpm not found. Install Node.js ^>=20.19.0 and pnpm ^>=8.6.0 first.
   exit /b 1
+)
+
+if defined CHECK_ONLY (
+  if not exist "node_modules\vite\bin\vite.js" echo [CHECK] Frontend dependencies missing; a real start would run pnpm install.
+  echo [CHECK] Frontend launcher prerequisites OK.
+  exit /b 0
 )
 
 if not exist "node_modules\vite\bin\vite.js" (
