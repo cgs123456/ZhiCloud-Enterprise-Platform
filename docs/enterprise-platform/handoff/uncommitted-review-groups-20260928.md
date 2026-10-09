@@ -6777,7 +6777,7 @@ DB/Redis/RabbitMQ 复用隔离 `zc-live-*`（MySQL 8.4.11）。
 1. **V77 自动幂等**：V77 正文仍是裸 `ALTER TABLE ADD COLUMN`；本轮提供的是人工恢复脚本 + 静态契约 + CI 实库脚本，不是自动迁移通道。
 2. **生产等价登录/业务 E2E**：本轮是隔离 Docker + 本机 MySQL/Redis/RabbitMQ，非生产等价；未覆盖生产拓扑、故障注入、规模、真实网关与 TLS。
 3. **`.bat` 干净机实跑**：CI 只覆盖 `--check` 契约，未在无 Maven/pnpm 缓存的真实干净 Windows 机跑完整安装。
-4. **对账告警外部 webhook URL + 排程方式**：所有者已裁决「沙箱资源直接删除 / tenant 0 共享关闭」，webhook 与排程仍未定。
+4. **对账告警的对外投递目标**：排程方式与投递通道已定——`scripts/production/register_reconcile_alert_task.bat` 注册 Windows 任务计划 `ZhiCloud_ReconcileAlert`（每日 08:00），投递走 `ZC_RECONCILE_WEBHOOK_URL`（token 走 `ZC_RECONCILE_TOKEN`），无 webhook 时落 `ZC_RECONCILE_LOG_FILE` / `--log-file`；**仍未定的只是生产环境实际 webhook URL 由谁提供**（运维/所有者输入，不是代码缺口）。
 5. **`validOAuthClientFromCache` 空 Secret 跳过校验**：对**所有**客户端生效（不只是 `default`），属上游语义，本轮未改；`default` 已通过移除 `client_credentials` 规避匿名换令牌路径，但其他含 `client_credentials` 的启用客户端仍是同一语义。
 
 **状态不翻**：production_ready=false、gate3_passed=false、independent_review=false、Go/No-Go=No-Go。
