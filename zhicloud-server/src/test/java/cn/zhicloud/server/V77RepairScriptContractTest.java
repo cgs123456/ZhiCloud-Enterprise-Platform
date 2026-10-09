@@ -24,7 +24,7 @@ class V77RepairScriptContractTest {
         assertTrue(sql.contains("V77_REPAIR_ALREADY_CONSISTENT"), "repair must expose an already-consistent marker");
         assertTrue(sql.contains("V77_REPAIR_NOOP_NO_FLYWAY_HISTORY"), "repair must expose no-history marker");
         assertTrue(sql.contains("V77_REPAIR_NOOP_NO_V77_HISTORY"), "repair must expose no-V77 marker");
-        assertTrue(sql.contains("checksum = 1776434009"), "repair must pin the published V77 checksum");
+        assertTrue(sql.contains("checksum = -282762132"), "repair must pin the published V77 checksum");
         assertTrue(sql.contains("DELIMITER $$"), "repair requires mysql client DELIMITER support");
         assertTrue(sql.contains("DELIMITER ;"), "repair must restore the mysql client delimiter");
     }

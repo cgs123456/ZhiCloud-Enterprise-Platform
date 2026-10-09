@@ -131,7 +131,7 @@ assert_contains "${out}" "V77_REPAIR_APPLIED"
 assert_column_exists aimultiagent_topology version
 assert_column_exists aimultiagent_execution_log trace_id
 history_state="$(mysql_exec -e "SELECT success, checksum FROM flyway_schema_history WHERE version='77' AND script='V77__aimultiagent_resilience.sql';")"
-if [[ "${history_state}" != "1	1776434009" ]]; then
+if [[ "${history_state}" != "1	-282762132" ]]; then
   echo "unexpected V77 history state: ${history_state}" >&2
   exit 1
 fi
@@ -150,8 +150,8 @@ mysql_exec -e "
   INSERT INTO flyway_schema_history
     (version, description, type, script, checksum, installed_by, execution_time, success)
   VALUES
-    ('77', 'aimultiagent resilience', 'SQL', 'V77__aimultiagent_resilience.sql', 1776434009, 'ci', 1, 1),
-    ('77', 'aimultiagent resilience', 'SQL', 'V77__aimultiagent_resilience.sql', 1776434009, 'ci', 1, 1);
+    ('77', 'aimultiagent resilience', 'SQL', 'V77__aimultiagent_resilience.sql', -282762132, 'ci', 1, 1),
+    ('77', 'aimultiagent resilience', 'SQL', 'V77__aimultiagent_resilience.sql', -282762132, 'ci', 1, 1);
 "
 out="$(assert_fails)"
 assert_contains "${out}" "duplicate V77 history rows"

@@ -72,18 +72,36 @@ public interface OAuth2ClientService {
     PageResult<OAuth2ClientDO> getOAuth2ClientPage(OAuth2ClientPageReqVO pageReqVO);
 
     /**
-     * 从缓存中，校验客户端是否合法
+     * 从缓存中，校验客户端是否合法（不校验客户端密钥）
      *
+     * 适用于「服务端内部信任调用」（登录、刷新令牌）与「用户代理（浏览器）授权流程」：
+     * 前者由登录凭据 / 刷新令牌本身背书，后者由已登录用户会话背书，均不持有 client_secret。
+     *
+     * @param clientId 客户端编号
      * @return 客户端
      */
     default OAuth2ClientDO validOAuthClientFromCache(String clientId) {
-        return validOAuthClientFromCache(clientId, null, null, null, null);
+        return validOAuthClientFromCache(clientId, null, null, null);
     }
 
     /**
-     * 从缓存中，校验客户端是否合法
+     * 从缓存中，校验客户端是否合法（不校验客户端密钥，但校验授权方式 / 范围 / 回调地址）
      *
-     * 非空时，进行校验
+     * @param clientId 客户端编号
+     * @param authorizedGrantType 授权方式
+     * @param scopes 授权范围
+     * @param redirectUri 重定向地址
+     * @return 客户端
+     */
+    OAuth2ClientDO validOAuthClientFromCache(String clientId, String authorizedGrantType,
+                                             Collection<String> scopes, String redirectUri);
+
+    /**
+     * 从缓存中，校验客户端是否合法，并校验客户端密钥
+     *
+     * 语义：只要客户端在库中配置了非空 secret，调用方就必须提供完全一致的 secret；
+     * 调用方传空不再能跳过校验。secret 为空的客户端视为公开客户端（public client），允许不传密钥。
+     * 该重载用于 /oauth2/token、/oauth2/check-token 等需要「客户端认证」的端点。
      *
      * @param clientId 客户端编号
      * @param clientSecret 客户端密钥

@@ -76,6 +76,15 @@ public final class DatabaseMigrationRunner {
     static final int CURRENT_V11_CHECKSUM = loadCurrentV11Checksum();
 
     /**
+     * V77 在 2026-10-09 从裸 ALTER TABLE 改为 information_schema + PREPARE 幂等 DDL。
+     * 旧版脚本已经可能被成功应用到存量库，因此必须先精确对齐 checksum，再交给 Flyway 校验；
+     * 只允许从已发布的旧 checksum 做一次性对齐，其他漂移仍 fail-closed。
+     */
+    static final String V77_MIGRATION_RESOURCE = "db/migration/V77__aimultiagent_resilience.sql";
+    static final int LEGACY_V77_CHECKSUM = 1776434009;
+    static final int CURRENT_V77_CHECKSUM = loadCurrentV77Checksum();
+
+    /**
      * Flyway 只能证明脚本“执行成功”，不能证明关键结构约束与数据不变量已经满足。
      * 这里把 V116-V121 的只读语义检查登记为迁移退出码的硬门禁；任何一项缺失、
      * 失败或额外漂移都会让 PreSync Job 失败，阻止业务 Deployment 继续发布。
@@ -115,6 +124,12 @@ public final class DatabaseMigrationRunner {
         CLEAN_BASELINE,
         CURRENT,
         LEGACY_REPAIR_REQUIRED
+    }
+
+    enum V77ChecksumDisposition {
+        CURRENT,
+        LEGACY_REPAIR_REQUIRED,
+        FAILED
     }
 
     /**
@@ -575,6 +590,7 @@ public final class DatabaseMigrationRunner {
             validateExistingTargetInitialization(
                     tableNames, successfulBaselineRecorded, existingColumns, existingIndexes);
             alignExistingV11Checksum(connection);
+            alignExistingV77Checksum(connection);
         }
     }
 
@@ -641,6 +657,191 @@ public final class DatabaseMigrationRunner {
             throw new IllegalStateException("V1.1 checksum 对齐失败", ex);  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
         } finally {
             connection.setAutoCommit(true);
+        }
+    }
+
+    /**
+     * V77 幂等化后的受控 checksum 对齐。
+     *
+     * <p>旧版 V77 已发布且可能已成功写入 flyway_schema_history；直接改正文会让 Flyway
+     * 在存量库上因 checksum mismatch 阻断启动。这里只处理成功且 checksum 精确等于旧版值的
+     * V77 行，先确认两列确实存在，再在行锁和前后快照保护下只改 checksum。</p>
+     *
+     * <p>失败行（success=0）不在自动路径中静默标记成功：它可能只完成了一半 DDL，
+     * 必须先走 scripts/production/repair_v77_aimultiagent_resilience.sql 的受控恢复流程。</p>
+     */
+    private static void alignExistingV77Checksum(Connection connection) throws SQLException {
+        Map<Integer, HistoryRow> before = readHistoryRows(connection, false);
+        List<HistoryRow> v77Rows = findV77HistoryRows(before);
+        if (v77Rows.isEmpty()) {
+            return;
+        }
+        if (v77Rows.size() != 1) {
+            throw new IllegalStateException("flyway_schema_history 中 V77 记录必须恰好一行，实际=" + v77Rows.size());  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
+        }
+
+        HistoryRow v77 = v77Rows.get(0);
+        V77ChecksumDisposition disposition = classifyV77HistoryRow(v77);
+        if (disposition == V77ChecksumDisposition.CURRENT) {
+            requireV77Columns(connection);
+            return;
+        }
+        if (disposition == V77ChecksumDisposition.FAILED) {
+            throw new IllegalStateException(  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
+                    "V77 迁移存在失败历史（success=0）；请先执行 scripts/production/repair_v77_aimultiagent_resilience.sql 的受控恢复");
+        }
+        requireV77Columns(connection);
+
+        connection.setAutoCommit(false);
+        try {
+            Map<Integer, HistoryRow> locked = readHistoryRows(connection, true);
+            if (!locked.equals(before)) {
+                throw new IllegalStateException("V77 checksum 对齐前 flyway_schema_history 发生变化，拒绝继续");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
+            }
+            HistoryRow lockedV77 = requireSingleV77HistoryRow(locked);
+            if (classifyV77HistoryRow(lockedV77) != V77ChecksumDisposition.LEGACY_REPAIR_REQUIRED) {
+                throw new IllegalStateException("V77 checksum 对齐状态发生变化，拒绝继续");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
+            }
+
+            int updated;
+            try (PreparedStatement statement = connection.prepareStatement(
+                    "UPDATE " + HISTORY_TABLE + " SET checksum = ? "
+                            + "WHERE installed_rank = ? AND version = ? AND script = ? "
+                            + "AND success = 1 AND checksum = ?")) {
+                statement.setInt(1, CURRENT_V77_CHECKSUM);
+                statement.setInt(2, lockedV77.installedRank());
+                statement.setString(3, "77");
+                statement.setString(4, "V77__aimultiagent_resilience.sql");
+                statement.setInt(5, LEGACY_V77_CHECKSUM);
+                updated = statement.executeUpdate();
+            }
+            if (updated != 1) {
+                throw new IllegalStateException("V77 checksum 对齐必须恰好更新一行，实际=" + updated);  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
+            }
+
+            Map<Integer, HistoryRow> after = readHistoryRows(connection, false);
+            validateV77ChecksumRepairScope(locked, after, lockedV77.installedRank(), CURRENT_V77_CHECKSUM);
+            connection.commit();
+            System.out.printf(
+                    "[flyway-migration] V77 checksum aligned: legacy=%d current=%d rank=%d%n",
+                    LEGACY_V77_CHECKSUM, CURRENT_V77_CHECKSUM, lockedV77.installedRank());
+        } catch (Throwable ex) {
+            try {
+                connection.rollback();
+            } catch (SQLException rollbackEx) {
+                ex.addSuppressed(rollbackEx);
+            }
+            if (ex instanceof SQLException sqlEx) {
+                throw sqlEx;
+            }
+            if (ex instanceof RuntimeException runtimeEx) {
+                throw runtimeEx;
+            }
+            throw new IllegalStateException("V77 checksum 对齐失败", ex);  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
+        } finally {
+            connection.setAutoCommit(true);
+        }
+    }
+
+    private static List<HistoryRow> findV77HistoryRows(Map<Integer, HistoryRow> history) {
+        return history.values().stream()
+                .filter(row -> "77".equals(row.version()))
+                .toList();
+    }
+
+    private static HistoryRow requireSingleV77HistoryRow(Map<Integer, HistoryRow> history) {
+        List<HistoryRow> rows = findV77HistoryRows(history);
+        if (rows.size() != 1) {
+            throw new IllegalStateException("flyway_schema_history 中 V77 记录必须恰好一行，实际=" + rows.size());  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
+        }
+        HistoryRow row = rows.get(0);
+        classifyV77HistoryRow(row);
+        return row;
+    }
+
+    private static void requireV77Columns(Connection connection) throws SQLException {
+        requireColumnExactlyOnce(connection, "aimultiagent_topology", "version");
+        requireColumnExactlyOnce(connection, "aimultiagent_execution_log", "trace_id");
+    }
+
+    private static void requireColumnExactlyOnce(Connection connection, String tableName, String columnName)
+            throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(
+                "SELECT COUNT(*) FROM information_schema.columns "
+                        + "WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?")) {
+            statement.setString(1, tableName);
+            statement.setString(2, columnName);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                long count = resultSet.next() ? resultSet.getLong(1) : 0L;
+                if (count != 1L) {
+                    throw new IllegalStateException(  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
+                            "V77 目标列必须恰好存在一列: " + tableName + "." + columnName + "，实际=" + count);
+                }
+            }
+        }
+    }
+
+    static V77ChecksumDisposition classifyV77HistoryRow(HistoryRow row) {
+        Objects.requireNonNull(row, "row");
+        if (!"77".equals(row.version())
+                || !"SQL".equals(row.type())
+                || !"V77__aimultiagent_resilience.sql".equals(row.script())) {
+            throw new IllegalStateException("flyway_schema_history 中 V77 记录不是正式 SQL 迁移");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
+        }
+        if (!row.success()) {
+            return V77ChecksumDisposition.FAILED;
+        }
+        if (row.checksum() == null) {
+            throw new IllegalStateException("flyway_schema_history 中 V77 SQL 迁移 checksum 不能为空");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
+        }
+        if (row.checksum() == CURRENT_V77_CHECKSUM) {
+            return V77ChecksumDisposition.CURRENT;
+        }
+        if (row.checksum() == LEGACY_V77_CHECKSUM) {
+            return V77ChecksumDisposition.LEGACY_REPAIR_REQUIRED;
+        }
+        throw new IllegalStateException(  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
+                "未知 V77 checksum: " + row.checksum() + "；只允许当前或已发布 legacy checksum");
+    }
+
+    static void validateV77ChecksumRepairScope(
+            Map<Integer, HistoryRow> before,
+            Map<Integer, HistoryRow> after,
+            int repairedRank,
+            int expectedChecksum) {
+        Objects.requireNonNull(before, "before");
+        Objects.requireNonNull(after, "after");
+        if (expectedChecksum != CURRENT_V77_CHECKSUM) {
+            throw new IllegalStateException("V77 checksum 对齐目标不是当前源码 checksum");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
+        }
+        if (!before.keySet().equals(after.keySet())) {
+            throw new IllegalStateException("V77 checksum 对齐不得增删 flyway_schema_history 行");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
+        }
+
+        int changedRows = 0;
+        for (Integer installedRank : before.keySet()) {
+            HistoryRow beforeRow = before.get(installedRank);
+            HistoryRow afterRow = after.get(installedRank);
+            if (Objects.equals(beforeRow, afterRow)) {
+                continue;
+            }
+            changedRows++;
+            if (installedRank != repairedRank) {
+                throw new IllegalStateException("V77 checksum 对齐修改了非目标 history 行: " + installedRank);  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
+            }
+            if (beforeRow == null || afterRow == null || !beforeRow.sameExceptChecksum(afterRow)) {
+                throw new IllegalStateException("V77 checksum 对齐修改了 checksum 以外的字段");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
+            }
+            if (!Objects.equals(beforeRow.checksum(), LEGACY_V77_CHECKSUM)
+                    || !Objects.equals(afterRow.checksum(), CURRENT_V77_CHECKSUM)
+                    || !afterRow.success()
+                    || !"77".equals(afterRow.version())
+                    || !"V77__aimultiagent_resilience.sql".equals(afterRow.script())) {
+                throw new IllegalStateException("V77 checksum 对齐结果不符合受控契约");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
+            }
+        }
+        if (changedRows != 1) {
+            throw new IllegalStateException("V77 checksum 对齐必须恰好修改一行，实际=" + changedRows);  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
         }
     }
 
@@ -1094,8 +1295,16 @@ public final class DatabaseMigrationRunner {
     }
 
     private static int loadCurrentV11Checksum() {
+        return loadCurrentChecksum(SOURCE_BASELINE_RESOURCE);
+    }
+
+    private static int loadCurrentV77Checksum() {
+        return loadCurrentChecksum(V77_MIGRATION_RESOURCE);
+    }
+
+    private static int loadCurrentChecksum(String resource) {
         try {
-            return flywayChecksum(readRequiredResource(SOURCE_BASELINE_RESOURCE));
+            return flywayChecksum(readRequiredResource(resource));
         } catch (IOException ex) {
             throw new ExceptionInInitializerError(ex);
         }

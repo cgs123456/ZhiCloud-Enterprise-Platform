@@ -229,7 +229,8 @@ public class OAuth2OpenController {
         // 1.1 校验 responseType 是否满足 code 或者 token 值
         OAuth2GrantTypeEnum grantTypeEnum = getGrantTypeEnum(responseType);
         // 1.2 校验 redirectUri 重定向域名是否合法 + 校验 scope 是否在 Client 授权范围内
-        OAuth2ClientDO client = oauth2ClientService.validOAuthClientFromCache(clientId, null,
+        // 这里是用户代理（浏览器）授权流程，用户已登录，不持有 client_secret，故不校验客户端密钥
+        OAuth2ClientDO client = oauth2ClientService.validOAuthClientFromCache(clientId,
                 grantTypeEnum.getGrantType(), scopes.keySet(), redirectUri);
 
         // 2.1 假设 approved 为 null，说明是场景一

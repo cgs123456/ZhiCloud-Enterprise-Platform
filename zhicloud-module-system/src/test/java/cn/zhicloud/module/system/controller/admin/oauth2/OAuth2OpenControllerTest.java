@@ -239,7 +239,7 @@ public class OAuth2OpenControllerTest extends BaseMockitoUnitTest {
         String state = randomString();
         // mock 方法
         OAuth2ClientDO client = randomPojo(OAuth2ClientDO.class);
-        when(oauth2ClientService.validOAuthClientFromCache(eq(clientId), isNull(), eq("authorization_code"),
+        when(oauth2ClientService.validOAuthClientFromCache(eq(clientId), eq("authorization_code"),
                 eq(asSet("read", "write")), eq(redirectUri))).thenReturn(client);
 
         // 调用
@@ -260,7 +260,7 @@ public class OAuth2OpenControllerTest extends BaseMockitoUnitTest {
         String state = "test";
         // mock 方法
         OAuth2ClientDO client = randomPojo(OAuth2ClientDO.class);
-        when(oauth2ClientService.validOAuthClientFromCache(eq(clientId), isNull(), eq("implicit"),
+        when(oauth2ClientService.validOAuthClientFromCache(eq(clientId), eq("implicit"),
                 eq(asSet("read", "write")), eq(redirectUri))).thenReturn(client);
 
         // 调用
@@ -281,7 +281,7 @@ public class OAuth2OpenControllerTest extends BaseMockitoUnitTest {
         String state = "test";
         // mock 方法（client)
         OAuth2ClientDO client = randomPojo(OAuth2ClientDO.class).setClientId(clientId).setAdditionalInformation(null);
-        when(oauth2ClientService.validOAuthClientFromCache(eq(clientId), isNull(), eq("implicit"),
+        when(oauth2ClientService.validOAuthClientFromCache(eq(clientId), eq("implicit"),
                 eq(asSet("read", "write")), eq(redirectUri))).thenReturn(client);
         // mock 方法（场景一）
         when(oauth2ApproveService.checkForPreApproval(isNull(), eq(UserTypeEnum.ADMIN.getValue()),
@@ -318,7 +318,7 @@ public class OAuth2OpenControllerTest extends BaseMockitoUnitTest {
         String state = "test";
         // mock 方法（client)
         OAuth2ClientDO client = randomPojo(OAuth2ClientDO.class).setClientId(clientId).setAdditionalInformation(null);
-        when(oauth2ClientService.validOAuthClientFromCache(eq(clientId), isNull(), eq("authorization_code"),
+        when(oauth2ClientService.validOAuthClientFromCache(eq(clientId), eq("authorization_code"),
                 eq(asSet("read", "write")), eq(redirectUri))).thenReturn(client);
         // mock 方法（场景二）
         when(oauth2ApproveService.updateAfterApproval(isNull(), eq(UserTypeEnum.ADMIN.getValue()), eq(clientId),

@@ -6470,7 +6470,7 @@ demo 数据的写路径/审批/会计过账。清理入口现成：`demo-data/cl
 - `check_migration_contract.py` PASS：tracked=61 scanned=157 findings=0。
 
 **四、对账告警推送**
-- 新增 `scripts/production/push_inventory_reconcile_alert.py`，由外部调度器调用；不在 Java 应用内新增 Quartz/MQ。
+- 新增 `scripts/production/push_inventory_reconcile_alert.py`；后续所有者明确要求禁止任何自动化，改为仅手动调用（见 §12.163.7），不在 Java 应用内新增 Quartz/MQ。
 - 只调用 `/erp/inventory-reconcile/run`，仅在 `consistent=false` 时推送；token/webhook 走环境变量。
 - 真机 dry-run：source=1、projection=2、mismatches=2（erp item=1/wh=1 46 vs 73；mes item=1/wh=1 46 vs 3），脚本正确识别差异且未发 webhook。
 - 状态标记不翻：production_ready=false、gate3_passed=false、independent_review=false、Go/No-Go=No-Go。
@@ -6536,7 +6536,7 @@ demo 数据的写路径/审批/会计过账。清理入口现成：`demo-data/cl
 
 **状态不翻**：production_ready=false、gate3_passed=false、independent_review=false、Go/No-Go=No-Go。
 
-### 12.157 告警本地文件模式 + 调度脚本 + tenant 0 科目共享关闭（2026-10-09）
+### 12.157 告警本地文件模式 + 手动执行脚本 + tenant 0 科目共享关闭（2026-10-09）
 
 **一、告警脚本增加本地文件输出模式**
 - `push_inventory_reconcile_alert.py` 新增 `--log-file` 参数 / `ZC_RECONCILE_LOG_FILE` 环境变量。
@@ -6544,10 +6544,10 @@ demo 数据的写路径/审批/会计过账。清理入口现成：`demo-data/cl
 - 真机验证：tenant 9001 对账 144 条 mismatch → JSONL 文件正确追加，`EXIT=0`。
 - 优先级：`--log-file` CLI 参数 > `ZC_RECONCILE_LOG_FILE` 环境变量 > webhook > dry-run。
 
-**二、Windows Task Scheduler 注册脚本**
-- 新增 `scripts/production/register_reconcile_alert_task.bat`：以管理员运行一次即注册每日 08:00 定时任务 `ZhiCloud_ReconcileAlert`。
-- Token 从系统环境变量 `ZC_RECONCILE_TOKEN` 读取（脚本内不硬编码），日志输出到脚本同目录 `reconcile_alert.jsonl`。
-- 脚本仅做注册，不含业务逻辑；可通过 `schtasks /Delete /TN ZhiCloud_ReconcileAlert` 撤销。
+**二、Windows 手动执行脚本（后续已撤回自动排程）**
+- 后续所有者明确要求“不要任何自动化”：原每日 08:00 的任务注册脚本已删除，现仅保留 `scripts/production/push_inventory_reconcile_alert_manual.bat` 供操作员手动执行。
+- 手动脚本不调用 `schtasks`、不注册 `ZhiCloud_ReconcileAlert`；token/webhook 仍从 `ZC_RECONCILE_TOKEN` / `ZC_RECONCILE_WEBHOOK_URL` 读取，脚本内不硬编码。
+- 管理后台库存对账页提供「执行对账」「手动推送告警」两个按钮；后端 `POST /erp/inventory-reconcile/alert` 只在人工点击/人工调用时触发。
 
 **三、tenant 0 平台科目余额物理共享——关闭**
 - 所有者裁决：项目不商用，多租户独立账簿非当前需求；该项关闭。
@@ -6699,6 +6699,7 @@ hr+oa / protection+security / erp 全 exit 0
 - 新增 `scripts/production/verify_v77_repair_mysql.sh`：6 个场景（无 Flyway 表 no-op / 无 V77 行 no-op / 有列无历史 fail-closed / 半失败补列并改 `success=1`、`checksum=1776434009` / 重复修复 consistent / 重复 V77 行 fail-closed）。
 - 本地用 Git Bash 对隔离 `zc-live-mysql`（MySQL 8.4.11）实跑：**6/6 passed**，跑完 DROP 测试库 `zhicloud_v77_repair_ci`。
 - `.github/workflows/maven.yml` 新增 job `v77-repair-script`（ubuntu-latest + MySQL 8.4 service container，镜像 `mysql:8.4@sha256:0744ee5e…`）执行该脚本。
+- 后续注记（2026-10-09）：V77 正文已幂等化，当前 checksum 为 `-282762132`；`1776434009` 仅作为已发布 legacy checksum 保留用于一次性受控对齐，恢复脚本已同步写当前值。
 
 ### 12.163.3 两个 `.bat` 增加 `--check` + Windows CI 契约（部分闭环）
 
@@ -6772,12 +6773,14 @@ DB/Redis/RabbitMQ 复用隔离 `zc-live-*`（MySQL 8.4.11）。
 同窗口 `不存在租户编号` 命中 0；登录/权限信息/刷新令牌复验仍全 `code=0`。
 证据：`docs/enterprise-platform/evidence/production/skill-catalog-validator-tenant0-20261009.md`。
 
-### 12.163.7 仍未闭环（不得假称完成）
+### 12.163.7 2026-10-09 第 1/2/3/4/5 项收口结果
 
-1. **V77 自动幂等**：V77 正文仍是裸 `ALTER TABLE ADD COLUMN`；本轮提供的是人工恢复脚本 + 静态契约 + CI 实库脚本，不是自动迁移通道。
-2. **生产等价登录/业务 E2E**：本轮是隔离 Docker + 本机 MySQL/Redis/RabbitMQ，非生产等价；未覆盖生产拓扑、故障注入、规模、真实网关与 TLS。
-3. **`.bat` 干净机实跑**：CI 只覆盖 `--check` 契约，未在无 Maven/pnpm 缓存的真实干净 Windows 机跑完整安装。
-4. **对账告警的对外投递目标**：排程方式与投递通道已定——`scripts/production/register_reconcile_alert_task.bat` 注册 Windows 任务计划 `ZhiCloud_ReconcileAlert`（每日 08:00），投递走 `ZC_RECONCILE_WEBHOOK_URL`（token 走 `ZC_RECONCILE_TOKEN`），无 webhook 时落 `ZC_RECONCILE_LOG_FILE` / `--log-file`；**仍未定的只是生产环境实际 webhook URL 由谁提供**（运维/所有者输入，不是代码缺口）。
-5. **`validOAuthClientFromCache` 空 Secret 跳过校验**：对**所有**客户端生效（不只是 `default`），属上游语义，本轮未改；`default` 已通过移除 `client_credentials` 规避匿名换令牌路径，但其他含 `client_credentials` 的启用客户端仍是同一语义。
+1. **V77 自动幂等（已闭环）**：V77 正文已改为 `information_schema` 预检 + 动态 `ALTER TABLE`，重复执行/半失败补列均幂等，目标表缺失仍 fail-closed。`DatabaseMigrationRunner` 只对已发布旧 checksum `1776434009` 做一次性受控对齐；当前源码 checksum 为 `-282762132`；`success=0` 的失败历史仍必须走人工恢复脚本。定向测试 36/36，隔离 MySQL 8.4 实库重复执行后 `version`/`trace_id` 各恰 1 列，恢复脚本 6/6 场景通过。
+2. **生产等价登录/业务 E2E（部分闭环，仍 OPEN）**：已在隔离 Docker（MySQL/Redis/RabbitMQ + 后端 48080）取得真实链路：登录、权限信息、刷新令牌全 `code=0`；手动库存对账 `run` 能读出差异，`POST /alert` 真实推送 webhook 并收到 payload，临时差异行已清理。边界仍是隔离单机、非生产拓扑、故障注入、规模、真实网关与 TLS，不能据此宣称生产等价。
+3. **`.bat` 干净机实跑（部分闭环，仍 OPEN）**：已在空 Maven 本地仓库和空 pnpm store 下冷启动实跑：后端 `start-backend.bat` 成功下载约 642 MB 依赖并生成 jar，前端 `pnpm install --frozen-lockfile` 下载 1147 包、Vite 冷启动 HTTP 200；`pnpm build:local` 成功。边界：本机已有 JDK/Maven/Node/pnpm，不是“无这些前置、无缓存”的真实干净 Windows 机，故完整干净机安装仍未闭环。
+4. **对账告警（已闭环，且无任何自动化）**：按所有者要求不注册 Windows Task Scheduler、不引入 Quartz/CI 定时；原 `register_reconcile_alert_task.bat` 已改为 `push_inventory_reconcile_alert_manual.bat`，只允许手动执行。管理后台新增「执行对账」「手动推送告警」按钮；后端 `POST /erp/inventory-reconcile/alert` 仅在按钮/人工调用时触发，webhook URL/token 走环境变量，未配置且不一致时 502 fail-closed。`InventoryReconcileAlertServiceTest` 3/3，隔离容器真实 webhook 推送验证通过。
+5. **`validOAuthClientFromCache` 空 Secret 跳过校验（按 A 方案已闭环）**：服务层拆成“校验 secret”和“不校验 secret（内部信任/浏览器授权）”两个重载；只要客户端配置了非空 secret，token/revoke/check-token 路径必须提供一致 secret，传空不再跳过；公开客户端仍允许空 secret。定向测试 23/23，构建成功。
+
+**仍未闭环（不翻状态）**：第 2 项的生产等价环境验证、第 3 项的真实干净 Windows 机完整安装；其余生产迁移规模、非 MySQL 方言、真实 TLS、灾备/SLO 等仍按 `00-README.md` 的后续清单执行。
 
 **状态不翻**：production_ready=false、gate3_passed=false、independent_review=false、Go/No-Go=No-Go。

@@ -131,7 +131,7 @@ BEGIN
 
             UPDATE flyway_schema_history
                SET success = 1,
-                   checksum = 1776434009
+                   checksum = -282762132
              WHERE version = '77'
                AND script = 'V77__aimultiagent_resilience.sql'
                AND success = 0;

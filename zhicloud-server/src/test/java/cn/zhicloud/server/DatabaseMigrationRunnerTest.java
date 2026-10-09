@@ -443,6 +443,65 @@ class DatabaseMigrationRunnerTest {
                         Map.of(0, invalidScript, 1, history.get(1)), history.get(1)));
     }
 
+    @Test
+    void legacyV77ChecksumIsExactAndCurrentMigrationHasNewChecksum() throws Exception {
+        assertEquals(1776434009, DatabaseMigrationRunner.LEGACY_V77_CHECKSUM);
+        assertEquals(DatabaseMigrationRunner.flywayChecksum(
+                        readResource(DatabaseMigrationRunner.V77_MIGRATION_RESOURCE)),
+                DatabaseMigrationRunner.CURRENT_V77_CHECKSUM);
+        assertTrue(DatabaseMigrationRunner.CURRENT_V77_CHECKSUM
+                != DatabaseMigrationRunner.LEGACY_V77_CHECKSUM);
+    }
+
+    @Test
+    void v77ChecksumDispositionOnlyAllowsCurrentOrExactLegacy() {
+        assertEquals(DatabaseMigrationRunner.V77ChecksumDisposition.CURRENT,
+                DatabaseMigrationRunner.classifyV77HistoryRow(historyRow(77,
+                        DatabaseMigrationRunner.CURRENT_V77_CHECKSUM,
+                        "77", "V77__aimultiagent_resilience.sql")));
+        assertEquals(DatabaseMigrationRunner.V77ChecksumDisposition.LEGACY_REPAIR_REQUIRED,
+                DatabaseMigrationRunner.classifyV77HistoryRow(historyRow(77,
+                        DatabaseMigrationRunner.LEGACY_V77_CHECKSUM,
+                        "77", "V77__aimultiagent_resilience.sql")));
+
+        assertEquals(DatabaseMigrationRunner.V77ChecksumDisposition.FAILED,
+                DatabaseMigrationRunner.classifyV77HistoryRow(new DatabaseMigrationRunner.HistoryRow(
+                        77, "77", "aimultiagent resilience", "SQL",
+                        "V77__aimultiagent_resilience.sql", DatabaseMigrationRunner.LEGACY_V77_CHECKSUM,
+                        "migration-user", "2026-09-28 00:00:00", 10L, false)));
+
+        IllegalStateException unknown = assertThrows(IllegalStateException.class,
+                () -> DatabaseMigrationRunner.classifyV77HistoryRow(historyRow(77, 123456789,
+                        "77", "V77__aimultiagent_resilience.sql")));
+        assertTrue(unknown.getMessage().contains("未知"));
+        assertTrue(unknown.getMessage().contains("V77"));
+    }
+
+    @Test
+    void v77ChecksumRepairScopeAllowsOnlyTheExactChecksumCellToChange() {
+        int legacyRank = 77;
+        int laterRank = 78;
+        Map<Integer, DatabaseMigrationRunner.HistoryRow> before = new LinkedHashMap<>();
+        before.put(legacyRank, historyRow(legacyRank, DatabaseMigrationRunner.LEGACY_V77_CHECKSUM,
+                "77", "V77__aimultiagent_resilience.sql"));
+        before.put(laterRank, historyRow(laterRank, 456789, "78",
+                "V78__example.sql"));
+
+        Map<Integer, DatabaseMigrationRunner.HistoryRow> after = new LinkedHashMap<>(before);
+        after.put(legacyRank, historyRow(legacyRank, DatabaseMigrationRunner.CURRENT_V77_CHECKSUM,
+                "77", "V77__aimultiagent_resilience.sql"));
+
+        assertDoesNotThrow(() -> DatabaseMigrationRunner.validateV77ChecksumRepairScope(
+                before, after, legacyRank, DatabaseMigrationRunner.CURRENT_V77_CHECKSUM));
+
+        Map<Integer, DatabaseMigrationRunner.HistoryRow> drifted = new LinkedHashMap<>(after);
+        drifted.put(laterRank, historyRow(laterRank, 987654, "78",
+                "V78__example.sql"));
+        assertThrows(IllegalStateException.class,
+                () -> DatabaseMigrationRunner.validateV77ChecksumRepairScope(
+                        before, drifted, legacyRank, DatabaseMigrationRunner.CURRENT_V77_CHECKSUM));
+    }
+
     private static DatabaseMigrationRunner.HistoryRow historyRow(
             int installedRank, Integer checksum, String version, String script) {
         return new DatabaseMigrationRunner.HistoryRow(

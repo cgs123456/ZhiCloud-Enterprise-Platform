@@ -3,12 +3,15 @@ package cn.zhicloud.server.controller.admin.inventory;
 import cn.zhicloud.framework.common.pojo.CommonResult;
 import cn.zhicloud.framework.inventory.service.InventoryReconcileReport;
 import cn.zhicloud.framework.inventory.service.InventoryReconciliationService;
+import cn.zhicloud.server.service.inventory.InventoryReconcileAlertResult;
+import cn.zhicloud.server.service.inventory.InventoryReconcileAlertService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -38,11 +41,21 @@ public class InventoryReconcileController {
     @Resource
     private InventoryReconciliationService reconciliationService;
 
+    @Resource
+    private InventoryReconcileAlertService alertService;
+
     @GetMapping("/run")
     @Operation(summary = "执行一次库存对账并返回差异报告（只读）")
     @PreAuthorize("@ss.hasPermission('erp:inventory-reconcile:query')")
     public CommonResult<InventoryReconcileReport> run() {
         return success(reconciliationService.reconcile());
+    }
+
+    @PostMapping("/alert")
+    @Operation(summary = "手动执行库存对账并向 webhook 推送不一致告警（无自动排程）")
+    @PreAuthorize("@ss.hasPermission('erp:inventory-reconcile:query')")
+    public CommonResult<InventoryReconcileAlertResult> pushAlert() {
+        return success(alertService.pushAlertIfNeeded());
     }
 
 }

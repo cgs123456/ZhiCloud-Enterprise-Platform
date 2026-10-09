@@ -119,8 +119,20 @@ public class OAuth2ClientServiceImpl implements OAuth2ClientService {
     }
 
     @Override
+    public OAuth2ClientDO validOAuthClientFromCache(String clientId, String authorizedGrantType,
+                                                    Collection<String> scopes, String redirectUri) {
+        return doValidOAuthClientFromCache(clientId, null, false, authorizedGrantType, scopes, redirectUri);
+    }
+
+    @Override
     public OAuth2ClientDO validOAuthClientFromCache(String clientId, String clientSecret, String authorizedGrantType,
                                                     Collection<String> scopes, String redirectUri) {
+        return doValidOAuthClientFromCache(clientId, clientSecret, true, authorizedGrantType, scopes, redirectUri);
+    }
+
+    private OAuth2ClientDO doValidOAuthClientFromCache(String clientId, String clientSecret, boolean checkSecret,
+                                                       String authorizedGrantType, Collection<String> scopes,
+                                                       String redirectUri) {
         // 校验客户端存在、且开启
         OAuth2ClientDO client = getSelf().getOAuth2ClientFromCache(clientId);
         if (client == null) {
@@ -130,8 +142,10 @@ public class OAuth2ClientServiceImpl implements OAuth2ClientService {
             throw exception(OAUTH2_CLIENT_DISABLE);
         }
 
-        // 校验客户端密钥
-        if (StrUtil.isNotEmpty(clientSecret) && ObjectUtil.notEqual(client.getSecret(), clientSecret)) {
+        // 校验客户端密钥：只要客户端配置了非空 secret，调用方就必须提供一致的 secret。
+        // 修复前判的是「调用方传值非空」，导致 Basic clientId: （空 secret）可绕过校验。
+        if (checkSecret && StrUtil.isNotEmpty(client.getSecret())
+                && ObjectUtil.notEqual(client.getSecret(), clientSecret)) {
             throw exception(OAUTH2_CLIENT_CLIENT_SECRET_ERROR);
         }
         // 校验授权方式

@@ -193,6 +193,10 @@ public class OAuth2ClientServiceImplTest extends BaseDbUnitTest {
             OAuth2ClientDO client02 = randomPojo(OAuth2ClientDO.class).setClientId("disable")
                     .setStatus(CommonStatusEnum.DISABLE.getStatus());
             oauth2ClientMapper.insert(client02);
+            OAuth2ClientDO publicClient = randomPojo(OAuth2ClientDO.class).setClientId("public")
+                    .setSecret("")
+                    .setStatus(CommonStatusEnum.ENABLE.getStatus());
+            oauth2ClientMapper.insert(publicClient);
 
             // 调用，并断言
             assertServiceException(() -> oauth2ClientService.validOAuthClientFromCache(randomString(),
@@ -202,11 +206,13 @@ public class OAuth2ClientServiceImplTest extends BaseDbUnitTest {
             assertServiceException(() -> oauth2ClientService.validOAuthClientFromCache("default",
                     randomString(), null, null, null), OAUTH2_CLIENT_CLIENT_SECRET_ERROR);
             assertServiceException(() -> oauth2ClientService.validOAuthClientFromCache("default",
-                    null, randomString(), null, null), OAUTH2_CLIENT_AUTHORIZED_GRANT_TYPE_NOT_EXISTS);
+                    null, null, null, null), OAUTH2_CLIENT_CLIENT_SECRET_ERROR);
             assertServiceException(() -> oauth2ClientService.validOAuthClientFromCache("default",
-                    null, null, Collections.singleton(randomString()), null), OAUTH2_CLIENT_SCOPE_OVER);
+                    client.getSecret(), randomString(), null, null), OAUTH2_CLIENT_AUTHORIZED_GRANT_TYPE_NOT_EXISTS);
             assertServiceException(() -> oauth2ClientService.validOAuthClientFromCache("default",
-                    null, null, null, "test"), OAUTH2_CLIENT_REDIRECT_URI_NOT_MATCH, "test");
+                    client.getSecret(), null, Collections.singleton(randomString()), null), OAUTH2_CLIENT_SCOPE_OVER);
+            assertServiceException(() -> oauth2ClientService.validOAuthClientFromCache("default",
+                    client.getSecret(), null, null, "test"), OAUTH2_CLIENT_REDIRECT_URI_NOT_MATCH, "test");
             // 成功调用（1：参数完整）
             OAuth2ClientDO result = oauth2ClientService.validOAuthClientFromCache(client.getClientId(), client.getSecret(),
                     client.getAuthorizedGrantTypes().get(0), client.getScopes(), client.getRedirectUris().get(0));
@@ -214,6 +220,12 @@ public class OAuth2ClientServiceImplTest extends BaseDbUnitTest {
             // 成功调用（2：只有 clientId 参数）
             result = oauth2ClientService.validOAuthClientFromCache(client.getClientId());
             assertPojoEquals(client, result);
+            // 成功调用（3：空 secret 的 public client 不要求 client_secret）
+            result = oauth2ClientService.validOAuthClientFromCache(publicClient.getClientId());
+            assertPojoEquals(publicClient, result);
+            result = oauth2ClientService.validOAuthClientFromCache(publicClient.getClientId(),
+                    null, null, null, null);
+            assertPojoEquals(publicClient, result);
         }
     }
 

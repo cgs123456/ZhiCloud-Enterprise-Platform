@@ -4,12 +4,12 @@
 
 设计边界：
   * 不在 Java 应用内新增 Quartz/消息队列；按 owner 口径，告警是运维设施。
-  * 本脚本由外部调度器调用（cron / Windows Task Scheduler / K8s CronJob 均可）。
+  * 本脚本只供运维人员在需要时手动调用；项目明确不注册 cron / Windows Task Scheduler / K8s CronJob。
   * 只调用对账只读端点；对账服务本身不写任何业务表。
   * 仅当报告 consistent=false 时推送，避免定时噪音。
   * Webhook URL 与凭据从环境变量读取，避免进入 shell history/argv。
 
-用法：
+用法（仅手动执行，不提供排程注册脚本）：
   ZC_RECONCILE_TOKEN=xxx ZC_RECONCILE_WEBHOOK_URL=https://... \\
       python scripts/production/push_inventory_reconcile_alert.py \\
       --base-url http://127.0.0.1:48080/admin-api --tenant-id 1
