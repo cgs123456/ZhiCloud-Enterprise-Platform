@@ -6364,3 +6364,262 @@ demo 数据的写路径/审批/会计过账。清理入口现成：`demo-data/cl
 （双谓词 tenant+creator），演示租户/账号三行（9001/900100/900101/900100）如需一并清，
 按 §3.4 走沙箱不入库。证据工件 `demo-data-fill-tenant9001-20261008_162945.json`
 （SHA-256 `f635b06e370b33e9d27c04693a34a924520138f252a5460099fbdbd6724849ab`，含旁车，不入库）。
+
+
+### 12.150 全景复核（2026-10-08）：项目现状与后续方向（只读复核，不改结论）
+
+本节只同步口径，不改业务代码、不翻风险登记状态、不新增门禁。
+
+**一、当前基线**
+- 仓库 `zhicloud-audit-src2` 在 `upgrade/production-readiness`，HEAD `3a6c6579`；复核时点无 tracked 业务/文档 diff，未跟踪项集中在 `docs/enterprise-platform/evidence/production/**`，按证据约定不入库。
+- 商业域（会员/积分/充值/钱包/佣金/商城交易）已按所有者裁决整体移除。
+- 本轮只跑迁移契约：`check_migration_contract.py` PASS（tracked=60 / scanned=156 / findings=0）。Java/Python 全量本轮未复跑，历史绿不能外推为本轮绿。
+- 状态标记保持：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、Go/No-Go=`No-Go`。
+
+**二、业务现状**
+- 八大业务域骨架与大量 API 已在库内；已有多条真机链证据（OA 报销、HR 请假、QMS 收货/流转/发运、WMS 移库/发运、TMS→WMS、CRM 合同审批、采购/销售/收付款/退货会计事件、期间关闭守卫、库存对账等）。
+- 演示数据已进服务库 `zhicloud_sandbox_v140` 的租户 9001，主数据 19 表 267 行 + 业务 99 表 2,458 行，读路径/API 分页/租户隔离验证过；**写路径、审批、会计过账未跑**。
+- `creator` 审计列非数字导致 14 个分页端点 500 的同族缺陷已修复（`NumberUtils` 宽松化 + 19 controller 32 处），`NumberUtilsTest` 4/4，common+CRM+ERP 模块测试全绿，真机 14 个端点 `code=0`。
+
+**三、未闭环/需所有者或后续动作**
+- R-G3.5-4 四件所有者裁决事项：责任人、保留期、清库存流程、回收证据；现状是沙箱运行资源只读盘点，登记不动。
+- `crm/follow-up-record/page` 不带 `bizId` 时 500（`CrmPermissionAspect` NPE），与演示数据无关，属既有切面缺陷，修法涉及语义裁决。
+- outbox DLQ 重放入口未做。
+- demo 数据业务写路径/审批/会计过账未验。
+- `tms_shipment` collation 与全库不一致，跨表字符串 JOIN 仍需显式 COLLATE；迁移统一收口影响面大，未动。
+- 对账告警是否推送属运维设施，暂未做。
+
+**四、后续方向**
+1. 先等所有者对上面裁决项拍板，不自作主张翻状态。
+2. 业务价值优先的续做点是 demo 写路径验证：用 `demo_admin` 跑一条完整链（销售订单→出库→收款 或 采购→入库→质检），断言落 DB 行。
+3. 其余新增功能先读码核实“是否真是缺口”，防止把设计边界误判成待补。
+4. 工程化门禁/告警/审计类工作按所有者口径点到即止，不主动加码。
+
+### 12.151 未闭环事项处理（2026-10-08）：CRM 分页、平台科目回退、销售出库→会计过账真机闭环
+
+本节处理交接遗留项，不新增工程化门禁；所有 API 结论均来自 48080 真机，DB 结论均来自 `zhicloud_sandbox_v140` 租户 9001 实际行。
+
+**一、CRM 跟进记录分页：两层修复，真机复验通过**
+- 前提核实：`CrmFollowUpRecordServiceImpl.getFollowUpRecordPage` 的权限注解本就以 `#pageReqVO.bizType/#pageReqVO.bizId` 为权限范围，因此必填化 `bizType/bizId` 与既有语义一致，不是改变接口含义。
+- 修复层 1：`CrmFollowUpRecordPageReqVO` 对 `bizType`、`bizId` 加 `@NotNull`，无参请求进入权限切面前先返回 400，避免 `CrmPermissionAspect` 对 null 表达式 NPE。
+- 修复层 2：真机带合法参数后仍 500，日志定位到 `contact_ids`/`business_ids` 反序列化为 null 时控制器直接 `.stream()`。改为 `CollUtil.emptyIfNull(...)` 兜底；该缺陷与 demo 数据真实相关，不是靠清数据绕过。
+- 真机：无参返回 `code=400, msg="请求参数不正确:数据编号不能为空"`；`bizType=1&bizId=6460000` 返回 `code=0,total=1`。
+- 测试：`CrmFollowUpRecordControllerTest` 先复现 null 集合 NPE，再转绿；`CrmFollowUpRecordPageReqVOTest` 覆盖必填约束。CRM 模块 50 run / 0 fail / 5 skip。
+
+**二、ERP 平台科目回退：补齐分录快照与余额更新，真机过账闭环**
+- 原问题：租户 9001 无同编码科目，会计事件按设计回退到 tenant 0 平台科目，但凭证校验按当前租户查询报 `GL_ACCOUNT_NOT_EXISTS`。此前已有 `selectAccountForVoucher` 校验回退；本轮核实后发现还不完整：分录冗余 `account_code/account_name` 仍取不到，审核时 `updateAccountBalance` 仍按当前租户查平台科目并静默跳过。
+- 补齐：`saveEntries` 改走同一回退读取；`updateAccountBalance` 用 `TenantUtils.execute(account.getTenantId(), ...)` 按科目所属租户更新余额。单元测试先复现“快照为 null + 平台余额未更新”两条失败，再转绿。
+- 真机链：销售出库 5480009 `PUT /erp/sale-out/update-status?id=5480009&status=20` 返回 `code=0`；出库状态变 20。生成会计事件 id=21（`SALES_SHIPMENT_POSTED`）、凭证 id=17，四条分录分别落在 1122/6401/6001/1405，借贷各 1345.64。库存记录 5820040 记 912000/-2；`inventory_item` id=7 仍为 16。
+- 凭证审核：`POST /erp/gl-voucher/approve?id=17` 返回 `code=0`；会计事件/凭证/posting 状态均到 20，`posted_at` 均落值。平台科目余额断言：1122 借 77.24；6401 借 1268.40；6001 贷 77.24；1405 贷 1268.40。
+- 残余风险：回退到 tenant 0 平台科目时余额物理落在平台科目行上，多租户同时使用会共享余额。这是当前设计口径的已知边界；若要求严格租户账簿，应改用租户科目初始化/覆盖，而不是继续扩大平台科目回退。
+
+**三、服务启动阻塞：根因不是 Git Bash，也不是 Redisson 连接失败**
+- 最小复现：`Selector.open()` 在 PowerShell 与 Git Bash 下均报 `Unable to establish loopback connection`；手工 AF_UNIX client/server 在 `C:\Temp\...` 成功，JDK 自动绑定到 `%TEMP%\socket_*` 后 connect 报 `Invalid argument`。
+- 根因定位：Windows 上 JDK 21 `UnixDomainSocketsUtil` 优先读 `jdk.net.unixdomain.tmpdir`，否则用 `%TEMP%`；当前 `%TEMP%` 路径用于 AF_UNIX 自动绑定会失败。`-Djdk.net.unixdomain.tmpdir=C:\Temp` 最小探针转绿。
+- 处置：只改本地 `%TEMP%\zc-v140-boot.sh`，Java 命令加该参数；不改仓库配置、不装全局 JDK。服务 48080 正常监听并完成上述业务验证。Redis Stream 监听仍打印 Redisson/Spring Data 的 `ClassCastException`，但服务启动和业务链路未受阻断，单独登记为既有依赖兼容噪音。
+
+**四、其余未闭环口径**
+- outbox DLQ 重放入口已存在：`EventDlqController` 的 `/replay`、`/replay-batch` 与 `EventDlqServiceImpl` 实现齐全，`EventDlqServiceTest` 21/21 绿；本轮不改代码。
+- demo 写路径只闭环了销售订单→销售出库→会计凭证/过账与库存行；收款、采购入库、质检等链路仍未跑。
+- R-G3.5-4 四件所有者裁决事项、`tms_shipment` collation 统一、对账告警推送，均维持原状，不自动收口。
+- 状态标记不翻：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、Go/No-Go=`No-Go`。
+
+**验证汇总**：CRM 50 run / 0 fail / 5 skip；ERP 169 run / 0 fail / 0 skip；`zhicloud-server` package BUILD SUCCESS（2026-10-08 18:39:52）。本节无迁移、无 evidence 入库。
+
+### 12.152 未闭环续做（2026-10-08）：demo 收款、采购入库、QA 判定真机落库
+
+**范围**：只做业务链真机验证与落库断言；不触碰 R-G3.5-4、`tms_shipment` collation、对账告警推送等所有者裁决项。
+
+**一、销售出库→收款→会计过账**
+- 新建收款单 5880006（`SKD20261008000001`），客户 913000、账户 5000000、金额 77.24，关联销售出库 5480009（bizType=21）。
+- 审核收款单 `code=0`；会计事件 22（`RECEIPT_POSTED`）、GL 凭证 18（1002 借 77.24 / 1122 贷 77.24）生成。
+- 凭证 18 审核后：event 22 / voucher 18 / posting 18 均 status=20；平台科目 1002 借 77.24，1122 借贷各 77.24；销售出库 5480009 `receipt_price=77.24`。
+
+**二、采购订单→采购入库→库存与暂估**
+- 新建采购订单 5560008（`CGDD20261008000001`，供应商 914000，产品 912002×3，金额 1906.26）并审核；订单项 5580024。
+- 新建采购入库 5600006（`CGRK20261008000001`）并审核；库存记录 5820041 记 912002/915002/+3，库存项 5800010 从 490.156 变为 493.156；订单头与订单项 `in_count` 均为 3。
+- 会计事件 23（`PURCHASE_RECEIPT_ACCRUAL`）、GL 凭证 19（1403 借 1906.26 / 2202 贷 1906.26）生成；凭证 19 审核后 event/voucher/posting 均 status=20，平台科目 13 借 1906.26、6 贷 1906.26。
+
+**三、采购入库 QA 判定**
+- 新建 IQC 检验单 6320008（`DEMO-IQC-20261008-001`），`bizType=PURCHASE_IN`、`bizId=5600006`。
+- 提交 PASS 检验记录 6340024（item 5360000，severity=MINOR），检验单 status=30（PASSED），断言落在 `qms_inspection_order` 与 `qms_inspection_record`。
+- 说明：该链路建立的是“采购入库单可关联 QA 判定”的落库闭环；采购入库审核本身先于本次 QA 创建，未另行重复验证审批前 QA 卡点拒收。
+
+**发现并登记，不在本节扩大修复**
+- `demo-data/` 生成的旧收款单/采购单明细仍写在 `master_id/bill_id` 旧结构上，与当前服务读写用的 `receipt_id/biz_type/biz_id`、`order_id/order_item_id` 不一致；本轮不改种子数据，改用 API 新建链路验证。
+- `qms/inspection-order/submit` 请求体是 JSON 数组；首次误发单对象返回 500，改为数组后 `code=0`，不属于本链路业务缺陷。
+
+**验证口径**：本节全部断言来自 MySQL `zhicloud_sandbox_v140` 实际行与 48080 真机 API；无迁移、无 evidence 入库、无生产状态翻转。
+
+### 12.153 按推荐完成四项：治理、demo 兼容、tms collation、对账告警
+
+**一、R-G3.5-4 治理规则**
+- 新增 `scripts/production/resource_retention_policy.json`，把四类对象拆开：tracked-baseline、evidence-pinned、unreferenced-evidence、sandbox-runtime。
+- 默认保留期：未引用 evidence 30 天，沙箱运行资源 14 天；tracked-baseline 与被引用证据不设回收期。
+- 硬护栏：无 owner 批准不删；无 pre-cleanup manifest 不删；无 post-cleanup report 不删；tracked-baseline 和 evidence-pinned 永不入候选。
+- 本节没有删除任何文件、容器、卷或账号。
+
+**二、demo 旧明细结构兼容**
+- 新增 `demo-data/compatibility/align_legacy_demo_business_documents.sql`，只作用 `tenant_id=9001`。
+- 回填旧收款明细 6 行、旧采购订单明细 24 行、旧采购入库明细 12 行的新读写列；执行后 legacy 未回填计数均为 0。
+- 不改旧列，不改 demo 生成器主文件，避免一次性放大 schema 快照 diff。
+
+**三、tms_shipment collation**
+- 新增 V150：`ALTER TABLE tms_shipment CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`。
+- 验证 SQL 断言表和全部字符列均为 `utf8mb4_unicode_ci`；当前服务库执行后 `V150_TMS_SHIPMENT_COLLATION PASS`。
+- `check_migration_contract.py` PASS：tracked=61 scanned=157 findings=0。
+
+**四、对账告警推送**
+- 新增 `scripts/production/push_inventory_reconcile_alert.py`，由外部调度器调用；不在 Java 应用内新增 Quartz/MQ。
+- 只调用 `/erp/inventory-reconcile/run`，仅在 `consistent=false` 时推送；token/webhook 走环境变量。
+- 真机 dry-run：source=1、projection=2、mismatches=2（erp item=1/wh=1 46 vs 73；mes item=1/wh=1 46 vs 3），脚本正确识别差异且未发 webhook。
+- 状态标记不翻：production_ready=false、gate3_passed=false、independent_review=false、Go/No-Go=No-Go。
+
+### 12.154 按建议逐项完成：QA 卡点负向、告警推送、清理清单
+
+**一、审批前 QA 卡点双向验证（负向路径）**
+- 新建 IQC 检验单 6320009（`DEMO-IQC-20261008-FAIL-001`），`bizType=PURCHASE_IN`、`bizId=5600007`。
+- 提交 CRITICAL FAIL 记录（result=20、severity=10 一票否决），检验单 `status=40`（FAILED）。
+- 新建 WMS 入库单 6120008（`DEMO-RCP-FAIL-001`），`qcBizId=5600007`、明细 skuId=5020000×1。
+- 调用 `/wms/receipt-order/complete` → 返回 `code=1060200008`"入库单已关联质检业务（qcBizId=5600007），但对应 QMS 检验单未通过，禁止入库"。
+- DB 断言：`wms_receipt_order.id=6120008 status=0`（PREPARE 未变 FINISHED）；`qms_inspection_order.id=6320009 status=40`。
+- 正向路径已在 §12.152 验证（PASS → 入库成功落库存行）；至此双向闭环。
+
+**二、对账告警真实推送**
+- 本地 HTTP 接收端（127.0.0.1:18453）作为 webhook 目标；脚本 POST 实际到达且 HTTP=200。
+- 接收端 payload 断言：`msg_type=text`、`consistent=false`、`sourceCount=2`、`projectionCount=144`、`mismatches=144`。
+- 与 dry-run 一致：不一致即推送，consistent=true 时不推送（§12.153 已验证）。
+
+**三、沙箱资源清理清单（pre-cleanup manifest）**
+- 新增 `scripts/production/pre_cleanup_manifest_20261008.json`：6 容器（全 Exited）+ 6 卷 + 1 网络逐一列名。
+- 按 14 天保留策略：`zhicloud-maven-cache`（14d）与 `zhicloud-mysql-sandbox-data-f29c293d`（14d）已到期；其余 9 天未到期。
+- 排除项：活跃服务（zc-*）、其他会话资源（amz-*、p13net）、Docker 内建（bridge/host/none）、扫描器缓存（grype-*）。
+- DB 用户：`mysql.user` 无 sandbox/zhicloud 账号，无需清理。
+- **未执行任何删除**；`owner_approval_required=true`、`executed=false`。到期不等于可删，仍需所有者具名批准。
+
+**状态不翻**：production_ready=false、gate3_passed=false、independent_review=false、Go/No-Go=No-Go。
+
+### 12.156 待做清单六项真机闭环（2026-10-09）：付款/销售退货/采购退货/其他出入库/MES工单/CRM商机
+
+**一、付款链**
+- 新建付款单 5920005（`FKD20261009000001`），供应商 914000、账户 5000000、金额 1906.26，关联采购入库 5600006（bizType=11）。
+- 审核通过；会计事件 24（`PAYMENT_POSTED`）、GL 凭证 20（2202 借 1906.26 / 1002 贷 1906.26）生成；凭证审核后 event/voucher 均 status=20。
+- 发现并适配：请求体的 `LocalDateTime` 需传 epoch millis（`TimestampLocalDateTimeDeserializer`），ISO 字符串会被解析为 1970 epoch；这是序列化边界，非业务缺陷。
+- 科目余额：2202 借贷平衡（1906.26=1906.26），1002 累计贷方 1829.02（1906.26-77.24）。
+
+**二、销售退货链**
+- 新建退货单 5520003（`XSTH20261009000001`），关联销售订单 5440010/订单项 5460030，数量 1、单价 38.62。
+- 审核通过；会计事件 25（`SALES_RETURN_POSTED`）、GL 凭证 21（6001 借 38.62 / 1122 贷 38.62 + 1405 借 634.20 / 6401 贷 634.20）生成；凭证审核后 status=20。
+- 成本端金额 634.20 由系统按产品成本计算（非售价），口径已核实为规则产出，非本节改动。
+
+**三、采购退货链**
+- 新建退货单 5640002（`CGTH20261009000001`），关联采购订单 5560008/订单项 5580024，数量 1、单价 635.42。
+- 审核通过；会计事件 26（`PURCHASE_RETURN_POSTED`）、GL 凭证 22（1403 贷 635.42 / 2202 借 635.42）生成；凭证审核后 status=20。
+
+**四、其他出入库/移库**
+- 其他入库 5680006（`QTRK20261009000001`）：产品 912001/仓 915003/数量 5/单价 100，审核后库存 341.274。
+- 其他出库 5720005（`QCKD20261009000001`）：同仓同产品/数量 3，审核后库存 338.274。
+- 移库 5760004（`QCDB20261009000001`）：915003→915001/数量 2，审核后源仓 336.274、目标仓 119.566。
+- 三张单据 DB 行与库存行均落断言。
+
+**五、MES 工单全生命周期**
+- 新建工单 5960008（`DEMO-WO-20261009-001`），产品 5080000、数量 10。
+- 状态流转：create(0)→confirm(1)→dispatch(4)→start(5)→finish(2)→close(6)，全部 API 通过，DB status=6。
+- 发现并适配：`/start` 要求先 `/dispatch`（"只有已确认状态的工单才能派工"→ 实际流程是 confirm→dispatch→start），非缺陷。
+
+**六、CRM 商机赢单**
+- 新建商机 6460010（`DEMO_CRM商机-测试`），客户 922000、状态组 5320000、产品 5300001（启用状态，5300000 为禁用不可选）。
+- 状态推进：update-status → statusId=5340003（100%）+ endStatus=1（赢单）。
+- DB 断言：`status_id=5340003`、`end_status=1`。
+
+**验证口径**：全部断言来自 MySQL `zhicloud_sandbox_v140` 行与 48080 API 实际响应；无迁移、无 evidence 入库、无生产状态翻转。
+
+**状态不翻**：production_ready=false、gate3_passed=false、independent_review=false、Go/No-Go=No-Go。
+
+### 12.157 告警本地文件模式 + 调度脚本 + tenant 0 科目共享关闭（2026-10-09）
+
+**一、告警脚本增加本地文件输出模式**
+- `push_inventory_reconcile_alert.py` 新增 `--log-file` 参数 / `ZC_RECONCILE_LOG_FILE` 环境变量。
+- 当设置 log-file 且未设置 webhook 时，告警 JSON（含 timestamp + 完整 report）追加写入文件而非 POST；避免无外部 webhook 时的硬性依赖。
+- 真机验证：tenant 9001 对账 144 条 mismatch → JSONL 文件正确追加，`EXIT=0`。
+- 优先级：`--log-file` CLI 参数 > `ZC_RECONCILE_LOG_FILE` 环境变量 > webhook > dry-run。
+
+**二、Windows Task Scheduler 注册脚本**
+- 新增 `scripts/production/register_reconcile_alert_task.bat`：以管理员运行一次即注册每日 08:00 定时任务 `ZhiCloud_ReconcileAlert`。
+- Token 从系统环境变量 `ZC_RECONCILE_TOKEN` 读取（脚本内不硬编码），日志输出到脚本同目录 `reconcile_alert.jsonl`。
+- 脚本仅做注册，不含业务逻辑；可通过 `schtasks /Delete /TN ZhiCloud_ReconcileAlert` 撤销。
+
+**三、tenant 0 平台科目余额物理共享——关闭**
+- 所有者裁决：项目不商用，多租户独立账簿非当前需求；该项关闭。
+- 台账留存事实：tenant 9001 的 6 笔凭证全部写入 tenant_id=0 平台科目行；tenant 1 有自己的 9 个科目副本不走此路径。若将来多租户商用需另做租户科目初始化（V-migration 副本 + opening 余额）。
+
+
+---
+
+## 12.158 全模块深度 Review——BPM 同族 listener / 签名框架 / 操作日志 / 预算 N+1
+
+**范围**：HR / OA / framework(protection, security) / ERP / MES / System / Infra / IoT 模块的 parseLong 同族缺陷、N+1 循环查询、字符串引用比较。
+
+### 修复（6 文件）
+
+| # | 严重度 | 文件 | 问题 | 修法 |
+|---|---|---|---|---|
+| 1 | HIGH | HrLeaveRequestStatusListener:30 | Long.parseLong(businessKey) 无保护 | NumberUtils.parseLong + null skip |
+| 2 | HIGH | OaDocumentStatusListener:50 | 同上 | 同上 |
+| 3 | HIGH | OaReimburseStatusListener:48 | 同上 | 同上 |
+| 4 | MEDIUM | ApiSignatureAspect:115 | Long.parseLong(timestamp) 客户端垃圾值 → 500 | try-catch → return false |
+| 5 | MEDIUM | LogRecordServiceImpl:63 | Long.parseLong(bizNo) 非数字 → 丢操作日志 | NumberUtils.parseLong |
+| 6 | MEDIUM | ErpBudgetServiceImpl:208 | saveDetails 循环内 selectById N+1 | 批量 selectByIds + Map |
+
+### 核实安全
+
+MesQcIndicatorResultServiceImpl / HrSalaryServiceImpl / IotSceneRuleTimeHelper / SsrfGuard / RagAdvisor / TokenLimitFilter / PersonServiceImpl / MesDvTpKpiServiceImpl / MesProPieceworkSummaryServiceImpl / LiveKitClient / IPUtils / ErpFixedAssetServiceImpl — try-catch 或受控输入。
+
+### 扫描无命中
+
+- N+1: MES/System/Infra/IoT/HR/OA/TMS/CRM/BPM = 0
+- 字符串 ==/!= 引用比较: 全模块 = 0
+
+### 测试
+
+hr+oa / protection+security / erp 全 exit 0
+
+
+---
+
+## 12.159 前后端接口匹配 Review——IoT OTA delete 缺端点 + SmsChannel 前导 /
+
+**范围**：Vue3 前端 2435 个 API 调用 vs 后端 2974 个 Controller 路径。
+
+### 修复（4 文件 23 行）
+
+| # | 文件 | 问题 | 修法 |
+|---|---|---|---|---|
+| 1 | IotOtaFirmwareController | 缺 DELETE 端点，前端调 /delete 返回 404 | 添加 @DeleteMapping + Service delete 方法 |
+| 2 | IotOtaFirmwareService/Impl | 缺 deleteOtaFirmware 方法 | 接口 + 实现对齐 |
+| 3 | SmsChannelController:27 | @RequestMapping 缺前导 / | 补 /system/sms-channel |
+
+### 已匹配（1963/2435）
+### 前端有后端没有的整个模块（不在本轮修复范围）
+- /fms/* 140 个调用，无后端模块
+- /hrm/* 302 个调用，无后端模块
+
+---
+
+## 12.160 外层文档仓证据回流（2026-10-09）：V107 负向验证 + schema triage + V105–V108 沙箱证据
+
+**背景**：桌面外层 `zhicloud\` 是独立的 docs/script 交付仓（`master@01dfe6b`），其工作树有 6 个已改跟踪文档 + 85 个未跟踪条目从未提交。逐类评估后，其中 13 个制品是 src2 缺失的唯一证据；其余（gate 日志、helm TLS 渲染、security baseline、mysql-chain、maven、python、tenant-isolation、do-ddl-flyway、mutation）已被 src2 更晚/更全的口径覆盖，不回迁。
+
+**已回流**（13 文件，417.4 KB，复制到 `docs/enterprise-platform/evidence/production/`，逐文件 MD5 与源一致；src2 evidence 文件数 1664 → 1677）：
+
+| 类别 | 文件 | src2 此前状态 |
+|---|---|---|
+| V107 负向行为 | `30-V107-event-tenant-unique-key-negative-evidence.md`、`v107-negative-mysql-sandbox.json` | 无。`V107_verify.sql` 只是只读结构校验，不含 fail-closed / 跨租户负向断言 |
+| schema triage | `schema-findings-triage-2026-09-27.md/.json`、`schema-audit-sandbox-2026-09-27.json` | 无。src2 的 `schema-audit-20260927_192127.json` 是另一次审计（132 条 / P0 115 / 463 表），与外层 248 条 / P0 154 / 438 表不同源 |
+| V105–V108 沙箱 | `v105-*`、`v106-*`、`v107-mysql-sandbox.json`、`v108-*` 共 8 件 | 有迁移脚本（`V105__event_dlq_replay_log.sql` … `V108__tenant_isolation_p0.sql`），但无逐版本沙箱证据 |
+
+**文档引用**：`08-测试与证据.md` §3.3 中原有两条占位 bullet（"Flyway 11.7.2 对 V108 的解析/执行检查。"、"V107 fail-closed 负向场景。"）已扩写为含路径 + SHA-256 + `generated_at` 的引用，并新增 V105–V108 与 schema triage 条目。
+
+**未闭环**：这 13 件均**未记录生成命令**，保留期/责任人与全项目同口径未指定（`R-G6-2` OPEN）。按 `00-README.md` §3.4，缺要素的结论只能记"待验证"，因此本次**只登记证据与边界，不据此关闭任何门禁**。`production_ready=false`、`gate3_passed=false`、`independent_review=false`、`Go/No-Go=No-Go` 均不变。
+
+**归档**：外层未提交内容已用 `git bundle`（全 refs）+ 临时索引快照提交 `764485bbf921dcf526e8a100e7fb7cfa8a980922` 完整归档于 `zhicloud\archive\20261009-outer-repo-snapshot\`（38.3 MB，含 `MANIFEST.md` 与 `SHA256SUMS.txt`），并已通过"克隆 bundle → 还原快照 → 哈希比对"的恢复演练。外层工作树未改动，仍保留 6 改 + 85 未跟踪。

@@ -1,5 +1,6 @@
 package cn.zhicloud.module.hr.service.leave.listener;
 
+import cn.zhicloud.framework.common.util.number.NumberUtils;
 import cn.zhicloud.module.bpm.api.event.BpmProcessInstanceStatusEvent;
 import cn.zhicloud.module.bpm.api.event.BpmProcessInstanceStatusEventListener;
 import cn.zhicloud.module.hr.service.leave.HrLeaveRequestService;
@@ -27,7 +28,12 @@ public class HrLeaveRequestStatusListener extends BpmProcessInstanceStatusEventL
 
     @Override
     protected void onEvent(BpmProcessInstanceStatusEvent event) {
-        leaveRequestService.updateLeaveRequestBpmResult(Long.parseLong(event.getBusinessKey()),
+        Long leaveId = NumberUtils.parseLong(event.getBusinessKey());
+        if (leaveId == null) {
+            log.error("[onEvent][businessKey({}) 不是有效的请假单编号，跳过状态更新]", event.getBusinessKey());
+            return;
+        }
+        leaveRequestService.updateLeaveRequestBpmResult(leaveId,
                 event.getStatus(), event.getId());
     }
 

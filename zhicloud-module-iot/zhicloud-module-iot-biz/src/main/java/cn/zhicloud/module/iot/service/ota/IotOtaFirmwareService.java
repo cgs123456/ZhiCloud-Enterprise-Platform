@@ -79,6 +79,13 @@ public interface IotOtaFirmwareService {
     PageResult<IotOtaFirmwareDO> getOtaFirmwarePage(@Valid IotOtaFirmwarePageReqVO pageReqVO);
 
     /**
+     * 删除 OTA 固件
+     *
+     * @param id 固件编号
+     */
+    void deleteOtaFirmware(Long id);
+
+    /**
      * 验证 OTA 固件是否存在
      *
      * @param id  固件编号

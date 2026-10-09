@@ -24,7 +24,7 @@ import static cn.zhicloud.framework.common.pojo.CommonResult.success;
 
 @Tag(name = "管理后台 - 短信渠道")
 @RestController
-@RequestMapping("system/sms-channel")
+@RequestMapping("/system/sms-channel")
 public class SmsChannelController {
 
     @Resource

@@ -1,5 +1,6 @@
 package cn.zhicloud.module.crm.controller.admin.followup;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.zhicloud.framework.common.util.number.NumberUtils;
 import cn.zhicloud.framework.common.pojo.CommonResult;
 import cn.zhicloud.framework.common.pojo.PageResult;
@@ -96,9 +97,9 @@ public class CrmFollowUpRecordController {
         PageResult<CrmFollowUpRecordDO> pageResult = followUpRecordService.getFollowUpRecordPage(pageReqVO);
         // 1.1 查询联系人和商机
         Map<Long, CrmContactDO> contactMap = contactService.getContactMap(
-                convertSetByFlatMap(pageResult.getList(), item -> item.getContactIds().stream()));
+                convertSetByFlatMap(pageResult.getList(), item -> CollUtil.emptyIfNull(item.getContactIds()).stream()));
         Map<Long, CrmBusinessDO> businessMap = businessService.getBusinessMap(
-                convertSetByFlatMap(pageResult.getList(), item -> item.getBusinessIds().stream()));
+                convertSetByFlatMap(pageResult.getList(), item -> CollUtil.emptyIfNull(item.getBusinessIds()).stream()));
         // 1.2 查询用户
         Map<Long, AdminUserRespDTO> userMap = adminUserApi.getUserMap(
                 convertSet(pageResult.getList(), item -> NumberUtils.parseLong(item.getCreator())));
@@ -106,9 +107,9 @@ public class CrmFollowUpRecordController {
         PageResult<CrmFollowUpRecordRespVO> voPageResult = BeanUtils.toBean(pageResult, CrmFollowUpRecordRespVO.class, record -> {
             // 2.1 设置联系人和商机信息
             record.setBusinesses(new ArrayList<>()).setContacts(new ArrayList<>());
-            record.getContactIds().forEach(id -> MapUtils.findAndThen(contactMap, id, contact ->
+            CollUtil.emptyIfNull(record.getContactIds()).forEach(id -> MapUtils.findAndThen(contactMap, id, contact ->
                     record.getContacts().add(new CrmBusinessRespVO().setId(contact.getId()).setName(contact.getName()))));
-            record.getBusinessIds().forEach(id -> MapUtils.findAndThen(businessMap, id, business ->
+            CollUtil.emptyIfNull(record.getBusinessIds()).forEach(id -> MapUtils.findAndThen(businessMap, id, business ->
                     record.getBusinesses().add(new CrmBusinessRespVO().setId(business.getId()).setName(business.getName()))));
             // 2.2 设置用户信息
             MapUtils.findAndThen(userMap, NumberUtils.parseLong(record.getCreator()), user -> record.setCreatorName(user.getNickname()));

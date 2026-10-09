@@ -261,6 +261,14 @@ schtasks /run /tn ZhiCloudFrontend   # 前端约 1 分钟就绪（:80）
 - 错误码唯一性门禁：140 处冲突去重，2051 个定义 0 冲突
 
 
+
+## 🔄 最近更新（2026-10-09）
+
+- **代码 Review**：修复 BPM 状态回写 listener 同族 `Long.parseLong` 缺陷（HR/OA×3）、签名框架 timestamp 500、操作日志 bizNo 审计丢失、预算明细 N+1（§12.158）
+- **前后端接口匹配**：扫描 2,435 前端调用 vs 2,974 后端端点；修复 IoT OTA 固件缺 DELETE 端点 + 短信渠道前导 `/`（§12.159）
+- **测试基线**：hr+oa / protection+security / erp 全部通过
+- **遗留**：FMS(140) / HRM(302) 前端页面后端未开发，属规划范围
+
 ## 📄 开源协议
 
 MIT License，个人与企业可 100% 免费使用。

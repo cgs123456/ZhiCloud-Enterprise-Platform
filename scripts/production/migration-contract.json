@@ -422,6 +422,13 @@
       "sha256": "24d84c3931a614220d3ff280903555b00627ed50e99289f2a12ce8182ea8d288",
       "verification_file": "V149_verify.sql",
       "verification_sha256": "72dc910fc68d6252215efb76d2c70c4c5a150ab2709d3729ef2456d6e4ee0a17"
+    },
+    {
+      "version": 150,
+      "file": "V150__tms_shipment_unicode_collation.sql",
+      "sha256": "27421a0efec23261cc2f10f4f5da71347475db5dba472d615e1ddc412a3c9d94",
+      "verification_file": "V150_verify.sql",
+      "verification_sha256": "0a4ef4013df82b6dffbd7d8b8e00bab330c3c3f5d888697b237309a4afc1ecda"
     }
   ]
 }

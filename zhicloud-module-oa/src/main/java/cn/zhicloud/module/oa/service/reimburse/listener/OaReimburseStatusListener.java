@@ -1,5 +1,6 @@
 package cn.zhicloud.module.oa.service.reimburse.listener;
 
+import cn.zhicloud.framework.common.util.number.NumberUtils;
 import cn.zhicloud.module.bpm.api.event.BpmProcessInstanceStatusEvent;
 import cn.zhicloud.module.bpm.api.event.BpmProcessInstanceStatusEventListener;
 import cn.zhicloud.module.bpm.enums.task.BpmProcessInstanceStatusEnum;
@@ -45,7 +46,12 @@ public class OaReimburseStatusListener extends BpmProcessInstanceStatusEventList
             log.info("[onEvent][报销单({}) 忽略 BPM 状态({})]", event.getBusinessKey(), event.getStatus());
             return;
         }
-        reimburseService.updateReimburseStatus(Long.parseLong(event.getBusinessKey()),
+        Long reimburseId = NumberUtils.parseLong(event.getBusinessKey());
+        if (reimburseId == null) {
+            log.error("[onEvent][businessKey({}) 不是有效的报销单编号，跳过状态更新]", event.getBusinessKey());
+            return;
+        }
+        reimburseService.updateReimburseStatus(reimburseId,
                 status, event.getId());
     }
 

@@ -1,5 +1,6 @@
 package cn.zhicloud.module.oa.service.document.listener;
 
+import cn.zhicloud.framework.common.util.number.NumberUtils;
 import cn.zhicloud.module.bpm.api.event.BpmProcessInstanceStatusEvent;
 import cn.zhicloud.module.bpm.api.event.BpmProcessInstanceStatusEventListener;
 import cn.zhicloud.module.bpm.enums.task.BpmProcessInstanceStatusEnum;
@@ -47,7 +48,12 @@ public class OaDocumentStatusListener extends BpmProcessInstanceStatusEventListe
             log.info("[onEvent][公文({}) 忽略 BPM 状态({})]", event.getBusinessKey(), event.getStatus());
             return;
         }
-        documentService.updateDocumentStatus(Long.parseLong(event.getBusinessKey()),
+        Long documentId = NumberUtils.parseLong(event.getBusinessKey());
+        if (documentId == null) {
+            log.error("[onEvent][businessKey({}) 不是有效的公文编号，跳过状态更新]", event.getBusinessKey());
+            return;
+        }
+        documentService.updateDocumentStatus(documentId,
                 status, event.getId());
     }
 

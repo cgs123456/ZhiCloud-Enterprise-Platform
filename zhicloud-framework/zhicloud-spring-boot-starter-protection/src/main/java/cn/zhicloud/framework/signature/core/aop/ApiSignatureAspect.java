@@ -112,7 +112,13 @@ public class ApiSignatureAspect {
 
         // 2. 检查 timestamp 是否超出允许的范围 （重点一：此处需要取绝对值）
         long expireTime = signature.timeUnit().toMillis(signature.timeout());
-        long requestTimestamp = Long.parseLong(timestamp);
+        long requestTimestamp;
+        try {
+            requestTimestamp = Long.parseLong(timestamp);
+        } catch (NumberFormatException e) {
+            // timestamp 不是合法数字，签名校验失败，返回 false 而不是抛异常导致 500
+            return false;
+        }
         long timestampDisparity = Math.abs(System.currentTimeMillis() - requestTimestamp);
         if (timestampDisparity > expireTime) {
             return false;
