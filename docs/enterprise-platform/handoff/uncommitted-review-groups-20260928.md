@@ -6935,6 +6935,8 @@ ative_mysqld_sandbox），故不阻断 master CI；但作为技术债登记，�
 
 ### 四、远端 CI 与未闭环项（如实登记，不美化）
 
+本节修复推送为 `1fcf3a61b`（`master`，远端 SHA 已用 `gh api .../git/ref/heads/master` 核实一致），CI run `37956773428` 读数：代码类门禁（Error Code / Full-Repo @PreAuthorize / WMS Strict / Electronic Signature / Bare-Throw Exception Gate / Transaction Atomicity / Migration Contract / Duplicate DDL）与 **Build with Maven**、V77 Repair Script (MySQL 8.4)、Windows Launcher Contract 均 **success**；失败仍然只有 `Upload Surefire Reports` 与 `Upload Maven Build Log`，check-run annotation 为 `Failed to CreateArtifact: Artifact storage quota has been hit.`——与上一次同因，证实与本次文档修复无关（且本次提交未改任何代码）。附带记录两个不阻断的旧告警：`actions/setup-java@v4` 传了不再支持的 `maven-version` 输入（被忽略），以及 Node.js 20 弃用提醒。这两项与本轮目标无关，未动。
+
 - 远端 `master` = `f827af431`（已用 `gh api .../git/ref/heads/master` 核实）。该 run **代码类门禁全部 success**：
   Error Code / Full-Repo @PreAuthorize / WMS Strict / Electronic Signature / **Bare-Throw Exception Gate（本次修复点，此前连续 5 次 failure）** /
   Transaction Atomicity / Migration Contract / Duplicate DDL / Build with Maven / V77 Repair Script (MySQL 8.4) / Windows Launcher Contract。
