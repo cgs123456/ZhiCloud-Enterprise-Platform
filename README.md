@@ -17,7 +17,7 @@
 | 指标 | 数值（2026-10-09 实测，git ls-files） |
 |------|------|
 | Java 源文件 | 5,882（主代码）+ 404（测试） |
-| Controller | 515（@RestController 计数） |
+| Controller | 512（`@RestController` 且位于 `*/controller/` 下，与 CI 门禁口径一致） |
 | Maven 子模块 | 22 个（20 个进构建；IM / MP 未进构建，Report 进构建但未接入 server，见下方「模块启用状态」） |
 | Flyway 迁移脚本 | 158 个（最高 V151） |
 | SQL 文件 | 341 个（含 Flyway 迁移、多方言安装脚本、demo-data 与审计证据） |
@@ -323,10 +323,12 @@ start-frontend.bat
 - Docker 非 root 用户运行（UID/GID 1000）
 - K8s Secret 占位符 + securityContext
 - QMS 电子签名（21 CFR Part 11）：8 个管控点（审批/驳回/关闭）全量覆盖，CI 门禁防回归
-- 全仓 @PreAuthorize 扫描门禁：GAP 清零（0/515 Controller），CRITICAL=0 匿名可达
+- 全仓 @PreAuthorize 扫描门禁：GAP 清零（0/512 Controller），CRITICAL=0 匿名可达（口径边界见下方说明）
 - 裸抛异常统一门禁：0 处裸抛（81 处显式 @bare-throw-ignore 豁免），CI 防回归
 - 事务原子性门禁：12 处多写操作补 @Transactional，CI 防回归
 - 错误码唯一性门禁：140 处冲突去重，1830 个定义 0 冲突
+
+> **@PreAuthorize 门禁口径边界（实测，已登记）**：`scripts/check_missing_preauthorize.py` 只扫描路径中含 `controller/` 且以 `Controller.java` 结尾的文件（512 个）。全仓另有 **1 个对外暴露的 `@RestController` 落在该口径之外**：`zhicloud-module-iot/.../api/device/IoTDeviceApiImpl.java`（`/rpc-api/iot/device/**` 共 5 个 `@PermitAll` 写接口：auth / get / modbus config-list / register / register-sub）。它靠 `@PermitAll` + 设备自身的 productKey/deviceName 凭证验证，属**设备端认证**设计意图，不是管理后台 RBAC 接口；但它确实不在现有门禁扫描范围内，对应的风险已记入 handoff §12.168，待负责人决定是否扩大门禁口径。
 
 
 

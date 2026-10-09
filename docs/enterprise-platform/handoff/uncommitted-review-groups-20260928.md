@@ -6995,3 +6995,63 @@ ative_mysqld_sandbox），故不阻断 master CI；但作为技术债登记，�
   （验证用的临时 `.env` 已删除，`git status` 干净）。
 - 修复后「按文档能起中间件」成立；这**不等于**生产就绪。
 - **状态不翻**：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、Go/No-Go=`No-Go`。
+
+---
+
+## 12.168 2026-10-10 完整性 Review：@PreAuthorize 门禁口径边界 + README Controller 计数纠偏
+
+### 一、发现（实测，非推断）
+
+README 规模表写「Controller 515（@RestController 计数）」，安全章节写「GAP 清零（0/515 Controller）」。
+实测这两个数**口径不一致且偏大**：
+
+| 口径 | 数量 | 说明 |
+|---|---|---|
+| `git grep -l '@RestController'` 命中的文件 | **515** | 含 1 个 `@RestControllerAdvice`（GlobalExceptionHandler）与 1 处**注释里**的 `@RestController` 字样（PiiMaskConverter 的 javadoc），不是真正的 Controller |
+| 路径含 `controller/` 且以 `Controller.java` 结尾 | **512** | 与 CI 门禁 `check_missing_preauthorize.py` 的扫描口径一致 |
+| 路径**不含** `controller/` 的真实 `@RestController` | **1** | 见下 |
+
+**边界发现（P2，安全门禁覆盖缺口）**：`check_missing_preauthorize.py` 的实现是
+「路径含 `controller/` + 文件名以 `Controller.java` 结尾 + 类头出现 `@RestController|@Controller`」。
+全仓有 **1 个真实 `@RestController` 不满足该路径条件**：
+
+- `zhicloud-module-iot/zhicloud-module-iot-biz/src/main/java/cn/zhicloud/module/iot/api/device/IoTDeviceApiImpl.java`
+  （包路径是 `.../api/device/`，不是 `.../controller/...`）
+- 它通过 `RpcConstants.RPC_API_PREFIX`（`/rpc-api`）暴露 **5 个 `@PermitAll` 写接口**：
+  `/rpc-api/iot/device/auth`、`/rpc-api/iot/device/get`、`/rpc-api/iot/modbus/config-list`、
+  `/rpc-api/iot/device/register`、`/rpc-api/iot/device/register-sub`
+- 定性：这是 **IoT 设备端认证**接口（设备用自身 productKey/deviceName 走 `authDevice`/`registerDevice`），
+  `@PermitAll` 是**设计意图**，不是管理后台 RBAC 漏配；因此**不是**一个「匿名可达后台功能」的 CRITICAL。
+- 但它确实**不在现有 @PreAuthorize 门禁的扫描范围内**——若将来有人往这个类里加管理后台性质的写接口，
+  门禁不会报。这是**门禁口径的盲区**，不是当前已知的越权漏洞。
+
+### 二、修复动作
+
+1. README 规模表：`Controller | 515` → **`512`**，并显式标注口径（`@RestController` 且位于 `*/controller/` 下，与 CI 门禁一致）。
+2. README 安全章节：`0/515 Controller` → **`0/512 Controller`**。
+3. README 安全章节追加一段**口径边界说明**（即上表内容），把「512 不含 IoTDeviceApiImpl 的 5 个设备端 @PermitAll 接口」写清楚，
+   避免把「GAP 清零」误读成「全仓所有 HTTP 端点都已覆盖」。
+4. 本节（§12.168）作为台账记录；**未修改** `check_missing_preauthorize.py`，也**未改动** IoT 设备接口。
+
+### 三、为什么不当场改门禁口径
+
+- 扩大门禁到「全仓 `@RestController`」会立刻扫到 `IoTDeviceApiImpl` 的 5 个 `@PermitAll`，
+  而它们**按设计就该是 PermitAll**（设备端认证）。要么给门禁加「RPC 前缀白名单」，要么给这些方法加豁免标注——
+  两者都会改变 CI 语义或引入新的豁免机制，属**需要所有者决策**的改动，与「清理文档、确保按文档可用」的本轮目标不同。
+- 记录在案 + 由人决定，比在收尾阶段偷偷放宽/收紧门禁更安全。
+
+### 四、验证读数
+
+| 项 | 结果 |
+|---|---|
+| `git grep -l '@RestController'` | 515（含 1 advice + 1 注释） |
+| 路径含 `controller/` 且 `Controller.java` 结尾 | 512 |
+| `python scripts/check_missing_preauthorize.py --include-app --max-gaps 0` | `[OK]`，扫描 **512** 个 Controller 文件 |
+| `git diff --check` | exit=0 |
+
+### 五、边界与状态
+
+- 只改 README 与台账，**未改**任何 Java 代码、未改门禁脚本、未改 CI workflow。
+- 「GAP 清零」的准确含义是「**512 个 `*/controller/` 下的 Controller 写接口全部有 @PreAuthorize**」，
+  不含 IoT 设备端 `/rpc-api` 的 5 个按设计 PermitAll 的接口。
+- **状态不翻**：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、Go/No-Go=`No-Go`。
