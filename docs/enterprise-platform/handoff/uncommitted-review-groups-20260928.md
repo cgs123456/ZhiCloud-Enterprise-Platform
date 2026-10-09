@@ -6750,13 +6750,34 @@ DB/Redis/RabbitMQ 复用隔离 `zc-live-*`（MySQL 8.4.11）。
 完整证据（令牌已脱敏）见 `docs/enterprise-platform/evidence/production/v151-default-oauth2-client-login-e2e-20261009.md`；
 `check_evidence_credentials.py`：`present=1678 scanned=1678 live_credentials=0`，命中 0。
 
-### 12.163.6 仍未闭环（不得假称完成）
+### 12.163.6 附带修复：`SkillCatalogValidator` 启动期校验是死代码（已闭环）
+
+`SkillCatalogValidator`（AI 多智能体模块）是 `ApplicationRunner`，启动时比对 Worker 声明的工具与
+`aimultiagent_skill` 技能目录的绑定关系。它在**启动线程**执行、`TenantContextHolder` 为空，
+而技能表是租户表 → 查询被租户拦截器抛 `TenantContextHolder 不存在租户编号`，
+又被方法内 `catch (Exception e) { log.warn("校验异常，跳过", e); }` 吞掉 →
+**校验从未真正生效**（与「`@ElectronicSignature` 切面实现完整但从未被触发」同型的死代码）。
+
+核实目录归属：`V87__aimultiagent_skill.sql` 种子行 `tenant_id` 全为 0，实库复核
+`aimultiagent_skill` 8 行 / `aimultiagent_skill_group` 6 行均为 `tenant_id=0` →
+技能目录是平台全局（租户 0）目录。
+
+修法：`TenantUtils.execute(0L, this::validateCatalog)`（与 `ErpAccountingEventServiceImpl`
+读平台科目同一写法），未放宽任何 `@TenantIgnore`、未改租户拦截器。新增
+`SkillCatalogValidatorTest`（`Tests run: 3, Failures: 0, Errors: 0, Skipped: 0`，断言查询确实发生在
+租户 0、执行后上下文被还原）。
+
+运行时对照（隔离容器）：修复前两次启动均 `WARN [SkillCatalogValidator][技能目录校验异常，跳过]`；
+修复后 `INFO [SkillCatalogValidator][技能目录校验完成，Worker 数=4，缺失目录的工具数=0]`，
+同窗口 `不存在租户编号` 命中 0；登录/权限信息/刷新令牌复验仍全 `code=0`。
+证据：`docs/enterprise-platform/evidence/production/skill-catalog-validator-tenant0-20261009.md`。
+
+### 12.163.7 仍未闭环（不得假称完成）
 
 1. **V77 自动幂等**：V77 正文仍是裸 `ALTER TABLE ADD COLUMN`；本轮提供的是人工恢复脚本 + 静态契约 + CI 实库脚本，不是自动迁移通道。
 2. **生产等价登录/业务 E2E**：本轮是隔离 Docker + 本机 MySQL/Redis/RabbitMQ，非生产等价；未覆盖生产拓扑、故障注入、规模、真实网关与 TLS。
 3. **`.bat` 干净机实跑**：CI 只覆盖 `--check` 契约，未在无 Maven/pnpm 缓存的真实干净 Windows 机跑完整安装。
 4. **对账告警外部 webhook URL + 排程方式**：所有者已裁决「沙箱资源直接删除 / tenant 0 共享关闭」，webhook 与排程仍未定。
 5. **`validOAuthClientFromCache` 空 Secret 跳过校验**：对**所有**客户端生效（不只是 `default`），属上游语义，本轮未改；`default` 已通过移除 `client_credentials` 规避匿名换令牌路径，但其他含 `client_credentials` 的启用客户端仍是同一语义。
-6. **启动期租户上下文告警**：`SkillCatalogValidator` 在启动时 `TenantContextHolder 不存在租户编号`（WARN 后跳过，非阻断），未修。
 
 **状态不翻**：production_ready=false、gate3_passed=false、independent_review=false、Go/No-Go=No-Go。
