@@ -1656,24 +1656,29 @@ public class BpmTaskServiceImpl implements BpmTaskService {
         }
 
         taskList.forEach(task -> FlowableUtils.execute(task.getTenantId(), () -> {
+            Long assigneeUserId = NumberUtils.parseLong(task.getAssignee());
+            if (assigneeUserId == null) {
+                log.warn("[processTaskTimeout][task({}) assignee({}) not a valid userId, skip timeout handler]", task.getId(), task.getAssignee());
+                return;
+            }
             // 情况一：自动提醒
             if (Objects.equals(handlerType, BpmUserTaskTimeoutHandlerTypeEnum.REMINDER.getType())) {
                 messageService.sendMessageWhenTaskTimeout(new BpmMessageSendWhenTaskTimeoutReqDTO()
                         .setProcessInstanceId(processInstanceId).setProcessInstanceName(processInstance.getName())
-                        .setTaskId(task.getId()).setTaskName(task.getName()).setAssigneeUserId(Long.parseLong(task.getAssignee())));
+                        .setTaskId(task.getId()).setTaskName(task.getName()).setAssigneeUserId(assigneeUserId));
                 return;
             }
 
             // 情况二：自动同意
             if (Objects.equals(handlerType, BpmUserTaskTimeoutHandlerTypeEnum.APPROVE.getType())) {
-                approveTask(Long.parseLong(task.getAssignee()),
+                approveTask(assigneeUserId,
                         new BpmTaskApproveReqVO().setId(task.getId()).setReason(BpmReasonEnum.TIMEOUT_APPROVE.getReason()));
                 return;
             }
 
             // 情况三：自动拒绝
             if (Objects.equals(handlerType, BpmUserTaskTimeoutHandlerTypeEnum.REJECT.getType())) {
-                rejectTask(Long.parseLong(task.getAssignee()),
+                rejectTask(assigneeUserId,
                         new BpmTaskRejectReqVO().setId(task.getId()).setReason(BpmReasonEnum.REJECT_TASK.getReason()));
             }
         }));

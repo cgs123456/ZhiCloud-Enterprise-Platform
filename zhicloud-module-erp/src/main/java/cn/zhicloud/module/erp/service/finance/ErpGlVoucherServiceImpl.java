@@ -1,6 +1,8 @@
 package cn.zhicloud.module.erp.service.finance;
 
 import cn.zhicloud.framework.common.pojo.PageResult;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
 import cn.zhicloud.module.erp.controller.admin.finance.vo.glvoucher.ErpGlVoucherEntryReqVO;
 import cn.zhicloud.module.erp.controller.admin.finance.vo.glvoucher.ErpGlVoucherPageReqVO;
@@ -235,12 +237,7 @@ public class ErpGlVoucherServiceImpl implements ErpGlVoucherService {
         glVoucherMapper.updateById(update);
         // 更新科目累计发生额和期末余额
         List<ErpGlVoucherEntryDO> entries = glVoucherEntryMapper.selectListByVoucherId(id);
-        for (ErpGlVoucherEntryDO entry : entries) {
-            updateAccountBalance(entry.getAccountId(),
-                    entry.getDebitAmount() == null ? BigDecimal.ZERO : entry.getDebitAmount(),
-                    entry.getCreditAmount() == null ? BigDecimal.ZERO : entry.getCreditAmount(),
-                    true);
-        }
+        updateAccountBalances(entries, true);
         markAccountingResultsPosted(id, update.getApprovedTime());
         log.info("[approveGlVoucher][凭证({})审核成功，更新了 {} 个科目余额]", existing.getVoucherNo(), entries.size());
     }
@@ -270,12 +267,7 @@ public class ErpGlVoucherServiceImpl implements ErpGlVoucherService {
         }
         // 回滚科目余额
         List<ErpGlVoucherEntryDO> entries = glVoucherEntryMapper.selectListByVoucherId(id);
-        for (ErpGlVoucherEntryDO entry : entries) {
-            updateAccountBalance(entry.getAccountId(),
-                    entry.getDebitAmount() == null ? BigDecimal.ZERO : entry.getDebitAmount(),
-                    entry.getCreditAmount() == null ? BigDecimal.ZERO : entry.getCreditAmount(),
-                    false);
-        }
+        updateAccountBalances(entries, false);
         // 凭证回到草稿状态
         ErpGlVoucherDO update = new ErpGlVoucherDO();
         update.setId(id);
@@ -320,6 +312,22 @@ public class ErpGlVoucherServiceImpl implements ErpGlVoucherService {
             entryDOs.add(entryDO);
         }
         glVoucherEntryMapper.insertBatch(entryDOs);
+    }
+
+    /**
+     * 按科目聚合金额后逐科目更新一次余额，减少同一科目在同一次审核中的重复 SELECT/UPDATE。
+     */
+    private void updateAccountBalances(List<ErpGlVoucherEntryDO> entries, boolean isApprove) {
+        Map<Long, BigDecimal[]> aggregated = new LinkedHashMap<>();
+        for (ErpGlVoucherEntryDO entry : entries) {
+            BigDecimal debit = entry.getDebitAmount() == null ? BigDecimal.ZERO : entry.getDebitAmount();
+            BigDecimal credit = entry.getCreditAmount() == null ? BigDecimal.ZERO : entry.getCreditAmount();
+            BigDecimal[] amounts = aggregated.computeIfAbsent(entry.getAccountId(), k -> new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO});
+            amounts[0] = amounts[0].add(debit);
+            amounts[1] = amounts[1].add(credit);
+        }
+        aggregated.forEach((accountId, amounts) ->
+                updateAccountBalance(accountId, amounts[0], amounts[1], isApprove));
     }
 
     /**

@@ -106,9 +106,10 @@ class ErpGlVoucherPlatformAccountTest {
         glVoucherService.approveGlVoucher(501L);
 
         ArgumentCaptor<ErpGlAccountDO> accountCaptor = ArgumentCaptor.forClass(ErpGlAccountDO.class);
-        verify(glAccountMapper, times(2)).updateById(accountCaptor.capture());
-        assertEquals(BigDecimal.ONE, accountCaptor.getAllValues().get(0).getCurrentDebit());
-        assertEquals(BigDecimal.ONE, accountCaptor.getAllValues().get(1).getCurrentCredit());
+        // 聚合后同一科目只更新一次，借贷金额在同一行中同时体现
+        verify(glAccountMapper, times(1)).updateById(accountCaptor.capture());
+        assertEquals(BigDecimal.ONE, accountCaptor.getValue().getCurrentDebit());
+        assertEquals(BigDecimal.ONE, accountCaptor.getValue().getCurrentCredit());
     }
 
     private static ErpGlAccountDO platformAccount() {

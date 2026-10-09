@@ -19,6 +19,7 @@ import org.springframework.validation.annotation.Validated;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -57,12 +58,15 @@ public class CrmContactBusinessServiceImpl implements CrmContactBusinessService 
         // 批量校验商机存在性 + 关联判重，避免循环内逐条查询（N+1）
         Map<Long, CrmBusinessDO> businessMap = businessService.getBusinessList(createReqVO.getBusinessIds())
                 .stream().collect(Collectors.toMap(CrmBusinessDO::getId, Function.identity()));
+        // 一次性查出现有关联做判重，避免循环内逐条查询
+        Set<Long> existingBusinessIds = contactBusinessMapper.selectListByContactId(createReqVO.getContactId())
+                .stream().map(CrmContactBusinessDO::getBusinessId).collect(Collectors.toSet());
         createReqVO.getBusinessIds().forEach(businessId -> {
             if (!businessMap.containsKey(businessId)) {
                 throw exception(BUSINESS_NOT_EXISTS);
             }
             // 关联判重
-            if (contactBusinessMapper.selectByContactIdAndBusinessId(createReqVO.getContactId(), businessId) != null) {
+            if (existingBusinessIds.contains(businessId)) {
                 return;
             }
             saveDOList.add(new CrmContactBusinessDO(null, createReqVO.getContactId(), businessId));
@@ -85,12 +89,15 @@ public class CrmContactBusinessServiceImpl implements CrmContactBusinessService 
         // 批量校验联系人存在性 + 关联判重，避免循环内逐条查询（N+1）
         Map<Long, CrmContactDO> contactMap = contactService.getContactList(createReqVO.getContactIds())
                 .stream().collect(Collectors.toMap(CrmContactDO::getId, Function.identity()));
+        // 一次性查出现有关联做判重，避免循环内逐条查询
+        Set<Long> existingContactIds = contactBusinessMapper.selectListByBusinessId(createReqVO.getBusinessId())
+                .stream().map(CrmContactBusinessDO::getContactId).collect(Collectors.toSet());
         createReqVO.getContactIds().forEach(contactId -> {
             if (!contactMap.containsKey(contactId)) {
                 throw exception(CONTACT_NOT_EXISTS);
             }
             // 关联判重
-            if (contactBusinessMapper.selectByContactIdAndBusinessId(contactId, createReqVO.getBusinessId()) != null) {
+            if (existingContactIds.contains(contactId)) {
                 return;
             }
             saveDOList.add(new CrmContactBusinessDO(null, contactId, createReqVO.getBusinessId()));
