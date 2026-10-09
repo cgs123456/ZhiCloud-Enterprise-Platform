@@ -6952,3 +6952,46 @@ ative_mysqld_sandbox），故不阻断 master CI；但作为技术债登记，�
 - 本节只做「修复本仓自身写坏的字节 + 纠偏文档数字」，**未做**任何功能改动、未删任何代码、未翻任何生产状态标记。
 - 修复后 README 的规模数字与门禁描述均与仓库实测一致；这**不等于**生产就绪。
 - **状态不翻**：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、Go/No-Go=`No-Go`。
+
+---
+
+## 12.167 2026-10-10 收尾：修复「按 README 无法顺利使用项目」的 Docker 快速启动缺陷
+
+### 一、发现（实测复现，不是文本推断）
+
+按所有者「确保能顺利根据文档使用项目」的要求，对 README 快速启动做**可执行验证**，发现两个会直接卡住新用户的缺陷：
+
+1. **README 与 `script/docker/Docker-HOWTO.md` 都指向一个不存在的文件**：两处都写
+   `docker compose --env-file docker.env up -d`，但 `docker.env` 被 `.gitignore:65-66` 忽略、
+   从未入库（仓库里只有 `.env.example`）。实测：
+   `couldn't find env file: ...\script\docker\docker.env`，exit=1。
+2. **`.env.example` 本身不完整**（更隐蔽）：`docker-compose.yml` 对 **11 个**变量使用
+   `${VAR:?required}`（无默认值），而模板只给了 6 个，缺
+   `MINIO_ROOT_USER`、`MINIO_ROOT_PASSWORD`、`NACOS_AUTH_TOKEN`、
+   `NACOS_AUTH_IDENTITY_KEY`、`NACOS_AUTH_IDENTITY_VALUE`。
+   即便照模板生成 `.env`，`docker compose config` 仍直接报错退出。
+   另外 Docker-HOWTO 原文写「`--env-file docker.env` 为可选参数，compose 本身已提供足够默认参数」，
+   与事实**相反**——这三个密码（MySQL/Redis/PG）不提供就必然失败。
+
+### 二、修复
+
+- README：快速启动改为 `cp .env.example .env`（填必填密码）→ `docker compose up -d`；
+  初始化管理员前补 `export MYSQL_ROOT_PASSWORD=...`（`--password-env` 读的是**环境变量**，不是 `.env` 文件，原文易误导）。
+- `script/docker/Docker-HOWTO.md`：同步命令、目录树与「可选→必填」的准确表述。
+- `script/docker/.env.example`：补齐 5 个缺失的必填变量（含 Nacos 2.x 32 位基密钥提示）。
+
+### 三、验证读数
+
+| 项 | 结果 |
+|---|---|
+| 旧说明 `docker compose --env-file docker.env config` | exit=1，`couldn't find env file` |
+| 修复前模板生成 .env 后 `docker compose config` | exit=1，缺 MINIO/NACOS 必填变量 |
+| 修复后 `cp .env.example .env` + 填值 → `docker compose config --quiet` | **exit=0** |
+| `git diff --check` | exit=0 |
+
+### 四、边界与状态
+
+- 只改文档与模板，**未改**任何 compose 服务定义、未改 `.gitignore`、未提交任何真实密钥
+  （验证用的临时 `.env` 已删除，`git status` 干净）。
+- 修复后「按文档能起中间件」成立；这**不等于**生产就绪。
+- **状态不翻**：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、Go/No-Go=`No-Go`。
