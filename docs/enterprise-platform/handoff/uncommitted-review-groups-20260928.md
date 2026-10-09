@@ -7055,3 +7055,5 @@ README 规模表写「Controller 515（@RestController 计数）」，安全章�
 - 「GAP 清零」的准确含义是「**512 个 `*/controller/` 下的 Controller 写接口全部有 @PreAuthorize**」，
   不含 IoT 设备端 `/rpc-api` 的 5 个按设计 PermitAll 的接口。
 - **状态不翻**：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、Go/No-Go=`No-Go`。
+
+本节提交为 `ce0d72dfc`（远端 `master` SHA 已核实一致），CI run `37960328996`：8 道代码类门禁（含 **Full-Repo @PreAuthorize / @PermitAll Gate**，扫描 512 个 Controller）与 **Build with Maven**、V77 Repair Script、Windows Launcher Contract 均 **success**；失败仍为 `Upload Surefire Reports`/`Upload Maven Build Log`（artifact 配额，非代码）。
