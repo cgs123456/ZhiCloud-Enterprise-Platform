@@ -18,9 +18,9 @@
 |------|------|
 | Java 源文件 | 5,882（主代码）+ 404（测试） |
 | Controller | 515（@RestController 计数） |
-| Maven 子模块 | 20 个（其中 IM / MP 未进构建，Report 进构建但未接入 server，见下方「模块启用状态」） |
+| Maven 子模块 | 22 个（20 个进构建；IM / MP 未进构建，Report 进构建但未接入 server，见下方「模块启用状态」） |
 | Flyway 迁移脚本 | 158 个（最高 V151） |
-| SQL 文件 | 432 个（含 Flyway 迁移、多方言安装脚本、demo-data 与审计证据） |
+| SQL 文件 | 341 个（含 Flyway 迁移、多方言安装脚本、demo-data 与审计证据） |
 | 单元测试文件 | 404 个 |
 | 框架 Starter | 18 个（zhicloud-common + 17 个 spring-boot-starter-*） |
 
@@ -73,7 +73,7 @@
 
 | 模块 | Controller | 核心能力 |
 |------|-----------|----------|
-| **ERP** 企业资源计划 | 71 | 财务全链路（总账/预算/合并/成本/资产/税务/资金/外币）、供应链（采购/销售/库存）、VMI、CPFR、MRP、DDD 销售订单试点 |
+| **ERP** 企业资源计划 | 70 | 财务全链路（总账/预算/合并/成本/资产/税务/资金/外币）、供应链（采购/销售/库存）、VMI、CPFR、MRP、DDD 销售订单试点 |
 | **MES** 制造执行系统 | 148 | 8 子域：cal 排产 / dv 设备点检 / md 主数据 / pro 生产 / qc 质量 / tm 工具 / wm 仓储 / energy 能源；APS+MRP 智能排产、Andon 安灯、OEE、SCADA、PDA 报工、BOM 替代料 |
 | **WMS** 仓库管理 | 38 | FEFO 效期管理、SN 序列号追踪、3PL 计费、越库、ABC 分析、PDA 全场景、波次拣货、安全库存预警 |
 | **QMS** 质量管理 | 28 | IQC/IPQC/OQC 全流程检验、FMEA、8D 报告、CAPA 闭环、SPC 过程能力、MSA 量测系统、NCR、SCAR、质量追溯、电子签名 |
@@ -107,7 +107,7 @@
 | K8s 部署 | Helm Chart（11 模板文件，不含 values）+ values-dev/prod/staging、ArgoCD GitOps、金丝雀发布 |
 | CI/CD | Jenkins Pipeline（测试→安全扫描→SonarQube→构建→部署/回滚） |
 | 安全 | OWASP Dependency-Check（CVSS≥7 高危阻断；需配置 NVD API Key，未配置时 CI 跳过并告警）、CycloneDX SBOM、pre-commit 密钥扫描、security-check.sh 部署前检查 |
-| 质量门禁 | JaCoCo 覆盖率门禁（当前基线 30%，WMS/MES 已纳入阻断，BPM 暂排除待补齐单测；目标分阶段提升至 60%→80%）+ 7 道 Python 脚本门禁（错误码唯一性/PreAuthorize 全仓/WMS 严格/电子签名/裸抛/事务原子性/错误码基线）、JUnit + Mockito 单元测试 |
+| 质量门禁 | JaCoCo 覆盖率门禁（当前基线 30%，WMS/MES 已纳入阻断，BPM 暂排除待补齐单测；目标分阶段提升至 60%→80%）+ 7 道 Python 脚本门禁（错误码唯一性/PreAuthorize 全仓（含 WMS 严格）/电子签名/裸抛/事务原子性/迁移契约/重复建表收敛）、JUnit + Mockito 单元测试 |
 | 监控 | Prometheus + Grafana（4 Dashboard）+ Loki 日志 + Jaeger 链路追踪 + AlertManager 告警 |
 | 压测 | JMeter（zhicloud-load-test.jmx）+ Gatling（ZhiCloudLoadTest.scala） |
 | 灾备 | 备份脚本、异地容灾、disaster-recovery-drill.sh 演练脚本 |
@@ -322,9 +322,9 @@ start-frontend.bat
 - K8s Secret 占位符 + securityContext
 - QMS 电子签名（21 CFR Part 11）：8 个管控点（审批/驳回/关闭）全量覆盖，CI 门禁防回归
 - 全仓 @PreAuthorize 扫描门禁：GAP 清零（0/515 Controller），CRITICAL=0 匿名可达
-- 裸抛异常统一门禁：0 处裸抛（4 处显式 @bare-throw-ignore 豁免），CI 防回归
+- 裸抛异常统一门禁：0 处裸抛（81 处显式 @bare-throw-ignore 豁免），CI 防回归
 - 事务原子性门禁：12 处多写操作补 @Transactional，CI 防回归
-- 错误码唯一性门禁：140 处冲突去重，2051 个定义 0 冲突
+- 错误码唯一性门禁：140 处冲突去重，1830 个定义 0 冲突
 
 
 
@@ -335,7 +335,8 @@ start-frontend.bat
 - **测试基线**：hr+oa / protection+security / erp 全部通过
 - **Issue #1 已闭环**（closed / completed）：Redis 空密码、前端本地启动、V77 恢复路径；修复提交 `f6b890395`，生产形状 E2E 与干净 Windows 安装证据见 `docs/enterprise-platform/evidence/production/clean-windows-bat-install-20261009/`
 - **文档修正（本次）**：README 登录凭据改为 `init_bootstrap_admin.py` 随机口令流程（原 `admin/admin123` 已被 V115 软禁用）；规模数字、Flyway 版本、测试表、模块启用状态按实测重写
-- **仓库清理（本次）**：移除误提交的 `zhicloud-extracted/`（806 个文件 / 517MB 解包 fat jar，迁移只到 V84）、根目录 `redis2_out.txt` 与 `runlog.txt`、`application-local.yaml` 的 IM 残留日志配置
+- **仓库清理**：移除误提交的 `zhicloud-extracted/`（806 个文件 / 517MB 解包 fat jar，迁移只到 V84）、根目录 `redis2_out.txt` 与 `runlog.txt`、`application-local.yaml` 的 IM 残留日志配置
+- **完整性 review 收尾（本次）**：修复上一提交引入的**转义符号受损**（`docs/enterprise-platform/00-README.md` 与 `handoff/uncommitted-review-groups-20260928.md` 中 `\r`/`\a`/`\b`/`\0` 被当作转义序列写成真实控制字符，吞掉后一字符）；同类问题在 `evidence/production/schema-source-drift-20260928.md`（37 处）与 `script/docker/nacos/README.md`（`bash` 被写成 `\b`+`ash`）中也已修复；修复 README 三处过时数字（SQL 432→341、ERP Controller 71→70、Maven 子模块 20→22）与两处过时门禁描述（裸抛豁免 4→81、错误码定义 2051→1830）
 - **遗留（不影响按文档启动）**：FMS(140) / HRM(302) 前端页面后端未开发，属规划范围；IM/MP 为预留模块，不参与构建
 - **状态未变**：`production_ready=false` / `gate3_passed=false` / `independent_review=false` / Go-No-Go = **No-Go**，本 README 的「可启动」不等于「生产就绪」
 

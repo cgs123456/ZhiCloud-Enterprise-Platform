@@ -3,13 +3,13 @@
 ## Quick Start
 
 1. Start Nacos via docker-compose:
-   `ash
+   `bash
    docker compose up -d nacos
    `
 2. Access Nacos console: http://localhost:8848/nacos
    - Default credentials: nacos / nacos
 3. Activate Nacos config in zhicloud-server:
-   `ash
+   `bash
    java -jar zhicloud-server.jar -Dspring.profiles.active=nacos
    `
 
@@ -62,7 +62,7 @@ The following config keys support dynamic refresh (see application-nacos.yaml):
 
 ## Docker Compose Environment Variables
 
-`ash
+`bash
 # .env file example
 NACOS_AUTH_TOKEN=SecretKey012345678901234567890123456789012345678901234567890123456789
 NACOS_AUTH_IDENTITY_KEY=nacos

@@ -28,19 +28,17 @@
 
 - 表：qrtz_blob_triggers、qrtz_calendars、qrtz_cron_triggers、qrtz_fired_triggers、qrtz_job_details、qrtz_locks、qrtz_paused_trigger_grps、qrtz_scheduler_state、qrtz_simple_triggers、qrtz_simprop_triggers、qrtz_triggers。
 - 唯一定义来源：sql/mysql/quartz.sql。迁移链全文检索 QRTZ 命中数 = **0**。
-- pplication-local.yaml:9 排除 QuartzAutoConfiguration；pplication-local.yaml:109 设置 initialize-schema: NEVER（注释写明"我们手动创建表结构"）。
-- pplication-prod.yaml **完全没有 quartz 配置段**，无 job-store-type=jdbc。
+- application-local.yaml:9 排除 QuartzAutoConfiguration；application-local.yaml:109 设置 initialize-schema: NEVER（注释写明"我们手动创建表结构"）。
+- application-prod.yaml **完全没有 quartz 配置段**，无 job-store-type=jdbc。
 - 推论：走 Helm/K8s 迁移 Job 的生产路径**不会创建 Quartz 表**；如果生产启用 JDBC JobStore，调度器启动即失败，除非人工执行 sql/mysql/quartz.sql。这条与"生产 DDL 只由迁移链产生"的假设直接冲突。
 
 ### 2.2 P1：ERP 财务凭证表在两条源上是两套命名，安装脚本侧已废弃
 
-sql/mysql/erp.sql:725 的 rp_gl_voucher 只有 12 列，使用旧命名 
-o（凭证号）、oucher_time（凭证日期）；迁移链侧使用 oucher_no、oucher_date，并另有 12 列（ccount_book_id、pproved_by、pproved_time、ttachment_count、credit_total、debit_total、period_code、prepared_by、emark、oucher_date、oucher_no、oucher_type）。
+sql/mysql/erp.sql:725 的 erp_gl_voucher 只有 12 列，使用旧命名 no（凭证号）、voucher_time（凭证日期）；迁移链侧使用 voucher_no、voucher_date，并另有 12 列（account_book_id、approved_by、approved_time、attachment_count、credit_total、debit_total、period_code、prepared_by、remark、voucher_date、voucher_no、voucher_type）。
 
-代码侧证据：ERP 模块 + server 模块中 oucherNo 命中 **26** 处，oucherTime 命中 **0** 处，oucher_time 在 XML 中命中 **0** 处。
+代码侧证据：ERP 模块 + server 模块中 voucherNo 命中 **26** 处，voucherTime 命中 **0** 处，voucher_time 在 XML 中命中 **0** 处。
 
-结论：
-o / oucher_time / rp_gl_voucher_entry.master_id 是**遗留命名，当前代码不使用**。危害方向是"从 sql/mysql 初始化的库"：少 12 个代码实际依赖的列、多 5 个废弃列，ERP 凭证功能直接不可用。这正好落在 R-012（ERP 过账/期间关闭）的关键路径上。
+结论：no / voucher_time / erp_gl_voucher_entry.master_id 是**遗留命名，当前代码不使用**。危害方向是"从 sql/mysql 初始化的库"：少 12 个代码实际依赖的列、多 5 个废弃列，ERP 凭证功能直接不可用。这正好落在 R-012（ERP 过账/期间关闭）的关键路径上。
 
 ### 2.3 P2：143 张表只在迁移链，sql/mysql 已严重过时——但仍有 4 条活跃路径以它为输入
 
@@ -55,13 +53,13 @@ o / oucher_time / rp_gl_voucher_entry.master_id 是**遗留命名，当前代�
 
 ### 2.4 P2：快照自带 13 条重复定义警告，快照本身不等于任一真实环境结构
 
-V10__erp_ddl.sql（rp_period、rp_period_close）、V11__wms_ddl.sql（wms_wave_order、wms_wave_order_detail）、V13__qms_ddl.sql（qms_inspection_item、qms_inspection_order、qms_inspection_record、qms_capa_document）、V14__aimultiagent_ddl.sql（2 张）、V73__ai_ddl.sql（1 张）、sql/mysql/wms_wave.sql（2 张）共 13 处重复 CREATE TABLE，快照按**列并集**合并。因此第 3 节的列清单是"合并结果"，不是任一真实库的结构。
+V10__erp_ddl.sql（erp_period、erp_period_close）、V11__wms_ddl.sql（wms_wave_order、wms_wave_order_detail）、V13__qms_ddl.sql（qms_inspection_item、qms_inspection_order、qms_inspection_record、qms_capa_document）、V14__aimultiagent_ddl.sql（2 张）、V73__ai_ddl.sql（1 张）、sql/mysql/wms_wave.sql（2 张）共 13 处重复 CREATE TABLE，快照按**列并集**合并。因此第 3 节的列清单是"合并结果"，不是任一真实库的结构。
 
 ### 2.5 P3：静态解析对动态 SQL 可见性不一致，漂移清单存在双向误报
 
 - V62__wms_asn_pick_batch.sql 用**硬编码字面量**拼 ALTER TABLE ... ADD COLUMN，解析器可见 → 正确识别为"仅迁移链列"。
-- V24__wms_fefo_slotting_fields.sql 用 CONCAT('ALTER TABLE \', tableName, '\ ADD COLUMN \', columnName, ...) + 存储过程 CALL，列名是变量，解析器**不可见** → 把 wms_receipt_order_detail.production_date / xpiry_date 误报为"仅安装脚本列"，而这两列实际已由 V24 添加。
-- 同类不可见风险存在于 V21（存储过程回填）、V80（rp_stock.version 动态 SQL）、V116（ctive_username 生成列）。
+- V24__wms_fefo_slotting_fields.sql 用 CONCAT('ALTER TABLE \', tableName, '\ ADD COLUMN \', columnName, ...) + 存储过程 CALL，列名是变量，解析器**不可见** → 把 wms_receipt_order_detail.production_date / expiry_date 误报为"仅安装脚本列"，而这两列实际已由 V24 添加。
+- 同类不可见风险存在于 V21（存储过程回填）、V80（erp_stock.version 动态 SQL）、V116（active_username 生成列）。
 
 因此：**第 3 节的 54 行列差异中，"仅迁移链"方向的可信度高于"仅安装脚本"方向**；wms_receipt_order_detail 的两条属于已确认的假阳性。唯一可靠口径是在实库上做 information_schema 双向 diff。
 
@@ -134,13 +132,11 @@ wms_item 的"仅安装脚本列 if"来自 sql/mysql/zhicloud_platform_bootstrap.
 
 | 表 | 列 | 迁移链是否存在 | 代码是否使用 | 判定 |
 |---|---|---|---|---|
-| rp_gl_voucher | 
-o | 否（链上为 oucher_no） | 否（oucherNo 26 处；
-o 未单独核对） | 遗留命名，建议删除 |
-| rp_gl_voucher | oucher_time | 否（链上为 oucher_date） | 否（oucherTime 0 处） | 遗留命名，建议删除 |
-| rp_gl_voucher_entry | master_id | 否（链上为 oucher_id） | 否 | 遗留命名，建议删除 |
+| erp_gl_voucher | no | 否（链上为 voucher_no） | 否（voucherNo 26 处；no 未单独核对） | 遗留命名，建议删除 |
+| erp_gl_voucher | voucher_time | 否（链上为 voucher_date） | 否（voucherTime 0 处） | 遗留命名，建议删除 |
+| erp_gl_voucher_entry | master_id | 否（链上为 voucher_id） | 否 | 遗留命名，建议删除 |
 | wms_receipt_order_detail | production_date | 是（V24 动态 SQL 添加） | 是（DO 含 productionDate） | **解析器假阳性**，非真实漂移 |
-| wms_receipt_order_detail | xpiry_date | 是（V24 动态 SQL 添加） | 是（DO 含 xpiryDate） | **解析器假阳性**，非真实漂移 |
+| wms_receipt_order_detail | expiry_date | 是（V24 动态 SQL 添加） | 是（DO 含 expiryDate） | **解析器假阳性**，非真实漂移 |
 | wms_item | if | — | — | **解析器误报**（bootstrap 脚本 IF ... THEN） |
 
 ## 5. 建议处置顺序
@@ -149,8 +145,7 @@ o 未单独核对） | 遗留命名，建议删除 |
 2. **用实库 information_schema 重做 diff**（消除 2.5 的双向误报）：分别用"迁移链初始化"和"sql/mysql 初始化"各建一个 MySQL 8.4.9 库，导出 information_schema.COLUMNS 做双向差集，产出机器可读 JSON 证据，替换静态快照作为漂移判定依据。
 3. **补齐 Quartz 真值**（对应 2.1）：二选一并写进文档——(a) 新增 Flyway 迁移固化 11 张 QRTZ 表；(b) 明确生产不使用 JDBC JobStore，删除 sql/mysql/quartz.sql 的挂载与引用。
 4. **修正 R-013 审计覆盖面**（对应 2.3）：check_tenant_isolation.py 的默认 DDL 目录改为迁移链，或显式传 --ddl-dir 并覆盖 474 张表后重跑，重出证据。
-5. **清理遗留列**（对应 2.2）：删除 sql/mysql 中 
-o / oucher_time / master_id，或在迁移链中补一条重命名映射说明，避免后续误以为安装脚本可用。
+5. **清理遗留列**（对应 2.2）：删除 sql/mysql 中 no / voucher_time / master_id，或在迁移链中补一条重命名映射说明，避免后续误以为安装脚本可用。
 6. **消除重复定义**（对应 2.4）：13 处重复 CREATE TABLE 逐个确认是否应合并/删除，避免"列并集"掩盖真实差异。
 
 ## 6. 复核要求

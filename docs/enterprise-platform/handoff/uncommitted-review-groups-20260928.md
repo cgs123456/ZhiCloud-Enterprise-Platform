@@ -3065,7 +3065,7 @@ datadir 非空且无标记即拒绝（§12.60 那 71 个 `amz_*` 库的形状）
 
 | # | 相对路径 | SHA-256 | `generated_at` | 生成命令 |
 |---|---|---|---|---|
-| 1 | `docs\enterprise-platform\evidence\production\native-lifecycle-20261002_122526/provision/crm-bpm-chain-source-provision-20261002_122636.json` | `73c8ebdf498f1f52638441d64d867ac64bd25b05e92d532b60782f02e3e23d0e` | `2026-10-02T12:26:36+08:00` | `pwsh scripts/production/provision_crm_bpm_chain_source.ps1 -TargetKind native -NativePort 14706 -NativeAdminClient C:	ools\mysql8\mysql-8.0.39-winx64in\mysql.exe -NativePasswordEnv ZC_NATIVE_PW -NativeDataDirPrefix <本轮 TEMP>\data -EvidenceDir docs\enterprise-platform\evidence\production\native-lifecycle-20261002_122526\provision -RunRealChainIt` |
+| 1 | `docs\enterprise-platform\evidence\production\native-lifecycle-20261002_122526/provision/crm-bpm-chain-source-provision-20261002_122636.json` | `73c8ebdf498f1f52638441d64d867ac64bd25b05e92d532b60782f02e3e23d0e` | `2026-10-02T12:26:36+08:00` | `pwsh scripts/production/provision_crm_bpm_chain_source.ps1 -TargetKind native -NativePort 14706 -NativeAdminClient C:	ools\mysql8\mysql-8.0.39-winx64\bin\mysql.exe -NativePasswordEnv ZC_NATIVE_PW -NativeDataDirPrefix <本轮 TEMP>\data -EvidenceDir docs\enterprise-platform\evidence\production\native-lifecycle-20261002_122526\provision -RunRealChainIt` |
 | 2 | `docs\enterprise-platform\evidence\production\native-lifecycle-20261002_122526/ds/crm-bpm-dynamic-datasource-mysql-20261002_122730.json` | `f29b16d5faa50cb070cefe7f4d9c91e76887ea7b1785e273834d86b5b0183c97` | `2026-10-02T12:27:30+08:00` | `pwsh scripts/production/verify_crm_bpm_dynamic_datasource_mysql.ps1 -TargetKind native -NativePort 14706 …（同上三条 native 参数）… -EvidenceDir docs\enterprise-platform\evidence\production\native-lifecycle-20261002_122526\ds` |
 
 原始 Maven 日志（各 569 行）：`crm-bpm-chain-source-provision-20261002_122636.log` SHA-256 `062e80e37724cf1fa412d06129fdbd290d5e51f4b0e0da4d6576cd6a202f0eac`、`crm-bpm-dynamic-datasource-mysql-20261002_122730.log` SHA-256 `52cd8eb6af8918b81e6b7711748ab2b01c0ab6052d8c09298013974bf88870ef`；
@@ -6824,7 +6824,7 @@ DB/Redis/RabbitMQ 复用隔离 `zc-live-*`（MySQL 8.4.11）。
 
 ### 一、发现并修复的真实缺陷：master CI 连续 5 次失败
 
-- 事实：远端 master 最近 5 次 Java CI with Maven 全部 conclusion=failure（含  8eae3331、39fcebeda、21552bad、22f0bbecf、697402fb8）。
+- 事实：远端 master 最近 5 次 Java CI with Maven 全部 conclusion=failure（含 08eae3331、39fcebeda、a21552bad、22f0bbecf、697402fb8）。
 - 失败点：Bare-Throw Exception Gate。本地复现读数 [FAIL] 豁免总数 81 已超过已审校上限 64。
 - 根因：cd8cc85c7 把 MAX_EXEMPTIONS 设为 64 时全仓恰好 64 处豁免；随后 39fcebeda（V77 OAuth / 对账告警闭环）给 DatabaseMigrationRunner.java 新增 17 处豁免（39 → 56），全仓 64 → 81，但**漏同步上限**。
 - 定性：17 处豁免理由与既有豁免同属一类 —— Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间。属"有意识修改但漏改常量"，不是新类型的债。
@@ -6834,14 +6834,14 @@ DB/Redis/RabbitMQ 复用隔离 `zc-live-*`（MySQL 8.4.11）。
 ### 二、仓库清理（最大项：误提交的构建产物）
 
 - **zhicloud-extracted/ 移除**：806 个跟踪文件、517.4 MB（701 个依赖 jar + 91 个 SQL），是解包后的 Spring Boot fat jar。证据：其迁移只到 **V84**（当前源码已 V151），且全仓无任何构建/脚本引用（仅审计证据 JSON 作为被扫描对象提及）。本地原本靠 sparse-checkout（.git/info/sparse-checkout 含 !/zhicloud-extracted/**）隐藏，属"本地看不见但已入库"。
-- **根目录垃圾文件移除**：edis2_out.txt（内容为 python: can't open file 'D:\Desktop\zhicloud\start_redis2.py'）、unlog.txt（内容为 opencode/fix_redis.py 的 SyntaxError 日志）。
-- **IM 残留配置清理**：pplication-local.yaml 删除 cn.zhicloud.module.im.dal.mysql: debug（IM 未进构建，该日志级别是死配置）。已确认全文件仅此 1 处 IM 残留，改动为 1 行删除。
+- **根目录垃圾文件移除**：redis2_out.txt（内容为 python: can't open file 'D:\Desktop\zhicloud\start_redis2.py'）、runlog.txt（内容为 opencode/fix_redis.py 的 SyntaxError 日志）。
+- **IM 残留配置清理**：application-local.yaml 删除 cn.zhicloud.module.im.dal.mysql: debug（IM 未进构建，该日志级别是死配置）。已确认全文件仅此 1 处 IM 残留，改动为 1 行删除。
 - **本地大体积产物清理（约 4.1 GB，均被 .gitignore 覆盖、非跟踪）**：zhicloud-ui/.../node_modules 1712 MB、Temp/pnpm-store-clean-20261009 1623 MB、Temp/ui-node-modules-backup-20261009 1018 MB、Temp/m2-clean-20261009 642 MB、Temp/zhicloud-server-target-backup-20261009 547 MB、zhicloud-ui/.../dist 73 MB。
 - **刻意保留**：Temp/e2e-prodlike/（含 VM 脚本与 key.pem/cert.pem）未删 —— 它被 handoff/evidence 文档按路径引用，删除会让引用悬空；Temp/ 整体未被跟踪，不入库。.gitignore:107-109 的 evidence 反忽略规则未动。
 
 ### 三、文档纠偏（README 是重灾区）
 
-- **登录凭据（Issue #1 根因类别）**：README 原写 租户 智云 / admin / admin123，但 V115 会按 (id, username, password_hash, tenant_id) 精确匹配并**软禁用 V1.1 的 20 个公开种子账号**（含 dmin/dmin123），同时撤销角色/岗位/OAuth2 会话。改为：先启动一次让 Flyway 建出 system_users，再用 scripts/production/init_bootstrap_admin.py 生成随机口令的 zhicloud_admin（BCrypt cost=12），并注明明文只打印一次、--force 轮换、K8s 走 BootstrapAdminRunner。
+- **登录凭据（Issue #1 根因类别）**：README 原写 租户 智云 / admin / admin123，但 V115 会按 (id, username, password_hash, tenant_id) 精确匹配并**软禁用 V1.1 的 20 个公开种子账号**（含 admin/admin123），同时撤销角色/岗位/OAuth2 会话。改为：先启动一次让 Flyway 建出 system_users，再用 scripts/production/init_bootstrap_admin.py 生成随机口令的 zhicloud_admin（BCrypt cost=12），并注明明文只打印一次、--force 轮换、K8s 走 BootstrapAdminRunner。
 - **同一错误在多处**：script/jmeter/README.md 的账号行与执行命令、script/jmeter/zhicloud-load-test.jmx 的 USERNAME/PASSWORD 默认值、script/gatling/.../ZhiCloudLoadTest.scala 的 5 处硬编码、script/shell/disaster-recovery-drill.sh 的登录体，全部改为「zhicloud_admin + 外部传入口令」。Gatling 在缺 -Dpassword 时显式抛错，不再静默用失效口令；灾备脚本改为 ${DRILL_LOGIN_PASSWORD:?required} fail-closed。
 - **规模数字全面失准**（实测 git ls-files）：Java 主代码 6,973 → **5,882**；测试 380 → **404**；Controller 615 → **515**；Flyway 88 个（V1–V82）→ **158 个（V1–V151）**；SQL 276 → **432**；Starter 16 → **18**。
 - **测试表含已删除模块**：Trade(15)/Pay(14)/Promotion(13)/Member(8)/Product(5) 五行随 V140 商业域整体移除删除；IM(21) 与 MP(0) 标注为「未进构建（根 pom 已注释）」，Report(2) 标注为「进构建、未接入 server」。
@@ -6872,3 +6872,81 @@ ative_mysqld_sandbox），故不阻断 master CI；但作为技术债登记，�
 - 本节只做「清理 + 文档纠偏 + 修复被 CI 卡住的常量」，**未做**任何功能改动、未翻任何生产状态标记。
 - README 修复后「全新库可按文档初始化并登录」成立；这**不等于**生产就绪。
 - **状态不翻**：production_ready=false、gate3_passed=false、independent_review=false、Go/No-Go=No-Go。
+
+---
+
+## 12.166 2026-10-09 完整性 Review 收尾：修复本仓自身引入的转义符号受损 + README 过时数字/门禁描述
+
+### 一、发现（按严重程度）
+
+**P0 — 上一个提交把转义序列写成了真实控制字符，吞掉后一字符（本仓自己引入，属回归）**
+
+- `docs/enterprise-platform/00-README.md`（提交 `f827af431` 引入）：第 244 行出现 2 个真实 BEL(`0x07`) 与 2 个真实 CR(`0x0d`)。
+  原文 `redis2_out.txt/runlog.txt` 被写成 `\redis2_out.txt/\runlog.txt`（`\r` 被解释成 CR，吃掉 `r`），
+  `application-local.yaml` 被写成 `\application-local.yaml`（`\a`→BEL，吃掉 `a`），`admin/admin123` 被写成 `\admin/admin123`（同理）。
+- `docs/enterprise-platform/handoff/uncommitted-review-groups-20260928.md`（同一提交引入）：新增的 §12.165 段落里出现 BEL×4、NUL×1、BS×1，
+  受影响的同样是 `application-local.yaml`、`admin/admin123`、提交短哈希 `08eae3331`/`a21552bad` 与 Windows 路径 `...\winx64\bin\mysql.exe`。
+- 判定依据：`git show f827af431^:<file>` 无控制字符，`f827af431` 起出现 → 归属明确，是**本仓自己写坏**，不是上游/生成物问题。
+
+**P1 — 同一类损坏在本仓另有存量（早于本次提交，非本轮引入）**
+
+- `docs/enterprise-platform/evidence/production/schema-source-drift-20260928.md`：37 处控制字符（BEL/VT/ESC/CR），
+  影响 `application-local.yaml`、`application-prod.yaml`、`erp_gl_voucher*`、`voucher_no/date/time/id/type`、
+  `account_book_id`、`approved_by`、`approved_time`、`attachment_count`、`active_username`、`remark`、`expiry_date`、`erp_stock.version` 等标识符。
+  该文件**未被任何 SHA-256 引用**（已按 8/10/12/16/32/64 位前缀全仓检索，命中 0），修字节不会打断证据链；对外只有 `…schema-source-drift-20260928.md:6` 一处**行号引用**，修复后该行（第 6 行，引 `demo-schema-snapshot-20260928_030403.json` 的 payload_sha256）**未变**。
+  需特别说明：该文件的损坏**不只是单字母**——`\n` 转义还吞掉了 `voucher_n` 并把字符串**从中间断成两行**（如 `voucher_no` 变成行尾 + 新行 + `o`）。因此这部分不能只“把控制字符换回字母”，必须按语义重建。重建时用了**独立地事实源交叉验证**：`sql/mysql/erp.sql:727` 实际列名为 `no`（不是 `voucher_no`），与 `docs/enterprise-platform/12-风险登记册.md:59` 的 R-030 条目“安装脚本侧 `no`/`voucher_time`/`master_id` 为遗留”完全一致；若按“补回被吞的字母”直接重建，会得到错误的 `voucher_no`。
+- `script/docker/nacos/README.md`：3 处 `\bash` 被写成 BS+`ash`（代码块围栏坏掉）。
+  该文件仅在 gitleaks 证据里按**路径 + 行号 + fingerprint** 被引用（fingerprint 是 `commit:path:rule:line`，不含文件哈希），修字节不影响这些引用。
+- 其余 4 个控制字符文件（`mall-e2e-run.log`、`clean-windows-bat-install-*/frontend-wait-result.txt`、`server2-status.txt`、`startup-lines.txt`、`vite-output.txt`）
+  是**终端会话录制的真实字节**（ANSI 颜色/进度符），属证据原样，**刻意不动**。
+
+**P2 — README 过时数字与门禁描述（上一轮只改了一部分，遗留 5 处）**
+
+| 位置 | 原值 | 实测值 | 依据 |
+|---|---|---|---|
+| 规模表 SQL 文件 | 432 | **341** | `git ls-files '*.sql'`（432 是删除 `zhicloud-extracted/` 前的旧值，含那 91 个 SQL） |
+| 八大业务域 ERP Controller | 71 | **70** | `git grep -l '@RestController' -- 'zhicloud-module-erp/*.java'` |
+| 规模表 Maven 子模块 | 20 | **22** | 根 `pom.xml` 有 22 个 `<module>`（20 启用 + IM/MP 注释） |
+| 安全加固 裸抛豁免 | 4 | **81** | `git grep -c '@bare-throw-ignore'`（与 `check_bare_throws.py` 的 `MAX_EXEMPTIONS=81` 一致） |
+| 安全加固 错误码定义 | 2051 | **1830** | `check_error_codes.py` 输出「共 1830 个定义」 |
+
+（说明：全仓 `@RestController` 文件数 **515**、测试文件 **404**、Flyway **158（V1–V151）**、Starter **18**、Grafana Dashboard **4**、Helm 模板 **12**、compose 服务 **14** 均已复核**与 README 一致**，不再改动。）
+
+### 二、修复动作
+
+1. **控制字符修复（4 个文件，全部保留原行尾）**：按「转义序列吃字符」的统一规则还原被吞掉的字母——
+   `\a`→`a`、`\b`→`b`、`\v`→`v`、`\f`→`f`、`\e`→`e`、`\0`→`0`、非行尾的孤立 `\r`→`r`；
+   并额外补回 `\b` 同时吞掉的那个路径分隔符（`winx64bin\` → `winx64\bin\`）。
+   修复前后**逐文件核对 LF/CRLF 计数不变**，未做任何行尾归一化（本仓明确禁止对证据文件改行尾）。
+2. **README**：修正上表 5 处；把「7 道 Python 脚本门禁」的列举改为与实际 CI 一致（错误码唯一性 / PreAuthorize 全仓含 WMS 严格 / 电子签名 / 裸抛 / 事务原子性 / 迁移契约 / 重复建表收敛）。
+3. **台账**：本节即为记录；README「最近更新」同步追加本次条目。
+
+### 三、本轮验证读数
+
+| 项 | 结果 |
+|---|---|
+| 4 个修复文件控制字符扫描 | 全部 `ctrl=[]`（0 个残留） |
+| 4 个修复文件行尾 | LF/CRLF 计数与修复前完全一致 |
+| `python scripts/check_error_codes.py` | `[OK]`，共 1830 个定义 0 冲突 |
+| `python scripts/check_bare_throws.py` | `[OK]`，81 处显式豁免 = `MAX_EXEMPTIONS` |
+| `python scripts/check_missing_preauthorize.py --include-app --max-gaps 0` | `[OK]`，512 个 Controller 文件 |
+| `python scripts/check_electronic_signature.py` | `[OK]`，8 处挂载 / 8 个管控点 |
+| `python scripts/production/check_evidence_citations.py` | 仍为既有 1 条 `hash-unattributable`（与本次改动无关，见下） |
+
+### 四、远端 CI 与未闭环项（如实登记，不美化）
+
+- 远端 `master` = `f827af431`（已用 `gh api .../git/ref/heads/master` 核实）。该 run **代码类门禁全部 success**：
+  Error Code / Full-Repo @PreAuthorize / WMS Strict / Electronic Signature / **Bare-Throw Exception Gate（本次修复点，此前连续 5 次 failure）** /
+  Transaction Atomicity / Migration Contract / Duplicate DDL / Build with Maven / V77 Repair Script (MySQL 8.4) / Windows Launcher Contract。
+- **唯一失败**是 `Upload Surefire Reports` 与 `Upload Maven Build Log` 两个上传步骤，报错
+  `Failed to CreateArtifact: Artifact storage quota has been hit.`——属**账号级 artifact 存储配额**，非代码缺陷。
+  实测该账号 artifact 占用：本仓 299 个 / 436.3 MB（surefire 337.4 MB 占 77%）+ AmazonERP 746 个 / 205.8 MB ≈ **642 MB**，已超 GitHub Free 常见的 500 MB 上限。
+  `gh api user` 返回 `plan: null`（token 读不到 plan），故**上限数值本身未确证**，只有「已触发配额拒绝」是事实。
+- **处置未决**：删除旧 artifacts 可释放配额，但可能影响审计证据引用；给上传步骤加 `continue-on-error` 或调小 `retention-days` 会改 CI 语义。
+  两者都属**需要所有者决策**的事项，本轮**未擅自修改** `.github/workflows/maven.yml`。
+
+### 五、边界与状态
+
+- 本节只做「修复本仓自身写坏的字节 + 纠偏文档数字」，**未做**任何功能改动、未删任何代码、未翻任何生产状态标记。
+- 修复后 README 的规模数字与门禁描述均与仓库实测一致；这**不等于**生产就绪。
+- **状态不翻**：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、Go/No-Go=`No-Go`。
