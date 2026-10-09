@@ -7057,3 +7057,112 @@ README 规模表写「Controller 515（@RestController 计数）」，安全章�
 - **状态不翻**：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、Go/No-Go=`No-Go`。
 
 本节提交为 `ce0d72dfc`（远端 `master` SHA 已核实一致），CI run `37960328996`：8 道代码类门禁（含 **Full-Repo @PreAuthorize / @PermitAll Gate**，扫描 512 个 Controller）与 **Build with Maven**、V77 Repair Script、Windows Launcher Contract 均 **success**；失败仍为 `Upload Surefire Reports`/`Upload Maven Build Log`（artifact 配额，非代码）。
+
+---
+
+## 12.169 2026-10-10 完整性 Review：清理死代码残留 + 修复 Docker 文档与实际不符 + 补齐「.env 不作用于宿主机进程」这一真实断点
+
+### 一、清理：删除 4 个前端 `.ts.bak` 死文件
+
+`git ls-files` 检出 4 个从未被引用的备份残留（均为 `49a7f2c82` 前端并入 monorepo 时带入）：
+
+| 文件 | 与正式实现的关系 |
+|---|---|
+| `zhicloud-ui/zhicloud-ui-admin-vue3/src/api/mes/cal/plan/team.ts.bak` | 与 `plan/team/index.ts` 内容等价（仅多一行 `TODO @AI` 注释） |
+| `zhicloud-ui/zhicloud-ui-admin-vue3/src/api/mes/cal/shift/index.ts.bak` | 与 `plan/shift/index.ts` 内容等价（仅多一行 `TODO @AI` 注释） |
+| `zhicloud-ui/zhicloud-ui-admin-vue3/src/api/mes/dv/checkplan/machinery.ts.bak` | 与 `checkplan/machinery/index.ts` 等价，但**字段名是旧的 `machinerySpec`** |
+| `zhicloud-ui/zhicloud-ui-admin-vue3/src/api/mes/dv/checkplan/subject.ts.bak` | 与 `checkplan/subject/index.ts` 等价（仅多一行 `TODO @AI` 注释） |
+
+判定依据（不是「看着像备份就删」）：
+
+1. 4 个文件的基名对应位置**不存在**同名 `.ts`（`team.ts`、`machinery.ts` 等），所以不是「正式文件 + 备份」，
+   而是「正式实现已改名为目录 `index.ts`，旧文件被改名时漏删」。
+2. `git grep` 全仓无任何 `.ts/.vue/.js` 引用 `.bak`（唯一命中是 `sql/tools/.gitignore` 里的 `env.bak/`，无关）。
+3. 4 个 `.bak` 的 `url:`/`method:`/导出符号与对应 `index.ts` 完全一致，**只有注释差异**；
+   `machinery.ts.bak` 的 `machinerySpec` 更是**已过时字段**——后端 `MesDvCheckPlanMachineryRespVO.machinerySpecification`
+   与正式前端 `machinery/index.ts`、`CheckPlanMachineryList.vue` 用的都是 `machinerySpecification`。
+   若误用 `.bak` 版本，规格型号列会取不到值。
+4. 实际被 `import` 的是目录形式（`@/api/mes/cal/plan/team` 等 4 处 `.vue`），解析到 `index.ts`，与 `.bak` 无关。
+
+处置：`git rm` 删除这 4 个文件。**未改动**任何 `index.ts`、`.vue` 或后端 VO。
+
+### 二、修复：`script/docker/Docker-HOWTO.md` 与实际文件/端口不符
+
+| 项 | 原文（错） | 实际（已核实） |
+|---|---|---|
+| 必填变量数 | 「先把**三个**必填密码改成真实强密码」 | `docker-compose.yml` 有 **11 个** `${VAR:?required}` 变量 |
+| 文件树 | 列了 `zhicloud-ui-admin/`、`Dockerfile`、`nginx.conf` | 仓库**没有**这些文件；compose 无前端服务，仅 `zhicloud-server/Dockerfile` |
+| 端口 | 「admin ui: http://localhost:8080」 | **8080 映射给 Trino**；前端由 Vite 提供，不在 compose 内 |
+
+已改为：11 个必填变量逐个列出；文件树改为 `script/docker/` 实际结构 + 指向根 README 的前端启动章节；
+端口表按 `docker compose config --services` 与 `ports:` 实测补齐（含 Trino 8080、MinIO 9000/9001、Nacos 8848/9848、
+Prometheus 9090、Grafana 3000、Jaeger 16686、Alertmanager 9093、Loki 3100），并显式标注 8080 不是管理界面。
+
+### 三、修复：README 快速启动存在「按文档跑不通」的真实断点（本轮最有价值的发现）
+
+README 原文让用户 `cp .env.example .env` 并**把密码改成强密码**，然后 `cd zhicloud-server && mvn spring-boot:run`。
+但 `.env` **只被 docker compose 读取**，宿主机的 `mvn`/`java` 进程不会自动加载它：
+全仓无 `spring.config.import`、无 dotenv 依赖（`git grep` 已核实）。
+
+后果：用户按文档把 `MYSQL_ROOT_PASSWORD` 改成强密码后，MySQL 容器用强密码启动，
+而宿主机后端仍回退到 `application-local.yaml` 的内置默认值（`MASTER_DATASOURCE_PASSWORD:123456`、
+`REDIS_PASSWORD:redis@2026`）→ **Access denied / 认证失败，服务起不来**。
+`start-backend.bat` 同理（它不读 `.env`，只继承当前 shell 环境变量）。
+
+已在 README 快速启动第 3 步显式补上：
+
+```bash
+export MASTER_DATASOURCE_PASSWORD='<与 script/docker/.env 的 MYSQL_ROOT_PASSWORD 相同>'
+export SLAVE_DATASOURCE_PASSWORD='<同上>'
+export REDIS_PASSWORD='<与 script/docker/.env 的 REDIS_PASSWORD 相同>'
+```
+
+并加注 Windows CMD/PowerShell 写法，以及「`start-backend.bat` 同样不读 `.env`」的说明与两条可选路径
+（先设环境变量，或让 `.env` 保持内置默认口令）。同时纠正「Docker Compose 会覆盖 `zhicloud.airag.enabled=true`」
+一句——只有 compose 的 `server` 服务才覆盖；快速启动只起 mysql/redis/postgres 三个中间件，宿主机直跑时该开关仍为 `false`。
+
+### 四、复核一致（未改）的项
+
+| 项 | 实测 |
+|---|---|
+| Java 主代码 | `git ls-files '*/src/main/java/*.java'` = **5,882**（与 README 一致；`cn/zhicloud/` 前缀口径为 5,878，差 4 个包路径不在 `cn/zhicloud` 下的文件） |
+| 测试文件 / SQL / Flyway / Starter / Grafana / Helm | 404 / 341 / 158 / 18 / 4 / 12，与 README 一致 |
+| 模块依赖数 | `zhicloud-server/pom.xml` 有 20 个 `cn.zhicloud` 依赖，其中 16 个是业务模块（另 4 个是 framework starter），README 表述一致 |
+
+### 五、接口一致性扫描（全量，脚本化）
+
+按所有者此前要求，重新做了一次前端调用点 ↔ 后端 Controller 端点比对（不是抽样）：
+
+- 前端：扫描 `zhicloud-ui/.../src` 下全部 `url:` 字面量，去重后 **2,440** 条路径。
+- 后端：解析全部 `@RestController` 的类级 `@RequestMapping` + 方法级
+  `@GetMapping/@PostMapping/@PutMapping/@DeleteMapping/@PatchMapping/@RequestMapping`
+  （含多值 `value = {"/a","/b"}` 写法），按 `/controller/admin/`→`/admin-api`、`/controller/app/`→`/app-api` 补前缀，
+  去重后 **3,011** 个 `(路径, 方法)`。
+- 结果：**451** 条前端路径在后端无对应实现，构成为
+  **FMS 140 + HRM 303 + 8 条模块根路径**（`/ai`、`/bpm`、`/crm`、`/erp`、`/mes`、`/oa`、`/system`、`/wms`，
+  是前端 `url: '/'` 之类的占位写法，不是真实接口）。
+- 结论：**FMS / HRM 之外，没有发现新的前后端路径不一致**。
+  FMS(140) / HRM(303) 与 README「遗留」条目所述「前端页面后端未开发，属规划范围」一致，
+  是**已知规划缺口**而非本轮回归；本轮不新增/删除任何业务接口。
+- 口径更正：README 原写 HRM **302**，实测唯一路径为 **303**（304 条字面量含 1 条重复）；FMS 140 与实测一致。
+
+### 六、验证读数
+
+| 项 | 结果 |
+|---|---|
+| `python scripts/check_error_codes.py` | `[OK]`，1830 个定义 0 冲突，exit=0 |
+| `python scripts/check_bare_throws.py` | `[OK]`，81 处豁免 = `MAX_EXEMPTIONS`，exit=0 |
+| `python scripts/check_electronic_signature.py` | `[OK]`，8 处挂载 / 8 个管控点，exit=0 |
+| `python scripts/check_missing_preauthorize.py --include-app --max-gaps 0` | `[OK]`，扫描 512 个 Controller，exit=0 |
+| `python scripts/production/check_migration_contract.py` | `PASSED: tracked=62 scanned=158 findings=0` |
+| `python scripts/production/check_commit_readiness.py --quiet` | `PASS: required=17 tracked=17 untracked=0 missing=0 warnings=0` |
+| `docker compose --env-file .env.example config --quiet` | exit=0（11 个必填变量在模板中均已提供） |
+| `git diff --check` | exit=0 |
+
+### 七、边界与状态
+
+- 本轮只做：删 4 个无引用备份文件、改 2 个文档（README + Docker-HOWTO）、加本台账节。
+  **未改**任何 Java/Vue/TS 业务代码、未改 compose 服务定义、未改门禁脚本、未改 CI workflow、未改 `.gitignore`。
+- 未提交 `Temp/`、`.blob-sha-ledger`、`.tree-sha`（仍为未跟踪，按既有约定不入仓）。
+- FMS/HRM 后端未开发仍是**规划缺口**，本轮只做口径核实与登记，不改变其状态。
+- **状态不翻**：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、Go/No-Go=`No-Go`。

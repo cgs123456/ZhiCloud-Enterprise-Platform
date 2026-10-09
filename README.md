@@ -228,7 +228,7 @@ zhicloud/
 ```bash
 # 1. 启动中间件（首次需先从模板生成 .env）
 cd script/docker
-cp .env.example .env          # 然后把三个必填密码换成真实强密码
+cp .env.example .env          # 然后把模板里的占位密码全部换成真实强密码
 docker compose up -d mysql redis postgres
 cd ../..
 
@@ -236,12 +236,24 @@ cd ../..
 mvn -B -DskipTests install -T 1C
 
 # 3. 启动后端
+#    注意：.env 只被 docker compose 读取，宿主机的 mvn/java 进程**不会**自动加载它。
+#    必须把同名变量导出到当前 shell，否则 application-local.yaml 会退回内置默认口令
+#    （MySQL/Redis 均为 123456 / redis@2026），与第 1 步设置的强密码不一致而连接失败。
+export MASTER_DATASOURCE_PASSWORD='<与 script/docker/.env 的 MYSQL_ROOT_PASSWORD 相同>'
+export SLAVE_DATASOURCE_PASSWORD='<同上>'
+export REDIS_PASSWORD='<与 script/docker/.env 的 REDIS_PASSWORD 相同>'
 cd zhicloud-server
 mvn spring-boot:run
 ```
 
+> Windows CMD/PowerShell 请改用 `set MASTER_DATASOURCE_PASSWORD=...` / `$env:MASTER_DATASOURCE_PASSWORD="..."`。
+> `start-backend.bat` **同样不读取 `.env`**：它继承当前 shell 的环境变量，读不到时回退到 `application-local.yaml`
+> 的内置默认值（MySQL `123456`、Redis `redis@2026`）。所以要么先设好上面几个环境变量再运行它，
+> 要么把 `script/docker/.env` 里的 `MYSQL_ROOT_PASSWORD` / `REDIS_PASSWORD` 保持为这两个默认值。
+
 后端 API 地址：`http://localhost:48080`。该地址返回未认证 JSON 是正常行为，不是前端管理界面。
-Docker Compose 会覆盖 `zhicloud.airag.enabled=true` 并提供 PostgreSQL+pgvector；`local` profile 自身默认 `false`。
+Docker Compose 的 `server` 服务会覆盖 `zhicloud.airag.enabled=true` 并提供 PostgreSQL+pgvector；
+上面第 1 步只启动了 mysql/redis/postgres 三个中间件，宿主机直跑时 `local` profile 的 `zhicloud.airag.enabled` 仍为默认 `false`。
 
 ### 前端启动（Vue3 + Vite）
 
@@ -332,7 +344,7 @@ start-frontend.bat
 
 
 
-## 🔄 最近更新（2026-10-09）
+## 🔄 最近更新（2026-10-10）
 
 - **代码 Review**：修复 BPM 状态回写 listener 同族 `Long.parseLong` 缺陷（HR/OA×3）、签名框架 timestamp 500、操作日志 bizNo 审计丢失、预算明细 N+1（§12.158）
 - **前后端接口匹配**：扫描 2,435 前端调用 vs 2,974 后端端点；修复 IoT OTA 固件缺 DELETE 端点 + 短信渠道前导 `/`（§12.159）
@@ -341,7 +353,9 @@ start-frontend.bat
 - **文档修正（本次）**：README 登录凭据改为 `init_bootstrap_admin.py` 随机口令流程（原 `admin/admin123` 已被 V115 软禁用）；规模数字、Flyway 版本、测试表、模块启用状态按实测重写
 - **仓库清理**：移除误提交的 `zhicloud-extracted/`（806 个文件 / 517MB 解包 fat jar，迁移只到 V84）、根目录 `redis2_out.txt` 与 `runlog.txt`、`application-local.yaml` 的 IM 残留日志配置
 - **完整性 review 收尾（本次）**：修复上一提交引入的**转义符号受损**（`docs/enterprise-platform/00-README.md` 与 `handoff/uncommitted-review-groups-20260928.md` 中 `\r`/`\a`/`\b`/`\0` 被当作转义序列写成真实控制字符，吞掉后一字符）；同类问题在 `evidence/production/schema-source-drift-20260928.md`（37 处）与 `script/docker/nacos/README.md`（`bash` 被写成 `\b`+`ash`）中也已修复；修复 README 三处过时数字（SQL 432→341、ERP Controller 71→70、Maven 子模块 20→22）与两处过时门禁描述（裸抛豁免 4→81、错误码定义 2051→1830）
-- **遗留（不影响按文档启动）**：FMS(140) / HRM(302) 前端页面后端未开发，属规划范围；IM/MP 为预留模块，不参与构建
+- **遗留（不影响按文档启动）**：FMS(140) / HRM(303) 前端页面后端未开发，属规划范围（口径：前端 `url:` 唯一路径数，与全量前后端接口比对脚本一致）；IM/MP 为预留模块，不参与构建
+- **完整性 review 收尾（2026-10-10，§12.169）**：删除 4 个无引用的前端 `.ts.bak` 死文件（其中一个还带已过时的 `machinerySpec` 字段）；修复 `script/docker/Docker-HOWTO.md` 三处与实际不符（「三个必填密码」实为 **11 个**、文件树里的 `zhicloud-ui-admin/` 目录不存在、「8080 = admin UI」实为 Trino）；修复 README 快速启动的**真实断点**——`.env` 只被 docker compose 读取，宿主机 `mvn spring-boot:run` / `start-backend.bat` 都不会自动加载，必须先把 `MASTER_DATASOURCE_PASSWORD` / `SLAVE_DATASOURCE_PASSWORD` / `REDIS_PASSWORD` 导出到当前 shell，否则会回退到内置默认口令（`123456` / `redis@2026`）而与容器强密码不一致
+- **前后端接口一致性（全量脚本比对，2026-10-10）**：前端 2,440 条唯一路径 vs 后端 3,011 个 `(路径,方法)`；不匹配 451 条 = FMS 140 + HRM 303 + 8 条占位根路径，**除已登记的 FMS/HRM 规划缺口外无新增不一致**
 - **状态未变**：`production_ready=false` / `gate3_passed=false` / `independent_review=false` / Go-No-Go = **No-Go**，本 README 的「可启动」不等于「生产就绪」
 
 ## 📄 开源协议
