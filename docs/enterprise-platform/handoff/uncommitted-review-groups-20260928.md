@@ -7166,3 +7166,5 @@ export REDIS_PASSWORD='<与 script/docker/.env 的 REDIS_PASSWORD 相同>'
 - 未提交 `Temp/`、`.blob-sha-ledger`、`.tree-sha`（仍为未跟踪，按既有约定不入仓）。
 - FMS/HRM 后端未开发仍是**规划缺口**，本轮只做口径核实与登记，不改变其状态。
 - **状态不翻**：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、Go/No-Go=`No-Go`。
+
+本节提交为 `4db7f9fe7`（远端 `master` SHA 已独立核实一致）。CI run `37965123133`：8 道代码类门禁（Error Code / Full-Repo @PreAuthorize / WMS Strict / Electronic Signature / Bare-Throw / Transaction Atomicity / Migration Contract / Duplicate DDL）+ **Build with Maven** + V77 Repair Script (MySQL 8.4) + Windows Launcher Contract **全部 success**；失败仍只有 `Upload Surefire Reports` / `Upload Maven Build Log` 两步，日志原文 `Failed to CreateArtifact: Artifact storage quota has been hit. Unable to upload any new artifacts. Usage is recalculated every 6-12 hours.`——**账号级 artifact 存储配额，非代码缺陷**，处置仍待所有者决策（删旧 artifact / 调 retention-days / 改上传语义），本轮未擅改 workflow。
