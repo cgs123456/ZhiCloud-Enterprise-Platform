@@ -7168,3 +7168,66 @@ export REDIS_PASSWORD='<与 script/docker/.env 的 REDIS_PASSWORD 相同>'
 - **状态不翻**：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、Go/No-Go=`No-Go`。
 
 本节提交为 `4db7f9fe7`（远端 `master` SHA 已独立核实一致）。CI run `37965123133`：8 道代码类门禁（Error Code / Full-Repo @PreAuthorize / WMS Strict / Electronic Signature / Bare-Throw / Transaction Atomicity / Migration Contract / Duplicate DDL）+ **Build with Maven** + V77 Repair Script (MySQL 8.4) + Windows Launcher Contract **全部 success**；失败仍只有 `Upload Surefire Reports` / `Upload Maven Build Log` 两步，日志原文 `Failed to CreateArtifact: Artifact storage quota has been hit. Unable to upload any new artifacts. Usage is recalculated every 6-12 hours.`——**账号级 artifact 存储配额，非代码缺陷**，处置仍待所有者决策（删旧 artifact / 调 retention-days / 改上传语义），本轮未擅改 workflow。
+
+---
+
+## 12.170 2026-10-10 门禁口径收敛：@PreAuthorize 扫描从「路径含 controller/」改为「按注解判定」+ 空扫 fail-closed
+
+### 一、背景（§12.168 登记的是「待负责人决定」，本节是执行决定）
+
+§12.168 记录了 `scripts/check_missing_preauthorize.py` 的门禁盲区：它要求文件路径含 `controller/` 且文件名以
+`Controller.java` 结尾，导致 `zhicloud-module-iot/.../api/device/IoTDeviceApiImpl.java`（包路径 `.../api/device/`）
+连同其 5 个 `@PermitAll` 写接口长期不在扫描范围内。当时判定「扩大口径属决策项，不擅改」。
+
+本轮按「登记 + 白名单」方案执行（不删接口、不放宽门禁、不改业务语义）。
+
+### 二、改动
+
+1. **扫描口径改为按注解判定**：不再要求路径含 `controller/`，也不再只认 `*Controller.java`，
+   改为「类声明前 80 行内（**先剥离注释**）出现 `@RestController`/`@Controller`」即纳入。
+   剥注释这一步是必须的：`zhicloud-module-ai/.../config/security/PiiMaskConverter.java` 只在
+   `import` 与 Javadoc 里出现 `@RestController` 字样，若按裸文本匹配会被误收（假阳性）。
+2. **`--module` 聚合目录回退**：`zhicloud-module-iot` 是聚合目录，真正的 Controller 在其子模块
+   `zhicloud-module-iot-biz/src/main/java/...`。原实现只试 `<module>/src/main/java`，目录不存在时
+   `roots=[]`，于是**扫 0 个文件却打印 `[OK]`**——这是典型的「空转假绿」。改为不存在时回退扫描整个 `<module>` 目录。
+3. **空扫 fail-closed**：`scanned == 0` 时直接报 `[ERROR]` 并 `return 1`，不再把「0 文件」读成「全仓干净」。
+4. **5 个设备端 RPC 接口登记进 `scripts/permitall-allowlist.txt`**，并逐条写明豁免理由（不是只写路径）：
+   | 方法 | 自校验依据（读码核实） |
+   |---|---|
+   | `authDevice` | `IotDeviceAuthUtils` 用 `deviceSecret` 校验 username/password，失败返回 false |
+   | `getDevice` | 按 productKey/deviceName 取设备，需先经 `authDevice` 拿到凭证 |
+   | `getModbusDeviceConfigList` | 按 productKey/deviceName 取 Modbus 点位配置 |
+   | `registerDevice` | 需 `productSecret` 签名 `verifySign` 通过 + 产品必须开启 `registerEnabled`，否则抛异常拒绝 |
+   | `registerSubDevices` | 需网关设备已存在且为网关类型，子设备必须已预注册，绑定前校验 `gatewayId` 归属 |
+5. **新增回归测试** `scripts/production/tests/test_check_missing_preauthorize.py`（7 个用例）：
+   真实仓库必须扫到 `IoTDeviceApiImpl`、必须排除 `PiiMaskConverter`、5 个方法必须都在白名单；
+   另用临时仓库验证「非 controller 目录 + 真 @RestController 要收」「只在注释里出现要排除」，
+   以及「聚合模块必须扫到子模块 Controller」「未知模块产出 0 文件」。
+
+### 三、为什么调用方判定为「设计意图而非漏洞」
+
+- 调用方是 **独立的 `zhicloud-module-iot-gateway`**（`pom.xml` 自带 `spring-boot-maven-plugin`，是独立进程），
+  它通过 HTTP 调 server 的 `/rpc-api/iot/**`（`IotDeviceApiImpl` 里 5 处 `doPost("/rpc-api/iot/...")` 可证）。
+- `zhicloud-server` 只依赖 `zhicloud-module-iot-biz`，不依赖 gateway，因此这些端点是**给网关调的内网 RPC**，
+  不是给管理后台浏览器调的 RBAC 接口。
+- 5 个接口的业务层都有凭证校验（上表），`@PermitAll` 是因为**网关自身没有后台登录态**，不能挂 `@ss.hasPermission`。
+
+### 四、验证读数
+
+| 项 | 修复前 | 修复后 |
+|---|---|---|
+| 全仓 `--include-app --max-gaps 0` | `[OK]`，512 个 | `[OK]`，**513** 个 |
+| 越界文件 `IoTDeviceApiImpl` | 不在扫描范围 | 在扫描范围（5 个方法已登记） |
+| 假阳性 `PiiMaskConverter` | 不涉及 | **正确排除**（剥注释后无真注解） |
+| `--module zhicloud-module-iot --include-app` | `[OK]`，**0 个**（假绿） | `[OK]`，**19 个** |
+| `--module zhicloud-module-wms --include-app` | `[OK]`，38 个 | `[OK]`，**38 个**（无回归） |
+| `--module zhicloud-module-does-not-exist` | `[OK]`，0 个（假绿） | `[ERROR]` + exit=1（fail-closed） |
+| `pytest scripts/production/tests/test_check_missing_preauthorize.py` | 不存在 | **7 passed** |
+
+### 五、边界与状态
+
+- **未改**任何 Java 业务代码（IoT 的 5 个接口一行未动）、**未改** CI workflow（CI 本来就用 `--include-app --max-gaps 0`，
+  口径收敛后自动生效）、**未改** `.gitignore`。
+- 门禁从「512 个 controller 目录下的 Controller」扩到「513 个真实标注了 Controller 注解的类」，
+  **是收紧而非放宽**：以前看不见的接口现在会被门禁盯住。
+- **状态不翻**：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、Go/No-Go=`No-Go`。

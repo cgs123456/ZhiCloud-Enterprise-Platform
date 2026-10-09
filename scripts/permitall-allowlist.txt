@@ -55,3 +55,17 @@ zhicloud-module-infra/src/main/java/cn/zhicloud/module/infra/controller/app/file
 
 # ===== WMS - PDA 登录 =====
 zhicloud-module-wms/src/main/java/cn/zhicloud/module/wms/controller/app/pda/WmsPdaController.java#login
+
+# ===== IoT 设备端 RPC（/rpc-api/iot/**） =====
+# 调用方是独立的 zhicloud-module-iot-gateway（自带 spring-boot-maven-plugin，走 HTTP 调 server），
+# 不是管理后台 RBAC 接口，@PermitAll 属设计意图；但每个接口都在业务层自校验凭证，逐一登记理由：
+#   authDevice              : IotDeviceAuthUtils 用 deviceSecret 校验 username/password，失败返回 false
+#   getDevice               : 按 productKey/deviceName 取设备，需先通过 authDevice 拿到凭证
+#   getModbusDeviceConfigList: 按 productKey/deviceName 取 Modbus 点位配置
+#   registerDevice          : 需 productSecret 签名 verifySign + 产品必须开启 registerEnabled，否则拒绝
+#   registerSubDevices      : 需网关设备已存在且为网关类型，子设备必须已预注册，绑定前校验 gatewayId 归属
+zhicloud-module-iot/zhicloud-module-iot-biz/src/main/java/cn/zhicloud/module/iot/api/device/IoTDeviceApiImpl.java#authDevice
+zhicloud-module-iot/zhicloud-module-iot-biz/src/main/java/cn/zhicloud/module/iot/api/device/IoTDeviceApiImpl.java#getDevice
+zhicloud-module-iot/zhicloud-module-iot-biz/src/main/java/cn/zhicloud/module/iot/api/device/IoTDeviceApiImpl.java#getModbusDeviceConfigList
+zhicloud-module-iot/zhicloud-module-iot-biz/src/main/java/cn/zhicloud/module/iot/api/device/IoTDeviceApiImpl.java#registerDevice
+zhicloud-module-iot/zhicloud-module-iot-biz/src/main/java/cn/zhicloud/module/iot/api/device/IoTDeviceApiImpl.java#registerSubDevices

@@ -17,7 +17,7 @@
 | 指标 | 数值（2026-10-09 实测，git ls-files） |
 |------|------|
 | Java 源文件 | 5,882（主代码）+ 404（测试） |
-| Controller | 512（`@RestController` 且位于 `*/controller/` 下，与 CI 门禁口径一致） |
+| Controller | 513（`@RestController`/`@Controller` 注解判定，含 `*/controller/` 下 512 个 + IoT `/rpc-api` 设备端 1 个，与 CI 门禁口径一致） |
 | Maven 子模块 | 22 个（20 个进构建；IM / MP 未进构建，Report 进构建但未接入 server，见下方「模块启用状态」） |
 | Flyway 迁移脚本 | 158 个（最高 V151） |
 | SQL 文件 | 341 个（含 Flyway 迁移、多方言安装脚本、demo-data 与审计证据） |
@@ -335,12 +335,14 @@ start-frontend.bat
 - Docker 非 root 用户运行（UID/GID 1000）
 - K8s Secret 占位符 + securityContext
 - QMS 电子签名（21 CFR Part 11）：8 个管控点（审批/驳回/关闭）全量覆盖，CI 门禁防回归
-- 全仓 @PreAuthorize 扫描门禁：GAP 清零（0/512 Controller），CRITICAL=0 匿名可达（口径边界见下方说明）
+- 全仓 @PreAuthorize 扫描门禁：GAP 清零（0/513 Controller），CRITICAL=0 匿名可达（口径说明见下方）
 - 裸抛异常统一门禁：0 处裸抛（81 处显式 @bare-throw-ignore 豁免），CI 防回归
 - 事务原子性门禁：12 处多写操作补 @Transactional，CI 防回归
 - 错误码唯一性门禁：140 处冲突去重，1830 个定义 0 冲突
 
-> **@PreAuthorize 门禁口径边界（实测，已登记）**：`scripts/check_missing_preauthorize.py` 只扫描路径中含 `controller/` 且以 `Controller.java` 结尾的文件（512 个）。全仓另有 **1 个对外暴露的 `@RestController` 落在该口径之外**：`zhicloud-module-iot/.../api/device/IoTDeviceApiImpl.java`（`/rpc-api/iot/device/**` 共 5 个 `@PermitAll` 写接口：auth / get / modbus config-list / register / register-sub）。它靠 `@PermitAll` + 设备自身的 productKey/deviceName 凭证验证，属**设备端认证**设计意图，不是管理后台 RBAC 接口；但它确实不在现有门禁扫描范围内，对应的风险已记入 handoff §12.168，待负责人决定是否扩大门禁口径。
+> **@PreAuthorize 门禁口径（2026-10-10 已收敛，见 handoff §12.170）**：`scripts/check_missing_preauthorize.py` 改为**按类上是否真的标注 `@RestController`/`@Controller` 判定**（先剥离注释，避免 import/Javadoc 里的字样造成误收），不再要求路径含 `controller/`。扫描数由 512 → **513**，新增覆盖的就是此前在口径之外的 `zhicloud-module-iot/.../api/device/IoTDeviceApiImpl.java`（`/rpc-api/iot/device/**` 5 个 `@PermitAll` 写接口：auth / get / modbus config-list / register / register-sub）。
+> 这 5 个接口调用方是**独立的 IoT 网关模块**（`zhicloud-module-iot-gateway`，走 HTTP 调 server），不是管理后台 RBAC 接口；每个都在业务层自校验凭证（`authDevice` 用 deviceSecret、`registerDevice` 用 productSecret 签名 + 产品须开启 `registerEnabled`、`registerSubDevices` 须网关已存在且校验 `gatewayId` 归属），因此 `@PermitAll` 属设计意图，已连同**逐条理由**登记到 `scripts/permitall-allowlist.txt`。
+> 同时脚本补了**空扫 fail-closed**：`--module` 指到不存在的模块或扫到 0 个 Controller 时报错退出，不再把「0 文件」读成「全仓干净」。回归测试见 `scripts/production/tests/test_check_missing_preauthorize.py`（7 个用例）。
 
 
 
@@ -356,6 +358,7 @@ start-frontend.bat
 - **遗留（不影响按文档启动）**：FMS(140) / HRM(303) 前端页面后端未开发，属规划范围（口径：前端 `url:` 唯一路径数，与全量前后端接口比对脚本一致）；IM/MP 为预留模块，不参与构建
 - **完整性 review 收尾（2026-10-10，§12.169）**：删除 4 个无引用的前端 `.ts.bak` 死文件（其中一个还带已过时的 `machinerySpec` 字段）；修复 `script/docker/Docker-HOWTO.md` 三处与实际不符（「三个必填密码」实为 **11 个**、文件树里的 `zhicloud-ui-admin/` 目录不存在、「8080 = admin UI」实为 Trino）；修复 README 快速启动的**真实断点**——`.env` 只被 docker compose 读取，宿主机 `mvn spring-boot:run` / `start-backend.bat` 都不会自动加载，必须先把 `MASTER_DATASOURCE_PASSWORD` / `SLAVE_DATASOURCE_PASSWORD` / `REDIS_PASSWORD` 导出到当前 shell，否则会回退到内置默认口令（`123456` / `redis@2026`）而与容器强密码不一致
 - **前后端接口一致性（全量脚本比对，2026-10-10）**：前端 2,440 条唯一路径 vs 后端 3,011 个 `(路径,方法)`；不匹配 451 条 = FMS 140 + HRM 303 + 8 条占位根路径，**除已登记的 FMS/HRM 规划缺口外无新增不一致**
+- **@PreAuthorize 门禁口径收敛（2026-10-10，§12.170）**：门禁脚本从「路径含 `controller/`」改为「按类上 `@RestController`/`@Controller` 注解判定」，扫描数 512 → **513**，把此前长期在视野外的 IoT `/rpc-api` 5 个 `@PermitAll` 设备端接口纳入扫描并**逐条登记理由**；同时补 **空扫 fail-closed**（`--module` 写错时不再静默报 `[OK]`，实测修复前 `--module zhicloud-module-iot` 扫 0 个文件仍通过，修复后扫 19 个）；新增回归测试 7 个用例
 - **状态未变**：`production_ready=false` / `gate3_passed=false` / `independent_review=false` / Go-No-Go = **No-Go**，本 README 的「可启动」不等于「生产就绪」
 
 ## 📄 开源协议

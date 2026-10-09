@@ -96,17 +96,17 @@ def strip_comments(lines):
 
 def iter_controller_files(module, include_app):
     if module:
+        # 模块可能是聚合目录（如 zhicloud-module-iot 下才是 zhicloud-module-iot-biz/src/...），
+        # 所以先试 <module>/src/main/java，不存在就回退到整个 <module> 目录，
+        # 避免「路径写错 → 扫 0 个文件 → 永远 [OK]」的空转假绿。
         base = os.path.join(ROOT, module, 'src', 'main', 'java')
-        roots = [base] if os.path.isdir(base) else []
+        roots = [base] if os.path.isdir(base) else [os.path.join(ROOT, module)]
     else:
         roots = [ROOT]
     seen = set()
     for base in roots:
         for dirpath, dirs, files in os.walk(base):
             dirs[:] = [d for d in dirs if d not in ('target', 'node_modules', '.git')]
-            rel_dir = dirpath.replace('\\', '/')
-            if 'controller' not in rel_dir.split('/'):
-                continue
             for fn in files:
                 if not fn.endswith('.java'):
                     continue
@@ -114,12 +114,16 @@ def iter_controller_files(module, include_app):
                 rel = os.path.relpath(full, ROOT).replace('\\', '/')
                 if not include_app and '/app/' in rel:
                     continue
-                # 不再只认 *Controller.java：以类上是否有 @RestController/@Controller 为准，
-                # 避免 XxxApi.java / XxxEndpoint.java 这类命名逃过扫描
+                # 不按「路径里必须有 controller/」筛文件，也不只认 *Controller.java：
+                # 以类上是否真的标注了 @RestController/@Controller 为准。
+                # 历史盲区：IoTDeviceApiImpl 位于 .../api/device/（无 controller 段）且不以
+                # Controller.java 结尾，它通过 /rpc-api 暴露 5 个 @PermitAll 写接口，长期在
+                # 本门禁视野之外（handoff §12.168/§12.170）。改成注解判定后这类文件不再逃逸。
+                # 命中判定前先剥离注释，避免 Javadoc/import 里出现 @RestController 字样造成误收。
                 if not fn.endswith('Controller.java'):
                     try:
                         with open(full, 'r', encoding='utf-8', errors='ignore') as f:
-                            head = f.read(4000)
+                            head = ''.join(strip_comments(f.readlines())[:80])
                     except OSError:
                         continue
                     if not CONTROLLER_ANNO_RE.search(head):
@@ -250,6 +254,14 @@ def main():
 
     if not args.include_app:
         print('[WARN] 未开启 --include-app，controller/app（PDA/移动端）未纳入扫描；CI 应始终传该参数。')
+
+    # 空扫 fail-closed：扫描目标写错（模块名不存在、目录结构变化）时必须报错，
+    # 否则「0 个文件 + 0 个缺口」会被读成「全仓干净」。
+    if scanned == 0:
+        target = args.module or '全仓'
+        print(f'[ERROR] 扫描 {target} 时匹配到 0 个 Controller 文件——扫描目标或目录结构可能写错，'
+              f'按 fail-closed 处理（不视为通过）。')
+        return 1
 
     if not gaps and not permit_all_gaps and not app_rbac_gaps:
         print(f'[OK] 未发现缺失 @PreAuthorize / 违规 @PermitAll 的写接口（扫描 {scanned} 个 Controller 文件）。')
