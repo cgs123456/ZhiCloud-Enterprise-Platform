@@ -1,0 +1,3 @@
+Error: execution error at (zhicloud/templates/deployment.yaml:33:28): migration.enabled 必须为 true：Kubernetes 部署的唯一迁移入口是 ArgoCD PreSync Job，禁止回退到业务应用自动迁移。
+
+Use --debug flag to render out invalid YAML

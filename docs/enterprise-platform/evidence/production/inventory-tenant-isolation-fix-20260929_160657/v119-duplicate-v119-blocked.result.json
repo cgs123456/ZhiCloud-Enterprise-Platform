@@ -1,0 +1,7 @@
+{
+  "label": "duplicate-v119-blocked",
+  "exit_code": 1,
+  "mysql_error_code": 1644,
+  "stdout": "",
+  "stderr": "ERROR 1644 (45000) at line 240: V119 duplicate rows block unique index uk_inventory_item_tenant_composite on inventory_item\n"
+}

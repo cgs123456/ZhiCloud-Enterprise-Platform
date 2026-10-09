@@ -1,0 +1,1 @@
+mvn -pl zhicloud-framework/zhicloud-spring-boot-starter-biz-inventory -am '-Dtest=InventoryTenantIsolationTest' '-Dsurefire.failIfNoSpecifiedTests=false' test

@@ -1,0 +1,3 @@
+[bootstrap-admin] target=jdbc:mysql://127.0.0.1:51727/zhicloud_runner_clean_20261001_115818 mode=ensure username=zhicloud_admin tenantId=1
+
+[bootstrap-admin] FAILED: ����Ա�˺��Ѵ����ҿ��ƥ�䣻ensure ģʽ�ܾ����ǣ����ܿ� rotate

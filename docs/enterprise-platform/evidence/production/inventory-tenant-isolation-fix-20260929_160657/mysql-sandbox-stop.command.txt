@@ -1,0 +1,1 @@
+pwsh -NoProfile -File scripts/production/mysql-sandbox.ps1 stop -RepoRoot <repo> -StateFile <redacted-state> -EvidenceFile docs/enterprise-platform/evidence/production/inventory-tenant-isolation-fix-20260929_160657/mysql-sandbox-stop.json

@@ -1,0 +1,9 @@
+[2026-09-29T08:51:39.4107380+00:00] Starting isolated MySQL physical replication approximation run_id=6950d21a
+[2026-09-29T08:51:39.4218539+00:00] Creating network=zhicloud-mysql-repl-net-6950d21a source_volume=zhicloud-mysql-repl-source-6950d21a replica_volume=zhicloud-mysql-repl-replica-6950d21a
+[2026-09-29T08:51:40.5960105+00:00] Source container started: zhicloud-mysql-sandbox-e5dc7685
+[2026-09-29T08:51:41.3196482+00:00] Replica container started: zhicloud-mysql-sandbox-6d4e885e
+[2026-09-29T08:51:41.5730663+00:00] Waiting for source readiness
+[2026-09-29T08:51:54.8823380+00:00] Waiting for replica readiness
+[2026-09-29T08:51:57.8539637+00:00] Replication user created on source
+[2026-09-29T08:51:58.8200678+00:00] FAILED: docker command failed with exit code 1. Output: ERROR 3056 (HY000) at line 1: The password provided for the replication user exceeds the maximum length of 32 characters
+[2026-09-29T08:51:58.8210652+00:00] Removing temporary sandbox resources

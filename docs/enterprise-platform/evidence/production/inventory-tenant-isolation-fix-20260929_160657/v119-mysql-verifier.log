@@ -1,0 +1,112 @@
+{
+  "status": "passed",
+  "generated_at": "2026-09-29T08:16:41.5890026+00:00",
+  "scope": "isolated MySQL 8.4 sandbox; synthetic schema/data only",
+  "sandbox": {
+    "container_name": "zhicloud-mysql-sandbox-956ce0c9",
+    "volume": "zhicloud-mysql-sandbox-data-956ce0c9",
+    "database": "zhicloud_sandbox",
+    "host_port": 54610,
+    "image": "mysql:8.4@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+    "docker_inspect": "true|mysql:8.4@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d|41462ed645788024f0295b55da33d4814df07f789d76607c988bac857bf1401c"
+  },
+  "server": {
+    "version": "8.4.11",
+    "version_comment": "MySQL Community Server - GPL",
+    "charset_server": "utf8mb4",
+    "collation_server": "utf8mb4_0900_ai_ci",
+    "sql_mode": "ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION",
+    "time_zone": "+08:00",
+    "global_time_zone": "+08:00",
+    "database": "zhicloud_sandbox"
+  },
+  "artifacts": {
+    "v81": {
+      "path": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V81__inventory_item.sql",
+      "sha256": "5778e0bc7d399a18461c74b9e57d8069db012dc172e381f42f9d082dc6755468"
+    },
+    "v119_migration": {
+      "path": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V119__inventory_item_tenant_unique.sql",
+      "sha256": "0e59f833ff2f988f249f8d2f505ea5657a52fa82b34bcf5e5607a3acc0a8281d"
+    },
+    "v119_verification": {
+      "path": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\verification\\V119_verify.sql",
+      "sha256": "e9ae7f063547328a901d37d3463eda82f6bc83ea3e8e47bd5d80b634bff952ad"
+    },
+    "verifier": {
+      "path": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\docs\\enterprise-platform\\evidence\\production\\inventory-tenant-isolation-fix-20260929_160657\\v119-mysql-verifier.ps1",
+      "sha256": "20726f9d0d3c5153263f7afb77339428af84ca4666c53c942be0b39e57fe41dd"
+    }
+  },
+  "scenarios": [
+    {
+      "name": "happy_path_and_tenant_separation",
+      "passed": true,
+      "details": {
+        "v81_exit": 0,
+        "v119_first_exit": 0,
+        "verification": {
+          "V119_INVENTORY_ITEM_TENANT_COLUMNS": "PASS",
+          "V119_INVENTORY_ITEM_TENANT_UNIQUE_INDEX": "PASS",
+          "V119_INVENTORY_ITEM_LEGACY_INDEX_REMOVED": "PASS",
+          "V119_INVENTORY_ITEM_TENANT_UNIQUE_DATA": "PASS"
+        },
+        "v119_repeat_exit": 0,
+        "repeat_verification": {
+          "V119_INVENTORY_ITEM_TENANT_COLUMNS": "PASS",
+          "V119_INVENTORY_ITEM_TENANT_UNIQUE_INDEX": "PASS",
+          "V119_INVENTORY_ITEM_LEGACY_INDEX_REMOVED": "PASS",
+          "V119_INVENTORY_ITEM_TENANT_UNIQUE_DATA": "PASS"
+        },
+        "tenant_separation_insert_exit": 0,
+        "same_tenant_duplicate_exit": 1,
+        "same_tenant_duplicate_mysql_error": 1062
+      }
+    },
+    {
+      "name": "duplicate_rows_fail_closed",
+      "passed": true,
+      "details": {
+        "v81_exit": 0,
+        "induced_legacy_index_removed": true,
+        "seed_exit": 0,
+        "v119_exit": 1,
+        "mysql_error_code": 1644,
+        "new_index_count_after_failure": "0"
+      }
+    },
+    {
+      "name": "wrong_new_index_fail_closed",
+      "passed": true,
+      "details": {
+        "v81_exit": 0,
+        "wrong_new_index_exit": 0,
+        "v119_exit": 1,
+        "mysql_error_code": 1644,
+        "legacy_index_column_count": "5",
+        "wrong_new_index_column_count": "5"
+      }
+    },
+    {
+      "name": "wrong_legacy_index_fail_closed",
+      "passed": true,
+      "details": {
+        "v81_exit": 0,
+        "correct_new_index_exit": 0,
+        "wrong_legacy_index_exit": 0,
+        "v119_exit": 1,
+        "mysql_error_code": 1644,
+        "correct_new_index_column_count": "6",
+        "wrong_legacy_index_column_count": "4"
+      }
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "passed": 4,
+    "failed": 0
+  },
+  "fatal_error": null,
+  "disclaimer": "Isolated H2/MySQL sandbox evidence only. It does not prove production-equivalent MySQL topology, real tenant datasource routing, production-scale DDL/MDL/replication behavior, or independent review."
+}
+

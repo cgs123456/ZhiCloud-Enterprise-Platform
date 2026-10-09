@@ -1,0 +1,1176 @@
+{
+  "generated_at": "2026-10-04T11:40:02.928598+08:00",
+  "host": "127.0.0.1",
+  "port": 55101,
+  "database": "zhicloud_sandbox_v135",
+  "migration_dir": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration",
+  "files_total": 142,
+  "from_version": null,
+  "continue_on_error": false,
+  "results": [
+    {
+      "file": "<create database>",
+      "exit_code": 0,
+      "duration_s": 0.053,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V1__baseline.sql",
+      "bytes": 726,
+      "exit_code": 0,
+      "duration_s": 0.053,
+      "stdout": "1\r\n1\r\n",
+      "stderr": ""
+    },
+    {
+      "file": "V1.1__system_base_schema.sql",
+      "bytes": 1415737,
+      "exit_code": 0,
+      "duration_s": 5.811,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V2__qms_init.sql",
+      "bytes": 4927,
+      "exit_code": 0,
+      "duration_s": 0.22,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V3__aimultiagent_init.sql",
+      "bytes": 2469,
+      "exit_code": 0,
+      "duration_s": 0.144,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V4__wms_wave_init.sql",
+      "bytes": 4861,
+      "exit_code": 0,
+      "duration_s": 0.293,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V5__qms_capa_workflow_ext.sql",
+      "bytes": 7519,
+      "exit_code": 0,
+      "duration_s": 0.437,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V6__erp_period_close.sql",
+      "bytes": 9791,
+      "exit_code": 0,
+      "duration_s": 0.362,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V7__erp_gl_account_voucher.sql",
+      "bytes": 21711,
+      "exit_code": 0,
+      "duration_s": 0.606,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V8__user_totp.sql",
+      "bytes": 1982,
+      "exit_code": 0,
+      "duration_s": 0.071,
+      "stdout": "1\r\n1\r\n1\r\n1\r\n",
+      "stderr": ""
+    },
+    {
+      "file": "V9__operate_log_hash_chain.sql",
+      "bytes": 941,
+      "exit_code": 0,
+      "duration_s": 0.149,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V10__erp_ddl.sql",
+      "bytes": 43384,
+      "exit_code": 0,
+      "duration_s": 2.046,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V11__wms_ddl.sql",
+      "bytes": 24701,
+      "exit_code": 0,
+      "duration_s": 1.57,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V12__mes_ddl.sql",
+      "bytes": 201782,
+      "exit_code": 0,
+      "duration_s": 9.655,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V13__qms_ddl.sql",
+      "bytes": 13464,
+      "exit_code": 0,
+      "duration_s": 0.402,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V14__aimultiagent_ddl.sql",
+      "bytes": 2469,
+      "exit_code": 0,
+      "duration_s": 0.07,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V15__erp_indexes.sql",
+      "bytes": 26203,
+      "exit_code": 0,
+      "duration_s": 6.368,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V16__wms_indexes.sql",
+      "bytes": 11015,
+      "exit_code": 0,
+      "duration_s": 2.425,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V17__mes_indexes.sql",
+      "bytes": 11006,
+      "exit_code": 0,
+      "duration_s": 22.571,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V18__qms_indexes.sql",
+      "bytes": 10677,
+      "exit_code": 0,
+      "duration_s": 2.413,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V19__aimultiagent_indexes.sql",
+      "bytes": 2531,
+      "exit_code": 0,
+      "duration_s": 0.302,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V20__erp_multi_currency_columns.sql",
+      "bytes": 2979,
+      "exit_code": 0,
+      "duration_s": 2.403,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V21__qms_fmea_action_priority.sql",
+      "bytes": 2362,
+      "exit_code": 0,
+      "duration_s": 0.246,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V22__mes_mrp_low_level_safety_lot.sql",
+      "bytes": 2826,
+      "exit_code": 0,
+      "duration_s": 1.516,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V23__mes_aps_priority_capacity.sql",
+      "bytes": 2424,
+      "exit_code": 0,
+      "duration_s": 0.616,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V24__wms_fefo_slotting_fields.sql",
+      "bytes": 3205,
+      "exit_code": 0,
+      "duration_s": 0.535,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V25__erp_budget_tables.sql",
+      "bytes": 9091,
+      "exit_code": 0,
+      "duration_s": 0.334,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V26__erp_consolidation_tables.sql",
+      "bytes": 8172,
+      "exit_code": 0,
+      "duration_s": 0.245,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V27__erp_fixed_asset_tables.sql",
+      "bytes": 8825,
+      "exit_code": 0,
+      "duration_s": 0.307,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V28__erp_fixed_asset_change.sql",
+      "bytes": 6990,
+      "exit_code": 0,
+      "duration_s": 0.348,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V29__mes_oee_iso22400_fields.sql",
+      "bytes": 1449,
+      "exit_code": 0,
+      "duration_s": 0.322,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V30__erp_account_book.sql",
+      "bytes": 7785,
+      "exit_code": 0,
+      "duration_s": 0.427,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V31__erp_consolidation_engine.sql",
+      "bytes": 6377,
+      "exit_code": 0,
+      "duration_s": 0.285,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V32__qms_eight_d.sql",
+      "bytes": 2160,
+      "exit_code": 0,
+      "duration_s": 0.136,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V33__qms_training.sql",
+      "bytes": 4599,
+      "exit_code": 0,
+      "duration_s": 0.31,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V34__qms_complaint.sql",
+      "bytes": 2101,
+      "exit_code": 0,
+      "duration_s": 0.143,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V35__qms_sqm.sql",
+      "bytes": 5171,
+      "exit_code": 0,
+      "duration_s": 0.293,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V36__mes_bom.sql",
+      "bytes": 2975,
+      "exit_code": 0,
+      "duration_s": 0.186,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V37__wms_sn.sql",
+      "bytes": 2086,
+      "exit_code": 0,
+      "duration_s": 0.145,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V38__ai_nl2sql_history.sql",
+      "bytes": 1587,
+      "exit_code": 0,
+      "duration_s": 0.109,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V39__ai_rag_evaluation.sql",
+      "bytes": 1767,
+      "exit_code": 0,
+      "duration_s": 0.103,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V40__erp_customer_credit_fields.sql",
+      "bytes": 535,
+      "exit_code": 0,
+      "duration_s": 0.381,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V41__erp_fund_management.sql",
+      "bytes": 2669,
+      "exit_code": 0,
+      "duration_s": 0.196,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V42__mes_bom_substitute.sql",
+      "bytes": 2037,
+      "exit_code": 0,
+      "duration_s": 0.125,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V43__wms_inventory_alert.sql",
+      "bytes": 3188,
+      "exit_code": 0,
+      "duration_s": 0.204,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V44__wms_check_order_ext.sql",
+      "bytes": 2992,
+      "exit_code": 0,
+      "duration_s": 0.472,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V45__wms_shipment_order_status.sql",
+      "bytes": 2561,
+      "exit_code": 0,
+      "duration_s": 0.114,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V46__qms_fqc_type.sql",
+      "bytes": 967,
+      "exit_code": 0,
+      "duration_s": 0.088,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V47__qms_quality_cost.sql",
+      "bytes": 2060,
+      "exit_code": 0,
+      "duration_s": 0.141,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V48__hr_contract.sql",
+      "bytes": 1212,
+      "exit_code": 0,
+      "duration_s": 0.201,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V49__hr_leave.sql",
+      "bytes": 1820,
+      "exit_code": 0,
+      "duration_s": 0.251,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V50__hr_social_insurance.sql",
+      "bytes": 1620,
+      "exit_code": 0,
+      "duration_s": 0.095,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V51__hr_recruitment.sql",
+      "bytes": 2046,
+      "exit_code": 0,
+      "duration_s": 0.268,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V51.1__crm_ddl.sql",
+      "bytes": 18844,
+      "exit_code": 0,
+      "duration_s": 1.248,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V52__crm_patch.sql",
+      "bytes": 6760,
+      "exit_code": 0,
+      "duration_s": 0.238,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V53__erp_purchase_inquiry.sql",
+      "bytes": 8213,
+      "exit_code": 0,
+      "duration_s": 0.492,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V54__mes_scada_piecework.sql",
+      "bytes": 6872,
+      "exit_code": 0,
+      "duration_s": 0.596,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V55__oa_init.sql",
+      "bytes": 6350,
+      "exit_code": 0,
+      "duration_s": 0.662,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V56__wms_3pl.sql",
+      "bytes": 10467,
+      "exit_code": 0,
+      "duration_s": 0.726,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V57__erp_vmi_cpfr.sql",
+      "bytes": 7355,
+      "exit_code": 0,
+      "duration_s": 0.404,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V58__tms_init.sql",
+      "bytes": 8214,
+      "exit_code": 0,
+      "duration_s": 0.457,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V59__system_menu_new_modules.sql",
+      "bytes": 29090,
+      "exit_code": 0,
+      "duration_s": 0.735,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V60__erp_mrp_credit_supplier_cashier.sql",
+      "bytes": 9399,
+      "exit_code": 0,
+      "duration_s": 0.508,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V60.1__qms_inspection_aql.sql",
+      "bytes": 1134,
+      "exit_code": 0,
+      "duration_s": 0.367,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V61__mes_scada_pda_ecn.sql",
+      "bytes": 4831,
+      "exit_code": 0,
+      "duration_s": 0.26,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V61.1__wms_receipt_qc.sql",
+      "bytes": 331,
+      "exit_code": 0,
+      "duration_s": 0.247,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V62__wms_asn_pick_batch.sql",
+      "bytes": 8839,
+      "exit_code": 0,
+      "duration_s": 0.795,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V62.1__wms_inventory_version.sql",
+      "bytes": 197,
+      "exit_code": 0,
+      "duration_s": 0.188,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V63__crm_saleorder_channel_esign_wo.sql",
+      "bytes": 6412,
+      "exit_code": 0,
+      "duration_s": 0.214,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V63.1__mes_pro_work_order_version.sql",
+      "bytes": 202,
+      "exit_code": 0,
+      "duration_s": 0.217,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V64__oa_phase4_enhancements.sql",
+      "bytes": 17275,
+      "exit_code": 0,
+      "duration_s": 2.864,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V64.1__qms_inspection_order_version.sql",
+      "bytes": 201,
+      "exit_code": 0,
+      "duration_s": 0.218,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V65__crm_optimistic_lock.sql",
+      "bytes": 2756,
+      "exit_code": 0,
+      "duration_s": 0.07,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V66__crm_receivable_optimistic_lock.sql",
+      "bytes": 1331,
+      "exit_code": 0,
+      "duration_s": 0.151,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V67__tms_freight.sql",
+      "bytes": 2081,
+      "exit_code": 0,
+      "duration_s": 0.121,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V68__tms_gps.sql",
+      "bytes": 1525,
+      "exit_code": 0,
+      "duration_s": 0.122,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V69__mes_energy.sql",
+      "bytes": 1872,
+      "exit_code": 0,
+      "duration_s": 0.111,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V70__oa_schedule.sql",
+      "bytes": 2198,
+      "exit_code": 0,
+      "duration_s": 0.107,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V71__tms_freight_reconciliation_fleet_operation.sql",
+      "bytes": 3752,
+      "exit_code": 0,
+      "duration_s": 0.18,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V72__wms_zone_location_tables.sql",
+      "bytes": 7833,
+      "exit_code": 0,
+      "duration_s": 0.255,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V73__ai_ddl.sql",
+      "bytes": 18587,
+      "exit_code": 0,
+      "duration_s": 0.958,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V74__bpm_ddl.sql",
+      "bytes": 10348,
+      "exit_code": 0,
+      "duration_s": 0.592,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V75__wms_pda_permissions.sql",
+      "bytes": 5095,
+      "exit_code": 0,
+      "duration_s": 0.122,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V76__mes_pda_permissions.sql",
+      "bytes": 3475,
+      "exit_code": 0,
+      "duration_s": 0.081,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V77__aimultiagent_resilience.sql",
+      "bytes": 740,
+      "exit_code": 0,
+      "duration_s": 0.289,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V78__crm_receivable_unique_constraint.sql",
+      "bytes": 681,
+      "exit_code": 0,
+      "duration_s": 0.087,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V79__mes_material_stock_unique_constraint.sql",
+      "bytes": 2036,
+      "exit_code": 0,
+      "duration_s": 0.131,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V80__erp_stock_version_column.sql",
+      "bytes": 1128,
+      "exit_code": 0,
+      "duration_s": 0.177,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V81__inventory_item.sql",
+      "bytes": 2048,
+      "exit_code": 0,
+      "duration_s": 0.099,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V82__fix_do_column_mappings.sql",
+      "bytes": 38508,
+      "exit_code": 0,
+      "duration_s": 15.766,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V83__hr_base_tables.sql",
+      "bytes": 14340,
+      "exit_code": 0,
+      "duration_s": 0.619,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V84__hr_salary_unique_constraint.sql",
+      "bytes": 1166,
+      "exit_code": 0,
+      "duration_s": 0.075,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V85__aimultiagent_checkpoint.sql",
+      "bytes": 2012,
+      "exit_code": 0,
+      "duration_s": 0.134,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V86__airag_eval_dataset.sql",
+      "bytes": 5164,
+      "exit_code": 0,
+      "duration_s": 0.233,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V87__aimultiagent_skill.sql",
+      "bytes": 6924,
+      "exit_code": 0,
+      "duration_s": 0.263,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V88__aimultiagent_execute_menu.sql",
+      "bytes": 1607,
+      "exit_code": 0,
+      "duration_s": 0.063,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V89__aimultiagent_trace.sql",
+      "bytes": 2351,
+      "exit_code": 0,
+      "duration_s": 0.129,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V90__fix_erp_bill_master_columns.sql",
+      "bytes": 39692,
+      "exit_code": 0,
+      "duration_s": 9.077,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V91__unblock_erp_phantom_not_null_columns.sql",
+      "bytes": 18997,
+      "exit_code": 0,
+      "duration_s": 2.978,
+      "stdout": "level\tmessage\tsql_mode\r\nOK\tV91 self-check passed\tONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION\r\n",
+      "stderr": ""
+    },
+    {
+      "file": "V92__ensure_id_auto_increment.sql",
+      "bytes": 12918,
+      "exit_code": 0,
+      "duration_s": 12.886,
+      "stdout": "v92_result\r\nV92 OK: all 95 expected id columns are AUTO_INCREMENT\r\nglobal_sql_mode\tsession_sql_mode\r\nONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION\tONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION\r\n",
+      "stderr": ""
+    },
+    {
+      "file": "V93__erp_tax_ddl.sql",
+      "bytes": 29346,
+      "exit_code": 0,
+      "duration_s": 0.488,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V94__erp_accounting_foundation.sql",
+      "bytes": 16770,
+      "exit_code": 0,
+      "duration_s": 1.154,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V95__erp_posting_rule_seed.sql",
+      "bytes": 14272,
+      "exit_code": 0,
+      "duration_s": 0.192,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V96__erp_accounting_event_sequence.sql",
+      "bytes": 5239,
+      "exit_code": 0,
+      "duration_s": 0.268,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V97__erp_return_posting_rule_seed.sql",
+      "bytes": 7523,
+      "exit_code": 0,
+      "duration_s": 0.12,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V98__reconcile_duplicate_table_ddl.sql",
+      "bytes": 13033,
+      "exit_code": 0,
+      "duration_s": 0.909,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V99__erp_accounting_event_doc_total.sql",
+      "bytes": 4568,
+      "exit_code": 0,
+      "duration_s": 0.211,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V100__event_outbox_inbox.sql",
+      "bytes": 8089,
+      "exit_code": 0,
+      "duration_s": 0.219,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V101__mdm_cross_ref.sql",
+      "bytes": 5208,
+      "exit_code": 0,
+      "duration_s": 0.155,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V102__mdm_cross_ref_seed.sql",
+      "bytes": 6371,
+      "exit_code": 0,
+      "duration_s": 0.105,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V103__wms_order_type_range.sql",
+      "bytes": 1560,
+      "exit_code": 0,
+      "duration_s": 0.39,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V104__integration_monitoring_indexes.sql",
+      "bytes": 2270,
+      "exit_code": 0,
+      "duration_s": 0.106,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V105__event_dlq_replay_log.sql",
+      "bytes": 3517,
+      "exit_code": 0,
+      "duration_s": 0.115,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V106__event_dlq_permissions.sql",
+      "bytes": 1998,
+      "exit_code": 0,
+      "duration_s": 0.072,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V107__event_tenant_unique_keys.sql",
+      "bytes": 5924,
+      "exit_code": 0,
+      "duration_s": 0.233,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V108__tenant_isolation_p0.sql",
+      "bytes": 4508,
+      "exit_code": 0,
+      "duration_s": 0.193,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V109__wms_shipment_order_tenant_unique.sql",
+      "bytes": 5236,
+      "exit_code": 0,
+      "duration_s": 0.184,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V110__erp_cost_mps_tables.sql",
+      "bytes": 10330,
+      "exit_code": 0,
+      "duration_s": 0.381,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V111__mes_tpm_rework_tables.sql",
+      "bytes": 9264,
+      "exit_code": 0,
+      "duration_s": 0.375,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V112__qms_document_audit_instrument_tables.sql",
+      "bytes": 13231,
+      "exit_code": 0,
+      "duration_s": 0.552,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V113__tenant_indexes.sql",
+      "bytes": 6638,
+      "exit_code": 0,
+      "duration_s": 1.234,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V114__ai_metadata_tables.sql",
+      "bytes": 4753,
+      "exit_code": 0,
+      "duration_s": 0.197,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V115__production_seed_account_cleanup.sql",
+      "bytes": 8659,
+      "exit_code": 0,
+      "duration_s": 0.105,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V116__system_users_active_username_unique.sql",
+      "bytes": 6944,
+      "exit_code": 0,
+      "duration_s": 0.245,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V117__crm_receivable_idempotency.sql",
+      "bytes": 7685,
+      "exit_code": 0,
+      "duration_s": 0.286,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V118__bpm_process_instance_idempotency.sql",
+      "bytes": 1896,
+      "exit_code": 0,
+      "duration_s": 0.108,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V119__inventory_item_tenant_unique.sql",
+      "bytes": 10137,
+      "exit_code": 0,
+      "duration_s": 0.224,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V120__event_outbox_inbox_owner_lease.sql",
+      "bytes": 10293,
+      "exit_code": 0,
+      "duration_s": 0.641,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V121__bpm_process_instance_idempotency_claim_token.sql",
+      "bytes": 3246,
+      "exit_code": 0,
+      "duration_s": 0.204,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V122__iot_ddl.sql",
+      "bytes": 17217,
+      "exit_code": 0,
+      "duration_s": 0.723,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V123__mall_pay_ddl.sql",
+      "bytes": 81592,
+      "exit_code": 0,
+      "duration_s": 3.119,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V124__tms_wms_shipment_link.sql",
+      "bytes": 1547,
+      "exit_code": 0,
+      "duration_s": 0.538,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V125__member_ddl.sql",
+      "bytes": 10999,
+      "exit_code": 0,
+      "duration_s": 0.603,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V126__business_report_views.sql",
+      "bytes": 4232,
+      "exit_code": 0,
+      "duration_s": 0.082,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V127__hr_leave_request_bpm_link.sql",
+      "bytes": 721,
+      "exit_code": 0,
+      "duration_s": 0.132,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V128__business_pk_auto_increment.sql",
+      "bytes": 17803,
+      "exit_code": 0,
+      "duration_s": 1.258,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V129__report_ddl.sql",
+      "bytes": 1141,
+      "exit_code": 0,
+      "duration_s": 0.085,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V130__bpm_inflight_view_fix.sql",
+      "bytes": 3500,
+      "exit_code": 0,
+      "duration_s": 0.059,
+      "stdout": "v130_view_predicate_check\r\nV130 self-check passed\r\n",
+      "stderr": ""
+    },
+    {
+      "file": "V131__hr_leave_type_seed.sql",
+      "bytes": 2804,
+      "exit_code": 0,
+      "duration_s": 0.055,
+      "stdout": "check_result\r\nV131_LEAVE_TYPE_COUNT PASS\r\ncheck_result\r\nV131_UNPAID_TYPE_EXISTS PASS\r\n",
+      "stderr": ""
+    },
+    {
+      "file": "V132__member_level_group_seed.sql",
+      "bytes": 4568,
+      "exit_code": 0,
+      "duration_s": 0.067,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V133__qms_view_dimension_gap.sql",
+      "bytes": 1968,
+      "exit_code": 0,
+      "duration_s": 0.056,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V134__hr_qms_menu_seed.sql",
+      "bytes": 33797,
+      "exit_code": 0,
+      "duration_s": 0.096,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "V135__pay_app_mock_channel_seed.sql",
+      "bytes": 5868,
+      "exit_code": 0,
+      "duration_s": 0.086,
+      "stdout": "check_result\r\nV135_APP_PER_TENANT PASS\r\ncheck_result\r\nV135_NOTIFY_CONVENTION PASS\r\ncheck_result\r\nV135_MOCK_CHANNEL_DISABLED PASS\r\ncheck_result\r\nV135_CHANNEL_LINKED_PASS\r\n",
+      "stderr": ""
+    }
+  ],
+  "files_failed": 0,
+  "stopped_at": null,
+  "verify": [
+    {
+      "script": "V135_verify.sql",
+      "file": "V135_verify.sql",
+      "bytes": 3277,
+      "exit_code": 0,
+      "duration_s": 0.05,
+      "stdout": "check_result\r\nV135_NO_DUPLICATE_APP PASS\r\ncheck_result\r\nV135_NO_DUPLICATE_CHANNEL PASS\r\ncheck_result\r\nV135_TENANT_COVERAGE PASS\r\ncheck_result\r\nV135_APP_ENABLED PASS\r\ncheck_result\r\nV135_NOTIFY_URL_ABSOLUTE PASS\r\n",
+      "stderr": ""
+    }
+  ],
+  "server_metrics": {
+    "exit_code": 0,
+    "duration_s": 0.129,
+    "stdout": "VERSION()\t@@sql_mode\t@@collation_server\t@@time_zone\t@@transaction_isolation\r\n8.4.11\tONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION\tutf8mb4_0900_ai_ci\tSYSTEM\tREPEATABLE-READ\r\n",
+    "stderr": ""
+  },
+  "table_count": "557",
+  "status": "passed"
+}

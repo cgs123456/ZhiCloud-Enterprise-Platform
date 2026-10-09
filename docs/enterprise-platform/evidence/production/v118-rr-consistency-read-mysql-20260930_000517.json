@@ -1,0 +1,72 @@
+{
+  "tool": "v118-rr-consistency-read-probe",
+  "created_at": "2026-09-30",
+  "scenario": "MySQL 8.4.11 REPEATABLE-READ: loser transaction cannot see winner row via plain consistent read after duplicate-key upsert; only current read (FOR UPDATE) sees it",
+  "production_validation": false,
+  "environment": {
+    "kind": "isolated ephemeral MySQL sandbox (NOT production)",
+    "docker_image": "mysql:8.4@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+    "container": "zhicloud-mysql-sandbox-18e0f782",
+    "server_version": "8.4.11",
+    "scratch_database": "zhicloud_rr_probe",
+    "transaction_isolation": "REPEATABLE-READ (server default, asserted at probe start)",
+    "note": "container is a pre-existing sandbox from earlier 2026-09-29 evidence runs, reused for this read-only probe"
+  },
+  "table_under_probe": "bpm_process_instance_idempotency (V118 DDL + V121 claim_token varchar(64) NULL DEFAULT NULL; unique key (tenant_id, process_definition_key, business_key))",
+  "steps": [
+    {
+      "session": "B",
+      "action": "SET default isolation asserted; START TRANSACTION; plain SELECT COUNT(*)",
+      "result": "rows_seen=0"
+    },
+    {
+      "session": "A",
+      "action": "INSERT (tenant_id=1, process_definition_key='leave', business_key='BK-1', claim_token='token-A') then COMMIT",
+      "result": "id=1 committed, claim_token=token-A"
+    },
+    {
+      "session": "B",
+      "action": "plain consistent SELECT COUNT(*) after A committed",
+      "result": "rows_seen=0 (row invisible to RR snapshot)"
+    },
+    {
+      "session": "B",
+      "action": "INSERT ... ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id) with claim_token='token-B' (same as mapper insertOrLockUniqueKey)",
+      "result": "duplicate-key path taken; NO DuplicateKeyException surfaced"
+    },
+    {
+      "session": "B",
+      "action": "plain consistent SELECT COUNT(*) after the duplicate-key upsert",
+      "result": "rows_seen=0 (still invisible)"
+    },
+    {
+      "session": "B",
+      "action": "SELECT COUNT(*), MAX(claim_token) ... FOR UPDATE (current read, same as V121 selectByUniqueKeyForUpdate)",
+      "result": "rows_seen=1, claim_token_seen=token-A"
+    }
+  ],
+  "conclusions": [
+    "In REPEATABLE-READ, a transaction that took its snapshot before the winner committed cannot observe the winner row through a plain consistent read, even after its own duplicate-key upsert.",
+    "The mapper upsert INSERT ... ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id) does NOT raise DuplicateKeyException on the duplicate path, so ownership cannot be decided from \"no exception\". With Connector/J default useAffectedRows=false the same statement returns affected rows 1 for the duplicate path, so ownership cannot be decided from affected rows either. Both old decision inputs are unsound.",
+    "Only a current read (SELECT ... FOR UPDATE) sees the committed winner row and yields the real claim_token, which is what V121 + selectByUniqueKeyForUpdate implements.",
+    "Any V118-era code path doing a plain consistency read after the upsert would return no row and fail-closed as PROCESS_INSTANCE_IDEMPOTENCY_PENDING even though a valid instance already exists; this matches the preserved historical failure reproduction bpm-idempotency-real-chain-20260929_121828.json (1 success / 9 PENDING)."
+  ],
+  "not_covered": [
+    "production or production-equivalent topology",
+    "physical master/replica, real read-write splitting, multi-tenant physical connections",
+    "production-scale concurrency, lock wait, deadlock/recovery behaviour",
+    "READ-COMMITTED / SERIALIZABLE comparison",
+    "HA / failover",
+    "actual BPM service-chain behaviour (this is a SQL-level isolation probe, not the application path)"
+  ],
+  "commit_locked_artifacts": {
+    "V118 migration sha256": "f57dc75a5e731e17d3978a459d4f722b039c07d0d5d36b9f1bc1cec9652db8db (unchanged, not modified by this probe)",
+    "V118 verification sha256": "35f2a5e3065352d71148b4da7108726051a8cb638d246ffdc33b383d5e3d9824",
+    "V121 migration sha256": "9597f047324b1a7f7348a050eebf302f6fabf505c642cf4ede5f60a54f8093e0",
+    "V121 verification sha256": "23760521d1fbb2dc0c4388fcd798e4278019287a34a82cdc4372817070cd61d2"
+  },
+  "git_head": "d0ebc96c9f864450c9c293094e114aff0e4e8588",
+  "git_branch": "upgrade/production-readiness",
+  "cleanup": "scratch database zhicloud_rr_probe dropped after the probe",
+  "reviewer": "pending (independent_review=false)"
+}

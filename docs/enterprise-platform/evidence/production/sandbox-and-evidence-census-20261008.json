@@ -1,0 +1,58 @@
+{
+  "generated_at": "2026-10-08T14:48:22",
+  "scope": "R-G3.5-4 只读盘点：证据文件与沙箱运行资源现状（未删除/未停止/未修改任何对象）",
+  "evidence_files": {
+    "disk_total": 1660,
+    "disk_bytes": 25729931,
+    "git_tracked_baseline": 400,
+    "untracked": 1260,
+    "note": "tracked=400 为 6a47efeb 冻结基线，由 .gitignore:107-109 反忽略 *.log 刻意入库；其余为本会话/历史会话产出，按 §3.4 红线不入库。"
+  },
+  "sandbox_resources": {
+    "containers": [
+      "zhicloud-mysql-sandbox-550d1eaa|Exited (255) 7 days ago|2026-09-29 19:36:02 +0800 +08",
+      "zhicloud-mysql-sandbox-05df062d|Exited (137) 8 days ago|2026-09-29 19:36:01 +0800 +08",
+      "zhicloud-mysql-sandbox-18e0f782|Exited (255) 7 days ago|2026-09-29 17:34:25 +0800 +08",
+      "zhicloud-mysql-sandbox-87323300|Exited (255) 8 days ago|2026-09-29 09:45:52 +0800 +08",
+      "zhicloud-maven-builder|Exited (255) 10 days ago|2026-09-25 16:36:48 +0800 +08",
+      "zhicloud-mysql-sandbox-f29c293d|Exited (255) 10 days ago|2026-09-24 22:30:30 +0800 +08"
+    ],
+    "volumes": [
+      "zhicloud-maven-cache",
+      "zhicloud-mysql-repl-replica-965821fa",
+      "zhicloud-mysql-repl-source-965821fa",
+      "zhicloud-mysql-sandbox-data-18e0f782",
+      "zhicloud-mysql-sandbox-data-87323300",
+      "zhicloud-mysql-sandbox-data-f29c293d"
+    ],
+    "networks": [
+      "zhicloud-mysql-repl-net-965821fa"
+    ],
+    "foreign_containers_running": [
+      "zc-datalake-trino",
+      "zc-live-redis",
+      "zc-live-rabbit",
+      "zc-live-mysql",
+      "amz-service-report",
+      "amz-service-finance",
+      "amz-service-spapi",
+      "amz-service-user",
+      "amz-gateway",
+      "amz-service-order",
+      "amz-mysql-slave",
+      "amz-redis",
+      "amz-rabbitmq",
+      "amz-mysql",
+      "amz-nacos",
+      "ta-redis",
+      "ta-mongo"
+    ],
+    "note": "zhicloud-* 容器全部 Exited（0 在跑）；卷 6 个、网络 1 个留存。运行中的非 zhicloud 容器属其他会话/项目，不得触碰。"
+  },
+  "retention": {
+    "owner": "未指定（需所有者具名）",
+    "period": "未指定",
+    "disposal_flow": "未指定",
+    "verdict": "R-G3.5-4 维持 OPEN：证据是否绑定留存资源、保留期、清库存流程三项均需所有者裁决；本盘点不删除任何对象。"
+  }
+}

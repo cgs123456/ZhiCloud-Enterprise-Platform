@@ -1,0 +1,39 @@
+
+ProcessId       : 19368
+ParentProcessId : 23396
+CreationDate    : 29/9/2026 下午 1:57:29
+CommandLine     : C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe -NoProfile -Command "try { [Console]::OutputEncoding=[System.Text.Encoding]::UTF8 } catch {}
+                  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\production\verify_crm_bpm_dynamic_datasource_mysql.ps1"
+
+ProcessId       : 34252
+ParentProcessId : 19368
+CreationDate    : 29/9/2026 下午 1:57:29
+CommandLine     : "C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File .\scripts\production\verify_crm_bpm_dynamic_datasource_mysql.ps1
+
+ProcessId       : 18580
+ParentProcessId : 37688
+CreationDate    : 29/9/2026 下午 1:57:38
+CommandLine     : "C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot\bin\java.exe"       --enable-native-access=ALL-UNNAMED          -classpath "C:\tools\apache-maven-3.9.16\boot\plexus-classworlds-2.11.0.jar"   "-Dclassworlds.conf=C:\tools\apache-maven-3.9.16\bin\m2.conf"   "-Dmaven.home=C:\tools\apache-maven-3.9.16"   "-Dlibrary.jansi.path=C:\tools\apache-maven-3.9.16\lib\jansi-native"   "-Dmaven.multiModuleProjectDirectory=C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2"   org.codehaus.plexus.classworlds.launcher.Launcher  -pl zhicloud-module-crm -Dtest=CrmReceivableBpmDynamicDataSourceMysqlIntegrationTest -DfailIfNoTests=false test
+
+ProcessId       : 15388
+ParentProcessId : 18580
+CreationDate    : 29/9/2026 下午 1:57:47
+CommandLine     : cmd.exe /X /C ""C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot\bin\java" -jar C:\Users\Administrator\AppData\Local\Temp\surefire7997696609707534226\surefirebooter-20260929135747199_3.jar C:\Users\Administrator\AppData\Local\Temp\surefire7997696609707534226 2026-09-29T13-57-46_986-jvmRun1 surefire-20260929135747199_1tmp surefire_0-20260929135747199_2tmp"
+
+ProcessId       : 40088
+ParentProcessId : 15388
+CreationDate    : 29/9/2026 下午 1:57:47
+CommandLine     : "C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot\bin\java"  -jar C:\Users\Administrator\AppData\Local\Temp\surefire7997696609707534226\surefirebooter-20260929135747199_3.jar C:\Users\Administrator\AppData\Local\Temp\surefire7997696609707534226 2026-09-29T13-57-46_986-jvmRun1 surefire-20260929135747199_1tmp surefire_0-20260929135747199_2tmp
+
+
+--- TCP ---
+
+--- Process CPU ---
+
+Id           : 40088
+StartTime    : 29/9/2026 下午 1:57:47
+CPU          : 46.6875
+Threads      : {26740, 30564, 25036, 31088…}
+Handles      : 811
+WorkingSet64 : 412311552
+

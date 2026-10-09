@@ -1,0 +1,359 @@
+[flyway-migration] target=jdbc:mysql://127.0.0.1:3306/zhicloud_runner_clean_20261001_180415 mode=clean
+[flyway-migration] clean baseline: sourceSha256=5b202dcb1223343844aea26dcdc10417f324ac8dbcefa25c912e3c5901d3f181, outputSha256=1eede7a86b9905cbcc01992a89b7889d9f39e88109e83e71df4258fd844695c4, statements=3849
+18:04:36.443 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:mysql://127.0.0.1:3306/zhicloud_runner_clean_20261001_180415?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=utf8 (MySQL 8.4)
+18:04:36.800 [main] WARN org.flywaydb.core.internal.database.base.Database -- Flyway upgrade recommended: MySQL 8.4 is newer than this version of Flyway and support has not been tested. The latest supported version of MySQL is 8.1.
+18:04:37.146 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table `zhicloud_runner_clean_20261001_180415`.`flyway_schema_history` does not exist yet
+18:04:37.161 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 128 migrations (execution time 00:00.281s)
+18:04:37.235 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table `zhicloud_runner_clean_20261001_180415`.`flyway_schema_history` with baseline ...
+18:04:37.528 [main] INFO org.flywaydb.core.internal.command.DbBaseline -- Successfully baselined schema with version: 1.1
+18:04:37.623 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema `zhicloud_runner_clean_20261001_180415`: 1.1
+18:04:37.697 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "2 - qms init"
+18:04:38.008 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "3 - aimultiagent init"
+18:04:38.190 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "4 - wms wave init"
+18:04:38.405 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "5 - qms capa workflow ext"
+18:04:38.808 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "6 - erp period close"
+18:04:38.887 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:04:38.956 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:04:39.049 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "7 - erp gl account voucher"
+18:04:39.158 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:04:39.159 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:04:39.266 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:04:39.356 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:04:39.495 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "8 - user totp"
+18:04:39.509 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---+
+| 1 |
++---+
+| 1 |
++---+
+
+18:04:39.513 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---+
+| 1 |
++---+
+| 1 |
++---+
+
+18:04:39.550 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "9 - operate log hash chain"
+18:04:39.750 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "10 - erp ddl"
+18:04:41.469 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Table 'erp_period' already exists (SQL State: 42S01 - Error Code: 1050)
+18:04:41.475 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Table 'erp_period_close' already exists (SQL State: 42S01 - Error Code: 1050)
+18:04:41.954 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "11 - wms ddl"
+18:04:43.536 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Table 'wms_wave_order' already exists (SQL State: 42S01 - Error Code: 1050)
+18:04:43.543 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Table 'wms_wave_order_detail' already exists (SQL State: 42S01 - Error Code: 1050)
+18:04:43.959 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "12 - mes ddl"
+18:04:55.008 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "13 - qms ddl"
+18:04:55.016 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Table 'qms_inspection_item' already exists (SQL State: 42S01 - Error Code: 1050)
+18:04:55.022 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Table 'qms_inspection_order' already exists (SQL State: 42S01 - Error Code: 1050)
+18:04:55.028 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Table 'qms_inspection_record' already exists (SQL State: 42S01 - Error Code: 1050)
+18:04:55.036 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Table 'qms_capa_document' already exists (SQL State: 42S01 - Error Code: 1050)
+18:04:55.446 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "14 - aimultiagent ddl"
+18:04:55.458 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Table 'aimultiagent_topology' already exists (SQL State: 42S01 - Error Code: 1050)
+18:04:55.465 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Table 'aimultiagent_execution_log' already exists (SQL State: 42S01 - Error Code: 1050)
+18:04:55.511 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "15 - erp indexes"
+18:04:55.518 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_add_index_if_not_exists does not exist (SQL State: 42000 - Error Code: 1305)
+18:04:55.537 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_add_unique_if_not_exists does not exist (SQL State: 42000 - Error Code: 1305)
+18:05:03.429 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "16 - wms indexes"
+18:05:03.450 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_add_index_if_not_exists does not exist (SQL State: 42000 - Error Code: 1305)
+18:05:06.475 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "17 - mes indexes"
+18:05:06.481 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_mes_add_tenant_deleted_index does not exist (SQL State: 42000 - Error Code: 1305)
+18:05:06.502 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_mes_add_create_time_index does not exist (SQL State: 42000 - Error Code: 1305)
+18:05:06.522 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_mes_add_status_index does not exist (SQL State: 42000 - Error Code: 1305)
+18:05:06.538 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_mes_add_code_index does not exist (SQL State: 42000 - Error Code: 1305)
+18:05:06.555 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_mes_add_fk_indexes does not exist (SQL State: 42000 - Error Code: 1305)
+18:05:33.396 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "18 - qms indexes"
+18:05:33.402 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_add_index_if_not_exists does not exist (SQL State: 42000 - Error Code: 1305)
+18:05:33.417 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_add_unique_if_not_exists does not exist (SQL State: 42000 - Error Code: 1305)
+18:05:36.209 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "19 - aimultiagent indexes"
+18:05:36.215 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_add_index_if_not_exists does not exist (SQL State: 42000 - Error Code: 1305)
+18:05:36.538 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "20 - erp multi currency columns"
+18:05:36.543 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_erp_add_currency_columns does not exist (SQL State: 42000 - Error Code: 1305)
+18:05:39.145 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "21 - qms fmea action priority"
+18:05:39.151 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_qms_fmea_add_action_priority does not exist (SQL State: 42000 - Error Code: 1305)
+18:05:39.349 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "22 - mes mrp low level safety lot"
+18:05:39.358 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_mes_mrp_add_columns does not exist (SQL State: 42000 - Error Code: 1305)
+18:05:41.197 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "23 - mes aps priority capacity"
+18:05:41.207 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_mes_aps_add_columns does not exist (SQL State: 42000 - Error Code: 1305)
+18:05:41.910 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "24 - wms fefo slotting fields"
+18:05:41.916 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_wms_fefo_add_columns does not exist (SQL State: 42000 - Error Code: 1305)
+18:05:42.471 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_wms_fefo_add_index does not exist (SQL State: 42000 - Error Code: 1305)
+18:05:42.586 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "25 - erp budget tables"
+18:05:42.715 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:42.788 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:42.844 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "26 - erp consolidation tables"
+18:05:42.934 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:42.982 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "27 - erp fixed asset tables"
+18:05:43.078 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:43.171 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:43.216 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "28 - erp fixed asset change"
+18:05:43.319 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:43.325 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_erp_add_voucher_no_column does not exist (SQL State: 42000 - Error Code: 1305)
+18:05:43.545 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "29 - mes oee iso22400 fields"
+18:05:43.900 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "30 - erp account book"
+18:05:43.990 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:43.990 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:44.207 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "31 - erp consolidation engine"
+18:05:44.312 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:44.394 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:44.423 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "32 - qms eight d"
+18:05:44.541 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "33 - qms training"
+18:05:44.843 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "34 - qms complaint"
+18:05:44.979 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "35 - qms sqm"
+18:05:45.274 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "36 - mes bom"
+18:05:45.372 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:45.436 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:45.460 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "37 - wms sn"
+18:05:45.564 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:45.590 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "38 - ai nl2sql history"
+18:05:45.654 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:45.675 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "39 - ai rag evaluation"
+18:05:45.739 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:45.740 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:45.762 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "40 - erp customer credit fields"
+18:05:46.160 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "41 - erp fund management"
+18:05:46.317 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "42 - mes bom substitute"
+18:05:46.407 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:46.429 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "43 - wms inventory alert"
+18:05:46.513 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:46.607 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:46.627 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "44 - wms check order ext"
+18:05:47.047 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:47.047 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:47.069 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "45 - wms shipment order status"
+18:05:47.109 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "46 - qms fqc type"
+18:05:47.167 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "47 - qms quality cost"
+18:05:47.265 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "48 - hr contract"
+18:05:47.540 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "49 - hr leave"
+18:05:47.932 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "50 - hr social insurance"
+18:05:48.024 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "51 - hr recruitment"
+18:05:48.312 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "51.1 - crm ddl"
+18:05:49.641 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "52 - crm patch"
+18:05:49.698 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:49.757 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:49.806 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:49.806 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:49.807 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:49.858 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:49.893 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "53 - erp purchase inquiry"
+18:05:49.985 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:50.064 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:50.164 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:50.248 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:50.345 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:50.429 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:50.429 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:50.460 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "54 - mes scada piecework"
+18:05:50.534 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:50.630 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:50.779 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:51.233 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "55 - oa init"
+18:05:52.052 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "56 - wms 3pl"
+18:05:52.373 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:52.529 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:52.631 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:52.727 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:52.847 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:52.962 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:52.990 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "57 - erp vmi cpfr"
+18:05:53.070 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:53.162 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:53.244 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:53.331 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:53.412 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:53.441 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "58 - tms init"
+18:05:53.522 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:53.607 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:53.687 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:53.794 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:53.905 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:53.976 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:54.003 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "59 - system menu new modules"
+18:05:54.079 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "60 - erp mrp credit supplier cashier"
+18:05:54.171 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:54.255 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:54.328 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:54.409 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:54.467 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:54.614 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:54.640 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "60.1 - qms inspection aql"
+18:05:55.248 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "61 - mes scada pda ecn"
+18:05:55.369 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:55.475 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:55.552 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:55.579 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "61.1 - wms receipt qc"
+18:05:55.788 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "62 - wms asn pick batch"
+18:05:56.290 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:56.398 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:56.484 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:56.612 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:05:56.632 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "62.1 - wms inventory version"
+18:05:56.798 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "63 - crm saleorder channel esign wo"
+18:05:57.026 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "63.1 - mes pro work order version"
+18:05:57.266 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "64 - oa phase4 enhancements"
+18:05:58.115 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: InnoDB rebuilding table to add column FTS_DOC_ID (SQL State: HY000 - Error Code: 124)
+18:06:00.611 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "64.1 - qms inspection order version"
+18:06:00.832 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "65 - crm optimistic lock"
+18:06:00.874 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "66 - crm receivable optimistic lock"
+18:06:01.014 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "67 - tms freight"
+18:06:01.106 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:06:01.129 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "68 - tms gps"
+18:06:01.212 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:06:01.245 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "69 - mes energy"
+18:06:01.361 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "70 - oa schedule"
+18:06:01.467 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "71 - tms freight reconciliation fleet operation"
+18:06:01.645 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "72 - wms zone location tables"
+18:06:01.718 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:06:01.818 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:06:01.853 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "73 - ai ddl"
+18:06:01.921 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:06:01.990 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:06:02.055 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:06:02.124 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:06:02.194 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:06:02.261 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:06:02.328 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:06:02.402 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:06:02.479 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:06:02.548 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:06:02.623 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:06:02.630 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:06:02.631 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Table 'ai_nl2sql_query_history' already exists (SQL State: 42S01 - Error Code: 1050)
+18:06:02.698 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:06:02.783 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:06:02.894 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:06:02.922 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "74 - bpm ddl"
+18:06:03.030 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:06:03.122 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:06:03.203 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:06:03.276 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:06:03.362 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:06:03.475 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:06:03.561 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:06:03.663 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+18:06:03.695 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "75 - wms pda permissions"
+18:06:03.743 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "76 - mes pda permissions"
+18:06:03.780 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "77 - aimultiagent resilience"
+18:06:04.076 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "78 - crm receivable unique constraint"
+18:06:04.130 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "79 - mes material stock unique constraint"
+18:06:04.137 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v79_add_material_stock_uk does not exist (SQL State: 42000 - Error Code: 1305)
+18:06:04.217 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "80 - erp stock version column"
+18:06:04.363 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "81 - inventory item"
+18:06:04.455 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "82 - fix do column mappings"
+18:06:04.462 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v80_add_column does not exist (SQL State: 42000 - Error Code: 1305)
+18:06:24.129 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "83 - hr base tables"
+18:06:24.728 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "84 - hr salary unique constraint"
+18:06:24.796 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "85 - aimultiagent checkpoint"
+18:06:24.963 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "86 - airag eval dataset"
+18:06:25.290 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "87 - aimultiagent skill"
+18:06:25.558 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "88 - aimultiagent execute menu"
+18:06:25.590 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "89 - aimultiagent trace"
+18:06:25.739 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "90 - fix erp bill master columns"
+18:06:25.744 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v90_add_column does not exist (SQL State: 42000 - Error Code: 1305)
+18:06:37.464 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v90_copy_legacy does not exist (SQL State: 42000 - Error Code: 1305)
+18:06:37.545 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v90_add_index does not exist (SQL State: 42000 - Error Code: 1305)
+18:06:38.053 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v90_self_check does not exist (SQL State: 42000 - Error Code: 1305)
+18:06:38.146 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "91 - unblock erp phantom not null columns"
+18:06:38.151 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v91_make_nullable does not exist (SQL State: 42000 - Error Code: 1305)
+18:06:42.382 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v91_copy_legacy does not exist (SQL State: 42000 - Error Code: 1305)
+18:06:42.427 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v91_self_check does not exist (SQL State: 42000 - Error Code: 1305)
+18:06:42.459 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-------+-----------------------+-----------------------------------------------------------------------------------------------------------------------+
+| level | message               | v_sql_mode                                                                                                            |
++-------+-----------------------+-----------------------------------------------------------------------------------------------------------------------+
+| OK    | V91 self-check passed | ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION |
++-------+-----------------------+-----------------------------------------------------------------------------------------------------------------------+
+
+18:06:42.509 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "92 - ensure id auto increment"
+18:06:42.515 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v92_ensure_auto_increment does not exist (SQL State: 42000 - Error Code: 1305)
+18:06:58.513 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Unknown table 'zhicloud_runner_clean_20261001_180415.tmp_v92_expected' (SQL State: 42S02 - Error Code: 1051)
+18:06:58.519 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v92_self_check does not exist (SQL State: 42000 - Error Code: 1305)
+18:06:58.633 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-------------------------------------------------------+
+| v92_result                                            |
++-------------------------------------------------------+
+| V92 OK: all 95 expected id columns are AUTO_INCREMENT |
++-------------------------------------------------------+
+
+18:06:58.657 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-----------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------+
+| global_sql_mode                                                                                                       | session_sql_mode                                                                                                      |
++-----------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------+
+| ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION | ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION |
++-----------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------+
+
+18:06:58.685 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "93 - erp tax ddl"
+18:06:58.976 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v93_normalize_table_options does not exist (SQL State: 42000 - Error Code: 1305)
+18:06:58.997 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v93_add_column does not exist (SQL State: 42000 - Error Code: 1305)
+18:06:59.104 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v93_normalize_legacy_columns does not exist (SQL State: 42000 - Error Code: 1305)
+18:06:59.133 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v93_ensure_auto_increment does not exist (SQL State: 42000 - Error Code: 1305)
+18:06:59.166 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v93_ensure_unique_index does not exist (SQL State: 42000 - Error Code: 1305)
+18:06:59.194 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v93_drop_index_if_exists does not exist (SQL State: 42000 - Error Code: 1305)
+18:06:59.313 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "94 - erp accounting foundation"
+18:06:59.909 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v94_add_column_if_not_exists does not exist (SQL State: 42000 - Error Code: 1305)
+18:07:00.616 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v94_add_index_if_not_exists does not exist (SQL State: 42000 - Error Code: 1305)
+18:07:00.729 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "95 - erp posting rule seed"
+18:07:00.764 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "96 - erp accounting event sequence"
+18:07:00.769 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v96_add_column_if_not_exists does not exist (SQL State: 42000 - Error Code: 1305)
+18:07:00.944 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v96_replace_source_unique_key does not exist (SQL State: 42000 - Error Code: 1305)
+18:07:01.030 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "97 - erp return posting rule seed"
+18:07:01.063 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "98 - reconcile duplicate table ddl"
+18:07:01.068 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v98_add_column does not exist (SQL State: 42000 - Error Code: 1305)
+18:07:01.082 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v98_widen_column does not exist (SQL State: 42000 - Error Code: 1305)
+18:07:01.099 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v98_ensure_auto_increment does not exist (SQL State: 42000 - Error Code: 1305)
+18:07:01.129 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v98_ensure_index does not exist (SQL State: 42000 - Error Code: 1305)
+18:07:02.029 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "99 - erp accounting event doc total"
+18:07:02.034 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v99_add_column_if_not_exists does not exist (SQL State: 42000 - Error Code: 1305)
+18:07:02.212 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "100 - event outbox inbox"
+18:07:02.389 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "101 - mdm cross ref"
+18:07:02.488 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "102 - mdm cross ref seed"
+18:07:02.492 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'VALUES function' is deprecated and will be removed in a future release. Please use an alias (INSERT INTO ... VALUES (...) AS alias) and replace VALUES(col) in the ON DUPLICATE KEY UPDATE clause with alias.col instead (SQL State: HY000 - Error Code: 1287)
+18:07:02.492 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'VALUES function' is deprecated and will be removed in a future release. Please use an alias (INSERT INTO ... VALUES (...) AS alias) and replace VALUES(col) in the ON DUPLICATE KEY UPDATE clause with alias.col instead (SQL State: HY000 - Error Code: 1287)
+18:07:02.492 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'VALUES function' is deprecated and will be removed in a future release. Please use an alias (INSERT INTO ... VALUES (...) AS alias) and replace VALUES(col) in the ON DUPLICATE KEY UPDATE clause with alias.col instead (SQL State: HY000 - Error Code: 1287)
+18:07:02.493 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'VALUES function' is deprecated and will be removed in a future release. Please use an alias (INSERT INTO ... VALUES (...) AS alias) and replace VALUES(col) in the ON DUPLICATE KEY UPDATE clause with alias.col instead (SQL State: HY000 - Error Code: 1287)
+18:07:02.493 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'VALUES function' is deprecated and will be removed in a future release. Please use an alias (INSERT INTO ... VALUES (...) AS alias) and replace VALUES(col) in the ON DUPLICATE KEY UPDATE clause with alias.col instead (SQL State: HY000 - Error Code: 1287)
+18:07:02.493 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'VALUES function' is deprecated and will be removed in a future release. Please use an alias (INSERT INTO ... VALUES (...) AS alias) and replace VALUES(col) in the ON DUPLICATE KEY UPDATE clause with alias.col instead (SQL State: HY000 - Error Code: 1287)
+18:07:02.494 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'VALUES function' is deprecated and will be removed in a future release. Please use an alias (INSERT INTO ... VALUES (...) AS alias) and replace VALUES(col) in the ON DUPLICATE KEY UPDATE clause with alias.col instead (SQL State: HY000 - Error Code: 1287)
+18:07:02.495 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'VALUES function' is deprecated and will be removed in a future release. Please use an alias (INSERT INTO ... VALUES (...) AS alias) and replace VALUES(col) in the ON DUPLICATE KEY UPDATE clause with alias.col instead (SQL State: HY000 - Error Code: 1287)
+18:07:02.495 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'VALUES function' is deprecated and will be removed in a future release. Please use an alias (INSERT INTO ... VALUES (...) AS alias) and replace VALUES(col) in the ON DUPLICATE KEY UPDATE clause with alias.col instead (SQL State: HY000 - Error Code: 1287)
+18:07:02.515 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "103 - wms order type range"
+18:07:02.955 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "104 - integration monitoring indexes"
+18:07:03.039 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "105 - event dlq replay log"
+18:07:03.124 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "106 - event dlq permissions"
+18:07:03.156 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "107 - event tenant unique keys"
+18:07:03.162 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v107_assert_column does not exist (SQL State: 42000 - Error Code: 1305)
+18:07:03.167 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v107_ensure_tenant_unique_index does not exist (SQL State: 42000 - Error Code: 1305)
+18:07:03.174 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v107_drop_index_if_exists does not exist (SQL State: 42000 - Error Code: 1305)
+18:07:03.453 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "108 - tenant isolation p0"
+18:07:03.460 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v108_ensure_tenant_isolation does not exist (SQL State: 42000 - Error Code: 1305)
+18:07:03.685 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "109 - wms shipment order tenant unique"
+18:07:03.693 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v109_assert_column does not exist (SQL State: 42000 - Error Code: 1305)
+18:07:03.702 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v109_ensure_tenant_unique_index does not exist (SQL State: 42000 - Error Code: 1305)
+18:07:03.710 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v109_drop_index_if_exists does not exist (SQL State: 42000 - Error Code: 1305)
+18:07:03.879 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "110 - erp cost mps tables"
+18:07:04.419 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "111 - mes tpm rework tables"
+18:07:04.850 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "112 - qms document audit instrument tables"
+18:07:05.476 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "113 - tenant indexes"
+18:07:05.480 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v113_add_tenant_indexes does not exist (SQL State: 42000 - Error Code: 1305)
+18:07:05.493 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Unknown table 'zhicloud_runner_clean_20261001_180415.v113_tenant_index_targets' (SQL State: 42S02 - Error Code: 1051)
+18:07:07.071 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "114 - ai metadata tables"
+18:07:07.261 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "115 - production seed account cleanup"
+18:07:07.266 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v115_production_seed_cleanup does not exist (SQL State: 42000 - Error Code: 1305)
+18:07:07.267 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Unknown table 'zhicloud_runner_clean_20261001_180415.tmp_v115_seed_users' (SQL State: 42S02 - Error Code: 1051)
+18:07:07.319 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "116 - system users active username unique"
+18:07:07.326 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v116_system_users_active_username_unique does not exist (SQL State: 42000 - Error Code: 1305)
+18:07:07.580 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "117 - crm receivable idempotency"
+18:07:07.587 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v117_crm_receivable_idempotency does not exist (SQL State: 42000 - Error Code: 1305)
+18:07:07.919 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "118 - bpm process instance idempotency"
+18:07:08.018 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "119 - inventory item tenant unique"
+18:07:08.025 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v119_assert_table does not exist (SQL State: 42000 - Error Code: 1305)
+18:07:08.030 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v119_assert_column does not exist (SQL State: 42000 - Error Code: 1305)
+18:07:08.036 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v119_ensure_tenant_unique_index does not exist (SQL State: 42000 - Error Code: 1305)
+18:07:08.043 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v119_drop_legacy_index_if_exists does not exist (SQL State: 42000 - Error Code: 1305)
+18:07:08.048 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v119_assert_no_global_unique_index does not exist (SQL State: 42000 - Error Code: 1305)
+18:07:08.270 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "120 - event outbox inbox owner lease"
+18:07:08.277 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v120_event_outbox_inbox_owner_lease does not exist (SQL State: 42000 - Error Code: 1305)
+18:07:09.069 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_runner_clean_20261001_180415` to version "121 - bpm process instance idempotency claim token"
+18:07:09.076 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_runner_clean_20261001_180415.p_v121_bpm_process_instance_idempotency_claim_token does not exist (SQL State: 42000 - Error Code: 1305)
+18:07:09.218 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 126 migrations to schema `zhicloud_runner_clean_20261001_180415`, now at version v121 (execution time 02:27.987s)
+[flyway-migration] verification PASS: resource=db/verification/V116_verify.sql, checks=3
+[flyway-migration] verification PASS: resource=db/verification/V117_verify.sql, checks=3
+[flyway-migration] verification PASS: resource=db/verification/V118_verify.sql, checks=2
+[flyway-migration] verification PASS: resource=db/verification/V119_verify.sql, checks=4
+[flyway-migration] verification PASS: resource=db/verification/V120_verify.sql, checks=4
+[flyway-migration] verification PASS: resource=db/verification/V121_verify.sql, checks=1
+[flyway-migration] success: applied=126, initialVersion=1.1, targetVersion=121, cost=164024ms

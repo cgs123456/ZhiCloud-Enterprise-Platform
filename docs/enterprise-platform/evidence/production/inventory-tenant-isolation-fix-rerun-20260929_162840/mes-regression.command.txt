@@ -1,0 +1,1 @@
+mvn -pl zhicloud-module-mes -am test

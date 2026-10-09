@@ -1,0 +1,106 @@
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] zhicloud                                                           [pom]
+[INFO] zhicloud-framework                                                 [pom]
+[INFO] zhicloud-common                                                    [jar]
+[INFO] zhicloud-spring-boot-starter-web                                   [jar]
+[INFO] zhicloud-spring-boot-starter-security                              [jar]
+[INFO] zhicloud-spring-boot-starter-mybatis                               [jar]
+[INFO] zhicloud-spring-boot-starter-redis                                 [jar]
+[INFO] zhicloud-spring-boot-starter-mq                                    [jar]
+[INFO] zhicloud-spring-boot-starter-job                                   [jar]
+[INFO] zhicloud-spring-boot-starter-test                                  [jar]
+[INFO] zhicloud-spring-boot-starter-biz-tenant                            [jar]
+[INFO] zhicloud-spring-boot-starter-websocket                             [jar]
+[INFO] zhicloud-spring-boot-starter-monitor                               [jar]
+[INFO] zhicloud-spring-boot-starter-protection                            [jar]
+[INFO] zhicloud-spring-boot-starter-biz-ip                                [jar]
+[INFO] zhicloud-spring-boot-starter-excel                                 [jar]
+[INFO] zhicloud-spring-boot-starter-biz-data-permission                   [jar]
+[INFO] zhicloud-spring-boot-starter-biz-integration                       [jar]
+[INFO] zhicloud-module-infra                                              [jar]
+[INFO] zhicloud-module-system                                             [jar]
+[INFO] zhicloud-module-bpm                                                [jar]
+[INFO] zhicloud-module-crm                                                [jar]
+[INFO] 
+[INFO] ------------------------< cn.zhicloud:zhicloud >------------------------
+[INFO] Building zhicloud 2026.06.0                                       [1/22]
+[INFO]   from pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud:pom:2026.06.0...
+[INFO] 
+[INFO] -------------------< cn.zhicloud:zhicloud-framework >-------------------
+[INFO] Building zhicloud-framework 2026.06.0                             [2/22]
+[INFO]   from zhicloud-framework\pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-framework ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-framework:pom:2026.06.0...
+[INFO] 
+[INFO] --------------------< cn.zhicloud:zhicloud-common >---------------------
+[INFO] Building zhicloud-common 2026.06.0                                [3/22]
+[INFO]   from zhicloud-framework\zhicloud-common\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-common ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-common\src\main\resources
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-common ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-common:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-common ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-common ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-common\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-common ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-common ---
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for zhicloud 2026.06.0:
+[INFO] 
+[INFO] zhicloud ........................................... SUCCESS [  0.648 s]
+[INFO] zhicloud-framework ................................. SUCCESS [  0.365 s]
+[INFO] zhicloud-common .................................... FAILURE [  2.137 s]
+[INFO] zhicloud-spring-boot-starter-web ................... SKIPPED
+[INFO] zhicloud-spring-boot-starter-security .............. SKIPPED
+[INFO] zhicloud-spring-boot-starter-mybatis ............... SKIPPED
+[INFO] zhicloud-spring-boot-starter-redis ................. SKIPPED
+[INFO] zhicloud-spring-boot-starter-mq .................... SKIPPED
+[INFO] zhicloud-spring-boot-starter-job ................... SKIPPED
+[INFO] zhicloud-spring-boot-starter-test .................. SKIPPED
+[INFO] zhicloud-spring-boot-starter-biz-tenant ............ SKIPPED
+[INFO] zhicloud-spring-boot-starter-websocket ............. SKIPPED
+[INFO] zhicloud-spring-boot-starter-monitor ............... SKIPPED
+[INFO] zhicloud-spring-boot-starter-protection ............ SKIPPED
+[INFO] zhicloud-spring-boot-starter-biz-ip ................ SKIPPED
+[INFO] zhicloud-spring-boot-starter-excel ................. SKIPPED
+[INFO] zhicloud-spring-boot-starter-biz-data-permission ... SKIPPED
+[INFO] zhicloud-spring-boot-starter-biz-integration ....... SKIPPED
+[INFO] zhicloud-module-infra .............................. SKIPPED
+[INFO] zhicloud-module-system ............................. SKIPPED
+[INFO] zhicloud-module-bpm ................................ SKIPPED
+[INFO] zhicloud-module-crm ................................ SKIPPED
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  3.984 s
+[INFO] Finished at: 2026-10-02T11:28:38+08:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.3:test (default-test) on project zhicloud-common: No tests matching pattern "CrmReceivableBpmDynamicDataSourceMysqlIntegrationTest" were executed! (Set -Dsurefire.failIfNoSpecifiedTests=false to ignore this error.) -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+[ERROR] 
+[ERROR] After correcting the problems, you can resume the build with the command
+[ERROR]   mvn <args> -rf :zhicloud-common
+

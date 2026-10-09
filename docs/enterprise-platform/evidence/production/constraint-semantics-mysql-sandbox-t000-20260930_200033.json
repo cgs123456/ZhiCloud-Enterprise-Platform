@@ -1,0 +1,44 @@
+{
+  "generated_at": "2026-09-30T20:00:33.968184+08:00",
+  "disclaimer": "FAKE-SIMULATED-DATA: isolated schema/data only; production_import_allowed=false",
+  "production_import_allowed": false,
+  "production_ready": false,
+  "gate3_passed": false,
+  "r011_status": "OPEN",
+  "r029_status": "OPEN",
+  "independent_review": false,
+  "repository": {
+    "repo_commit": "d0ebc96c9f864450c9c293094e114aff0e4e8588",
+    "repo_branch": "upgrade/production-readiness",
+    "repo_worktree_dirty": true,
+    "repo_worktree_status_count": 851,
+    "repo_worktree_status_sha256": "06d87add52b1a35bbe2a98f814ae74fa41b56a591801aa8be98b7304a96eb46c",
+    "verifier_path": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\scripts\\production\\verify_constraint_semantics.py",
+    "verifier_sha256": "4aef475b2d83fd919f896b42fc8e48f4ea21dc31b2926c1142de52cc88d7dbe7"
+  },
+  "scope": "MySQL sandbox behavior only: V116 active-username uniqueness and soft-delete recreation; V117 idempotency-key uniqueness and soft-delete occupancy; synthetic DDL cost.",
+  "evidence_boundaries": {
+    "database": "isolated native MySQL sandbox",
+    "schema": "minimal tables required by V116/V117",
+    "execution": "original migration SQL files via mysql.exe",
+    "production_import_allowed": false
+  },
+  "server": {},
+  "artifacts": {},
+  "scenarios": [],
+  "caveats": [
+    "Synthetic minimal schema and synthetic row counts; this is not a production-scale migration proof.",
+    "isolated MySQL 8.4.x sandbox only; exact server version is recorded in evidence; non-MySQL dialects and their equivalent constraints remain unverified.",
+    "No replication, backup/restore, production traffic, long-running DML, or MDL contention was exercised.",
+    "InnoDB DATA_LENGTH/INDEX_LENGTH are approximate and timings are single-run observations.",
+    "This evidence does not prove Flyway parser behavior, application transaction rollback, BPM/Flowable behavior, or production readiness.",
+    "Repository metadata records HEAD plus a dirty-worktree digest; a dirty worktree is not a frozen release, so verifier_sha256 identifies the executed script.",
+    "verifier failed before scenarios completed: ValueError: unsafe database name: 'zc_cs_probe'"
+  ],
+  "summary": {
+    "total": 0,
+    "passed": 0,
+    "failed": 0
+  },
+  "status": "failed"
+}

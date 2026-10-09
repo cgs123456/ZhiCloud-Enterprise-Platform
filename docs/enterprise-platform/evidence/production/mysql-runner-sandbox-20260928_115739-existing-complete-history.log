@@ -1,0 +1,9 @@
+[flyway-migration] target=jdbc:mysql://127.0.0.1:53306/zhicloud_runner_existing_20260928_115739 mode=existing
+12:00:15.677 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:mysql://127.0.0.1:53306/zhicloud_runner_existing_20260928_115739?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=utf8 (MySQL 8.4)
+12:00:15.768 [main] WARN org.flywaydb.core.internal.database.base.Database -- Flyway upgrade recommended: MySQL 8.4 is newer than this version of Flyway and support has not been tested. The latest supported version of MySQL is 8.1.
+12:00:15.905 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 125 migrations (execution time 00:00.109s)
+12:00:15.930 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema `zhicloud_runner_existing_20260928_115739`: 117
+12:00:15.935 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Schema `zhicloud_runner_existing_20260928_115739` is up to date. No migration necessary.
+[flyway-migration] verification PASS: resource=db/verification/V116_verify.sql, checks=3
+[flyway-migration] verification PASS: resource=db/verification/V117_verify.sql, checks=3
+[flyway-migration] success: applied=0, initialVersion=117, targetVersion=null, cost=1917ms

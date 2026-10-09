@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "evidence_id": "event-owner-fencing-mysql-20260929_191149",
+  "generated_at": "2026-09-29T19:13:14.5899552+08:00",
+  "scope": "Application-level Outbox/Inbox owner fencing and lease takeover matrix against an isolated real MySQL 8.4.11 sandbox",
+  "git": {
+    "branch": "upgrade/production-readiness",
+    "commit_sha": "d0ebc96c9f864450c9c293094e114aff0e4e8588",
+    "worktree_state": "dirty; pre-existing and task-related changes were preserved and not committed",
+    "changed_paths_count": 260
+  },
+  "environment": {
+    "container_name": "zhicloud-mysql-sandbox-18e0f782",
+    "image": "mysql:8.4",
+    "image_digest": "mysql@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+    "server_version": "8.4.11",
+    "host_endpoint": "127.0.0.1:12413",
+    "database": "zhicloud_sandbox_chain",
+    "isolation": "isolated Docker container; dedicated sandbox database; no production connection"
+  },
+  "schema_baseline": {
+    "type": "minimal migration dependency chain; not a full V1-to-V120 production baseline",
+    "migrations": [
+      "V100__event_outbox_inbox.sql",
+      "V104__integration_monitoring_indexes.sql",
+      "V107__event_tenant_unique_keys.sql",
+      "V120__event_outbox_inbox_owner_lease.sql"
+    ],
+    "migration_artifact_hashes": {
+      "V120__event_outbox_inbox_owner_lease.sql": "a8fe907f2cc383e3523c10134926e3cc826554474171212317e83e3cba0c747e",
+      "V120_verify.sql": "5f6398298799319121630d4a295b4d60805da6a563d6f3e61fc38c0f2bac4e08"
+    }
+  },
+  "execution": {
+    "command": "SPRING_DATASOURCE_URL=<redacted>; SPRING_DATASOURCE_USERNAME=root; SPRING_DATASOURCE_PASSWORD=<redacted>; mvn -pl zhicloud-server -am test -Dtest=EventOwnerFencingMysqlIntegrationTest -Dsurefire.failIfNoSpecifiedTests=false -Dzhicloud.mysql.integration=true",
+    "test_class": "cn.zhicloud.server.integration.EventOwnerFencingMysqlIntegrationTest",
+    "result": "PASS",
+    "tests_run": 9,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "build": "BUILD SUCCESS",
+    "elapsed_seconds": 50.143,
+    "test_elapsed_seconds": 13.13,
+    "verified_behaviors": [
+      "Active Inbox lease returns IN_PROGRESS and does not execute the handler.",
+      "Expired Inbox lease can be taken over and settled as PROCESSED.",
+      "A stale Inbox owner cannot settle success after takeover; settlement fails closed.",
+      "Inbox handler failure marks FAILED, increments retry_count, clears owner/lease, and records the error.",
+      "Eight concurrent first deliveries execute the Inbox handler exactly once; one result is PROCESSED and the other seven are IN_PROGRESS before winner settlement.",
+      "An active Outbox lease blocks a second claim; after expiry a new owner can take over.",
+      "A stale Outbox owner cannot markPublished or markRetry after takeover; the new owner and PUBLISHING state remain intact.",
+      "A stale Outbox owner cannot mark dead after takeover; the new owner can subsequently mark dead.",
+      "Eight concurrent Outbox claim calls produce exactly one winner."
+    ],
+    "test_matrix": [
+      {
+        "method": "testInboxActiveLeaseReturnsInProgressWithoutHandler",
+        "status": "PASS"
+      },
+      {
+        "method": "testInboxExpiredLeaseIsTakenOverAndProcessed",
+        "status": "PASS"
+      },
+      {
+        "method": "testInboxStaleOwnerSettlementFailsClosed",
+        "status": "PASS"
+      },
+      {
+        "method": "testInboxHandlerFailureMarksFailedAndClearsLease",
+        "status": "PASS"
+      },
+      {
+        "method": "testInboxConcurrentFirstDeliveryHasSingleHandler",
+        "status": "PASS"
+      },
+      {
+        "method": "testOutboxLeaseBlocksThenAllowsTakeover",
+        "status": "PASS"
+      },
+      {
+        "method": "testOutboxStaleOwnerCannotPublishOrRetryAfterTakeover",
+        "status": "PASS"
+      },
+      {
+        "method": "testOutboxStaleOwnerCannotMarkDeadAfterTakeover",
+        "status": "PASS"
+      },
+      {
+        "method": "testOutboxConcurrentClaimHasSingleWinner",
+        "status": "PASS"
+      }
+    ],
+    "log": {
+      "path": "docs/enterprise-platform/evidence/production/event-owner-fencing-mysql-20260929_191149.log",
+      "sha256": "86b0f816cdb2e696418299ed0a7ce6a33f31f815ef297d3afbfe982a35fd2e78"
+    },
+    "test_source": {
+      "path": "zhicloud-server/src/test/java/cn/zhicloud/server/integration/EventOwnerFencingMysqlIntegrationTest.java",
+      "sha256": "ecdb121d2935d9e445001ae2e4bc356a805ea3c76448bb9fc6ae2ad11236a77b"
+    }
+  },
+  "diagnostic_notes": [
+    "The first matrix invocation failed before test execution because PowerShell-to-mvn.cmd argument parsing split Maven options; it is not application or MySQL semantic evidence.",
+    "The first real-MySQL matrix execution exposed two test harness defects: the concurrency test waited on the blocked winner before releasing it, and the stale-owner assertion incorrectly expected an actively leased PUBLISHING row to be returned by selectClaimable. Both were corrected; the passing run above is the evidence run."
+  ],
+  "coverage": {
+    "proven": [
+      "Real MySQL 8.4.11 application-level Inbox and Outbox owner fencing semantics.",
+      "Real MySQL row-level CAS behavior for concurrent Inbox first delivery and Outbox claim.",
+      "Lease expiry takeover and stale-owner fail-closed settlement behavior in the tested single-node sandbox."
+    ],
+    "not_covered": [
+      "Production physical primary/replica topology.",
+      "Real read/write splitting or multi-tenant dynamic datasource topology.",
+      "Network partition and process crash/failover injection.",
+      "End-to-end Outbox publish, DLQ, replay, compensation, and reconciliation workflows.",
+      "Production data volume, latency, lock contention, long-running migration, and independent review."
+    ]
+  },
+  "conclusion": {
+    "sandbox_verdict": "PASS",
+    "production_ready": false,
+    "gate3_passed": false,
+    "r_011": "OPEN",
+    "r_029": "OPEN",
+    "go_no_go": "No-Go",
+    "limits": [
+      "This is sandbox evidence and cannot be represented as production validation.",
+      "The database was a dedicated sandbox database in a single-node Docker container.",
+      "The schema baseline was a minimal dependency chain, not the complete production migration baseline.",
+      "The test does not validate physical replication, failover, or production-scale behavior."
+    ]
+  },
+  "reproducibility": {
+    "prerequisite": "Use the dedicated zhicloud_sandbox_chain database on the existing isolated MySQL sandbox container; do not use production credentials or databases.",
+    "secret_handling": "The database password is intentionally omitted and must be injected through SPRING_DATASOURCE_PASSWORD at execution time.",
+    "notes": [
+      "Run from the repository root with PowerShell.",
+      "Do not put the JDBC URL with query parameters directly on the mvn.cmd command line because cmd.exe treats ampersands as command separators.",
+      "The migration chain is minimal and does not establish the full production migration baseline."
+    ]
+  }
+}

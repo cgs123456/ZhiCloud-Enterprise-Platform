@@ -1,0 +1,76 @@
+{
+  "generated_at": "2026-10-02T11:23:00+08:00",
+  "status": "passed",
+  "scope": "为动态数据源验证器产出前置库 zhicloud_crm_bpm_chain_test（建库 + 可选真链路 IT 引导 Flowable schema）",
+  "source_head": "d0ebc96c9f864450c9c293094e114aff0e4e8588",
+  "branch": "upgrade/production-readiness",
+  "working_tree_state": "dirty_entries=556; evidence_not_committed_at_generation_time",
+  "environment": {
+    "classification": "隔离 MySQL 单实例沙箱的逻辑测试库，非生产",
+    "container": "",
+    "image": "native-mysqld",
+    "image_repo_digest": "native-mysqld-8.0.39",
+    "host": "127.0.0.1",
+    "port": 13306,
+    "server_version": "8.0.39",
+    "source_database": "zhicloud_crm_bpm_chain_test",
+    "target_kind": "native",
+    "native_port": 13306,
+    "native_version": "8.0.39",
+    "native_datadir": "C:\\Users\\Administrator\\zhicloud-native-mysqld\\data\\",
+    "native_datadir_prefix": "C:\\Users\\Administrator\\zhicloud-native-mysqld\\data",
+    "admin_transport": "host_client_loopback_native_mysqld",
+    "jdbc_endpoint": "127.0.0.1:13306",
+    "jdbc_endpoint_source": "native_loopback",
+    "container_published_port": 13306,
+    "jdbc_url_parameters": "connectTimeout=8000"
+  },
+  "provisioning": {
+    "mode": "drop_then_create",
+    "existed_before": true,
+    "created": true,
+    "schema_producer": "real_chain_it_flowable_schema_update",
+    "expected_flowable_tables": 32,
+    "expected_property_rows": 6,
+    "flowable_tables_after_create": 0,
+    "flowable_tables_final": 32,
+    "property_rows_final": 6
+  },
+  "command": "C:\\tools\\apache-maven-3.9.16\\bin\\mvn.cmd -o -B -pl zhicloud-module-crm -am -Dtest=CrmReceivableBpmTransactionMysqlIntegrationTest -Dsurefire.failIfNoSpecifiedTests=false test",
+  "test": {
+    "class": "cn.zhicloud.module.crm.service.receivable.CrmReceivableBpmTransactionMysqlIntegrationTest",
+    "tests_run": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "build": "SUCCESS",
+    "exit_code": 0,
+    "note": "未启用 -RunRealChainIt 时不运行 IT"
+  },
+  "artifacts": {
+    "script": "scripts/production/provision_crm_bpm_chain_source.ps1",
+    "script_sha256": "282c31c1e70a93cda8ac4e896ba25f3a05ca76d4279bd061ca67c8b7cf201685",
+    "raw_log_sha256": "91b8504a5592c5652e4c05248d70ca1e1844540677dfc1389353cc4c418f37eb",
+    "it_source_sha256": "3bb91d4211a89738fc1682343dc4421654c4e8c48ecef1b2bb6643f34f2bf786",
+    "it_source_note": "IT 源文件按哈希钉定，本脚本不修改它"
+  },
+  "downstream": {
+    "verifier": "scripts/production/verify_crm_bpm_dynamic_datasource_mysql.ps1",
+    "verifier_flags": "-SourceProvisioning pipeline -ExpectedFlowableTables 32 -ExpectedPropertyRows 6"
+  },
+  "production_ready": false,
+  "gate3_passed": false,
+  "independent_review": false,
+  "risk_register": {
+    "R_011": "OPEN",
+    "R_029": "OPEN"
+  },
+  "Go_No_Go": "No-Go",
+  "caveats": [
+    "本脚本只在隔离 MySQL 沙箱内创建预定义源库，不代表生产可部署。",
+    "不创建 ACT_/FLW_ 表的 SQL：仓库内没有 Flowable DDL，表只能由真实引擎引导产生，因此 -RunRealChainIt 是产出 32/6 的唯一路径。",
+    "产出 32/6 不等于历史人工预置库的 45/7；引用本证据时必须同时写下 -SourceProvisioning pipeline。",
+    "root 口令取自容器环境变量，只经进程环境继承传给 docker/maven，不进入命令行参数。",
+    "失败时同样写出 JSON 证据，且不覆盖既有证据文件。"
+  ]
+}

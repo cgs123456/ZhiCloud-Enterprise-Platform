@@ -1,0 +1,3 @@
+timestamp=20260929_160657
+command=mvn -pl zhicloud-module-mes -am test
+workdir=C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2

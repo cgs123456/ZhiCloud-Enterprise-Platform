@@ -1,0 +1,25 @@
+{
+  "status": "stopped",
+  "step": "stop",
+  "generated_at": "2026-10-01T11:26:58.3814895+00:00",
+  "image": "mysql:8.4@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+  "repo_root": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2",
+  "container_name": "zhicloud-mysql-sandbox-a3dd6c5c",
+  "volume": "zhicloud-mysql-sandbox-data-a3dd6c5c",
+  "bind_address": "127.0.0.1",
+  "host_port": 9957,
+  "relay_container": "zhicloud-mysql-sandbox-relay-a3dd6c5c",
+  "relay_port": 9956,
+  "relay_image": "nginx:1.30.5-alpine@sha256:0985e772fb9f729e6fa0980da05fca5d9c468e870eed43071545afa9d2e27d94",
+  "metrics": null,
+  "checks": [],
+  "failure_reasons": [],
+  "note": "Sandbox only. Never point these scripts at production data.",
+  "container_removed": true,
+  "relay_removed": true,
+  "relay_absent": false,
+  "detached_sidecars": [
+    "quizzical_vaughan"
+  ],
+  "volume_removed": true
+}

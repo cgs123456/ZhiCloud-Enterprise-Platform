@@ -1,0 +1,32 @@
+{
+  "status": "passed",
+  "database": "zhicloud_runner_clean_20260928_121947",
+  "bootstrap": {
+    "username": "zhicloud_admin",
+    "tenant_id": 1,
+    "user_count": 1,
+    "user_id": 225,
+    "status": 0,
+    "deleted": 0,
+    "password_hash_length": 60,
+    "password_hash_prefix": "$2a$",
+    "role_id": 1,
+    "role_binding_count": 1,
+    "role_ids": "1",
+    "post_id": 4,
+    "post_binding_count": 1,
+    "post_ids": "4"
+  },
+  "checks": {
+    "database_reachable": true,
+    "single_tenant_user": true,
+    "enabled": true,
+    "not_deleted": true,
+    "bcrypt_hash_shape": true,
+    "role_binding_exact": true,
+    "post_binding_exact": true,
+    "active_username_unique_index": true,
+    "no_duplicate_active_usernames": true
+  },
+  "failures": []
+}

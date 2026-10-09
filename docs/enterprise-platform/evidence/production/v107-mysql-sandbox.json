@@ -1,0 +1,41 @@
+{
+  "generated_at": "2026-09-26T15:11:33.537703+08:00",
+  "host": "127.0.0.1",
+  "port": 53306,
+  "database": "zhicloud_sandbox_chain",
+  "migration_dir": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration",
+  "files_total": 1,
+  "from_version": "V107",
+  "continue_on_error": false,
+  "results": [
+    {
+      "file": "V107__event_tenant_unique_keys.sql",
+      "bytes": 5924,
+      "exit_code": 0,
+      "duration_s": 0.189,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "files_failed": 0,
+  "stopped_at": null,
+  "verify": [
+    {
+      "script": "V107_verify.sql",
+      "file": "V107_verify.sql",
+      "bytes": 5364,
+      "exit_code": 0,
+      "duration_s": 0.07,
+      "stdout": "table_name\tindex_name\texpected_columns\tactual_columns\tnon_unique\tindex_verdict\r\nevent_inbox\tuk_consumer_tenant_event\ttenant_id,consumer_name,event_id\ttenant_id,consumer_name,event_id\t0\tOK\r\nevent_outbox\tuk_event_tenant_event\ttenant_id,event_id\ttenant_id,event_id\t0\tOK\r\ncheck_name\tverdict\r\nV107_LEGACY_INDEXES\tPASS\r\ncheck_name\toutbox_duplicate_groups\tinbox_duplicate_groups\tverdict\r\nV107_DUPLICATES\t0\t0\tPASS\r\ncheck_name\tverdict\r\nV107\tPASS\r\n",
+      "stderr": ""
+    }
+  ],
+  "server_metrics": {
+    "exit_code": 0,
+    "duration_s": 0.072,
+    "stdout": "VERSION()\t@@sql_mode\t@@collation_server\t@@time_zone\t@@transaction_isolation\r\n8.4.9\tONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION\tutf8mb4_0900_ai_ci\t+08:00\tREPEATABLE-READ\r\n",
+    "stderr": ""
+  },
+  "table_count": "438",
+  "status": "passed"
+}

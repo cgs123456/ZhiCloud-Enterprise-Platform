@@ -1,0 +1,12 @@
+{
+  "contract_start_version": 90,
+  "findings": [],
+  "limits": [
+    "SHA-256 locks reviewed bytes; it does not prove MySQL execution.",
+    "Semantic backfill correctness still requires pre-production data validation."
+  ],
+  "scanned_migrations": 125,
+  "status": "passed",
+  "tool": "check_migration_contract.py",
+  "tracked_migrations": 29
+}

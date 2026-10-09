@@ -1,0 +1,41 @@
+{
+  "generated_at": "2026-09-26T16:03:03.320896+08:00",
+  "host": "127.0.0.1",
+  "port": 53306,
+  "database": "zhicloud_sandbox_chain",
+  "migration_dir": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration",
+  "files_total": 1,
+  "from_version": "V108",
+  "continue_on_error": false,
+  "results": [
+    {
+      "file": "V108__tenant_isolation_p0.sql",
+      "bytes": 4508,
+      "exit_code": 0,
+      "duration_s": 0.055,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "files_failed": 0,
+  "stopped_at": null,
+  "verify": [
+    {
+      "script": "V108_verify.sql",
+      "file": "V108_verify.sql",
+      "bytes": 5503,
+      "exit_code": 0,
+      "duration_s": 0.038,
+      "stdout": "check_name\tverdict\r\nV108_CRM_CLUE_POOL_CONFIG_COLUMN\tPASS\r\ncheck_name\tverdict\r\nV108_CRM_CLUE_POOL_CONFIG_NULLS\tPASS\r\ntable_name\tindex_name\texpected_columns\tactual_columns\tnon_unique\tindex_verdict\r\ncrm_clue_pool_config\tidx_crm_clue_pool_config_tenant\ttenant_id,deleted\ttenant_id,deleted\t1\tOK\r\nsystem_sms_code\tidx_sms_code_tenant_mobile_id\ttenant_id,mobile,id\ttenant_id,mobile,id\t1\tOK\r\ncheck_name\tverdict\r\nV108\tPASS\r\n",
+      "stderr": ""
+    }
+  ],
+  "server_metrics": {
+    "exit_code": 0,
+    "duration_s": 0.04,
+    "stdout": "VERSION()\t@@sql_mode\t@@collation_server\t@@time_zone\t@@transaction_isolation\r\n8.4.9\tONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION\tutf8mb4_0900_ai_ci\t+08:00\tREPEATABLE-READ\r\n",
+    "stderr": ""
+  },
+  "table_count": "438",
+  "status": "passed"
+}

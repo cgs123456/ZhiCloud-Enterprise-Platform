@@ -1,0 +1,1 @@
+python scripts/production/sql_migration_lint.py zhicloud-server/src/main/resources/db/migration/V119__inventory_item_tenant_unique.sql zhicloud-server/src/main/resources/db/verification/V119_verify.sql --json

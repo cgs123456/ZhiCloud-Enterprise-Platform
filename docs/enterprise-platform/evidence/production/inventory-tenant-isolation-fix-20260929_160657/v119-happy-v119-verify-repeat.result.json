@@ -1,0 +1,7 @@
+{
+  "label": "happy-v119-verify-repeat",
+  "exit_code": 0,
+  "mysql_error_code": null,
+  "stdout": "V119_INVENTORY_ITEM_TENANT_COLUMNS\tPASS\nV119_INVENTORY_ITEM_TENANT_UNIQUE_INDEX\tPASS\nV119_INVENTORY_ITEM_LEGACY_INDEX_REMOVED\tPASS\nV119_INVENTORY_ITEM_TENANT_UNIQUE_DATA\tPASS\n",
+  "stderr": ""
+}

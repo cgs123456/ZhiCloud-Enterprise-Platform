@@ -1,0 +1,978 @@
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] zhicloud                                                           [pom]
+[INFO] zhicloud-framework                                                 [pom]
+[INFO] zhicloud-common                                                    [jar]
+[INFO] zhicloud-spring-boot-starter-web                                   [jar]
+[INFO] zhicloud-spring-boot-starter-security                              [jar]
+[INFO] zhicloud-spring-boot-starter-mybatis                               [jar]
+[INFO] zhicloud-spring-boot-starter-redis                                 [jar]
+[INFO] zhicloud-spring-boot-starter-mq                                    [jar]
+[INFO] zhicloud-spring-boot-starter-job                                   [jar]
+[INFO] zhicloud-spring-boot-starter-test                                  [jar]
+[INFO] zhicloud-spring-boot-starter-biz-tenant                            [jar]
+[INFO] zhicloud-spring-boot-starter-websocket                             [jar]
+[INFO] zhicloud-spring-boot-starter-monitor                               [jar]
+[INFO] zhicloud-spring-boot-starter-protection                            [jar]
+[INFO] zhicloud-spring-boot-starter-biz-ip                                [jar]
+[INFO] zhicloud-spring-boot-starter-excel                                 [jar]
+[INFO] zhicloud-spring-boot-starter-biz-data-permission                   [jar]
+[INFO] zhicloud-spring-boot-starter-biz-integration                       [jar]
+[INFO] zhicloud-module-infra                                              [jar]
+[INFO] zhicloud-module-system                                             [jar]
+[INFO] zhicloud-module-bpm                                                [jar]
+[INFO] zhicloud-module-crm                                                [jar]
+[INFO] 
+[INFO] ------------------------< cn.zhicloud:zhicloud >------------------------
+[INFO] Building zhicloud 2026.06.0                                       [1/22]
+[INFO]   from pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud:pom:2026.06.0...
+[INFO] 
+[INFO] -------------------< cn.zhicloud:zhicloud-framework >-------------------
+[INFO] Building zhicloud-framework 2026.06.0                             [2/22]
+[INFO]   from zhicloud-framework\pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-framework ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-framework:pom:2026.06.0...
+[INFO] 
+[INFO] --------------------< cn.zhicloud:zhicloud-common >---------------------
+[INFO] Building zhicloud-common 2026.06.0                                [3/22]
+[INFO]   from zhicloud-framework\zhicloud-common\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-common ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-common\src\main\resources
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-common ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-common:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-common ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-common ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-common\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-common ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-common ---
+[INFO] 
+[INFO] ------------< cn.zhicloud:zhicloud-spring-boot-starter-web >------------
+[INFO] Building zhicloud-spring-boot-starter-web 2026.06.0               [4/22]
+[INFO]   from zhicloud-framework\zhicloud-spring-boot-starter-web\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-spring-boot-starter-web ---
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-spring-boot-starter-web ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-spring-boot-starter-web:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-spring-boot-starter-web ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-spring-boot-starter-web ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-spring-boot-starter-web\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-spring-boot-starter-web ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-spring-boot-starter-web ---
+[INFO] 
+[INFO] ---------< cn.zhicloud:zhicloud-spring-boot-starter-security >----------
+[INFO] Building zhicloud-spring-boot-starter-security 2026.06.0          [5/22]
+[INFO]   from zhicloud-framework\zhicloud-spring-boot-starter-security\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-spring-boot-starter-security ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-spring-boot-starter-security ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-spring-boot-starter-security:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-spring-boot-starter-security ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-spring-boot-starter-security ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-spring-boot-starter-security\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-spring-boot-starter-security ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-spring-boot-starter-security ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] ----------< cn.zhicloud:zhicloud-spring-boot-starter-mybatis >----------
+[INFO] Building zhicloud-spring-boot-starter-mybatis 2026.06.0           [6/22]
+[INFO]   from zhicloud-framework\zhicloud-spring-boot-starter-mybatis\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-spring-boot-starter-mybatis ---
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-spring-boot-starter-mybatis ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-spring-boot-starter-mybatis:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-spring-boot-starter-mybatis ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-spring-boot-starter-mybatis ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-spring-boot-starter-mybatis\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-spring-boot-starter-mybatis ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-spring-boot-starter-mybatis ---
+[INFO] 
+[INFO] -----------< cn.zhicloud:zhicloud-spring-boot-starter-redis >-----------
+[INFO] Building zhicloud-spring-boot-starter-redis 2026.06.0             [7/22]
+[INFO]   from zhicloud-framework\zhicloud-spring-boot-starter-redis\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-spring-boot-starter-redis ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-spring-boot-starter-redis ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-spring-boot-starter-redis:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-spring-boot-starter-redis ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-spring-boot-starter-redis ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-spring-boot-starter-redis\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-spring-boot-starter-redis ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-spring-boot-starter-redis ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] ------------< cn.zhicloud:zhicloud-spring-boot-starter-mq >-------------
+[INFO] Building zhicloud-spring-boot-starter-mq 2026.06.0                [8/22]
+[INFO]   from zhicloud-framework\zhicloud-spring-boot-starter-mq\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[WARNING] 1 problem was encountered while building the effective model for org.javassist:javassist:jar:3.21.0-GA during dependency collection step for project (use -X to see details)
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-spring-boot-starter-mq ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-spring-boot-starter-mq ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-spring-boot-starter-mq:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-spring-boot-starter-mq ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-spring-boot-starter-mq ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-spring-boot-starter-mq\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-spring-boot-starter-mq ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-spring-boot-starter-mq ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] ------------< cn.zhicloud:zhicloud-spring-boot-starter-job >------------
+[INFO] Building zhicloud-spring-boot-starter-job 2026.06.0               [9/22]
+[INFO]   from zhicloud-framework\zhicloud-spring-boot-starter-job\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-spring-boot-starter-job ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-spring-boot-starter-job ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-spring-boot-starter-job:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-spring-boot-starter-job ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-spring-boot-starter-job ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-spring-boot-starter-job\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-spring-boot-starter-job ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-spring-boot-starter-job ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] -----------< cn.zhicloud:zhicloud-spring-boot-starter-test >------------
+[INFO] Building zhicloud-spring-boot-starter-test 2026.06.0             [10/22]
+[INFO]   from zhicloud-framework\zhicloud-spring-boot-starter-test\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-spring-boot-starter-test ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-spring-boot-starter-test\src\main\resources
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-spring-boot-starter-test ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-spring-boot-starter-test:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-spring-boot-starter-test ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-spring-boot-starter-test ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-spring-boot-starter-test\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-spring-boot-starter-test ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-spring-boot-starter-test ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --------< cn.zhicloud:zhicloud-spring-boot-starter-biz-tenant >---------
+[INFO] Building zhicloud-spring-boot-starter-biz-tenant 2026.06.0       [11/22]
+[INFO]   from zhicloud-framework\zhicloud-spring-boot-starter-biz-tenant\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-spring-boot-starter-biz-tenant ---
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-spring-boot-starter-biz-tenant ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-spring-boot-starter-biz-tenant:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-spring-boot-starter-biz-tenant ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-spring-boot-starter-biz-tenant ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-spring-boot-starter-biz-tenant\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-spring-boot-starter-biz-tenant ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-spring-boot-starter-biz-tenant ---
+[INFO] 
+[INFO] ---------< cn.zhicloud:zhicloud-spring-boot-starter-websocket >---------
+[INFO] Building zhicloud-spring-boot-starter-websocket 2026.06.0        [12/22]
+[INFO]   from zhicloud-framework\zhicloud-spring-boot-starter-websocket\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-spring-boot-starter-websocket ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-spring-boot-starter-websocket ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-spring-boot-starter-websocket:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-spring-boot-starter-websocket ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-spring-boot-starter-websocket ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-spring-boot-starter-websocket\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-spring-boot-starter-websocket ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-spring-boot-starter-websocket ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] ----------< cn.zhicloud:zhicloud-spring-boot-starter-monitor >----------
+[INFO] Building zhicloud-spring-boot-starter-monitor 2026.06.0          [13/22]
+[INFO]   from zhicloud-framework\zhicloud-spring-boot-starter-monitor\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-spring-boot-starter-monitor ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-spring-boot-starter-monitor ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-spring-boot-starter-monitor:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-spring-boot-starter-monitor ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-spring-boot-starter-monitor ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-spring-boot-starter-monitor\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-spring-boot-starter-monitor ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-spring-boot-starter-monitor ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --------< cn.zhicloud:zhicloud-spring-boot-starter-protection >---------
+[INFO] Building zhicloud-spring-boot-starter-protection 2026.06.0       [14/22]
+[INFO]   from zhicloud-framework\zhicloud-spring-boot-starter-protection\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-spring-boot-starter-protection ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-spring-boot-starter-protection ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-spring-boot-starter-protection:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-spring-boot-starter-protection ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-spring-boot-starter-protection ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-spring-boot-starter-protection\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-spring-boot-starter-protection ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-spring-boot-starter-protection ---
+[INFO] 
+[INFO] ----------< cn.zhicloud:zhicloud-spring-boot-starter-biz-ip >-----------
+[INFO] Building zhicloud-spring-boot-starter-biz-ip 2026.06.0           [15/22]
+[INFO]   from zhicloud-framework\zhicloud-spring-boot-starter-biz-ip\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-spring-boot-starter-biz-ip ---
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-spring-boot-starter-biz-ip ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-spring-boot-starter-biz-ip:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-spring-boot-starter-biz-ip ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-spring-boot-starter-biz-ip ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-spring-boot-starter-biz-ip\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-spring-boot-starter-biz-ip ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-spring-boot-starter-biz-ip ---
+[INFO] 
+[INFO] -----------< cn.zhicloud:zhicloud-spring-boot-starter-excel >-----------
+[INFO] Building zhicloud-spring-boot-starter-excel 2026.06.0            [16/22]
+[INFO]   from zhicloud-framework\zhicloud-spring-boot-starter-excel\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-spring-boot-starter-excel ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-spring-boot-starter-excel ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-spring-boot-starter-excel:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-spring-boot-starter-excel ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-spring-boot-starter-excel ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-spring-boot-starter-excel\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-spring-boot-starter-excel ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-spring-boot-starter-excel ---
+[INFO] 
+[INFO] ----< cn.zhicloud:zhicloud-spring-boot-starter-biz-data-permission >----
+[INFO] Building zhicloud-spring-boot-starter-biz-data-permission 2026.06.0 [17/22]
+[INFO]   from zhicloud-framework\zhicloud-spring-boot-starter-biz-data-permission\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-spring-boot-starter-biz-data-permission ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-spring-boot-starter-biz-data-permission ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-spring-boot-starter-biz-data-permission:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-spring-boot-starter-biz-data-permission ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-spring-boot-starter-biz-data-permission ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-spring-boot-starter-biz-data-permission\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-spring-boot-starter-biz-data-permission ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-spring-boot-starter-biz-data-permission ---
+[INFO] 
+[INFO] ------< cn.zhicloud:zhicloud-spring-boot-starter-biz-integration >------
+[INFO] Building zhicloud-spring-boot-starter-biz-integration 2026.06.0  [18/22]
+[INFO]   from zhicloud-framework\zhicloud-spring-boot-starter-biz-integration\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-spring-boot-starter-biz-integration ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-spring-boot-starter-biz-integration ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-spring-boot-starter-biz-integration:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-spring-boot-starter-biz-integration ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-spring-boot-starter-biz-integration ---
+[INFO] Copying 3 resources from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-spring-boot-starter-biz-integration ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-spring-boot-starter-biz-integration ---
+[INFO] 
+[INFO] -----------------< cn.zhicloud:zhicloud-module-infra >------------------
+[INFO] Building zhicloud-module-infra 2026.06.0                         [19/22]
+[INFO]   from zhicloud-module-infra\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-module-infra ---
+[INFO] Copying 108 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-module-infra ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-module-infra:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-module-infra ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-module-infra ---
+[INFO] Copying 900 resources from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-module-infra ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-module-infra ---
+[INFO] 
+[INFO] -----------------< cn.zhicloud:zhicloud-module-system >-----------------
+[INFO] Building zhicloud-module-system 2026.06.0                        [20/22]
+[INFO]   from zhicloud-module-system\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-module-system ---
+[INFO] Copying 37 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-module-system ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-module-system:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-module-system ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-module-system ---
+[INFO] Copying 4 resources from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-module-system ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-module-system ---
+[INFO] 
+[INFO] ------------------< cn.zhicloud:zhicloud-module-bpm >-------------------
+[INFO] Building zhicloud-module-bpm 2026.06.0                           [21/22]
+[INFO]   from zhicloud-module-bpm\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- jacoco:0.8.12:prepare-agent (prepare-agent) @ zhicloud-module-bpm ---
+[INFO] argLine set to -javaagent:C:\\Users\\Administrator\\.m2\\repository\\org\\jacoco\\org.jacoco.agent\\0.8.12\\org.jacoco.agent-0.8.12-runtime.jar=destfile=C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-bpm\\target\\jacoco.exec,includes=cn/zhicloud/zhicloud/module/wms/service/**:cn/zhicloud/zhicloud/module/mes/service/**
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-module-bpm ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-module-bpm\src\main\resources
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-module-bpm ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-module-bpm:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-module-bpm ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-module-bpm ---
+[INFO] Copying 5 resources from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-module-bpm ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-module-bpm ---
+[INFO] 
+[INFO] ------------------< cn.zhicloud:zhicloud-module-crm >-------------------
+[INFO] Building zhicloud-module-crm 2026.06.0                           [22/22]
+[INFO]   from zhicloud-module-crm\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-module-crm ---
+[INFO] Copying 8 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-module-crm ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-module-crm:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-module-crm ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-module-crm ---
+[INFO] Copying 8 resources from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-module-crm ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-module-crm ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running cn.zhicloud.module.crm.service.receivable.CrmReceivableBpmTransactionMysqlIntegrationTest
+���� http://www.zhicloud.cn
+Application Version: ${zhicloud.info.version}
+Spring Boot Version: 3.5.16
+
+.__   __.   ______      .______    __    __    _______
+|  \ |  |  /  __  \     |   _  \  |  |  |  |  /  _____|
+|   \|  | |  |  |  |    |  |_)  | |  |  |  | |  |  __
+|  . `  | |  |  |  |    |   _  <  |  |  |  | |  | |_ |
+|  |\   | |  `--'  |    |  |_)  | |  `--'  | |  |__| |
+|__| \__|  \______/     |______/   \______/   \______|
+
+�������[   �����[ �������������[     �������������[ �����[   �����[ �������������[
+���������[  �����U�����X�T�T�T�����[    �����X�T�T�����[�����U   �����U�����X�T�T�T�T�a
+�����X�����[ �����U�����U   �����U    �������������X�a�����U   �����U�����U  �������[
+�����U�^�����[�����U�����U   �����U    �����X�T�T�����[�����U   �����U�����U   �����U
+�����U �^���������U�^�������������X�a    �������������X�a�^�������������X�a�^�������������X�a
+�^�T�a  �^�T�T�T�a �^�T�T�T�T�T�a     �^�T�T�T�T�T�a  �^�T�T�T�T�T�a  �^�T�T�T�T�T�a
+
+ _ _   |_  _ _|_. ___ _ |    _ 
+| | |\/|_)(_| | |_\  |_)||_|_\ 
+     /               |         
+                        3.5.16 
+ _ _   |_  _ _|_. ___ _ |    _  .  _  .  _  
+| | |\/|_)(_| | |_\  |_)||_|_\  | (_) | | | 
+     /               |          /
+                                    1.5.7
+[ERROR] Tests run: 2, Failures: 0, Errors: 2, Skipped: 0, Time elapsed: 53.54 s <<< FAILURE! -- in cn.zhicloud.module.crm.service.receivable.CrmReceivableBpmTransactionMysqlIntegrationTest
+[ERROR] cn.zhicloud.module.crm.service.receivable.CrmReceivableBpmTransactionMysqlIntegrationTest.submitReceivableShouldCommitCrmBpmRegistrationAndFlowableTogether -- Time elapsed: 0.012 s <<< ERROR!
+java.lang.IllegalStateException: Failed to load ApplicationContext for [MergedContextConfiguration@63fef83c testClass = cn.zhicloud.module.crm.service.receivable.CrmReceivableBpmTransactionMysqlIntegrationTest, locations = [], classes = [cn.zhicloud.module.crm.service.receivable.CrmReceivableBpmTransactionMysqlIntegrationTest.TestApplication], contextInitializerClasses = [], activeProfiles = [], propertySourceDescriptors = [], propertySourceProperties = ["spring.datasource.url=${ZHICLOUD_CRM_BPM_IT_MYSQL_URL:jdbc:mysql://127.0.0.1:57507/zhicloud_crm_bpm_chain_test?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Singapore}", "spring.datasource.username=${ZHICLOUD_CRM_BPM_IT_MYSQL_USERNAME:root}", "spring.datasource.password=${ZHICLOUD_CRM_BPM_IT_MYSQL_PASSWORD:}", "spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver", "spring.sql.init.mode=never", "spring.main.lazy-initialization=false", "mybatis-plus.configuration.map-underscore-to-camel-case=true", "zhicloud.info.base-package=cn.zhicloud", "flowable.database-schema-update=true", "flowable.db-history-used=true", "flowable.check-process-definitions=false", "flowable.history-level=audit", "flowable.app.enabled=false", "flowable.idm.enabled=false", "flowable.event-registry.enabled=false", "org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true", "spring.main.web-application-type=none"], contextCustomizers = [org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@32c8e539, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@53dacd14, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@0, org.springframework.boot.test.web.client.TestRestTemplateContextCustomizer@5c153b9e, org.springframework.boot.test.web.reactor.netty.DisableReactorResourceFactoryGlobalResourcesContextCustomizerFactory$DisableReactorResourceFactoryGlobalResourcesContextCustomizerCustomizer@31aa3ca5, org.springframework.boot.test.autoconfigure.OnFailureConditionReportContextCustomizerFactory$OnFailureConditionReportContextCustomizer@b6b1987, org.springframework.boot.test.autoconfigure.actuate.observability.ObservabilityContextCustomizerFactory$DisableObservabilityContextCustomizer@1f, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@0, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizer@6f0b0a5e, org.springframework.test.context.bean.override.BeanOverrideContextCustomizer@48405c26, org.springframework.test.context.support.DynamicPropertiesContextCustomizer@0, org.springframework.boot.test.context.SpringBootTestAnnotation@f827a99a], contextLoader = org.springframework.boot.test.context.SpringBootContextLoader, parent = null]
+	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContext(DefaultCacheAwareContextLoaderDelegate.java:180)
+	at org.springframework.test.context.support.DefaultTestContext.getApplicationContext(DefaultTestContext.java:130)
+	at org.springframework.test.context.bean.override.BeanOverrideTestExecutionListener.injectFields(BeanOverrideTestExecutionListener.java:107)
+	at org.springframework.test.context.bean.override.BeanOverrideTestExecutionListener.prepareTestInstance(BeanOverrideTestExecutionListener.java:70)
+	at org.springframework.test.context.TestContextManager.prepareTestInstance(TestContextManager.java:260)
+	at org.springframework.test.context.junit.jupiter.SpringExtension.postProcessTestInstance(SpringExtension.java:159)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.Optional.orElseGet(Optional.java:364)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'runtimeServiceBean' defined in org.flowable.spring.boot.ProcessEngineServicesAutoConfiguration: Unsatisfied dependency expressed through method 'runtimeServiceBean' parameter 0: Error creating bean with name 'processEngine': FactoryBean threw exception on object creation
+	at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:804)
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiateUsingFactoryMethod(ConstructorResolver.java:546)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateUsingFactoryMethod(AbstractAutowireCapableBeanFactory.java:1373)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1203)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:569)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:529)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:339)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:373)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:337)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.instantiateSingleton(DefaultListableBeanFactory.java:1235)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingleton(DefaultListableBeanFactory.java:1201)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:1130)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:991)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:628)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:752)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:439)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:318)
+	at org.springframework.boot.test.context.SpringBootContextLoader.lambda$loadContext$3(SpringBootContextLoader.java:151)
+	at org.springframework.util.function.ThrowingSupplier.get(ThrowingSupplier.java:58)
+	at org.springframework.util.function.ThrowingSupplier.get(ThrowingSupplier.java:46)
+	at org.springframework.boot.SpringApplication.withHook(SpringApplication.java:1461)
+	at org.springframework.boot.test.context.SpringBootContextLoader$ContextLoaderHook.run(SpringBootContextLoader.java:590)
+	at org.springframework.boot.test.context.SpringBootContextLoader.loadContext(SpringBootContextLoader.java:151)
+	at org.springframework.boot.test.context.SpringBootContextLoader.loadContext(SpringBootContextLoader.java:110)
+	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContextInternal(DefaultCacheAwareContextLoaderDelegate.java:225)
+	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContext(DefaultCacheAwareContextLoaderDelegate.java:152)
+	... 19 more
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'processEngine': FactoryBean threw exception on object creation
+	at org.springframework.beans.factory.support.FactoryBeanRegistrySupport.doGetObjectFromFactoryBean(FactoryBeanRegistrySupport.java:211)
+	at org.springframework.beans.factory.support.FactoryBeanRegistrySupport.getObjectFromFactoryBean(FactoryBeanRegistrySupport.java:137)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getObjectForBeanInstance(AbstractBeanFactory.java:1895)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.getObjectForBeanInstance(AbstractAutowireCapableBeanFactory.java:1314)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:261)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1715)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1660)
+	at org.springframework.beans.factory.support.ConstructorResolver.resolveAutowiredArgument(ConstructorResolver.java:913)
+	at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:791)
+	... 45 more
+Caused by: org.springframework.transaction.TransactionSystemException: JDBC rollback failed
+	at org.springframework.jdbc.datasource.DataSourceTransactionManager.translateException(DataSourceTransactionManager.java:478)
+	at org.springframework.jdbc.support.JdbcTransactionManager.translateException(JdbcTransactionManager.java:184)
+	at org.springframework.jdbc.datasource.DataSourceTransactionManager.doRollback(DataSourceTransactionManager.java:362)
+	at org.springframework.transaction.support.AbstractPlatformTransactionManager.processRollback(AbstractPlatformTransactionManager.java:897)
+	at org.springframework.transaction.support.AbstractPlatformTransactionManager.rollback(AbstractPlatformTransactionManager.java:866)
+	at org.springframework.transaction.support.TransactionTemplate.rollbackOnException(TransactionTemplate.java:168)
+	at org.springframework.transaction.support.TransactionTemplate.execute(TransactionTemplate.java:144)
+	at org.flowable.common.spring.SpringTransactionInterceptor.execute(SpringTransactionInterceptor.java:57)
+	at org.flowable.common.engine.impl.interceptor.LogInterceptor.execute(LogInterceptor.java:35)
+	at org.flowable.common.engine.impl.cfg.CommandExecutorImpl.execute(CommandExecutorImpl.java:56)
+	at org.flowable.engine.impl.ProcessEngineImpl.<init>(ProcessEngineImpl.java:83)
+	at org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl.createEngine(ProcessEngineConfigurationImpl.java:880)
+	at org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl.createEngine(ProcessEngineConfigurationImpl.java:438)
+	at org.flowable.common.engine.impl.AbstractBuildableEngineConfiguration.buildEngine(AbstractBuildableEngineConfiguration.java:30)
+	at org.flowable.spring.SpringProcessEngineConfiguration.buildEngine(SpringProcessEngineConfiguration.java:76)
+	at org.flowable.spring.SpringProcessEngineConfiguration.buildEngine(SpringProcessEngineConfiguration.java:53)
+	at org.flowable.engine.ProcessEngineConfiguration.buildProcessEngine(ProcessEngineConfiguration.java:164)
+	at org.flowable.spring.ProcessEngineFactoryBean.getObject(ProcessEngineFactoryBean.java:59)
+	at org.flowable.spring.ProcessEngineFactoryBean.getObject(ProcessEngineFactoryBean.java:32)
+	at org.springframework.beans.factory.support.FactoryBeanRegistrySupport.doGetObjectFromFactoryBean(FactoryBeanRegistrySupport.java:205)
+	... 54 more
+Caused by: java.sql.SQLException: Connection is closed
+	at com.zaxxer.hikari.pool.ProxyConnection$ClosedConnection.lambda$getClosedConnection$0(ProxyConnection.java:562)
+	at jdk.proxy3/jdk.proxy3.$Proxy160.rollback(Unknown Source)
+	at com.zaxxer.hikari.pool.ProxyConnection.rollback(ProxyConnection.java:386)
+	at com.zaxxer.hikari.pool.HikariProxyConnection.rollback(HikariProxyConnection.java)
+	at org.springframework.jdbc.datasource.DataSourceTransactionManager.doRollback(DataSourceTransactionManager.java:359)
+	... 71 more
+
+[ERROR] cn.zhicloud.module.crm.service.receivable.CrmReceivableBpmTransactionMysqlIntegrationTest.submitReceivableShouldRollbackCrmBpmRegistrationAndFlowableTogether -- Time elapsed: 0 s <<< ERROR!
+java.lang.IllegalStateException: ApplicationContext failure threshold (1) exceeded: skipping repeated attempt to load context for [MergedContextConfiguration@63fef83c testClass = cn.zhicloud.module.crm.service.receivable.CrmReceivableBpmTransactionMysqlIntegrationTest, locations = [], classes = [cn.zhicloud.module.crm.service.receivable.CrmReceivableBpmTransactionMysqlIntegrationTest.TestApplication], contextInitializerClasses = [], activeProfiles = [], propertySourceDescriptors = [], propertySourceProperties = ["spring.datasource.url=${ZHICLOUD_CRM_BPM_IT_MYSQL_URL:jdbc:mysql://127.0.0.1:57507/zhicloud_crm_bpm_chain_test?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Singapore}", "spring.datasource.username=${ZHICLOUD_CRM_BPM_IT_MYSQL_USERNAME:root}", "spring.datasource.password=${ZHICLOUD_CRM_BPM_IT_MYSQL_PASSWORD:}", "spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver", "spring.sql.init.mode=never", "spring.main.lazy-initialization=false", "mybatis-plus.configuration.map-underscore-to-camel-case=true", "zhicloud.info.base-package=cn.zhicloud", "flowable.database-schema-update=true", "flowable.db-history-used=true", "flowable.check-process-definitions=false", "flowable.history-level=audit", "flowable.app.enabled=false", "flowable.idm.enabled=false", "flowable.event-registry.enabled=false", "org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true", "spring.main.web-application-type=none"], contextCustomizers = [org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@32c8e539, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@53dacd14, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@0, org.springframework.boot.test.web.client.TestRestTemplateContextCustomizer@5c153b9e, org.springframework.boot.test.web.reactor.netty.DisableReactorResourceFactoryGlobalResourcesContextCustomizerFactory$DisableReactorResourceFactoryGlobalResourcesContextCustomizerCustomizer@31aa3ca5, org.springframework.boot.test.autoconfigure.OnFailureConditionReportContextCustomizerFactory$OnFailureConditionReportContextCustomizer@b6b1987, org.springframework.boot.test.autoconfigure.actuate.observability.ObservabilityContextCustomizerFactory$DisableObservabilityContextCustomizer@1f, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@0, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizer@6f0b0a5e, org.springframework.test.context.bean.override.BeanOverrideContextCustomizer@48405c26, org.springframework.test.context.support.DynamicPropertiesContextCustomizer@0, org.springframework.boot.test.context.SpringBootTestAnnotation@f827a99a], contextLoader = org.springframework.boot.test.context.SpringBootContextLoader, parent = null]
+	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContext(DefaultCacheAwareContextLoaderDelegate.java:145)
+	at org.springframework.test.context.support.DefaultTestContext.getApplicationContext(DefaultTestContext.java:130)
+	at org.springframework.test.context.bean.override.BeanOverrideTestExecutionListener.injectFields(BeanOverrideTestExecutionListener.java:107)
+	at org.springframework.test.context.bean.override.BeanOverrideTestExecutionListener.prepareTestInstance(BeanOverrideTestExecutionListener.java:70)
+	at org.springframework.test.context.TestContextManager.prepareTestInstance(TestContextManager.java:260)
+	at org.springframework.test.context.junit.jupiter.SpringExtension.postProcessTestInstance(SpringExtension.java:159)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.Optional.orElseGet(Optional.java:364)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Errors: 
+[ERROR]   CrmReceivableBpmTransactionMysqlIntegrationTest.submitReceivableShouldCommitCrmBpmRegistrationAndFlowableTogether ? IllegalState Failed to load ApplicationContext for [MergedContextConfiguration@63fef83c testClass = cn.zhicloud.module.crm.service.receivable.CrmReceivableBpmTransactionMysqlIntegrationTest, locations = [], classes = [cn.zhicloud.module.crm.service.receivable.CrmReceivableBpmTransactionMysqlIntegrationTest.TestApplication], contextInitializerClasses = [], activeProfiles = [], propertySourceDescriptors = [], propertySourceProperties = ["spring.datasource.url=${ZHICLOUD_CRM_BPM_IT_MYSQL_URL:jdbc:mysql://127.0.0.1:57507/zhicloud_crm_bpm_chain_test?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Singapore}", "spring.datasource.username=${ZHICLOUD_CRM_BPM_IT_MYSQL_USERNAME:root}", "spring.datasource.password=${ZHICLOUD_CRM_BPM_IT_MYSQL_PASSWORD:}", "spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver", "spring.sql.init.mode=never", "spring.main.lazy-initialization=false", "mybatis-plus.configuration.map-underscore-to-camel-case=true", "zhicloud.info.base-package=cn.zhicloud", "flowable.database-schema-update=true", "flowable.db-history-used=true", "flowable.check-process-definitions=false", "flowable.history-level=audit", "flowable.app.enabled=false", "flowable.idm.enabled=false", "flowable.event-registry.enabled=false", "org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true", "spring.main.web-application-type=none"], contextCustomizers = [org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@32c8e539, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@53dacd14, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@0, org.springframework.boot.test.web.client.TestRestTemplateContextCustomizer@5c153b9e, org.springframework.boot.test.web.reactor.netty.DisableReactorResourceFactoryGlobalResourcesContextCustomizerFactory$DisableReactorResourceFactoryGlobalResourcesContextCustomizerCustomizer@31aa3ca5, org.springframework.boot.test.autoconfigure.OnFailureConditionReportContextCustomizerFactory$OnFailureConditionReportContextCustomizer@b6b1987, org.springframework.boot.test.autoconfigure.actuate.observability.ObservabilityContextCustomizerFactory$DisableObservabilityContextCustomizer@1f, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@0, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizer@6f0b0a5e, org.springframework.test.context.bean.override.BeanOverrideContextCustomizer@48405c26, org.springframework.test.context.support.DynamicPropertiesContextCustomizer@0, org.springframework.boot.test.context.SpringBootTestAnnotation@f827a99a], contextLoader = org.springframework.boot.test.context.SpringBootContextLoader, parent = null]
+[ERROR]   CrmReceivableBpmTransactionMysqlIntegrationTest.submitReceivableShouldRollbackCrmBpmRegistrationAndFlowableTogether ? IllegalState ApplicationContext failure threshold (1) exceeded: skipping repeated attempt to load context for [MergedContextConfiguration@63fef83c testClass = cn.zhicloud.module.crm.service.receivable.CrmReceivableBpmTransactionMysqlIntegrationTest, locations = [], classes = [cn.zhicloud.module.crm.service.receivable.CrmReceivableBpmTransactionMysqlIntegrationTest.TestApplication], contextInitializerClasses = [], activeProfiles = [], propertySourceDescriptors = [], propertySourceProperties = ["spring.datasource.url=${ZHICLOUD_CRM_BPM_IT_MYSQL_URL:jdbc:mysql://127.0.0.1:57507/zhicloud_crm_bpm_chain_test?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Singapore}", "spring.datasource.username=${ZHICLOUD_CRM_BPM_IT_MYSQL_USERNAME:root}", "spring.datasource.password=${ZHICLOUD_CRM_BPM_IT_MYSQL_PASSWORD:}", "spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver", "spring.sql.init.mode=never", "spring.main.lazy-initialization=false", "mybatis-plus.configuration.map-underscore-to-camel-case=true", "zhicloud.info.base-package=cn.zhicloud", "flowable.database-schema-update=true", "flowable.db-history-used=true", "flowable.check-process-definitions=false", "flowable.history-level=audit", "flowable.app.enabled=false", "flowable.idm.enabled=false", "flowable.event-registry.enabled=false", "org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true", "spring.main.web-application-type=none"], contextCustomizers = [org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@32c8e539, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@53dacd14, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@0, org.springframework.boot.test.web.client.TestRestTemplateContextCustomizer@5c153b9e, org.springframework.boot.test.web.reactor.netty.DisableReactorResourceFactoryGlobalResourcesContextCustomizerFactory$DisableReactorResourceFactoryGlobalResourcesContextCustomizerCustomizer@31aa3ca5, org.springframework.boot.test.autoconfigure.OnFailureConditionReportContextCustomizerFactory$OnFailureConditionReportContextCustomizer@b6b1987, org.springframework.boot.test.autoconfigure.actuate.observability.ObservabilityContextCustomizerFactory$DisableObservabilityContextCustomizer@1f, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@0, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizer@6f0b0a5e, org.springframework.test.context.bean.override.BeanOverrideContextCustomizer@48405c26, org.springframework.test.context.support.DynamicPropertiesContextCustomizer@0, org.springframework.boot.test.context.SpringBootTestAnnotation@f827a99a], contextLoader = org.springframework.boot.test.context.SpringBootContextLoader, parent = null]
+[INFO] 
+[ERROR] Tests run: 2, Failures: 0, Errors: 2, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for zhicloud 2026.06.0:
+[INFO] 
+[INFO] zhicloud ........................................... SUCCESS [  0.602 s]
+[INFO] zhicloud-framework ................................. SUCCESS [  0.298 s]
+[INFO] zhicloud-common .................................... SUCCESS [  1.734 s]
+[INFO] zhicloud-spring-boot-starter-web ................... SUCCESS [  0.668 s]
+[INFO] zhicloud-spring-boot-starter-security .............. SUCCESS [  0.602 s]
+[INFO] zhicloud-spring-boot-starter-mybatis ............... SUCCESS [  2.115 s]
+[INFO] zhicloud-spring-boot-starter-redis ................. SUCCESS [  0.625 s]
+[INFO] zhicloud-spring-boot-starter-mq .................... SUCCESS [  0.849 s]
+[INFO] zhicloud-spring-boot-starter-job ................... SUCCESS [  0.339 s]
+[INFO] zhicloud-spring-boot-starter-test .................. SUCCESS [  0.470 s]
+[INFO] zhicloud-spring-boot-starter-biz-tenant ............ SUCCESS [  0.855 s]
+[INFO] zhicloud-spring-boot-starter-websocket ............. SUCCESS [  0.817 s]
+[INFO] zhicloud-spring-boot-starter-monitor ............... SUCCESS [  0.478 s]
+[INFO] zhicloud-spring-boot-starter-protection ............ SUCCESS [  0.600 s]
+[INFO] zhicloud-spring-boot-starter-biz-ip ................ SUCCESS [  0.575 s]
+[INFO] zhicloud-spring-boot-starter-excel ................. SUCCESS [  0.655 s]
+[INFO] zhicloud-spring-boot-starter-biz-data-permission ... SUCCESS [  0.633 s]
+[INFO] zhicloud-spring-boot-starter-biz-integration ....... SUCCESS [  0.570 s]
+[INFO] zhicloud-module-infra .............................. SUCCESS [  3.021 s]
+[INFO] zhicloud-module-system ............................. SUCCESS [  1.584 s]
+[INFO] zhicloud-module-bpm ................................ SUCCESS [  1.879 s]
+[INFO] zhicloud-module-crm ................................ FAILURE [ 57.144 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  01:17 min
+[INFO] Finished at: 2026-10-02T11:04:37+08:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.3:test (default-test) on project zhicloud-module-crm: 
+[ERROR] 
+[ERROR] See C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-module-crm\target\surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+[ERROR] 
+[ERROR] After correcting the problems, you can resume the build with the command
+[ERROR]   mvn <args> -rf :zhicloud-module-crm
+11:03:44,983 |-WARN in Logger[org.jboss.logging] - No appenders present in context [default] for logger [org.jboss.logging].
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\Administrator\.m2\repository\net\bytebuddy\byte-buddy-agent\1.17.8\byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+
+
+============================
+CONDITIONS EVALUATION REPORT
+============================
+
+
+Positive matches:
+-----------------
+
+   DataSourceAutoConfiguration matched:
+      - @ConditionalOnClass found required classes 'javax.sql.DataSource', 'org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType' (OnClassCondition)
+      - @ConditionalOnMissingBean (types: io.r2dbc.spi.ConnectionFactory; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+   DataSourceAutoConfiguration.PooledDataSourceConfiguration matched:
+      - AnyNestedCondition 1 matched 1 did not; NestedCondition on DataSourceAutoConfiguration.PooledDataSourceCondition.PooledDataSourceAvailable PooledDataSource found supported DataSource; NestedCondition on DataSourceAutoConfiguration.PooledDataSourceCondition.ExplicitType @ConditionalOnProperty (spring.datasource.type) did not find property 'spring.datasource.type' (DataSourceAutoConfiguration.PooledDataSourceCondition)
+      - @ConditionalOnMissingBean (types: javax.sql.DataSource,javax.sql.XADataSource; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+   DataSourceAutoConfiguration.PooledDataSourceConfiguration#jdbcConnectionDetails matched:
+      - @ConditionalOnMissingBean (types: org.springframework.boot.autoconfigure.jdbc.JdbcConnectionDetails; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+   DataSourceConfiguration.Hikari matched:
+      - @ConditionalOnClass found required class 'com.zaxxer.hikari.HikariDataSource' (OnClassCondition)
+      - @ConditionalOnProperty (spring.datasource.type=com.zaxxer.hikari.HikariDataSource) matched (OnPropertyCondition)
+      - @ConditionalOnMissingBean (types: javax.sql.DataSource; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+   DataSourcePoolMetadataProvidersConfiguration.HikariPoolDataSourceMetadataProviderConfiguration matched:
+      - @ConditionalOnClass found required class 'com.zaxxer.hikari.HikariDataSource' (OnClassCondition)
+
+   DataSourcePoolMetadataProvidersConfiguration.OracleUcpPoolDataSourceMetadataProviderConfiguration matched:
+      - @ConditionalOnClass found required classes 'oracle.ucp.jdbc.PoolDataSource', 'oracle.jdbc.OracleConnection' (OnClassCondition)
+
+   DataSourceTransactionManagerAutoConfiguration matched:
+      - @ConditionalOnClass found required classes 'javax.sql.DataSource', 'org.springframework.jdbc.core.JdbcTemplate', 'org.springframework.transaction.TransactionManager' (OnClassCondition)
+
+   DataSourceTransactionManagerAutoConfiguration.JdbcTransactionManagerConfiguration matched:
+      - @ConditionalOnSingleCandidate (types: javax.sql.DataSource; SearchStrategy: all) found a single bean 'dataSource' (OnBeanCondition)
+
+   DataSourceTransactionManagerAutoConfiguration.JdbcTransactionManagerConfiguration#transactionManager matched:
+      - @ConditionalOnMissingBean (types: org.springframework.transaction.TransactionManager; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+   DruidDataSourceAutoConfigure matched:
+      - @ConditionalOnClass found required class 'com.alibaba.druid.pool.DruidDataSource' (OnClassCondition)
+      - @ConditionalOnProperty (spring.datasource.type=com.alibaba.druid.pool.DruidDataSource) matched (OnPropertyCondition)
+
+   FlowableJobConfiguration#flowableAsyncTaskInvokerTaskExecutor matched:
+      - @ConditionalOnMissingBean (names: flowableAsyncTaskInvokerTaskExecutor; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+   FlowableJobConfiguration#taskExecutor matched:
+      - @ConditionalOnMissingBean (types: org.springframework.core.task.AsyncTaskExecutor; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+   MybatisPlusAutoConfiguration matched:
+      - @ConditionalOnClass found required classes 'org.apache.ibatis.session.SqlSessionFactory', 'org.mybatis.spring.SqlSessionFactoryBean' (OnClassCondition)
+      - @ConditionalOnSingleCandidate (types: javax.sql.DataSource; SearchStrategy: all) found a single bean 'dataSource' (OnBeanCondition)
+
+   MybatisPlusAutoConfiguration#mybatisPlusSpringApplicationContextAware matched:
+      - @ConditionalOnMissingBean (types: com.baomidou.mybatisplus.extension.spring.MybatisPlusApplicationContextAware; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+   MybatisPlusAutoConfiguration#sqlSessionFactory matched:
+      - @ConditionalOnMissingBean (types: org.apache.ibatis.session.SqlSessionFactory; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+   MybatisPlusAutoConfiguration#sqlSessionTemplate matched:
+      - @ConditionalOnMissingBean (types: org.mybatis.spring.SqlSessionTemplate; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+   MybatisPlusJoinAutoConfiguration matched:
+      - @ConditionalOnClass found required classes 'org.apache.ibatis.session.SqlSessionFactory', 'org.mybatis.spring.SqlSessionFactoryBean' (OnClassCondition)
+      - @ConditionalOnSingleCandidate (types: javax.sql.DataSource; SearchStrategy: all) found a single bean 'dataSource' (OnBeanCondition)
+
+   MybatisPlusJoinAutoConfiguration#mpjInterceptor matched:
+      - @ConditionalOnClass found required classes 'org.apache.ibatis.session.SqlSessionFactory', 'org.mybatis.spring.SqlSessionFactoryBean' (OnClassCondition)
+
+   MybatisPlusJoinAutoConfiguration#mpjInterceptorConfig matched:
+      - @ConditionalOnClass found required classes 'org.apache.ibatis.session.SqlSessionFactory', 'org.mybatis.spring.SqlSessionFactoryBean' (OnClassCondition)
+
+   MybatisPlusJoinAutoConfiguration#mpjSqlInjectorOnMiss matched:
+      - @ConditionalOnClass found required classes 'org.apache.ibatis.session.SqlSessionFactory', 'org.mybatis.spring.SqlSessionFactoryBean' (OnClassCondition)
+      - @ConditionalOnMissingBean (types: com.baomidou.mybatisplus.core.injector.ISqlInjector; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+   MybatisPlusJoinAutoConfiguration.MPJMappingConfig matched:
+      - @ConditionalOnClass found required classes 'org.apache.ibatis.session.SqlSessionFactory', 'org.mybatis.spring.SqlSessionFactoryBean' (OnClassCondition)
+
+   MybatisPlusJoinAutoConfiguration.MPJSpringContext matched:
+      - @ConditionalOnClass found required classes 'org.apache.ibatis.session.SqlSessionFactory', 'org.mybatis.spring.SqlSessionFactoryBean' (OnClassCondition)
+
+   ProcessEngineAutoConfiguration matched:
+      - @ConditionalOnClass found required classes 'org.flowable.engine.ProcessEngine', 'org.flowable.spring.SpringProcessEngineConfiguration' (OnClassCondition)
+      - @ConditionalOnProperty (flowable.process.enabled=true) matched (OnPropertyCondition)
+
+   ProcessEngineAutoConfiguration#processAsyncExecutor matched:
+      - @ConditionalOnMissingBean (names: processAsyncExecutor; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+   ProcessEngineAutoConfiguration#springProcessEngineConfiguration matched:
+      - @ConditionalOnMissingBean (types: org.flowable.spring.SpringProcessEngineConfiguration; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+   ProcessEngineServicesAutoConfiguration matched:
+      - @ConditionalOnClass found required classes 'org.flowable.engine.ProcessEngine', 'org.flowable.spring.SpringProcessEngineConfiguration' (OnClassCondition)
+      - @ConditionalOnProperty (flowable.process.enabled=true) matched (OnPropertyCondition)
+
+   ProcessEngineServicesAutoConfiguration#dynamicBpmnServiceBean matched:
+      - @ConditionalOnMissingBean (types: org.flowable.engine.DynamicBpmnService; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+   ProcessEngineServicesAutoConfiguration#formServiceBean matched:
+      - @ConditionalOnMissingBean (types: org.flowable.engine.FormService; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+   ProcessEngineServicesAutoConfiguration#historyServiceBean matched:
+      - @ConditionalOnMissingBean (types: org.flowable.engine.HistoryService; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+   ProcessEngineServicesAutoConfiguration#identityServiceBean matched:
+      - @ConditionalOnMissingBean (types: org.flowable.engine.IdentityService; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+   ProcessEngineServicesAutoConfiguration#managementServiceBean matched:
+      - @ConditionalOnMissingBean (types: org.flowable.engine.ManagementService; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+   ProcessEngineServicesAutoConfiguration#processInstanceMigrationService matched:
+      - @ConditionalOnMissingBean (types: org.flowable.engine.ProcessMigrationService; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+   ProcessEngineServicesAutoConfiguration#repositoryServiceBean matched:
+      - @ConditionalOnMissingBean (types: org.flowable.engine.RepositoryService; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+   ProcessEngineServicesAutoConfiguration#runtimeServiceBean matched:
+      - @ConditionalOnMissingBean (types: org.flowable.engine.RuntimeService; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+   ProcessEngineServicesAutoConfiguration#taskServiceBean matched:
+      - @ConditionalOnMissingBean (types: org.flowable.engine.TaskService; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+   ProcessEngineServicesAutoConfiguration.StandaloneEngineConfiguration matched:
+      - @ConditionalOnMissingBean (types: org.flowable.engine.ProcessEngine,org.flowable.app.engine.AppEngine; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+
+Negative matches:
+-----------------
+
+   DataSourceAutoConfiguration.EmbeddedDatabaseConfiguration:
+      Did not match:
+         - EmbeddedDataSource spring.datasource.url is set (DataSourceAutoConfiguration.EmbeddedDatabaseCondition)
+
+   DataSourceCheckpointRestoreConfiguration:
+      Did not match:
+         - @ConditionalOnClass did not find required class 'org.crac.Resource' (OnClassCondition)
+
+   DataSourceConfiguration.Dbcp2:
+      Did not match:
+         - @ConditionalOnClass did not find required class 'org.apache.commons.dbcp2.BasicDataSource' (OnClassCondition)
+
+   DataSourceConfiguration.Generic:
+      Did not match:
+         - @ConditionalOnProperty (spring.datasource.type) did not find property 'spring.datasource.type' (OnPropertyCondition)
+
+   DataSourceConfiguration.OracleUcp:
+      Did not match:
+         - @ConditionalOnMissingBean (types: javax.sql.DataSource; SearchStrategy: all) found beans of type 'javax.sql.DataSource' dataSource (OnBeanCondition)
+      Matched:
+         - @ConditionalOnClass found required classes 'oracle.ucp.jdbc.PoolDataSourceImpl', 'oracle.jdbc.OracleConnection' (OnClassCondition)
+         - @ConditionalOnProperty (spring.datasource.type=oracle.ucp.jdbc.PoolDataSource) matched (OnPropertyCondition)
+
+   DataSourceConfiguration.Tomcat:
+      Did not match:
+         - @ConditionalOnClass did not find required class 'org.apache.tomcat.jdbc.pool.DataSource' (OnClassCondition)
+
+   DataSourceJmxConfiguration:
+      Did not match:
+         - @ConditionalOnBooleanProperty (spring.jmx.enabled=true) found different value in property 'spring.jmx.enabled' (OnPropertyCondition)
+
+   DataSourcePoolMetadataProvidersConfiguration.CommonsDbcp2PoolDataSourceMetadataProviderConfiguration:
+      Did not match:
+         - @ConditionalOnClass did not find required class 'org.apache.commons.dbcp2.BasicDataSource' (OnClassCondition)
+
+   DataSourcePoolMetadataProvidersConfiguration.TomcatDataSourcePoolMetadataProviderConfiguration:
+      Did not match:
+         - @ConditionalOnClass did not find required class 'org.apache.tomcat.jdbc.pool.DataSource' (OnClassCondition)
+
+   DruidDataSourceAutoConfigure#dataSource:
+      Did not match:
+         - @ConditionalOnMissingBean (types: com.alibaba.druid.spring.boot3.autoconfigure.DruidDataSourceWrapper,com.alibaba.druid.pool.DruidDataSource,javax.sql.DataSource; SearchStrategy: all) found beans of type 'javax.sql.DataSource' dataSource (OnBeanCondition)
+
+   DruidFilterConfiguration#commonsLogFilter:
+      Did not match:
+         - @ConditionalOnProperty (spring.datasource.druid.filter.commons-log.enabled) did not find property 'enabled' (OnPropertyCondition)
+
+   DruidFilterConfiguration#configFilter:
+      Did not match:
+         - @ConditionalOnProperty (spring.datasource.druid.filter.config.enabled) did not find property 'enabled' (OnPropertyCondition)
+
+   DruidFilterConfiguration#encodingConvertFilter:
+      Did not match:
+         - @ConditionalOnProperty (spring.datasource.druid.filter.encoding.enabled) did not find property 'enabled' (OnPropertyCondition)
+
+   DruidFilterConfiguration#log4j2Filter:
+      Did not match:
+         - @ConditionalOnProperty (spring.datasource.druid.filter.log4j2.enabled) did not find property 'enabled' (OnPropertyCondition)
+
+   DruidFilterConfiguration#log4jFilter:
+      Did not match:
+         - @ConditionalOnProperty (spring.datasource.druid.filter.log4j.enabled) did not find property 'enabled' (OnPropertyCondition)
+
+   DruidFilterConfiguration#slf4jLogFilter:
+      Did not match:
+         - @ConditionalOnProperty (spring.datasource.druid.filter.slf4j.enabled) did not find property 'enabled' (OnPropertyCondition)
+
+   DruidFilterConfiguration#statFilter:
+      Did not match:
+         - @ConditionalOnProperty (spring.datasource.druid.filter.stat.enabled) did not find property 'enabled' (OnPropertyCondition)
+
+   DruidFilterConfiguration#wallConfig:
+      Did not match:
+         - @ConditionalOnProperty (spring.datasource.druid.filter.wall.enabled) did not find property 'enabled' (OnPropertyCondition)
+
+   DruidFilterConfiguration#wallFilter:
+      Did not match:
+         - @ConditionalOnProperty (spring.datasource.druid.filter.wall.enabled) did not find property 'enabled' (OnPropertyCondition)
+
+   DruidSpringAopConfiguration:
+      Did not match:
+         - @ConditionalOnProperty (spring.datasource.druid.aop-patterns) did not find property 'spring.datasource.druid.aop-patterns' (OnPropertyCondition)
+
+   DruidStatViewServletConfiguration:
+      Did not match:
+         - @ConditionalOnWebApplication (required) not a servlet web application and did not find reactive web application classes (OnWebApplicationCondition)
+
+   DruidWebStatFilterConfiguration:
+      Did not match:
+         - @ConditionalOnWebApplication (required) not a servlet web application and did not find reactive web application classes (OnWebApplicationCondition)
+
+   FlowableVariableJackson2JsonMapperConfiguration:
+      Did not match:
+         - @ConditionalOnProperty (flowable.variable-json-mapper=jackson2) did not find property 'variable-json-mapper' (OnPropertyCondition)
+      Matched:
+         - @ConditionalOnClass found required class 'com.fasterxml.jackson.databind.ObjectMapper' (OnClassCondition)
+
+   MybatisPlusAutoConfiguration.MapperScannerRegistrarNotFoundConfiguration:
+      Did not match:
+         - @ConditionalOnMissingBean (types: org.mybatis.spring.mapper.MapperFactoryBean,org.mybatis.spring.mapper.MapperScannerConfigurer; SearchStrategy: all) found beans of type 'org.mybatis.spring.mapper.MapperScannerConfigurer' cn.zhicloud.framework.mybatis.config.ZhiCloudMybatisAutoConfiguration#MapperScannerRegistrar#0 (OnBeanCondition)
+
+   MybatisPlusJoinAutoConfiguration#mpjSqlInjector:
+      Did not match:
+         - @ConditionalOnBean (types: com.baomidou.mybatisplus.core.injector.ISqlInjector; SearchStrategy: all) did not find any beans of type com.baomidou.mybatisplus.core.injector.ISqlInjector (OnBeanCondition)
+      Matched:
+         - @ConditionalOnClass found required classes 'org.apache.ibatis.session.SqlSessionFactory', 'org.mybatis.spring.SqlSessionFactoryBean' (OnClassCondition)
+
+   ProcessEngineAutoConfiguration#asyncHistoryExecutor:
+      Did not match:
+         - @ConditionalOnProperty (flowable.process.async-history.enable) did not find property 'async-history.enable' (OnPropertyCondition)
+
+   ProcessEngineAutoConfiguration#processAsyncHistoryExecutorConfiguration:
+      Did not match:
+         - @ConditionalOnProperty (flowable.process.async-history.enable) did not find property 'async-history.enable' (OnPropertyCondition)
+
+   ProcessEngineAutoConfiguration.ProcessEngineAppConfiguration:
+      Did not match:
+         - @ConditionalOnBean (types: org.flowable.app.spring.SpringAppEngineConfiguration; SearchStrategy: all) did not find any beans of type org.flowable.app.spring.SpringAppEngineConfiguration (OnBeanCondition)
+
+   ProcessEngineServicesAutoConfiguration.AlreadyInitializedAppEngineConfiguration:
+      Did not match:
+         - @ConditionalOnBean (types: org.flowable.app.engine.AppEngine; SearchStrategy: all) did not find any beans of type org.flowable.app.engine.AppEngine (OnBeanCondition)
+
+   ZhiCloudDataSourceAutoConfiguration#druidAdRemoveFilterFilter:
+      Did not match:
+         - @ConditionalOnProperty (spring.datasource.druid.stat-view-servlet.enabled=true) did not find property 'spring.datasource.druid.stat-view-servlet.enabled' (OnPropertyCondition)
+
+   ZhiCloudMybatisAutoConfiguration#keyGenerator:
+      Did not match:
+         - @ConditionalOnProperty (mybatis-plus.global-config.db-config.id-type=INPUT) did not find property 'id-type' (OnPropertyCondition)
+
+
+Exclusions:
+-----------
+
+    None
+
+
+Unconditional classes:
+----------------------
+
+    None

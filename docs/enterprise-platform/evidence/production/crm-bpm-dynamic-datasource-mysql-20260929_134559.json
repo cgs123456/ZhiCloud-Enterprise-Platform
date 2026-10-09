@@ -1,0 +1,109 @@
+{
+  "generated_at": "2026-09-29T13:46:55+08:00",
+  "status": "passed",
+  "scope": "CRM 回款提交在隔离 MySQL 8.4.11 动态数据源配置下，验证 DynamicRoutingDataSource 的 master/slave 路由、Spring 事务管理器绑定、Flowable TransactionAwareDataSourceProxy 目标动态数据源，以及 CRM/BPM 幂等/Flowable 在提交与回滚时使用同一 Spring 事务连接；流程定义查询、用户、权限、任务、消息等非目标依赖仍为 mock",
+  "source_head": "d0ebc96c9f864450c9c293094e114aff0e4e8588",
+  "branch": "upgrade/production-readiness",
+  "working_tree_state": "G2/G3 changes and evidence present and not committed at evidence generation time",
+  "environment": {
+    "classification": "隔离 MySQL 单实例，非生产",
+    "container": "zhicloud-mysql-sandbox-87323300",
+    "image": "mysql:8.4",
+    "image_digest": "sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+    "host": "127.0.0.1",
+    "port": 57507,
+    "server_version": "8.4.11",
+    "transaction_isolation": "REPEATABLE-READ",
+    "autocommit": 1,
+    "engine": "InnoDB",
+    "master_database": "zhicloud_crm_bpm_ds_master_test",
+    "slave_database": "zhicloud_crm_bpm_ds_slave_test",
+    "master_table_count": 47,
+    "slave_table_count": 2,
+    "post_run_counts": {
+      "crm_receivable": 0,
+      "bpm_process_instance_idempotency": 0,
+      "ACT_HI_PROCINST": 0,
+      "ACT_RE_PROCDEF": 0,
+      "ACT_RE_DEPLOYMENT": 0
+    },
+    "logical_databases_note": "master 与 slave 是同实例内的两个逻辑库，不是生产主从复制或独立物理库"
+  },
+  "activation_environment": {
+    "ZHICLOUD_CRM_BPM_DS_IT": "true",
+    "ZHICLOUD_CRM_BPM_DS_IT_MASTER_URL": "jdbc:mysql://127.0.0.1:57507/zhicloud_crm_bpm_ds_master_test?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Singapore",
+    "ZHICLOUD_CRM_BPM_DS_IT_SLAVE_URL": "jdbc:mysql://127.0.0.1:57507/zhicloud_crm_bpm_ds_slave_test?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Singapore",
+    "ZHICLOUD_CRM_BPM_DS_IT_MYSQL_USERNAME": "root",
+    "ZHICLOUD_CRM_BPM_DS_IT_MYSQL_PASSWORD": "<redacted>"
+  },
+  "command": "mvn -pl zhicloud-module-crm '-Dtest=CrmReceivableBpmDynamicDataSourceMysqlIntegrationTest' '-DfailIfNoTests=false' test",
+  "test": {
+    "class": "cn.zhicloud.module.crm.service.receivable.CrmReceivableBpmDynamicDataSourceMysqlIntegrationTest",
+    "methods": [
+      "dynamicRoutingShouldExposeMasterAndSlaveDatabases",
+      "submitReceivableShouldCommitCrmBpmAndFlowableOnMasterInOneTransaction",
+      "submitReceivableShouldRollbackCrmBpmAndFlowableOnMasterInOneTransaction"
+    ],
+    "tests_run": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "build": "SUCCESS",
+    "exit_code": 0
+  },
+  "schema_bootstrap": {
+    "classification": "人工预置，尚非空库自举 CI",
+    "source_database": "zhicloud_crm_bpm_chain_test",
+    "target_database": "zhicloud_crm_bpm_ds_master_test",
+    "flowable_tables_copied": 45,
+    "act_ge_property_rows_copied": 7,
+    "temporary_sql_path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\zhicloud-flowable-schema-87323300.sql",
+    "temporary_sql_sha256": "ff9e7401f03fb5e68a240640111e8ebf69f97c90713d354c105b3726f3480ea3",
+    "temporary_sql_size_bytes": 73676,
+    "note": "测试启动时 Flowable database-schema-update=true 会在空库初始化前访问 ACT_GE_PROPERTY；当前通过人工预置 Flowable schema 解决，测试同时执行 CRM schema/clean fixture"
+  },
+  "covered": [
+    "Spring 注入的是 DynamicRoutingDataSource，且仅暴露 master、slave 两个显式路由",
+    "master 路由连接到 zhicloud_crm_bpm_ds_master_test，slave 路由连接到 zhicloud_crm_bpm_ds_slave_test",
+    "transactionManager 是 DataSourceTransactionManager 且绑定同一 DynamicRoutingDataSource",
+    "Flowable DataSource 是 TransactionAwareDataSourceProxy，目标与同一 DynamicRoutingDataSource 相同对象",
+    "提交用例在真实 BPM 调用前后通过 CONNECTION_ID() 和 DATABASE() 验证外层绑定连接仍为 master，CRM 状态、BPM 幂等登记与 Flowable 历史提交一致，slave 无业务写入",
+    "回滚用例在真实 BPM 返回后注入异常，CRM 状态/版本/流程编号、BPM 幂等登记、Flowable 运行实例和历史共同回滚，slave 无业务写入"
+  ],
+  "not_covered": [
+    "生产主从复制、复制延迟、真实读写分离与生产物理库拓扑",
+    "网络超时、连接中断、数据库瞬时故障、进程中断和提交边界异常",
+    "生产规模并发、MDL/锁等待、长稳压测和容量验证",
+    "Outbox/Inbox、DLQ、补偿、重放、异常流程回收、幂等残留清理与 CRM/Flowable 跨域对账",
+    "K8s/HA、备份恢复、TLS、外部 Secret 和真实生产变更管理",
+    "网络抓包或 MySQL 全量审计日志级别的逐条 SQL 连接证明；本次仅通过 Spring 事务绑定连接的 CONNECTION_ID()/DATABASE() 与提交回滚结果验证"
+  ],
+  "connection_identity_method": "Spring 事务同步器绑定的物理连接 ID（SELECT CONNECTION_ID()）与当前库（SELECT DATABASE()），配合 CRM/BPM/Flowable 状态与提交/回滚断言；不是网络抓包或 MySQL 全量审计日志",
+  "artifacts": {
+    "raw_log": "docs/enterprise-platform/evidence/production/crm-bpm-dynamic-datasource-mysql-20260929_134559.log",
+    "raw_log_sha256": "707a90f0a4af164f1ae6a89e20c9f8ed6abf57a9950db6dd88f3aefa395d5e8f",
+    "exit_code_file": "docs/enterprise-platform/evidence/production/crm-bpm-dynamic-datasource-mysql-20260929_134559.exit.txt",
+    "exit_code_file_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "test": "zhicloud-module-crm/src/test/java/cn/zhicloud/module/crm/service/receivable/CrmReceivableBpmDynamicDataSourceMysqlIntegrationTest.java",
+    "test_sha256": "53330c5e00218a3d0f3c71b737f5c6ac9516df8339e732e7792810beec98918b",
+    "schema_fixture": "zhicloud-module-crm/src/test/resources/sql/crm_bpm_transaction_schema_mysql.sql",
+    "schema_fixture_sha256": "f426c027a982bdd13cc2f0d790a17e5f39a7a1a9f4a3ff8cd1ce2367fecb94de",
+    "clean_fixture": "zhicloud-module-crm/src/test/resources/sql/crm_bpm_transaction_clean_mysql.sql",
+    "clean_fixture_sha256": "b8f268f7609f62e97d268000fe6aea133e5514674b4f526d80c412e60ea78626"
+  },
+  "production_ready": false,
+  "gate3_passed": false,
+  "independent_review": false,
+  "risk_register": {
+    "R_011": "OPEN",
+    "R_029": "OPEN"
+  },
+  "Go_No_Go": "No-Go",
+  "caveats": [
+    "该结果只是隔离单实例 MySQL 非生产验证，不代表生产可部署。",
+    "测试通过不等于 R-011 或 R-029 已关闭，仍需生产等价数据源、故障注入、规模与补偿对账。",
+    "当前 master 库 Flowable schema 为人工预置，尚不是完全空库自举的 CI 流程。",
+    "两个逻辑库不能证明生产主从复制、复制延迟或真实读写分离。",
+    "证据生成时工作树含未提交改动，source_head 仅表示基线，不能单独建立可复现发布。"
+  ]
+}

@@ -6623,3 +6623,20 @@ hr+oa / protection+security / erp 全 exit 0
 **未闭环**：这 13 件均**未记录生成命令**，保留期/责任人与全项目同口径未指定（`R-G6-2` OPEN）。按 `00-README.md` §3.4，缺要素的结论只能记"待验证"，因此本次**只登记证据与边界，不据此关闭任何门禁**。`production_ready=false`、`gate3_passed=false`、`independent_review=false`、`Go/No-Go=No-Go` 均不变。
 
 **归档**：外层未提交内容已用 `git bundle`（全 refs）+ 临时索引快照提交 `764485bbf921dcf526e8a100e7fb7cfa8a980922` 完整归档于 `zhicloud\archive\20261009-outer-repo-snapshot\`（38.3 MB，含 `MANIFEST.md` 与 `SHA256SUMS.txt`），并已通过"克隆 bundle → 还原快照 → 哈希比对"的恢复演练。外层工作树未改动，仍保留 6 改 + 85 未跟踪。
+
+## 12.161 2026-10-09 证据入库策略切换：仓库转 private + 未跟踪 evidence 全量入 master
+
+**所有者指令**：不再新建分支，所有内容推送至 `master`；接受把 evidence 纳入版本库。执行前安全扫描与策略更新如下。
+
+**动作**：
+- GitHub 仓库 `cgs123456/ZhiCloud-Enterprise-Platform` 可见性由 public 改为 private（API `private=true`，执行后 `.private=true`）。
+- 将 `docs/enterprise-platform/evidence/production/**` 下 484 个未跟踪条目（展开为 1277 个文件，连同目录/旁车）纳入版本库；总证据面 1677 文件 / 26,162,555 B。
+- 更新 `00-README.md` §3.4 与 `08-测试与证据.md` §1，明确新责任人、保留期、安全边界和六要素引用规则。
+- 提交并推送至 `master`；不创建新分支。
+
+**安全扫描**：
+- `check_evidence_credentials.py --evidence-root docs/enterprise-platform/evidence`：`present=1677 scanned=1677 bytes=26162555 live_credentials=0 live_layer=not-exercised(no live credential found)`，命中 0；未登记凭据 0。
+- 高风险模式扫描（1277 个未跟踪 evidence 文件）：AWS access key / private key / GitHub token / Slack token / OpenAI key / Google API key / Bearer token / JDBC password / URI password 命中均为 0。
+- 仍存在：92 个文件含 `C:\Users\Administrator`、453 个含 `jdbc:mysql://`、576 个含 `127.0.0.1`、198 个含 `zc-live-mysql` / `zhicloud-mysql`。这些按原字节保留，前提是仓库保持 private；若改回 public，必须先脱敏并重算被引用证据的 SHA-256。
+
+**边界**：本次只改变证据入库与仓库可见性，不改变 `production_ready=false`、`gate3_passed=false`、`independent_review=false`、`Go/No-Go=No-Go`。

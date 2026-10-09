@@ -1,0 +1,23 @@
+{
+  "artifact": "powershell-portability",
+  "status": "passed",
+  "generated_at": "2026-09-29T12:04:11.770845+00:00",
+  "repo_root": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2",
+  "commit": "d0ebc96c9f864450c9c293094e114aff0e4e8588",
+  "script_count": 12,
+  "rule": "scripts containing non-ASCII bytes must be UTF-8 with BOM",
+  "bom_offenders": [],
+  "hosts": {
+    "pwsh": {
+      "path": "C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\powershell\\pwsh.EXE",
+      "version": "7.6.5",
+      "parse_errors": []
+    },
+    "windows_powershell": {
+      "path": "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+      "version": "5.1.26100.9444",
+      "parse_errors": []
+    }
+  },
+  "failure_reasons": []
+}

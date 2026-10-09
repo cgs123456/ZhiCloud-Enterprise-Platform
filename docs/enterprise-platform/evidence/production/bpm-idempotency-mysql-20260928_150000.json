@@ -1,0 +1,146 @@
+{
+  "generated_at": "2026-09-28T17:33:02+08:00",
+  "status": "passed",
+  "scope": "MySQL 8.4.9 clean sandbox execution and idempotent rerun for BPM process instance idempotency",
+  "database": {
+    "name": "zhicloud_v118_sandbox2",
+    "host": "127.0.0.1",
+    "port": 53306,
+    "server_version": "8.4.9",
+    "cleanup": true
+  },
+  "migration": {
+    "version": "118",
+    "description": "bpm process instance idempotency",
+    "path": "zhicloud-server/src/main/resources/db/migration/V118__bpm_process_instance_idempotency.sql",
+    "sha256": "f57dc75a5e731e17d3978a459d4f722b039c07d0d5d36b9f1bc1cec9652db8db",
+    "clean_result": {
+      "applied": 123,
+      "initial_version": "1.1",
+      "target_version": "118",
+      "success": true
+    },
+    "rerun_result": {
+      "applied": 0,
+      "initial_version": "118",
+      "target_version": null,
+      "success": true
+    }
+  },
+  "table": {
+    "name": "bpm_process_instance_idempotency",
+    "unique_key": "uk_bpm_process_instance_idempotency",
+    "unique_columns": [
+      "tenant_id",
+      "process_definition_key",
+      "business_key"
+    ],
+    "process_instance_index": "idx_bpm_process_instance_idempotency_instance"
+  },
+  "unit_tests": {
+    "tests": [
+      {
+        "test": "BpmProcessInstanceIdempotencyMapperTest",
+        "result": "2 tests, 0 failures, 0 errors"
+      },
+      {
+        "test": "BpmProcessInstanceIdempotencyTransactionTest",
+        "result": "2 tests, 0 failures, 0 errors"
+      }
+    ],
+    "transaction_scope": "H2 本地事务；证明幂等登记随事务回滚，不证明生产 CRM+BPM 同库同事务"
+  },
+  "jar": {
+    "path": "zhicloud-server/target/zhicloud-server.jar",
+    "sha256": "b9ab30d32910cd6f03efec3c232fe8e6746cba6b969e7d687a79e3a7ed490a2a",
+    "previous_sha256": "d9519b0774c0477673ed230e820e6f63b5cdd6e8807ea6846e5935a523fb3937",
+    "rebuilt_at": "2026-09-28T17:10:13+08:00",
+    "build_command": "mvn -pl zhicloud-server -am -DskipTests package",
+    "packaged_dependencies": [
+      "BOOT-INF/lib/flowable-engine-configurator-8.0.0.jar",
+      "BOOT-INF/lib/flowable-spring-configurator-8.0.0.jar",
+      "BOOT-INF/lib/flowable-app-engine-spring-8.0.0.jar"
+    ]
+  },
+  "production_ready": false,
+  "gate3_passed": false,
+  "caveats": [
+    "MySQL 8.4.9 沙箱已验证 V118 迁移幂等、单实例 InnoDB 回滚和 Flowable 历史零残留。",
+    "CRM+BPM 测试仍使用测试 BPM API 直接启动真实 Flowable 引擎，不覆盖真实 BpmProcessInstanceServiceImpl 在生产数据源上的完整调用链。",
+    "未证明生产 DynamicRoutingDataSource、主从切换、真实 CRM+BPM 跨服务事务、生产规模 MDL/复制或补偿对账。",
+    "R-011 和 R-029 仍保持 OPEN，直到完成生产等价数据源路由验证、真实事务故障注入、补偿对账和独立复核。"
+  ],
+  "compatibility_fix": {
+    "description": "补齐 Flowable 8.0.0 process starter 自动配置直接引用、但 starter 未传递的可选模块，并显式关闭未使用的 App Engine",
+    "dependencies": [
+      "org.flowable:flowable-engine-configurator:8.0.0",
+      "org.flowable:flowable-spring-configurator:8.0.0",
+      "org.flowable:flowable-app-engine-spring:8.0.0"
+    ],
+    "application_config": "flowable.app.enabled=false"
+  },
+  "flowable_transaction_integration": {
+    "test": "FlowableSpringTransactionIntegrationTest",
+    "result": "2 tests, 0 failures, 0 errors",
+    "database": "H2 in-memory native dialect",
+    "verified": [
+      "startProcessInstanceByKey 在 Spring PlatformTransactionManager 提交后，历史流程实例可见",
+      "本地事务抛出异常回滚后，Flowable 历史流程实例不存在"
+    ],
+    "test_sha256": "5084ec03e10d02f69e046bf6da2908a6e7456596047903de19ac16b2c787bdfc",
+    "scope": "仅证明 Flowable 8.0.0 在本地 Spring 事务管理器内随事务提交/回滚；不证明 CRM+BPM 跨服务事务、生产数据源路由、MySQL InnoDB 一致性或故障补偿"
+  },
+  "module_regression": {
+    "module": "zhicloud-module-bpm",
+    "result": "60 tests, 0 failures, 0 errors, 6 skipped",
+    "command": "mvn -pl zhicloud-module-bpm test"
+  },
+  "crm_bpm_transaction_integration": {
+    "test": "CrmReceivableBpmTransactionIntegrationTest",
+    "result": "1 test, 0 failures, 0 errors",
+    "database": "H2 in-memory native dialect with test-only CRM receivable DDL",
+    "verified": [
+      "真实 CrmReceivableServiceImpl.submitReceivable 持有本地事务",
+      "BPM 测试实现启动真实 Flowable Process Engine 后才注入失败",
+      "异常回滚后 CRM 回款状态保持 DRAFT",
+      "异常回滚后按业务键查询不到 Flowable 历史流程实例"
+    ],
+    "test_sha256": "9ba2031355ea187f715da38ee5aafae2fa93f01d2f44167d86f6c777abaaa0e7",
+    "schema_sha256": "d14e39d2dec923f0b81ee5e4e7cba1f47eec71d0265369c52b2a0b1d2954764f",
+    "cleanup_sha256": "eb896eac34d42fdcad6b7a893abe7309a112e61bee23212a88ad605bbf95a933",
+    "scope": "仅证明 CRM 服务和 Flowable 引擎在同一 JVM、同一内存数据源、同一 Spring 本地事务中的回滚一致性；不证明生产 DynamicRoutingDataSource、MySQL InnoDB、跨服务事务或补偿机制"
+  },
+  "crm_module_regression": {
+    "module": "zhicloud-module-crm",
+    "result": "44 tests, 0 failures, 0 errors, 1 skipped",
+    "command": "mvn -pl zhicloud-module-crm test"
+  },
+  "crm_bpm_transaction_mysql_integration": {
+    "test": "CrmReceivableBpmTransactionMysqlIntegrationTest",
+    "result": "1 test, 0 failures, 0 errors",
+    "database": {
+      "name": "zhicloud_crm_bpm_tx_20260928",
+      "host": "127.0.0.1",
+      "port": 53306,
+      "server_version": "8.4.9",
+      "engine": "InnoDB",
+      "cleanup": true
+    },
+    "verified": [
+      "真实 CrmReceivableServiceImpl.submitReceivable 持有本地事务",
+      "BPM 测试实现启动真实 Flowable Process Engine 后才注入失败",
+      "异常回滚后 CRM 回款状态保持 DRAFT",
+      "异常回滚后 ACT_HI_PROCINST 计数为 0",
+      "异常回滚后 ACT_RE_DEPLOYMENT 计数为 0"
+    ],
+    "test_sha256": "2c14c9eede145154c93582364291ac8e85baf2809c27398d46c05249b85c0c2f",
+    "schema_sha256": "d24b9a42adb2633b916d5bad2e8f15d30659216d5a84787201bb0a916836c9f8",
+    "cleanup_sha256": "eb896eac34d42fdcad6b7a893abe7309a112e61bee23212a88ad605bbf95a933",
+    "scope": "证明单实例 MySQL 8.4.9 InnoDB 下，CRM 本地事务回滚会同步回滚真实 Flowable 运行时/历史写入；不证明生产 DynamicRoutingDataSource、主从切换、跨服务事务、生产规模或补偿机制"
+  },
+  "server_module_regression": {
+    "module": "zhicloud-server",
+    "result": "86 tests, 0 failures, 0 errors, 3 skipped",
+    "command": "mvn -pl zhicloud-server test"
+  }
+}

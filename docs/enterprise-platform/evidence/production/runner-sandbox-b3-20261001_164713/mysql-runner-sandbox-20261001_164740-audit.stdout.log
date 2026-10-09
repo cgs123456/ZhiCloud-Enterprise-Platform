@@ -1,0 +1,1 @@
+[FAIL] ִ�� mysql ��ѯʧ�ܣ�Command '['C:\\Users\\Administrator\\mysql84-sandbox\\mysql-8.4.9-winx64\\bin\\mysql.exe', '--protocol=TCP', '--host=127.0.0.1', '--port=50517', '--user=zhicloud_run_20261001_164740', '--batch', '--raw', '--skip-column-names', '--connect-timeout=10', 'zhicloud_runner_clean_20261001_164740']' timed out after 60 seconds

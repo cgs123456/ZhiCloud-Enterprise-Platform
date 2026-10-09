@@ -1,0 +1,25 @@
+P5_DRIVER_BEGIN 2026-10-01T21:50:11+08:00
+Created sandbox volume zhicloud-mysql-sandbox-data-e639af5e
+Started sandbox container zhicloud-mysql-sandbox-e639af5e
+Sandbox image provenance verified: mysql@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d
+Started loopback relay zhicloud-mysql-sandbox-relay-e639af5e (127.0.0.1:40692 -> zhicloud-mysql-sandbox-e639af5e 127.0.0.1:3306; image nginx@sha256:0985e772fb9f729e6fa0980da05fca5d9c468e870eed43071545afa9d2e27d94)
+Sandbox zhicloud-mysql-sandbox-e639af5e ready on 127.0.0.1:40693 (database=zhicloud_sandbox, server=8.4.11, sql_mode=ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION)
+Loopback relay ready on 127.0.0.1:40692 —— 需要 @'127.0.0.1' 授权的宿主侧验证请把 -DatabasePort 指向该端口（来源会被 mysqld 看作 127.0.0.1）。
+START_EXIT=0
+container=zhicloud-mysql-sandbox-e639af5e relay=40692 direct=40693 pw_present=1
+mysql_client_choice=C:\Users\Administrator\mysql84-sandbox\mysql-8.4.9-winx64\bin\mysql.exe
+evidence=C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\docs\enterprise-platform\evidence\production\mysql-runner-sandbox-20261001_215027.json
+audit=C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\docs\enterprise-platform\evidence\production\mysql-runner-sandbox-20261001_215027-audit.json
+status=passed
+database=zhicloud_runner_clean_20261001_215027
+jar_sha256=c7e1cbc1fbe5854ca64c55bd039d5e604d96dd896e7a378bc219a7303550c40b
+HARNESS_EXIT=0
+Traceback (most recent call last):
+  File "<string>", line 7, in <module>
+PermissionError: [Errno 13] Permission denied: 'C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\docs\\enterprise-platform\\evidence\\production\\runner-sandbox-combined-20261001_153042'
+P5_EVIDENCE_COUNT=1
+HARNESS_DONE
+CLEANUP_BEGIN 2026-10-01T22:00:29+08:00
+Stopped and removed sandbox zhicloud-mysql-sandbox-e639af5e (volume zhicloud-mysql-sandbox-data-e639af5e deleted)
+CLEANUP_STOP_EXIT=0
+P5_DRIVER_END 2026-10-01T22:00:32+08:00

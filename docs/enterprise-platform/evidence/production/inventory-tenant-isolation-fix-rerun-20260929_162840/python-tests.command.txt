@@ -1,0 +1,2 @@
+python scripts/production/tests/test_check_migration_contract.py
+python scripts/production/tests/test_sql_migration_lint.py

@@ -1,0 +1,4 @@
+target=native：跳过 Docker daemon 守卫（本形态不碰 docker）
+native target: version=8.0.39 port=14706 datadir=C:\Users\Administrator\AppData\Local\Temp\zc-native-lcscript-20261002_122526\data\
+evidence=C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\docs\enterprise-platform\evidence\production\native-lifecycle-20261002_122526\provision\crm-bpm-chain-source-provision-20261002_122636.json
+status=passed

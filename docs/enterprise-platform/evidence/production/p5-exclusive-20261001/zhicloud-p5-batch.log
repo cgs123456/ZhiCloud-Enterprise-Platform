@@ -1,0 +1,33 @@
+=== ITER 1 BEGIN 2026-10-01T22:01:47+08:00 ===
+START_EXIT=0
+Sandbox zhicloud-mysql-sandbox-706df882 ready on 127.0.0.1:30547 (database=zhicloud_sandbox, server=8.4.11, sql_mode=ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION)
+Loopback relay ready on 127.0.0.1:30546 —— 需要 @'127.0.0.1' 授权的宿主侧验证请把 -DatabasePort 指向该端口（来源会被 mysqld 看作 127.0.0.1）。
+ITER1 container=zhicloud-mysql-sandbox-706df882 relay=30546
+ITER1 HARNESS_EXIT=0
+evidence=C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\docs\enterprise-platform\evidence\production\mysql-runner-sandbox-20261001_220207.json
+audit=C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\docs\enterprise-platform\evidence\production\mysql-runner-sandbox-20261001_220207-audit.json
+status=passed
+database=zhicloud_runner_clean_20261001_220207
+jar_sha256=c7e1cbc1fbe5854ca64c55bd039d5e604d96dd896e7a378bc219a7303550c40b
+Stopped and removed sandbox zhicloud-mysql-sandbox-706df882 (volume zhicloud-mysql-sandbox-data-706df882 deleted)
+ITER1 STOP_EXIT=0
+=== ITER 1 END 2026-10-01T22:14:09+08:00 ===
+=== ITER 2 BEGIN 2026-10-01T22:14:09+08:00 ===
+START_EXIT=0
+Sandbox zhicloud-mysql-sandbox-9abf4be7 ready on 127.0.0.1:27271 (database=zhicloud_sandbox, server=8.4.11, sql_mode=ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION)
+Loopback relay ready on 127.0.0.1:27272 —— 需要 @'127.0.0.1' 授权的宿主侧验证请把 -DatabasePort 指向该端口（来源会被 mysqld 看作 127.0.0.1）。
+ITER2 container=zhicloud-mysql-sandbox-9abf4be7 relay=27272
+ITER2 HARNESS_EXIT=0
+evidence=C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\docs\enterprise-platform\evidence\production\mysql-runner-sandbox-20261001_221432.json
+audit=C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\docs\enterprise-platform\evidence\production\mysql-runner-sandbox-20261001_221432-audit.json
+status=passed
+database=zhicloud_runner_clean_20261001_221432
+jar_sha256=c7e1cbc1fbe5854ca64c55bd039d5e604d96dd896e7a378bc219a7303550c40b
+Stopped and removed sandbox zhicloud-mysql-sandbox-9abf4be7 (volume zhicloud-mysql-sandbox-data-9abf4be7 deleted)
+ITER2 STOP_EXIT=0
+=== ITER 2 END 2026-10-01T22:38:38+08:00 ===
+NS_ROW mysql-runner-sandbox-20261001_215027.json ('passed', 0, 18, '62ea23c18e2f5dcb')
+NS_ROW mysql-runner-sandbox-20261001_220207.json ('passed', 0, 18, 'e96e4eca02615efb')
+NS_ROW mysql-runner-sandbox-20261001_221432.json ('passed', 0, 18, 'd4f7a7891a8db7a4')
+P5_BATCH_SUMMARY_DONE
+P5_BATCH_END 2026-10-01T22:38:38+08:00

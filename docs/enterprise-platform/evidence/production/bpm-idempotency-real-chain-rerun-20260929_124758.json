@@ -1,0 +1,77 @@
+{
+  "generated_at": "2026-09-29T12:48:50+08:00",
+  "status": "passed",
+  "scope": "真实 Spring Bean、真实 MyBatis Mapper、真实 Flowable 8.0.0 和真实 MySQL 8.4.11 的 BPM 幂等并发链；流程定义服务等非目标外部依赖为 mock",
+  "source_head": "d0ebc96c9f864450c9c293094e114aff0e4e8588",
+  "working_tree_state": "G2/G3 changes present and not committed at evidence generation time",
+  "environment": {
+    "classification": "隔离 MySQL 单实例，非生产",
+    "container": "zhicloud-mysql-sandbox-87323300",
+    "host": "127.0.0.1",
+    "port": 57507,
+    "server_version": "8.4.11",
+    "database": "zhicloud_bpm_chain_test",
+    "transaction_isolation": "REPEATABLE-READ",
+    "engine": "InnoDB",
+    "post_run_counts": {
+      "ACT_HI_PROCINST": 0,
+      "ACT_RU_EXECUTION": 0,
+      "bpm_process_instance_idempotency": 0
+    }
+  },
+  "activation_environment": {
+    "ZHICLOUD_BPM_REAL_CHAIN_IT": "true",
+    "ZHICLOUD_BPM_IT_MYSQL_URL": "jdbc:mysql://127.0.0.1:57507/zhicloud_bpm_chain_test?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Singapore",
+    "ZHICLOUD_BPM_IT_MYSQL_USERNAME": "root",
+    "ZHICLOUD_BPM_IT_MYSQL_PASSWORD": "<redacted>"
+  },
+  "command": "mvn -pl zhicloud-module-bpm '-Dtest=BpmProcessInstanceIdempotencyRealChainConcurrencyTest' '-DfailIfNoTests=false' test",
+  "test": {
+    "class": "cn.zhicloud.module.bpm.service.task.BpmProcessInstanceIdempotencyRealChainConcurrencyTest",
+    "method": "concurrentCallsThroughRealSpringAndFlowableReturnOneInstance",
+    "concurrency": 10,
+    "process_definition_key": "bpm-idempotency-real-chain",
+    "assertions": [
+      "10/10 请求成功",
+      "所有成功请求返回同一实例编号",
+      "仅一条幂等登记",
+      "仅一条 Flowable 历史且与登记一致"
+    ],
+    "tests_run": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "build": "SUCCESS"
+  },
+  "prior_failed_reproduction": "docs/enterprise-platform/evidence/production/bpm-idempotency-real-chain-20260929_121828.json",
+  "not_covered": [
+    "生产 DynamicRoutingDataSource、主从路由、多租户物理连接一致性",
+    "生产等价网络、数据库瞬时故障和进程中断",
+    "生产规模并发与锁等待分布",
+    "Outbox/补偿、监控与对账"
+  ],
+  "artifacts": {
+    "raw_log": "docs/enterprise-platform/evidence/production/bpm-idempotency-real-chain-rerun-20260929_124758.log",
+    "raw_log_sha256": "e68d31a56eb3e22e8c9b59bf92ce21e99ecea86b54bd1595dd1164dfb7de8747",
+    "exit_code_file": "docs/enterprise-platform/evidence/production/bpm-idempotency-real-chain-rerun-20260929_124758.exit.txt",
+    "test": "zhicloud-module-bpm/src/test/java/cn/zhicloud/module/bpm/service/task/BpmProcessInstanceIdempotencyRealChainConcurrencyTest.java",
+    "test_sha256": "fd0747dcbd54b72a46cb28debadd75fef39bcdc39d3330fd819d554da9053987",
+    "mapper": "zhicloud-module-bpm/src/main/java/cn/zhicloud/module/bpm/dal/mysql/task/BpmProcessInstanceIdempotencyMapper.java",
+    "mapper_sha256": "cf4f1579af36d95a9dbe181d001a282b4dfbebe7a2d50f3b727ce43db79d5964",
+    "service": "zhicloud-module-bpm/src/main/java/cn/zhicloud/module/bpm/service/task/BpmProcessInstanceServiceImpl.java",
+    "service_sha256": "2b387e40a15f694765c1352a4114fb4305e97b112a3a5655e4fc8ff16d6005df"
+  },
+  "production_ready": false,
+  "gate3_passed": false,
+  "independent_review": false,
+  "risk_register": {
+    "R_011": "OPEN",
+    "R_029": "OPEN"
+  },
+  "Go_No_Go": "No-Go",
+  "caveats": [
+    "该结果只是隔离单实例 MySQL 非生产验证，不代表生产可部署。",
+    "修复与成功复跑消除了已复现的隔离 MySQL 并发语义缺陷，但未关闭 R-011/R-029。",
+    "仍需生产等价数据源路由、故障注入、规模与补偿对账和独立复核。"
+  ]
+}

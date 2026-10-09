@@ -198,18 +198,18 @@ controls_failed = 0
 
 管理员 SQL 模板资产覆盖 8 套方言并按 `tenant_id=1 + username`、`role_id=1`、`post_id=4` 做静态契约校验；生产 K8s 入口是 `BootstrapAdminRunner`。历史 MySQL 8.4.9 沙箱 runner 和只读审计确认了 ensure 创建、相同密码 noop、不同密码 fail-closed 且哈希不变、rotate 成功、旧密码失效、新密码 noop，以及账号唯一性、租户、角色、岗位、BCrypt 形态和 `uk_system_users_tenant_active_username` 索引一致；`independent_review=false`。当前 T-000 history-lock 证据使用 MySQL 8.4.11 并观察到锁与 history 不变。该 bootstrap 证据只覆盖隔离 MySQL 沙箱库，不证明生产目标库、事务边界、并发或其余 7 套方言。V116/V117 的并发/软删除/合成 DDL 证据同样仅限隔离沙箱，不证明生产规模迁移、非 MySQL 并发唯一性、生产物理主从/真实读写分离/多租户数据源路由、生产故障/补偿对账或生产可用；其余 7 套尚未在目标实库执行。
 
-### 3.4 证据存放约定（2026-09-30 确立）
+### 3.4 证据存放约定（2026-10-09 更新）
 
-`docs/enterprise-platform/evidence/production/**` 下的执行证据**不入版本库**，仅本地留存。当前该目录有 582 个未跟踪文件（2026-09-30 实测；本轮实跑新增 Helm 渲染包、runner 沙箱日志与 Maven 日志及其 `.sha256` 旁车），而 `docs/enterprise-platform` 已有 415 个跟踪文件——`check_commit_readiness.py` 因此不会告警，门禁也不会变红；代价是干净检出的仓库里不含这些文件，文档中的证据路径对第三方是悬空的。为让结论仍可核验，约定如下：
+`docs/enterprise-platform/evidence/production/**` 下的执行证据自 2026-10-09 起**纳入版本库并随 `master` 推送**。仓库已按所有者指令改为 private；在仓库保持 private 的前提下，允许保留原始证据文件，避免干净检出后引用悬空。
 
-- 凡被文档引用的证据，引用处必须内联六要素：**相对路径 / SHA-256 / 生成时间（取 JSON 的 `generated_at`，不得用文件名时间戳代替）/ 生成命令 / 保留期 / 责任人**。缺任一要素的结论只能写作"待验证"，不得写成"已通过"。
-- 有 `.sha256` 旁车的，旁车值必须与文档所写一致；本轮新增的 `security-baseline-t000-20260930_113027.json` 即按此格式登记。
-- 文档中的任何计数（`scanned_files`、测试数、工作树项数）都必须标注其来源证据 SHA，并注明"证据不在版本库内，数值为本地复跑结果，非 CI、非独立复核"。
-- `.gitignore:109` 的反忽略 `!docs/enterprise-platform/evidence/production/**/*.log` **必须保留**：它使证据日志处于 untracked-but-not-ignored 状态，是上述"按 SHA 本地校验"成立的前提。删除它会让证据被静默忽略，比不入库更糟（`R-G6-5`）。
-- 脱敏缺口如实登记，不假装已处理：**下列子计数是 2026-09-28 时点、针对当时 498 份证据的扫描结果，本轮新增的 84 份证据未重扫**：227 个 MySQL JDBC URL（11 种 `host:port`，含 `zhicloud-mysql*`、`db:3306` 等内部/模板主机名）、47 个文件含本机用户路径（524 次）、10 个文件含 Unix home 路径（52 次）。新跑的 Helm/runner 产物必然再引入本机路径与连接串，因此该缺口只扩大未缩小，正式脱敏前必须全量重扫。证据保留/脱敏政策的**责任人和保留期至今未指定**，因此 `R-G6-2` 保持 OPEN；在指定责任人之前，不得把这些文件提交到任何共享仓库。
-- "所有 `.md` 保持 UTF-8 无 BOM、LF 行尾"这条规则**只适用于手写文档**（`docs/enterprise-platform/*.md` 与 `handoff/*.md`）。`evidence/**` 下的 Markdown 是被按 SHA-256 引用的生成产物，其 CR/BOM 属真实字节，归一会打断证据链，禁止"顺手清理"。
-- 下一阶段的**第一笔提交对象**是 `docs/enterprise-platform/handoff/` 下 4 份文档（含 88,516 字节（约 87KB）的分组 review 清单本身）。它们目前 100% 未跟踪，是唯一"计划只存在于这块磁盘上"的丢失风险；文档与证据、文档与代码仍须分开提交。
-
+- 责任人：项目所有者（GitHub `cgs123456`，2026-10-09 明确指令）。
+- 保留期：随 `master` 版本保留；删除、重写或公开披露需所有者再次裁决。
+- 安全边界：2026-10-09 对未跟踪证据执行 `check_evidence_credentials.py`（1677 文件 / 26,162,555 B，MySQL 凭据命中 0）及高风险模式扫描（1277 个未跟踪 evidence 文件；AWS/私钥/GitHub/Slack/OpenAI/Google/Bearer/JDBC 密码/URI 密码命中 0）。仍存在 92 个文件含本机用户路径、453 个含 JDBC MySQL URL、576 个含回环地址、198 个含 MySQL 容器名，因仓库为 private 暂按原字节保留；若仓库改回 public，必须先脱敏并重算被引用证据的 SHA-256。
+- 凡被文档引用的证据，引用处仍必须内联六要素：相对路径 / SHA-256 / 生成时间（取 JSON `generated_at`）/ 生成命令 / 保留期 / 责任人。缺任一要素的结论只能写作“待验证”。
+- 有 `.sha256` 旁车的，旁车值必须与文档所写一致。
+- 文档中的任何计数必须标注来源证据 SHA，并注明是否为 CI、独立复核。
+- `.gitignore` 中 `!docs/enterprise-platform/evidence/production/**/*.log` 的反忽略规则必须保留。
+- `evidence/**` 下的 Markdown 是生成产物，CR/BOM 属真实字节，禁止顺手归一。
 ## 4. 文档索引
 
 | 文件 | 内容 |

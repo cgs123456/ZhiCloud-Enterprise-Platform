@@ -1,0 +1,356 @@
+{
+  "generated_at": "2026-09-26T16:07:37.477165+08:00",
+  "disclaimer": "FAKE-SIMULATED-DATA: isolated schema/data only; production_import_allowed=false",
+  "production_import_allowed": false,
+  "scope": "V107 negative behavior only: duplicate data, wrong indexes and missing tenant columns must block migration; cross-tenant equal event IDs must coexist.",
+  "evidence_boundaries": {
+    "setup_scope": "V100 event_outbox/event_inbox schema plus V107 focused migration",
+    "execution_path": "native mysql 8.4.9 client",
+    "flyway_parser_covered": false,
+    "warning": "This evidence does not replace a full Flyway chain run on the pinned production versions."
+  },
+  "server": {
+    "version": "8.4.9",
+    "sql_mode": "ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION",
+    "transaction_isolation": "REPEATABLE-READ"
+  },
+  "artifacts": {
+    "v100_migration": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V100__event_outbox_inbox.sql",
+    "v100_migration_sha256": "526ea17e03761a4f75914a2d0623df84f64c1d5bc142c90323926a9da4313bf0",
+    "v107_migration": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V107__event_tenant_unique_keys.sql",
+    "v107_migration_sha256": "bddfbb8b8476ed7e0358a65f16d18e1f9b7276e8dfdf7903fda708bb9f21a78b",
+    "v107_verification": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\verification\\V107_verify.sql",
+    "v107_verification_sha256": "95875b1552bdad7e6b3cd0aa85fd8f849f867a7c156da7bf94450bbd2f4f8d12",
+    "contract": {
+      "expected": {
+        "migration_sha256": "bddfbb8b8476ed7e0358a65f16d18e1f9b7276e8dfdf7903fda708bb9f21a78b",
+        "verification_sha256": "95875b1552bdad7e6b3cd0aa85fd8f849f867a7c156da7bf94450bbd2f4f8d12"
+      },
+      "actual": {
+        "migration_sha256": "bddfbb8b8476ed7e0358a65f16d18e1f9b7276e8dfdf7903fda708bb9f21a78b",
+        "verification_sha256": "95875b1552bdad7e6b3cd0aa85fd8f849f867a7c156da7bf94450bbd2f4f8d12"
+      },
+      "match": true
+    }
+  },
+  "contract_match": true,
+  "scenarios": [
+    {
+      "id": "outbox_same_tenant_duplicate_blocked",
+      "purpose": "Existing duplicate outbox rows must fail closed before the new unique key is created.",
+      "passed": true,
+      "assertions": [
+        {
+          "name": "setup_legacy_index_removed_for_duplicate_simulation",
+          "passed": true,
+          "expected": true,
+          "actual": false
+        },
+        {
+          "name": "duplicate_seed_inserted",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "migration_blocked",
+          "passed": true,
+          "expected": "non-zero",
+          "actual": 1
+        },
+        {
+          "name": "expected_signal",
+          "passed": true,
+          "expected": "V107 duplicate rows block unique index uk_event_tenant_event on event_outbox",
+          "actual": "ERROR 1644 (45000) at line 132: V107 duplicate rows block unique index uk_event_tenant_event on event_outbox\r\n"
+        },
+        {
+          "name": "new_index_not_created",
+          "passed": true,
+          "expected": true,
+          "actual": false
+        }
+      ],
+      "migration": {
+        "exit_code": 1,
+        "duration_s": 0.056,
+        "stdout": "",
+        "stderr": "ERROR 1644 (45000) at line 132: V107 duplicate rows block unique index uk_event_tenant_event on event_outbox\r\n",
+        "file": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V107__event_tenant_unique_keys.sql"
+      },
+      "notes": [
+        "setup_v100_exit=0",
+        "drop_legacy_exit=0"
+      ]
+    },
+    {
+      "id": "inbox_same_tenant_consumer_duplicate_blocked",
+      "purpose": "Existing duplicate inbox rows must fail closed and leave no new inbox unique key.",
+      "passed": true,
+      "assertions": [
+        {
+          "name": "setup_legacy_index_removed_for_duplicate_simulation",
+          "passed": true,
+          "expected": true,
+          "actual": false
+        },
+        {
+          "name": "duplicate_seed_inserted",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "migration_blocked",
+          "passed": true,
+          "expected": "non-zero",
+          "actual": 1
+        },
+        {
+          "name": "expected_signal",
+          "passed": true,
+          "expected": "V107 duplicate rows block unique index uk_consumer_tenant_event on event_inbox",
+          "actual": "ERROR 1644 (45000) at line 138: V107 duplicate rows block unique index uk_consumer_tenant_event on event_inbox\r\n"
+        },
+        {
+          "name": "new_inbox_index_not_created",
+          "passed": true,
+          "expected": true,
+          "actual": false
+        },
+        {
+          "name": "outbox_partial_ddl_visible",
+          "passed": true,
+          "expected": true,
+          "actual": true
+        }
+      ],
+      "migration": {
+        "exit_code": 1,
+        "duration_s": 0.072,
+        "stdout": "",
+        "stderr": "ERROR 1644 (45000) at line 138: V107 duplicate rows block unique index uk_consumer_tenant_event on event_inbox\r\n",
+        "file": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V107__event_tenant_unique_keys.sql"
+      },
+      "notes": [
+        "setup_v100_exit=0",
+        "drop_legacy_exit=0",
+        "MySQL DDL is non-transactional; the already-created outbox index is expected partial progress and makes retry idempotent."
+      ]
+    },
+    {
+      "id": "wrong_unique_column_order_blocked",
+      "purpose": "An existing same-name unique index with the wrong column order must block migration.",
+      "passed": true,
+      "assertions": [
+        {
+          "name": "migration_blocked",
+          "passed": true,
+          "expected": "non-zero",
+          "actual": 1
+        },
+        {
+          "name": "expected_signal",
+          "passed": true,
+          "expected": "V107 index mismatch: event_outbox.uk_event_tenant_event expected=tenant_id,event_id actual=event_id,tenant_id",
+          "actual": "ERROR 1644 (45000) at line 132: V107 index mismatch: event_outbox.uk_event_tenant_event expected=tenant_id,event_id actual=event_id,tenant_id\r\n"
+        },
+        {
+          "name": "wrong_index_not_silently_replaced",
+          "passed": true,
+          "expected": "event_id,tenant_id",
+          "actual": {
+            "non_unique": 0,
+            "columns": "event_id,tenant_id"
+          }
+        },
+        {
+          "name": "legacy_index_preserved",
+          "passed": true,
+          "expected": true,
+          "actual": true
+        }
+      ],
+      "migration": {
+        "exit_code": 1,
+        "duration_s": 0.058,
+        "stdout": "",
+        "stderr": "ERROR 1644 (45000) at line 132: V107 index mismatch: event_outbox.uk_event_tenant_event expected=tenant_id,event_id actual=event_id,tenant_id\r\n",
+        "file": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V107__event_tenant_unique_keys.sql"
+      },
+      "notes": [
+        "setup_v100_exit=0",
+        "setup_index_exit=0"
+      ]
+    },
+    {
+      "id": "non_unique_index_blocked",
+      "purpose": "An existing same-name non-unique index must block migration.",
+      "passed": true,
+      "assertions": [
+        {
+          "name": "migration_blocked",
+          "passed": true,
+          "expected": "non-zero",
+          "actual": 1
+        },
+        {
+          "name": "expected_signal",
+          "passed": true,
+          "expected": "V107 index mismatch: event_outbox.uk_event_tenant_event expected=tenant_id,event_id actual=tenant_id,event_id",
+          "actual": "ERROR 1644 (45000) at line 132: V107 index mismatch: event_outbox.uk_event_tenant_event expected=tenant_id,event_id actual=tenant_id,event_id\r\n"
+        },
+        {
+          "name": "non_unique_index_not_silently_accepted",
+          "passed": true,
+          "expected": 1,
+          "actual": 1
+        },
+        {
+          "name": "legacy_index_preserved",
+          "passed": true,
+          "expected": true,
+          "actual": true
+        }
+      ],
+      "migration": {
+        "exit_code": 1,
+        "duration_s": 0.057,
+        "stdout": "",
+        "stderr": "ERROR 1644 (45000) at line 132: V107 index mismatch: event_outbox.uk_event_tenant_event expected=tenant_id,event_id actual=tenant_id,event_id\r\n",
+        "file": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V107__event_tenant_unique_keys.sql"
+      },
+      "notes": [
+        "setup_v100_exit=0",
+        "setup_index_exit=0"
+      ]
+    },
+    {
+      "id": "missing_tenant_column_blocked",
+      "purpose": "A missing tenant_id column must block migration before any index is changed.",
+      "passed": true,
+      "assertions": [
+        {
+          "name": "migration_blocked",
+          "passed": true,
+          "expected": "non-zero",
+          "actual": 1
+        },
+        {
+          "name": "expected_signal",
+          "passed": true,
+          "expected": "V107 column missing: event_outbox.tenant_id",
+          "actual": "ERROR 1644 (45000) at line 126: V107 column missing: event_outbox.tenant_id\r\n"
+        },
+        {
+          "name": "missing_column_confirmed",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        }
+      ],
+      "migration": {
+        "exit_code": 1,
+        "duration_s": 0.053,
+        "stdout": "",
+        "stderr": "ERROR 1644 (45000) at line 126: V107 column missing: event_outbox.tenant_id\r\n",
+        "file": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V107__event_tenant_unique_keys.sql"
+      },
+      "notes": [
+        "setup_v100_exit=0",
+        "setup_change_exit=0"
+      ]
+    },
+    {
+      "id": "cross_tenant_equal_event_ids_and_idempotent_rerun",
+      "purpose": "After migration, equal event IDs in different tenants coexist while same-tenant duplicates are rejected.",
+      "passed": true,
+      "assertions": [
+        {
+          "name": "first_migration_succeeded",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "idempotent_rerun_succeeded",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "verification_passed",
+          "passed": true,
+          "expected": "V107=PASS",
+          "actual": "event_inbox\tuk_consumer_tenant_event\ttenant_id,consumer_name,event_id\ttenant_id,consumer_name,event_id\t0\tOK\r\nevent_outbox\tuk_event_tenant_event\ttenant_id,event_id\ttenant_id,event_id\t0\tOK\r\nV107_LEGACY_INDEXES\tPASS\r\nV107_DUPLICATES\t0\t0\tPASS\r\nV107\tPASS\r\n"
+        },
+        {
+          "name": "cross_tenant_equal_event_ids_accepted",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "same_tenant_outbox_duplicate_rejected",
+          "passed": true,
+          "expected": "duplicate key",
+          "actual": "ERROR 1062 (23000) at line 1: Duplicate entry '1-v107-shared-id' for key 'event_outbox.uk_event_tenant_event'\r\n"
+        },
+        {
+          "name": "same_tenant_inbox_duplicate_rejected",
+          "passed": true,
+          "expected": "duplicate key",
+          "actual": "ERROR 1062 (23000) at line 1: Duplicate entry '1-v107-consumer-v107-shared-id' for key 'event_inbox.uk_consumer_tenant_event'\r\n"
+        },
+        {
+          "name": "legacy_outbox_index_removed",
+          "passed": true,
+          "expected": true,
+          "actual": false
+        },
+        {
+          "name": "legacy_inbox_index_removed",
+          "passed": true,
+          "expected": true,
+          "actual": false
+        },
+        {
+          "name": "new_outbox_index_correct",
+          "passed": true,
+          "expected": "UNIQUE tenant_id,event_id",
+          "actual": {
+            "non_unique": 0,
+            "columns": "tenant_id,event_id"
+          }
+        },
+        {
+          "name": "new_inbox_index_correct",
+          "passed": true,
+          "expected": "UNIQUE tenant_id,consumer_name,event_id",
+          "actual": {
+            "non_unique": 0,
+            "columns": "tenant_id,consumer_name,event_id"
+          }
+        }
+      ],
+      "migration": {
+        "exit_code": 0,
+        "duration_s": 0.122,
+        "stdout": "",
+        "stderr": "",
+        "file": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V107__event_tenant_unique_keys.sql"
+      },
+      "notes": [
+        "setup_v100_exit=0",
+        "second_migration_exit=0",
+        "verify_exit=0"
+      ]
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "passed": 6,
+    "failed": 0
+  },
+  "status": "passed"
+}

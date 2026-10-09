@@ -1,0 +1,17 @@
+[flyway-migration] target=jdbc:mysql://127.0.0.1:53306/zhicloud_runner_legacy_20260928_121947 mode=existing
+[flyway-migration] FAILED: δ֪ V1.1 checksum: 123456789��ֻ�����ǰ���ѷ��� legacy checksum
+java.lang.IllegalStateException: δ֪ V1.1 checksum: 123456789��ֻ�����ǰ���ѷ��� legacy checksum
+	at cn.zhicloud.server.DatabaseMigrationRunner.classifyV11Checksum(DatabaseMigrationRunner.java:705)
+	at cn.zhicloud.server.DatabaseMigrationRunner.classifyV11HistoryRow(DatabaseMigrationRunner.java:686)
+	at cn.zhicloud.server.DatabaseMigrationRunner.requireV11HistoryRow(DatabaseMigrationRunner.java:635)
+	at cn.zhicloud.server.DatabaseMigrationRunner.alignExistingV11Checksum(DatabaseMigrationRunner.java:569)
+	at cn.zhicloud.server.DatabaseMigrationRunner.assertExistingTargetInitialized(DatabaseMigrationRunner.java:558)
+	at cn.zhicloud.server.DatabaseMigrationRunner.preflightMigrationTarget(DatabaseMigrationRunner.java:265)
+	at cn.zhicloud.server.DatabaseMigrationRunner.run(DatabaseMigrationRunner.java:241)
+	at cn.zhicloud.server.DatabaseMigrationRunner.run(DatabaseMigrationRunner.java:216)
+	at cn.zhicloud.server.DatabaseMigrationRunner.main(DatabaseMigrationRunner.java:209)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.boot.loader.launch.Launcher.launch(Launcher.java:106)
+	at org.springframework.boot.loader.launch.Launcher.launch(Launcher.java:64)
+	at org.springframework.boot.loader.launch.PropertiesLauncher.main(PropertiesLauncher.java:580)

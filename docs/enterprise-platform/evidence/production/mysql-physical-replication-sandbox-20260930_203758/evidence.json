@@ -1,0 +1,981 @@
+{
+    "schema_version":  1,
+    "evidence_type":  "mysql_physical_replication_sandbox",
+    "run_id":  "913b2d7f",
+    "status":  "passed",
+    "validation_passed":  true,
+    "started_at":  "2026-09-30T20:37:16.7274692+08:00",
+    "finished_at":  "2026-09-30T20:37:59.5942469+08:00",
+    "duration_seconds":  42.9,
+    "image":  "mysql:8.4@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+    "image_repo_digest":  "mysql@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+    "repo_root":  "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2",
+    "repo":  {
+                 "repo_root":  "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2",
+                 "repo_commit":  "d0ebc96c9f864450c9c293094e114aff0e4e8588",
+                 "repo_branch":  "upgrade/production-readiness",
+                 "repo_worktree_dirty":  true,
+                 "repo_worktree_status_count":  349,
+                 "repo_worktree_status_sha256":  "c7e34d0488972128f0c3562d700067598869f1b42ca7d679e70630f51dc81445"
+             },
+    "source_container":  "zhicloud-mysql-sandbox-e80499af",
+    "replica_container":  "zhicloud-mysql-sandbox-67771c2c",
+    "network":  "zhicloud-mysql-repl-net-913b2d7f",
+    "source_volume":  "zhicloud-mysql-repl-source-913b2d7f",
+    "replica_volume":  "zhicloud-mysql-repl-replica-913b2d7f",
+    "database":  "zhicloud_replication_probe",
+    "table":  "replication_probe",
+    "application_database":  "zhicloud_event_repl_sandbox",
+    "application_migration_hashes":  {
+                                         "V100":  "526ea17e03761a4f75914a2d0623df84f64c1d5bc142c90323926a9da4313bf0",
+                                         "V104":  "673d05aea7eb6938fedb3f053e62c9e2436b1d6768e9b5da851b06d5a071b5a1",
+                                         "V107":  "bddfbb8b8476ed7e0358a65f16d18e1f9b7276e8dfdf7903fda708bb9f21a78b",
+                                         "V120":  "a8fe907f2cc383e3523c10134926e3cc826554474171212317e83e3cba0c747e"
+                                     },
+    "application_schema_ready":  true,
+    "application_v120_verification":  {
+                                          "ExitCode":  0,
+                                          "Rows":  {
+                                                       "V120_EVENT_INBOX_OWNER_COLUMNS":  "PASS",
+                                                       "V120_EVENT_OUTBOX_OWNER_COLUMNS":  "PASS",
+                                                       "V120_EVENT_INBOX_LEASE_INDEX":  "PASS",
+                                                       "V120_EVENT_OUTBOX_LEASE_INDEX":  "PASS"
+                                                   },
+                                          "Output":  "V120_EVENT_INBOX_OWNER_COLUMNS\tPASS\nV120_EVENT_OUTBOX_OWNER_COLUMNS\tPASS\nV120_EVENT_INBOX_LEASE_INDEX\tPASS\nV120_EVENT_OUTBOX_LEASE_INDEX\tPASS"
+                                      },
+    "application_row_counts_before_promotion":  {
+                                                    "source_event_outbox":  6,
+                                                    "replica_event_outbox":  6,
+                                                    "source_event_inbox":  7,
+                                                    "replica_event_inbox":  7
+                                                },
+    "application_fingerprints_before_promotion":  {
+                                                      "source_event_outbox":  "6|0f71e55119dd7a6e28ac7862ed7d7f003db92bce4eea21255fe328ddc6bd2288",
+                                                      "replica_event_outbox":  "6|0f71e55119dd7a6e28ac7862ed7d7f003db92bce4eea21255fe328ddc6bd2288",
+                                                      "source_event_inbox":  "7|de7b87559494db73efaebc761a497699fe609db0363bdd4c8197309bd6a9c359",
+                                                      "replica_event_inbox":  "7|de7b87559494db73efaebc761a497699fe609db0363bdd4c8197309bd6a9c359"
+                                                  },
+    "checks":  [
+                   {
+                       "scenario":  "source_configuration",
+                       "name":  "server_id",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "source_configuration",
+                       "name":  "log_bin",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "source_configuration",
+                       "name":  "binlog_format",
+                       "passed":  true,
+                       "expected":  "ROW",
+                       "actual":  "ROW"
+                   },
+                   {
+                       "scenario":  "source_configuration",
+                       "name":  "gtid_mode",
+                       "passed":  true,
+                       "expected":  "ON",
+                       "actual":  "ON"
+                   },
+                   {
+                       "scenario":  "source_configuration",
+                       "name":  "enforce_gtid_consistency",
+                       "passed":  true,
+                       "expected":  "ON",
+                       "actual":  "ON"
+                   },
+                   {
+                       "scenario":  "replica_configuration",
+                       "name":  "server_id",
+                       "passed":  true,
+                       "expected":  "2",
+                       "actual":  "2"
+                   },
+                   {
+                       "scenario":  "replica_configuration",
+                       "name":  "read_only",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "replica_configuration",
+                       "name":  "super_read_only",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "replica_configuration",
+                       "name":  "gtid_mode",
+                       "passed":  true,
+                       "expected":  "ON",
+                       "actual":  "ON"
+                   },
+                   {
+                       "scenario":  "replica_configuration",
+                       "name":  "enforce_gtid_consistency",
+                       "passed":  true,
+                       "expected":  "ON",
+                       "actual":  "ON"
+                   },
+                   {
+                       "scenario":  "replication_start",
+                       "name":  "Replica_IO_Running",
+                       "passed":  true,
+                       "expected":  "Yes",
+                       "actual":  "Yes"
+                   },
+                   {
+                       "scenario":  "replication_start",
+                       "name":  "Replica_SQL_Running",
+                       "passed":  true,
+                       "expected":  "Yes",
+                       "actual":  "Yes"
+                   },
+                   {
+                       "scenario":  "initial_data_replication",
+                       "name":  "replica_row_count",
+                       "passed":  true,
+                       "expected":  "2",
+                       "actual":  "2"
+                   },
+                   {
+                       "scenario":  "initial_data_replication",
+                       "name":  "source_row_count",
+                       "passed":  true,
+                       "expected":  "2",
+                       "actual":  "2"
+                   },
+                   {
+                       "scenario":  "initial_data_replication",
+                       "name":  "content_fingerprint",
+                       "passed":  true,
+                       "expected":  "2|7a1f69c05b506d6e4e1414fe2b1910594238f17112e4536538267031a4b1ae35",
+                       "actual":  "2|7a1f69c05b506d6e4e1414fe2b1910594238f17112e4536538267031a4b1ae35"
+                   },
+                   {
+                       "scenario":  "replica_read_only",
+                       "name":  "write_rejected",
+                       "passed":  true,
+                       "expected":  "nonzero exit and read-only error",
+                       "actual":  "exit=1; output=ERROR 1290 (HY000) at line 1: The MySQL server is running with the --super-read-only option so it cannot execute this statement"
+                   },
+                   {
+                       "scenario":  "replica_restart_recovery",
+                       "name":  "docker_restart_exit_code",
+                       "passed":  true,
+                       "expected":  "0",
+                       "actual":  "0"
+                   },
+                   {
+                       "scenario":  "replica_restart_recovery",
+                       "name":  "Replica_IO_Running_after_restart",
+                       "passed":  true,
+                       "expected":  "Yes",
+                       "actual":  "Yes"
+                   },
+                   {
+                       "scenario":  "replica_restart_recovery",
+                       "name":  "Replica_SQL_Running_after_restart",
+                       "passed":  true,
+                       "expected":  "Yes",
+                       "actual":  "Yes"
+                   },
+                   {
+                       "scenario":  "replica_restart_recovery",
+                       "name":  "super_read_only_after_restart",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "replica_restart_recovery",
+                       "name":  "source_row_count_after_restart",
+                       "passed":  true,
+                       "expected":  "3",
+                       "actual":  "3"
+                   },
+                   {
+                       "scenario":  "replica_restart_recovery",
+                       "name":  "replica_row_count_after_restart",
+                       "passed":  true,
+                       "expected":  "3",
+                       "actual":  "3"
+                   },
+                   {
+                       "scenario":  "replica_restart_recovery",
+                       "name":  "content_fingerprint_after_restart",
+                       "passed":  true,
+                       "expected":  "3|e1fcf731d0deb087eb0184f2a890858502c74c3af86123676bcca0cdf26e7f1a",
+                       "actual":  "3|e1fcf731d0deb087eb0184f2a890858502c74c3af86123676bcca0cdf26e7f1a"
+                   },
+                   {
+                       "scenario":  "application_migration",
+                       "name":  "database_create_exit_code",
+                       "passed":  true,
+                       "expected":  "0",
+                       "actual":  "0"
+                   },
+                   {
+                       "scenario":  "application_migration",
+                       "name":  "V100_exit_code",
+                       "passed":  true,
+                       "expected":  "0",
+                       "actual":  "0"
+                   },
+                   {
+                       "scenario":  "application_migration",
+                       "name":  "V104_exit_code",
+                       "passed":  true,
+                       "expected":  "0",
+                       "actual":  "0"
+                   },
+                   {
+                       "scenario":  "application_migration",
+                       "name":  "V107_exit_code",
+                       "passed":  true,
+                       "expected":  "0",
+                       "actual":  "0"
+                   },
+                   {
+                       "scenario":  "application_migration",
+                       "name":  "V120_exit_code",
+                       "passed":  true,
+                       "expected":  "0",
+                       "actual":  "0"
+                   },
+                   {
+                       "scenario":  "application_migration",
+                       "name":  "v120_verify_exit_code",
+                       "passed":  true,
+                       "expected":  "0",
+                       "actual":  "0"
+                   },
+                   {
+                       "scenario":  "application_migration",
+                       "name":  "V120_EVENT_INBOX_OWNER_COLUMNS",
+                       "passed":  true,
+                       "expected":  "PASS",
+                       "actual":  "PASS"
+                   },
+                   {
+                       "scenario":  "application_migration",
+                       "name":  "V120_EVENT_OUTBOX_OWNER_COLUMNS",
+                       "passed":  true,
+                       "expected":  "PASS",
+                       "actual":  "PASS"
+                   },
+                   {
+                       "scenario":  "application_migration",
+                       "name":  "V120_EVENT_INBOX_LEASE_INDEX",
+                       "passed":  true,
+                       "expected":  "PASS",
+                       "actual":  "PASS"
+                   },
+                   {
+                       "scenario":  "application_migration",
+                       "name":  "V120_EVENT_OUTBOX_LEASE_INDEX",
+                       "passed":  true,
+                       "expected":  "PASS",
+                       "actual":  "PASS"
+                   },
+                   {
+                       "scenario":  "application_migration",
+                       "name":  "v120_verify_check_count",
+                       "passed":  true,
+                       "expected":  "4",
+                       "actual":  "4"
+                   },
+                   {
+                       "scenario":  "application_schema_replication",
+                       "name":  "replica_application_schema_ready",
+                       "passed":  true,
+                       "expected":  "tables=2; owner_lease_columns=5",
+                       "actual":  "tables=2; owner_lease_columns=5"
+                   },
+                   {
+                       "scenario":  "application_fixture",
+                       "name":  "outbox_insert_exit_code",
+                       "passed":  true,
+                       "expected":  "0",
+                       "actual":  "0"
+                   },
+                   {
+                       "scenario":  "application_fixture",
+                       "name":  "inbox_insert_exit_code",
+                       "passed":  true,
+                       "expected":  "0",
+                       "actual":  "0"
+                   },
+                   {
+                       "scenario":  "application_fixture",
+                       "name":  "source_event_outbox_row_count",
+                       "passed":  true,
+                       "expected":  "6",
+                       "actual":  "6"
+                   },
+                   {
+                       "scenario":  "application_fixture",
+                       "name":  "replica_event_outbox_row_count",
+                       "passed":  true,
+                       "expected":  "6",
+                       "actual":  "6"
+                   },
+                   {
+                       "scenario":  "application_fixture",
+                       "name":  "source_event_inbox_row_count",
+                       "passed":  true,
+                       "expected":  "7",
+                       "actual":  "7"
+                   },
+                   {
+                       "scenario":  "application_fixture",
+                       "name":  "replica_event_inbox_row_count",
+                       "passed":  true,
+                       "expected":  "7",
+                       "actual":  "7"
+                   },
+                   {
+                       "scenario":  "application_fixture",
+                       "name":  "event_outbox_fingerprint_equal",
+                       "passed":  true,
+                       "expected":  "6|0f71e55119dd7a6e28ac7862ed7d7f003db92bce4eea21255fe328ddc6bd2288",
+                       "actual":  "6|0f71e55119dd7a6e28ac7862ed7d7f003db92bce4eea21255fe328ddc6bd2288"
+                   },
+                   {
+                       "scenario":  "application_fixture",
+                       "name":  "event_inbox_fingerprint_equal",
+                       "passed":  true,
+                       "expected":  "7|de7b87559494db73efaebc761a497699fe609db0363bdd4c8197309bd6a9c359",
+                       "actual":  "7|de7b87559494db73efaebc761a497699fe609db0363bdd4c8197309bd6a9c359"
+                   },
+                   {
+                       "scenario":  "promotion_precheck",
+                       "name":  "Replica_IO_Running",
+                       "passed":  true,
+                       "expected":  "Yes",
+                       "actual":  "Yes"
+                   },
+                   {
+                       "scenario":  "promotion_precheck",
+                       "name":  "Replica_SQL_Running",
+                       "passed":  true,
+                       "expected":  "Yes",
+                       "actual":  "Yes"
+                   },
+                   {
+                       "scenario":  "promotion_precheck",
+                       "name":  "Seconds_Behind_Source",
+                       "passed":  true,
+                       "expected":  "0 or empty",
+                       "actual":  "0"
+                   },
+                   {
+                       "scenario":  "promotion_precheck",
+                       "name":  "source_gtid_executed_nonempty",
+                       "passed":  true,
+                       "expected":  "non-empty",
+                       "actual":  "ac7a52d7-bccb-11f1-abe6-a6ff6cf5b0c6:1-43"
+                   },
+                   {
+                       "scenario":  "promotion_precheck",
+                       "name":  "replica_executed_gtid_nonempty",
+                       "passed":  true,
+                       "expected":  "non-empty",
+                       "actual":  "ac7a52d7-bccb-11f1-abe6-a6ff6cf5b0c6:1-43,"
+                   },
+                   {
+                       "scenario":  "promotion",
+                       "name":  "source_stop_exit_code",
+                       "passed":  true,
+                       "expected":  "0",
+                       "actual":  "0"
+                   },
+                   {
+                       "scenario":  "promotion",
+                       "name":  "source_container_stopped",
+                       "passed":  true,
+                       "expected":  "false",
+                       "actual":  "exit=0; running=false"
+                   },
+                   {
+                       "scenario":  "promotion",
+                       "name":  "replica_stop_exit_code",
+                       "passed":  true,
+                       "expected":  "0",
+                       "actual":  "0"
+                   },
+                   {
+                       "scenario":  "promotion",
+                       "name":  "replica_reset_exit_code",
+                       "passed":  true,
+                       "expected":  "0",
+                       "actual":  "0"
+                   },
+                   {
+                       "scenario":  "promotion",
+                       "name":  "read_only_off_exit_code",
+                       "passed":  true,
+                       "expected":  "0",
+                       "actual":  "0"
+                   },
+                   {
+                       "scenario":  "promotion",
+                       "name":  "promoted_read_only",
+                       "passed":  true,
+                       "expected":  "0",
+                       "actual":  "0"
+                   },
+                   {
+                       "scenario":  "promotion",
+                       "name":  "promoted_super_read_only",
+                       "passed":  true,
+                       "expected":  "0",
+                       "actual":  "0"
+                   },
+                   {
+                       "scenario":  "promotion",
+                       "name":  "promoted_write_probe_affected_rows",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "outbox_active_claim_blocked",
+                       "passed":  true,
+                       "expected":  "0",
+                       "actual":  "0"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "outbox_active_owner_unchanged",
+                       "passed":  true,
+                       "expected":  "source-active-owner",
+                       "actual":  "source-active-owner"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "outbox_expired_claim_succeeds",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "outbox_old_owner_publish_blocked",
+                       "passed":  true,
+                       "expected":  "0",
+                       "actual":  "0"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "outbox_new_owner_publish_succeeds",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "outbox_published_state",
+                       "passed":  true,
+                       "expected":  "PUBLISHED|||0",
+                       "actual":  "PUBLISHED|||0"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "outbox_retry_claim_succeeds",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "outbox_old_owner_retry_blocked",
+                       "passed":  true,
+                       "expected":  "0",
+                       "actual":  "0"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "outbox_new_owner_retry_succeeds",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "outbox_retry_state",
+                       "passed":  true,
+                       "expected":  "NEW|||1",
+                       "actual":  "NEW|||1"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "outbox_dead_claim_succeeds",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "outbox_old_owner_dead_blocked",
+                       "passed":  true,
+                       "expected":  "0",
+                       "actual":  "0"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "outbox_new_owner_dead_succeeds",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "outbox_dead_state",
+                       "passed":  true,
+                       "expected":  "DEAD|||1",
+                       "actual":  "DEAD|||1"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "inbox_active_claim_blocked",
+                       "passed":  true,
+                       "expected":  "0",
+                       "actual":  "0"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "inbox_active_owner_unchanged",
+                       "passed":  true,
+                       "expected":  "source-inbox-active-owner",
+                       "actual":  "source-inbox-active-owner"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "inbox_received_claim_succeeds",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "inbox_received_processed_succeeds",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "inbox_received_processed_state",
+                       "passed":  true,
+                       "expected":  "PROCESSED|||0",
+                       "actual":  "PROCESSED|||0"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "inbox_failed_claim_succeeds",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "inbox_old_owner_failed_blocked",
+                       "passed":  true,
+                       "expected":  "0",
+                       "actual":  "0"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "inbox_new_owner_failed_succeeds",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "inbox_failed_retry_state",
+                       "passed":  true,
+                       "expected":  "FAILED|||2",
+                       "actual":  "FAILED|||2"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "inbox_expired_processed_claim_succeeds",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "inbox_old_owner_processed_blocked",
+                       "passed":  true,
+                       "expected":  "0",
+                       "actual":  "0"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "inbox_new_owner_processed_succeeds",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "inbox_expired_processed_state",
+                       "passed":  true,
+                       "expected":  "PROCESSED|||0",
+                       "actual":  "PROCESSED|||0"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "inbox_expired_failed_claim_succeeds",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "inbox_old_owner_expired_failed_blocked",
+                       "passed":  true,
+                       "expected":  "0",
+                       "actual":  "0"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "inbox_new_owner_expired_failed_succeeds",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "inbox_expired_failed_state",
+                       "passed":  true,
+                       "expected":  "FAILED|||1",
+                       "actual":  "FAILED|||1"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "inbox_expired_dead_claim_succeeds",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "inbox_old_owner_dead_blocked",
+                       "passed":  true,
+                       "expected":  "0",
+                       "actual":  "0"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "inbox_new_owner_dead_succeeds",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "inbox_dead_state",
+                       "passed":  true,
+                       "expected":  "DEAD|||1",
+                       "actual":  "DEAD|||1"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "inbox_dead_replay_succeeds",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "owner_fencing",
+                       "name":  "inbox_dead_replay_state",
+                       "passed":  true,
+                       "expected":  "FAILED|||0",
+                       "actual":  "FAILED|||0"
+                   }
+               ],
+    "check_count":  93,
+    "failed_checks":  [
+
+                      ],
+    "replication_status_after_start":  {
+                                           "Replica_IO_Running":  "Yes",
+                                           "Replica_SQL_Running":  "Yes",
+                                           "Seconds_Behind_Source":  "9",
+                                           "Source_Host":  "source",
+                                           "Retrieved_Gtid_Set":  "ac7a52d7-bccb-11f1-abe6-a6ff6cf5b0c6:1-11",
+                                           "Executed_Gtid_Set":  "ac7a52d7-bccb-11f1-abe6-a6ff6cf5b0c6:1-4,",
+                                           "Last_IO_Error":  "",
+                                           "Last_SQL_Error":  ""
+                                       },
+    "replication_status_after_restart":  {
+                                             "Replica_IO_Running":  "Yes",
+                                             "Replica_SQL_Running":  "Yes",
+                                             "Seconds_Behind_Source":  "0",
+                                             "Source_Host":  "source",
+                                             "Retrieved_Gtid_Set":  "ac7a52d7-bccb-11f1-abe6-a6ff6cf5b0c6:1-12",
+                                             "Executed_Gtid_Set":  "ac7a52d7-bccb-11f1-abe6-a6ff6cf5b0c6:1-12,",
+                                             "Last_IO_Error":  "",
+                                             "Last_SQL_Error":  ""
+                                         },
+    "fingerprint_after_start":  {
+                                    "Source":  "2|7a1f69c05b506d6e4e1414fe2b1910594238f17112e4536538267031a4b1ae35",
+                                    "Replica":  "2|7a1f69c05b506d6e4e1414fe2b1910594238f17112e4536538267031a4b1ae35"
+                                },
+    "fingerprint_after_restart":  {
+                                      "Source":  "3|e1fcf731d0deb087eb0184f2a890858502c74c3af86123676bcca0cdf26e7f1a",
+                                      "Replica":  "3|e1fcf731d0deb087eb0184f2a890858502c74c3af86123676bcca0cdf26e7f1a"
+                                  },
+    "row_counts":  {
+                       "source_after_start":  2,
+                       "replica_after_start":  2,
+                       "source_after_restart":  3,
+                       "replica_after_restart":  3
+                   },
+    "read_only_enforced":  true,
+    "read_only_write_exit_code":  1,
+    "read_only_write_output":  "ERROR 1290 (HY000) at line 1: The MySQL server is running with the --super-read-only option so it cannot execute this statement",
+    "restart_exit_code":  0,
+    "promotion":  {
+                      "source_gtid_executed_before_promotion":  "ac7a52d7-bccb-11f1-abe6-a6ff6cf5b0c6:1-43",
+                      "replica_status_before_promotion":  {
+                                                              "Replica_IO_Running":  "Yes",
+                                                              "Replica_SQL_Running":  "Yes",
+                                                              "Seconds_Behind_Source":  "0",
+                                                              "Retrieved_Gtid_Set":  "ac7a52d7-bccb-11f1-abe6-a6ff6cf5b0c6:1-43",
+                                                              "Executed_Gtid_Set":  "ac7a52d7-bccb-11f1-abe6-a6ff6cf5b0c6:1-43,"
+                                                          },
+                      "source_stop_exit_code":  0,
+                      "source_running_after_stop":  true,
+                      "replica_stop_exit_code":  0,
+                      "replica_reset_exit_code":  0,
+                      "read_only_off_exit_code":  0,
+                      "promoted_read_only":  "0",
+                      "promoted_super_read_only":  "0",
+                      "write_probe_affected_rows":  1
+                  },
+    "owner_fencing":  {
+                          "outbox_active_claim_blocked":  {
+                                                              "expected":  0,
+                                                              "actual":  0,
+                                                              "passed":  true
+                                                          },
+                          "outbox_active_owner_unchanged":  {
+                                                                "expected":  "source-active-owner",
+                                                                "actual":  "source-active-owner",
+                                                                "passed":  true
+                                                            },
+                          "outbox_expired_claim_succeeds":  {
+                                                                "expected":  1,
+                                                                "actual":  1,
+                                                                "passed":  true
+                                                            },
+                          "outbox_old_owner_publish_blocked":  {
+                                                                   "expected":  0,
+                                                                   "actual":  0,
+                                                                   "passed":  true
+                                                               },
+                          "outbox_new_owner_publish_succeeds":  {
+                                                                    "expected":  1,
+                                                                    "actual":  1,
+                                                                    "passed":  true
+                                                                },
+                          "outbox_published_state":  {
+                                                         "expected":  "PUBLISHED|||0",
+                                                         "actual":  "PUBLISHED|||0",
+                                                         "passed":  true
+                                                     },
+                          "outbox_retry_claim_succeeds":  {
+                                                              "expected":  1,
+                                                              "actual":  1,
+                                                              "passed":  true
+                                                          },
+                          "outbox_old_owner_retry_blocked":  {
+                                                                 "expected":  0,
+                                                                 "actual":  0,
+                                                                 "passed":  true
+                                                             },
+                          "outbox_new_owner_retry_succeeds":  {
+                                                                  "expected":  1,
+                                                                  "actual":  1,
+                                                                  "passed":  true
+                                                              },
+                          "outbox_retry_state":  {
+                                                     "expected":  "NEW|||1",
+                                                     "actual":  "NEW|||1",
+                                                     "passed":  true
+                                                 },
+                          "outbox_dead_claim_succeeds":  {
+                                                             "expected":  1,
+                                                             "actual":  1,
+                                                             "passed":  true
+                                                         },
+                          "outbox_old_owner_dead_blocked":  {
+                                                                "expected":  0,
+                                                                "actual":  0,
+                                                                "passed":  true
+                                                            },
+                          "outbox_new_owner_dead_succeeds":  {
+                                                                 "expected":  1,
+                                                                 "actual":  1,
+                                                                 "passed":  true
+                                                             },
+                          "outbox_dead_state":  {
+                                                    "expected":  "DEAD|||1",
+                                                    "actual":  "DEAD|||1",
+                                                    "passed":  true
+                                                },
+                          "inbox_active_claim_blocked":  {
+                                                             "expected":  0,
+                                                             "actual":  0,
+                                                             "passed":  true
+                                                         },
+                          "inbox_active_owner_unchanged":  {
+                                                               "expected":  "source-inbox-active-owner",
+                                                               "actual":  "source-inbox-active-owner",
+                                                               "passed":  true
+                                                           },
+                          "inbox_received_claim_succeeds":  {
+                                                                "expected":  1,
+                                                                "actual":  1,
+                                                                "passed":  true
+                                                            },
+                          "inbox_received_processed_succeeds":  {
+                                                                    "expected":  1,
+                                                                    "actual":  1,
+                                                                    "passed":  true
+                                                                },
+                          "inbox_received_processed_state":  {
+                                                                 "expected":  "PROCESSED|||0",
+                                                                 "actual":  "PROCESSED|||0",
+                                                                 "passed":  true
+                                                             },
+                          "inbox_failed_claim_succeeds":  {
+                                                              "expected":  1,
+                                                              "actual":  1,
+                                                              "passed":  true
+                                                          },
+                          "inbox_old_owner_failed_blocked":  {
+                                                                 "expected":  0,
+                                                                 "actual":  0,
+                                                                 "passed":  true
+                                                             },
+                          "inbox_new_owner_failed_succeeds":  {
+                                                                  "expected":  1,
+                                                                  "actual":  1,
+                                                                  "passed":  true
+                                                              },
+                          "inbox_failed_retry_state":  {
+                                                           "expected":  "FAILED|||2",
+                                                           "actual":  "FAILED|||2",
+                                                           "passed":  true
+                                                       },
+                          "inbox_expired_processed_claim_succeeds":  {
+                                                                         "expected":  1,
+                                                                         "actual":  1,
+                                                                         "passed":  true
+                                                                     },
+                          "inbox_old_owner_processed_blocked":  {
+                                                                    "expected":  0,
+                                                                    "actual":  0,
+                                                                    "passed":  true
+                                                                },
+                          "inbox_new_owner_processed_succeeds":  {
+                                                                     "expected":  1,
+                                                                     "actual":  1,
+                                                                     "passed":  true
+                                                                 },
+                          "inbox_expired_processed_state":  {
+                                                                "expected":  "PROCESSED|||0",
+                                                                "actual":  "PROCESSED|||0",
+                                                                "passed":  true
+                                                            },
+                          "inbox_expired_failed_claim_succeeds":  {
+                                                                      "expected":  1,
+                                                                      "actual":  1,
+                                                                      "passed":  true
+                                                                  },
+                          "inbox_old_owner_expired_failed_blocked":  {
+                                                                         "expected":  0,
+                                                                         "actual":  0,
+                                                                         "passed":  true
+                                                                     },
+                          "inbox_new_owner_expired_failed_succeeds":  {
+                                                                          "expected":  1,
+                                                                          "actual":  1,
+                                                                          "passed":  true
+                                                                      },
+                          "inbox_expired_failed_state":  {
+                                                             "expected":  "FAILED|||1",
+                                                             "actual":  "FAILED|||1",
+                                                             "passed":  true
+                                                         },
+                          "inbox_expired_dead_claim_succeeds":  {
+                                                                    "expected":  1,
+                                                                    "actual":  1,
+                                                                    "passed":  true
+                                                                },
+                          "inbox_old_owner_dead_blocked":  {
+                                                               "expected":  0,
+                                                               "actual":  0,
+                                                               "passed":  true
+                                                           },
+                          "inbox_new_owner_dead_succeeds":  {
+                                                                "expected":  1,
+                                                                "actual":  1,
+                                                                "passed":  true
+                                                            },
+                          "inbox_dead_state":  {
+                                                   "expected":  "DEAD|||1",
+                                                   "actual":  "DEAD|||1",
+                                                   "passed":  true
+                                               },
+                          "inbox_dead_replay_succeeds":  {
+                                                             "expected":  1,
+                                                             "actual":  1,
+                                                             "passed":  true
+                                                         },
+                          "inbox_dead_replay_state":  {
+                                                          "expected":  "FAILED|||0",
+                                                          "actual":  "FAILED|||0",
+                                                          "passed":  true
+                                                      }
+                      },
+    "resources_retained":  false,
+    "cleanup_attempted":  true,
+    "cleanup_failures":  [
+
+                         ],
+    "secrets_recorded":  false,
+    "caveats":  [
+                    "Both MySQL containers run on one Docker host; this is not a production physical replication topology.",
+                    "This does not validate HA, failover, real network partition, replication lag under production load, MDL contention, disaster recovery, backup restore, or production data volume.",
+                    "The V100-\u003eV104-\u003eV107-\u003eV120 chain is a minimal application migration subset, not the full production V1-\u003eV120 migration baseline or a production-scale DDL test.",
+                    "Outbox/Inbox rows are inserted directly as SQL fixtures; the run does not exercise application worker concurrency, DLQ service replay, compensation, reconciliation, or tenant datasource topology.",
+                    "Direct SQL owner-fencing CAS assertions do not prove end-to-end application fencing under process pause, network partition, or concurrent service execution.",
+                    "A passed sandbox result must not be represented as production acceptance or as evidence for gate3, independent review, R-011, or R-029 closure."
+                ],
+    "gates":  {
+                  "production_ready":  false,
+                  "gate3_passed":  false,
+                  "independent_review":  false,
+                  "R_011":  "OPEN",
+                  "R_029":  "OPEN",
+                  "Go_No_Go":  "No-Go"
+              },
+    "failure":  null
+}

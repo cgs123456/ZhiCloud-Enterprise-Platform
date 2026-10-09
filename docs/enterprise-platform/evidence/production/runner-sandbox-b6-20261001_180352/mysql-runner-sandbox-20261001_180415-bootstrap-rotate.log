@@ -1,0 +1,2 @@
+[bootstrap-admin] target=jdbc:mysql://127.0.0.1:3306/zhicloud_runner_clean_20261001_180415 mode=rotate username=zhicloud_admin tenantId=1
+[bootstrap-admin] success: action=rotated username=zhicloud_admin tenantId=1 roleId=1 postId=4 cost=4874ms

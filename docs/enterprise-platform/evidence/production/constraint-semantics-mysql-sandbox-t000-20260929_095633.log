@@ -1,0 +1,12 @@
+{
+  "status": "passed",
+  "summary": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0
+  },
+  "output": "docs\\enterprise-platform\\evidence\\production\\constraint-semantics-mysql-sandbox-t000-20260929_095633.json",
+  "sha256": "3f7c977ead3a47d9bec372787ca8483da6dbd63c5cd621d51181200ac24d5446"
+}
+EXIT=0
+SHA256=3F7C977EAD3A47D9BEC372787CA8483DA6DBD63C5CD621D51181200AC24D5446

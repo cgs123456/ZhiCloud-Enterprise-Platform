@@ -1,0 +1,356 @@
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] zhicloud                                                           [pom]
+[INFO] zhicloud-framework                                                 [pom]
+[INFO] zhicloud-common                                                    [jar]
+[INFO] zhicloud-spring-boot-starter-web                                   [jar]
+[INFO] zhicloud-spring-boot-starter-security                              [jar]
+[INFO] zhicloud-spring-boot-starter-mybatis                               [jar]
+[INFO] zhicloud-spring-boot-starter-redis                                 [jar]
+[INFO] zhicloud-spring-boot-starter-mq                                    [jar]
+[INFO] zhicloud-spring-boot-starter-job                                   [jar]
+[INFO] zhicloud-spring-boot-starter-test                                  [jar]
+[INFO] zhicloud-spring-boot-starter-biz-tenant                            [jar]
+[INFO] zhicloud-spring-boot-starter-biz-inventory                         [jar]
+[INFO] 
+[INFO] ------------------------< cn.zhicloud:zhicloud >------------------------
+[INFO] Building zhicloud 2026.06.0                                       [1/12]
+[INFO]   from pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud:pom:2026.06.0...
+[INFO] 
+[INFO] -------------------< cn.zhicloud:zhicloud-framework >-------------------
+[INFO] Building zhicloud-framework 2026.06.0                             [2/12]
+[INFO]   from zhicloud-framework\pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-framework ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-framework:pom:2026.06.0...
+[INFO] 
+[INFO] --------------------< cn.zhicloud:zhicloud-common >---------------------
+[INFO] Building zhicloud-common 2026.06.0                                [3/12]
+[INFO]   from zhicloud-framework\zhicloud-common\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-common ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-common\src\main\resources
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-common ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-common:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-common ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-common ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-common\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-common ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-common ---
+[INFO] 
+[INFO] ------------< cn.zhicloud:zhicloud-spring-boot-starter-web >------------
+[INFO] Building zhicloud-spring-boot-starter-web 2026.06.0               [4/12]
+[INFO]   from zhicloud-framework\zhicloud-spring-boot-starter-web\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-spring-boot-starter-web ---
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-spring-boot-starter-web ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-spring-boot-starter-web:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-spring-boot-starter-web ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-spring-boot-starter-web ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-spring-boot-starter-web\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-spring-boot-starter-web ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-spring-boot-starter-web ---
+[INFO] 
+[INFO] ---------< cn.zhicloud:zhicloud-spring-boot-starter-security >----------
+[INFO] Building zhicloud-spring-boot-starter-security 2026.06.0          [5/12]
+[INFO]   from zhicloud-framework\zhicloud-spring-boot-starter-security\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-spring-boot-starter-security ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-spring-boot-starter-security ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-spring-boot-starter-security:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-spring-boot-starter-security ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-spring-boot-starter-security ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-spring-boot-starter-security\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-spring-boot-starter-security ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-spring-boot-starter-security ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] ----------< cn.zhicloud:zhicloud-spring-boot-starter-mybatis >----------
+[INFO] Building zhicloud-spring-boot-starter-mybatis 2026.06.0           [6/12]
+[INFO]   from zhicloud-framework\zhicloud-spring-boot-starter-mybatis\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-spring-boot-starter-mybatis ---
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-spring-boot-starter-mybatis ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-spring-boot-starter-mybatis:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-spring-boot-starter-mybatis ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-spring-boot-starter-mybatis ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-spring-boot-starter-mybatis\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-spring-boot-starter-mybatis ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-spring-boot-starter-mybatis ---
+[INFO] 
+[INFO] -----------< cn.zhicloud:zhicloud-spring-boot-starter-redis >-----------
+[INFO] Building zhicloud-spring-boot-starter-redis 2026.06.0             [7/12]
+[INFO]   from zhicloud-framework\zhicloud-spring-boot-starter-redis\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-spring-boot-starter-redis ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-spring-boot-starter-redis ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-spring-boot-starter-redis:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-spring-boot-starter-redis ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-spring-boot-starter-redis ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-spring-boot-starter-redis\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-spring-boot-starter-redis ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-spring-boot-starter-redis ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] ------------< cn.zhicloud:zhicloud-spring-boot-starter-mq >-------------
+[INFO] Building zhicloud-spring-boot-starter-mq 2026.06.0                [8/12]
+[INFO]   from zhicloud-framework\zhicloud-spring-boot-starter-mq\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[WARNING] 1 problem was encountered while building the effective model for org.javassist:javassist:jar:3.21.0-GA during dependency collection step for project (use -X to see details)
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-spring-boot-starter-mq ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-spring-boot-starter-mq ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-spring-boot-starter-mq:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-spring-boot-starter-mq ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-spring-boot-starter-mq ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-spring-boot-starter-mq\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-spring-boot-starter-mq ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-spring-boot-starter-mq ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] ------------< cn.zhicloud:zhicloud-spring-boot-starter-job >------------
+[INFO] Building zhicloud-spring-boot-starter-job 2026.06.0               [9/12]
+[INFO]   from zhicloud-framework\zhicloud-spring-boot-starter-job\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-spring-boot-starter-job ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-spring-boot-starter-job ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-spring-boot-starter-job:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-spring-boot-starter-job ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-spring-boot-starter-job ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-spring-boot-starter-job\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-spring-boot-starter-job ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-spring-boot-starter-job ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] -----------< cn.zhicloud:zhicloud-spring-boot-starter-test >------------
+[INFO] Building zhicloud-spring-boot-starter-test 2026.06.0             [10/12]
+[INFO]   from zhicloud-framework\zhicloud-spring-boot-starter-test\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-spring-boot-starter-test ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-spring-boot-starter-test\src\main\resources
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-spring-boot-starter-test ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-spring-boot-starter-test:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-spring-boot-starter-test ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-spring-boot-starter-test ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-spring-boot-starter-test\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-spring-boot-starter-test ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-spring-boot-starter-test ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --------< cn.zhicloud:zhicloud-spring-boot-starter-biz-tenant >---------
+[INFO] Building zhicloud-spring-boot-starter-biz-tenant 2026.06.0       [11/12]
+[INFO]   from zhicloud-framework\zhicloud-spring-boot-starter-biz-tenant\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-spring-boot-starter-biz-tenant ---
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-spring-boot-starter-biz-tenant ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-spring-boot-starter-biz-tenant:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-spring-boot-starter-biz-tenant ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-spring-boot-starter-biz-tenant ---
+[INFO] skip non existing resourceDirectory C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-spring-boot-starter-biz-tenant\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-spring-boot-starter-biz-tenant ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-spring-boot-starter-biz-tenant ---
+[INFO] 
+[INFO] -------< cn.zhicloud:zhicloud-spring-boot-starter-biz-inventory >-------
+[INFO] Building zhicloud-spring-boot-starter-biz-inventory 2026.06.0    [12/12]
+[INFO]   from zhicloud-framework\zhicloud-spring-boot-starter-biz-inventory\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ zhicloud-spring-boot-starter-biz-inventory ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- flatten:1.7.2:flatten (flatten) @ zhicloud-spring-boot-starter-biz-inventory ---
+[INFO] Generating flattened POM of project cn.zhicloud:zhicloud-spring-boot-starter-biz-inventory:jar:2026.06.0...
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ zhicloud-spring-boot-starter-biz-inventory ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ zhicloud-spring-boot-starter-biz-inventory ---
+[INFO] Copying 3 resources from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ zhicloud-spring-boot-starter-biz-inventory ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ zhicloud-spring-boot-starter-biz-inventory ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running cn.zhicloud.framework.inventory.service.InventoryServiceImplTest
+2026-09-29T16:18:31.798+08:00  WARN 39024 --- [           main] ory$DuplicateJsonObjectContextCustomizer : 
+
+Found multiple occurrences of org.json.JSONObject on the class path:
+
+	jar:file:/C:/Users/Administrator/.m2/repository/com/vaadin/external/google/android-json/0.0.20131108.vaadin1/android-json-0.0.20131108.vaadin1.jar!/org/json/JSONObject.class
+	jar:file:/C:/Users/Administrator/.m2/repository/org/json/json/20250107/json-20250107.jar!/org/json/JSONObject.class
+
+You may wish to exclude one of them to ensure predictable runtime behavior
+
+2026-09-29T16:18:31.823+08:00  INFO 39024 --- [           main] c.z.f.i.s.InventoryServiceImplTest       : Starting InventoryServiceImplTest using Java 21.0.12.1 with PID 39024 (started by Administrator in C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-spring-boot-starter-biz-inventory)
+2026-09-29T16:18:31.824+08:00  INFO 39024 --- [           main] c.z.f.i.s.InventoryServiceImplTest       : The following 1 profile is active: "unit-test"
+2026-09-29T16:18:32.215+08:00  WARN 39024 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : No MyBatis mapper was found in '[cn.zhicloud.module]' package. Please check your configuration.
+2026-09-29T16:18:32.371+08:00  INFO 39024 --- [           main] c.g.y.a.MybatisPlusJoinAutoConfiguration : MPJ SqlSessionFactory bean definition: sqlSessionFactory factoryBeanName: com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration factoryMethodName: sqlSessionFactory source: public org.apache.ibatis.session.SqlSessionFactory com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration.sqlSessionFactory(javax.sql.DataSource) throws java.lang.Exception
+2026-09-29T16:18:32.830+08:00  INFO 39024 --- [           main] com.zaxxer.hikari.HikariDataSource       : zhicloud_platform - Starting...
+2026-09-29T16:18:33.369+08:00  INFO 39024 --- [           main] com.zaxxer.hikari.pool.HikariPool        : zhicloud_platform - Added connection conn0: url=jdbc:h2:mem:testdb user=SA
+2026-09-29T16:18:33.372+08:00  INFO 39024 --- [           main] com.zaxxer.hikari.HikariDataSource       : zhicloud_platform - Start completed.
+2026-09-29T16:18:33.510+08:00  INFO 39024 --- [           main] c.g.y.a.MybatisPlusJoinAutoConfiguration : mybatis plus join properties config complete
+2026-09-29T16:18:33.595+08:00  INFO 39024 --- [           main] c.g.y.a.MybatisPlusJoinAutoConfiguration : mybatis plus join SqlInjector init
+ _ _   |_  _ _|_. ___ _ |    _ 
+| | |\/|_)(_| | |_\  |_)||_|_\ 
+     /               |         
+                        3.5.16 
+2026-09-29T16:18:33.963+08:00  INFO 39024 --- [           main] c.z.f.i.s.InventoryServiceImplTest       : Started InventoryServiceImplTest in 2.871 seconds (process running for 4.258)
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (C:\Users\Administrator\.m2\repository\net\bytebuddy\byte-buddy-agent\1.17.8\byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+2026-09-29T16:18:35.219+08:00  WARN 39024 --- [pool-3-thread-3] c.z.f.i.service.InventoryServiceImpl     : [getOrCreate][���������ͻ ��������id=2]
+2026-09-29T16:18:35.219+08:00  WARN 39024 --- [pool-3-thread-8] c.z.f.i.service.InventoryServiceImpl     : [getOrCreate][���������ͻ ��������id=2]
+2026-09-29T16:18:35.219+08:00  WARN 39024 --- [pool-3-thread-5] c.z.f.i.service.InventoryServiceImpl     : [getOrCreate][���������ͻ ��������id=2]
+2026-09-29T16:18:35.219+08:00  WARN 39024 --- [pool-3-thread-2] c.z.f.i.service.InventoryServiceImpl     : [getOrCreate][���������ͻ ��������id=2]
+2026-09-29T16:18:35.219+08:00  WARN 39024 --- [ool-3-thread-17] c.z.f.i.service.InventoryServiceImpl     : [getOrCreate][���������ͻ ��������id=2]
+2026-09-29T16:18:35.219+08:00  WARN 39024 --- [pool-3-thread-6] c.z.f.i.service.InventoryServiceImpl     : [getOrCreate][���������ͻ ��������id=2]
+2026-09-29T16:18:35.219+08:00  WARN 39024 --- [pool-3-thread-4] c.z.f.i.service.InventoryServiceImpl     : [getOrCreate][���������ͻ ��������id=2]
+2026-09-29T16:18:35.220+08:00  WARN 39024 --- [pool-3-thread-1] c.z.f.i.service.InventoryServiceImpl     : [getOrCreate][���������ͻ ��������id=2]
+2026-09-29T16:18:35.220+08:00  WARN 39024 --- [pool-3-thread-7] c.z.f.i.service.InventoryServiceImpl     : [getOrCreate][���������ͻ ��������id=2]
+2026-09-29T16:18:35.290+08:00  WARN 39024 --- [           main] c.z.f.i.s.InventoryReconciliationService : [reconcile][mes ��һ�� item=6 wh=1 truth=50.00 proj=30]
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.802 s -- in cn.zhicloud.framework.inventory.service.InventoryServiceImplTest
+[INFO] Running cn.zhicloud.framework.inventory.service.InventoryTenantIsolationTest
+2026-09-29T16:18:35.376+08:00  WARN 39024 --- [           main] ory$DuplicateJsonObjectContextCustomizer : 
+
+Found multiple occurrences of org.json.JSONObject on the class path:
+
+	jar:file:/C:/Users/Administrator/.m2/repository/com/vaadin/external/google/android-json/0.0.20131108.vaadin1/android-json-0.0.20131108.vaadin1.jar!/org/json/JSONObject.class
+	jar:file:/C:/Users/Administrator/.m2/repository/org/json/json/20250107/json-20250107.jar!/org/json/JSONObject.class
+
+You may wish to exclude one of them to ensure predictable runtime behavior
+
+2026-09-29T16:18:35.378+08:00  INFO 39024 --- [           main] c.z.f.i.s.InventoryTenantIsolationTest   : Starting InventoryTenantIsolationTest using Java 21.0.12.1 with PID 39024 (started by Administrator in C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\zhicloud-framework\zhicloud-spring-boot-starter-biz-inventory)
+2026-09-29T16:18:35.378+08:00  INFO 39024 --- [           main] c.z.f.i.s.InventoryTenantIsolationTest   : The following 1 profile is active: "unit-test"
+2026-09-29T16:18:35.453+08:00  WARN 39024 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : No MyBatis mapper was found in '[cn.zhicloud.module]' package. Please check your configuration.
+2026-09-29T16:18:35.464+08:00  INFO 39024 --- [           main] c.g.y.a.MybatisPlusJoinAutoConfiguration : MPJ SqlSessionFactory bean definition: sqlSessionFactory factoryBeanName: com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration factoryMethodName: sqlSessionFactory source: public org.apache.ibatis.session.SqlSessionFactory com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration.sqlSessionFactory(javax.sql.DataSource) throws java.lang.Exception
+2026-09-29T16:18:35.491+08:00  INFO 39024 --- [           main] com.zaxxer.hikari.HikariDataSource       : zhicloud_platform - Starting...
+2026-09-29T16:18:35.493+08:00  INFO 39024 --- [           main] com.zaxxer.hikari.pool.HikariPool        : zhicloud_platform - Added connection conn10: url=jdbc:h2:mem:testdb user=SA
+2026-09-29T16:18:35.494+08:00  INFO 39024 --- [           main] com.zaxxer.hikari.HikariDataSource       : zhicloud_platform - Start completed.
+2026-09-29T16:18:35.503+08:00  INFO 39024 --- [           main] c.g.y.a.MybatisPlusJoinAutoConfiguration : mybatis plus join properties config complete
+2026-09-29T16:18:35.508+08:00  INFO 39024 --- [           main] c.g.y.a.MybatisPlusJoinAutoConfiguration : mybatis plus join SqlInjector init
+ _ _   |_  _ _|_. ___ _ |    _ 
+| | |\/|_)(_| | |_\  |_)||_|_\ 
+     /               |         
+                        3.5.16 
+2026-09-29T16:18:35.647+08:00  INFO 39024 --- [           main] c.z.f.i.s.InventoryTenantIsolationTest   : Started InventoryTenantIsolationTest in 0.327 seconds (process running for 5.942)
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.796 s -- in cn.zhicloud.framework.inventory.service.InventoryTenantIsolationTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for zhicloud 2026.06.0:
+[INFO] 
+[INFO] zhicloud ........................................... SUCCESS [  0.485 s]
+[INFO] zhicloud-framework ................................. SUCCESS [  0.267 s]
+[INFO] zhicloud-common .................................... SUCCESS [  1.792 s]
+[INFO] zhicloud-spring-boot-starter-web ................... SUCCESS [  0.622 s]
+[INFO] zhicloud-spring-boot-starter-security .............. SUCCESS [  0.590 s]
+[INFO] zhicloud-spring-boot-starter-mybatis ............... SUCCESS [  1.799 s]
+[INFO] zhicloud-spring-boot-starter-redis ................. SUCCESS [  0.730 s]
+[INFO] zhicloud-spring-boot-starter-mq .................... SUCCESS [  0.905 s]
+[INFO] zhicloud-spring-boot-starter-job ................... SUCCESS [  0.326 s]
+[INFO] zhicloud-spring-boot-starter-test .................. SUCCESS [  0.436 s]
+[INFO] zhicloud-spring-boot-starter-biz-tenant ............ SUCCESS [  0.623 s]
+[INFO] zhicloud-spring-boot-starter-biz-inventory ......... SUCCESS [  7.276 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  16.611 s
+[INFO] Finished at: 2026-09-29T16:18:36+08:00
+[INFO] ------------------------------------------------------------------------
+

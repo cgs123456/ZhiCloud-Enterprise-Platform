@@ -1,0 +1,110 @@
+{
+    "status":  "passed",
+    "generated_at":  "2026-09-30T10:15:17.1990402+00:00",
+    "command":  "drill",
+    "disclaimer":  "FAKE-SIMULATED-DATA",
+    "production_import_allowed":  false,
+    "container":  "zhicloud-mysql-sandbox-e763a710",
+    "source_database":  "zhicloud_sandbox",
+    "target_database":  "zhicloud_drill_b977389e",
+    "probe_table":  "zc_drill_probe",
+    "backup":  {
+                   "file":  "/tmp/zc-drill-full-8b2577f5.sql",
+                   "size_bytes":  18979,
+                   "sha256":  "cad371e462dae0db4442c0029ebecf958a0dccb92341f3b2f96fb5ca44aca58f",
+                   "duration_seconds":  0.191
+               },
+    "restore":  {
+                    "point_duration_seconds":  0.256,
+                    "full_duration_seconds":  0.682
+                },
+    "recovery":  {
+                     "rows_seeded_before_backup":  24,
+                     "rows_written_after_backup":  6,
+                     "rows_recovered":  24,
+                     "rows_lost_inside_rpo":  6,
+                     "rpo_window_seconds":  0.495,
+                     "rto_seconds":  0.938
+                 },
+    "target_comparison":  {
+                              "tables_compared":  4,
+                              "checksums_compared":  4,
+                              "reasons":  [
+
+                                          ]
+                          },
+    "verification_failure_reasons":  [
+
+                                     ],
+    "steps":  [
+                  {
+                      "name":  "seed_probe_rows",
+                      "exit_code":  0,
+                      "duration_seconds":  0.338,
+                      "note":  "24 simulated rows"
+                  },
+                  {
+                      "name":  "snapshot_before",
+                      "exit_code":  0,
+                      "duration_seconds":  0.883,
+                      "note":  "4 tables"
+                  },
+                  {
+                      "name":  "backup_full_database",
+                      "exit_code":  0,
+                      "duration_seconds":  0.191,
+                      "note":  "/tmp/zc-drill-full-8b2577f5.sql"
+                  },
+                  {
+                      "name":  "write_rows_after_backup",
+                      "exit_code":  0,
+                      "duration_seconds":  0,
+                      "note":  "6 rows inside the RPO window"
+                  },
+                  {
+                      "name":  "simulate_incident_drop_probe",
+                      "exit_code":  0,
+                      "duration_seconds":  0,
+                      "note":  "dropped zc_drill_probe"
+                  },
+                  {
+                      "name":  "restore_probe_table",
+                      "exit_code":  0,
+                      "duration_seconds":  0.256,
+                      "note":  "point-in-time restore of the probe table"
+                  },
+                  {
+                      "name":  "snapshot_after",
+                      "exit_code":  0,
+                      "duration_seconds":  0.665,
+                      "note":  "4 tables"
+                  },
+                  {
+                      "name":  "verify_source_after_restore",
+                      "exit_code":  0,
+                      "duration_seconds":  0,
+                      "note":  "0 verification problems"
+                  },
+                  {
+                      "name":  "restore_full_dump_into_target",
+                      "exit_code":  0,
+                      "duration_seconds":  0.682,
+                      "note":  "zhicloud_drill_b977389e"
+                  },
+                  {
+                      "name":  "compare_source_and_target",
+                      "exit_code":  0,
+                      "duration_seconds":  0,
+                      "note":  "0 differences"
+                  },
+                  {
+                      "name":  "cleanup",
+                      "exit_code":  0,
+                      "duration_seconds":  0.561,
+                      "note":  "dropped drill target database and probe table"
+                  }
+              ],
+    "failure_reasons":  [
+
+                        ]
+}

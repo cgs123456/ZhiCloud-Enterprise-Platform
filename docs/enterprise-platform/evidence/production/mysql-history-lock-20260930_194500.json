@@ -1,0 +1,50 @@
+{
+    "generated_at":  "2026-09-30T19:45:00.8182658+08:00",
+    "status":  "passed",
+    "scope":  "MySQL flyway_schema_history SELECT FOR UPDATE concurrency lock validation",
+    "production_ready":  false,
+    "gate3_passed":  false,
+    "database":  "zhicloud_lock_test_20260930_194500",
+    "sandbox_container":  "zhicloud-mysql-sandbox-421ad135",
+    "sandbox_volume":  "zhicloud-mysql-sandbox-data-421ad135",
+    "sandbox_image":  "mysql:8.4@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+    "bind_address":  "127.0.0.1",
+    "host_port":  9017,
+    "repo_commit":  "d0ebc96c9f864450c9c293094e114aff0e4e8588",
+    "repo_branch":  "upgrade/production-readiness",
+    "independent_review":  false,
+    "hold_seconds":  8,
+    "lock_observed":  true,
+    "history_unchanged":  true,
+    "session_a":  {
+                      "exit_code":  0,
+                      "elapsed_seconds":  8.067,
+                      "stdout":  "14\r\n1\r\n0\r\nSESSION_A_ROLLED_BACK\r\n",
+                      "stderr":  "",
+                      "stdout_path":  "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\docs\\enterprise-platform\\evidence\\production\\mysql-history-lock-20260930_194500-session-a.stdout.log",
+                      "stderr_path":  "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\docs\\enterprise-platform\\evidence\\production\\mysql-history-lock-20260930_194500-session-a.stderr.log"
+                  },
+    "session_b":  {
+                      "exit_code":  0,
+                      "elapsed_seconds":  7.989,
+                      "stdout":  "16\r\nSESSION_B_UPDATED\r\n",
+                      "stderr":  "",
+                      "stdout_path":  "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\docs\\enterprise-platform\\evidence\\production\\mysql-history-lock-20260930_194500-session-b.stdout.log",
+                      "stderr_path":  "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\docs\\enterprise-platform\\evidence\\production\\mysql-history-lock-20260930_194500-session-b.stderr.log"
+                  },
+    "required_checks":  {
+                            "session_a_exit_zero":  true,
+                            "session_b_exit_zero":  true,
+                            "record_lock_observed":  true,
+                            "session_b_waited_for_lock":  true,
+                            "session_b_committed_after_wait":  true,
+                            "session_a_rolled_back":  true,
+                            "history_unchanged":  true
+                        },
+    "server_version":  "8.4.11",
+    "client_version":  "C:\\Users\\Administrator\\mysql84-sandbox\\mysql-8.4.9-winx64\\bin\\mysql.exe  Ver 8.4.9 for Win64 on x86_64 (MySQL Community Server - GPL)",
+    "caveats":  [
+                    "本验证仅覆盖本机 MySQL 8.4.11 沙箱，不证明生产数据库、TLS、Kubernetes 或跨库分布式锁。",
+                    "本验证证明 InnoDB 记录锁对相同 history 行的写入会阻塞；不证明业务表并发、死锁恢复或高可用切换。"
+                ]
+}

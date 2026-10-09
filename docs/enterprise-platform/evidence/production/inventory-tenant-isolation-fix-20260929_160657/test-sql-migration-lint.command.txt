@@ -1,0 +1,1 @@
+python scripts/production/tests/test_sql_migration_lint.py

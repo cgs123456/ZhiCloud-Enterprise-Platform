@@ -1,0 +1,1 @@
+[timeout] 硬止损：阶段 runner-process 的 docker 超过 164 秒未结束，已强制终止进程树（parent_exited=True taskkill_rc=0）。见 R-G4-2 / R-G3.5-2。

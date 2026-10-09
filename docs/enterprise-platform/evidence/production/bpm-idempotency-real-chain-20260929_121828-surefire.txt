@@ -1,0 +1,16 @@
+-------------------------------------------------------------------------------
+Test set: cn.zhicloud.module.bpm.service.task.BpmProcessInstanceIdempotencyRealChainConcurrencyTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 11.40 s <<< FAILURE! -- in cn.zhicloud.module.bpm.service.task.BpmProcessInstanceIdempotencyRealChainConcurrencyTest
+cn.zhicloud.module.bpm.service.task.BpmProcessInstanceIdempotencyRealChainConcurrencyTest.concurrentCallsThroughRealSpringAndFlowableReturnOneInstance -- Time elapsed: 4.033 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 真实并发调用存在失败: [#0=ServiceException(流程正在创建中，请稍后查询结果), #1=ServiceException(流程正在创建中，请稍后查询结果), #2=ServiceException(流程正在创建中，请稍后查询结果), #3=ServiceException(流程正在创建中，请稍后查询结果), #4=ServiceException(流程正在创建中，请稍后查询结果), #5=ServiceException(流程正在创建中，请稍后查询结果), #6=ServiceException(流程正在创建中，请稍后查询结果), #7=success(d83a6f79-bbbc-11f1-825f-00155dcc8dd6), #8=ServiceException(流程正在创建中，请稍后查询结果), #9=ServiceException(流程正在创建中，请稍后查询结果)] ==> expected: <true> but was: <false>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:42)
+	at org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:191)
+	at cn.zhicloud.module.bpm.service.task.BpmProcessInstanceIdempotencyRealChainConcurrencyTest.concurrentCallsThroughRealSpringAndFlowableReturnOneInstance(BpmProcessInstanceIdempotencyRealChainConcurrencyTest.java:244)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+

@@ -1,0 +1,1 @@
+python scripts/production/check_migration_contract.py --json

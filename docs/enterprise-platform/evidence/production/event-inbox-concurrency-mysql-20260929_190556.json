@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "evidence_id": "event-inbox-concurrency-mysql-20260929_190556",
+  "generated_at": "2026-09-29T19:07:52.5246780+08:00",
+  "scope": "Application-level Inbox concurrent first-delivery owner fencing against an isolated real MySQL 8.4.11 sandbox",
+  "git": {
+    "branch": "upgrade/production-readiness",
+    "commit_sha": "d0ebc96c9f864450c9c293094e114aff0e4e8588",
+    "worktree_state": "dirty; pre-existing and task-related changes were preserved and not committed"
+  },
+  "environment": {
+    "container_name": "zhicloud-mysql-sandbox-18e0f782",
+    "image": "mysql:8.4",
+    "image_digest": "mysql@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+    "server_version": "8.4.11",
+    "host_endpoint": "127.0.0.1:12413",
+    "database": "zhicloud_sandbox_chain",
+    "isolation": "isolated Docker container; dedicated sandbox database; no production connection"
+  },
+  "schema_baseline": {
+    "type": "minimal migration dependency chain; not a full V1-to-V120 production baseline",
+    "migrations": [
+      "V100__event_outbox_inbox.sql",
+      "V104__integration_monitoring_indexes.sql",
+      "V107__event_tenant_unique_keys.sql",
+      "V120__event_outbox_inbox_owner_lease.sql"
+    ],
+    "verified_schema": {
+      "event_inbox_owner_lease_columns": 3,
+      "event_inbox_v120_lease_index_columns": 3,
+      "event_outbox_v120_lease_index_columns": 3
+    },
+    "migration_artifact_hashes": {
+      "V120__event_outbox_inbox_owner_lease.sql": "a8fe907f2cc383e3523c10134926e3cc826554474171212317e83e3cba0c747e",
+      "V120_verify.sql": "5f6398298799319121630d4a295b4d60805da6a563d6f3e61fc38c0f2bac4e08"
+    }
+  },
+  "execution": {
+    "command": "SPRING_DATASOURCE_URL=<redacted>; SPRING_DATASOURCE_USERNAME=root; SPRING_DATASOURCE_PASSWORD=<redacted>; mvn -pl zhicloud-server -am test -Dtest=EventInboxConcurrencyMysqlIntegrationTest -Dsurefire.failIfNoSpecifiedTests=false -Dzhicloud.mysql.integration=true",
+    "test_class": "cn.zhicloud.server.integration.EventInboxConcurrencyMysqlIntegrationTest",
+    "result": "PASS",
+    "tests_run": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "build": "BUILD SUCCESS",
+    "elapsed_seconds": 51.028,
+    "verified_behaviors": [
+      "The first thread entered the handler while holding the Inbox processing lease.",
+      "A concurrent second delivery returned IN_PROGRESS and did not execute the handler.",
+      "The handler executed exactly once.",
+      "The final Inbox status was PROCESSED."
+    ],
+    "log": {
+      "path": "docs/enterprise-platform/evidence/production/event-inbox-concurrency-mysql-20260929_190556.log",
+      "sha256": "43cfdfd82fffc84fdc1555e2e83ab94a9ff1929fe29a894aa5ec119440982694"
+    }
+  },
+  "diagnostic_failure": {
+    "path": "docs/enterprise-platform/evidence/production/event-inbox-concurrency-mysql-20260929_190414.log",
+    "sha256": "6427bc6cf2d98d848ed0bc8ce34a15d9361c2656020e096acd573497cf6f4574",
+    "result": "Tests run: 1, Failures: 0, Errors: 1, Skipped: 0; BUILD FAILURE",
+    "root_cause": "PowerShell-to-mvn.cmd argument parsing split the datasource URL at the ampersand and the password system property was not passed; the JVM received a truncated URL and no password.",
+    "classification": "test harness invocation/environment defect, not an application or MySQL semantic failure",
+    "resolution": "Connection parameters were supplied through SPRING_DATASOURCE_* environment variables; the rerun passed."
+  },
+  "coverage": {
+    "proven": [
+      "Real MySQL concurrent first-delivery CAS behavior for one Inbox row.",
+      "Application-level owner lease prevents a concurrent handler execution in the tested topology."
+    ],
+    "not_covered": [
+      "Production physical primary/replica topology.",
+      "Real read/write splitting or multi-tenant dynamic datasource topology.",
+      "Network partition and process crash/failover injection.",
+      "Outbox claim, publish, retry, dead-letter, replay and owner-fencing matrix.",
+      "Compensation and reconciliation workflows.",
+      "Production data volume, latency, lock contention and long-running migration behavior."
+    ]
+  },
+  "conclusion": {
+    "sandbox_verdict": "PASS",
+    "production_ready": false,
+    "gate3_passed": false,
+    "r_011": "OPEN",
+    "r_029": "OPEN",
+    "go_no_go": "No-Go",
+    "limits": [
+      "This is sandbox evidence and cannot be represented as production validation.",
+      "The database was a dedicated sandbox database in a single-node Docker container.",
+      "The schema baseline was a minimal dependency chain, not the complete production migration baseline."
+    ]
+  },
+  "reproducibility": {
+    "prerequisite": "Use the dedicated zhicloud_sandbox_chain database on the existing isolated MySQL sandbox container; do not use production credentials or databases.",
+    "secret_handling": "The database password is intentionally omitted and must be injected through SPRING_DATASOURCE_PASSWORD at execution time.",
+    "notes": [
+      "Run from the repository root with PowerShell.",
+      "Do not put the JDBC URL with query parameters directly on the mvn.cmd command line because cmd.exe treats ampersands as command separators."
+    ]
+  }
+}

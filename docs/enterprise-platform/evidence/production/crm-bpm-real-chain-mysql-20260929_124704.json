@@ -1,0 +1,80 @@
+{
+  "generated_at": "2026-09-29T12:48:50+08:00",
+  "status": "passed",
+  "scope": "CRM 回款提交经真实 BpmProcessInstanceApiImpl、BpmProcessInstanceServiceImpl、幂等 Mapper 与真实 Flowable，在隔离 MySQL 8.4.11 单实例 InnoDB 上验证提交一致性与 BPM 返回后故障回滚；流程定义查询等非目标外部依赖为 mock",
+  "source_head": "d0ebc96c9f864450c9c293094e114aff0e4e8588",
+  "working_tree_state": "G2/G3 changes present and not committed at evidence generation time",
+  "environment": {
+    "classification": "隔离 MySQL 单实例，非生产",
+    "container": "zhicloud-mysql-sandbox-87323300",
+    "host": "127.0.0.1",
+    "port": 57507,
+    "server_version": "8.4.11",
+    "database": "zhicloud_crm_bpm_chain_test",
+    "table_count": 47,
+    "transaction_isolation": "REPEATABLE-READ",
+    "engine": "InnoDB",
+    "post_run_counts": {
+      "ACT_HI_PROCINST": 0,
+      "ACT_RU_EXECUTION": 0,
+      "bpm_process_instance_idempotency": 0
+    }
+  },
+  "activation_environment": {
+    "ZHICLOUD_CRM_BPM_REAL_CHAIN_IT": "true",
+    "ZHICLOUD_CRM_BPM_IT_MYSQL_URL": "jdbc:mysql://127.0.0.1:57507/zhicloud_crm_bpm_chain_test?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Singapore",
+    "ZHICLOUD_CRM_BPM_IT_MYSQL_USERNAME": "root",
+    "ZHICLOUD_CRM_BPM_IT_MYSQL_PASSWORD": "<redacted>"
+  },
+  "command": "mvn -pl zhicloud-module-crm '-Dtest=CrmReceivableBpmTransactionMysqlIntegrationTest' '-DfailIfNoTests=false' test",
+  "test": {
+    "class": "cn.zhicloud.module.crm.service.receivable.CrmReceivableBpmTransactionMysqlIntegrationTest",
+    "methods": [
+      "submitReceivableShouldRollbackCrmBpmRegistrationAndFlowableTogether",
+      "submitReceivableShouldCommitCrmBpmRegistrationAndFlowableTogether"
+    ],
+    "tests_run": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "build": "SUCCESS"
+  },
+  "real_chain_covered": [
+    "CrmReceivableServiceImpl.submitReceivable -> BpmProcessInstanceApiImpl -> BpmProcessInstanceServiceImpl.createProcessInstance",
+    "真实 MyBatis 幂等 Mapper",
+    "真实 Flowable RuntimeService / HistoryService",
+    "同一 Spring 事务内 CRM 状态、BPM 幂等登记和 Flowable 历史提交一致",
+    "真实 BPM 返回后注入 CRM 外层事务故障，三者共同回滚"
+  ],
+  "not_covered": [
+    "完整真实流程定义服务链；测试中流程定义查询为 mock",
+    "生产 DynamicRoutingDataSource、主从路由、多租户物理连接一致性",
+    "网络中断、进程中断和数据库瞬时故障",
+    "生产规模并发、MDL、复制延迟、备份恢复",
+    "Outbox/补偿、生产监控与对账"
+  ],
+  "artifacts": {
+    "raw_log": "docs/enterprise-platform/evidence/production/crm-bpm-real-chain-mysql-20260929_124704.log",
+    "raw_log_sha256": "c92c63012e587eec2ce792827a1f1f9a697a3ae7647f12baf40a0f3d670719b9",
+    "exit_code_file": "docs/enterprise-platform/evidence/production/crm-bpm-real-chain-mysql-20260929_124704.exit.txt",
+    "test": "zhicloud-module-crm/src/test/java/cn/zhicloud/module/crm/service/receivable/CrmReceivableBpmTransactionMysqlIntegrationTest.java",
+    "test_sha256": "3bb91d4211a89738fc1682343dc4421654c4e8c48ecef1b2bb6643f34f2bf786",
+    "schema_fixture": "zhicloud-module-crm/src/test/resources/sql/crm_bpm_transaction_schema_mysql.sql",
+    "schema_fixture_sha256": "f426c027a982bdd13cc2f0d790a17e5f39a7a1a9f4a3ff8cd1ce2367fecb94de",
+    "clean_fixture": "zhicloud-module-crm/src/test/resources/sql/crm_bpm_transaction_clean_mysql.sql",
+    "clean_fixture_sha256": "b8f268f7609f62e97d268000fe6aea133e5514674b4f526d80c412e60ea78626"
+  },
+  "production_ready": false,
+  "gate3_passed": false,
+  "independent_review": false,
+  "risk_register": {
+    "R_011": "OPEN",
+    "R_029": "OPEN"
+  },
+  "Go_No_Go": "No-Go",
+  "caveats": [
+    "该结果只是隔离单实例 MySQL 非生产验证，不代表生产可部署。",
+    "测试通过不等于 R-011 或 R-029 已关闭，仍需生产等价数据源、故障注入、规模与补偿对账。",
+    "证据生成时工作树含未提交改动，commit SHA 仅表示基线，不能单独建立可复现发布。"
+  ]
+}

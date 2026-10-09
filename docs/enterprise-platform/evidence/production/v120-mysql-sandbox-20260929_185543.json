@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "evidence_id": "v120-mysql-sandbox-20260929_185543",
+  "generated_at": "2026-09-29T18:55:43.592815+08:00",
+  "scope": "V120 event_outbox/event_inbox owner-lease migration on an isolated MySQL 8.4.11 sandbox",
+  "environment": {
+    "container_name": "zhicloud-mysql-v120-259eaac0",
+    "container_id": "5aded4d05bd88fc158573b2fca9dd40666ec6b8996fd7d96181ae03765d27bbf",
+    "image": "mysql:8.4",
+    "image_digest": "mysql@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+    "server_version": "8.4.11",
+    "host_port": "127.0.0.1:14176",
+    "isolation": "single-node Docker container, dedicated sandbox databases, no production connection"
+  },
+  "databases": {
+    "positive": "zhicloud_v120_sandbox_fixed",
+    "negative": "zhicloud_v120_negative"
+  },
+  "baseline": {
+    "migration": "V100__event_outbox_inbox.sql",
+    "exit_code": 0
+  },
+  "positive_execution": {
+    "migration": "V120__event_outbox_inbox_owner_lease.sql",
+    "first_run_exit_code": 0,
+    "idempotent_rerun_exit_code": 0,
+    "verification_file": "V120_verify.sql",
+    "verification_exit_code": 0,
+    "verification_results": [
+      {
+        "check": "V120_EVENT_INBOX_OWNER_COLUMNS",
+        "verdict": "PASS"
+      },
+      {
+        "check": "V120_EVENT_OUTBOX_OWNER_COLUMNS",
+        "verdict": "PASS"
+      },
+      {
+        "check": "V120_EVENT_INBOX_LEASE_INDEX",
+        "verdict": "PASS"
+      },
+      {
+        "check": "V120_EVENT_OUTBOX_LEASE_INDEX",
+        "verdict": "PASS"
+      }
+    ]
+  },
+  "negative_execution": {
+    "fixture": "pre-create event_inbox index idx_event_inbox_status_lease on (status, id)",
+    "expected": "V120 fails closed instead of accepting an incompatible lease index",
+    "actual_exit_code": 1,
+    "actual_error": "ERROR 1644 (45000) at line 250: V120 blocked: incompatible event_inbox lease index",
+    "verdict": "PASS"
+  },
+  "artifact_hashes": {
+    "V120__event_outbox_inbox_owner_lease.sql": "a8fe907f2cc383e3523c10134926e3cc826554474171212317e83e3cba0c747e",
+    "V120_verify.sql": "5f6398298799319121630d4a295b4d60805da6a563d6f3e61fc38c0f2bac4e08"
+  },
+  "defect_found_and_fixed": {
+    "summary": "The first sandbox rerun exposed that ordinary non-unique indexes were checked with MAX(non_unique) = 0, which is the unique-index value. The migration and verification checks were corrected to MAX(non_unique) = 1.",
+    "initial_rerun_error": "ERROR 1644 (45000) at line 250: V120 blocked: incompatible event_inbox lease index",
+    "resolution": "Only the ordinary-index predicate was corrected; column order, BTREE, non-prefix, and fail-closed checks remain strict."
+  },
+  "conclusion": {
+    "sandbox_verdict": "PASS",
+    "production_validation": false,
+    "owner_fencing_application_evidence": "H2/unit-level only; not proven by this migration sandbox run",
+    "limits": [
+      "No production execution, production data, production topology, replication, failover, or load test was performed.",
+      "The negative case proves fail-closed behavior for one incompatible-index fixture, not every possible incompatible schema shape.",
+      "V120 migration success does not prove application-level owner fencing, lease timing, compensation, or reconciliation semantics."
+    ]
+  }
+}

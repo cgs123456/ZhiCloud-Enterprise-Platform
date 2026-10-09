@@ -1,0 +1,97 @@
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] zhicloud                                                           [pom]
+[INFO] zhicloud-framework                                                 [pom]
+[INFO] zhicloud-common                                                    [jar]
+[INFO] zhicloud-spring-boot-starter-web                                   [jar]
+[INFO] zhicloud-spring-boot-starter-security                              [jar]
+[INFO] zhicloud-spring-boot-starter-mybatis                               [jar]
+[INFO] zhicloud-spring-boot-starter-redis                                 [jar]
+[INFO] zhicloud-spring-boot-starter-mq                                    [jar]
+[INFO] zhicloud-spring-boot-starter-job                                   [jar]
+[INFO] zhicloud-spring-boot-starter-test                                  [jar]
+[INFO] zhicloud-spring-boot-starter-biz-tenant                            [jar]
+[INFO] zhicloud-spring-boot-starter-websocket                             [jar]
+[INFO] zhicloud-spring-boot-starter-monitor                               [jar]
+[INFO] zhicloud-spring-boot-starter-protection                            [jar]
+[INFO] zhicloud-spring-boot-starter-biz-ip                                [jar]
+[INFO] zhicloud-spring-boot-starter-excel                                 [jar]
+[INFO] zhicloud-spring-boot-starter-biz-data-permission                   [jar]
+[INFO] zhicloud-spring-boot-starter-biz-inventory                         [jar]
+[INFO] zhicloud-spring-boot-starter-biz-integration                       [jar]
+[INFO] zhicloud-spring-boot-starter-biz-mdm                               [jar]
+[INFO] zhicloud-module-infra                                              [jar]
+[INFO] zhicloud-module-system                                             [jar]
+[INFO] zhicloud-module-bpm                                                [jar]
+[INFO] zhicloud-module-crm                                                [jar]
+[INFO] zhicloud-module-erp                                                [jar]
+[INFO] zhicloud-module-tms                                                [jar]
+[INFO] zhicloud-module-qms                                                [jar]
+[INFO] zhicloud-module-mes                                                [jar]
+[INFO] zhicloud-module-wms                                                [jar]
+[INFO] zhicloud-module-ai                                                 [jar]
+[INFO] zhicloud-module-ai-rag                                             [jar]
+[INFO] zhicloud-module-ai-multiagent                                      [jar]
+[INFO] zhicloud-module-datalake                                           [jar]
+[INFO] zhicloud-module-oa                                                 [jar]
+[INFO] zhicloud-module-hr                                                 [jar]
+[INFO] zhicloud-server                                                    [jar]
+[INFO] 
+[INFO] ------------------------< cn.zhicloud:zhicloud >------------------------
+[INFO] Building zhicloud 2026.06.0                                       [1/36]
+[INFO]   from pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for zhicloud 2026.06.0:
+[INFO] 
+[INFO] zhicloud ........................................... FAILURE [  0.004 s]
+[INFO] zhicloud-framework ................................. SKIPPED
+[INFO] zhicloud-common .................................... SKIPPED
+[INFO] zhicloud-spring-boot-starter-web ................... SKIPPED
+[INFO] zhicloud-spring-boot-starter-security .............. SKIPPED
+[INFO] zhicloud-spring-boot-starter-mybatis ............... SKIPPED
+[INFO] zhicloud-spring-boot-starter-redis ................. SKIPPED
+[INFO] zhicloud-spring-boot-starter-mq .................... SKIPPED
+[INFO] zhicloud-spring-boot-starter-job ................... SKIPPED
+[INFO] zhicloud-spring-boot-starter-test .................. SKIPPED
+[INFO] zhicloud-spring-boot-starter-biz-tenant ............ SKIPPED
+[INFO] zhicloud-spring-boot-starter-websocket ............. SKIPPED
+[INFO] zhicloud-spring-boot-starter-monitor ............... SKIPPED
+[INFO] zhicloud-spring-boot-starter-protection ............ SKIPPED
+[INFO] zhicloud-spring-boot-starter-biz-ip ................ SKIPPED
+[INFO] zhicloud-spring-boot-starter-excel ................. SKIPPED
+[INFO] zhicloud-spring-boot-starter-biz-data-permission ... SKIPPED
+[INFO] zhicloud-spring-boot-starter-biz-inventory ......... SKIPPED
+[INFO] zhicloud-spring-boot-starter-biz-integration ....... SKIPPED
+[INFO] zhicloud-spring-boot-starter-biz-mdm ............... SKIPPED
+[INFO] zhicloud-module-infra .............................. SKIPPED
+[INFO] zhicloud-module-system ............................. SKIPPED
+[INFO] zhicloud-module-bpm ................................ SKIPPED
+[INFO] zhicloud-module-crm ................................ SKIPPED
+[INFO] zhicloud-module-erp ................................ SKIPPED
+[INFO] zhicloud-module-tms ................................ SKIPPED
+[INFO] zhicloud-module-qms ................................ SKIPPED
+[INFO] zhicloud-module-mes ................................ SKIPPED
+[INFO] zhicloud-module-wms ................................ SKIPPED
+[INFO] zhicloud-module-ai ................................. SKIPPED
+[INFO] zhicloud-module-ai-rag ............................. SKIPPED
+[INFO] zhicloud-module-ai-multiagent ...................... SKIPPED
+[INFO] zhicloud-module-datalake ........................... SKIPPED
+[INFO] zhicloud-module-oa ................................. SKIPPED
+[INFO] zhicloud-module-hr ................................. SKIPPED
+[INFO] zhicloud-server .................................... SKIPPED
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  0.897 s
+[INFO] Finished at: 2026-09-29T19:09:12+08:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Unknown lifecycle phase ".failIfNoSpecifiedTests=false". You must specify a valid lifecycle phase or a goal in the format <plugin-prefix>:<goal> or <plugin-group-id>:<plugin-artifact-id>[:<plugin-version>]:<goal>. Available lifecycle phases are: pre-clean, clean, post-clean, validate, initialize, generate-sources, process-sources, generate-resources, process-resources, compile, process-classes, generate-test-sources, process-test-sources, generate-test-resources, process-test-resources, test-compile, process-test-classes, test, prepare-package, package, pre-integration-test, integration-test, post-integration-test, verify, install, deploy, pre-site, site, post-site, site-deploy. -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/LifecyclePhaseNotFoundException

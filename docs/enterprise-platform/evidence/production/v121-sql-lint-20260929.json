@@ -1,0 +1,27 @@
+{
+  "files": [
+    {
+      "file": "zhicloud-server\\src\\main\\resources\\db\\migration\\V121__bpm_process_instance_idempotency_claim_token.sql",
+      "name": "V121__bpm_process_instance_idempotency_claim_token.sql",
+      "violation_count": 0,
+      "violations": []
+    },
+    {
+      "file": "zhicloud-server\\src\\main\\resources\\db\\verification\\V121_verify.sql",
+      "name": "V121_verify.sql",
+      "violation_count": 0,
+      "violations": []
+    }
+  ],
+  "rules": {
+    "R1": "DELIMITER_TRAILING_TEXT",
+    "R2": "PREPARE_FROM_LOCAL_VAR",
+    "R3": "DELIMITER_UNBALANCED",
+    "R4": "DESTRUCTIVE_STATEMENT",
+    "R5": "MISSING_TRAILING_NEWLINE"
+  },
+  "scanned_files": 2,
+  "status": "passed",
+  "tool": "sql_migration_lint.py",
+  "total_violations": 0
+}

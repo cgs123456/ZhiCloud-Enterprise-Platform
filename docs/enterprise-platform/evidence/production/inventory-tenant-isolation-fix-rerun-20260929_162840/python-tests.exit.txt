@@ -1,0 +1,2 @@
+test_check_migration_contract=0
+test_sql_migration_lint=0

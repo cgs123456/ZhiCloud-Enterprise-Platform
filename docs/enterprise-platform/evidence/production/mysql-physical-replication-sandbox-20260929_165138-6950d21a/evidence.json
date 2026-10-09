@@ -1,0 +1,143 @@
+{
+    "schema_version":  1,
+    "evidence_type":  "mysql_physical_replication_sandbox",
+    "run_id":  "6950d21a",
+    "status":  "failed",
+    "validation_passed":  false,
+    "started_at":  "2026-09-29T16:51:38.8974601+08:00",
+    "finished_at":  "2026-09-29T16:52:00.6172136+08:00",
+    "duration_seconds":  21.7,
+    "image":  "mysql:8.4@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+    "image_repo_digest":  "mysql@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+    "repo_root":  "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2",
+    "repo":  {
+                 "repo_root":  "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2",
+                 "repo_commit":  "d0ebc96c9f864450c9c293094e114aff0e4e8588",
+                 "repo_branch":  "upgrade/production-readiness",
+                 "repo_worktree_dirty":  true,
+                 "repo_worktree_status_count":  228,
+                 "repo_worktree_status_sha256":  "d804d6ae5df8c5bcdedbed3b4fedc0ee8a7e7a1251f0f9b2ed1002458f2a757c"
+             },
+    "source_container":  "zhicloud-mysql-sandbox-e5dc7685",
+    "replica_container":  "zhicloud-mysql-sandbox-6d4e885e",
+    "network":  "zhicloud-mysql-repl-net-6950d21a",
+    "source_volume":  "zhicloud-mysql-repl-source-6950d21a",
+    "replica_volume":  "zhicloud-mysql-repl-replica-6950d21a",
+    "database":  "zhicloud_replication_probe",
+    "table":  "replication_probe",
+    "checks":  [
+                   {
+                       "scenario":  "source_configuration",
+                       "name":  "server_id",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "source_configuration",
+                       "name":  "log_bin",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "source_configuration",
+                       "name":  "binlog_format",
+                       "passed":  true,
+                       "expected":  "ROW",
+                       "actual":  "ROW"
+                   },
+                   {
+                       "scenario":  "source_configuration",
+                       "name":  "gtid_mode",
+                       "passed":  true,
+                       "expected":  "ON",
+                       "actual":  "ON"
+                   },
+                   {
+                       "scenario":  "source_configuration",
+                       "name":  "enforce_gtid_consistency",
+                       "passed":  true,
+                       "expected":  "ON",
+                       "actual":  "ON"
+                   },
+                   {
+                       "scenario":  "replica_configuration",
+                       "name":  "server_id",
+                       "passed":  true,
+                       "expected":  "2",
+                       "actual":  "2"
+                   },
+                   {
+                       "scenario":  "replica_configuration",
+                       "name":  "read_only",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "replica_configuration",
+                       "name":  "super_read_only",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "replica_configuration",
+                       "name":  "gtid_mode",
+                       "passed":  true,
+                       "expected":  "ON",
+                       "actual":  "ON"
+                   },
+                   {
+                       "scenario":  "replica_configuration",
+                       "name":  "enforce_gtid_consistency",
+                       "passed":  true,
+                       "expected":  "ON",
+                       "actual":  "ON"
+                   }
+               ],
+    "check_count":  10,
+    "failed_checks":  [
+
+                      ],
+    "replication_status_after_start":  {
+
+                                       },
+    "replication_status_after_restart":  {
+
+                                         },
+    "fingerprint_after_start":  null,
+    "fingerprint_after_restart":  null,
+    "row_counts":  {
+                       "source_after_start":  null,
+                       "replica_after_start":  null,
+                       "source_after_restart":  null,
+                       "replica_after_restart":  null
+                   },
+    "read_only_enforced":  false,
+    "read_only_write_exit_code":  null,
+    "read_only_write_output":  null,
+    "restart_exit_code":  null,
+    "resources_retained":  false,
+    "cleanup_attempted":  true,
+    "cleanup_failures":  [
+
+                         ],
+    "secrets_recorded":  false,
+    "caveats":  [
+                    "Both MySQL containers run on one Docker host; this is not a production physical replication topology.",
+                    "This does not validate HA, failover, real network partition, replication lag under production load, MDL contention, disaster recovery, backup restore, or production data volume.",
+                    "The synthetic probe table is not a substitute for the application schema migration, Outbox/Inbox, DLQ, replay, compensation, reconciliation, or tenant datasource topology.",
+                    "A passed sandbox result must not be represented as production acceptance or as evidence for gate3, independent review, R-011, or R-029 closure."
+                ],
+    "gates":  {
+                  "production_ready":  false,
+                  "gate3_passed":  false,
+                  "independent_review":  false,
+                  "R_011":  "OPEN",
+                  "R_029":  "OPEN",
+                  "Go_No_Go":  "No-Go"
+              },
+    "failure":  "System.Management.Automation.RuntimeException: docker command failed with exit code 1. Output: ERROR 3056 (HY000) at line 1: The password provided for the replication user exceeds the maximum length of 32 characters"
+}

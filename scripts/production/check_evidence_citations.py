@@ -42,9 +42,9 @@ MIN_PATH_CITATIONS = 30
 # **绝对基线**，不是比例：上一轮我自己写的一个归一化步骤把 `path_citations` 从 197 静默缩到 168，
 # 而当时所有校验（含 `path_citations == resolved + missing + dropped` 这条恒等式与上面的门槛）
 # 全部通过、违规数还下降 —— 在分母上做的算术检不出分母自己塌陷。
-# 基线取 2026-10-02 在 `HEAD=d0ebc96c` 的实测值；文档面**合法变动**时必须一起重测并显式改这三个数，
+# 基线取 2026-10-09 证据入库策略切换后的实测值（docs=46 / citations=213 / dangling=0）；此前为 2026-10-02 在 `HEAD=d0ebc96c` 的 42/197/111。文档面**合法变动**时必须一起重测并显式改这三个数，
 # 不接受"为了让门禁变绿而下调基线"。
-BASELINE = {"docs_scanned": 42, "path_citations": 197, "dangling_advisories": 111}
+BASELINE = {"docs_scanned": 46, "path_citations": 213, "dangling_advisories": 0}
 SHRINK_TOLERANCE = 0.05
 
 

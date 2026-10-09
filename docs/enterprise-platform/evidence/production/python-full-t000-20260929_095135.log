@@ -1,0 +1,97 @@
+...................................................................................................................................ERROR: license inventory ������: C:\Users\ADMINI~1\AppData\Local\Temp\tmpa_58yr8_\nope.json
+..ERROR: license policy ������: C:\Users\ADMINI~1\AppData\Local\Temp\tmp37u0lg40\nope.json
+........................................................................ERROR: CycloneDX BOM ���ǺϷ� JSON: C:\Users\ADMINI~1\AppData\Local\Temp\tmp7f2xayqq\bom.json: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)
+.ERROR: CycloneDX BOM ������: C:\Users\ADMINI~1\AppData\Local\Temp\tmpkajqq7ry\nope.json
+.ERROR: runtime dependency tree ������: C:\Users\ADMINI~1\AppData\Local\Temp\tmpziwbjk29\nope.log
+.ERROR: BOM ������ CycloneDX ��ʽ: C:\Users\ADMINI~1\AppData\Local\Temp\tmp1dvkjv2z\bom.json
+.............................................................................[ERROR] sandbox state file not found: C:\Users\Administrator\AppData\Local\Temp\tmpb_gxi04g\missing.json. Run mysql-sandbox.ps1 start first.
+....[ERROR] --database is required whenʹ�� --host ģʽ
+........................................................................................................invalid #0 missing_field:owner
+..stale #0 demo-data/a.sql R7
+.�����ļ����ɶ����ʽ����Expecting property name enclosed in double quotes: line 1 column 2 (char 1)
+.............................................................................
+----------------------------------------------------------------------
+Ran 473 tests in 139.855s
+
+OK
+wrote C:\Users\ADMINI~1\AppData\Local\Temp\tmp5ir5mjks\decision.json
+ALLOW: components=1 allowed=1 denied=0 review_required=0 allowlist_hits=1 runtime_blocked=0
+wrote C:\Users\ADMINI~1\AppData\Local\Temp\tmpcsz_q1ak\decision.json
+ALLOW: components=2 allowed=2 denied=0 review_required=0 allowlist_hits=0 runtime_blocked=0
+wrote C:\Users\ADMINI~1\AppData\Local\Temp\tmpy8p7ursz\decision.json
+[LIC-INT-001] DENY pkg:maven/cn.zhicloud/demo@1.0 (permissive_standard): internal ��� normalized_licenses=['APACHE-2.0'] δ���� ['MIT']
+FAIL: components=1 allowed=0 denied=1 review_required=0 allowlist_hits=0 runtime_blocked=0
+wrote C:\Users\ADMINI~1\AppData\Local\Temp\tmp_m1bp0wx\decision.json
+ALLOW: components=1 allowed=1 denied=0 review_required=0 allowlist_hits=0 runtime_blocked=0
+wrote C:\Users\ADMINI~1\AppData\Local\Temp\tmpk7vx20va\decision.json
+[LIC-EXT-001] DENY pkg:maven/com.mysql/mysql-connector-j@9.7.0?type=jar (strong_or_restrictive): ��� strong_or_restrictive Ĭ�϶��� deny_until_approved����δȡ������
+[LIC-EXT-001] DENY pkg:maven/com.oracle.database.jdbc/ojdbc8@23.7.0.25.01?type=jar (strong_or_restrictive): ��� strong_or_restrictive Ĭ�϶��� deny_until_approved����δȡ������
+[LIC-EXT-001] DENY pkg:maven/com.oracle.database.spring/oracle-spring-boot-starter-ucp@23.4.0?type=jar (strong_or_restrictive): ��� strong_or_restrictive Ĭ�϶��� deny_until_approved����δȡ������
+[LIC-EXT-001] DENY pkg:maven/com.oracle.database.jdbc/ojdbc11@23.7.0.25.01?type=jar (strong_or_restrictive): ��� strong_or_restrictive Ĭ�϶��� deny_until_approved����δȡ������
+[LIC-EXT-001] DENY pkg:maven/com.oracle.database.jdbc/ucp@23.7.0.25.01?type=jar (strong_or_restrictive): ��� strong_or_restrictive Ĭ�϶��� deny_until_approved����δȡ������
+[LIC-EXT-001] DENY pkg:maven/io.github.x-stream/mxparser@1.2.2?type=jar (strong_or_restrictive): ��� strong_or_restrictive Ĭ�϶��� deny_until_approved����δȡ������
+[LIC-EXT-001] DENY pkg:maven/org.bouncycastle/bcpkix-jdk18on@1.80?type=jar (custom_or_non_spdx): ��� custom_or_non_spdx Ĭ�϶��� deny_until_approved����δȡ������
+[LIC-EXT-001] DENY pkg:maven/org.bouncycastle/bcutil-jdk18on@1.80?type=jar (custom_or_non_spdx): ��� custom_or_non_spdx Ĭ�϶��� deny_until_approved����δȡ������
+[LIC-EXT-001] DENY pkg:maven/org.bouncycastle/bcprov-jdk18on@1.80?type=jar (custom_or_non_spdx): ��� custom_or_non_spdx Ĭ�϶��� deny_until_approved����δȡ������
+[LIC-EXT-001] DENY pkg:maven/com.github.jai-imageio/jai-imageio-core@1.4.0?type=jar (strong_or_restrictive): ��� strong_or_restrictive Ĭ�϶��� deny_until_approved����δȡ������
+[LIC-EXT-001] DENY pkg:maven/org.bouncycastle/bcjmail-jdk18on@1.84?type=jar (custom_or_non_spdx): ��� custom_or_non_spdx Ĭ�϶��� deny_until_approved����δȡ������
+[LIC-EXT-001] DENY pkg:maven/org.jdom/jdom2@2.0.6.1?type=jar (strong_or_restrictive): ��� strong_or_restrictive Ĭ�϶��� deny_until_approved����δȡ������
+[LIC-EXT-001] DENY pkg:maven/com.github.junrar/junrar@7.6.0?type=jar (strong_or_restrictive): ��� strong_or_restrictive Ĭ�϶��� deny_until_approved����δȡ������
+[LIC-EXT-001] REVIEW pkg:maven/org.aspectj/aspectjweaver@1.9.25.1?type=jar (weak_copyleft): ��� weak_copyleft Ĭ�϶��� review_and_record����δȡ������
+[LIC-EXT-001] REVIEW pkg:maven/jakarta.servlet/jakarta.servlet-api@6.0.0?type=jar (weak_copyleft): ��� weak_copyleft Ĭ�϶��� review_and_record����δȡ������
+[LIC-EXT-001] REVIEW pkg:maven/ch.qos.logback/logback-classic@1.5.34?type=jar (weak_copyleft): ��� weak_copyleft Ĭ�϶��� review_and_record����δȡ������
+[LIC-EXT-001] REVIEW pkg:maven/ch.qos.logback/logback-core@1.5.34?type=jar (weak_copyleft): ��� weak_copyleft Ĭ�϶��� review_and_record����δȡ������
+[LIC-EXT-001] REVIEW pkg:maven/jakarta.annotation/jakarta.annotation-api@2.1.1?type=jar (weak_copyleft): ��� weak_copyleft Ĭ�϶��� review_and_record����δȡ������
+[LIC-EXT-001] REVIEW pkg:maven/org.junit.jupiter/junit-jupiter@5.12.2?type=jar (weak_copyleft): ��� weak_copyleft Ĭ�϶��� review_and_record����δȡ������
+[LIC-EXT-001] REVIEW pkg:maven/org.junit.jupiter/junit-jupiter-api@5.12.2?type=jar (weak_copyleft): ��� weak_copyleft Ĭ�϶��� review_and_record����δȡ������
+[LIC-EXT-001] REVIEW pkg:maven/org.junit.platform/junit-platform-commons@1.12.2?type=jar (weak_copyleft): ��� weak_copyleft Ĭ�϶��� review_and_record����δȡ������
+[LIC-EXT-001] REVIEW pkg:maven/org.junit.jupiter/junit-jupiter-params@5.12.2?type=jar (weak_copyleft): ��� weak_copyleft Ĭ�϶��� review_and_record����δȡ������
+[LIC-EXT-001] REVIEW pkg:maven/org.junit.jupiter/junit-jupiter-engine@5.12.2?type=jar (weak_copyleft): ��� weak_copyleft Ĭ�϶��� review_and_record����δȡ������
+[LIC-EXT-001] REVIEW pkg:maven/org.junit.platform/junit-platform-engine@1.12.2?type=jar (weak_copyleft): ��� weak_copyleft Ĭ�϶��� review_and_record����δȡ������
+[LIC-EXT-001] REVIEW pkg:maven/com.google.code.findbugs/annotations@3.0.1?type=jar (weak_copyleft): ��� weak_copyleft Ĭ�϶��� review_and_record����δȡ������
+[LIC-EXT-001] REVIEW pkg:maven/com.github.jsqlparser/jsqlparser@5.2?type=jar (weak_copyleft): ��� weak_copyleft Ĭ�϶��� review_and_record����δȡ������
+[LIC-EXT-001] REVIEW pkg:maven/com.rabbitmq/amqp-client@5.25.0?type=jar (weak_copyleft): ��� weak_copyleft Ĭ�϶��� review_and_record����δȡ������
+[LIC-EXT-001] REVIEW pkg:maven/org.javassist/javassist@3.21.0-GA?type=jar (weak_copyleft): ��� weak_copyleft Ĭ�϶��� review_and_record����δȡ������
+[LIC-EXT-001] REVIEW pkg:maven/com.h2database/h2@2.3.232?type=jar (weak_copyleft): ��� weak_copyleft Ĭ�϶��� review_and_record����δȡ������
+[LIC-EXT-001] REVIEW pkg:maven/org.javassist/javassist@3.28.0-GA?type=jar (weak_copyleft): ��� weak_copyleft Ĭ�϶��� review_and_record����δȡ������
+[LIC-EXT-001] REVIEW pkg:maven/org.eclipse.angus/jakarta.mail@2.0.5?type=jar (weak_copyleft): ��� weak_copyleft Ĭ�϶��� review_and_record����δȡ������
+[LIC-EXT-001] REVIEW pkg:maven/com.xkcoding.http/simple-http@1.0.5?type=jar (weak_copyleft): ��� weak_copyleft Ĭ�϶��� review_and_record����δȡ������
+[LIC-EXT-001] REVIEW pkg:maven/com.xkcoding.justauth/justauth-spring-boot-starter@1.4.0?type=jar (weak_copyleft): ��� weak_copyleft Ĭ�϶��� review_and_record����δȡ������
+... review_required ���� 18 ������ JSON ���
+FAIL: components=862 allowed=811 denied=13 review_required=38 allowlist_hits=0 runtime_blocked=38
+wrote C:\Users\ADMINI~1\AppData\Local\Temp\tmpp1udmuhb\decision.json
+[LIC-EXT-001] DENY pkg:maven/com.mysql/mysql-connector-j@9.7.0?type=jar (strong_or_restrictive): ��� strong_or_restrictive Ĭ�϶��� deny_until_approved����δȡ������
+FAIL: components=1 allowed=0 denied=1 review_required=0 allowlist_hits=0 runtime_blocked=1
+wrote C:\Users\ADMINI~1\AppData\Local\Temp\tmp6x4tzxrr\decision.json
+[LIC-EXT-001] REVIEW pkg:maven/ch.qos.logback/logback-classic@1.5.34?type=jar (weak_copyleft): ��� weak_copyleft Ĭ�϶��� review_and_record����δȡ������
+FAIL: components=1 allowed=0 denied=0 review_required=1 allowlist_hits=0 runtime_blocked=1
+wrote C:\Users\ADMINI~1\AppData\Local\Temp\tmpm0ubgy5s\nested\inventory.json: components=1 internal=0 external=1 runtime=1 missing=0 review_required=0
+[INFO] report written to C:\Users\Administrator\AppData\Local\Temp\tmpzfidso3l\audit.json
+[INFO] tables expected=1 present=1 db_tables=1; columns expected=2 present=2
+[INFO] findings total=1 P0=0 P1=1 P2=0 divergences=0
+[P1_HIGH] tenant_index_missing erp_demo.tenant_id :: tenant_id ��û������Ϊ���е����������⻧���˻��˻���ȫ��ɨ�裬������ǿɹ۲�����ܷ��գ����������⻧���𣩡�
+[INFO] exit code = 0 (fail-on P0_BLOCKER)
+[INFO] report written to C:\Users\Administrator\AppData\Local\Temp\tmp03k1rod1\audit.json
+[INFO] tables expected=1 present=1 db_tables=1; columns expected=2 present=1
+[INFO] findings total=4 P0=3 P1=1 P2=0 divergences=0
+[P0_BLOCKER] id_not_auto_increment erp_demo.id :: id ��û�� AUTO_INCREMENT�����ṩ id �Ĳ������ϸ�ģʽ�±� 1364�����ϸ�ģʽ�»���� id=0 ���ڵڶ��β���ʱײ������
+[P0_BLOCKER] missing_column erp_demo.account_id :: ���ȱ�У�MyBatis-Plus ��ȡ���ֶλᱨ Unknown column��
+[P0_BLOCKER] primary_key_mismatch erp_demo.id :: �������ǵ��� (id)��MyBatis-Plus �� id ��λ�еļ��費������
+[P1_HIGH] tenant_column_missing erp_demo.tenant_id :: DO �̳� TenantBaseDO�������û�� tenant_id�����⻧�����ʧ�ܡ�
+[INFO] exit code = 2 (fail-on P0_BLOCKER)
+[INFO] tables expected=1 present=1 db_tables=1; columns expected=2 present=2
+[INFO] findings total=1 P0=0 P1=1 P2=0 divergences=0
+[P1_HIGH] tenant_index_missing erp_demo.tenant_id :: tenant_id ��û������Ϊ���е����������⻧���˻��˻���ȫ��ɨ�裬������ǿɹ۲�����ܷ��գ����������⻧���𣩡�
+[INFO] exit code = 2 (fail-on P1_HIGH)
+[INFO] report written to C:\Users\Administrator\AppData\Local\Temp\tmpgw4ihpq4\audit.json
+[INFO] tables expected=1 present=1 db_tables=1; columns expected=2 present=2
+[INFO] findings total=1 P0=0 P1=1 P2=0 divergences=0
+[P1_HIGH] tenant_column_missing erp_demo.tenant_id :: DO �̳� TenantBaseDO�������û�� tenant_id�����⻧�����ʧ�ܡ�
+[INFO] exit code = 0 (fail-on P0_BLOCKER)
+ɨ���ļ� 1����� 1 ��{'P0': 1}�����������ʧ�� 18
+���ƣ���Ŀ 0 ��Ч 0 Ӧ�� 0 ���ϸ� 0 δ���� 0 ������ǰ���� 1��
+status=failed
+{"entries": 1, "valid": 0, "applied": 0, "invalid": 1, "unmatched": 0, "stale_check": "skipped"}
+{"entries": 1, "valid": 1, "applied": 0, "invalid": 0, "unmatched": 0, "stale_check": "skipped"}
+{"entries": 1, "valid": 1, "applied": 0, "invalid": 0, "unmatched": 1, "stale_check": "enabled"}
+{"entries": 1, "valid": 1, "applied": 0, "invalid": 0, "unmatched": 0, "stale_check": "skipped"}

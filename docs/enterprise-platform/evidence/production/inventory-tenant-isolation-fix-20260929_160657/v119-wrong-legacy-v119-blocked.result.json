@@ -1,0 +1,7 @@
+{
+  "label": "wrong-legacy-v119-blocked",
+  "exit_code": 1,
+  "mysql_error_code": 1644,
+  "stdout": "",
+  "stderr": "ERROR 1644 (45000) at line 247: V119 legacy index mismatch: inventory_item.uk_item_warehouse_location_area_batch expected=item_id,warehouse_id,location_id,area_\n"
+}

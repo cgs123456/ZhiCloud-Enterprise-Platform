@@ -1,0 +1,4 @@
+Threads_connected	1
+Threads_running	2
+5	event_scheduler	localhost	NULL	Daemon	15946	Waiting on empty queue	NULL
+1938	root	localhost	NULL	Query	0	executing	SELECT ID,USER,HOST,DB,COMMAND,TIME,STATE,LEFT(INFO,300) FROM information_schema.PROCESSLIST ORDER BY ID

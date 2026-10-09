@@ -1,0 +1,41 @@
+{
+  "generated_at": "2026-10-04T11:43:23.844277+08:00",
+  "host": "127.0.0.1",
+  "port": 55101,
+  "database": "zhicloud_sandbox_v135",
+  "migration_dir": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration",
+  "files_total": 1,
+  "from_version": "V135",
+  "continue_on_error": false,
+  "results": [
+    {
+      "file": "V135__pay_app_mock_channel_seed.sql",
+      "bytes": 6568,
+      "exit_code": 0,
+      "duration_s": 0.066,
+      "stdout": "check_result\r\nV135_APP_PER_TENANT PASS\r\ncheck_result\r\nV135_NOTIFY_CONVENTION PASS\r\ncheck_result\r\nV135_MOCK_CHANNEL_DISABLED PASS\r\ncheck_result\r\nV135_CHANNEL_LINKED_PASS\r\n",
+      "stderr": ""
+    }
+  ],
+  "files_failed": 0,
+  "stopped_at": null,
+  "verify": [
+    {
+      "script": "V135_verify.sql",
+      "file": "V135_verify.sql",
+      "bytes": 3277,
+      "exit_code": 0,
+      "duration_s": 0.051,
+      "stdout": "check_result\r\nV135_NO_DUPLICATE_APP PASS\r\ncheck_result\r\nV135_NO_DUPLICATE_CHANNEL PASS\r\ncheck_result\r\nV135_TENANT_COVERAGE PASS\r\ncheck_result\r\nV135_APP_ENABLED PASS\r\ncheck_result\r\nV135_NOTIFY_URL_ABSOLUTE PASS\r\n",
+      "stderr": ""
+    }
+  ],
+  "server_metrics": {
+    "exit_code": 0,
+    "duration_s": 0.042,
+    "stdout": "VERSION()\t@@sql_mode\t@@collation_server\t@@time_zone\t@@transaction_isolation\r\n8.4.11\tONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION\tutf8mb4_0900_ai_ci\tSYSTEM\tREPEATABLE-READ\r\n",
+    "stderr": ""
+  },
+  "table_count": "557",
+  "status": "passed"
+}

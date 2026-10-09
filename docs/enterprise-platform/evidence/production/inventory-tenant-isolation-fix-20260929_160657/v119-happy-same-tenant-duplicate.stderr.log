@@ -1,0 +1,1 @@
+ERROR 1062 (23000) at line 1: Duplicate entry '1-1001-10-0-0-0' for key 'inventory_item.uk_inventory_item_tenant_composite'

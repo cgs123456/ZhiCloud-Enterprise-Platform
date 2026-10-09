@@ -1,0 +1,213 @@
+ M demo-data/README.md
+ M demo-data/generators/generate_business_documents.py
+ M demo-data/schema/demo_business_documents.json
+ M demo-data/schema/demo_business_documents_summary.json
+ M demo-data/sql/mysql/demo_business_documents.sql
+ M docs/enterprise-platform/00-README.md
+ M docs/enterprise-platform/01-平台现状核验.md
+ M docs/enterprise-platform/05-生产就绪门禁清单.md
+ M docs/enterprise-platform/06-数据迁移与发布方案.md
+ M docs/enterprise-platform/07-模拟数据与验收方案.md
+ M docs/enterprise-platform/08-测试与证据.md
+ M docs/enterprise-platform/10-最终Review与交付审计.md
+ M docs/enterprise-platform/12-风险登记册.md
+ M docs/enterprise-platform/13-安全基线扫描证据.md
+ M docs/enterprise-platform/14-实施任务分解与执行顺序.md
+ M scripts/production/migration-contract.json
+ M scripts/production/tests/test_mysql_sandbox.py
+ M scripts/production/tests/test_verify_constraint_semantics.py
+ M scripts/production/verify_constraint_semantics.py
+ M scripts/production/verify_mysql_runner_sandbox.ps1
+ M zhicloud-framework/zhicloud-spring-boot-starter-biz-inventory/pom.xml
+ M zhicloud-module-bpm/src/main/java/cn/zhicloud/module/bpm/dal/mysql/task/BpmProcessInstanceIdempotencyMapper.java
+ M zhicloud-module-bpm/src/main/java/cn/zhicloud/module/bpm/service/task/BpmProcessInstanceServiceImpl.java
+ M zhicloud-module-crm/src/test/java/cn/zhicloud/module/crm/service/receivable/CrmReceivableBpmTransactionMysqlIntegrationTest.java
+ M zhicloud-module-crm/src/test/resources/sql/crm_bpm_transaction_clean_mysql.sql
+ M zhicloud-module-crm/src/test/resources/sql/crm_bpm_transaction_schema_mysql.sql
+?? docs/enterprise-platform/evidence/production/bpm-idempotency-mysql-20260928_150000.json
+?? docs/enterprise-platform/evidence/production/bpm-idempotency-real-chain-20260929_121828-surefire.txt
+?? docs/enterprise-platform/evidence/production/bpm-idempotency-real-chain-20260929_121828.json
+?? docs/enterprise-platform/evidence/production/bpm-idempotency-real-chain-20260929_121828.json.sha256
+?? docs/enterprise-platform/evidence/production/bpm-idempotency-real-chain-20260929_121828.log
+?? docs/enterprise-platform/evidence/production/bpm-idempotency-real-chain-rerun-20260929_124758.exit.txt
+?? docs/enterprise-platform/evidence/production/bpm-idempotency-real-chain-rerun-20260929_124758.json
+?? docs/enterprise-platform/evidence/production/bpm-idempotency-real-chain-rerun-20260929_124758.json.sha256
+?? docs/enterprise-platform/evidence/production/bpm-idempotency-real-chain-rerun-20260929_124758.log
+?? docs/enterprise-platform/evidence/production/bpm-idempotency-rerun-20260929_092432.json
+?? docs/enterprise-platform/evidence/production/constraint-semantics-mysql-sandbox-t000-20260929_095633.json
+?? docs/enterprise-platform/evidence/production/constraint-semantics-mysql-sandbox-t000-20260929_095633.json.sha256
+?? docs/enterprise-platform/evidence/production/constraint-semantics-mysql-sandbox-t000-20260929_095633.log
+?? docs/enterprise-platform/evidence/production/constraint-semantics-mysql-sandbox-t000-20260929_101404.json
+?? docs/enterprise-platform/evidence/production/constraint-semantics-mysql-sandbox-t000-20260929_101404.json.sha256
+?? docs/enterprise-platform/evidence/production/crm-bpm-dynamic-datasource-mysql-20260929_133907.exit.txt
+?? docs/enterprise-platform/evidence/production/crm-bpm-dynamic-datasource-mysql-20260929_133907.log
+?? docs/enterprise-platform/evidence/production/crm-bpm-dynamic-datasource-mysql-20260929_134451.exit.txt
+?? docs/enterprise-platform/evidence/production/crm-bpm-dynamic-datasource-mysql-20260929_134451.log
+?? docs/enterprise-platform/evidence/production/crm-bpm-dynamic-datasource-mysql-20260929_134559.exit.txt
+?? docs/enterprise-platform/evidence/production/crm-bpm-dynamic-datasource-mysql-20260929_134559.json
+?? docs/enterprise-platform/evidence/production/crm-bpm-dynamic-datasource-mysql-20260929_134559.json.sha256
+?? docs/enterprise-platform/evidence/production/crm-bpm-dynamic-datasource-mysql-20260929_134559.log
+?? docs/enterprise-platform/evidence/production/crm-bpm-dynamic-datasource-mysql-20260929_135729.hang-jstack.txt
+?? docs/enterprise-platform/evidence/production/crm-bpm-dynamic-datasource-mysql-20260929_135729.hang-mysql.txt
+?? docs/enterprise-platform/evidence/production/crm-bpm-dynamic-datasource-mysql-20260929_135729.hang-process.txt
+?? docs/enterprise-platform/evidence/production/crm-bpm-dynamic-datasource-mysql-20260929_135731.exit.txt
+?? docs/enterprise-platform/evidence/production/crm-bpm-dynamic-datasource-mysql-20260929_135731.json
+?? docs/enterprise-platform/evidence/production/crm-bpm-dynamic-datasource-mysql-20260929_135731.json.sha256
+?? docs/enterprise-platform/evidence/production/crm-bpm-dynamic-datasource-mysql-20260929_135731.log
+?? docs/enterprise-platform/evidence/production/crm-bpm-dynamic-datasource-mysql-20260929_141430.exit.txt
+?? docs/enterprise-platform/evidence/production/crm-bpm-dynamic-datasource-mysql-20260929_141430.json
+?? docs/enterprise-platform/evidence/production/crm-bpm-dynamic-datasource-mysql-20260929_141430.json.sha256
+?? docs/enterprise-platform/evidence/production/crm-bpm-dynamic-datasource-mysql-20260929_141430.log
+?? docs/enterprise-platform/evidence/production/crm-bpm-dynamic-datasource-mysql-20260929_141551.exit.txt
+?? docs/enterprise-platform/evidence/production/crm-bpm-dynamic-datasource-mysql-20260929_141551.json
+?? docs/enterprise-platform/evidence/production/crm-bpm-dynamic-datasource-mysql-20260929_141551.json.sha256
+?? docs/enterprise-platform/evidence/production/crm-bpm-dynamic-datasource-mysql-20260929_141551.log
+?? docs/enterprise-platform/evidence/production/crm-bpm-real-chain-mysql-20260929_124704.exit.txt
+?? docs/enterprise-platform/evidence/production/crm-bpm-real-chain-mysql-20260929_124704.json
+?? docs/enterprise-platform/evidence/production/crm-bpm-real-chain-mysql-20260929_124704.json.sha256
+?? docs/enterprise-platform/evidence/production/crm-bpm-real-chain-mysql-20260929_124704.log
+?? docs/enterprise-platform/evidence/production/demo-data-mysql-20260928_133559-cleanup.log
+?? docs/enterprise-platform/evidence/production/demo-data-mysql-20260928_133559-migration.log
+?? docs/enterprise-platform/evidence/production/demo-data-mysql-20260928_133559.json
+?? docs/enterprise-platform/evidence/production/inventory-tenant-isolation-baseline-20260929_144442/
+?? docs/enterprise-platform/evidence/production/maven-t000-20260929_095633.exit.txt
+?? docs/enterprise-platform/evidence/production/maven-t000-20260929_095633.log
+?? docs/enterprise-platform/evidence/production/maven-test-bpm-module-20260929_124931.exit.txt
+?? docs/enterprise-platform/evidence/production/maven-test-bpm-module-20260929_124931.log
+?? docs/enterprise-platform/evidence/production/maven-test-crm-module-20260929_125103.exit.txt
+?? docs/enterprise-platform/evidence/production/maven-test-crm-module-20260929_125103.log
+?? docs/enterprise-platform/evidence/production/migration-contract-t000-20260929_095135.log
+?? docs/enterprise-platform/evidence/production/mysql-history-lock-20260928_132430-session-a.stderr.log
+?? docs/enterprise-platform/evidence/production/mysql-history-lock-20260928_132430-session-a.stdout.log
+?? docs/enterprise-platform/evidence/production/mysql-history-lock-20260928_132430-session-b.stderr.log
+?? docs/enterprise-platform/evidence/production/mysql-history-lock-20260928_132430-session-b.stdout.log
+?? docs/enterprise-platform/evidence/production/mysql-history-lock-20260928_132430.json
+?? docs/enterprise-platform/evidence/production/mysql-history-lock-20260929_094619-session-a.stderr.log
+?? docs/enterprise-platform/evidence/production/mysql-history-lock-20260929_094619-session-a.stdout.log
+?? docs/enterprise-platform/evidence/production/mysql-history-lock-20260929_094619-session-b.stderr.log
+?? docs/enterprise-platform/evidence/production/mysql-history-lock-20260929_094619-session-b.stdout.log
+?? docs/enterprise-platform/evidence/production/mysql-history-lock-20260929_094619.json
+?? docs/enterprise-platform/evidence/production/mysql-history-lock-20260929_094909-session-a.stderr.log
+?? docs/enterprise-platform/evidence/production/mysql-history-lock-20260929_094909-session-a.stdout.log
+?? docs/enterprise-platform/evidence/production/mysql-history-lock-20260929_094909-session-b.stderr.log
+?? docs/enterprise-platform/evidence/production/mysql-history-lock-20260929_094909-session-b.stdout.log
+?? docs/enterprise-platform/evidence/production/mysql-history-lock-20260929_094909.json
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_093123-clean.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_093123-existing-complete-history.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_093123-existing-fixture-clean.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_093123-existing-missing-v11.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_093123-resume.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_093123.json
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_093441-audit.json
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_093441-audit.stdout.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_093441-bootstrap-ensure-first.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_093441-bootstrap-ensure-mismatch.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_093441-bootstrap-ensure-repeat.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_093441-bootstrap-new-password.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_093441-bootstrap-old-password.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_093441-bootstrap-rotate.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_093441-clean.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_093441-existing-complete-history.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_093441-existing-fixture-clean.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_093441-existing-incomplete-schema.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_093441-existing-missing-v11.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_093441-existing-no-history.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_093441-incomplete-fixture-clean.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_093441-resume.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_093441.json
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_115739-clean.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_115739-existing-complete-history.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_115739-existing-fixture-clean.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_115739-existing-missing-v11.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_115739-existing-no-history.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_115739-resume.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_121359.json
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_121947-audit.json
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_121947-audit.stdout.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_121947-bootstrap-ensure-first.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_121947-bootstrap-ensure-mismatch.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_121947-bootstrap-ensure-repeat.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_121947-bootstrap-new-password.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_121947-bootstrap-old-password.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_121947-bootstrap-rotate.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_121947-clean.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_121947-existing-complete-history.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_121947-existing-fixture-clean.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_121947-existing-incomplete-schema.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_121947-existing-missing-v11.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_121947-existing-no-history.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_121947-incomplete-fixture-clean.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_121947-legacy-checksum-align.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_121947-legacy-checksum-idempotent.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_121947-legacy-checksum-rejected.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_121947-legacy-fixture-clean.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_121947-resume.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_121947.json
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_125431-audit.json
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_125431-audit.stdout.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_125431-bootstrap-ensure-first.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_125431-bootstrap-ensure-mismatch.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_125431-bootstrap-ensure-repeat.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_125431-bootstrap-new-password.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_125431-bootstrap-old-password.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_125431-bootstrap-rotate.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_125431-clean.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_125431-existing-complete-history.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_125431-existing-fixture-clean.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_125431-existing-incomplete-schema.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_125431-existing-missing-v11.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_125431-existing-no-history.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_125431-incomplete-fixture-clean.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_125431-legacy-checksum-align.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_125431-legacy-checksum-idempotent.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_125431-legacy-checksum-rejected.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_125431-legacy-fixture-clean.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_125431-resume.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_125431.json
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_130931-clean.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_130931-existing-complete-history.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_130931-existing-fixture-clean.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_130931-existing-incomplete-schema.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_130931-existing-missing-v11.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_130931-existing-no-history.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_130931-incomplete-fixture-clean.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_130931-resume.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_131729-audit.json
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_131729-audit.stdout.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_131729-bootstrap-ensure-first.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_131729-bootstrap-ensure-mismatch.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_131729-bootstrap-ensure-repeat.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_131729-bootstrap-new-password.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_131729-bootstrap-old-password.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_131729-bootstrap-rotate.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_131729-clean.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_131729-existing-complete-history.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_131729-existing-fixture-clean.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_131729-existing-incomplete-schema.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_131729-existing-missing-v11.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_131729-existing-no-history.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_131729-incomplete-fixture-clean.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_131729-legacy-checksum-align.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_131729-legacy-checksum-idempotent.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_131729-legacy-checksum-rejected.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_131729-legacy-fixture-clean.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_131729-resume.log
+?? docs/enterprise-platform/evidence/production/mysql-runner-sandbox-20260928_131729.json
+?? docs/enterprise-platform/evidence/production/python-full-20260928_160500.log
+?? docs/enterprise-platform/evidence/production/python-full-t000-20260929_095135.log
+?? docs/enterprise-platform/evidence/production/schema-source-drift-20260928.md
+?? docs/enterprise-platform/evidence/production/security-baseline-20260928_134500.json
+?? docs/enterprise-platform/evidence/production/security-baseline-20260928_151500.json
+?? docs/enterprise-platform/evidence/production/security-baseline-t000-20260929_095135.json
+?? docs/enterprise-platform/evidence/production/security-baseline-t000-20260929_095135.log
+?? docs/enterprise-platform/evidence/production/security-p1-disposition-ledger-20260928.md
+?? docs/enterprise-platform/evidence/production/tenant-isolation-t000-20260929_095135.json
+?? docs/enterprise-platform/evidence/production/tenant-isolation-t000-20260929_095135.log
+?? docs/enterprise-platform/handoff/
+?? scripts/production/verify_crm_bpm_dynamic_datasource_mysql.ps1
+?? scripts/production/verify_demo_data_mysql.ps1
+?? scripts/production/verify_mysql_history_lock.ps1
+?? zhicloud-framework/zhicloud-spring-boot-starter-biz-inventory/src/test/java/cn/zhicloud/framework/inventory/service/InventoryTenantIsolationTest.java
+?? zhicloud-module-bpm/src/test/java/cn/zhicloud/module/bpm/service/task/BpmProcessInstanceIdempotencyRealChainConcurrencyTest.java
+?? zhicloud-module-bpm/src/test/resources/sql/bpm_process_instance_idempotency_mysql.sql
+?? zhicloud-module-crm/src/test/java/cn/zhicloud/module/crm/service/receivable/CrmReceivableBpmDynamicDataSourceMysqlIntegrationTest.java

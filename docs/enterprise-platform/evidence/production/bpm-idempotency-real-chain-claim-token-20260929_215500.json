@@ -1,0 +1,186 @@
+{
+  "generated_at": "2026-09-29T21:50:50+08:00",
+  "status": "passed",
+  "scope": "BPM 流程实例幂等 claim-token ownership 修复的真实 Spring/MyBatis/Flowable/MySQL 隔离验证，以及 CRM 事务链与动态数据源回归；非生产",
+  "source_head": "d0ebc96c9f864450c9c293094e114aff0e4e8588",
+  "branch": "upgrade/production-readiness",
+  "working_tree_state": "dirty_entries=569; evidence_not_committed_at_generation_time",
+  "change_under_test": {
+    "defect": "createProcessInstance 原实现依赖 insertOrLockUniqueKey 的 affected-rows 判断 claim ownership；Connector/J 默认 useAffectedRows=false 时重复命中返回 1，非 owner 线程会误判 claim 成功并继续启动流程实例",
+    "fix": "新增 claim_token varchar(64)；INSERT ... ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id) 不覆盖已有 claim_token；只有 persisted.claim_token 等于本次 claim_token 才继续，否则返回既有 process_instance_id，或对空白登记 fail-closed 抛 PROCESS_INSTANCE_IDEMPOTENCY_PENDING",
+    "migration": "zhicloud-server/src/main/resources/db/migration/V121__bpm_process_instance_idempotency_claim_token.sql",
+    "verification": "zhicloud-server/src/main/resources/db/verification/V121_verify.sql"
+  },
+  "environment": {
+    "classification": "隔离 MySQL 单实例，非生产",
+    "container": "zhicloud-mysql-sandbox-18e0f782",
+    "image": "mysql:8.4@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+    "host": "127.0.0.1",
+    "port": 12413,
+    "server_version": "8.4.11",
+    "database": "zhicloud_bpm_chain_test",
+    "transaction_isolation": "REPEATABLE-READ",
+    "engine": "InnoDB",
+    "post_run_counts": {
+      "bpm_process_instance_idempotency": 0,
+      "ACT_HI_PROCINST": 0,
+      "ACT_RU_EXECUTION": 0
+    }
+  },
+  "activation_environment": {
+    "ZHICLOUD_BPM_REAL_CHAIN_IT": "true",
+    "ZHICLOUD_BPM_IT_MYSQL_URL": "jdbc:mysql://127.0.0.1:12413/zhicloud_bpm_chain_test?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Singapore",
+    "ZHICLOUD_BPM_IT_MYSQL_USERNAME": "root",
+    "ZHICLOUD_BPM_IT_MYSQL_PASSWORD": "<redacted>"
+  },
+  "runs": [
+    {
+      "name": "claim-token unit",
+      "command": "mvn -pl zhicloud-module-bpm '-Dtest=BpmProcessInstanceIdempotencyMapperTest,BpmProcessInstanceIdempotencyTransactionTest' '-DfailIfNoTests=false' test",
+      "raw_log": "docs\\enterprise-platform\\evidence\\production\\bpm-idempotency-claim-token-unit-20260929.log",
+      "raw_log_sha256": "828e88c27d1988ab9aeca2c083a3d407b1d73f50e282a30b71e6722b83582c0b",
+      "tests_run": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "build": "SUCCESS",
+      "exit_code": 0
+    },
+    {
+      "name": "claim-token real-chain fail-closed",
+      "command": "mvn -pl zhicloud-module-bpm '-Dtest=BpmProcessInstanceIdempotencyRealChainConcurrencyTest#committedBlankRegistrationFailsClosedWithoutCreatingProcessInstance+blankRegistrationCommittedAfterFastPathFailsClosed' '-DfailIfNoTests=false' test",
+      "raw_log": "docs\\enterprise-platform\\evidence\\production\\bpm-idempotency-claim-token-real-chain-failclosed-20260929.log",
+      "raw_log_sha256": "ba43a0049d2ced0597e3f09da4c013c6cc489c4f6cd39b3de501a32db5288fd8",
+      "tests_run": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "build": "SUCCESS",
+      "exit_code": 0
+    },
+    {
+      "name": "claim-token real-chain 10-concurrency",
+      "command": "mvn -pl zhicloud-module-bpm '-Dtest=BpmProcessInstanceIdempotencyRealChainConcurrencyTest#concurrentCallsThroughRealSpringAndFlowableReturnOneInstance' '-DfailIfNoTests=false' test",
+      "raw_log": "docs\\enterprise-platform\\evidence\\production\\bpm-idempotency-claim-token-real-chain-concurrency-20260929.log",
+      "raw_log_sha256": "a7abca659c23da2112222bcdb6b069a62a1f51757eb7a71013dd98f0a980a022",
+      "tests_run": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "build": "SUCCESS",
+      "exit_code": 0
+    },
+    {
+      "name": "BPM module full regression",
+      "command": "mvn -pl zhicloud-module-bpm test",
+      "raw_log": "docs\\enterprise-platform\\evidence\\production\\maven-test-bpm-module-claim-token-20260929.log",
+      "raw_log_sha256": "91b7c275be953e16f338fe8da54c201256937278a34c1d7a9820062ed921fba0",
+      "tests_run": 63,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 9,
+      "build": "SUCCESS",
+      "exit_code": 0
+    },
+    {
+      "name": "CRM real-chain regression",
+      "command": "mvn -pl zhicloud-module-crm '-Dtest=CrmReceivableBpmTransactionMysqlIntegrationTest' '-DfailIfNoTests=false' test",
+      "raw_log": "docs\\enterprise-platform\\evidence\\production\\crm-bpm-real-chain-claim-token-20260929.log",
+      "raw_log_sha256": "494c006422fccac26c68a06964ef2b4e8490acd89008ed2bf44681358e3326de",
+      "tests_run": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "build": "SUCCESS",
+      "exit_code": 0
+    },
+    {
+      "name": "CRM dynamic datasource regression",
+      "command": "powershell -File scripts/production/verify_crm_bpm_dynamic_datasource_mysql.ps1 -ContainerName zhicloud-mysql-sandbox-18e0f782",
+      "raw_log": "docs\\enterprise-platform\\evidence\\production\\crm-bpm-dynamic-datasource-mysql-20260929_214517.log",
+      "raw_log_sha256": "da5fba96e74dfa887c8a5b658afcbe1072ab5a8e49794cfcaa0f07dd660f3e73",
+      "evidence": "docs\\enterprise-platform\\evidence\\production\\crm-bpm-dynamic-datasource-mysql-20260929_214517.json",
+      "evidence_sha256": "f1cb55420c93eb26a0e2693cc6e861ec22cbe5e1fccc1e35fdd67d79772b84a5",
+      "tests_run": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "build": "SUCCESS",
+      "exit_code": 0
+    },
+    {
+      "name": "CRM module full regression",
+      "command": "mvn -pl zhicloud-module-crm test",
+      "raw_log": "docs\\enterprise-platform\\evidence\\production\\maven-test-crm-module-claim-token-20260929.log",
+      "raw_log_sha256": "cbbc77c6f3210bd72d045def4d05f002e28590e8d83aa78f8d85a41f5b412f1d",
+      "tests_run": 48,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 5,
+      "build": "SUCCESS",
+      "exit_code": 0
+    }
+  ],
+  "artifacts": {
+    "test": "zhicloud-module-bpm/src/test/java/cn/zhicloud/module/bpm/service/task/BpmProcessInstanceIdempotencyRealChainConcurrencyTest.java",
+    "test_sha256": "9163d334d4aa3466566e281d01a3c315e82766a0d466cb894c67120d768d0a41",
+    "mapper": "zhicloud-module-bpm/src/main/java/cn/zhicloud/module/bpm/dal/mysql/task/BpmProcessInstanceIdempotencyMapper.java",
+    "mapper_sha256": "95410c90f9e2aba909e67c457a4b6385cbe0bd15cfb7e9ab7642a5da3d3b420f",
+    "service": "zhicloud-module-bpm/src/main/java/cn/zhicloud/module/bpm/service/task/BpmProcessInstanceServiceImpl.java",
+    "service_sha256": "75bfe08ba35203dda2eddd12042a2a572f88384531ece262bc273267ec6f7d96",
+    "dataobject": "zhicloud-module-bpm/src/main/java/cn/zhicloud/module/bpm/dal/dataobject/task/BpmProcessInstanceIdempotencyDO.java",
+    "dataobject_sha256": "82c657ba80ef74d15b53cb391ea764ddceb360e3dc9d278a84da46bea228c11c",
+    "bpm_fixture": "zhicloud-module-bpm/src/test/resources/sql/bpm_process_instance_idempotency_mysql.sql",
+    "bpm_fixture_sha256": "daf225d005a994de2127826b8463eb3019abaf335a2ae9d436d5f25a0b95f8cb",
+    "crm_fixture": "zhicloud-module-crm/src/test/resources/sql/crm_bpm_transaction_schema_mysql.sql",
+    "crm_fixture_sha256": "ca989da9e8239e53b16ea7710380aa671ffc5c606a91093c6fcb1f3afe883b79",
+    "migration": "zhicloud-server/src/main/resources/db/migration/V121__bpm_process_instance_idempotency_claim_token.sql",
+    "migration_sha256": "9597f047324b1a7f7348a050eebf302f6fabf505c642cf4ede5f60a54f8093e0",
+    "verification": "zhicloud-server/src/main/resources/db/verification/V121_verify.sql",
+    "verification_sha256": "23760521d1fbb2dc0c4388fcd798e4278019287a34a82cdc4372817070cd61d2",
+    "migration_contract": "scripts/production/migration-contract.json",
+    "migration_contract_sha256": "4dd65852bfc839ec5d35022cab1bad07f9ea0aa95d7574d0b798280b4d6f8533",
+    "migration_contract_check": "docs/enterprise-platform/evidence/production/migration-contract-claim-token-20260929.json",
+    "migration_contract_check_sha256": "8c8e9a8c38e9b13160f819c0cf408351d29142d2438204768b9a654498541c99",
+    "sql_lint": "docs/enterprise-platform/evidence/production/v121-sql-lint-20260929.json",
+    "sql_lint_sha256": "84c925aef1fc77705de38a7ccc6d8d2eebd933410c35440edeb3b3f4df18f8ca"
+  },
+  "historical_hash_drift": {
+    "note": "以下旧哈希来自 2026-09-29 12:47 的旧实现证据 bpm-idempotency-real-chain-rerun-20260929_124758.json，本次 claim-token 修复后已按预期变化；历史证据文件保持不覆盖",
+    "old_test_sha256": "fd0747dcbd54b72a46cb28debadd75fef39bcdc39d3330fd819d554da9053987",
+    "new_test_sha256": "9163d334d4aa3466566e281d01a3c315e82766a0d466cb894c67120d768d0a41",
+    "old_mapper_sha256": "cf4f1579af36d95a9dbe181d001a282b4dfbebe7a2d50f3b727ce43db79d5964",
+    "new_mapper_sha256": "95410c90f9e2aba909e67c457a4b6385cbe0bd15cfb7e9ab7642a5da3d3b420f",
+    "old_service_sha256": "2b387e40a15f694765c1352a4114fb4305e97b112a3a5655e4fc8ff16d6005df",
+    "new_service_sha256": "75bfe08ba35203dda2eddd12042a2a572f88384531ece262bc273267ec6f7d96"
+  },
+  "not_covered": [
+    "生产物理主从/真实读写分离/多租户数据源拓扑与同一物理连接、同一事务管理器",
+    "网络超时、数据库瞬时故障、进程中断、提交边界异常",
+    "生产规模并发、锁等待、MDL/复制影响、长稳与容量",
+    "Outbox/Inbox、DLQ、补偿、重放、幂等残留清理与 CRM/Flowable 跨域对账",
+    "生产物理主从复制延迟与 HA/failover",
+    "非 MySQL 方言等价约束与实库语法",
+    "独立复核与冻结提交"
+  ],
+  "residual_risks": [
+    "空白登记永久阻塞：process_instance_id 为空且 claim_token 不匹配（含 legacy NULL 行）会 fail-closed，同一业务键永久 PENDING，缺少 lease/expiry/recovery/reconciliation",
+    "软删除与逻辑删除：V118 注释称软删除仍占用唯一键，但 selectByUniqueKey / selectByUniqueKeyForUpdate 受 MyBatis-Plus 逻辑删除过滤，deleted=1 时可能唯一键命中但 select 返回 null 并抛 IllegalStateException",
+    "隔离单实例 MySQL 证据不能替代生产等价验证"
+  ],
+  "production_ready": false,
+  "gate3_passed": false,
+  "independent_review": false,
+  "risk_register": {
+    "R_011": "OPEN",
+    "R_029": "OPEN"
+  },
+  "Go_No_Go": "No-Go",
+  "caveats": [
+    "该结果只是隔离单实例 MySQL 非生产验证，不代表生产可部署。",
+    "claim-token 修复消除了已复现的隔离 MySQL 并发语义缺陷，但未关闭 R-011/R-029。",
+    "CRM 动态数据源 master/slave 是同实例两个逻辑库，不是生产物理主从或真实读写分离。",
+    "失败首次运行与历史证据保持保留，未覆盖。",
+    "仍需生产等价数据源路由、故障注入、规模与补偿对账和独立复核。"
+  ]
+}

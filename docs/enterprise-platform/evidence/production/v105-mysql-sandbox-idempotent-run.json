@@ -1,0 +1,41 @@
+{
+  "generated_at": "2026-09-26T14:24:00.463179+08:00",
+  "host": "127.0.0.1",
+  "port": 53306,
+  "database": "zhicloud_sandbox_chain",
+  "migration_dir": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration",
+  "files_total": 1,
+  "from_version": "V105",
+  "continue_on_error": false,
+  "results": [
+    {
+      "file": "V105__event_dlq_replay_log.sql",
+      "bytes": 3517,
+      "exit_code": 0,
+      "duration_s": 0.048,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "files_failed": 0,
+  "stopped_at": null,
+  "verify": [
+    {
+      "script": "V105_verify.sql",
+      "file": "V105_verify.sql",
+      "bytes": 7522,
+      "exit_code": 0,
+      "duration_s": 0.048,
+      "stdout": "column_name\texpected_type\tactual_type\texpected_nullable\tactual_nullable\texpected_length\tactual_length\tcolumn_verdict\r\ncreate_time\tdatetime\tdatetime\tNO\tNO\tNULL\tNULL\tOK\r\ncreator\tvarchar\tvarchar\tYES\tYES\t64\t64\tOK\r\ndeleted\tbit\tbit\tNO\tNO\tNULL\tNULL\tOK\r\nerror_message\tvarchar\tvarchar\tYES\tYES\t2000\t2000\tOK\r\nevent_id\tvarchar\tvarchar\tNO\tNO\t64\t64\tOK\r\nid\tbigint\tbigint\tNO\tNO\tNULL\tNULL\tOK\r\ninbox_replayed\tint\tint\tNO\tNO\tNULL\tNULL\tOK\r\noperator_id\tbigint\tbigint\tNO\tNO\tNULL\tNULL\tOK\r\noperator_name\tvarchar\tvarchar\tNO\tNO\t64\t64\tOK\r\noutbox_replayed\tbit\tbit\tNO\tNO\tNULL\tNULL\tOK\r\nreason\tvarchar\tvarchar\tNO\tNO\t512\t512\tOK\r\nresult\tvarchar\tvarchar\tNO\tNO\t16\t16\tOK\r\ntenant_id\tbigint\tbigint\tNO\tNO\tNULL\tNULL\tOK\r\nupdate_time\tdatetime\tdatetime\tNO\tNO\tNULL\tNULL\tOK\r\nupdater\tvarchar\tvarchar\tYES\tYES\t64\t64\tOK\r\ncheck_name\tverdict\texpected_columns\tcorrect_columns\r\nV105_COLUMNS\tPASS\t15\t15\r\nindex_name\texpected_columns\tactual_columns\tindex_verdict\r\nidx_dlq_replay_tenant_create\ttenant_id,create_time\ttenant_id,create_time\tOK\r\nidx_dlq_replay_tenant_event\ttenant_id,event_id\ttenant_id,event_id\tOK\r\ncheck_name\tverdict\texpected_indexes\tcorrect_indexes\r\nV105_INDEXES\tPASS\t2\t2\r\ncheck_name\tverdict\r\nV105\tPASS\r\n",
+      "stderr": ""
+    }
+  ],
+  "server_metrics": {
+    "exit_code": 0,
+    "duration_s": 0.05,
+    "stdout": "VERSION()\t@@sql_mode\t@@collation_server\t@@time_zone\t@@transaction_isolation\r\n8.4.9\tONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION\tutf8mb4_0900_ai_ci\t+08:00\tREPEATABLE-READ\r\n",
+    "stderr": ""
+  },
+  "table_count": "438",
+  "status": "passed"
+}

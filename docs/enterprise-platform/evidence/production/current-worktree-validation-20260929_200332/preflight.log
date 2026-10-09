@@ -1,0 +1,39 @@
+{
+  "status": "ready_with_warnings",
+  "blockers": [],
+  "warnings": [
+    {
+      "code": "MYSQL_CLIENT_MISSING",
+      "message": "No local MySQL client; the sandbox will use the Docker MySQL container instead."
+    }
+  ],
+  "tools": {
+    "java": {
+      "available": true,
+      "path": "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.12.101-hotspot\\bin\\java.EXE",
+      "version": "openjdk version \"21.0.12.1\" 2026-08-18 LTS\nOpenJDK Runtime Environment Temurin-21.0.12.1+1 (build 21.0.12.1+1-LTS)\nOpenJDK 64-Bit Server VM Temurin-21.0.12.1+1 (build 21.0.12.1+1-LTS, mixed mode, sharing)"
+    },
+    "mvn": {
+      "available": true,
+      "path": "C:\\tools\\apache-maven-3.9.16\\bin\\mvn.CMD",
+      "version": "Apache Maven 3.9.16 (2bdd9fddda4b155ebf8000e807eb73fd829a51d5)\nMaven home: C:\\tools\\apache-maven-3.9.16\nJava version: 21.0.12.1, vendor: Eclipse Adoptium, runtime: C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.12.101-hotspot\nDefault locale: zh_SG, platform encoding: UTF-8\nOS name: \"windows 11\", version: \"10.0\", arch: \"amd64\", family: \"windows\""
+    },
+    "mysql": {
+      "available": false,
+      "path": null,
+      "version": null
+    },
+    "docker": {
+      "available": true,
+      "path": "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.EXE",
+      "version": "Docker version 29.8.0, build 88096ef"
+    }
+  },
+  "datasource_host": "127.0.0.1",
+  "allow_production": false,
+  "disk_free_bytes": 228712755200,
+  "min_free_bytes": 5368709120,
+  "generated_at": "2026-09-29T12:04:09.920875+00:00",
+  "repo_root": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2",
+  "datasource_url": "jdbc:mysql://127.0.0.1:3306/zhicloud_platform"
+}

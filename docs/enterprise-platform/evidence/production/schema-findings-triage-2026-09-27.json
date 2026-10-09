@@ -1,0 +1,4076 @@
+{
+  "findings": [
+    {
+      "actual": "<missing>",
+      "category": "missing_column",
+      "classification": "legacy_ddl_false_positive",
+      "column": "no",
+      "confidence": "high",
+      "expected": "列存在",
+      "message": "真库缺列，MyBatis-Plus 读取该字段会报 Unknown column。",
+      "recommended_action": "不新增旧列；以 V7 DO/Flyway 字段为准，后续修正静态审计源选择",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl"
+      ],
+      "table": "erp_gl_voucher",
+      "triage_reason": "V7 权威定义为 voucher_no；旧 sql/mysql/erp.sql 的 no 字段已废弃"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_column",
+      "classification": "legacy_ddl_false_positive",
+      "column": "voucher_time",
+      "confidence": "high",
+      "expected": "列存在",
+      "message": "真库缺列，MyBatis-Plus 读取该字段会报 Unknown column。",
+      "recommended_action": "不新增旧列；以 V7 DO/Flyway 字段为准，后续修正静态审计源选择",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl"
+      ],
+      "table": "erp_gl_voucher",
+      "triage_reason": "V7 权威定义为 voucher_date；旧 sql/mysql/erp.sql 的 voucher_time 字段已废弃"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_column",
+      "classification": "legacy_ddl_false_positive",
+      "column": "master_id",
+      "confidence": "high",
+      "expected": "列存在",
+      "message": "真库缺列，MyBatis-Plus 读取该字段会报 Unknown column。",
+      "recommended_action": "不新增旧列；以 V7 DO/Flyway 字段为准，后续修正静态审计源选择",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl"
+      ],
+      "table": "erp_gl_voucher_entry",
+      "triage_reason": "V7 权威定义为 voucher_id；V10 注释已明确旧列 master_id 到 voucher_id 的映射"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl"
+      ],
+      "table": "QRTZ_BLOB_TRIGGERS",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl"
+      ],
+      "table": "QRTZ_CALENDARS",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl"
+      ],
+      "table": "QRTZ_CRON_TRIGGERS",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl"
+      ],
+      "table": "QRTZ_FIRED_TRIGGERS",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl"
+      ],
+      "table": "QRTZ_JOB_DETAILS",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl"
+      ],
+      "table": "QRTZ_LOCKS",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl"
+      ],
+      "table": "QRTZ_PAUSED_TRIGGER_GRPS",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl"
+      ],
+      "table": "QRTZ_SCHEDULER_STATE",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl"
+      ],
+      "table": "QRTZ_SIMPLE_TRIGGERS",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl"
+      ],
+      "table": "QRTZ_SIMPROP_TRIGGERS",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl"
+      ],
+      "table": "QRTZ_TRIGGERS",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "ai_prompt_template",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "airag_document",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "airag_knowledge",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "target_domain_real_gap",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "纳入 V110-V112 迁移，并以 information_schema 和 DO/DDL 门禁复验",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "erp_actual_cost",
+      "triage_reason": "目标 8 域内的 DO/旧模块 DDL 表未进入 Flyway 权威迁移路径，真库不存在该表"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "target_domain_real_gap",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "纳入 V110-V112 迁移，并以 information_schema 和 DO/DDL 门禁复验",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "erp_cost_item",
+      "triage_reason": "目标 8 域内的 DO/旧模块 DDL 表未进入 Flyway 权威迁移路径，真库不存在该表"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "target_domain_real_gap",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "纳入 V110-V112 迁移，并以 information_schema 和 DO/DDL 门禁复验",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "erp_cost_variance",
+      "triage_reason": "目标 8 域内的 DO/旧模块 DDL 表未进入 Flyway 权威迁移路径，真库不存在该表"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "target_domain_real_gap",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "纳入 V110-V112 迁移，并以 information_schema 和 DO/DDL 门禁复验",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "erp_mps_plan",
+      "triage_reason": "目标 8 域内的 DO/旧模块 DDL 表未进入 Flyway 权威迁移路径，真库不存在该表"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "target_domain_real_gap",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "纳入 V110-V112 迁移，并以 information_schema 和 DO/DDL 门禁复验",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "erp_mps_plan_detail",
+      "triage_reason": "目标 8 域内的 DO/旧模块 DDL 表未进入 Flyway 权威迁移路径，真库不存在该表"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "target_domain_real_gap",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "纳入 V110-V112 迁移，并以 information_schema 和 DO/DDL 门禁复验",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "erp_standard_cost",
+      "triage_reason": "目标 8 域内的 DO/旧模块 DDL 表未进入 Flyway 权威迁移路径，真库不存在该表"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "target_domain_real_gap",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "纳入 V110-V112 迁移，并以 information_schema 和 DO/DDL 门禁复验",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "erp_work_order_cost",
+      "triage_reason": "目标 8 域内的 DO/旧模块 DDL 表未进入 Flyway 权威迁移路径，真库不存在该表"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "im_channel",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "im_channel_material",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "im_channel_message",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "im_conversation_read",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "im_face_pack",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "im_face_pack_item",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "im_face_user_item",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "im_friend",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "im_friend_request",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "im_group",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "im_group_member",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "im_group_message",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "im_group_request",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "im_private_message",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "im_rtc_call",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "im_rtc_participant",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "im_sensitive_word",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "iot_alert_config",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "iot_alert_record",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "iot_data_rule",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "iot_data_sink",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "iot_device",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "iot_device_group",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "iot_device_modbus_config",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "iot_device_modbus_point",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "iot_ota_firmware",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "iot_ota_task",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "iot_ota_task_record",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "iot_product",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "iot_product_category",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "iot_scene_rule",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "iot_thing_model",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "member_address",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "member_config",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "member_experience_record",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "member_group",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "member_level",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "member_level_record",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "member_point_record",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "member_sign_in_config",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "member_sign_in_record",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "member_tag",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "member_user",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "target_domain_real_gap",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "纳入 V110-V112 迁移，并以 information_schema 和 DO/DDL 门禁复验",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "mes_dv_tp_kpi",
+      "triage_reason": "目标 8 域内的 DO/旧模块 DDL 表未进入 Flyway 权威迁移路径，真库不存在该表"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "target_domain_real_gap",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "纳入 V110-V112 迁移，并以 information_schema 和 DO/DDL 门禁复验",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "mes_dv_tp_plan",
+      "triage_reason": "目标 8 域内的 DO/旧模块 DDL 表未进入 Flyway 权威迁移路径，真库不存在该表"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "target_domain_real_gap",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "纳入 V110-V112 迁移，并以 information_schema 和 DO/DDL 门禁复验",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "mes_dv_tp_plan_item",
+      "triage_reason": "目标 8 域内的 DO/旧模块 DDL 表未进入 Flyway 权威迁移路径，真库不存在该表"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "target_domain_real_gap",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "纳入 V110-V112 迁移，并以 information_schema 和 DO/DDL 门禁复验",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "mes_dv_tp_record",
+      "triage_reason": "目标 8 域内的 DO/旧模块 DDL 表未进入 Flyway 权威迁移路径，真库不存在该表"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "target_domain_real_gap",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "纳入 V110-V112 迁移，并以 information_schema 和 DO/DDL 门禁复验",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "mes_pro_rework_order",
+      "triage_reason": "目标 8 域内的 DO/旧模块 DDL 表未进入 Flyway 权威迁移路径，真库不存在该表"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "target_domain_real_gap",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "纳入 V110-V112 迁移，并以 information_schema 和 DO/DDL 门禁复验",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "mes_pro_rework_order_detail",
+      "triage_reason": "目标 8 域内的 DO/旧模块 DDL 表未进入 Flyway 权威迁移路径，真库不存在该表"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "mp_account",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "mp_auto_reply",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "mp_material",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "mp_menu",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "mp_message",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "mp_message_template",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "mp_tag",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "mp_user",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "pay_app",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "pay_channel",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "pay_demo_order",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "pay_demo_withdraw",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "pay_notify_log",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "pay_notify_task",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "pay_order",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "pay_order_extension",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "pay_refund",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "pay_transfer",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "pay_wallet",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "pay_wallet_recharge",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "pay_wallet_recharge_package",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "pay_wallet_transaction",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "product_brand",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "product_browse_history",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "product_category",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "product_comment",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "product_favorite",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "product_property",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "product_property_value",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "product_sku",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "product_spu",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "product_statistics",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "promotion_article",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "promotion_article_category",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "promotion_banner",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "promotion_bargain_activity",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "promotion_bargain_help",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "promotion_bargain_record",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "promotion_combination_activity",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "promotion_combination_product",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "promotion_combination_record",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "promotion_coupon",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "promotion_coupon_template",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "promotion_discount_activity",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "promotion_discount_product",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "promotion_diy_page",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "promotion_diy_template",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "promotion_kefu_conversation",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "promotion_kefu_message",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "promotion_point_activity",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "promotion_point_product",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "promotion_reward_activity",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "promotion_seckill_activity",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "promotion_seckill_config",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "promotion_seckill_product",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "target_domain_real_gap",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "纳入 V110-V112 迁移，并以 information_schema 和 DO/DDL 门禁复验",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "qms_audit_nonconformity",
+      "triage_reason": "目标 8 域内的 DO/旧模块 DDL 表未进入 Flyway 权威迁移路径，真库不存在该表"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "target_domain_real_gap",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "纳入 V110-V112 迁移，并以 information_schema 和 DO/DDL 门禁复验",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "qms_audit_plan",
+      "triage_reason": "目标 8 域内的 DO/旧模块 DDL 表未进入 Flyway 权威迁移路径，真库不存在该表"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "target_domain_real_gap",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "纳入 V110-V112 迁移，并以 information_schema 和 DO/DDL 门禁复验",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "qms_audit_plan_auditor",
+      "triage_reason": "目标 8 域内的 DO/旧模块 DDL 表未进入 Flyway 权威迁移路径，真库不存在该表"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "target_domain_real_gap",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "纳入 V110-V112 迁移，并以 information_schema 和 DO/DDL 门禁复验",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "qms_audit_report",
+      "triage_reason": "目标 8 域内的 DO/旧模块 DDL 表未进入 Flyway 权威迁移路径，真库不存在该表"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "target_domain_real_gap",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "纳入 V110-V112 迁移，并以 information_schema 和 DO/DDL 门禁复验",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "qms_document",
+      "triage_reason": "目标 8 域内的 DO/旧模块 DDL 表未进入 Flyway 权威迁移路径，真库不存在该表"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "target_domain_real_gap",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "纳入 V110-V112 迁移，并以 information_schema 和 DO/DDL 门禁复验",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "qms_document_change_request",
+      "triage_reason": "目标 8 域内的 DO/旧模块 DDL 表未进入 Flyway 权威迁移路径，真库不存在该表"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "target_domain_real_gap",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "纳入 V110-V112 迁移，并以 information_schema 和 DO/DDL 门禁复验",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "qms_document_distribute",
+      "triage_reason": "目标 8 域内的 DO/旧模块 DDL 表未进入 Flyway 权威迁移路径，真库不存在该表"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "target_domain_real_gap",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "纳入 V110-V112 迁移，并以 information_schema 和 DO/DDL 门禁复验",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "qms_instrument",
+      "triage_reason": "目标 8 域内的 DO/旧模块 DDL 表未进入 Flyway 权威迁移路径，真库不存在该表"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "target_domain_real_gap",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "纳入 V110-V112 迁移，并以 information_schema 和 DO/DDL 门禁复验",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "qms_instrument_calibration",
+      "triage_reason": "目标 8 域内的 DO/旧模块 DDL 表未进入 Flyway 权威迁移路径，真库不存在该表"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "report_go_view_project",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "trade_after_sale",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "trade_after_sale_log",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "trade_brokerage_record",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "trade_brokerage_user",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "trade_brokerage_withdraw",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "trade_cart",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "trade_config",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "trade_delivery_express",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "trade_delivery_express_template",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "trade_delivery_express_template_charge",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "trade_delivery_express_template_free",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "trade_delivery_pick_up_store",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "trade_order",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "trade_order_item",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "trade_order_log",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<missing>",
+      "category": "missing_table",
+      "classification": "non_target_optional_module",
+      "confidence": "high",
+      "expected": "表存在",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "recommended_action": "本轮不批量补迁移；保持可见风险，后续按模块单独立项、评审和数据迁移",
+      "severity": "P0_BLOCKER",
+      "sources": [
+        "do"
+      ],
+      "table": "trade_statistics",
+      "triage_reason": "表属于商城、IoT、支付、IM、Quartz 或 AI/RAG 等非本轮目标模块"
+    },
+    {
+      "actual": "<none>",
+      "category": "missing_unique_index",
+      "classification": "legacy_ddl_false_positive",
+      "column": "no",
+      "confidence": "high",
+      "expected": "UNIQUE (no)",
+      "message": "DDL 声明了唯一键，但真库缺少同列的唯一索引。",
+      "recommended_action": "不重建全局唯一键；保留 V109 的租户级唯一键",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl"
+      ],
+      "table": "wms_shipment_order",
+      "triage_reason": "V109 已将全局 uk_no 替换为租户级 uk_tenant_no(tenant_id, no)；审计器仍按旧 DDL 的全局唯一键判定"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "crm_clue_pool_config",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "crm_invoice",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "crm_invoice_line",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "erp_account_book",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "erp_accounting_event",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "erp_accounting_posting",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "erp_bank_account",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "erp_cash_flow",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "erp_consolidation_scope",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "erp_consolidation_worksheet",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ],
+      "table": "erp_cost_allocation",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ],
+      "table": "erp_cost_center",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ],
+      "table": "erp_currency",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ],
+      "table": "erp_exchange_rate",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "erp_finance_settlement_allocation",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "erp_fund_plan",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "erp_gl_account",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "erp_gl_voucher",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "erp_gl_voucher_entry",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "erp_period",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "erp_period_close",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "erp_posting_rule",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "erp_posting_rule_line",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ],
+      "table": "erp_profit_center",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ],
+      "table": "erp_profitability_analysis",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do",
+        "v90_verify",
+        "v92_verify"
+      ],
+      "table": "erp_sale_out",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do",
+        "v91_verify",
+        "v92_verify"
+      ],
+      "table": "erp_sale_out_items",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "erp_tax_invoice",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "erp_tax_invoice_line",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "erp_tax_invoice_source",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "erp_tax_rate",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "hr_contract",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "hr_interview",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "hr_job_posting",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "hr_leave_balance",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "hr_leave_request",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "hr_leave_type",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "hr_resume",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "hr_social_insurance_base",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "mdm_cross_ref",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "mes_energy_consumption",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "oa_announcement",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "oa_approval_template",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "oa_document",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "oa_document_attachment",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "oa_knowledge_article",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "oa_knowledge_category",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "oa_knowledge_comment",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "oa_knowledge_version",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "oa_meeting_reservation",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "oa_meeting_room",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "oa_reimburse",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "oa_reimburse_item",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "oa_schedule",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ],
+      "table": "qms_capa_document",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ],
+      "table": "qms_electronic_signature_log",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ],
+      "table": "qms_fmea_document",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ],
+      "table": "qms_fmea_item",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ],
+      "table": "qms_inspection_item",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ],
+      "table": "qms_inspection_order",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ],
+      "table": "qms_inspection_record",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ],
+      "table": "qms_msa_measurement",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ],
+      "table": "qms_msa_study",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ],
+      "table": "qms_ncr_document",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ],
+      "table": "qms_ncr_mrb_record",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "system_dept",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "system_oauth2_access_token",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "system_oauth2_refresh_token",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "system_role",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "system_role_menu",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "system_sms_code",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "system_social_client",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "ddl",
+        "do"
+      ],
+      "table": "system_users",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "tms_fleet_operation",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "<none>",
+      "category": "tenant_index_missing",
+      "classification": "performance_index_gap",
+      "column": "tenant_id",
+      "confidence": "medium",
+      "expected": "以 tenant_id 为首列的索引",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "recommended_action": "纳入 V113 幂等索引迁移；大表上线前评估 MDL、复制延迟和执行窗口",
+      "severity": "P1_HIGH",
+      "sources": [
+        "do"
+      ],
+      "table": "tms_freight_reconciliation",
+      "triage_reason": "表已有 tenant_id，但缺少以 tenant_id 为前缀的索引，租户过滤可能退化为扫描"
+    },
+    {
+      "actual": "varchar(64)",
+      "category": "column_type_declaration_drift",
+      "classification": "type_width_review",
+      "column": "data_source",
+      "confidence": "medium",
+      "expected": "text",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "recommended_action": "保留为 P2 复核项；禁止未做数据边界分析就直接收窄或扩展列",
+      "severity": "P2_REVIEW",
+      "sources": [
+        "ddl"
+      ],
+      "table": "ai_nl2sql_query_history",
+      "triage_reason": "静态 DDL 声明与真库类型/宽度不完全一致，但未判定为当前运行阻断"
+    },
+    {
+      "actual": "varchar(2000)",
+      "category": "column_type_declaration_drift",
+      "classification": "type_width_review",
+      "column": "error_msg",
+      "confidence": "medium",
+      "expected": "varchar(255)",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "recommended_action": "保留为 P2 复核项；禁止未做数据边界分析就直接收窄或扩展列",
+      "severity": "P2_REVIEW",
+      "sources": [
+        "ddl"
+      ],
+      "table": "ai_nl2sql_query_history",
+      "triage_reason": "静态 DDL 声明与真库类型/宽度不完全一致，但未判定为当前运行阻断"
+    },
+    {
+      "actual": "text",
+      "category": "column_type_declaration_drift",
+      "classification": "type_width_review",
+      "column": "natural_language",
+      "confidence": "medium",
+      "expected": "varchar(255)",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "recommended_action": "保留为 P2 复核项；禁止未做数据边界分析就直接收窄或扩展列",
+      "severity": "P2_REVIEW",
+      "sources": [
+        "ddl"
+      ],
+      "table": "ai_nl2sql_query_history",
+      "triage_reason": "静态 DDL 声明与真库类型/宽度不完全一致，但未判定为当前运行阻断"
+    },
+    {
+      "actual": "tinyint",
+      "category": "column_type_declaration_drift",
+      "classification": "type_width_review",
+      "column": "status",
+      "confidence": "medium",
+      "expected": "int",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "recommended_action": "保留为 P2 复核项；禁止未做数据边界分析就直接收窄或扩展列",
+      "severity": "P2_REVIEW",
+      "sources": [
+        "ddl"
+      ],
+      "table": "ai_nl2sql_query_history",
+      "triage_reason": "静态 DDL 声明与真库类型/宽度不完全一致，但未判定为当前运行阻断"
+    },
+    {
+      "actual": "varchar(50)",
+      "category": "column_type_declaration_drift",
+      "classification": "type_width_review",
+      "column": "code",
+      "confidence": "medium",
+      "expected": "varchar(64)",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "recommended_action": "保留为 P2 复核项；禁止未做数据边界分析就直接收窄或扩展列",
+      "severity": "P2_REVIEW",
+      "sources": [
+        "ddl"
+      ],
+      "table": "erp_gl_account",
+      "triage_reason": "静态 DDL 声明与真库类型/宽度不完全一致，但未判定为当前运行阻断"
+    },
+    {
+      "actual": "tinyint(1)",
+      "category": "column_type_declaration_drift",
+      "classification": "type_width_review",
+      "column": "deleted",
+      "confidence": "medium",
+      "expected": "bit(1)",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "recommended_action": "保留为 P2 复核项；禁止未做数据边界分析就直接收窄或扩展列",
+      "severity": "P2_REVIEW",
+      "sources": [
+        "ddl"
+      ],
+      "table": "erp_gl_account",
+      "triage_reason": "静态 DDL 声明与真库类型/宽度不完全一致，但未判定为当前运行阻断"
+    },
+    {
+      "actual": "varchar(100)",
+      "category": "column_type_declaration_drift",
+      "classification": "type_width_review",
+      "column": "name",
+      "confidence": "medium",
+      "expected": "varchar(128)",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "recommended_action": "保留为 P2 复核项；禁止未做数据边界分析就直接收窄或扩展列",
+      "severity": "P2_REVIEW",
+      "sources": [
+        "ddl"
+      ],
+      "table": "erp_gl_account",
+      "triage_reason": "静态 DDL 声明与真库类型/宽度不完全一致，但未判定为当前运行阻断"
+    },
+    {
+      "actual": "tinyint(1)",
+      "category": "column_type_declaration_drift",
+      "classification": "type_width_review",
+      "column": "deleted",
+      "confidence": "medium",
+      "expected": "bit(1)",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "recommended_action": "保留为 P2 复核项；禁止未做数据边界分析就直接收窄或扩展列",
+      "severity": "P2_REVIEW",
+      "sources": [
+        "ddl"
+      ],
+      "table": "erp_gl_voucher",
+      "triage_reason": "静态 DDL 声明与真库类型/宽度不完全一致，但未判定为当前运行阻断"
+    },
+    {
+      "actual": "tinyint(1)",
+      "category": "column_type_declaration_drift",
+      "classification": "type_width_review",
+      "column": "deleted",
+      "confidence": "medium",
+      "expected": "bit(1)",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "recommended_action": "保留为 P2 复核项；禁止未做数据边界分析就直接收窄或扩展列",
+      "severity": "P2_REVIEW",
+      "sources": [
+        "ddl"
+      ],
+      "table": "erp_gl_voucher_entry",
+      "triage_reason": "静态 DDL 声明与真库类型/宽度不完全一致，但未判定为当前运行阻断"
+    },
+    {
+      "actual": "varchar(20)",
+      "category": "column_type_declaration_drift",
+      "classification": "type_width_review",
+      "column": "code",
+      "confidence": "medium",
+      "expected": "varchar(64)",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "recommended_action": "保留为 P2 复核项；禁止未做数据边界分析就直接收窄或扩展列",
+      "severity": "P2_REVIEW",
+      "sources": [
+        "ddl"
+      ],
+      "table": "erp_period",
+      "triage_reason": "静态 DDL 声明与真库类型/宽度不完全一致，但未判定为当前运行阻断"
+    },
+    {
+      "actual": "tinyint(1)",
+      "category": "column_type_declaration_drift",
+      "classification": "type_width_review",
+      "column": "deleted",
+      "confidence": "medium",
+      "expected": "bit(1)",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "recommended_action": "保留为 P2 复核项；禁止未做数据边界分析就直接收窄或扩展列",
+      "severity": "P2_REVIEW",
+      "sources": [
+        "ddl"
+      ],
+      "table": "erp_period",
+      "triage_reason": "静态 DDL 声明与真库类型/宽度不完全一致，但未判定为当前运行阻断"
+    },
+    {
+      "actual": "tinyint(1)",
+      "category": "column_type_declaration_drift",
+      "classification": "type_width_review",
+      "column": "deleted",
+      "confidence": "medium",
+      "expected": "bit(1)",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "recommended_action": "保留为 P2 复核项；禁止未做数据边界分析就直接收窄或扩展列",
+      "severity": "P2_REVIEW",
+      "sources": [
+        "ddl"
+      ],
+      "table": "erp_period_close",
+      "triage_reason": "静态 DDL 声明与真库类型/宽度不完全一致，但未判定为当前运行阻断"
+    },
+    {
+      "actual": "varchar(1000)",
+      "category": "column_type_declaration_drift",
+      "classification": "type_width_review",
+      "column": "d1_team_members",
+      "confidence": "medium",
+      "expected": "text",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "recommended_action": "保留为 P2 复核项；禁止未做数据边界分析就直接收窄或扩展列",
+      "severity": "P2_REVIEW",
+      "sources": [
+        "ddl"
+      ],
+      "table": "qms_eight_d_report",
+      "triage_reason": "静态 DDL 声明与真库类型/宽度不完全一致，但未判定为当前运行阻断"
+    },
+    {
+      "actual": "varchar(1000)",
+      "category": "column_type_declaration_drift",
+      "classification": "type_width_review",
+      "column": "d8_team_recognition",
+      "confidence": "medium",
+      "expected": "text",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "recommended_action": "保留为 P2 复核项；禁止未做数据边界分析就直接收窄或扩展列",
+      "severity": "P2_REVIEW",
+      "sources": [
+        "ddl"
+      ],
+      "table": "qms_eight_d_report",
+      "triage_reason": "静态 DDL 声明与真库类型/宽度不完全一致，但未判定为当前运行阻断"
+    },
+    {
+      "actual": "tinyint(1)",
+      "category": "column_type_declaration_drift",
+      "classification": "type_width_review",
+      "column": "deleted",
+      "confidence": "medium",
+      "expected": "bit(1)",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "recommended_action": "保留为 P2 复核项；禁止未做数据边界分析就直接收窄或扩展列",
+      "severity": "P2_REVIEW",
+      "sources": [
+        "ddl"
+      ],
+      "table": "wms_location",
+      "triage_reason": "静态 DDL 声明与真库类型/宽度不完全一致，但未判定为当前运行阻断"
+    },
+    {
+      "actual": "smallint",
+      "category": "column_type_declaration_drift",
+      "classification": "type_width_review",
+      "column": "type",
+      "confidence": "medium",
+      "expected": "tinyint",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "recommended_action": "保留为 P2 复核项；禁止未做数据边界分析就直接收窄或扩展列",
+      "severity": "P2_REVIEW",
+      "sources": [
+        "ddl"
+      ],
+      "table": "wms_receipt_order",
+      "triage_reason": "静态 DDL 声明与真库类型/宽度不完全一致，但未判定为当前运行阻断"
+    },
+    {
+      "actual": "smallint",
+      "category": "column_type_declaration_drift",
+      "classification": "type_width_review",
+      "column": "type",
+      "confidence": "medium",
+      "expected": "tinyint",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "recommended_action": "保留为 P2 复核项；禁止未做数据边界分析就直接收窄或扩展列",
+      "severity": "P2_REVIEW",
+      "sources": [
+        "ddl"
+      ],
+      "table": "wms_shipment_order",
+      "triage_reason": "静态 DDL 声明与真库类型/宽度不完全一致，但未判定为当前运行阻断"
+    },
+    {
+      "actual": "tinyint(1)",
+      "category": "column_type_declaration_drift",
+      "classification": "type_width_review",
+      "column": "deleted",
+      "confidence": "medium",
+      "expected": "bit(1)",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "recommended_action": "保留为 P2 复核项；禁止未做数据边界分析就直接收窄或扩展列",
+      "severity": "P2_REVIEW",
+      "sources": [
+        "ddl"
+      ],
+      "table": "wms_zone",
+      "triage_reason": "静态 DDL 声明与真库类型/宽度不完全一致，但未判定为当前运行阻断"
+    }
+  ],
+  "generated_at": "2026-09-27T04:11:40.630425+00:00",
+  "limitations": [
+    "本 triage 是对静态审计结果的证据分流，不是生产库修复完成证明。",
+    "non_target_optional_module 仍可能在部署了对应模块时阻断启动，必须在模块启用前单独迁移。",
+    "type_width_review 不阻断当前 P0/P1 关闭，但上线前仍需按真实数据范围复核。",
+    "模拟数据禁止导入生产；本报告不包含业务数据回填。"
+  ],
+  "schema_version": 1,
+  "source_audit": "C:\\Users\\Administrator\\Desktop\\zhicloud\\docs\\enterprise-platform\\evidence\\production\\schema-audit-sandbox-2026-09-27.json",
+  "source_audit_sha256": "90a1a700bf8d5d0d546db31b332b93399b8534aa6361d01c9a3882385d8b9724",
+  "source_audit_summary": {
+    "by_category": {
+      "column_type_declaration_drift": 18,
+      "missing_column": 3,
+      "missing_table": 151,
+      "missing_unique_index": 1,
+      "tenant_index_missing": 75
+    },
+    "by_severity": {
+      "P0_BLOCKER": 154,
+      "P1_HIGH": 76,
+      "P2_REVIEW": 18
+    },
+    "columns_expected": 8213,
+    "columns_present": 6459,
+    "divergences_total": 227,
+    "exit_code": 2,
+    "fail_on": "P0_BLOCKER",
+    "findings_total": 248,
+    "tables_expected": 589,
+    "tables_in_database": 438,
+    "tables_present": 438
+  },
+  "triage_summary": {
+    "classification_counts": {
+      "legacy_ddl_false_positive": 4,
+      "non_target_optional_module": 129,
+      "performance_index_gap": 75,
+      "target_domain_real_gap": 22,
+      "type_width_review": 18
+    },
+    "findings_total": 248,
+    "non_target_missing_table_prefix_counts": {
+      "ai": 1,
+      "airag": 2,
+      "im": 17,
+      "iot": 15,
+      "member": 11,
+      "mp": 8,
+      "pay": 14,
+      "product": 10,
+      "promotion": 23,
+      "qrtz": 11,
+      "report": 1,
+      "trade": 16
+    },
+    "severity_by_classification": {
+      "legacy_ddl_false_positive": {
+        "P0_BLOCKER": 3,
+        "P1_HIGH": 1
+      },
+      "non_target_optional_module": {
+        "P0_BLOCKER": 129
+      },
+      "performance_index_gap": {
+        "P1_HIGH": 75
+      },
+      "target_domain_real_gap": {
+        "P0_BLOCKER": 22
+      },
+      "type_width_review": {
+        "P2_REVIEW": 18
+      }
+    },
+    "target_domain_real_gap_tables": [
+      "erp_actual_cost",
+      "erp_cost_item",
+      "erp_cost_variance",
+      "erp_mps_plan",
+      "erp_mps_plan_detail",
+      "erp_standard_cost",
+      "erp_work_order_cost",
+      "mes_dv_tp_kpi",
+      "mes_dv_tp_plan",
+      "mes_dv_tp_plan_item",
+      "mes_dv_tp_record",
+      "mes_pro_rework_order",
+      "mes_pro_rework_order_detail",
+      "qms_audit_nonconformity",
+      "qms_audit_plan",
+      "qms_audit_plan_auditor",
+      "qms_audit_report",
+      "qms_document",
+      "qms_document_change_request",
+      "qms_document_distribute",
+      "qms_instrument",
+      "qms_instrument_calibration"
+    ],
+    "tenant_index_gap_tables": [
+      "crm_clue_pool_config",
+      "crm_invoice",
+      "crm_invoice_line",
+      "erp_account_book",
+      "erp_accounting_event",
+      "erp_accounting_posting",
+      "erp_bank_account",
+      "erp_cash_flow",
+      "erp_consolidation_scope",
+      "erp_consolidation_worksheet",
+      "erp_cost_allocation",
+      "erp_cost_center",
+      "erp_currency",
+      "erp_exchange_rate",
+      "erp_finance_settlement_allocation",
+      "erp_fund_plan",
+      "erp_gl_account",
+      "erp_gl_voucher",
+      "erp_gl_voucher_entry",
+      "erp_period",
+      "erp_period_close",
+      "erp_posting_rule",
+      "erp_posting_rule_line",
+      "erp_profit_center",
+      "erp_profitability_analysis",
+      "erp_sale_out",
+      "erp_sale_out_items",
+      "erp_tax_invoice",
+      "erp_tax_invoice_line",
+      "erp_tax_invoice_source",
+      "erp_tax_rate",
+      "hr_contract",
+      "hr_interview",
+      "hr_job_posting",
+      "hr_leave_balance",
+      "hr_leave_request",
+      "hr_leave_type",
+      "hr_resume",
+      "hr_social_insurance_base",
+      "mdm_cross_ref",
+      "mes_energy_consumption",
+      "oa_announcement",
+      "oa_approval_template",
+      "oa_document",
+      "oa_document_attachment",
+      "oa_knowledge_article",
+      "oa_knowledge_category",
+      "oa_knowledge_comment",
+      "oa_knowledge_version",
+      "oa_meeting_reservation",
+      "oa_meeting_room",
+      "oa_reimburse",
+      "oa_reimburse_item",
+      "oa_schedule",
+      "qms_capa_document",
+      "qms_electronic_signature_log",
+      "qms_fmea_document",
+      "qms_fmea_item",
+      "qms_inspection_item",
+      "qms_inspection_order",
+      "qms_inspection_record",
+      "qms_msa_measurement",
+      "qms_msa_study",
+      "qms_ncr_document",
+      "qms_ncr_mrb_record",
+      "system_dept",
+      "system_oauth2_access_token",
+      "system_oauth2_refresh_token",
+      "system_role",
+      "system_role_menu",
+      "system_sms_code",
+      "system_social_client",
+      "system_users",
+      "tms_fleet_operation",
+      "tms_freight_reconciliation"
+    ]
+  }
+}

@@ -1,0 +1,679 @@
+{
+  "generated_at": "2026-09-29T09:56:58.795796+08:00",
+  "disclaimer": "FAKE-SIMULATED-DATA: isolated schema/data only; production_import_allowed=false",
+  "production_import_allowed": false,
+  "production_ready": false,
+  "gate3_passed": false,
+  "r011_status": "OPEN",
+  "r029_status": "OPEN",
+  "independent_review": false,
+  "scope": "MySQL sandbox behavior only: V116 active-username uniqueness and soft-delete recreation; V117 idempotency-key uniqueness and soft-delete occupancy; synthetic DDL cost.",
+  "evidence_boundaries": {
+    "database": "isolated native MySQL sandbox",
+    "schema": "minimal tables required by V116/V117",
+    "execution": "original migration SQL files via mysql.exe",
+    "production_import_allowed": false
+  },
+  "server": {
+    "version": "8.4.11",
+    "version_comment": "MySQL Community Server - GPL",
+    "sql_mode": "ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION",
+    "transaction_isolation": "REPEATABLE-READ",
+    "innodb_lock_wait_timeout": "50",
+    "log_bin": "1",
+    "server_id": "1",
+    "innodb_buffer_pool_size": "134217728"
+  },
+  "artifacts": {
+    "v116_migration": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V116__system_users_active_username_unique.sql",
+    "v116_migration_sha256": "7e8131760055c462065e5d420bb699aea39e076265b2c0344170b693883e28fd",
+    "v117_migration": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V117__crm_receivable_idempotency.sql",
+    "v117_migration_sha256": "5418533c05c413ce6ddf6c96f18e622b8970e17fa90211b00b97face239e3cb2",
+    "v116_verification": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\verification\\V116_verify.sql",
+    "v116_verification_sha256": "cebbc235ad68f32032d67d02e7b375b874ce2911b1bc2577a045585007938077",
+    "v117_verification": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\verification\\V117_verify.sql",
+    "v117_verification_sha256": "9e291f2eef92b2754b25ae310c0d867a4ae4c2bf2b441618ea09dc8c9d82cb22",
+    "contract": {
+      "contract_path": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\scripts\\production\\migration-contract.json",
+      "checks": [
+        {
+          "version": 116,
+          "expected": {
+            "migration_sha256": "7e8131760055c462065e5d420bb699aea39e076265b2c0344170b693883e28fd",
+            "verification_sha256": "cebbc235ad68f32032d67d02e7b375b874ce2911b1bc2577a045585007938077"
+          },
+          "actual": {
+            "migration_sha256": "7e8131760055c462065e5d420bb699aea39e076265b2c0344170b693883e28fd",
+            "verification_sha256": "cebbc235ad68f32032d67d02e7b375b874ce2911b1bc2577a045585007938077"
+          },
+          "match": true
+        },
+        {
+          "version": 117,
+          "expected": {
+            "migration_sha256": "5418533c05c413ce6ddf6c96f18e622b8970e17fa90211b00b97face239e3cb2",
+            "verification_sha256": "9e291f2eef92b2754b25ae310c0d867a4ae4c2bf2b441618ea09dc8c9d82cb22"
+          },
+          "actual": {
+            "migration_sha256": "5418533c05c413ce6ddf6c96f18e622b8970e17fa90211b00b97face239e3cb2",
+            "verification_sha256": "9e291f2eef92b2754b25ae310c0d867a4ae4c2bf2b441618ea09dc8c9d82cb22"
+          },
+          "match": true
+        }
+      ],
+      "match": true
+    }
+  },
+  "scenarios": [
+    {
+      "id": "v116_concurrent_active_username",
+      "purpose": "Two concurrent inserts of the same active tenant username must commit exactly one row and reject the other with MySQL 1062.",
+      "passed": true,
+      "assertions": [
+        {
+          "name": "database_created",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "schema_created",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "migration_applied",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "one_committed_writer",
+          "passed": true,
+          "expected": 1,
+          "actual": 1
+        },
+        {
+          "name": "one_duplicate_key_loser",
+          "passed": true,
+          "expected": 1,
+          "actual": 1
+        },
+        {
+          "name": "no_other_concurrent_failure",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "active_row_count",
+          "passed": true,
+          "expected": 1,
+          "actual": 1
+        },
+        {
+          "name": "sandbox_database_cleaned",
+          "passed": true,
+          "expected": true,
+          "actual": true
+        }
+      ],
+      "migration": {
+        "exit_code": 0,
+        "duration_s": 0.312,
+        "stdout": "",
+        "stderr": "",
+        "mysql_error_code": null,
+        "file": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V116__system_users_active_username_unique.sql"
+      },
+      "concurrent": [
+        {
+          "exit_code": 0,
+          "duration_s": 2.08,
+          "stdout": "0\r\n",
+          "stderr": "",
+          "mysql_error_code": null,
+          "slot": 1
+        },
+        {
+          "exit_code": 1,
+          "duration_s": 2.093,
+          "stdout": "",
+          "stderr": "ERROR 1062 (23000) at line 2: Duplicate entry '1-v116-race-user' for key 'system_users.uk_system_users_tenant_active_username'\r\n",
+          "mysql_error_code": 1062,
+          "slot": 2
+        }
+      ],
+      "classification": {
+        "passed": true,
+        "success_count": 1,
+        "duplicate_key_count": 1,
+        "other_failure_count": 0
+      },
+      "active_row_count": 1
+    },
+    {
+      "id": "v116_soft_delete_recreate",
+      "purpose": "A soft-deleted username must not block recreation, while the deleted historical row remains present.",
+      "passed": true,
+      "assertions": [
+        {
+          "name": "database_created",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "schema_created",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "migration_applied",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "initial_insert_committed",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "soft_delete_committed",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "recreate_after_soft_delete",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "single_active_row",
+          "passed": true,
+          "expected": 1,
+          "actual": 1
+        },
+        {
+          "name": "historical_row_preserved",
+          "passed": true,
+          "expected": 2,
+          "actual": 2
+        },
+        {
+          "name": "sandbox_database_cleaned",
+          "passed": true,
+          "expected": true,
+          "actual": true
+        }
+      ],
+      "migration": {
+        "exit_code": 0,
+        "duration_s": 0.332,
+        "stdout": "",
+        "stderr": "",
+        "mysql_error_code": null,
+        "file": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V116__system_users_active_username_unique.sql"
+      },
+      "insert": {
+        "exit_code": 0,
+        "duration_s": 0.216,
+        "stdout": "",
+        "stderr": "",
+        "mysql_error_code": null
+      },
+      "soft_delete": {
+        "exit_code": 0,
+        "duration_s": 0.248,
+        "stdout": "",
+        "stderr": "",
+        "mysql_error_code": null
+      },
+      "recreate": {
+        "exit_code": 0,
+        "duration_s": 0.145,
+        "stdout": "",
+        "stderr": "",
+        "mysql_error_code": null
+      },
+      "active_row_count": 1,
+      "total_row_count": 2
+    },
+    {
+      "id": "v117_concurrent_idempotency_key",
+      "purpose": "Two concurrent receivables with the same tenant idempotency key must commit exactly one row and reject the other with MySQL 1062.",
+      "passed": true,
+      "assertions": [
+        {
+          "name": "database_created",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "schema_created",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "migration_applied",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "one_committed_writer",
+          "passed": true,
+          "expected": 1,
+          "actual": 1
+        },
+        {
+          "name": "one_duplicate_key_loser",
+          "passed": true,
+          "expected": 1,
+          "actual": 1
+        },
+        {
+          "name": "no_other_concurrent_failure",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "receivable_row_count",
+          "passed": true,
+          "expected": 1,
+          "actual": 1
+        },
+        {
+          "name": "sandbox_database_cleaned",
+          "passed": true,
+          "expected": true,
+          "actual": true
+        }
+      ],
+      "migration": {
+        "exit_code": 0,
+        "duration_s": 0.475,
+        "stdout": "",
+        "stderr": "",
+        "mysql_error_code": null,
+        "file": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V117__crm_receivable_idempotency.sql"
+      },
+      "concurrent": [
+        {
+          "exit_code": 0,
+          "duration_s": 2.099,
+          "stdout": "0\r\n",
+          "stderr": "",
+          "mysql_error_code": null,
+          "slot": 1
+        },
+        {
+          "exit_code": 1,
+          "duration_s": 2.085,
+          "stdout": "",
+          "stderr": "ERROR 1062 (23000) at line 2: Duplicate entry '1-v117-race-key' for key 'crm_receivable.uk_crm_receivable_idempotency'\r\n",
+          "mysql_error_code": 1062,
+          "slot": 2
+        }
+      ],
+      "classification": {
+        "passed": true,
+        "success_count": 1,
+        "duplicate_key_count": 1,
+        "other_failure_count": 0
+      },
+      "receivable_row_count": 1
+    },
+    {
+      "id": "v117_soft_delete_permanent_key",
+      "purpose": "A soft-deleted receivable idempotency key must remain occupied and reject reuse with MySQL 1062.",
+      "passed": true,
+      "assertions": [
+        {
+          "name": "database_created",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "schema_created",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "migration_applied",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "initial_insert_committed",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "soft_delete_committed",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "recreate_after_soft_delete_rejected",
+          "passed": true,
+          "expected": "non-zero",
+          "actual": 1
+        },
+        {
+          "name": "duplicate_key_error_code",
+          "passed": true,
+          "expected": 1062,
+          "actual": 1062
+        },
+        {
+          "name": "row_count_unchanged",
+          "passed": true,
+          "expected": 1,
+          "actual": 1
+        },
+        {
+          "name": "sandbox_database_cleaned",
+          "passed": true,
+          "expected": true,
+          "actual": true
+        }
+      ],
+      "migration": {
+        "exit_code": 0,
+        "duration_s": 0.293,
+        "stdout": "",
+        "stderr": "",
+        "mysql_error_code": null,
+        "file": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V117__crm_receivable_idempotency.sql"
+      },
+      "insert": {
+        "exit_code": 0,
+        "duration_s": 0.054,
+        "stdout": "",
+        "stderr": "",
+        "mysql_error_code": null
+      },
+      "soft_delete": {
+        "exit_code": 0,
+        "duration_s": 0.058,
+        "stdout": "",
+        "stderr": "",
+        "mysql_error_code": null
+      },
+      "recreate": {
+        "exit_code": 1,
+        "duration_s": 0.056,
+        "stdout": "",
+        "stderr": "ERROR 1062 (23000) at line 1: Duplicate entry '1-v117-recreate-key' for key 'crm_receivable.uk_crm_receivable_idempotency'\r\n",
+        "mysql_error_code": 1062
+      },
+      "receivable_row_count": 1
+    },
+    {
+      "id": "synthetic_ddl_cost",
+      "purpose": "Measure V116/V117 DDL on minimal synthetic tables with the requested row count; this is not a production-volume proof.",
+      "passed": true,
+      "assertions": [
+        {
+          "name": "database_created",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "schema_users_created",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "schema_crm_created",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "users_seeded",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "crm_seeded",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "analyze_users_before",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "analyze_crm_before",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "users_row_count_before",
+          "passed": true,
+          "expected": 100000,
+          "actual": 100000
+        },
+        {
+          "name": "crm_row_count_before",
+          "passed": true,
+          "expected": 100000,
+          "actual": 100000
+        },
+        {
+          "name": "v116_migration_applied",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "v116_no_duplicates",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "v116_unique_index",
+          "passed": true,
+          "expected": true,
+          "actual": {
+            "present": true,
+            "columns": "tenant_id,active_username",
+            "non_unique": 0,
+            "column_count": 2
+          }
+        },
+        {
+          "name": "v117_migration_applied",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "v117_no_duplicates",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "v117_unique_index",
+          "passed": true,
+          "expected": true,
+          "actual": {
+            "present": true,
+            "columns": "tenant_id,idempotency_key",
+            "non_unique": 0,
+            "column_count": 2
+          }
+        },
+        {
+          "name": "users_row_count_after",
+          "passed": true,
+          "expected": 100000,
+          "actual": 100000
+        },
+        {
+          "name": "crm_row_count_after",
+          "passed": true,
+          "expected": 100000,
+          "actual": 100000
+        },
+        {
+          "name": "analyze_users_after",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "analyze_crm_after",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "sandbox_database_cleaned",
+          "passed": true,
+          "expected": true,
+          "actual": true
+        }
+      ],
+      "rows": 100000,
+      "migrations": {
+        "v116": {
+          "exit_code": 0,
+          "duration_s": 4.222,
+          "stdout": "",
+          "stderr": "",
+          "mysql_error_code": null,
+          "file": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V116__system_users_active_username_unique.sql"
+        },
+        "v117": {
+          "exit_code": 0,
+          "duration_s": 1.439,
+          "stdout": "",
+          "stderr": "",
+          "mysql_error_code": null,
+          "file": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\src\\main\\resources\\db\\migration\\V117__crm_receivable_idempotency.sql"
+        }
+      },
+      "analyze": {
+        "before": {
+          "system_users": {
+            "exit_code": 0,
+            "duration_s": 0.083,
+            "stdout": "zhicloud_sandbox_t000_20260929_095633_20260929_095633_dfee8a_05.system_users\tanalyze\tstatus\tOK\r\n",
+            "stderr": "",
+            "mysql_error_code": null
+          },
+          "crm_receivable": {
+            "exit_code": 0,
+            "duration_s": 0.084,
+            "stdout": "zhicloud_sandbox_t000_20260929_095633_20260929_095633_dfee8a_05.crm_receivable\tanalyze\tstatus\tOK\r\n",
+            "stderr": "",
+            "mysql_error_code": null
+          }
+        },
+        "after": {
+          "system_users": {
+            "exit_code": 0,
+            "duration_s": 0.16,
+            "stdout": "zhicloud_sandbox_t000_20260929_095633_20260929_095633_dfee8a_05.system_users\tanalyze\tstatus\tOK\r\n",
+            "stderr": "",
+            "mysql_error_code": null
+          },
+          "crm_receivable": {
+            "exit_code": 0,
+            "duration_s": 5.941,
+            "stdout": "zhicloud_sandbox_t000_20260929_095633_20260929_095633_dfee8a_05.crm_receivable\tanalyze\tstatus\tOK\r\n",
+            "stderr": "",
+            "mysql_error_code": null
+          }
+        }
+      },
+      "table_stats": {
+        "before": {
+          "system_users": {
+            "row_count": 100000,
+            "data_length_bytes": 6832128,
+            "index_length_bytes": 3686400,
+            "estimated_rows": 99940
+          },
+          "crm_receivable": {
+            "row_count": 100000,
+            "data_length_bytes": 4734976,
+            "index_length_bytes": 5783552,
+            "estimated_rows": 100345
+          }
+        },
+        "after": {
+          "system_users": {
+            "row_count": 100000,
+            "data_length_bytes": 8929280,
+            "index_length_bytes": 9469952,
+            "estimated_rows": 99640
+          },
+          "crm_receivable": {
+            "row_count": 100000,
+            "data_length_bytes": 4734976,
+            "index_length_bytes": 8421376,
+            "estimated_rows": 100345
+          }
+        }
+      },
+      "duplicate_counts": {
+        "v116_active_username": 0,
+        "v117_idempotency_key": 0
+      },
+      "indexes": {
+        "v116": {
+          "present": true,
+          "columns": "tenant_id,active_username",
+          "non_unique": 0,
+          "column_count": 2
+        },
+        "v117": {
+          "present": true,
+          "columns": "tenant_id,idempotency_key",
+          "non_unique": 0,
+          "column_count": 2
+        }
+      }
+    }
+  ],
+  "caveats": [
+    "Synthetic minimal schema and synthetic row counts; this is not a production-scale migration proof.",
+    "MySQL 8.4.9 only; non-MySQL dialects and their equivalent constraints remain unverified.",
+    "No replication, backup/restore, production traffic, long-running DML, or MDL contention was exercised.",
+    "InnoDB DATA_LENGTH/INDEX_LENGTH are approximate and timings are single-run observations.",
+    "This evidence does not prove Flyway parser behavior, application transaction rollback, BPM/Flowable behavior, or production readiness."
+  ],
+  "summary": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0
+  },
+  "status": "passed"
+}

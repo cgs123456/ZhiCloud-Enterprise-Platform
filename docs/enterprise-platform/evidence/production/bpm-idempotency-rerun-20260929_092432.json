@@ -1,0 +1,113 @@
+{
+  "generated_at": "2026-09-29T09:24:32+08:00",
+  "status": "passed_for_local_and_h2_scope",
+  "scope": "2026-09-29 local rerun for BPM idempotency, Flowable Spring transaction integration, CRM-to-BPM H2 rollback integration, and server packaging",
+  "source_head": "63f99a812a8c51e38837300c7974cd61315cebd9",
+  "working_tree_state": "G2 changes present and not committed at evidence generation time",
+  "commands": [
+    {
+      "name": "bpm_module_regression",
+      "command": "mvn -pl zhicloud-module-bpm test",
+      "started_at": "2026-09-29T09:19:47+08:00",
+      "finished_at": "2026-09-29T09:20:14+08:00",
+      "result": "BUILD SUCCESS",
+      "tests": 60,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 6
+    },
+    {
+      "name": "crm_module_regression",
+      "command": "mvn -pl zhicloud-module-crm test",
+      "started_at": "2026-09-29T09:20:19+08:00",
+      "finished_at": "2026-09-29T09:21:00+08:00",
+      "result": "BUILD SUCCESS",
+      "tests": 44,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    {
+      "name": "server_package",
+      "command": "mvn -pl zhicloud-server -am -DskipTests package",
+      "started_at": "2026-09-29T09:21:09+08:00",
+      "finished_at": "2026-09-29T09:24:31+08:00",
+      "result": "BUILD SUCCESS",
+      "reactor_modules": 36,
+      "tests": "skipped by command"
+    }
+  ],
+  "mysql_rerun": {
+    "attempted": false,
+    "host": "127.0.0.1",
+    "port": 53306,
+    "tcp_test_succeeded": false,
+    "docker_ps_running_containers": [],
+    "reason": "The MySQL sandbox was not listening on port 53306 and no Docker container was running. The 2026-09-28 MySQL 8.4.9 evidence was not revalidated in this run and must not be presented as a 2026-09-29 result."
+  },
+  "artifacts": {
+    "migration": {
+      "path": "zhicloud-server/src/main/resources/db/migration/V118__bpm_process_instance_idempotency.sql",
+      "sha256": "f57dc75a5e731e17d3978a459d4f722b039c07d0d5d36b9f1bc1cec9652db8db"
+    },
+    "service": {
+      "path": "zhicloud-module-bpm/src/main/java/cn/zhicloud/module/bpm/service/task/BpmProcessInstanceServiceImpl.java",
+      "sha256": "cc9fdf8ca520228250833517b5a0173e36f63bd8981ba05d454bfa6c583434ee"
+    },
+    "flowable_integration_test": {
+      "path": "zhicloud-module-bpm/src/test/java/cn/zhicloud/module/bpm/framework/flowable/FlowableSpringTransactionIntegrationTest.java",
+      "sha256": "5084ec03e10d02f69e046bf6da2908a6e7456596047903de19ac16b2c787bdfc"
+    },
+    "idempotency_transaction_test": {
+      "path": "zhicloud-module-bpm/src/test/java/cn/zhicloud/module/bpm/service/task/BpmProcessInstanceIdempotencyTransactionTest.java",
+      "sha256": "948343a0d308116b51a30ac931a6ec8a9128ef1d32fa3c63f2ff0b7638bb18c5"
+    },
+    "crm_h2_integration_test": {
+      "path": "zhicloud-module-crm/src/test/java/cn/zhicloud/module/crm/service/receivable/CrmReceivableBpmTransactionIntegrationTest.java",
+      "sha256": "9ba2031355ea187f715da38ee5aafae2fa93f01d2f44167d86f6c777abaaa0e7"
+    },
+    "crm_mysql_integration_test": {
+      "path": "zhicloud-module-crm/src/test/java/cn/zhicloud/module/crm/service/receivable/CrmReceivableBpmTransactionMysqlIntegrationTest.java",
+      "sha256": "2c14c9eede145154c93582364291ac8e85baf2809c27398d46c05249b85c0c2f",
+      "executed_in_this_run": false
+    },
+    "server_jar": {
+      "path": "zhicloud-server/target/zhicloud-server.jar",
+      "sha256": "dda355763bd7b033bfb1ced1c47de00acc6de01cfeaeed3b95afbc20a968bfb8"
+    }
+  },
+  "compatibility_fix": {
+    "description": "Add Flowable 8.0.0 optional modules referenced by process starter auto-configuration and explicitly disable the unused App Engine.",
+    "dependencies": [
+      "org.flowable:flowable-engine-configurator:8.0.0",
+      "org.flowable:flowable-spring-configurator:8.0.0",
+      "org.flowable:flowable-app-engine-spring:8.0.0"
+    ],
+    "application_config": "flowable.app.enabled=false"
+  },
+  "verified_in_scope": [
+    "BPM module regression suite completed without failures or errors in the local H2-backed test environment.",
+    "CRM module regression suite completed without failures or errors in the local H2-backed test environment.",
+    "CRM-to-BPM H2 rollback integration test passed in the local Spring test context.",
+    "The server reactor built and repackaged successfully with the Flowable compatibility changes."
+  ],
+  "not_verified_in_this_run": [
+    "MySQL 8.4.9 migration, InnoDB rollback, or cleanup behavior.",
+    "The production BpmProcessInstanceApiImpl to BpmProcessInstanceServiceImpl call chain under a production-equivalent DynamicRoutingDataSource.",
+    "Primary/replica switching, cross-service transaction behavior, production-scale concurrency, or compensation/reconciliation.",
+    "The full zhicloud-server test suite; this run used -DskipTests for packaging."
+  ],
+  "caveats": [
+    "The CRM H2 integration test uses a test BPM API that starts a real Flowable Process Engine; it does not cover the production BpmProcessInstanceApiImpl to BpmProcessInstanceServiceImpl call chain.",
+    "H2 and local sandbox results are not production validation.",
+    "R-011 and R-029 remain OPEN until production-equivalent datasource routing, fault injection, reconciliation, and independent review are complete.",
+    "The four gate invariants remain unchanged: production_ready=false, gate3_passed=false, R-011=OPEN, R-029=OPEN; independent_review=false."
+  ],
+  "production_ready": false,
+  "gate3_passed": false,
+  "independent_review": false,
+  "risk_register": {
+    "R-011": "OPEN",
+    "R-029": "OPEN"
+  }
+}

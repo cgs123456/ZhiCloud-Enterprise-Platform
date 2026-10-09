@@ -1,0 +1,36 @@
+LC_DRIVER_PID=28762 STAMP=20261002_122526 START=12:25:26
+QUEUE_DONE=12:26:26 suite=SUITE_EXIT=1
+=== STEP1 start(fresh) 12:26:26 ===
+START1_EXIT=0
+password_source=generated_file
+started_pid=7596
+version=8.0.39 port=14706 datadir=C:\\Users\\Administrator\\AppData\\Local\\Temp\\zc-native-lcscript-20261002_122526\\data\\ amz_schemas=0
+state base_dir=C:\Users\Administrator\AppData\Local\Temp\zc-native-lcscript-20261002_122526 port=14706 data_dir=C:\Users\Administrator\AppData\Local\Temp\zc-native-lcscript-20261002_122526\data
+=== STEP2 provision+real-chain-IT 12:26:35 ===
+PROVISION_EXIT=0
+target=native：跳过 Docker daemon 守卫（本形态不碰 docker）
+native target: version=8.0.39 port=14706 datadir=C:\Users\Administrator\AppData\Local\Temp\zc-native-lcscript-20261002_122526\data\
+evidence=C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\docs\enterprise-platform\evidence\production\native-lifecycle-20261002_122526\provision\crm-bpm-chain-source-provision-20261002_122636.json
+status=passed
+=== STEP3 ds-verifier 12:27:29 ===
+DS_EXIT=0
+target=native：跳过 Docker daemon 守卫（本形态不碰 docker）
+native target: version=8.0.39 port=14706 datadir=C:\Users\Administrator\AppData\Local\Temp\zc-native-lcscript-20261002_122526\data\
+evidence=C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2\docs\enterprise-platform\evidence\production\native-lifecycle-20261002_122526\ds\crm-bpm-dynamic-datasource-mysql-20261002_122730.json
+status=passed
+=== STEP4 status/restart-with-existing-datadir 12:28:28 ===
+STATUS_EXIT=0
+base_dir=C:\Users\Administrator\AppData\Local\Temp\zc-native-lcscript-20261002_122526 marker=True port=14706 pid=15400 listening=True pw_file=True
+STOP1_EXIT=0
+shutdown_exit=0
+stopped=true
+START2_EXIT=0
+password_source=existing_file
+started_pid=25764
+version=8.0.39 port=14706 datadir=C:\\Users\\Administrator\\AppData\\Local\\Temp\\zc-native-lcscript-20261002_122526\\data\\ amz_schemas=0
+state base_dir=C:\Users\Administrator\AppData\Local\Temp\zc-native-lcscript-20261002_122526 port=14706 data_dir=C:\Users\Administrator\AppData\Local\Temp\zc-native-lcscript-20261002_122526\data
+STOP2_EXIT=0
+shutdown_exit=0
+stopped=true
+PW_FILE_KEPT=yes
+LC_DRIVER_DONE=12:28:37

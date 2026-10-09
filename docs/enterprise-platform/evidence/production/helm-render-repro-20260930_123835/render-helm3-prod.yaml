@@ -1,0 +1,476 @@
+---
+# Source: zhicloud/templates/pdb.yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: zhicloud-pdb
+  namespace: zhicloud-prod
+  labels:
+    helm.sh/chart: zhicloud-1.0.0
+    app.kubernetes.io/name: zhicloud
+    app.kubernetes.io/instance: zhicloud
+    app: zhicloud-server
+    component: backend
+    app.kubernetes.io/version: "2026.06.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: zhicloud
+      app.kubernetes.io/instance: zhicloud
+      app: zhicloud-server
+      component: backend
+---
+# Source: zhicloud/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: zhicloud
+  namespace: zhicloud-prod
+  labels:
+    helm.sh/chart: zhicloud-1.0.0
+    app.kubernetes.io/name: zhicloud
+    app.kubernetes.io/instance: zhicloud
+    app: zhicloud-server
+    component: backend
+    app.kubernetes.io/version: "2026.06.0"
+    app.kubernetes.io/managed-by: Helm
+automountServiceAccountToken: true
+---
+# Source: zhicloud/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zhicloud-config
+  namespace: zhicloud-prod
+  labels:
+    helm.sh/chart: zhicloud-1.0.0
+    app.kubernetes.io/name: zhicloud
+    app.kubernetes.io/instance: zhicloud
+    app: zhicloud-server
+    component: backend
+    app.kubernetes.io/version: "2026.06.0"
+    app.kubernetes.io/managed-by: Helm
+data:
+  # Spring profile（dev/staging/prod）
+  SPRING_PROFILES_ACTIVE: "prod"
+  # 时区
+  TZ: "Asia/Shanghai"
+  # JVM 参数
+  JAVA_OPTS: "-Xms1g -Xmx2g -XX:+UseZGC -XX:+ZGenerational -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/heapdump.hprof -Djava.security.egd=file:/dev/./urandom"
+  # 唯一迁移入口：Kubernetes 业务 Pod 禁止自行执行 Flyway；迁移由 PreSync Job 完成。
+  SPRING_FLYWAY_ENABLED: "false"
+  # ----- 主数据源（密码见 Secret）-----
+  MASTER_DATASOURCE_URL: "jdbc:mysql://zhicloud-mysql-prod:3306/zhicloud_platform?sslMode=VERIFY_IDENTITY&tlsVersions=TLSv1.2,TLSv1.3&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true"
+  MASTER_DATASOURCE_USERNAME: "zhicloud"
+  # ----- 从数据源 -----
+  SLAVE_DATASOURCE_URL: "jdbc:mysql://zhicloud-mysql-prod-slave:3306/zhicloud_platform?sslMode=VERIFY_IDENTITY&tlsVersions=TLSv1.2,TLSv1.3&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true"
+  SLAVE_DATASOURCE_USERNAME: "zhicloud"
+  # ----- Redis -----
+  REDIS_HOST: "zhicloud-redis-prod"
+  REDIS_PORT: "6379"
+  # ----- RAG 数据源 -----
+  ZHICLOUD_AIRAG_ENABLED: "true"
+  ZHICLOUD_AIRAG_DATASOURCE_URL: "jdbc:postgresql://zhicloud-postgres-prod:5432/zhicloud_rag?sslmode=verify-full"
+  ZHICLOUD_AIRAG_DATASOURCE_USERNAME: "zhicloud"
+  ZHICLOUD_AIRAG_INITIALIZE_SCHEMA: "false"
+  # ----- OTel 链路追踪 -----
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://zhicloud-jaeger-prod:4318/v1/traces"
+  MANAGEMENT_OTLP_TRACING_ENDPOINT: "http://zhicloud-jaeger-prod:4318/v1/traces"
+---
+# Source: zhicloud/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: zhicloud
+  namespace: zhicloud-prod
+  labels:
+    helm.sh/chart: zhicloud-1.0.0
+    app.kubernetes.io/name: zhicloud
+    app.kubernetes.io/instance: zhicloud
+    app: zhicloud-server
+    component: backend
+    app.kubernetes.io/version: "2026.06.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    # HTTP 业务端口
+    - name: http
+      port: 48080
+      targetPort: 48080
+      protocol: TCP
+    # Actuator 端口（仅集群内访问，用于健康检查/监控）
+    - name: actuator
+      port: 48090
+      targetPort: 48090
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: zhicloud
+    app.kubernetes.io/instance: zhicloud
+    app: zhicloud-server
+    component: backend
+---
+# Source: zhicloud/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zhicloud
+  namespace: zhicloud-prod
+  labels:
+    helm.sh/chart: zhicloud-1.0.0
+    app.kubernetes.io/name: zhicloud
+    app.kubernetes.io/instance: zhicloud
+    app: zhicloud-server
+    component: backend
+    app.kubernetes.io/version: "2026.06.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: zhicloud
+      app.kubernetes.io/instance: zhicloud
+      app: zhicloud-server
+      component: backend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: zhicloud
+        app.kubernetes.io/instance: zhicloud
+        app: zhicloud-server
+        component: backend
+      annotations:
+        # 注入 ConfigMap/Secret 哈希，内容变更时自动滚动更新
+        checksum/config: 8d5d9982da462c895e627df202c192368f4ed139ff845b603cf606c35aa678d2
+        checksum/secret: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
+        checksum/external-secret-revision: 2520d63f4c10069488f7074a0b8556cf971b25be14ec69a948134d4af6e89418
+        checksum/mysql-tls-truststore-revision: 2520d63f4c10069488f7074a0b8556cf971b25be14ec69a948134d4af6e89418
+    spec:
+      # 优雅停机：保证 preStop + Spring graceful 总时长不超过该值
+      terminationGracePeriodSeconds: 60
+      serviceAccountName: zhicloud
+      automountServiceAccountToken: true
+      # Pod 级安全上下文
+      securityContext:
+        fsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+      containers:
+        - name: zhicloud-server
+          image: zhicloud-server:2026.06.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 48080
+              protocol: TCP
+            - name: actuator
+              containerPort: 48090
+              protocol: TCP
+          # envFrom：批量注入 ConfigMap/Secret 中的环境变量
+          envFrom:
+            - configMapRef:
+                name: zhicloud-config
+            - secretRef:
+                name: zhicloud-app-secret
+          # env：覆盖关键变量（优先级高于 envFrom）
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: TZ
+              value: "Asia/Shanghai"
+            - name: JAVA_OPTS
+              value: "-Xms1g -Xmx2g -XX:+UseZGC -XX:+ZGenerational -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/heapdump.hprof -Djava.security.egd=file:/dev/./urandom"
+            # env 覆盖 envFrom：即使 ConfigMap 被误改，业务副本也不能取得自动迁移入口。
+            - name: SPRING_FLYWAY_ENABLED
+              value: "false"
+            - name: MYSQL_TLS_TRUSTSTORE_URL
+              value: "file:/etc/zhicloud/mysql-tls/truststore.p12"
+            - name: MYSQL_TLS_TRUSTSTORE_TYPE
+              value: "PKCS12"
+            - name: MYSQL_TLS_TRUSTSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: "zhicloud-mysql-truststore"
+                  key: "MYSQL_TLS_TRUSTSTORE_PASSWORD"
+          # 健康检查
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /actuator/health/readiness
+              port: 48090
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /actuator/health/liveness
+              port: 48090
+            initialDelaySeconds: 90
+            periodSeconds: 30
+            timeoutSeconds: 10
+          # 资源配额
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 2000m
+              memory: 4Gi
+          # 优雅停机：preStop 先等待流量摘除（Service endpoint 同步），再由
+          # server.shutdown=graceful 处理进行中请求。不再调用 /actuator/shutdown——
+          # 该端点默认未暴露（exposure 列表无 shutdown），curl 必然失败，此前等于只有 sleep 5。
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - "sleep 10"
+          # 容器级安全上下文
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            runAsUser: 1000
+          # MySQL TLS truststore 只读挂载
+          volumeMounts:
+            - name: mysql-tls-truststore
+              mountPath: "/etc/zhicloud/mysql-tls"
+              readOnly: true
+            - mountPath: /tmp
+              name: tmp
+      # 卷：MySQL TLS truststore + 额外卷
+      volumes:
+        - name: mysql-tls-truststore
+          secret:
+            secretName: "zhicloud-mysql-truststore"
+            items:
+              - key: "truststore.p12"
+                path: "truststore.p12"
+        - emptyDir: {}
+          name: tmp
+      # 调度策略
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - zhicloud-mysql
+                  - zhicloud-redis
+                  - zhicloud-postgres
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: zhicloud
+              app.kubernetes.io/instance: zhicloud
+              app: zhicloud-server
+              component: backend
+---
+# Source: zhicloud/templates/hpa.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: zhicloud
+  namespace: zhicloud-prod
+  labels:
+    helm.sh/chart: zhicloud-1.0.0
+    app.kubernetes.io/name: zhicloud
+    app.kubernetes.io/instance: zhicloud
+    app: zhicloud-server
+    component: backend
+    app.kubernetes.io/version: "2026.06.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: zhicloud
+  minReplicas: 3
+  maxReplicas: 15
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+  behavior:
+    # 扩容策略：快速响应流量增长
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 30
+    # 缩容策略：缓慢释放资源，避免抖动
+    scaleDown:
+      stabilizationWindowSeconds: 600
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+---
+# Source: zhicloud/templates/job-migration.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: zhicloud-migration
+  namespace: zhicloud-prod
+  labels:
+    helm.sh/chart: zhicloud-1.0.0
+    app.kubernetes.io/name: zhicloud
+    app.kubernetes.io/instance: zhicloud
+    app: zhicloud-server
+    component: backend
+    app.kubernetes.io/version: "2026.06.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    # ArgoCD Sync Hook：在主资源 Sync 前执行
+    argocd.argoproj.io/hook: PreSync
+    # 删除策略：每次创建新 Hook 前删除旧 Job（保证幂等）
+    argocd.argoproj.io/hook-delete-policy: before-hook-creation
+    # 失败时是否跳过后续 Sync：返回非 0 即失败
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  # 失败重试次数
+  backoffLimit: 2
+  # 完成后保留时长（秒），便于排查
+  ttlSecondsAfterFinished: 1800
+  # 串行化：只允许一个 Pod、只需一次成功完成，杜绝并发迁移
+  completions: 1
+  parallelism: 1
+  # 迁移超时上限，避免异常时长期占住 PreSync 阶段
+  activeDeadlineSeconds: 900
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: zhicloud
+        app.kubernetes.io/instance: zhicloud
+        app: zhicloud-server
+        component: backend
+        job-type: flyway-migration
+    spec:
+      # Never + backoffLimit：失败即产生新 Pod 便于保留失败现场日志，且失败会真实反映到 Job 状态
+      restartPolicy: Never
+      serviceAccountName: zhicloud
+      securityContext:
+        fsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+      containers:
+        - name: flyway-migration
+          image: zhicloud-server:2026.06.0
+          imagePullPolicy: IfNotPresent
+          # 复用 ConfigMap/Secret 环境变量，保证数据库连接信息可用
+          envFrom:
+            - configMapRef:
+                name: zhicloud-config
+            - secretRef:
+                name: zhicloud-app-secret
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: TZ
+              value: "Asia/Shanghai"
+            # existing=存量库增量迁移；clean=仅空 MySQL 库，显式覆盖后才允许
+            - name: MIGRATION_BASELINE_MODE
+              value: "existing"
+            - name: MYSQL_TLS_TRUSTSTORE_URL
+              value: "file:/etc/zhicloud/mysql-tls/truststore.p12"
+            - name: MYSQL_TLS_TRUSTSTORE_TYPE
+              value: "PKCS12"
+            - name: MYSQL_TLS_TRUSTSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: "zhicloud-mysql-truststore"
+                  key: "MYSQL_TLS_TRUSTSTORE_PASSWORD"
+          # 直接运行 fat jar 内的迁移入口类：只初始化 Flyway + JDBC，跑完即退出。
+          # 迁移失败会以非 0 退出码结束，从而让 PreSync Hook 失败并阻断发布。
+          command:
+            - java
+          args:
+            - -XX:MaxRAMPercentage=75
+            - -Duser.timezone=Asia/Shanghai
+            - -Dloader.main=cn.zhicloud.server.DatabaseMigrationRunner
+            - -cp
+            - /zhicloud-server/app.jar
+            - org.springframework.boot.loader.launch.PropertiesLauncher
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            runAsUser: 1000
+          # 迁移 Job 与业务 Pod 使用同一 truststore 契约，避免 PreSync 阶段先失败
+          volumeMounts:
+            - name: mysql-tls-truststore
+              mountPath: "/etc/zhicloud/mysql-tls"
+              readOnly: true
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 2000m
+              memory: 4Gi
+      volumes:
+        - name: mysql-tls-truststore
+          secret:
+            secretName: "zhicloud-mysql-truststore"
+            items:
+              - key: "truststore.p12"
+                path: "truststore.p12"
+---
+# Source: zhicloud/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: zhicloud
+  namespace: zhicloud-prod
+  labels:
+    helm.sh/chart: zhicloud-1.0.0
+    app.kubernetes.io/name: zhicloud
+    app.kubernetes.io/instance: zhicloud
+    app: zhicloud-server
+    component: backend
+    app.kubernetes.io/version: "2026.06.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    nginx.ingress.kubernetes.io/limit-connections: "200"
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/proxy-body-size: 100m
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - "api.zhicloud.example.com"
+      secretName: "zhicloud-tls-secret"
+  rules:
+    - host: "api.zhicloud.example.com"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: zhicloud
+                port:
+                  number: 48080

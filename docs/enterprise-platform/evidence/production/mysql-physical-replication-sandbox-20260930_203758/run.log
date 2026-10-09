@@ -1,0 +1,12 @@
+[2026-09-30T12:37:17.0435537+00:00] Starting isolated MySQL physical replication approximation run_id=913b2d7f
+[2026-09-30T12:37:17.0522824+00:00] Creating network=zhicloud-mysql-repl-net-913b2d7f source_volume=zhicloud-mysql-repl-source-913b2d7f replica_volume=zhicloud-mysql-repl-replica-913b2d7f
+[2026-09-30T12:37:17.7227295+00:00] Source container started: zhicloud-mysql-sandbox-e80499af
+[2026-09-30T12:37:18.1397560+00:00] Replica container started: zhicloud-mysql-sandbox-67771c2c
+[2026-09-30T12:37:18.3379846+00:00] Waiting for source readiness
+[2026-09-30T12:37:31.2030407+00:00] Waiting for replica readiness
+[2026-09-30T12:37:33.1637577+00:00] Replication user created on source
+[2026-09-30T12:37:34.0638473+00:00] Replication channel configured and started
+[2026-09-30T12:37:43.6922035+00:00] Starting application migration chain V100->V104->V107->V120
+[2026-09-30T12:37:48.2736395+00:00] Stopping source container for one-way promotion exercise
+[2026-09-30T12:37:58.4052719+00:00] Physical replication approximation checks passed: checks=93
+[2026-09-30T12:37:58.4062742+00:00] Removing temporary sandbox resources

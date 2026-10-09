@@ -1,0 +1,213 @@
+{
+    "generated_at":  "2026-09-28T09:34:42.3165585+08:00",
+    "status":  "failed",
+    "scope":  "MySQL 8.4 sandbox clean/existing migration fail-closed validation and bootstrap administrator end-to-end validation",
+    "production_ready":  false,
+    "gate3_passed":  false,
+    "r011_status":  "OPEN",
+    "r029_status":  "OPEN",
+    "blocking_risks":  [
+                           "R-011",
+                           "R-029"
+                       ],
+    "database":  {
+                     "name":  "zhicloud_runner_clean_20260928_093441",
+                     "user":  "zhicloud_run_20260928_093441",
+                     "host":  "127.0.0.1",
+                     "port":  53306
+                 },
+    "validation_databases":  {
+                                 "existing_history":  "zhicloud_runner_existing_20260928_093441",
+                                 "incomplete_schema":  "zhicloud_runner_incomplete_20260928_093441",
+                                 "host":  "127.0.0.1",
+                                 "port":  53306
+                             },
+    "mysql":  {
+                  "client_path":  "C:\\Users\\Administrator\\mysql84-sandbox\\mysql-8.4.9-winx64\\bin\\mysql.exe",
+                  "client_version":  "C:\\Users\\Administrator\\mysql84-sandbox\\mysql-8.4.9-winx64\\bin\\mysql.exe  Ver 8.4.9 for Win64 on x86_64 (MySQL Community Server - GPL)",
+                  "server_version":  "8.4.9"
+              },
+    "environment":  {
+                        "os":  "Microsoft Windows NT 10.0.26200.0",
+                        "powershell":  "5.1.26100.9444",
+                        "java_path":  "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.12.101-hotspot\\bin\\java.exe",
+                        "java_version":  "",
+                        "repo_root":  "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2"
+                    },
+    "git":  {
+                "commit_sha":  "6a47efebd373e409e2cc1567c327294fe76344f9",
+                "worktree_dirty":  true,
+                "status_sha256":  "385408f502d6f0528b8d34048e92a0441513e51e8ea7a1a8a6377bf006c4d463",
+                "status_entry_count":  9,
+                "note":  "工作区存在未提交改动时，commit_sha 不能单独唯一标识被验证代码；必须结合 JAR 哈希、脚本哈希和 status_sha256 复核。"
+            },
+    "script":  {
+                   "path":  "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\scripts\\production\\verify_mysql_runner_sandbox.ps1",
+                   "sha256":  "a5f8d6537f5a399a7890b1646ec2e90173878b58934811dd500e7e0e13cb9ced"
+               },
+    "execution":  {
+                      "command":  "\u0026 \u0027C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\scripts\\production\\verify_mysql_runner_sandbox.ps1\u0027 -RepoRoot \u0027C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\u0027 -MysqlClient \u0027C:\\Users\\Administrator\\mysql84-sandbox\\mysql-8.4.9-winx64\\bin\\mysql.exe\u0027 -DatabaseHost \u0027127.0.0.1\u0027 -DatabasePort 53306 -AdminUser \u0027root\u0027 -EvidenceDir \u0027C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\docs\\enterprise-platform\\evidence\\production\u0027 -Reviewer \u0027Administrator\u0027 -TimeoutSeconds 1800",
+                      "command_note":  "规范化复现命令；不包含任何口令值。",
+                      "started_at":  "2026-09-28T09:34:41.2901950+08:00",
+                      "completed_at":  "2026-09-28T09:39:26.2465496+08:00",
+                      "timeout_seconds":  1800,
+                      "deadline":  "2026-09-28T10:04:41.2911941+08:00"
+                  },
+    "review":  {
+                   "reviewer":  "Administrator",
+                   "reviewer_source":  "os_user_default",
+                   "independent_review":  false,
+                   "note":  "reviewer 默认为执行主机用户，不代表独立复核；生产放行前必须补充独立复核人。"
+               },
+    "jar":  {
+                "path":  "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\target\\zhicloud-server.jar",
+                "sha256":  "9f06a8313de6d1cd4780e186ed77733f5cc10f3b6a080931574acdabe73b75e4"
+            },
+    "auditor":  {
+                    "path":  "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\scripts\\production\\audit_bootstrap_admin.py",
+                    "sha256":  "9b2a4beddbd863ff5be22daa2ae15ff92db638182d4a58b43de4d10b7f2ff215"
+                },
+    "runs":  {
+                 "clean_first":  {
+                                     "exit_code":  0,
+                                     "log_path":  "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\docs\\enterprise-platform\\evidence\\production\\mysql-runner-sandbox-20260928_093441-clean.log",
+                                     "log_sha256":  "b0bc493c16eeb12d7aaca96226179fe05025a90e3e1e8358c0f73d38a77e8c44",
+                                     "applied_migrations":  122,
+                                     "initial_version":  "1.1",
+                                     "target_version":  "117",
+                                     "clean_baseline_statements":  3849
+                                 },
+                 "clean_resume":  {
+                                      "exit_code":  0,
+                                      "log_path":  "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\docs\\enterprise-platform\\evidence\\production\\mysql-runner-sandbox-20260928_093441-resume.log",
+                                      "log_sha256":  "ed38f639458b90bd8494869317c9152bd942ec6fdf27eeefad8e1920e1b8d1d0",
+                                      "applied_migrations":  0,
+                                      "initial_version":  "117",
+                                      "target_version":  "null"
+                                  },
+                 "existing_complete_history":  {
+                                                   "exit_code":  0,
+                                                   "applied_migrations":  0,
+                                                   "fixture_exit_code":  0,
+                                                   "fixture_log_path":  "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\docs\\enterprise-platform\\evidence\\production\\mysql-runner-sandbox-20260928_093441-existing-fixture-clean.log",
+                                                   "fixture_log_sha256":  "74b7f668e65e73888ce811f11b4a65875df54abfbe7cca764a0f31d3e2ce1df6",
+                                                   "log_path":  "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\docs\\enterprise-platform\\evidence\\production\\mysql-runner-sandbox-20260928_093441-existing-complete-history.log",
+                                                   "log_sha256":  "cc1bfe9f932849a302dfbfe459cbd711b9e208b5bdd22d61cccae017aa526e84",
+                                                   "history_rows_before":  123,
+                                                   "history_rows_after":  123,
+                                                   "v11_rows_before":  1,
+                                                   "v11_rows_after":  1
+                                               },
+                 "existing_missing_v11_history":  {
+                                                      "exit_code":  1,
+                                                      "log_path":  "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\docs\\enterprise-platform\\evidence\\production\\mysql-runner-sandbox-20260928_093441-existing-missing-v11.log",
+                                                      "log_sha256":  "3996280868afb2f5f61528fe0b154ef681c6b55964515cf1789981e242162440",
+                                                      "history_rows_before":  122,
+                                                      "history_rows_after":  122,
+                                                      "v11_rows_before":  0,
+                                                      "v11_rows_after":  0,
+                                                      "log_mentions_v11":  true,
+                                                      "log_mentions_history_table":  true
+                                                  },
+                 "existing_nonempty_without_history":  {
+                                                           "exit_code":  1,
+                                                           "log_path":  "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\docs\\enterprise-platform\\evidence\\production\\mysql-runner-sandbox-20260928_093441-existing-no-history.log",
+                                                           "log_sha256":  "3996280868afb2f5f61528fe0b154ef681c6b55964515cf1789981e242162440",
+                                                           "history_table_before_run":  0,
+                                                           "history_table_after_run":  0,
+                                                           "log_mentions_v11":  true,
+                                                           "log_mentions_history_table":  true
+                                                       },
+                 "existing_incomplete_schema":  {
+                                                    "exit_code":  1,
+                                                    "missing_table":  "system_menu",
+                                                    "fixture_exit_code":  0,
+                                                    "fixture_log_path":  "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\docs\\enterprise-platform\\evidence\\production\\mysql-runner-sandbox-20260928_093441-incomplete-fixture-clean.log",
+                                                    "fixture_log_sha256":  "c41057bf7191df4eec1ae209698988eda183a9cd159168127a40bf86a7c6aa40",
+                                                    "log_path":  "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\docs\\enterprise-platform\\evidence\\production\\mysql-runner-sandbox-20260928_093441-existing-incomplete-schema.log",
+                                                    "log_sha256":  "43025aa935482c4695376a9a56d596d574b434b4495f0121f7274af28e51ff55",
+                                                    "history_rows_before":  123,
+                                                    "history_rows_after":  123,
+                                                    "v11_rows_before":  1,
+                                                    "v11_rows_after":  1,
+                                                    "log_mentions_missing_table":  true
+                                                },
+                 "bootstrap_ensure_first":  {
+                                                "exit_code":  0,
+                                                "action":  "created",
+                                                "log_path":  "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\docs\\enterprise-platform\\evidence\\production\\mysql-runner-sandbox-20260928_093441-bootstrap-ensure-first.log",
+                                                "log_sha256":  "d67e537f2e6ad2d22f8e297be7c573dcac66d471be9de1b5b39815089369f6c2"
+                                            },
+                 "bootstrap_ensure_repeat_same_password":  {
+                                                               "exit_code":  0,
+                                                               "action":  "noop",
+                                                               "log_path":  "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\docs\\enterprise-platform\\evidence\\production\\mysql-runner-sandbox-20260928_093441-bootstrap-ensure-repeat.log",
+                                                               "log_sha256":  "90121508ee6fe42c967a991ae74048d640a8787679d82e8e12977ca8973bfdcd"
+                                                           },
+                 "bootstrap_ensure_mismatch":  {
+                                                   "exit_code":  1,
+                                                   "fail_closed":  true,
+                                                   "hash_unchanged":  true,
+                                                   "log_path":  "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\docs\\enterprise-platform\\evidence\\production\\mysql-runner-sandbox-20260928_093441-bootstrap-ensure-mismatch.log",
+                                                   "log_sha256":  "b50ab4e564e4709e6396b6141da7f2ad9e1190f7b1766e297f93a4c294291b72"
+                                               },
+                 "bootstrap_rotate":  {
+                                          "exit_code":  0,
+                                          "action":  "rotated",
+                                          "log_path":  "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\docs\\enterprise-platform\\evidence\\production\\mysql-runner-sandbox-20260928_093441-bootstrap-rotate.log",
+                                          "log_sha256":  "f20694fe7899d1150f3784982bdc2431af9620ea7c395a5760708aec80a4e4dc"
+                                      },
+                 "bootstrap_old_password_after_rotate":  {
+                                                             "exit_code":  1,
+                                                             "rejected":  true,
+                                                             "log_path":  "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\docs\\enterprise-platform\\evidence\\production\\mysql-runner-sandbox-20260928_093441-bootstrap-old-password.log",
+                                                             "log_sha256":  "b50ab4e564e4709e6396b6141da7f2ad9e1190f7b1766e297f93a4c294291b72"
+                                                         },
+                 "bootstrap_new_password_after_rotate":  {
+                                                             "exit_code":  0,
+                                                             "action":  "noop",
+                                                             "log_path":  "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\docs\\enterprise-platform\\evidence\\production\\mysql-runner-sandbox-20260928_093441-bootstrap-new-password.log",
+                                                             "log_sha256":  "f9eef204c82a8a9f728e456a862badb8e7bf1c5f9b4704d9afac99e4f3cff749"
+                                                         }
+             },
+    "database_checks":  {
+                            "pre_bootstrap_system_users":  0,
+                            "base_table_count":  464,
+                            "flyway_history_rows":  123,
+                            "flyway_success_rows":  123,
+                            "flyway_failed_rows":  0,
+                            "clean_baseline_success":  true,
+                            "version_115_success":  true,
+                            "version_116_success":  true,
+                            "version_117_success":  true,
+                            "active_username_unique_index":  true,
+                            "receivable_idempotency_unique_index":  true,
+                            "public_seed_users_after_clean_migration":  0
+                        },
+    "existing_checks":  {
+                            "complete_schema_with_v11_accepted":  true,
+                            "v11_not_reapplied":  true,
+                            "missing_v11_history_fail_closed":  true,
+                            "nonempty_without_history_fail_closed":  true,
+                            "incomplete_schema_fail_closed_with_history":  true,
+                            "incomplete_schema_history_unchanged":  true
+                        },
+    "bootstrap_checks":  {
+
+                         },
+    "secret_handling":  {
+                            "database_password_persisted":  false,
+                            "bootstrap_plaintext_password_persisted":  false,
+                            "note":  "数据库口令和 bootstrap 明文口令只存在于本次 PowerShell 进程；evidence 仅记录退出码、日志摘要和数据库查询结果。"
+                        },
+    "caveats":  [
+                    "本验证仅覆盖本机 MySQL 8.4.9 沙箱，不证明目标生产数据库、TLS、Kubernetes 或 ArgoCD 部署已通过。",
+                    "V116/V117 的并发与软删除语义未由本脚本证明。",
+                    "BPM/Flowable 事务回滚、备份恢复、容量与高可用未由本脚本证明。",
+                    "工作区存在未提交改动时，commit_sha 不能单独唯一标识被验证代码；必须结合 JAR 哈希、脚本哈希和 git status 哈希复核。",
+                    "reviewer 默认为执行主机用户，不代表独立复核；生产放行前必须补充独立复核人。",
+                    "existing 成功场景由 clean baseline 构造，只证明成功 V1.1 history 不会被重复执行；不证明外部 legacy schema 的列、索引和约束均已通过强签名校验。",
+                    "Production readiness 和 Gate 3 仍为 false，R-011 和 R-029 仍为 OPEN，直到所有阻断项关闭。"
+                ],
+    "error":  "Invalid object passed in, \u0027:\u0027 or \u0027}\u0027 expected. (1752): {\n  \"generated_at\": \"2026-09-28T09:39:26.166460+08:00\",\n  \"status\": \"passed\",\n  \"scope\": \"MySQL sandbox bootstrap administrator read-only audit\",\n  \"production_ready\": false,\n  \"gate3_passed\": false,\n  \"database\": \"zhicloud_runner_clean_20260928_093441\",\n  \"mysql\": {\n    \"database_reported\": \"zhicloud_runner_clean_20260928_093441\",\n    \"server_version\": \"8.4.9\",\n    \"host\": \"127.0.0.1\",\n    \"port\": 53306,\n    \"user\": \"zhicloud_run_20260928_093441\",\n    \"client\": \"C:\\\\Users\\\\Administrator\\\\mysql84-sandbox\\\\mysql-8.4.9-winx64\\\\bin\\\\mysql.exe\"\n  },\n  \"bootstrap\": {\n    \"username\": \"zhicloud_admin\",\n    \"tenant_id\": 1,\n    \"user_count\": 1,\n    \"user_id\": 225,\n    \"status\": 0,\n    \"deleted\": 0,\n    \"password_hash_length\": 60,\n    \"password_hash_prefix\": \"$2a$\",\n    \"role_id\": 1,\n    \"role_binding_count\": 1,\n    \"role_ids\": \"1\",\n    \"post_id\": 4,\n    \"post_binding_count\": 1,\n    \"post_ids\": \"4\"\n  },\n  \"database_checks\": {\n    \"active_username_unique_index\": \"uk_system_users_tenant_active_username\",\n    \"active_username_unique_index_columns\": \"tenant_id,active_username\",\n    \"active_username_duplicate_groups\": 0\n  },\n  \"checks\": {\n    \"database_reachable\": true,\n    \"single_tenant_user\": true,\n    \"enabled\": true,\n    \"not_deleted\": true,\n    \"bcrypt_hash_shape\": true,\n    \"role_binding_exact\": true,\n    \"post_binding_exact\": true,\n    \"active_username_unique_index\": true,\n    \"no_duplicate_active_usernames\": true\n  },\n  \"failures\": [],\n  \"dialect_scope\": {\n    \"executed_in_this_evidence\": [\n      \"mysql\"\n    ],\n    \"not_executed_in_this_evidence\": [\n      \"postgresql\",\n      \"highgo\",\n      \"kingbase\",\n      \"opengauss\",\n      \"oracle\",\n      \"sqlserver\",\n      \"dm\"\n    ],\n    \"note\": \"鍏朵綑 7 濂楁ā鏉夸粛鍙湁娓叉煋鍣ㄥ拰闈欐€佸绾﹁瘉鎹€?\n  },\n  \"secret_handling\": {\n    \"plaintext_password_persisted\": false,\n    \"plaintext_password_supplied_to_auditor\": false,\n    \"database_password_hash_only\": true,\n    \"note\": \"鏈璁″櫒鍙帴鏀舵暟鎹簱杩炴帴鍙傛暟锛屼笉鎺ユ敹 bootstrap 鏄庢枃鍙ｄ护锛涙暟鎹簱鏌ヨ鍙兘璇佹槑鍙ｄ护浠?BCrypt 鍝堝笇褰㈡€佸瓨鍦紝涓嶈兘鍗曠嫭璇佹槑澶栭儴鏃ュ織銆佺粓绔巻鍙叉垨澶囦唤涓笉瀛樺湪鏄庢枃銆?\n  },\n  \"artifacts\": {\n    \"auditor_sha256\": \"9b2a4beddbd863ff5be22daa2ae15ff92db638182d4a58b43de4d10b7f2ff215\"\n  },\n  \"caveats\": [\n    \"V116/V117 concurrency and soft-delete semantics are not proven by this audit.\",\n    \"BPM/Flowable transaction rollback is not proven by this audit.\",\n    \"Only MySQL is audited here; other dialects remain unverified in target databases.\",\n    \"Production readiness and Gate 3 remain false until all blocking checks pass.\"\n  ]\n}\n"
+}

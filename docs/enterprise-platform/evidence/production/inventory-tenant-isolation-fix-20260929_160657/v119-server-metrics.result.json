@@ -1,0 +1,7 @@
+{
+  "label": "server-metrics",
+  "exit_code": 0,
+  "mysql_error_code": null,
+  "stdout": "8.4.11\tMySQL Community Server - GPL\tutf8mb4\tutf8mb4_0900_ai_ci\tONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION\t+08:00\t+08:00\tzhicloud_sandbox\n",
+  "stderr": ""
+}

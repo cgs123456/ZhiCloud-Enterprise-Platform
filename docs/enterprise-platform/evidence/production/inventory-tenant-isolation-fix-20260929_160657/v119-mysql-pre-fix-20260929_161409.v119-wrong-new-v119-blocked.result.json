@@ -1,0 +1,7 @@
+{
+  "label": "wrong-new-v119-blocked",
+  "exit_code": 1,
+  "mysql_error_code": 1648,
+  "stdout": "",
+  "stderr": "ERROR 1648 (HY000) at line 240: Data too long for condition item 'MESSAGE_TEXT'\n"
+}

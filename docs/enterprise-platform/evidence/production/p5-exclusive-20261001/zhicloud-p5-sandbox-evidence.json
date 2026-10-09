@@ -1,0 +1,100 @@
+{
+  "status": "passed",
+  "step": "start",
+  "generated_at": "2026-10-01T13:50:27.0019093+00:00",
+  "image": "mysql:8.4@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+  "repo_root": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2",
+  "container_name": "zhicloud-mysql-sandbox-e639af5e",
+  "volume": "zhicloud-mysql-sandbox-data-e639af5e",
+  "bind_address": "127.0.0.1",
+  "host_port": 40693,
+  "relay_container": "zhicloud-mysql-sandbox-relay-e639af5e",
+  "relay_port": 40692,
+  "relay_image": "nginx:1.30.5-alpine@sha256:0985e772fb9f729e6fa0980da05fca5d9c468e870eed43071545afa9d2e27d94",
+  "metrics": {
+    "server_version": "8.4.11",
+    "character_set_server": "utf8mb4",
+    "collation_server": "utf8mb4_0900_ai_ci",
+    "collation_connection": "utf8mb4_0900_ai_ci",
+    "collation_database": "utf8mb4_0900_ai_ci",
+    "session_time_zone": "+08:00",
+    "global_time_zone": "+08:00",
+    "system_time_zone": "UTC",
+    "now_utc_offset": "08:00:00",
+    "sql_mode": "ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION",
+    "default_storage_engine": "InnoDB",
+    "innodb_default_row_format": "dynamic",
+    "lower_case_table_names": "0",
+    "transaction_isolation": "REPEATABLE-READ",
+    "log_bin": "1",
+    "sandbox_database_present": "yes",
+    "read_only": "0"
+  },
+  "checks": [
+    {
+      "check": "character_set_server",
+      "expected": "utf8mb4",
+      "actual": "utf8mb4",
+      "passed": true
+    },
+    {
+      "check": "collation_server",
+      "expected": "utf8mb4*",
+      "actual": "utf8mb4_0900_ai_ci",
+      "passed": true
+    },
+    {
+      "check": "session_time_zone",
+      "expected": "Asia/Shanghai (+08:00)",
+      "actual": "+08:00",
+      "passed": true
+    },
+    {
+      "check": "now_utc_offset",
+      "expected": "08:00:00",
+      "actual": "08:00:00",
+      "passed": true
+    },
+    {
+      "check": "sql_mode_strict",
+      "expected": "contains STRICT_TRANS_TABLES",
+      "actual": "ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION",
+      "passed": true
+    },
+    {
+      "check": "server_version",
+      "expected": "8.4.x",
+      "actual": "8.4.11",
+      "passed": true
+    },
+    {
+      "check": "sandbox_database_present",
+      "expected": "yes",
+      "actual": "yes",
+      "passed": true
+    }
+  ],
+  "failure_reasons": [],
+  "note": "Sandbox only. Never point these scripts at production data.",
+  "ready_seconds": 14.5,
+  "sql_mode_source": "server_default",
+  "image_provenance": {
+    "sandbox": {
+      "image_id": "sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+      "pinned_digest": "sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+      "matched_entry": "mysql@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+      "repo_digests": [
+        "mysql@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d"
+      ]
+    },
+    "relay": {
+      "image_id": "sha256:0985e772fb9f729e6fa0980da05fca5d9c468e870eed43071545afa9d2e27d94",
+      "pinned_digest": "sha256:0985e772fb9f729e6fa0980da05fca5d9c468e870eed43071545afa9d2e27d94",
+      "matched_entry": "nginx@sha256:0985e772fb9f729e6fa0980da05fca5d9c468e870eed43071545afa9d2e27d94",
+      "repo_digests": [
+        "nginx@sha256:0985e772fb9f729e6fa0980da05fca5d9c468e870eed43071545afa9d2e27d94"
+      ]
+    },
+    "note": "溯源依据是 image 的 RepoDigests 是否包含钉定摘要；容器 .Image 只是本地 image ID，单独引用它不足以证明用的是哪个 registry 版本。"
+  }
+}

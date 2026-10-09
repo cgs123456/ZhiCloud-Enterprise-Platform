@@ -1,0 +1,5394 @@
+{
+  "status": "failed",
+  "generated_at": "2026-09-27T04:06:25.297082+00:00",
+  "repo_root": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2",
+  "connection": {
+    "mode": "mysql-cli",
+    "host": "127.0.0.1",
+    "port": 53306,
+    "database": "zhicloud_sandbox_chain",
+    "user": "root",
+    "mysql_bin": "C:\\Users\\Administrator\\mysql84-sandbox\\mysql-8.4.9-winx64\\bin\\mysql.exe"
+  },
+  "server": {
+    "version": "8.4.9",
+    "database": "zhicloud_sandbox_chain",
+    "sql_mode": "ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION",
+    "time_zone": "+08:00"
+  },
+  "sources": {
+    "do_tables": 578,
+    "ddl_tables": 332,
+    "merged_tables": 589,
+    "v90_verify_columns": 71,
+    "v92_verify_tables": 95,
+    "v91_nullable_columns": 25,
+    "nullable_expectations": {
+      "erp_product": {
+        "code": "V91_verify.sql"
+      },
+      "erp_supplier": {
+        "code": "V91_verify.sql"
+      },
+      "erp_customer": {
+        "code": "V91_verify.sql"
+      },
+      "erp_warehouse": {
+        "code": "V91_verify.sql"
+      },
+      "erp_account": {
+        "code": "V91_verify.sql",
+        "type": "V91_verify.sql"
+      },
+      "erp_stock_move": {
+        "from_warehouse_id": "V91_verify.sql",
+        "to_warehouse_id": "V91_verify.sql"
+      },
+      "erp_stock_check": {
+        "warehouse_id": "V91_verify.sql"
+      },
+      "erp_purchase_order_items": {
+        "master_id": "V91_verify.sql"
+      },
+      "erp_purchase_in_items": {
+        "master_id": "V91_verify.sql"
+      },
+      "erp_purchase_return_items": {
+        "master_id": "V91_verify.sql"
+      },
+      "erp_sale_order_items": {
+        "master_id": "V91_verify.sql"
+      },
+      "erp_sale_out_items": {
+        "master_id": "V91_verify.sql"
+      },
+      "erp_sale_return_items": {
+        "master_id": "V91_verify.sql"
+      },
+      "erp_stock_in_item": {
+        "master_id": "V91_verify.sql"
+      },
+      "erp_stock_out_item": {
+        "master_id": "V91_verify.sql"
+      },
+      "erp_stock_move_item": {
+        "master_id": "V91_verify.sql"
+      },
+      "erp_stock_check_item": {
+        "master_id": "V91_verify.sql"
+      },
+      "erp_finance_payment_item": {
+        "master_id": "V91_verify.sql",
+        "bill_id": "V91_verify.sql",
+        "bill_type": "V91_verify.sql"
+      },
+      "erp_finance_receipt_item": {
+        "master_id": "V91_verify.sql",
+        "bill_id": "V91_verify.sql",
+        "bill_type": "V91_verify.sql"
+      }
+    },
+    "verify_sql_files": [
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\script\\enterprise-platform-upgrade\\verification\\V90_verify.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\script\\enterprise-platform-upgrade\\verification\\V91_verify.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\script\\enterprise-platform-upgrade\\verification\\V92_verify.sql"
+    ],
+    "ddl_files": [
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\sql\\mysql\\ai.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\sql\\mysql\\ai_prompt_template.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\sql\\mysql\\aimultiagent.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\sql\\mysql\\aimultiagent_rollback.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\sql\\mysql\\bpm.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\sql\\mysql\\erp.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\sql\\mysql\\erp_cost.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\sql\\mysql\\erp_mps.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\sql\\mysql\\erp_tax.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\sql\\mysql\\hr.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\sql\\mysql\\mes.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\sql\\mysql\\mes_rework.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\sql\\mysql\\mes_tpm.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\sql\\mysql\\qms.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\sql\\mysql\\qms_document_audit.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\sql\\mysql\\qms_ext.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\sql\\mysql\\qms_instrument.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\sql\\mysql\\qms_rollback.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\sql\\mysql\\quartz.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\sql\\mysql\\wms.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\sql\\mysql\\wms_wave.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\sql\\mysql\\wms_zone_location.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\sql\\mysql\\zhicloud_platform.sql",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\sql\\mysql\\zhicloud_platform_bootstrap.sql"
+    ],
+    "module_dirs": [
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-ai",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-ai-multiagent",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-ai-rag",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-bpm",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-crm",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-datalake",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-erp",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-hr",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-im",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-infra",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-iot",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-mall",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-member",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-mes",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-mp",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-oa",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-pay",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-qms",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-report",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-system",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-tms",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-module-wms",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-common",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-biz-data-permission",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-biz-integration",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-biz-inventory",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-biz-ip",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-biz-mdm",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-biz-tenant",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-excel",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-job",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-monitor",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-mq",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-mybatis",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-protection",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-redis",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-security",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-test",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-web",
+      "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-framework\\zhicloud-spring-boot-starter-websocket"
+    ]
+  },
+  "summary": {
+    "fail_on": "P0_BLOCKER",
+    "exit_code": 2,
+    "tables_expected": 589,
+    "tables_present": 438,
+    "tables_in_database": 438,
+    "columns_expected": 8213,
+    "columns_present": 6459,
+    "findings_total": 248,
+    "divergences_total": 227,
+    "by_severity": {
+      "P0_BLOCKER": 154,
+      "P1_HIGH": 76,
+      "P2_REVIEW": 18
+    },
+    "by_category": {
+      "column_type_declaration_drift": 18,
+      "missing_column": 3,
+      "missing_table": 151,
+      "missing_unique_index": 1,
+      "tenant_index_missing": 75
+    }
+  },
+  "findings": [
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_column",
+      "table": "erp_gl_voucher",
+      "message": "真库缺列，MyBatis-Plus 读取该字段会报 Unknown column。",
+      "confidence": "high",
+      "column": "no",
+      "expected": "列存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_column",
+      "table": "erp_gl_voucher",
+      "message": "真库缺列，MyBatis-Plus 读取该字段会报 Unknown column。",
+      "confidence": "high",
+      "column": "voucher_time",
+      "expected": "列存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_column",
+      "table": "erp_gl_voucher_entry",
+      "message": "真库缺列，MyBatis-Plus 读取该字段会报 Unknown column。",
+      "confidence": "high",
+      "column": "master_id",
+      "expected": "列存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "QRTZ_BLOB_TRIGGERS",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "QRTZ_CALENDARS",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "QRTZ_CRON_TRIGGERS",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "QRTZ_FIRED_TRIGGERS",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "QRTZ_JOB_DETAILS",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "QRTZ_LOCKS",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "QRTZ_PAUSED_TRIGGER_GRPS",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "QRTZ_SCHEDULER_STATE",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "QRTZ_SIMPLE_TRIGGERS",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "QRTZ_SIMPROP_TRIGGERS",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "QRTZ_TRIGGERS",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "ai_prompt_template",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "airag_document",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "airag_knowledge",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "erp_actual_cost",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "erp_cost_item",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "erp_cost_variance",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "erp_mps_plan",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "erp_mps_plan_detail",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "erp_standard_cost",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "erp_work_order_cost",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "im_channel",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "im_channel_material",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "im_channel_message",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "im_conversation_read",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "im_face_pack",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "im_face_pack_item",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "im_face_user_item",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "im_friend",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "im_friend_request",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "im_group",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "im_group_member",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "im_group_message",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "im_group_request",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "im_private_message",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "im_rtc_call",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "im_rtc_participant",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "im_sensitive_word",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "iot_alert_config",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "iot_alert_record",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "iot_data_rule",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "iot_data_sink",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "iot_device",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "iot_device_group",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "iot_device_modbus_config",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "iot_device_modbus_point",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "iot_ota_firmware",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "iot_ota_task",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "iot_ota_task_record",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "iot_product",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "iot_product_category",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "iot_scene_rule",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "iot_thing_model",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "member_address",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "member_config",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "member_experience_record",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "member_group",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "member_level",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "member_level_record",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "member_point_record",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "member_sign_in_config",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "member_sign_in_record",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "member_tag",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "member_user",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "mes_dv_tp_kpi",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "mes_dv_tp_plan",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "mes_dv_tp_plan_item",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "mes_dv_tp_record",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "mes_pro_rework_order",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "mes_pro_rework_order_detail",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "mp_account",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "mp_auto_reply",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "mp_material",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "mp_menu",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "mp_message",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "mp_message_template",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "mp_tag",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "mp_user",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "pay_app",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "pay_channel",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "pay_demo_order",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "pay_demo_withdraw",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "pay_notify_log",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "pay_notify_task",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "pay_order",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "pay_order_extension",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "pay_refund",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "pay_transfer",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "pay_wallet",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "pay_wallet_recharge",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "pay_wallet_recharge_package",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "pay_wallet_transaction",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "product_brand",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "product_browse_history",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "product_category",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "product_comment",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "product_favorite",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "product_property",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "product_property_value",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "product_sku",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "product_spu",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "product_statistics",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "promotion_article",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "promotion_article_category",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "promotion_banner",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "promotion_bargain_activity",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "promotion_bargain_help",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "promotion_bargain_record",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "promotion_combination_activity",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "promotion_combination_product",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "promotion_combination_record",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "promotion_coupon",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "promotion_coupon_template",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "promotion_discount_activity",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "promotion_discount_product",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "promotion_diy_page",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "promotion_diy_template",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "promotion_kefu_conversation",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "promotion_kefu_message",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "promotion_point_activity",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "promotion_point_product",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "promotion_reward_activity",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "promotion_seckill_activity",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "promotion_seckill_config",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "promotion_seckill_product",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "qms_audit_nonconformity",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "qms_audit_plan",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "qms_audit_plan_auditor",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "qms_audit_report",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "qms_document",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "qms_document_change_request",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "qms_document_distribute",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "qms_instrument",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "qms_instrument_calibration",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "report_go_view_project",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "trade_after_sale",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "trade_after_sale_log",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "trade_brokerage_record",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "trade_brokerage_user",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "trade_brokerage_withdraw",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "trade_cart",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "trade_config",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "trade_delivery_express",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "trade_delivery_express_template",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "trade_delivery_express_template_charge",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "trade_delivery_express_template_free",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "trade_delivery_pick_up_store",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "trade_order",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "trade_order_item",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "trade_order_log",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P0_BLOCKER",
+      "category": "missing_table",
+      "table": "trade_statistics",
+      "message": "真库不存在该表；DO/DDL 期望它存在，运行期会直接报错。",
+      "confidence": "high",
+      "expected": "表存在",
+      "actual": "<missing>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "missing_unique_index",
+      "table": "wms_shipment_order",
+      "message": "DDL 声明了唯一键，但真库缺少同列的唯一索引。",
+      "confidence": "high",
+      "column": "no",
+      "expected": "UNIQUE (no)",
+      "actual": "<none>",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "crm_clue_pool_config",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "crm_invoice",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "crm_invoice_line",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "erp_account_book",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "erp_accounting_event",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "erp_accounting_posting",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "erp_bank_account",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "erp_cash_flow",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "erp_consolidation_scope",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "erp_consolidation_worksheet",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "erp_cost_allocation",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "erp_cost_center",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "erp_currency",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "erp_exchange_rate",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "erp_finance_settlement_allocation",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "erp_fund_plan",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "erp_gl_account",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "erp_gl_voucher",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "erp_gl_voucher_entry",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "erp_period",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "erp_period_close",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "erp_posting_rule",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "erp_posting_rule_line",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "erp_profit_center",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "erp_profitability_analysis",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "erp_sale_out",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do",
+        "v90_verify",
+        "v92_verify"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "erp_sale_out_items",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do",
+        "v91_verify",
+        "v92_verify"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "erp_tax_invoice",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "erp_tax_invoice_line",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "erp_tax_invoice_source",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "erp_tax_rate",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "hr_contract",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "hr_interview",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "hr_job_posting",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "hr_leave_balance",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "hr_leave_request",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "hr_leave_type",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "hr_resume",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "hr_social_insurance_base",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "mdm_cross_ref",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "mes_energy_consumption",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "oa_announcement",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "oa_approval_template",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "oa_document",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "oa_document_attachment",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "oa_knowledge_article",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "oa_knowledge_category",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "oa_knowledge_comment",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "oa_knowledge_version",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "oa_meeting_reservation",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "oa_meeting_room",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "oa_reimburse",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "oa_reimburse_item",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "oa_schedule",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "qms_capa_document",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "qms_electronic_signature_log",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "qms_fmea_document",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "qms_fmea_item",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "qms_inspection_item",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "qms_inspection_order",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "qms_inspection_record",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "qms_msa_measurement",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "qms_msa_study",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "qms_ncr_document",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "qms_ncr_mrb_record",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do",
+        "v92_verify"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "system_dept",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "system_oauth2_access_token",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "system_oauth2_refresh_token",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "system_role",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "system_role_menu",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "system_sms_code",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "system_social_client",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "system_users",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "ddl",
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "tms_fleet_operation",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P1_HIGH",
+      "category": "tenant_index_missing",
+      "table": "tms_freight_reconciliation",
+      "message": "tenant_id 上没有以它为首列的索引：多租户过滤会退化成全表扫描，大表上是可观测的性能风险（不阻塞单租户部署）。",
+      "confidence": "medium",
+      "column": "tenant_id",
+      "expected": "以 tenant_id 为首列的索引",
+      "actual": "<none>",
+      "sources": [
+        "do"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "ai_nl2sql_query_history",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "data_source",
+      "expected": "text",
+      "actual": "varchar(64)",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "ai_nl2sql_query_history",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "error_msg",
+      "expected": "varchar(255)",
+      "actual": "varchar(2000)",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "ai_nl2sql_query_history",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "natural_language",
+      "expected": "varchar(255)",
+      "actual": "text",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "ai_nl2sql_query_history",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "status",
+      "expected": "int",
+      "actual": "tinyint",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "erp_gl_account",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "code",
+      "expected": "varchar(64)",
+      "actual": "varchar(50)",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "erp_gl_account",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "deleted",
+      "expected": "bit(1)",
+      "actual": "tinyint(1)",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "erp_gl_account",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "name",
+      "expected": "varchar(128)",
+      "actual": "varchar(100)",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "erp_gl_voucher",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "deleted",
+      "expected": "bit(1)",
+      "actual": "tinyint(1)",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "erp_gl_voucher_entry",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "deleted",
+      "expected": "bit(1)",
+      "actual": "tinyint(1)",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "erp_period",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "code",
+      "expected": "varchar(64)",
+      "actual": "varchar(20)",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "erp_period",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "deleted",
+      "expected": "bit(1)",
+      "actual": "tinyint(1)",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "erp_period_close",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "deleted",
+      "expected": "bit(1)",
+      "actual": "tinyint(1)",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "qms_eight_d_report",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "d1_team_members",
+      "expected": "text",
+      "actual": "varchar(1000)",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "qms_eight_d_report",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "d8_team_recognition",
+      "expected": "text",
+      "actual": "varchar(1000)",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "wms_location",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "deleted",
+      "expected": "bit(1)",
+      "actual": "tinyint(1)",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "wms_receipt_order",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "type",
+      "expected": "tinyint",
+      "actual": "smallint",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "wms_shipment_order",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "type",
+      "expected": "tinyint",
+      "actual": "smallint",
+      "sources": [
+        "ddl"
+      ]
+    },
+    {
+      "severity": "P2_REVIEW",
+      "category": "column_type_declaration_drift",
+      "table": "wms_zone",
+      "message": "DDL 声明的列类型与真库实际类型不一致（宽度/精度类差异，需人工确认）。",
+      "confidence": "medium",
+      "column": "deleted",
+      "expected": "bit(1)",
+      "actual": "tinyint(1)",
+      "sources": [
+        "ddl"
+      ]
+    }
+  ],
+  "divergences": [
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_account",
+      "column": "default_status",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_account",
+      "column": "no",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_account",
+      "column": "remark",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_account",
+      "column": "sort",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_customer",
+      "column": "bank_address",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_customer",
+      "column": "credit_limit",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_customer",
+      "column": "credit_period",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_customer",
+      "column": "fax",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_customer",
+      "column": "remark",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_customer",
+      "column": "sort",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_customer",
+      "column": "tax_no",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_customer",
+      "column": "tax_percent",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_customer",
+      "column": "telephone",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_customer",
+      "column": "used_credit",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_payment",
+      "column": "discount_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_payment",
+      "column": "finance_user_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_payment",
+      "column": "payment_time",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_payment_item",
+      "column": "biz_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_payment_item",
+      "column": "biz_no",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_payment_item",
+      "column": "biz_type",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_payment_item",
+      "column": "paid_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_payment_item",
+      "column": "payment_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_payment_item",
+      "column": "total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_receipt",
+      "column": "discount_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_receipt",
+      "column": "finance_user_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_receipt",
+      "column": "receipt_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_receipt",
+      "column": "receipt_time",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_receipt_item",
+      "column": "biz_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_receipt_item",
+      "column": "biz_no",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_receipt_item",
+      "column": "biz_type",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_receipt_item",
+      "column": "receipt_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_receipt_item",
+      "column": "receipt_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_receipt_item",
+      "column": "receipted_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_finance_receipt_item",
+      "column": "total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_account",
+      "column": "closing_credit",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_account",
+      "column": "closing_debit",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_account",
+      "column": "current_credit",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_account",
+      "column": "current_debit",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_account",
+      "column": "is_leaf",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_account",
+      "column": "opening_credit",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_account",
+      "column": "opening_debit",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_account",
+      "column": "remark",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_account",
+      "column": "sort",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_account",
+      "column": "type",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_voucher",
+      "column": "account_book_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_voucher",
+      "column": "approved_by",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_voucher",
+      "column": "approved_time",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_voucher",
+      "column": "attachment_count",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_voucher",
+      "column": "credit_total",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_voucher",
+      "column": "debit_total",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_voucher",
+      "column": "period_code",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_voucher",
+      "column": "prepared_by",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_voucher",
+      "column": "remark",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_voucher",
+      "column": "source_doc_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_voucher",
+      "column": "source_doc_no",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_voucher",
+      "column": "source_doc_type",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_voucher",
+      "column": "source_event_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_voucher",
+      "column": "voucher_date",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_voucher",
+      "column": "voucher_no",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_voucher",
+      "column": "voucher_type",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_voucher_entry",
+      "column": "account_code",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_voucher_entry",
+      "column": "account_name",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_voucher_entry",
+      "column": "sort",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_gl_voucher_entry",
+      "column": "voucher_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_period",
+      "column": "closed_by",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_period",
+      "column": "closed_time",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_period",
+      "column": "end_date",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_period",
+      "column": "month",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_period",
+      "column": "remark",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_period",
+      "column": "start_date",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_period",
+      "column": "year",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_period_close",
+      "column": "adjustment_amount",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_period_close",
+      "column": "executed_by",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_period_close",
+      "column": "executed_time",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_period_close",
+      "column": "period_code",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_period_close",
+      "column": "process_status",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_period_close",
+      "column": "remark",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_period_close",
+      "column": "summary",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_period_close",
+      "column": "type",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_product",
+      "column": "bar_code",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_product",
+      "column": "expiry_day",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_product",
+      "column": "min_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_product",
+      "column": "remark",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_product",
+      "column": "standard",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_product",
+      "column": "weight",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_in",
+      "column": "base_currency_total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_in",
+      "column": "currency_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_in",
+      "column": "exchange_rate",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_in_items",
+      "column": "count",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_in_items",
+      "column": "in_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_in_items",
+      "column": "order_item_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_in_items",
+      "column": "product_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_in_items",
+      "column": "product_unit_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_in_items",
+      "column": "tax_percent",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_in_items",
+      "column": "tax_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_in_items",
+      "column": "warehouse_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_order",
+      "column": "base_currency_total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_order",
+      "column": "currency_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_order",
+      "column": "exchange_rate",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_order_items",
+      "column": "count",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_order_items",
+      "column": "in_count",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_order_items",
+      "column": "order_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_order_items",
+      "column": "product_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_order_items",
+      "column": "product_unit_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_order_items",
+      "column": "return_count",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_order_items",
+      "column": "tax_percent",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_order_items",
+      "column": "tax_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_return",
+      "column": "base_currency_total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_return",
+      "column": "currency_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_return",
+      "column": "exchange_rate",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_return_items",
+      "column": "count",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_return_items",
+      "column": "order_item_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_return_items",
+      "column": "product_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_return_items",
+      "column": "product_unit_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_return_items",
+      "column": "return_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_return_items",
+      "column": "tax_percent",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_return_items",
+      "column": "tax_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_purchase_return_items",
+      "column": "warehouse_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_order",
+      "column": "base_currency_total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_order",
+      "column": "currency_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_order",
+      "column": "exchange_rate",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_order_items",
+      "column": "count",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_order_items",
+      "column": "order_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_order_items",
+      "column": "out_count",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_order_items",
+      "column": "product_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_order_items",
+      "column": "product_unit_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_order_items",
+      "column": "return_count",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_order_items",
+      "column": "tax_percent",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_order_items",
+      "column": "tax_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_out",
+      "column": "base_currency_total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_out",
+      "column": "currency_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_out",
+      "column": "exchange_rate",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_out_items",
+      "column": "count",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_out_items",
+      "column": "order_item_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_out_items",
+      "column": "out_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_out_items",
+      "column": "product_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_out_items",
+      "column": "product_unit_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_out_items",
+      "column": "tax_percent",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_out_items",
+      "column": "tax_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_out_items",
+      "column": "warehouse_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_return",
+      "column": "base_currency_total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_return",
+      "column": "currency_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_return",
+      "column": "exchange_rate",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_return_items",
+      "column": "count",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_return_items",
+      "column": "order_item_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_return_items",
+      "column": "product_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_return_items",
+      "column": "product_unit_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_return_items",
+      "column": "return_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_return_items",
+      "column": "tax_percent",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_return_items",
+      "column": "tax_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_sale_return_items",
+      "column": "warehouse_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock",
+      "column": "locked_count",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock",
+      "column": "version",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_check",
+      "column": "file_url",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_check",
+      "column": "total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_check_item",
+      "column": "check_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_check_item",
+      "column": "count",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_check_item",
+      "column": "product_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_check_item",
+      "column": "product_unit_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_check_item",
+      "column": "total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_check_item",
+      "column": "warehouse_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_in",
+      "column": "file_url",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_in",
+      "column": "total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_in_item",
+      "column": "in_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_in_item",
+      "column": "product_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_in_item",
+      "column": "product_unit_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_in_item",
+      "column": "total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_move",
+      "column": "file_url",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_move",
+      "column": "total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_move_item",
+      "column": "from_warehouse_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_move_item",
+      "column": "move_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_move_item",
+      "column": "product_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_move_item",
+      "column": "product_unit_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_move_item",
+      "column": "to_warehouse_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_move_item",
+      "column": "total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_out",
+      "column": "file_url",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_out",
+      "column": "total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_out_item",
+      "column": "out_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_out_item",
+      "column": "product_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_out_item",
+      "column": "product_unit_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_out_item",
+      "column": "total_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_record",
+      "column": "biz_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_record",
+      "column": "biz_item_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_stock_record",
+      "column": "biz_no",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_supplier",
+      "column": "bank_address",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_supplier",
+      "column": "fax",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_supplier",
+      "column": "remark",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_supplier",
+      "column": "sort",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_supplier",
+      "column": "tax_no",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_supplier",
+      "column": "tax_percent",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_supplier",
+      "column": "telephone",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_warehouse",
+      "column": "default_status",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_warehouse",
+      "column": "principal",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_warehouse",
+      "column": "remark",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_warehouse",
+      "column": "truckage_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "erp_warehouse",
+      "column": "warehouse_price",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_dv_machinery",
+      "column": "iot_device_pk",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_dv_machinery",
+      "column": "protocol_type",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_md_item",
+      "column": "fixed_lot_size",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_md_item",
+      "column": "lead_time_days",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_md_item",
+      "column": "lot_size_multiple",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_md_item",
+      "column": "lot_size_rule",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_md_item",
+      "column": "low_level_code",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_md_item",
+      "column": "safety_stock",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_md_item",
+      "column": "scrap_rate",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_md_workstation",
+      "column": "capacity",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_md_workstation",
+      "column": "efficiency",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_pro_mrp_result",
+      "column": "lot_size_rule",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_pro_mrp_result",
+      "column": "safety_stock",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_pro_work_order",
+      "column": "priority",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "mes_pro_work_order",
+      "column": "version",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "qms_fmea_item",
+      "column": "action_priority",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "qms_inspection_order",
+      "column": "acceptance_quantity",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "qms_inspection_order",
+      "column": "biz_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "qms_inspection_order",
+      "column": "biz_type",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "qms_inspection_order",
+      "column": "reject_quantity",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "qms_inspection_order",
+      "column": "version",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "qms_inspection_record",
+      "column": "severity",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "system_operate_log",
+      "column": "current_hash",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "system_operate_log",
+      "column": "prev_hash",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "wms_inventory",
+      "column": "version",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "wms_inventory_batch",
+      "column": "shelf_life_days",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "wms_inventory_batch",
+      "column": "supplier_batch_no",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "wms_item",
+      "column": "abc_classification",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "wms_receipt_order",
+      "column": "qc_biz_id",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "wms_receipt_order",
+      "column": "qc_biz_type",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    },
+    {
+      "kind": "static_do_column_missing_in_live",
+      "table": "wms_receipt_order_detail",
+      "column": "batch_no",
+      "static_says": "DDL 文件里没有该列（静态解析会判缺失）",
+      "live_says": "真库存在该列",
+      "resolution": "live_wins",
+      "source": "do_vs_ddl"
+    }
+  ],
+  "notes": [
+    "只读审计：脚本只查询 information_schema 与 SELECT VERSION()，不修改任何数据。",
+    "口径规则：期望来自 DO / DDL / V9x 核验 SQL 的静态解析，结论一律以真库 information_schema 为准；静态与真库不一致时以真库为准并记录在 divergences。",
+    "P0_BLOCKER 定义：缺表、缺列、主键/自增错误、NOT NULL 无默认列导致插入阻断；P1_HIGH：索引/租户字段/类型族不兼容；P2_REVIEW：类型宽度与声明漂移。",
+    "P0 未清零前不得进入生产；P1 需要单独的风险接受记录；P2 由业务/DB 负责人人工确认。",
+    "本次审计通过 mysql 客户端直连（未使用沙箱）；请确认目标库不是生产库。"
+  ]
+}

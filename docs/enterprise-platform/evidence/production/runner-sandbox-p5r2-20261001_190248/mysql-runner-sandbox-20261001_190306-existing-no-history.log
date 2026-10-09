@@ -1,0 +1,15 @@
+[flyway-migration] target=jdbc:mysql://127.0.0.1:3306/zhicloud_runner_existing_20261001_190306 mode=existing
+
+[flyway-migration] FAILED: existing 模式目标库缺少 flyway_schema_history 中成功的 V1.1 记录；拒绝自动建立 V1.1 baseline，请先完成受控历史库基线修复
+java.lang.IllegalStateException: existing 模式目标库缺少 flyway_schema_history 中成功的 V1.1 记录；拒绝自动建立 V1.1 baseline，请先完成受控历史库基线修复
+	at cn.zhicloud.server.DatabaseMigrationRunner.validateExistingTargetInitialization(DatabaseMigrationRunner.java:522)
+	at cn.zhicloud.server.DatabaseMigrationRunner.assertExistingTargetInitialized(DatabaseMigrationRunner.java:575)
+	at cn.zhicloud.server.DatabaseMigrationRunner.preflightMigrationTarget(DatabaseMigrationRunner.java:284)
+	at cn.zhicloud.server.DatabaseMigrationRunner.run(DatabaseMigrationRunner.java:260)
+	at cn.zhicloud.server.DatabaseMigrationRunner.run(DatabaseMigrationRunner.java:235)
+	at cn.zhicloud.server.DatabaseMigrationRunner.main(DatabaseMigrationRunner.java:228)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.boot.loader.launch.Launcher.launch(Launcher.java:106)
+	at org.springframework.boot.loader.launch.Launcher.launch(Launcher.java:64)
+	at org.springframework.boot.loader.launch.PropertiesLauncher.main(PropertiesLauncher.java:580)

@@ -1,0 +1,1 @@
+pwsh -NoProfile -File docs/enterprise-platform/evidence/production/inventory-tenant-isolation-fix-20260929_160657/v119-mysql-verifier.ps1 -StateFile <redacted-state-file> -EvidenceDir docs/enterprise-platform/evidence/production/inventory-tenant-isolation-fix-20260929_160657 -RepoRoot <repo-root>

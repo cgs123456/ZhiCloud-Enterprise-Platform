@@ -1,0 +1,31 @@
+generated_at=2026-09-29T12:05:05.2395381Z
+cwd=C:\Users\Administrator\Desktop\zhicloud\zhicloud-audit-src2
+--- kube config ---
+kube_config_exists=False
+--- kubectl current-context ---
+exit=1
+error: current-context is not set
+--- kubectl cluster-info ---
+exit=1
+E0929 20:05:05.464351   26508 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"http://localhost:8080/api?timeout=3s\": dial tcp [::1]:8080: connectex: No connection could be made because the target machine actively refused it."
+E0929 20:05:05.513654   26508 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"http://localhost:8080/api?timeout=3s\": dial tcp [::1]:8080: connectex: No connection could be made because the target machine actively refused it."
+E0929 20:05:05.515203   26508 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"http://localhost:8080/api?timeout=3s\": dial tcp [::1]:8080: connectex: No connection could be made because the target machine actively refused it."
+E0929 20:05:05.515710   26508 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"http://localhost:8080/api?timeout=3s\": dial tcp [::1]:8080: connectex: No connection could be made because the target machine actively refused it."
+E0929 20:05:05.517258   26508 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"http://localhost:8080/api?timeout=3s\": dial tcp [::1]:8080: connectex: No connection could be made because the target machine actively refused it."
+
+To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+Unable to connect to the server: dial tcp [::1]:8080: connectex: No connection could be made because the target machine actively refused it.
+--- required commands ---
+kubectl=C:\Program Files\Docker\Docker\resources\bin\kubectl.exe
+helm=MISSING
+kind=MISSING
+minikube=MISSING
+k3d=MISSING
+vault=MISSING
+psql=MISSING
+sqlcmd=MISSING
+sqlplus=MISSING
+redis-cli=MISSING
+mongosh=MISSING
+--- production equivalents ---
+No external Secret Manager, production TLS certificate, target database, or pre-production Kubernetes cluster was supplied to this workspace.

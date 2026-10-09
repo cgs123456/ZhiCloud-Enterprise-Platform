@@ -1,0 +1,68 @@
+{
+  "generated_at": "2026-10-08T16:29:48.830352",
+  "task": "所有者指示：数据相关内容模拟填充（经项目 demo 通道）",
+  "scope": "sandbox 服务库 zhicloud_sandbox_v140 填充 demo-data 官方数据集（tenant 9001）",
+  "channel": "demo-data/sql/mysql/demo_master_data.sql + demo_business_documents.sql（DEMO_ 前缀 / creator=demo-seed / tenant>=9001 三重隔离）",
+  "red_line_compliance": "全部虚构名称；未采用任何真实第三方公司名（§12.114/HANDOFF 红线）",
+  "setup": {
+    "system_tenant_9001": "注册 DEMO_演示租户（package_id=0 全权限，2099 过期，creator=demo-seed）",
+    "demo_admin": "system_users id=900100 username=demo_admin + system_role id=900101 code=super_admin + 关联 900100（tenant 9001）"
+  },
+  "row_counts_sample": {
+    "erp_product": "24",
+    "erp_supplier": "10",
+    "erp_customer": "12",
+    "erp_warehouse": "4",
+    "wms_item": "20",
+    "wms_location": "48",
+    "crm_customer": "15",
+    "hr_employee": "40",
+    "tms_carrier": "6",
+    "mes_md_item": "12",
+    "mes_md_bom": "6",
+    "mes_pro_work_order": "8",
+    "erp_sale_order": "10",
+    "erp_purchase_order": "8",
+    "crm_contract": "6",
+    "tms_shipment": "8"
+  },
+  "master_total": 267,
+  "business_total": 2458,
+  "scenario_queries": {
+    "S1_lead_to_cash": 4,
+    "S2_purchase_to_qms": 6,
+    "S3_work_order_to_feedback": 12,
+    "S4_order_to_tms": 64,
+    "S5_complaint_to_ncr_capa_return": 6,
+    "S6_hire_to_retire": 2400
+  },
+  "api_verified_pages": {
+    "erp/sale-order": 10,
+    "erp/purchase-order": 8,
+    "erp/sale-return": 3,
+    "erp/purchase-return": 2,
+    "erp/stock-in": 5,
+    "erp/stock-out": 5,
+    "erp/stock-move": 4,
+    "erp/stock-check": 3,
+    "erp/stock-record": 36,
+    "crm/customer": 15,
+    "crm/contract": 6,
+    "crm/receivable-plan": 12,
+    "mes/md/item": 12,
+    "mes/pro/work-order": 8,
+    "wms/shipment-order": 8,
+    "hr/employee": 40,
+    "tms/carrier": 6
+  },
+  "defect_fixed": {
+    "id": "creator 解析 NumberFormatException",
+    "symptom": "非数字 creator（demo-seed/admin）使列表接口 500（租户1 数字 creator 不触发，真机填充后暴露）",
+    "fix": "NumberUtils.parseLong/parseInt 宽松化 + 19 个 controller 32 处直接 Long.parseLong(getCreator()) 改走 NumberUtils",
+    "unit": "NumberUtilsTest 4/4",
+    "regression": "common+CRM(48)+ERP(167) 全绿"
+  },
+  "known_open_500": "crm/follow-up-record/page 无 bizId 调用 NPE（CrmPermissionAspect，与 demo 数据无关：租户1 同样 500）——登记不动",
+  "isolation_check": "demo_admin 访问租户1 → 403；225 访问租户1 只见自己的 1 条产品；双向隔离成立",
+  "note": "本工件按 §3.4 不入库"
+}

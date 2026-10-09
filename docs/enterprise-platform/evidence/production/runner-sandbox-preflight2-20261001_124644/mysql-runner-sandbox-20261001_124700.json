@@ -1,0 +1,143 @@
+{
+  "generated_at": "2026-10-01T12:47:02.0108623+08:00",
+  "status": "failed",
+  "scope": "MySQL 8.4 sandbox clean/existing migration fail-closed validation and bootstrap administrator end-to-end validation",
+  "production_ready": false,
+  "gate3_passed": false,
+  "r011_status": "OPEN",
+  "r029_status": "OPEN",
+  "blocking_risks": [
+    "R-011",
+    "R-029"
+  ],
+  "database": {
+    "name": "zhicloud_runner_clean_20261001_124700",
+    "user": "zhicloud_run_20261001_124700",
+    "host": "127.0.0.1",
+    "port": 33947
+  },
+  "validation_databases": {
+    "existing_history": "zhicloud_runner_existing_20261001_124700",
+    "incomplete_schema": "zhicloud_runner_incomplete_20261001_124700",
+    "legacy_checksum": "zhicloud_runner_legacy_20261001_124700",
+    "host": "127.0.0.1",
+    "port": 33947
+  },
+  "mysql": {
+    "client_path": "C:\\Users\\Administrator\\mysql84-sandbox\\mysql-8.4.9-winx64\\bin\\mysql.exe",
+    "client_version": "C:\\Users\\Administrator\\mysql84-sandbox\\mysql-8.4.9-winx64\\bin\\mysql.exe  Ver 8.4.9 for Win64 on x86_64 (MySQL Community Server - GPL)",
+    "server_version": "8.4.11"
+  },
+  "environment": {
+    "os": "Microsoft Windows NT 10.0.26200.0",
+    "powershell": "7.6.6",
+    "java_path": "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.12.101-hotspot\\bin\\java.exe",
+    "java_version": "openjdk version \"21.0.12.1\" 2026-08-18 LTS\r\nOpenJDK Runtime Environment Temurin-21.0.12.1+1 (build 21.0.12.1+1-LTS)\r\nOpenJDK 64-Bit Server VM Temurin-21.0.12.1+1 (build 21.0.12.1+1-LTS, mixed mode, sharing)",
+    "repo_root": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2"
+  },
+  "git": {
+    "commit_sha": "d0ebc96c9f864450c9c293094e114aff0e4e8588",
+    "worktree_dirty": true,
+    "status_sha256": "bab1b615de5065afc859a8a9a75d13675c1bfcdcd171bb97fa9f40b148016569",
+    "status_entry_count": 930,
+    "note": "工作区存在未提交改动时，commit_sha 不能单独唯一标识被验证代码；必须结合 JAR 哈希、脚本哈希和 status_sha256 复核。"
+  },
+  "script": {
+    "path": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\scripts\\production\\verify_mysql_runner_sandbox.ps1",
+    "sha256": "634eb72850127b988b54b36c1f29d057481ea9593d774d41088c2f8b9ab047ca"
+  },
+  "execution": {
+    "command": "& 'C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\scripts\\production\\verify_mysql_runner_sandbox.ps1' -RepoRoot 'C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2' -MysqlClient 'C:\\Users\\Administrator\\mysql84-sandbox\\mysql-8.4.9-winx64\\bin\\mysql.exe' -DatabaseHost '127.0.0.1' -DatabasePort 33947 -AdminUser 'root' -AdminPasswordEnv 'ZHICLOUD_SANDBOX_ROOT_PW' -EvidenceDir 'C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\docs\\enterprise-platform\\evidence\\production\\runner-sandbox-preflight2-20261001_124644' -Reviewer 'Administrator' -TimeoutSeconds 1400 -TransportProbes 6 -TransportProbeDelaySeconds 5",
+    "command_note": "规范化复现命令；不包含任何口令值。",
+    "started_at": "2026-10-01T12:47:00.9100824+08:00",
+    "completed_at": "2026-10-01T12:50:50.2964164+08:00",
+    "timeout_seconds": 1400,
+    "deadline": "2026-10-01T13:10:20.9108402+08:00"
+  },
+  "review": {
+    "reviewer": "Administrator",
+    "reviewer_source": "os_user_default",
+    "independent_review": false,
+    "note": "reviewer 默认为执行主机用户，不代表独立复核；生产放行前必须补充独立复核人。"
+  },
+  "jar": {
+    "path": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\zhicloud-server\\target\\zhicloud-server.jar",
+    "sha256": "c7e1cbc1fbe5854ca64c55bd039d5e604d96dd896e7a378bc219a7303550c40b"
+  },
+  "auditor": {
+    "path": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\scripts\\production\\audit_bootstrap_admin.py",
+    "sha256": "9b2a4beddbd863ff5be22daa2ae15ff92db638182d4a58b43de4d10b7f2ff215"
+  },
+  "runs": {
+    "clean_first": {
+      "exit_code": 0,
+      "log_path": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\docs\\enterprise-platform\\evidence\\production\\runner-sandbox-preflight2-20261001_124644\\mysql-runner-sandbox-20261001_124700-clean.log",
+      "log_sha256": "0ba49847fb39ddc97594866ef54224adabf7c14a4f85daeea891dddd6d99342a",
+      "applied_migrations": 126,
+      "initial_version": "1.1",
+      "target_version": "121",
+      "clean_baseline_statements": 3849
+    },
+    "clean_resume": {
+      "exit_code": 0,
+      "log_path": "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\docs\\enterprise-platform\\evidence\\production\\runner-sandbox-preflight2-20261001_124644\\mysql-runner-sandbox-20261001_124700-resume.log",
+      "log_sha256": "39b7a84407648e38a88906c6a3e953989bf4a0160bc3e76dcdcd75aaa5c7670d",
+      "applied_migrations": 0,
+      "initial_version": "121",
+      "target_version": "null"
+    }
+  },
+  "database_checks": {
+    "pre_bootstrap_system_users": 0,
+    "base_table_count": 465,
+    "flyway_history_rows": 127,
+    "flyway_success_rows": 127,
+    "flyway_failed_rows": 0,
+    "clean_baseline_success": true,
+    "clean_baseline_history_type": "BASELINE",
+    "clean_baseline_history_script": "<< Flyway Baseline >>",
+    "clean_baseline_history_checksum": "<NULL>",
+    "clean_baseline_history_row_shape": true,
+    "version_115_success": true,
+    "version_116_success": true,
+    "version_117_success": true,
+    "active_username_unique_index": true,
+    "receivable_idempotency_unique_index": true,
+    "version_118_success": true,
+    "version_119_success": true,
+    "version_120_success": true,
+    "version_121_success": true,
+    "inventory_tenant_unique_index": true,
+    "outbox_owner_lease_columns": true,
+    "inbox_owner_lease_columns": true,
+    "outbox_status_lease_index": true,
+    "inbox_status_lease_index": true,
+    "bpm_claim_token_column": true,
+    "public_seed_users_after_clean_migration": 0
+  },
+  "existing_checks": {},
+  "bootstrap_checks": {},
+  "transport": {
+    "probe_attempts_total": 3,
+    "probe_waits": 0,
+    "probe_limit_per_step": 6,
+    "probe_delay_seconds": 5,
+    "note": "预检只执行 SELECT 1（无副作用），用于规避本机 Docker 发布端口的首连抖动（R-034）；迁移与 bootstrap 调用从未重试，fail-closed 断言的退出码语义未改变。"
+  },
+  "secret_handling": {
+    "database_password_persisted": false,
+    "bootstrap_plaintext_password_persisted": false,
+    "note": "数据库口令和 bootstrap 明文口令只存在于本次 PowerShell 进程；evidence 仅记录退出码、日志摘要和数据库查询结果。"
+  },
+  "caveats": [
+    "本验证仅覆盖本机 MySQL 8.4.9 沙箱，不证明目标生产数据库、TLS、Kubernetes 或 ArgoCD 部署已通过。",
+    "V116/V117 的并发与软删除语义未由本脚本证明；V120 owner fencing 的接管与结算语义、V119 租户唯一约束的重复行 fail-closed 语义、V121 claim_token 的当前读 ownership 语义（含 REPEATABLE-READ 一致性读路径）也未由本脚本证明。本脚本对 V115-V121 只断言 history 成功行与列/索引存在性，即 DDL 落地，不等于运行期语义或生产等价验证。",
+    "BPM/Flowable 事务回滚、备份恢复、容量与高可用未由本脚本证明。",
+    "工作区存在未提交改动时，commit_sha 不能单独唯一标识被验证代码；必须结合 JAR 哈希、脚本哈希和 git status 哈希复核。",
+    "reviewer 默认为执行主机用户，不代表独立复核；生产放行前必须补充独立复核人。",
+    "existing 成功场景由 clean baseline（V1.1 为 BASELINE、checksum IS NULL）构造，只证明该成功 history 不会被重复执行或改写；不证明外部 legacy schema 的列、索引和约束均已通过强签名校验。",
+    "legacy checksum 正/负例均由 clean fixture 的 rank=1 行人工改写构造（checksum 设为已发布 legacy 值或未知值），只验证 DatabaseMigrationRunner 的受控对齐与 fail-closed 分支，不证明真实历史生产库的 Flyway 状态。",
+    "Production readiness 和 Gate 3 仍为 false，R-011 和 R-029 仍为 OPEN，直到所有阻断项关闭。"
+  ],
+  "error": "existing 验证夹具 clean migration 退出码 1，见 C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2\\docs\\enterprise-platform\\evidence\\production\\runner-sandbox-preflight2-20261001_124644\\mysql-runner-sandbox-20261001_124700-existing-fixture-clean.log"
+}

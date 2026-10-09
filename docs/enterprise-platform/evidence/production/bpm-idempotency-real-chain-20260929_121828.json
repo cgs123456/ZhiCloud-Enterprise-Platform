@@ -1,0 +1,68 @@
+{
+  "generated_at": "2026-09-29T12:19:00+08:00",
+  "status": "failed_reproduction",
+  "scope": "真实 Spring Bean、真实 MyBatis Mapper、真实 Flowable 8.0.0、真实 MySQL 8.4.11 的 BPM 幂等并发链；仅 mock 非目标外部依赖",
+  "source_head": "d0ebc96c9f864450c9c293094e114aff0e4e8588",
+  "working_tree_state": "G2 changes present and not committed at evidence generation time",
+  "database": {
+    "name": "zhicloud_bpm_chain_test",
+    "host": "127.0.0.1",
+    "port": 57507,
+    "server_version": "8.4.11",
+    "transaction_isolation": "REPEATABLE-READ",
+    "engine": "InnoDB",
+    "test_container": "zhicloud-mysql-sandbox-87323300"
+  },
+  "test": {
+    "class": "cn.zhicloud.module.bpm.service.task.BpmProcessInstanceIdempotencyRealChainConcurrencyTest",
+    "method": "concurrentCallsThroughRealSpringAndFlowableReturnOneInstance",
+    "concurrency": 10,
+    "process_definition_key": "bpm-idempotency-real-chain",
+    "business_key": "bpm-real-chain-<uuid-per-run>",
+    "active_definition_barrier": "first thread held in getActiveProcessDefinition while holding the idempotency claim; remaining threads enter unique-key competition"
+  },
+  "observed": {
+    "success_count": 1,
+    "pending_failure_count": 9,
+    "exception": "ServiceException(流程正在创建中，请稍后查询结果)",
+    "successful_instance_id": "d83a6f79-bbbc-11f1-825f-00155dcc8dd6",
+    "expected": "全部10个请求返回同一实例编号且仅有一条幂等登记/Flowable历史",
+    "actual": "9个请求在DuplicateKeyException后的普通一致性读中判定PENDING，未返回winner实例编号"
+  },
+  "interpretation": "在 MySQL REPEATABLE-READ 且唯一键等待提交的并发路径上，loser 捕获 DuplicateKeyException 后使用普通 select 看不到 winner 已提交的幂等登记，因此错误地抛出 PENDING；这是真实链路中可复现的幂等语义缺陷。",
+  "mocks": [
+    "BpmProcessDefinitionService",
+    "BpmTaskService",
+    "BpmMessageService",
+    "AdminUserApi",
+    "DeptApi",
+    "BpmProcessInstanceEventPublisher",
+    "BpmTaskCandidateInvoker",
+    "BpmProcessIdRedisDAO"
+  ],
+  "artifacts": {
+    "raw_log": "docs/enterprise-platform/evidence/production/bpm-idempotency-real-chain-20260929_121828.log",
+    "raw_log_sha256": "6d72970eb0bd590be0ad393b6d6b874142ef0db5f5c8aef5d50fcf41a3915743",
+    "surefire_text": "docs/enterprise-platform/evidence/production/bpm-idempotency-real-chain-20260929_121828-surefire.txt",
+    "surefire_text_sha256": "283afd61011145392e14af5b9147e3febaf2657b750b89133985bf255a2eaf5c",
+    "service": "zhicloud-module-bpm/src/main/java/cn/zhicloud/module/bpm/service/task/BpmProcessInstanceServiceImpl.java",
+    "service_sha256": "cc9fdf8ca520228250833517b5a0173e36f63bd8981ba05d454bfa6c583434ee",
+    "test": "zhicloud-module-bpm/src/test/java/cn/zhicloud/module/bpm/service/task/BpmProcessInstanceIdempotencyRealChainConcurrencyTest.java",
+    "test_sha256": "cf247491cb6dd4672040a74c384f5c99577ffbdecca6cadc57a6ab38ccc4fa97",
+    "fixture": "zhicloud-module-bpm/src/test/resources/sql/bpm_process_instance_idempotency_mysql.sql",
+    "fixture_sha256": "77fd14a86bd3d88aaf31bf4c68c4dd6a3ed87f9beed94c3b22fda2d6e34c2c17"
+  },
+  "production_ready": false,
+  "gate3_passed": false,
+  "independent_review": false,
+  "risk_register": {
+    "R_011": "OPEN",
+    "R_029": "OPEN"
+  },
+  "Go_No_Go": "No-Go",
+  "caveats": [
+    "该结果不是生产验证，也不替代生产数据源路由、故障注入、补偿对账或独立复核。",
+    "测试使用真实 BPM API/Service/Mapper/Flowable/MySQL，但外部依赖为 Mock，不能据此宣布安全风险关闭。",
+    "必须先保留本次失败证据，再修改实现并复跑真实并发测试。"
+  ]
+}

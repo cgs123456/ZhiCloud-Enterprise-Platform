@@ -1,0 +1,7 @@
+{
+  "label": "wrong-legacy-new-column-count",
+  "exit_code": 0,
+  "mysql_error_code": null,
+  "stdout": "6\n",
+  "stderr": ""
+}

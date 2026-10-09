@@ -1,0 +1,161 @@
+{
+  "generated_at": "2026-09-30T19:03:47.247234+08:00",
+  "command": "docker ps -a --filter name=zhicloud + docker volume ls (read-only census)",
+  "production_ready": false,
+  "gate3_passed": false,
+  "caveat": "只读盘点：未删除、未停止、未修改任何容器或卷。这些资源创建于本会话之前（2026-09-24 至 09-29），其中若干名字被现存台账/证据文档直接引用，删除会破坏证据可追溯性；R-G3.5-4 需要的是保留期 + 责任人 + 清库存流程，属数据所有者裁决，不由守卫补丁顺手定。",
+  "containers": [
+    {
+      "kind": "container",
+      "name": "zhicloud-mysql-sandbox-550d1eaa",
+      "image": "mysql:8.4@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+      "state": "exited",
+      "exit_code": 255,
+      "created": "2026-09-29T11:36:02.475401085Z",
+      "finished": "2026-09-30T10:10:47.279456963Z",
+      "labels": {},
+      "volumes": [
+        "zhicloud-mysql-repl-replica-965821fa"
+      ]
+    },
+    {
+      "kind": "container",
+      "name": "zhicloud-mysql-sandbox-05df062d",
+      "image": "mysql:8.4@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+      "state": "exited",
+      "exit_code": 137,
+      "created": "2026-09-29T11:36:01.993937471Z",
+      "finished": "2026-09-29T11:36:39.132586565Z",
+      "labels": {},
+      "volumes": [
+        "zhicloud-mysql-repl-source-965821fa"
+      ]
+    },
+    {
+      "kind": "container",
+      "name": "zhicloud-mysql-sandbox-18e0f782",
+      "image": "mysql:8.4@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+      "state": "exited",
+      "exit_code": 255,
+      "created": "2026-09-29T09:34:25.015433283Z",
+      "finished": "2026-09-30T10:10:47.279678193Z",
+      "labels": {
+        "zhicloud.sandbox": "true",
+        "zhicloud.sandbox.volume": "zhicloud-mysql-sandbox-data-18e0f782"
+      },
+      "volumes": [
+        "zhicloud-mysql-sandbox-data-18e0f782"
+      ]
+    },
+    {
+      "kind": "container",
+      "name": "zhicloud-mysql-sandbox-87323300",
+      "image": "mysql:8.4@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+      "state": "exited",
+      "exit_code": 255,
+      "created": "2026-09-29T01:45:52.893688554Z",
+      "finished": "2026-09-29T07:56:31.911929259Z",
+      "labels": {
+        "zhicloud.sandbox": "true",
+        "zhicloud.sandbox.volume": "zhicloud-mysql-sandbox-data-87323300"
+      },
+      "volumes": [
+        "zhicloud-mysql-sandbox-data-87323300"
+      ]
+    },
+    {
+      "kind": "container",
+      "name": "zhicloud-maven-builder",
+      "image": "maven:3.9.11-eclipse-temurin-21",
+      "state": "exited",
+      "exit_code": 255,
+      "created": "2026-09-25T08:36:48.481099178Z",
+      "finished": "2026-09-28T02:02:39.256073878Z",
+      "labels": {
+        "org.opencontainers.image.description": "Apache Maven is a software project management and comprehension tool. Based on the concept of a project object model (POM), Maven can manage a project's build, reporting and documentation from a central piece of information.",
+        "org.opencontainers.image.ref.name": "ubuntu",
+        "org.opencontainers.image.source": "https://github.com/carlossg/docker-maven",
+        "org.opencontainers.image.title": "Apache Maven",
+        "org.opencontainers.image.url": "https://github.com/carlossg/docker-maven",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "volumes": [
+        "zhicloud-maven-cache"
+      ]
+    },
+    {
+      "kind": "container",
+      "name": "zhicloud-mysql-sandbox-f29c293d",
+      "image": "mysql:8.4@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+      "state": "exited",
+      "exit_code": 255,
+      "created": "2026-09-24T14:30:30.659666652Z",
+      "finished": "2026-09-28T02:02:39.256079489Z",
+      "labels": {
+        "zhicloud.sandbox": "true",
+        "zhicloud.sandbox.volume": "zhicloud-mysql-sandbox-data-f29c293d"
+      },
+      "volumes": [
+        "zhicloud-mysql-sandbox-data-f29c293d"
+      ]
+    }
+  ],
+  "volumes": [
+    {
+      "kind": "volume",
+      "name": "zhicloud-maven-cache",
+      "created_at": "2026-09-24T12:43:11Z",
+      "labels": {}
+    },
+    {
+      "kind": "volume",
+      "name": "zhicloud-mysql-repl-replica-965821fa",
+      "created_at": "2026-09-29T11:36:01Z",
+      "labels": {}
+    },
+    {
+      "kind": "volume",
+      "name": "zhicloud-mysql-repl-source-965821fa",
+      "created_at": "2026-09-29T11:36:01Z",
+      "labels": {}
+    },
+    {
+      "kind": "volume",
+      "name": "zhicloud-mysql-sandbox-data-18e0f782",
+      "created_at": "2026-09-29T09:34:24Z",
+      "labels": {}
+    },
+    {
+      "kind": "volume",
+      "name": "zhicloud-mysql-sandbox-data-87323300",
+      "created_at": "2026-09-29T01:45:52Z",
+      "labels": {}
+    },
+    {
+      "kind": "volume",
+      "name": "zhicloud-mysql-sandbox-data-f29c293d",
+      "created_at": "2026-09-24T14:30:30Z",
+      "labels": {}
+    }
+  ],
+  "referenced_in_ledger": {
+    "zhicloud-mysql-sandbox-550d1eaa": [
+      "evidence\\production\\mysql-physical-replication-sandbox-20260929_193600-965821fa\\SUMMARY.md"
+    ],
+    "zhicloud-mysql-sandbox-05df062d": [
+      "evidence\\production\\mysql-physical-replication-sandbox-20260929_193600-965821fa\\SUMMARY.md"
+    ],
+    "zhicloud-mysql-sandbox-18e0f782": [
+      "handoff\\flowable-crm-bpm-transaction-20260928.md",
+      "handoff\\zhicloud-enterprise-platform-upgrade-handover-20260928.md"
+    ],
+    "zhicloud-maven-cache": [
+      "handoff\\uncommitted-review-groups-20260928.md"
+    ]
+  },
+  "totals": {
+    "containers": 6,
+    "volumes": 6,
+    "running": 0
+  }
+}

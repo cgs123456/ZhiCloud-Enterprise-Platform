@@ -1,0 +1,254 @@
+{
+    "schema_version":  1,
+    "evidence_type":  "mysql_physical_replication_sandbox",
+    "run_id":  "6c092992",
+    "status":  "passed",
+    "validation_passed":  true,
+    "started_at":  "2026-09-29T16:52:16.9996900+08:00",
+    "finished_at":  "2026-09-29T16:52:48.7500902+08:00",
+    "duration_seconds":  31.8,
+    "image":  "mysql:8.4@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+    "image_repo_digest":  "mysql@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+    "repo_root":  "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2",
+    "repo":  {
+                 "repo_root":  "C:\\Users\\Administrator\\Desktop\\zhicloud\\zhicloud-audit-src2",
+                 "repo_commit":  "d0ebc96c9f864450c9c293094e114aff0e4e8588",
+                 "repo_branch":  "upgrade/production-readiness",
+                 "repo_worktree_dirty":  true,
+                 "repo_worktree_status_count":  229,
+                 "repo_worktree_status_sha256":  "9fb508e707cb0fd9388bc8a4a53808e7ec19781840e5a4009035ebae93d75767"
+             },
+    "source_container":  "zhicloud-mysql-sandbox-3aab78f3",
+    "replica_container":  "zhicloud-mysql-sandbox-110e95ff",
+    "network":  "zhicloud-mysql-repl-net-6c092992",
+    "source_volume":  "zhicloud-mysql-repl-source-6c092992",
+    "replica_volume":  "zhicloud-mysql-repl-replica-6c092992",
+    "database":  "zhicloud_replication_probe",
+    "table":  "replication_probe",
+    "checks":  [
+                   {
+                       "scenario":  "source_configuration",
+                       "name":  "server_id",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "source_configuration",
+                       "name":  "log_bin",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "source_configuration",
+                       "name":  "binlog_format",
+                       "passed":  true,
+                       "expected":  "ROW",
+                       "actual":  "ROW"
+                   },
+                   {
+                       "scenario":  "source_configuration",
+                       "name":  "gtid_mode",
+                       "passed":  true,
+                       "expected":  "ON",
+                       "actual":  "ON"
+                   },
+                   {
+                       "scenario":  "source_configuration",
+                       "name":  "enforce_gtid_consistency",
+                       "passed":  true,
+                       "expected":  "ON",
+                       "actual":  "ON"
+                   },
+                   {
+                       "scenario":  "replica_configuration",
+                       "name":  "server_id",
+                       "passed":  true,
+                       "expected":  "2",
+                       "actual":  "2"
+                   },
+                   {
+                       "scenario":  "replica_configuration",
+                       "name":  "read_only",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "replica_configuration",
+                       "name":  "super_read_only",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "replica_configuration",
+                       "name":  "gtid_mode",
+                       "passed":  true,
+                       "expected":  "ON",
+                       "actual":  "ON"
+                   },
+                   {
+                       "scenario":  "replica_configuration",
+                       "name":  "enforce_gtid_consistency",
+                       "passed":  true,
+                       "expected":  "ON",
+                       "actual":  "ON"
+                   },
+                   {
+                       "scenario":  "replication_start",
+                       "name":  "Replica_IO_Running",
+                       "passed":  true,
+                       "expected":  "Yes",
+                       "actual":  "Yes"
+                   },
+                   {
+                       "scenario":  "replication_start",
+                       "name":  "Replica_SQL_Running",
+                       "passed":  true,
+                       "expected":  "Yes",
+                       "actual":  "Yes"
+                   },
+                   {
+                       "scenario":  "initial_data_replication",
+                       "name":  "replica_row_count",
+                       "passed":  true,
+                       "expected":  "2",
+                       "actual":  "2"
+                   },
+                   {
+                       "scenario":  "initial_data_replication",
+                       "name":  "source_row_count",
+                       "passed":  true,
+                       "expected":  "2",
+                       "actual":  "2"
+                   },
+                   {
+                       "scenario":  "initial_data_replication",
+                       "name":  "content_fingerprint",
+                       "passed":  true,
+                       "expected":  "2|7a1f69c05b506d6e4e1414fe2b1910594238f17112e4536538267031a4b1ae35",
+                       "actual":  "2|7a1f69c05b506d6e4e1414fe2b1910594238f17112e4536538267031a4b1ae35"
+                   },
+                   {
+                       "scenario":  "replica_read_only",
+                       "name":  "write_rejected",
+                       "passed":  true,
+                       "expected":  "nonzero exit and read-only error",
+                       "actual":  "exit=1; output=ERROR 1290 (HY000) at line 1: The MySQL server is running with the --super-read-only option so it cannot execute this statement"
+                   },
+                   {
+                       "scenario":  "replica_restart_recovery",
+                       "name":  "docker_restart_exit_code",
+                       "passed":  true,
+                       "expected":  "0",
+                       "actual":  "0"
+                   },
+                   {
+                       "scenario":  "replica_restart_recovery",
+                       "name":  "Replica_IO_Running_after_restart",
+                       "passed":  true,
+                       "expected":  "Yes",
+                       "actual":  "Yes"
+                   },
+                   {
+                       "scenario":  "replica_restart_recovery",
+                       "name":  "Replica_SQL_Running_after_restart",
+                       "passed":  true,
+                       "expected":  "Yes",
+                       "actual":  "Yes"
+                   },
+                   {
+                       "scenario":  "replica_restart_recovery",
+                       "name":  "super_read_only_after_restart",
+                       "passed":  true,
+                       "expected":  "1",
+                       "actual":  "1"
+                   },
+                   {
+                       "scenario":  "replica_restart_recovery",
+                       "name":  "source_row_count_after_restart",
+                       "passed":  true,
+                       "expected":  "3",
+                       "actual":  "3"
+                   },
+                   {
+                       "scenario":  "replica_restart_recovery",
+                       "name":  "replica_row_count_after_restart",
+                       "passed":  true,
+                       "expected":  "3",
+                       "actual":  "3"
+                   },
+                   {
+                       "scenario":  "replica_restart_recovery",
+                       "name":  "content_fingerprint_after_restart",
+                       "passed":  true,
+                       "expected":  "3|e1fcf731d0deb087eb0184f2a890858502c74c3af86123676bcca0cdf26e7f1a",
+                       "actual":  "3|e1fcf731d0deb087eb0184f2a890858502c74c3af86123676bcca0cdf26e7f1a"
+                   }
+               ],
+    "check_count":  23,
+    "failed_checks":  [
+
+                      ],
+    "replication_status_after_start":  {
+                                           "Replica_IO_Running":  "Yes",
+                                           "Replica_SQL_Running":  "Yes",
+                                           "Seconds_Behind_Source":  "11",
+                                           "Source_Host":  "source",
+                                           "Retrieved_Gtid_Set":  "1400f07d-bbe3-11f1-9c42-1272c28beb12:1-11",
+                                           "Executed_Gtid_Set":  "1400f07d-bbe3-11f1-9c42-1272c28beb12:1-4,",
+                                           "Last_IO_Error":  "",
+                                           "Last_SQL_Error":  ""
+                                       },
+    "replication_status_after_restart":  {
+                                             "Replica_IO_Running":  "Yes",
+                                             "Replica_SQL_Running":  "Yes",
+                                             "Seconds_Behind_Source":  "0",
+                                             "Source_Host":  "source",
+                                             "Retrieved_Gtid_Set":  "1400f07d-bbe3-11f1-9c42-1272c28beb12:1-12",
+                                             "Executed_Gtid_Set":  "1400f07d-bbe3-11f1-9c42-1272c28beb12:1-12,",
+                                             "Last_IO_Error":  "",
+                                             "Last_SQL_Error":  ""
+                                         },
+    "fingerprint_after_start":  {
+                                    "Source":  "2|7a1f69c05b506d6e4e1414fe2b1910594238f17112e4536538267031a4b1ae35",
+                                    "Replica":  "2|7a1f69c05b506d6e4e1414fe2b1910594238f17112e4536538267031a4b1ae35"
+                                },
+    "fingerprint_after_restart":  {
+                                      "Source":  "3|e1fcf731d0deb087eb0184f2a890858502c74c3af86123676bcca0cdf26e7f1a",
+                                      "Replica":  "3|e1fcf731d0deb087eb0184f2a890858502c74c3af86123676bcca0cdf26e7f1a"
+                                  },
+    "row_counts":  {
+                       "source_after_start":  2,
+                       "replica_after_start":  2,
+                       "source_after_restart":  3,
+                       "replica_after_restart":  3
+                   },
+    "read_only_enforced":  true,
+    "read_only_write_exit_code":  1,
+    "read_only_write_output":  "ERROR 1290 (HY000) at line 1: The MySQL server is running with the --super-read-only option so it cannot execute this statement",
+    "restart_exit_code":  0,
+    "resources_retained":  false,
+    "cleanup_attempted":  true,
+    "cleanup_failures":  [
+
+                         ],
+    "secrets_recorded":  false,
+    "caveats":  [
+                    "Both MySQL containers run on one Docker host; this is not a production physical replication topology.",
+                    "This does not validate HA, failover, real network partition, replication lag under production load, MDL contention, disaster recovery, backup restore, or production data volume.",
+                    "The synthetic probe table is not a substitute for the application schema migration, Outbox/Inbox, DLQ, replay, compensation, reconciliation, or tenant datasource topology.",
+                    "A passed sandbox result must not be represented as production acceptance or as evidence for gate3, independent review, R-011, or R-029 closure."
+                ],
+    "gates":  {
+                  "production_ready":  false,
+                  "gate3_passed":  false,
+                  "independent_review":  false,
+                  "R_011":  "OPEN",
+                  "R_029":  "OPEN",
+                  "Go_No_Go":  "No-Go"
+              },
+    "failure":  null
+}

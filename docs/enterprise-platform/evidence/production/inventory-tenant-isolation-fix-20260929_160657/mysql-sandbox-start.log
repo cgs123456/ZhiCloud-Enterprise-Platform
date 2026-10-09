@@ -1,0 +1,4 @@
+Created sandbox volume zhicloud-mysql-sandbox-data-956ce0c9
+Started sandbox container zhicloud-mysql-sandbox-956ce0c9
+Sandbox zhicloud-mysql-sandbox-956ce0c9 ready on 127.0.0.1:54610 (database=zhicloud_sandbox, server=8.4.11, sql_mode=ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION)
+

@@ -1,0 +1,7 @@
+{
+  "label": "wrong-new-v119-blocked",
+  "exit_code": 1,
+  "mysql_error_code": 1644,
+  "stdout": "",
+  "stderr": "ERROR 1644 (45000) at line 240: V119 index mismatch: inventory_item.uk_inventory_item_tenant_composite expected=tenant_id,item_id,warehouse_id,location_id,area_\n"
+}

@@ -1,0 +1,13 @@
+{
+    "command":  "selftest",
+    "live_dictionary":  true,
+    "identical_reasons":  [
+
+                          ],
+    "drift_reasons":  [
+                          "row_count_mismatch: erp_customer expected 12 got 11"
+                      ],
+    "table_count":  2,
+    "checksum_keys_normalized":  true,
+    "passed":  true
+}
