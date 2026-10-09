@@ -10,10 +10,13 @@
 ##   6. 输出演练报告
 ##
 ## 用法：
-##   ./disaster-recovery-drill.sh
-##   ./disaster-recovery-drill.sh --restore-from /data/backup/zhicloud/2026-07-29/mysql_zhicloud_platform_20260729_020001.sql.gz
+##   DRILL_LOGIN_PASSWORD='<随机口令>' ./disaster-recovery-drill.sh
+##   DRILL_LOGIN_PASSWORD='<随机口令>' ./disaster-recovery-drill.sh --restore-from /data/backup/zhicloud/2026-07-29/mysql_zhicloud_platform_20260729_020001.sql.gz
 ##   ./disaster-recovery-drill.sh --dry-run
 ##   ./disaster-recovery-drill.sh --skip-server    # 跳过启动 zhicloud-server
+##
+## 账号：DRILL_LOGIN_USERNAME（默认 zhicloud_admin）+ DRILL_LOGIN_PASSWORD（必填）。
+## 旧默认 admin/admin123 已被 V115 软禁用，口令请用 scripts/production/init_bootstrap_admin.py 生成。
 ##
 ## 退出码：
 ##   0 - 演练成功
@@ -393,8 +396,8 @@ test_api() {
     local LOGIN_BODY
     LOGIN_BODY=$(cat <<EOF
 {
-  "username": "${DRILL_LOGIN_USERNAME:-admin}",
-  "password": "admin123",
+  "username": "${DRILL_LOGIN_USERNAME:-zhicloud_admin}",
+  "password": "${DRILL_LOGIN_PASSWORD:?DRILL_LOGIN_PASSWORD is required (admin/admin123 disabled by V115; generate via scripts/production/init_bootstrap_admin.py)}",
   "tenantId": ${DRILL_LOGIN_TENANT:-1},
   "captchaVerification": ""
 }

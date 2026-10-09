@@ -14,15 +14,15 @@
 
 ## 📊 项目规模
 
-| 指标 | 数值 |
+| 指标 | 数值（2026-10-09 实测，git ls-files） |
 |------|------|
-| Java 源文件 | 6,973（主代码）+ 380（测试） |
-| Controller | 615 |
-| 业务模块 | 11 个活跃模块（ERP/MES/WMS/CRM/HR/OA/TMS + AI 三大模块 + 框架基础） |
-| Flyway 迁移脚本 | 88 个（V1–V82，含 V51.1 小版本补齐 CRM 核心表；部分版本号复用如 V60-V64 多版本共存） |
-| SQL 文件 | 276 个 |
-| 单元测试文件 | 380 个 |
-| 框架 Starter | 16 个（zhicloud-common + 15 starter 模块） |
+| Java 源文件 | 5,882（主代码）+ 404（测试） |
+| Controller | 515（@RestController 计数） |
+| Maven 子模块 | 20 个（其中 IM / MP 未进构建，Report 进构建但未接入 server，见下方「模块启用状态」） |
+| Flyway 迁移脚本 | 158 个（最高 V151） |
+| SQL 文件 | 432 个（含 Flyway 迁移、多方言安装脚本、demo-data 与审计证据） |
+| 单元测试文件 | 404 个 |
+| 框架 Starter | 18 个（zhicloud-common + 17 个 spring-boot-starter-*） |
 
 ## 🏗️ 技术架构
 
@@ -56,6 +56,18 @@
 | RocketMQ | - | 消息队列 |
 
 ## 📦 业务模块
+
+### 模块启用状态（重要）
+
+根 pom.xml 的 <modules> 才是构建事实来源，README 旧版把未启用模块也算进了规模：
+
+| 状态 | 模块 | 说明 |
+|------|------|------|
+| **已启用并入 server** | system / infra / bpm / crm / erp / iot / mes / wms / qms / tms / oa / hr / ai / ai-rag / ai-multiagent / datalake | zhicloud-server/pom.xml 中有对应依赖，随应用启动 |
+| **进构建但未接入 server** | zhicloud-module-report | 根 pom 已启用、有 16 条测试，但 server 依赖被注释：会引入 jimureport / jimubi 自动配置而 server 无相关配置。启动日志会打印「报表模块 - 已禁用」 |
+| **未进构建（预留源码）** | zhicloud-module-im、zhicloud-module-mp | 根 pom 中被注释。源码与测试仍在仓库（IM 21 个测试文件 / MP 0 个），但**不参与 mvn 构建、不随应用启动**，启动日志会打印「已禁用」 |
+
+> 历史提示：商业域模块（Trade / Pay / Promotion / Member / Product）已在 V140 整体移除（74 张表 + 3 个后端模块），本 README 不再列出。
 
 ### 八大业务域
 
@@ -102,7 +114,7 @@
 
 ## 🗄️ 数据库版本管理
 
-采用 Flyway 管理 88 个迁移脚本（V1–V82，含 V51.1 小版本补齐 CRM 核心表），覆盖：
+采用 Flyway 管理 **158 个迁移脚本（V1–V151）**，覆盖：
 
 - V1 基线 → V6 期间结转 → V8 TOTP → V9 操作日志哈希链
 - ERP：多币种/预算/合并/固定资产/总账/采购询价/VMI/CPFR/MRP/信用管理
@@ -113,41 +125,49 @@
 - HR：合同/请假/社保/招聘
 - OA：初始化/日程管理
 - TMS：运费结算/GPS 定位/运费对账/车队运营
+- V115–V121：生产种子账号清理、BPM businessKey 幂等登记与 claim-token ownership
+- V126–V140：业务报表视图、商业域（Trade/Pay/Promotion/Member/Product）整体移除
+- V141–V151：默认 OAuth2 客户端引导、V77 恢复路径与对账告警等生产就绪修复
+
+> 迁移契约门禁：python scripts/production/check_migration_contract.py（已审核迁移的字节哈希、版本唯一性、验证 SQL 与 lint）。
+> 该门禁只证明文本契约，**不替代**真实 MySQL 影子库 / 预生产执行。
 
 ## 🧪 测试覆盖
 
-| 模块 | 测试文件数 |
-|------|-----------|
-| IoT | 52 |
-| MES | 48 |
-| System | 39 |
-| AI | 32 |
-| Framework | 29 |
-| Infra | 26 |
-| WMS | 26 |
-| IM | 21 |
-| BPM | 20 |
-| Trade | 15 |
-| Pay | 14 |
-| Promotion | 13 |
-| Member | 8 |
-| Product | 5 |
-| QMS | 6 |
-| ERP | 8 |
-| CRM | 4 |
-| TMS | 4 |
-| OA | 3 |
-| HR | 3 |
-| Report | 2 |
-| AI-RAG | 2 |
-| **合计** | **380** |
+按 git ls-files '*src/test/java/*.java' 实测（**参与构建的模块**与**预留模块**分开列）：
+
+| 模块 | 测试文件数 | 参与构建 |
+|------|-----------|----------|
+| IoT | 52 | 是 |
+| MES | 48 | 是 |
+| System | 40 | 是 |
+| Framework | 37 | 是 |
+| AI | 33 | 是 |
+| WMS | 28 | 是 |
+| Infra | 27 | 是 |
+| BPM | 27 | 是 |
+| ERP | 24 | 是 |
+| Server | 20 | 是 |
+| CRM | 14 | 是 |
+| AI-RAG | 6 | 是 |
+| QMS | 6 | 是 |
+| OA | 5 | 是 |
+| AI-MultiAgent | 5 | 是 |
+| TMS | 5 | 是 |
+| HR | 4 | 是 |
+| Report | 2 | 进构建、未接入 server |
+| IM | 21 | **否（根 pom 已注释）** |
+| MP | 0 | **否（根 pom 已注释）** |
+| **合计** | **404** | — |
+
+> Trade / Pay / Promotion / Member / Product 的测试行已随 V140 商业域移除一并删除。
 
 ## 📁 项目结构
 
 ```
 zhicloud/
 ├── zhicloud-dependencies/          # Maven BOM 依赖版本管理
-├── zhicloud-framework/             # 16 个 Starter（zhicloud-common + 15 spring-boot-starter-*）
+├── zhicloud-framework/             # 18 个 Starter（zhicloud-common + 17 个 spring-boot-starter-*）
 │   ├── zhicloud-common/            # 通用工具、POJO、枚举
 │   ├── starter-web/             # Web 配置、全局异常、Swagger
 │   ├── starter-security/        # 认证鉴权、RBAC、多租户
@@ -167,7 +187,7 @@ zhicloud/
 ├── zhicloud-module-system/         # 系统管理
 ├── zhicloud-module-infra/          # 基础设施
 ├── zhicloud-module-bpm/            # 工作流（Flowable 8.0）
-├── zhicloud-module-erp/            # ERP（71 controller，DDD 试点）
+├── zhicloud-module-erp/            # ERP（70 controller，DDD 试点）
 ├── zhicloud-module-mes/            # MES（148 controller，8 子域）
 ├── zhicloud-module-wms/            # WMS（38 controller）
 ├── zhicloud-module-qms/            # QMS（28 controller，IATF 16949 对标）
@@ -175,6 +195,10 @@ zhicloud/
 ├── zhicloud-module-hr/             # HR（13 controller）
 ├── zhicloud-module-oa/             # OA（12 controller）
 ├── zhicloud-module-tms/            # TMS（9 controller）
+├── zhicloud-module-iot/            # IoT（19 controller，设备/物模型/告警/设备消息）
+├── zhicloud-module-report/         # Report（2 controller，进构建但未接入 server）
+├── zhicloud-module-im/             # IM（30 controller，预留：根 pom 已注释，不参与构建）
+├── zhicloud-module-mp/             # MP（12 controller，预留：根 pom 已注释，不参与构建）
 ├── zhicloud-module-ai/             # AI 大模型平台
 ├── zhicloud-module-ai-rag/         # RAG 检索增强生成
 ├── zhicloud-module-ai-multiagent/  # 多智能体编排
@@ -184,7 +208,7 @@ zhicloud/
 ├── deploy/                      # ArgoCD + Helm Chart
 ├── k8s/                         # K8s 部署（含金丝雀）
 ├── script/                      # Docker/Jenkins/JMeter/Gatling/安全/灾备
-├── docs/                        # OAuth2 接入指南
+├── docs/                        # OAuth2 接入指南 + 企业平台生产就绪审计台账
 └── sql/                         # 多数据库初始化脚本（MySQL/Oracle/PG/达梦/金仓/openGauss）
 ```
 
@@ -199,7 +223,7 @@ zhicloud/
 
 ### 后端启动（Docker Compose + Maven）
 
-> 重要：`zhicloud-server` 依赖 16 个本地 Maven 模块。根目录只执行 `mvn clean compile` **不会**把模块安装到本地仓库；在 `zhicloud-server` 子目录单独运行前，必须先 `mvn install`，或直接运行 `start-backend.bat`（内部使用 `-am` 构建）。
+> 重要：`zhicloud-server` 依赖 16 个本地 Maven 模块（system/infra/bpm/crm/erp/iot/mes/wms/qms/tms/oa/hr/ai/ai-rag/ai-multiagent/datalake）。根目录只执行 `mvn clean compile` **不会**把模块安装到本地仓库；在 `zhicloud-server` 子目录单独运行前，必须先 `mvn install`，或直接运行 `start-backend.bat`（内部使用 `-am` 构建）。
 
 ```bash
 # 1. 启动中间件
@@ -228,8 +252,35 @@ pnpm install
 pnpm dev
 ```
 
-访问 `http://localhost/`，租户 `智云` / 账号 `admin` / 密码 `admin123`。
-前端默认端口 80，Vite 将 `/admin-api` 代理到 `http://127.0.0.1:48080`；本地覆盖配置在 `.env.dev.local`。
+访问 `http://localhost/`。
+
+> **首次登录必须先初始化管理员账号。** 旧文档写的 `admin / admin123` **已经不可用**：
+> V115 迁移会按 `(id, username, password_hash, tenant_id)` 精确匹配并软禁用 V1.1 遗留的
+> **20 个公开种子账号**（`admin`、`zhicloud`、`admin123` …），同时撤销其角色/岗位/OAuth2 会话。
+> 这是 Issue #1 的根因类别（默认弱口令 = 后门），**不要**再通过导入 `demo-data/sql/**/*_demo_seed.sql` 来获得登录能力——
+> 那些文件仅供演示，且已被 V115 清理。
+
+全新库获取登录凭据（随机口令，明文只打印一次、不落盘）：
+
+> **顺序很重要**：`system_users` 表由 Flyway V1.1 创建，所以请**先按上面第 2–3 步启动过后端一次**
+> （Flyway 跑完迁移），再执行下面的初始化命令。库还不存在时脚本会失败。
+
+```bash
+pip install bcrypt            # 脚本依赖
+# MYSQL_ROOT_PASSWORD 来自 script/docker/docker.env
+python scripts/production/init_bootstrap_admin.py --dialect mysql \
+  --host 127.0.0.1 --port 3306 --database zhicloud_platform \
+  --user root --password-env MYSQL_ROOT_PASSWORD --apply \
+  --mysql-client "C:/tools/mysql8/bin/mysql.exe"
+```
+
+脚本默认创建 `zhicloud_admin`（BCrypt cost=12，24 字节随机口令，禁用已知种子用户名），
+**请立即保存 stdout 打印的明文口令**。之后用 `zhicloud_admin` + 该口令登录，租户选 `智云`（tenant_id=1）。
+
+- 不想用 `--apply` 直连时，去掉 `--apply`/`--mysql-client`，用 `--out bootstrap_rendered.sql` 只渲染 SQL 再手工执行。
+- K8s 部署走 `BootstrapAdminRunner`（PreSync 入口，`ensure`/`rotate`），不需要手工执行上面的命令。
+- 若目标账号已存在需轮换口令，加 `--force`。
+- 前端默认端口 80，Vite 将 `/admin-api` 代理到 `http://127.0.0.1:48080`；本地覆盖配置在 `.env.dev.local`。
 
 ### Windows 一键脚本
 
@@ -270,7 +321,7 @@ start-frontend.bat
 - Docker 非 root 用户运行（UID/GID 1000）
 - K8s Secret 占位符 + securityContext
 - QMS 电子签名（21 CFR Part 11）：8 个管控点（审批/驳回/关闭）全量覆盖，CI 门禁防回归
-- 全仓 @PreAuthorize 扫描门禁：GAP 清零（0/615 Controller），CRITICAL=0 匿名可达
+- 全仓 @PreAuthorize 扫描门禁：GAP 清零（0/515 Controller），CRITICAL=0 匿名可达
 - 裸抛异常统一门禁：0 处裸抛（4 处显式 @bare-throw-ignore 豁免），CI 防回归
 - 事务原子性门禁：12 处多写操作补 @Transactional，CI 防回归
 - 错误码唯一性门禁：140 处冲突去重，2051 个定义 0 冲突
@@ -282,7 +333,11 @@ start-frontend.bat
 - **代码 Review**：修复 BPM 状态回写 listener 同族 `Long.parseLong` 缺陷（HR/OA×3）、签名框架 timestamp 500、操作日志 bizNo 审计丢失、预算明细 N+1（§12.158）
 - **前后端接口匹配**：扫描 2,435 前端调用 vs 2,974 后端端点；修复 IoT OTA 固件缺 DELETE 端点 + 短信渠道前导 `/`（§12.159）
 - **测试基线**：hr+oa / protection+security / erp 全部通过
-- **遗留**：FMS(140) / HRM(302) 前端页面后端未开发，属规划范围
+- **Issue #1 已闭环**（closed / completed）：Redis 空密码、前端本地启动、V77 恢复路径；修复提交 `f6b890395`，生产形状 E2E 与干净 Windows 安装证据见 `docs/enterprise-platform/evidence/production/clean-windows-bat-install-20261009/`
+- **文档修正（本次）**：README 登录凭据改为 `init_bootstrap_admin.py` 随机口令流程（原 `admin/admin123` 已被 V115 软禁用）；规模数字、Flyway 版本、测试表、模块启用状态按实测重写
+- **仓库清理（本次）**：移除误提交的 `zhicloud-extracted/`（806 个文件 / 517MB 解包 fat jar，迁移只到 V84）、根目录 `redis2_out.txt` 与 `runlog.txt`、`application-local.yaml` 的 IM 残留日志配置
+- **遗留（不影响按文档启动）**：FMS(140) / HRM(302) 前端页面后端未开发，属规划范围；IM/MP 为预留模块，不参与构建
+- **状态未变**：`production_ready=false` / `gate3_passed=false` / `independent_review=false` / Go-No-Go = **No-Go**，本 README 的「可启动」不等于「生产就绪」
 
 ## 📄 开源协议
 

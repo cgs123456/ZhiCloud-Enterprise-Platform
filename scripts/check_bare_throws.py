@@ -40,7 +40,14 @@ IGNORE_MARK = '@bare-throw-ignore'
 IGNORE_LOOKBACK = 0
 # 当前已审校的豁免总数上限。新增豁免必须是一次有意识的修改：先改这个数字并说明理由，
 # 否则本门禁 FAIL。降低它代表真的还清了债。
-MAX_EXEMPTIONS = 64
+#
+# 2026-10-09：64 → 81。39fcebeda（V77 OAuth / 对账告警闭环）给
+# DatabaseMigrationRunner 新增 17 处豁免（39 → 56），全仓 64 → 81，
+# 但漏改本上限，导致 master CI 连续 5 次失败在 Bare-Throw Exception Gate。
+# 逐条复核：17 处全部是同一条已认可理由 —— Flyway/引导 CLI 运行在 Spring 容器之外，
+# 硬套 ServiceException 只会污染业务错误码空间；与既有豁免同类，不是新类型的债。
+# 若将来要把这类 CLI 异常统一成专用异常类型，应一次性还债并把本数字降回去。
+MAX_EXEMPTIONS = 81
 
 
 def in_comment(text, pos):

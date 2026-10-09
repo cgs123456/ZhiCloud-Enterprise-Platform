@@ -19,7 +19,8 @@ import scala.util.Random
  * 上线判定：P99 < 1s，成功率 > 99.5%
  *
  * 运行：
- *   mvn gatling:test -Dgatling.simulationClass=zhicloud.ZhiCloudLoadTest
+ *   mvn gatling:test -Dgatling.simulationClass=zhicloud.ZhiCloudLoadTest \
+  -Dusername=zhicloud_admin -Dpassword=<init_bootstrap_admin.py 生成的随机口令>
  */
 class ZhiCloudLoadTest extends Simulation {
 
@@ -37,10 +38,20 @@ class ZhiCloudLoadTest extends Simulation {
   // ============================================================
   // Feeder：账号数据
   // ============================================================
+  // 账号从系统属性读取（默认 zhicloud_admin）。旧默认 admin/admin123 已被 V115 软禁用，
+  // 运行前请先用 scripts/production/init_bootstrap_admin.py 生成口令，再传入：
+  //   -Dusername=zhicloud_admin -Dpassword=<随机口令>
+  val username = System.getProperty("username", "zhicloud_admin")
+  val password = System.getProperty("password", "")
+  if (password.isEmpty) {
+    throw new IllegalStateException(
+      "缺少 -Dpassword：admin/admin123 已被 V115 软禁用，" +
+        "请用 scripts/production/init_bootstrap_admin.py 生成口令后传入 -Dpassword=<口令>")
+  }
   val userFeeder = Iterator.continually(
     Map(
-      "username" -> "admin",
-      "password" -> "admin123",
+      "username" -> username,
+      "password" -> password,
       "captchaVerification" -> ""
     )
   )
@@ -76,7 +87,7 @@ class ZhiCloudLoadTest extends Simulation {
     .exec(
       http("POST /admin-api/system/auth/login (获取Token)")
         .post("/admin-api/system/auth/login")
-        .body(StringBody("""{"username":"admin","password":"admin123","captchaVerification":""}"""))
+        .body(StringBody(s"""{"username":"$username","password":"$password","captchaVerification":""}"""))
         .asJson
         .check(status.is(200))
         .check(jsonPath("$.data.accessToken").saveAs("accessToken"))
@@ -96,7 +107,7 @@ class ZhiCloudLoadTest extends Simulation {
     .exec(
       http("POST /admin-api/system/auth/login (获取Token)")
         .post("/admin-api/system/auth/login")
-        .body(StringBody("""{"username":"admin","password":"admin123","captchaVerification":""}"""))
+        .body(StringBody(s"""{"username":"$username","password":"$password","captchaVerification":""}"""))
         .asJson
         .check(status.is(200))
         .check(jsonPath("$.data.accessToken").saveAs("accessToken"))
@@ -116,7 +127,7 @@ class ZhiCloudLoadTest extends Simulation {
     .exec(
       http("POST /admin-api/system/auth/login (获取Token)")
         .post("/admin-api/system/auth/login")
-        .body(StringBody("""{"username":"admin","password":"admin123","captchaVerification":""}"""))
+        .body(StringBody(s"""{"username":"$username","password":"$password","captchaVerification":""}"""))
         .asJson
         .check(status.is(200))
         .check(jsonPath("$.data.accessToken").saveAs("accessToken"))
@@ -137,7 +148,7 @@ class ZhiCloudLoadTest extends Simulation {
     .exec(
       http("POST /admin-api/system/auth/login (获取Token)")
         .post("/admin-api/system/auth/login")
-        .body(StringBody("""{"username":"admin","password":"admin123","captchaVerification":""}"""))
+        .body(StringBody(s"""{"username":"$username","password":"$password","captchaVerification":""}"""))
         .asJson
         .check(status.is(200))
         .check(jsonPath("$.data.accessToken").saveAs("accessToken"))

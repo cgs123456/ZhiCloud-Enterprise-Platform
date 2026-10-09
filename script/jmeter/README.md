@@ -27,7 +27,7 @@ script/
 | zhicloud-server | 已启动且健康 | 业务端口 `48080`，管理端口 `48090` |
 | 数据库 | MySQL 8.x，已初始化数据 | 执行 `sql/mysql/zhicloud_platform.sql` |
 | Redis | 6.x 及以上 | 默认 `localhost:6379` |
-| 测试账号 | `admin / admin123` | 租户 ID `1` |
+| 测试账号 | `zhicloud_admin` + `init_bootstrap_admin.py` 生成的随机口令 | 租户 ID `1`；`admin/admin123` 已被 V115 软禁用 |
 | JVM | 堆内存建议 `-Xms2g -Xmx2g` | 启动参数见 `zhicloud-server-startup.out` |
 
 ### 2. 监控就绪
@@ -71,7 +71,8 @@ jmeter -t script/jmeter/zhicloud-load-test.jmx
 jmeter -n -t script/jmeter/zhicloud-load-test.jmx \
   -l result/zhicloud-result.jtl \
   -e -o result/zhicloud-report \
-  -JHOST=localhost -JPORT=48080 -JTENANT_ID=1
+  -JHOST=localhost -JPORT=48080 -JTENANT_ID=1 \
+  -JUSERNAME=zhicloud_admin -JPASSWORD='<init_bootstrap_admin.py 生成的随机口令>'
 ```
 
 参数说明：

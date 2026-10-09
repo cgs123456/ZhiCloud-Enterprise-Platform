@@ -180,7 +180,6 @@ logging:
     cn.zhicloud.module.iot.dal.tdengine: DEBUG
     cn.zhicloud.module.iot.service.rule: debug
     cn.zhicloud.module.ai.dal.mysql: debug
-    cn.zhicloud.module.im.dal.mysql: debug
     org.springframework.context.support.PostProcessorRegistrationDelegate: ERROR # TODO 芋艿：先禁用，Spring Boot 3.X 存在部分错误的 WARN 提示
 
 debug: false
