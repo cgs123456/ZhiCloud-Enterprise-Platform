@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from datetime import datetime
 import os
 import sys
 import urllib.error
@@ -70,14 +71,16 @@ def main(argv=None) -> int:
     parser.add_argument("--webhook-env", default="ZC_RECONCILE_WEBHOOK_URL")
     parser.add_argument("--timeout", type=float, default=10.0)
     parser.add_argument("--dry-run", action="store_true", help="fetch report, but do not POST webhook")
+    parser.add_argument("--log-file", default=None, help="append alert to this file instead of POSTing to webhook")
     args = parser.parse_args(argv)
 
     token = os.environ.get(args.token_env)
     if not token:
         raise SystemExit(f"missing token: set {args.token_env}")
     webhook = os.environ.get(args.webhook_env)
-    if not webhook and not args.dry_run:
-        raise SystemExit(f"missing webhook: set {args.webhook_env} or use --dry-run")
+    log_file = args.log_file or os.environ.get("ZC_RECONCILE_LOG_FILE")
+    if not webhook and not log_file and not args.dry_run:
+        raise SystemExit(f"missing webhook: set {args.webhook_env} or --log-file / ZC_RECONCILE_LOG_FILE, or use --dry-run")
 
     endpoint = args.base_url.rstrip("/") + "/erp/inventory-reconcile/run"
     status, body = http_json(endpoint, headers={
@@ -107,6 +110,12 @@ def main(argv=None) -> int:
         "consistent": False,
         "report": report,
     }
+    if log_file:
+        alert_entry = json.dumps({"timestamp": datetime.now().isoformat(), "alert": payload}, ensure_ascii=False, default=str) + "\n"
+        with open(log_file, "a", encoding="utf-8") as f:
+            f.write(alert_entry)
+        print(f"alert appended to {log_file}")
+        return 0
     post_status, post_body = http_json(webhook, method="POST", payload=payload, timeout=args.timeout)
     if post_status < 200 or post_status >= 300:
         raise RuntimeError(f"webhook failed: HTTP={post_status} body={post_body}")

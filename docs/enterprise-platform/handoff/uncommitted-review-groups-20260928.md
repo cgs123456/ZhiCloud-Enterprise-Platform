@@ -6535,3 +6535,20 @@ demo 数据的写路径/审批/会计过账。清理入口现成：`demo-data/cl
 **验证口径**：全部断言来自 MySQL `zhicloud_sandbox_v140` 行与 48080 API 实际响应；无迁移、无 evidence 入库、无生产状态翻转。
 
 **状态不翻**：production_ready=false、gate3_passed=false、independent_review=false、Go/No-Go=No-Go。
+
+### 12.157 告警本地文件模式 + 调度脚本 + tenant 0 科目共享关闭（2026-10-09）
+
+**一、告警脚本增加本地文件输出模式**
+- `push_inventory_reconcile_alert.py` 新增 `--log-file` 参数 / `ZC_RECONCILE_LOG_FILE` 环境变量。
+- 当设置 log-file 且未设置 webhook 时，告警 JSON（含 timestamp + 完整 report）追加写入文件而非 POST；避免无外部 webhook 时的硬性依赖。
+- 真机验证：tenant 9001 对账 144 条 mismatch → JSONL 文件正确追加，`EXIT=0`。
+- 优先级：`--log-file` CLI 参数 > `ZC_RECONCILE_LOG_FILE` 环境变量 > webhook > dry-run。
+
+**二、Windows Task Scheduler 注册脚本**
+- 新增 `scripts/production/register_reconcile_alert_task.bat`：以管理员运行一次即注册每日 08:00 定时任务 `ZhiCloud_ReconcileAlert`。
+- Token 从系统环境变量 `ZC_RECONCILE_TOKEN` 读取（脚本内不硬编码），日志输出到脚本同目录 `reconcile_alert.jsonl`。
+- 脚本仅做注册，不含业务逻辑；可通过 `schtasks /Delete /TN ZhiCloud_ReconcileAlert` 撤销。
+
+**三、tenant 0 平台科目余额物理共享——关闭**
+- 所有者裁决：项目不商用，多租户独立账簿非当前需求；该项关闭。
+- 台账留存事实：tenant 9001 的 6 笔凭证全部写入 tenant_id=0 平台科目行；tenant 1 有自己的 9 个科目副本不走此路径。若将来多租户商用需另做租户科目初始化（V-migration 副本 + opening 余额）。
