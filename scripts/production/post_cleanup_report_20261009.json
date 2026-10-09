@@ -1,0 +1,37 @@
+{
+  "report_type": "post-cleanup",
+  "executed_at": "2026-10-09",
+  "pre_manifest": "scripts/production/pre_cleanup_manifest_20261008.json",
+  "owner_approval": "user approved via chat message '1沙箱资源直接删除' 2026-10-09",
+  "deleted_containers": [
+    "zhicloud-mysql-sandbox-550d1eaa",
+    "zhicloud-mysql-sandbox-05df062d",
+    "zhicloud-mysql-sandbox-18e0f782",
+    "zhicloud-mysql-sandbox-87323300",
+    "zhicloud-maven-builder",
+    "zhicloud-mysql-sandbox-f29c293d"
+  ],
+  "deleted_volumes": [
+    "zhicloud-maven-cache",
+    "zhicloud-mysql-repl-replica-965821fa",
+    "zhicloud-mysql-repl-source-965821fa",
+    "zhicloud-mysql-sandbox-data-18e0f782",
+    "zhicloud-mysql-sandbox-data-87323300",
+    "zhicloud-mysql-sandbox-data-f29c293d"
+  ],
+  "deleted_networks": [
+    "zhicloud-mysql-repl-net-965821fa"
+  ],
+  "remaining_zhicloud": {
+    "networks": 0,
+    "containers": 0,
+    "volumes": 0
+  },
+  "active_services_untouched": [
+    "zc-live-mysql",
+    "zc-live-redis",
+    "zc-live-rabbit",
+    "zc-datalake-trino"
+  ],
+  "note": "13 resources deleted (6 containers + 6 volumes + 1 network). All zhicloud-* sandbox runtime items cleared. Active services unaffected."
+}
