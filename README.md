@@ -226,9 +226,10 @@ zhicloud/
 > 重要：`zhicloud-server` 依赖 16 个本地 Maven 模块（system/infra/bpm/crm/erp/iot/mes/wms/qms/tms/oa/hr/ai/ai-rag/ai-multiagent/datalake）。根目录只执行 `mvn clean compile` **不会**把模块安装到本地仓库；在 `zhicloud-server` 子目录单独运行前，必须先 `mvn install`，或直接运行 `start-backend.bat`（内部使用 `-am` 构建）。
 
 ```bash
-# 1. 启动中间件
+# 1. 启动中间件（首次需先从模板生成 .env）
 cd script/docker
-docker-compose --env-file docker.env up -d mysql redis postgres
+cp .env.example .env          # 然后把三个必填密码换成真实强密码
+docker compose up -d mysql redis postgres
 cd ../..
 
 # 2. 安装本地模块（首次或模块依赖变化后）
@@ -267,7 +268,8 @@ pnpm dev
 
 ```bash
 pip install bcrypt            # 脚本依赖
-# MYSQL_ROOT_PASSWORD 来自 script/docker/docker.env
+# MYSQL_ROOT_PASSWORD 来自上一步生成的 script/docker/.env
+export MYSQL_ROOT_PASSWORD='<script/docker/.env 里填的 MYSQL_ROOT_PASSWORD>'
 python scripts/production/init_bootstrap_admin.py --dialect mysql \
   --host 127.0.0.1 --port 3306 --database zhicloud_platform \
   --user root --password-env MYSQL_ROOT_PASSWORD --apply \

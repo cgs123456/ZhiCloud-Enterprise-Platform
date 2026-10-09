@@ -9,7 +9,7 @@
 .
 ├── Docker-HOWTO.md                 
 ├── docker-compose.yml              
-├── docker.env                      <-- 提供docker-compose环境变量配置
+├── .env.example                    <-- 环境变量模板；先 cp 成 .env 再填真实密码
 ├── zhicloud-server
 │   └── Dockerfile
 └── zhicloud-ui-admin
@@ -34,16 +34,17 @@ docker run -it --rm --name zhicloud-maven \
 ## 构建启动服务
 
 ```shell
-docker compose --env-file docker.env up -d
+cp .env.example .env        # 先把三个必填密码改成真实强密码
+docker compose up -d
 ```
 
 首次运行会自动构建容器。可以通过`docker compose build [service]`来手动构建所有或某个docker镜像
 
-`--env-file docker.env`为可选参数，只是展示了通过`.env`文件配置容器启动的环境变量，`docker-compose.yml`本身已经提供足够的默认参数来正常运行系统。
+`.env` 不是可选装饰：`docker-compose.yml` 对 `MYSQL_ROOT_PASSWORD` / `REDIS_PASSWORD` / `POSTGRES_PASSWORD` 用的是 `${VAR:?required}` 形式（无默认值），**不提供就会直接报错退出**。其余变量才有默认值。
 
 ## 服务器的宿主机端口映射
 
 - admin ui: http://localhost:8080
 - api server: http://localhost:48080
-- mysql: root/${MYSQL_ROOT_PASSWORD}, port: 3306（密码通过环境变量注入，见 docker.env）
-- redis: port: 6379（密码通过环境变量注入，见 docker.env）
+- mysql: root/${MYSQL_ROOT_PASSWORD}, port: 3306（密码通过 .env 注入）
+- redis: port: 6379（密码通过 .env 注入）
