@@ -63,6 +63,14 @@ public class IotOtaFirmwareController {
         }));
     }
 
+    @DeleteMapping("/delete")
+    @Operation(summary = "删除 OTA 固件")
+    @PreAuthorize("@ss.hasPermission('iot:ota-firmware:delete')")
+    public CommonResult<Boolean> deleteOtaFirmware(@RequestParam("id") Long id) {
+        otaFirmwareService.deleteOtaFirmware(id);
+        return success(true);
+    }
+
     @GetMapping("/page")
     @Operation(summary = "获得 OTA 固件分页")
     @PreAuthorize("@ss.hasPermission('iot:ota-firmware:query')")

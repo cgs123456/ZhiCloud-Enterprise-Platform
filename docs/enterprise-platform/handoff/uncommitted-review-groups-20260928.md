@@ -6583,3 +6583,23 @@ MesQcIndicatorResultServiceImpl / HrSalaryServiceImpl / IotSceneRuleTimeHelper /
 ### 测试
 
 hr+oa / protection+security / erp 全 exit 0
+
+
+---
+
+## 12.159 前后端接口匹配 Review——IoT OTA delete 缺端点 + SmsChannel 前导 /
+
+**范围**：Vue3 前端 2435 个 API 调用 vs 后端 2974 个 Controller 路径。
+
+### 修复（4 文件 23 行）
+
+| # | 文件 | 问题 | 修法 |
+|---|---|---|---|---|
+| 1 | IotOtaFirmwareController | 缺 DELETE 端点，前端调 /delete 返回 404 | 添加 @DeleteMapping + Service delete 方法 |
+| 2 | IotOtaFirmwareService/Impl | 缺 deleteOtaFirmware 方法 | 接口 + 实现对齐 |
+| 3 | SmsChannelController:27 | @RequestMapping 缺前导 / | 补 /system/sms-channel |
+
+### 已匹配（1963/2435）
+### 前端有后端没有的整个模块（不在本轮修复范围）
+- /fms/* 140 个调用，无后端模块
+- /hrm/* 302 个调用，无后端模块

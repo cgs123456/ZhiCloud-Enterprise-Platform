@@ -100,6 +100,13 @@ public class IotOtaFirmwareServiceImpl implements IotOtaFirmwareService {
     }
 
     @Override
+    public void deleteOtaFirmware(Long id) {
+        // 校验固件存在
+        validateFirmwareExists(id);
+        otaFirmwareMapper.deleteById(id);
+    }
+
+    @Override
     public IotOtaFirmwareDO validateFirmwareExists(Long id) {
         IotOtaFirmwareDO firmware = otaFirmwareMapper.selectById(id);
         if (firmware == null) {
