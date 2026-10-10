@@ -7621,6 +7621,53 @@ Artifact name is valid!
 - **状态不翻**：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、Go/No-Go=`No-Go`。本条是本地交付物删除，无任何生产等价验证。
 - 内层本轮只改**文档**（本台账 + `00-README.md`），不触碰代码/迁移/门禁取值。
 
+## 12.179 2026-10-10 业务模块「跑通」专项：启动阻断修复 + 70 个死菜单全部解决（前端页面补齐）
+
+**所有者指令**：着重处理半成品业务模块（OA/TMS/HR 有后端没前端、FMS/HRM 有前端没后端、IM/MP 未进构建、Report 未接入 server），**先解决项目能否顺利跑通**。
+
+### 一、启动阻断（真实缺陷，已修复）
+
+**症状**：应用启动失败，`Error creating bean 'tenantSecurityWebFilter' ... flywayInitializer: Validate failed: Migrations have failed validation`。
+
+**根因**：Flyway 校验和不匹配——`flyway_schema_history` 中 V77 的 checksum 是 `1776434009`，而本地 `V77__aimultiagent_resilience.sql`（2026-10-09 由 `39fcebeda` 改为 information_schema 幂等 DDL）解析为 `-282762132`。这是**陈旧数据库状态**，不是代码缺陷：该库在 V77 改版前就已成功应用过旧版。
+
+**处置**：用仓库自带的设计好的修复入口 `DatabaseMigrationRunner`（`java -Dloader.main=cn.zhicloud.server.DatabaseMigrationRunner`，existing 模式）——它只对**已发布的旧 checksum** `1776434009` 做一次性受控对齐，其他漂移仍 fail-closed。实跑读数：`V77 checksum aligned: legacy=1776434009 current=-282762132 rank=84`，并补跑 2 个待执行迁移（V150/V151），随后 V116–V121 语义校验全 PASS。**应用正常启动**：Tomcat 48080、Flyway 校验 158 个迁移通过、`GET /admin-api/system/auth/get-permission-info` 返回 `code=0`（364 个菜单）。
+
+> 注：`DatabaseMigrationRunner` 是 Helm PreSync Job 的入口，正常 K8s 部署本会先跑它；本机沙箱直接 `java -jar` 起服务跳过了这一步，才暴露为「跑不通」。修复未改任何代码/迁移。
+
+### 二、70 个「死菜单」全部解决（这是「跑通」的核心）
+
+**发现方法**：应用启动后，取它**实际返回给前端的菜单**（`get-permission-info`），逐个检查其 `component` 指向的 `.vue` 是否存在。结果：**70 个菜单指向的前端页面不存在**——用户看得见、点进去加载不出内容。分布：hr 13 / qms 20 / erp 10 / oa 9 / tms 5 / wms 5 / mes 4 / crm 2 / system 1 / infra 1。
+
+**分类处置**（不是一刀切）：
+
+| 类型 | 数量 | 处置 | 依据 |
+|---|---|---|---|
+| **路径写错**（页面存在，菜单指错） | 19 | 新增迁移 **V152**（QMS 18 条）+ **V153**（代码生成案例目录 1 条）改 `component` | QMS 页面本就存在且 API 对着真实后端（如 7510 页面调 `/qms/audit-plan/*`）；V134 按「模块/资源/index」生成，实际页面在带子域目录（`qms/audit/plan`）。V134 被哈希钉住不可改，故走新迁移 |
+| **需新建页面** | 51 | 生成前端页面（见下） | 后端控制器存在，前端页面确实没有 |
+
+**生成的 51 个页面**：用脚本从**后端 Java 源码**读取 base path、`@PreAuthorize` 权限串、RespVO 字段（含 `@Schema(description)` 中文标签），按仓库既有 yudao 风格生成 `api/<x>/index.ts` + `views/<x>/index.vue` + `views/<x>/<Entity>Form.vue`：
+
+- OA 9 个（报销/会议室/公文/工作台/公告/知识库×2/审批模板）+ TMS 5 个 + HR 13 个（含部门树、请假审批流转等非标准形态）+ ERP 10 + WMS 5 + MES 4 + CRM 2 + QMS 2（SPC 分析/追溯，只读）+ system 1（MDM 跨域对照，upsert 语义）。
+- 非标准 CRUD 的按真实端点定制：SPC/traceability 只读分析、MDM `save`/`invalidate`、计件记录只读、请假申请 submit/approve/cancel、部门用 `list` 非 `page`、TMS 跟踪用 `report`/`list-by-shipment`、WMS/MES PDA 为手持端只读列表。
+
+**验证**（都可复现）：
+
+| 检查 | 读数 |
+|---|---|
+| 应用实际返回菜单中的死菜单数 | **70 → 0** |
+| 生成前端调用 ↔ 后端端点比对 | **228 条调用，0 条落空**（逐条比对 `@RequestMapping`+方法） |
+| 生成 Vue 结构（template/script 标签、花括号/圆括号配平） | 95 文件 **0 问题**（与既有 qms/quality-cost 参考页同构） |
+| 迁移契约 | `tracked=64 / scanned=160 / findings=0`（V152/V153 已登记 + verify 文件） |
+| 沙箱实跑 V152/V153 及其自检 | 全 PASS（QMS 18 条改对、QMS 菜单数不变、目录 component 清空、5 个子菜单完好） |
+
+**边界**：前端未在本机构建（无 `node_modules`/pnpm），故**未做 `vite build`/`vue-tsc` 全量编译**——上面是静态结构 + 端点契约 + 沙箱运行三层验证，不等于编译通过。CI 也只跑启动器前置检查、不构建前端。
+
+### 三、状态
+
+- **状态不翻**：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、Go/No-Go=`No-Go`。本轮是「跑通」修复与前端补齐，无生产等价验证。
+- 尚未处理（同一指令的剩余项，另行推进）：**FMS 后端**（前端 140 端点无后端）、**HRM 后端**（318 端点无后端）、**IM/MP 进构建**、**Report 接入 server**。
+
 ## 12.178 2026-10-10 内层文档字节安全编辑工具（safe_doc_edit.py）与一条纪律违规记录
 
 **背景**：本轮改内层台账时，我一度用编辑器（Edit 工具）直接替换台账文本，导致该 CRLF 文件（`uncommitted-review-groups-20260928.md`，CRLF 恒 6551）被整体翻成 LF，产生 1000+ 行幻影 diff；随后我为回退**误用了 `git checkout -- <文件>`**——这违反「内层仓禁止 `git reset/clean/checkout/stash`」的既有纪律。文件最终已恢复正确状态（用 Python 按字节改，CRLF 复核 6551），但该动作本身属违规，此处据实登记。

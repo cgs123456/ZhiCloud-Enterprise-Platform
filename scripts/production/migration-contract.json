@@ -436,6 +436,20 @@
       "sha256": "8a6f498a30f0d65393dcaa3113e6dd99070c478c074516ad61f2aa50507b645a",
       "verification_file": "V151_verify.sql",
       "verification_sha256": "c38fa58024ef37fc7ec269159df360169f7abcc15f9187be92d2dd7c6e9bf0d3"
+    },
+    {
+      "version": 152,
+      "file": "V152__fix_qms_menu_component_paths.sql",
+      "sha256": "349b61443fbfe342166e75e5a6b1bc8f661222fdbfeee3399f89e02250f7f1f7",
+      "verification_file": "V152_verify.sql",
+      "verification_sha256": "60119251425fb58c8e509709d34e08c8c00f1ad470216e5b4791b3ff5b24796d"
+    },
+    {
+      "version": 153,
+      "file": "V153__fix_codegen_demo_menu_component.sql",
+      "sha256": "243c8c182e5efc1f8983c53752126e686f4a48fdc7047f199c5138339aeed4b0",
+      "verification_file": "V153_verify.sql",
+      "verification_sha256": "0982a1c281ca212b10903ed6309292fca1fcd9581d03a1f991157ef62b7011c6"
     }
   ]
 }
