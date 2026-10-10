@@ -101,6 +101,7 @@ jobs:
         set -o pipefail
         mvn -B -V clean verify --file pom.xml | tee maven-build.log
     - name: Upload Surefire Reports
+      id: upload_surefire
       if: always()
       # 存储配额/网络故障不得让后续安全门禁被 skipped（fail-open）。见台账 §12.171。
       # 产物只是取证便利，不是代码门禁；失败仍在步骤上可见，但不阻断 job。
@@ -112,6 +113,7 @@ jobs:
         if-no-files-found: warn
         retention-days: 30
     - name: Upload Maven Build Log
+      id: upload_build_log
       if: always()
       # 存储配额/网络故障不得让后续安全门禁被 skipped（fail-open）。见台账 §12.171。
       # 产物只是取证便利，不是代码门禁；失败仍在步骤上可见，但不阻断 job。
@@ -143,6 +145,7 @@ jobs:
       run: |
         echo "::warning title=OWASP 扫描已跳过::未配置仓库 Secret NVD_API_KEY，依赖漏洞扫描未执行。请在 Settings → Secrets and variables → Actions 添加 NVD_API_KEY 以启用 CVSS>=7 阻断门禁。"
     - name: Upload Dependency Check Report
+      id: upload_dep_check
       if: always() && env.NVD_API_KEY != ''
       # 存储配额/网络故障不得让后续安全门禁被 skipped（fail-open）。见台账 §12.171。
       # 产物只是取证便利，不是代码门禁；失败仍在步骤上可见，但不阻断 job。
@@ -217,6 +220,7 @@ jobs:
               "恢复阻断：给该步骤去掉 --record-only")
         PY
     - name: Upload License Governance Evidence
+      id: upload_license
       if: always()
       # 存储配额/网络故障不得让后续安全门禁被 skipped（fail-open）。见台账 §12.171。
       # 产物只是取证便利，不是代码门禁；失败仍在步骤上可见，但不阻断 job。
@@ -231,6 +235,7 @@ jobs:
         if-no-files-found: warn
         retention-days: 90
     - name: Upload SBOM Artifact
+      id: upload_sbom
       if: always()
       # 存储配额/网络故障不得让后续安全门禁被 skipped（fail-open）。见台账 §12.171。
       # 产物只是取证便利，不是代码门禁；失败仍在步骤上可见，但不阻断 job。
@@ -240,6 +245,52 @@ jobs:
         name: cyclonedx-sbom
         path: target/bom.*
         retention-days: 90  # SBOM 保留 90 天，满足合规审计要求
+    # 产物上传失败已被 continue-on-error 兜住（见 §12.171），但那会让"产物丢失"在结论里不可见。
+    # 项目既有原则是"不要用 continue-on-error 伪装成通过"，因此这里显式把丢失的产物名打到日志与
+    # job summary 上：既不阻断代码门禁，也不让取证缺口悄悄消失。
+    - name: Artifact Upload Posture Notice
+      if: always()
+      env:
+        UP_SUREFIRE: ${{ steps.upload_surefire.outcome }}
+        UP_BUILD_LOG: ${{ steps.upload_build_log.outcome }}
+        UP_DEP_CHECK: ${{ steps.upload_dep_check.outcome }}
+        UP_LICENSE: ${{ steps.upload_license.outcome }}
+        UP_SBOM: ${{ steps.upload_sbom.outcome }}
+      run: |
+        python3 - <<'PY'
+        import os, pathlib
+
+        names = {
+            "UP_SUREFIRE": "surefire-reports",
+            "UP_BUILD_LOG": "maven-build-log",
+            "UP_DEP_CHECK": "dependency-check-report",
+            "UP_LICENSE": "license-governance",
+            "UP_SBOM": "cyclonedx-sbom",
+        }
+        lost = []
+        for var, art in names.items():
+            outcome = os.environ.get(var, "")
+            if outcome == "failure":
+                lost.append(art)
+
+        if not lost:
+            print("All artifact uploads succeeded.")
+            raise SystemExit(0)
+
+        joined = ", ".join(lost)
+        msg = (
+            f"artifact 上传失败（通常为账号级存储配额耗尽），以下取证产物未能存档：{joined}"
+            "。代码门禁未受影响，但取证链存在缺口，"
+            "请在 Settings → Billing 或删除陈旧 artifact 后重跑。"
+        )
+        print(f"::warning title=Artifact 上传失败（取证缺口）::{msg}")
+
+        summary = pathlib.Path(os.environ["GITHUB_STEP_SUMMARY"])
+        with summary.open("a", encoding="utf-8") as fh:
+            fh.write("## Artifact 上传失败（取证缺口，不阻断）\n\n")
+            for art in lost:
+                fh.write(f"- `{art}`\n")
+        PY
   v77-repair-script:
     name: V77 Repair Script (MySQL 8.4)
     runs-on: ubuntu-latest
