@@ -7342,3 +7342,50 @@ Artifact name is valid!
 
 - **状态不翻**：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、Go/No-Go=`No-Go`。
 - 本轮未改任何 Java 业务代码；台账修正了 §12.166 将该 CI 失败定性为“非代码缺陷”的偏差。
+
+## 12.172 2026-10-10 四项未闭环项处置与事实核查（artifact 本仓二次清理 / Temp 与两个 sha 文件 / 外层目录 / 标记）
+
+所有者指令：「1 你不管 QAverify，处理自己的就行；2 继续跟踪他们，查清是什么，有什么用；3 说清是什么，有什么用，删除的影响；4 更新标记」。
+
+### 一、artifact 配额：本仓二次清理（已完成）
+
+- 本仓 artifacts **40 → 12 个**，**61,040,244 → 18,350,638 字节（58.2 → 17.5 MiB）**，保留**最近 3 次 run**（`285d38a7f` / `292847b9b` / `3a6c65794`）各 4 件。
+- 删除 28 件（42,689,606 字节），逐 id 反查文档与脚本引用**命中 0 条**（`git grep` 对 artifact id / run id / `actions/artifacts` 均无引用）。
+- **账号级占用未变**：实测全账号 3,706.1 MB = `QAverify` 3,442.0 + `AmazonERP` 205.9 + 本仓 58.2。按所有者指令**未动 QAverify**，故账号级 500 MB 额度瓶颈**依旧未解**，artifact 上传仍会失败。
+- 边界：本仓保留 3 次而非 10 次 run，是因为在账号级额度已被他仓占满的前提下，多保留 7 次 run（约 41 MB）不改变任何结论；3 次 run 足以回溯最近失败/成功形态。**本仓最小化已完成，瓶颈不在本仓。**
+
+### 二、`Temp/`、`.blob-sha-ledger`、`.tree-sha` 是什么、有什么用
+
+**`.blob-sha-ledger`（40 字节）**：内容是 handoff 文档某一版本的 git blob SHA `e378ed44eebe12d938ebc3fc846731591a20c1c1`（实测该 blob 即 `uncommitted-review-groups-20260928.md` 的 2026-10-08 版正文，648,429 字节）。**用途**：2026-10-08 会话（`01a11b09`）在直连 `git push` 受网络限制时，改用 GitHub Git Data API 直接构造 blob→tree→commit 上传，把中间 SHA 落到本地文件供下一步复用。**现状**：该 SHA 已过期——handoff 文档当前 blob SHA 为 `97ce5f65263481d1c8b1e4a8996da3f4e6358249`。
+
+**`.tree-sha`（0 字节）**：同一会话用 API 构造 tree 时准备写 tree SHA 的暂存文件，实测为空（那次 API 构造未完成/未写回）。**无任何现存用途。**
+
+**`Temp/`（151 个顶层项，763 MB）**：本地工作目录，非版本管理内容，分三类——
+1. **被文档按路径引用**：`Temp/e2e-prodlike/`（Windows Server 2025 干净机 E2E 的 VM 脚本、`key.pem`/`cert.pem`、日志），被 `evidence/production/v151-default-oauth2-client-login-e2e-20261009.md` 与 handoff 引用；
+2. **一次性过程产物**：`Temp/_*.py`、`_*.txt`、`commit-msg*.txt`、`*.log`、`*.pid` 等（本会话与历史会话的临时脚本/日志/提交信息）；
+3. **含真实凭据**：`Temp/zc-live-server.env`（21 行，含 `MASTER/SLAVE_DATASOURCE_PASSWORD`、`SPRING_DATA_REDIS_PASSWORD`、`SPRING_RABBITMQ_PASSWORD`、`MYBATIS_ENCRYPTOR_PASSWORD`、`API_ENCRYPT_REQUEST/RESPONSE_KEY`、`KD_NIAO_API_KEY` 等）与 `Temp/zc-live-admin-password.txt`（16 字节明文口令）。
+
+**重要更正**：三者**均未被 `.gitignore` 覆盖**（`git check-ignore -v Temp/ .blob-sha-ledger .tree-sha` 无命中）；它们显示为未跟踪，只是因为从未 `git add`。因此「按既有约定不入仓」这句话**不准确**——约定是口头的，不是 .gitignore 强制的；任何 `git add -A` 都会把它们纳入。
+
+### 三、删除的影响
+
+| 对象 | 删除影响 | 判断 |
+|---|---|---|
+| `.blob-sha-ledger` | 0。一次性 API 上传中间产物，已被 commit 取代，内容已过期 | 可删；但删它不会让 `test_plan_commit_groups` 变绿（该测试同时因 `Temp/` 失配） |
+| `.tree-sha` | 0。空文件，无用途 | 可删 |
+| `Temp/e2e-prodlike/` | **会使 evidence 与 handoff 的路径引用悬空**（此前踩过同类坑） | **不删** |
+| `Temp/` 其余一次性脚本与日志 | 0；但总收益有限（763 MB 中 e2e-prodlike 占大头） | 可删，优先级低 |
+| `Temp/zc-live-server.env`、`zc-live-admin-password.txt` | 删除=消除明文凭据暴露面；**不删=真实口令长期明文驻留未跟踪目录** | **建议删或确认已轮换**；未入仓故非泄密事件，但属本机风险 |
+
+### 四、外层目录 `C:\Users\Administrator\Desktop\zhicloud`
+
+- **是什么**：一个**独立 git 仓库**（18 个提交，root `c1f5dd2fe62c1e049ba0177b3ccaced17d2ff619`，分支 `master`，HEAD `01dfe6b35da736f2c4f1d801ff930f2525de52c1`，最后提交 2026-09-26）。remote 指向**同一个** GitHub 仓库，但历史与内层 `zhicloud-audit-src2`（root `5f2148fe…`）**完全不同、无共同祖先**。HEAD 从未推送成功（`gh api .../commits/01dfe6b35` 返回 **HTTP 422 No commit found**）。
+- **有什么用**：它是 2026-09 的**「生产化升级方案与审计交付物」外层仓**——334 个 tracked 文件 = 229 个 `script/`（`enterprise-mock-data` / `enterprise-platform-audit` / `enterprise-platform-upgrade` 的生成器、模拟数据 CSV/SQL）+ 103 个 `docs/enterprise-platform/*.md`（编号 00–16、26）+ README。**与内层 docs 编号体系不同**（内层为 00–13 + handoff 台账），不是同一批文件的副本。
+- **体积**：22.21 GB，其中 `Temp/win2025-clean/` = **20.5 GB**（`WindowsServer2025Eval.vhdx` 11 GB + `ZhiCloudClean-Diff.vhdx` 9.4 GB，即 §12.164 干净机证据的原始载体）；`archive` 37.9 MB、`.tools` 77.8 MB、内层 2.03 GB。
+- **未提交**：6 个 tracked 修改（`05-生产就绪门禁清单.md`、`10-最终Review与交付审计.md`、3 个 evidence + 1 个 evidence.md）+ 87 项未跟踪。
+- **删除影响**：**不可逆**。外层 334 个 tracked 文件中，103 个 docs 与 229 个 script 在内层**没有等价物**；因其从未推送，**删掉即永久丢失**（除非从本机其它副本恢复）。VM 磁盘 20.5 GB 若确认证据已固化到 `evidence/production/clean-windows-bat-install-20261009/`，可单独回收，但需所有者确认。
+
+### 五、标记
+
+- **四个硬标记一律不翻**：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、`Go/No-Go=No-Go`。本轮做的是 artifact 存储清理与文件事实核查，**没有任何生产等价验证**，不构成 gate3 / 独立复核证据；翻标记会违背项目自身的「先证据、后宣称」纪律。
+- **唯一更新**：artifact 配额条目由「本仓未清理」更新为「本仓已二次清理 40→12 个 / 58.2→17.5 MiB，保留最近 3 次 run；账号级瓶颈在他仓，仍 OPEN」。
