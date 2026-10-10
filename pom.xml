@@ -17,14 +17,14 @@
         <module>zhicloud-module-infra</module>
         <module>zhicloud-module-bpm</module> <!-- 启用：BPM 工作流（Flowable 8.0.0），CRM 依赖 -->
         <module>zhicloud-module-report</module> <!-- 启用：数据报表（GoView + 业务查询视图） -->
-<!--        <module>zhicloud-module-mp</module>-->
+        <module>zhicloud-module-mp</module> <!-- 启用：微信公众号管理（2026-10-10，V155 建 11 张 mp_* 表） -->
         <module>zhicloud-module-crm</module> <!-- B5 启用：CRM 客户关系管理模块（商机/合同/跟进） -->
         <module>zhicloud-module-erp</module>
         <module>zhicloud-module-iot</module> <!-- 启用：IoT 物联网（设备/物模型/告警/设备消息） -->
         <module>zhicloud-module-mes</module>
         <module>zhicloud-module-wms</module>
         <module>zhicloud-module-qms</module> <!-- QMS 质量管理系统模块（IQC/IPQC/OQC/CAPA） -->
-<!--        <module>zhicloud-module-im</module>-->
+        <module>zhicloud-module-im</module> <!-- 启用：IM 即时通讯（2026-10-10，V156 建 17 张 im_* 表） -->
 <!-- 请参考 https://github.com/cgs123456/ZhiCloud-Enterprise-Platform/docs/ai 文档，完成 AI 模块的启动！！！ -->
         <module>zhicloud-module-ai</module>
         <module>zhicloud-module-ai-rag</module>

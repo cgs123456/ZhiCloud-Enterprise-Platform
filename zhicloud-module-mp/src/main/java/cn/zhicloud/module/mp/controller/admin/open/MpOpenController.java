@@ -21,6 +21,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.Resource;
+import jakarta.annotation.security.PermitAll;
 import java.util.Objects;
 
 @Tag(name = "管理后台 - 公众号回调")

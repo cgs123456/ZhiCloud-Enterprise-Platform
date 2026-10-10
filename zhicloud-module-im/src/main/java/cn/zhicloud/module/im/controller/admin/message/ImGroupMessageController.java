@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import static cn.zhicloud.framework.common.pojo.CommonResult.success;
 import static cn.zhicloud.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
 

@@ -509,6 +509,15 @@ zhicloud:
       - /admin-api/system/user/profile/**
       - /admin-api/system/auth/**
     ignore-tables:
+      # mp 模块 7 张表对应 DO 继承 BaseDO（无租户列），必须排除在租户拼接之外；
+      # mp_account 是唯一 TenantBaseDO 表，保留拦截。
+      - mp_material
+      - mp_menu
+      - mp_message
+      - mp_message_template
+      - mp_auto_reply
+      - mp_tag
+      - mp_user
     ignore-caches:
       - user_role_ids
       - permission_menu_ids

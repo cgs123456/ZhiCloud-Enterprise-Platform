@@ -7713,3 +7713,39 @@ FMS/HRM 前端页面存在（80 + 198 个 .vue），但 **DB 里 0 条 `fms/*`�
 另有 `--stats`（只读报告 bytes/CRLF/bareLF）与 `--selftest`（验证字节替换保行尾 + 不变量守卫拒绝漂移）。本轮已跑 `--selftest` 通过，并用 `--stats` 复核台账 CRLF=6551。
 
 **边界**：该工具是**会话级**辅助，不进任何仓库；本台账只登记其存在与用途。真正的纪律仍是：**行尾敏感文件一律用 Python 按字节改，且改前先备份，绝不为此动用 `git checkout`。**
+
+## 12.180 2026-10-10 IM/MP/Report 三模块接线启用：28 个「可见但不可用」菜单全部解决
+
+**背景**：§12.179 登记的剩余项之一——IM（14 菜单）、MP（11 菜单）、Report（3 菜单）共 28 个菜单在 `get-permission-info` 可见、页面组件全部存在，但后端返回 `501 [module] - 已禁用`。根因：三个模块不在构建/部署单元里（root pom 注释、server pom 注释、表未建）。本轮按所有者指示启用三模块并逐真机验证。
+
+### 一、迁移（3 个新版本，契约 tracked=67）
+
+| 版本 | 内容 | 来源与口径 |
+|---|---|---|
+| V154__report_jimu_tables.sql | 16 张 `jimu_*` 表 + 字典/报表分类种子（INSERT IGNORE，47+196+5 条） | JeecgBoot 官方全量脚本 `jeecg-boot/db/jeecgboot-mysql-5.7.sql`（master 抓取）逐字抽取；与 jar 内实体/DAO SQL **逐列核对**发现 1 处漂移：`jimu_report_export_log` 补 `export_from/from_id/err_msg/from_job_name` 4 列（jimureport 2.3.4 的 DAO 需要，官方 master 脚本滞后）。官方 36 个演示报表种子（~934KB、依赖 demo 表）不带。 |
+| V155__mp_tables.sql | 8 张 `mp_*` 表 | **无现成 DDL**（模块无 test 建表脚本、仓库历史与上游 sql 均无），按 `dal/dataobject` 各 DO 字段逐表生成：String->varchar、Long->bigint、Boolean->bit(1)、LocalDateTime->datetime、List->json。`mp_account` 继承 TenantBaseDO 带 `tenant_id`；其余 7 个 DO 继承 BaseDO **不带**租户列。 |
+| V156__im_tables.sql | 17 张 `im_*` 表 | `zhicloud-module-im/src/test/resources/sql/create_tables.sql`（H2 方言）程序化转 MySQL 8：IDENTITY->AUTO_INCREMENT、timestamp->datetime、clob->longtext、bit->bit(1)、CONSTRAINT UNIQUE->UNIQUE KEY。 |
+
+三个 SQL 都在临时库 `zc_syntax_check` 对真机 MySQL 8.4 全量语法验证通过（25 表建成即删临时库），再登记契约 + verify 文件；`check_migration_contract.py` PASSED tracked=67 scanned=163。
+
+### 二、构建接线
+
+- root `pom.xml`：解开 `zhicloud-module-mp`、`zhicloud-module-im` 注释（此前两模块**从未进过反应堆**）。
+- `zhicloud-server/pom.xml`：解开 report、mp、im 三个依赖注释。
+- 编译暴露的存量缺陷（一并修）：`MpOpenController` 缺 `import jakarta.annotation.security.PermitAll`（1 处）；IM 4 个 controller 缺 `import org.springframework.security.access.prepost.PreAuthorize`（此前批量扫描因 Windows 反斜杠路径误报 26 个，实际以编译器为准补 4 个，复扫 279 个 java 文件 0 缺失）。
+- `application.yaml` `zhicloud.tenant.ignore-tables`：登记 7 张 mp BaseDO 表（mp_material/mp_menu/mp_message/mp_message_template/mp_auto_reply/mp_tag/mp_user）。原因：`TenantDatabaseInterceptor.computeIgnoreTable` 对非 TenantBaseDO 实体只要注册了就**默认不忽略**，查询被拼 `tenant_id` 报 `Unknown column`；mp_account 保留拦截。
+- Report 无需补 jmreport yaml：模块自带 `JmReportConfiguration`（@ComponentScan org.jeecg.modules.jmreport + JmReportTokenServiceImpl 桥接平台 OAuth2 token）与 Security 放行（仅 view/preview/img 只读端点 permitAll）；jimu_* 表由 jimureport 自建 SqlSessionFactory 访问，不经过平台租户拦截器（yudao 同栈先例）。
+
+### 三、真机验证（zhicloud_sandbox_v140，V154/V155/V156 由应用启动时 Flyway 自动执行）
+
+28 菜单逐端点探测（脚本 `.tmp-verify28.py`，会话级临时文件）：
+
+- **Report 3/3 PASS**：`/jmreport/list`、`/drag/list`（前端 iframe 内嵌端点，HTTP 200+HTML）、`/admin-api/report/go-view/project/my-page` code=0。
+- **IM 14/14 PASS**：全部 manager 端点 code=0（含首测拼错回落通配的"群成员"，真实方法是 `/list?groupId=`）。
+- **MP 8 张本地表端点 PASS**（account/tag/user/message/message-template/menu/auto-reply/material），其中 7 个 BaseDO 表在 ignore-tables 修复前报 `Unknown column 'tenant_id'`，修复后 code=0。
+- **MP 3 个微信 API 直连端点**（draft/free-publish/statistics）：插占位测试账号（`mp_account` id=1, app_id=`wx_test_appid`，沙箱库验证产物）并重启装配 WxMpServiceFactory 后，请求**打到微信官方 API** 返回「不合法的 AppID」业务错误码（1006007000/1006006000）——链路全通，占位 appid 属预期失败；真实公众号凭据下即可用。statistics 首测 500 是我探测传参错（appId 应为 accountId+date 数组），修正后同样到微信 API。
+
+**结论：28 个「可见但不可用」菜单全部解决。** 菜单数口径同步更正：§12.179 记 IM/MP/Report 共 28（14+11+3），本轮探测脚本按端点列 30 项——多出的 2 项是群成员/表情项等管理页的附加查询端点，不改变菜单计数。
+
+**遗留登记**：沙箱库 `mp_account` id=1 占位账号与 V154 的 jimu 字典种子保留（不影响断言口径，均为相对/元数据类）；FMS/HRM 未接线模块（458 端点）仍未动，待所有者排期。
+

@@ -450,6 +450,27 @@
       "sha256": "243c8c182e5efc1f8983c53752126e686f4a48fdc7047f199c5138339aeed4b0",
       "verification_file": "V153_verify.sql",
       "verification_sha256": "0982a1c281ca212b10903ed6309292fca1fcd9581d03a1f991157ef62b7011c6"
+    },
+    {
+      "version": 154,
+      "file": "V154__report_jimu_tables.sql",
+      "sha256": "d223636f0d5286858e28fc5472beb0c9a459df9ac3c4cd7a685e373b0ce05320",
+      "verification_file": "V154_verify.sql",
+      "verification_sha256": "66c46f1a438069565d5000650e97046eefbdf49aad1101d474b39257d6c4cb0a"
+    },
+    {
+      "version": 155,
+      "file": "V155__mp_tables.sql",
+      "sha256": "4d97762a1681b8e23de8d8c013395a1ea46639aac98cf20353f2569442ff8245",
+      "verification_file": "V155_verify.sql",
+      "verification_sha256": "bfe3eb632834c6cb371f60db42b934655f3798648310bbb877274ec53d535c4b"
+    },
+    {
+      "version": 156,
+      "file": "V156__im_tables.sql",
+      "sha256": "0e882d2b2eea347e21b7c9e92416380985b78f11f6449d2ca25e0a00015dfdd8",
+      "verification_file": "V156_verify.sql",
+      "verification_sha256": "c423115123d294aa302f6765ae6171d4cbbbc52ba0975fa5c631df86f56a468c"
     }
   ]
 }

@@ -33,17 +33,14 @@
         </dependency>
 
 
-        <!-- 数据报表。已进构建（模块测试 16 条在跑、V129 建表已登记），但**暂不接进 server**：
-             zhicloud-module-report 会带入 jimureport-spring-boot3-starter 与 jimubi-spring-boot3-starter
-             两个自动配置包，而 zhicloud-server 的 application*.yaml 里没有任何 jeecg/jmreport 配置项；
-             在没有真机启动验证的前提下把它接进部署单元，属于"可能让服务端起不来"的改动，故留在下一步。
-             要接进来时需要：补 jmreport 配置 + 确认它自建的 jimu_* 表是否纳入 Flyway 管理 + 真机启动一次。 -->
-        <!-- 数据报表。默认注释，保证编译速度 -->
-<!--        <dependency>-->
-<!--            <groupId>cn.zhicloud</groupId>-->
-<!--            <artifactId>zhicloud-module-report</artifactId>-->
-<!--            <version>${revision}</version>-->
-<!--        </dependency>-->
+        <!-- 数据报表。已接进 server（2026-10-10）：V154 建 16 张 jimu_* 表（JeecgBoot 官方 DDL，
+             与 jimureport 2.3.4 jar 内 DAO 逐列核对）；模块自带 JmReportConfiguration/SecurityConfiguration
+             与 JmReportTokenServiceImpl，jmreport 自动配置无需额外 yaml；已真机启动验证。 -->
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-module-report</artifactId>
+            <version>${revision}</version>
+        </dependency>
         <!-- 工作流。默认注释，保证编译速度 -->
         <dependency>
             <groupId>cn.zhicloud</groupId>
@@ -51,12 +48,12 @@
             <version>${revision}</version>
         </dependency>
 
-        <!-- 微信公众号模块。默认注释，保证编译速度 -->
-<!--        <dependency>-->
-<!--            <groupId>cn.zhicloud</groupId>-->
-<!--            <artifactId>zhicloud-module-mp</artifactId>-->
-<!--            <version>${revision}</version>-->
-<!--        </dependency>-->
+        <!-- 微信公众号模块。已接进 server（2026-10-10）：V155 建 8 张 mp_* 表（按 DO 字段生成）；已真机启动验证。 -->
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-module-mp</artifactId>
+            <version>${revision}</version>
+        </dependency>
 
 
         <!-- CRM 相关模块。B5 启用：客户关系管理 -->
@@ -148,12 +145,12 @@
             <version>${revision}</version>
         </dependency>
 
-        <!-- IM 相关模块。默认注释，保证编译速度 -->
-<!--        <dependency>-->
-<!--            <groupId>cn.zhicloud</groupId>-->
-<!--            <artifactId>zhicloud-module-im</artifactId>-->
-<!--            <version>${revision}</version>-->
-<!--        </dependency>-->
+        <!-- IM 相关模块。已接进 server（2026-10-10）：V156 建 17 张 im_* 表（由模块测试 H2 DDL 转 MySQL）；已真机启动验证。 -->
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-module-im</artifactId>
+            <version>${revision}</version>
+        </dependency>
 
         <!-- spring boot 配置所需依赖 -->
         <dependency>

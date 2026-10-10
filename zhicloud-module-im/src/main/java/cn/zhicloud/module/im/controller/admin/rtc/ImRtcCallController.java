@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import static cn.zhicloud.framework.common.pojo.CommonResult.success;
 import static cn.zhicloud.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
 
