@@ -7619,3 +7619,19 @@ Artifact name is valid!
 
 - **状态不翻**：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、Go/No-Go=`No-Go`。本条是本地交付物删除，无任何生产等价验证。
 - 内层本轮只改**文档**（本台账 + `00-README.md`），不触碰代码/迁移/门禁取值。
+
+## 12.178 2026-10-10 内层文档字节安全编辑工具（safe_doc_edit.py）与一条纪律违规记录
+
+**背景**：本轮改内层台账时，我一度用编辑器（Edit 工具）直接替换台账文本，导致该 CRLF 文件（`uncommitted-review-groups-20260928.md`，CRLF 恒 6551）被整体翻成 LF，产生 1000+ 行幻影 diff；随后我为回退**误用了 `git checkout -- <文件>`**——这违反「内层仓禁止 `git reset/clean/checkout/stash`」的既有纪律。文件最终已恢复正确状态（用 Python 按字节改，CRLF 复核 6551），但该动作本身属违规，此处据实登记。
+
+**根因**：文档编辑器按文本行处理，会把 CRLF 规范化；行尾敏感的文件不能用它改。
+
+**处置**：新增会话级工具 **`safe_doc_edit.py`**（放在 `.zcode/cli/tools/`，不进任何仓库），三条约束把这类事故堵死：
+
+1. **按字节精确替换**：`open(p,'rb')` 读 → 唯一片段 `.replace()` → `open(p,'wb')` 写；不经过任何文本行处理，行尾原样保留。
+2. **写入前强制行尾不变量**：可传 `--expect-crlf N`，若替换会让 CRLF 计数偏离 N 则**拒绝写入**。
+3. **写入前先做带时间戳备份**：`FILE.bak-YYYYmmdd-HHMMSS`，避免「改坏了没有退路」诱使再犯 `git checkout`。
+
+另有 `--stats`（只读报告 bytes/CRLF/bareLF）与 `--selftest`（验证字节替换保行尾 + 不变量守卫拒绝漂移）。本轮已跑 `--selftest` 通过，并用 `--stats` 复核台账 CRLF=6551。
+
+**边界**：该工具是**会话级**辅助，不进任何仓库；本台账只登记其存在与用途。真正的纪律仍是：**行尾敏感文件一律用 Python 按字节改，且改前先备份，绝不为此动用 `git checkout`。**
