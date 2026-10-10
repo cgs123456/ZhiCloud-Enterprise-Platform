@@ -7231,3 +7231,78 @@ export REDIS_PASSWORD='<与 script/docker/.env 的 REDIS_PASSWORD 相同>'
 - 门禁从「512 个 controller 目录下的 Controller」扩到「513 个真实标注了 Controller 注解的类」，
   **是收紧而非放宽**：以前看不见的接口现在会被门禁盯住。
 - **状态不翻**：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、Go/No-Go=`No-Go`。
+## 12.171 2026-10-10 CI fail-open 修复：artifact 上传失败不得跳过后续安全门禁 + 账号级 artifact 配额根因定位与本仓清理
+
+### 一、问题定性：不是"存储问题"，而是 fail-open
+
+`e41dc71a1` 的 CI run `38006057454` 结论 `failure`。逐步骤核查（`gh api .../actions/runs/<id>/jobs`）后确认：
+
+| 步骤 | 结论 |
+|---|---|
+| 4–11 代码门禁（错误码 / @PreAuthorize×2 / 电子签名 / 裸抛 / 事务 / 迁移契约 / 重复建表） | success |
+| 12 Build with Maven | **success** |
+| 13 Upload Surefire Reports | **failure** |
+| 14 Upload Maven Build Log | **failure** |
+| 15 Security Check (deploy gate) | **skipped** |
+| 16–18 Cache NVD / OWASP Dependency Check(×2) | **skipped** |
+| 19 Upload Dependency Check Report | **skipped** |
+| 20 Generate CycloneDX SBOM | **skipped** |
+| 21–23 Resolve Runtime Tree / Build License Inventory / License Policy Gate | **skipped** |
+| 24–25 License Guidance / License Posture Notice | **skipped** |
+| 26–27 Upload License Governance Evidence / Upload SBOM Artifact | success，但日志为 `No files were found with the provided path`（**空转成功**） |
+
+13/14 的失败原因（日志原文）：
+
+```
+##[error]Failed to CreateArtifact: Artifact storage quota has been hit.
+Unable to upload any new artifacts. Usage is recalculated every 6-12 hours.
+```
+
+**判定**：上传步骤失败确实源于存储配额，但**后果远不止"少了两份产物"**——它让第 15–25 步共 **11 个步骤全部 skipped**，其中包括 `Security Check (deploy gate)`、`OWASP Dependency Check`、`Generate CycloneDX SBOM` 和整条许可证治理链。也就是说：**一次与代码无关的存储配额错误，可以静默关闭整条安全/合规门禁链，而 CI 只表现为"上传失败"**。这是 CI 编排的 fail-open 缺陷，不能定性为"非代码缺陷"。
+
+该形态在 2026-10-09 的连续 5 次 run（`37890468463` / `37895319484` / `37901729817` / `37903088377` / `37903169487`）中完全一致：failed = `[Upload Surefire Reports, Upload Maven Build Log]`，skipped = 11。
+
+**更正**：此前 §12.166 与 `docs/enterprise-platform/00-README.md` 将该失败表述为"属存储问题非代码缺陷，处置需所有者决策"。前半句只对了一半（**上传失败**是存储问题），但该定性掩盖了 fail-open 这一真实缺陷，本节予以更正。
+
+### 二、修复
+
+给 5 个 `actions/upload-artifact@v4` 步骤统一加 `continue-on-error: true`（其余配置一律不动）：
+`surefire-reports` / `maven-build-log` / `dependency-check-report` / `license-governance` / `cyclonedx-sbom`。
+
+语义：上传失败时该步骤 `outcome=failure`（日志与 API 仍可见，不掩盖故障），但 `conclusion=success`，**job 不再中止**，后续安全门禁照常执行。产物只是取证便利，不是代码门禁，不应具备阻断 job 的能力。
+
+验证：`yaml.safe_load` 解析通过、5 个步骤 `continue-on-error=True`；`git diff` 仅 +15 行；文件保持 UTF-8 无 BOM + LF。
+
+### 三、配额根因定位（账号级，非本仓级）
+
+GitHub 官方文档（`docs.github.com/en/billing/concepts/product-billing/github-actions`，2026-10-10 实读）：**GitHub Free 计划的 artifact 存储配额为 500 MB，且为账号级；该额度与 GitHub Packages 共享；仅私有仓库的用量计入。**
+
+实测各仓 artifact 占用（`gh api .../actions/artifacts` 全量翻页求和）：
+
+| 仓库 | 可见性 | artifact 数 | 体积 |
+|---|---|---|---|
+| `QAverify` | **private** | 6 | **3442.0 MB** |
+| `ZhiCloud-Enterprise-Platform`（本仓，清理前） | private | 299 | 436.3 MB |
+| `ZhiCloud-Enterprise-Platform`（清理后） | private | 40 | 58.2 MB |
+| `AmazonERP` | public | 749 | 205.9 MB |
+| 其余 8 仓 | 混合 | 0 | 0 |
+
+**结论**：本仓不是配额主因。`QAverify` 的 **6 个 artifact 就占 3.44 GB，约为 500 MB 额度的 7 倍**，每个约 600 MB，名字为 `qaverify-2.1.7-public` … `qaverify-2.1.14-public`（版本 2.1.7 / 2.1.8 / 2.1.9 / 2.1.10 / 2.1.13 / 2.1.14）。因此**只清本仓 artifact 无法恢复上传能力**，这一点必须先说清，否则会把"清理本仓"误当成已解决。
+
+### 四、本仓清理（已执行）
+
+删除本仓 **259 个**陈旧 artifact（**378.1 MB**），保留最近 10 次 run 的 40 个（58.2 MB，覆盖 2026-10-08 03:58 之后的 run）。删除前已核实：
+
+- 全仓 `git grep` 未发现任何引用 `actions/runs/<id>`、`actions/artifacts/<id>`、`artifact_id` 的位置；对每个待删 run id 逐个反查文档，命中 0 条。
+- 删除结果：`deleted=259 failed=0`；复查 `total_count` 299 → **40**。
+
+### 五、仍 OPEN：需所有者决策的动作（本轮未擅动）
+
+1. **`QAverify` 的 3.44 GB（根因，最有效）**：这 6 个 artifact 中，2.1.13 / 2.1.14 与 `QAverify-releases` 的 Release 资产（`QAVerify-Setup-2.1.13/14-public.exe`，各约 300 MB）版本重叠，但体积不同（artifact 约 600 MB vs 资产约 300 MB），**不能据此断言可安全删除**；2.1.7–2.1.10 在 releases 中**没有**对应资产，可能是这些版本安装包的唯一留存。删除属跨项目、不可逆操作，**未执行**，需所有者确认。
+2. **本仓保留策略结构性不可持续**：本仓平均每次 run 产出约 5.8 MB（其中 `surefire-reports` 4.8 MB，占 83%）。按 10–19 run/日估算，30 天 retention 的稳态占用约 1.7–3.2 GB，远超 500 MB 账号额度。workflow 中 `cyclonedx-sbom` 与 `license-governance` 标注 `retention-days: 90` 并写明"SBOM 保留 90 天，满足合规审计要求"——**下调 retention 会与这条已记录的合规要求冲突**，故未擅改。可行方向按优先级：(a) 先处理第 1 项释放账号池；(b) 升级计划（Pro 1 GB / Team 2 GB）；(c) SBOM 改存 Release 资产或对象存储；(d) 确可放宽时再下调 retention。
+3. **`surefire-reports` 上传的必要性**：`Build with Maven` 已用 `tee maven-build.log` 捕获 surefire 的 stdout 汇总，单测明细 XML 仅在需要逐用例下钻时才有增量价值，而它占单次产物体积 83%。是否改为仅失败时上传（`if: failure()`）或取消上传属策略选择，未擅改。
+
+### 六、状态
+
+- **状态不翻**：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、Go/No-Go=`No-Go`。
+- 本轮未改任何 Java 业务代码；workflow 仅新增 `continue-on-error: true` 与 2 行注释。

@@ -102,6 +102,9 @@ jobs:
         mvn -B -V clean verify --file pom.xml | tee maven-build.log
     - name: Upload Surefire Reports
       if: always()
+      # 存储配额/网络故障不得让后续安全门禁被 skipped（fail-open）。见台账 §12.171。
+      # 产物只是取证便利，不是代码门禁；失败仍在步骤上可见，但不阻断 job。
+      continue-on-error: true
       uses: actions/upload-artifact@v4
       with:
         name: surefire-reports
@@ -110,6 +113,9 @@ jobs:
         retention-days: 30
     - name: Upload Maven Build Log
       if: always()
+      # 存储配额/网络故障不得让后续安全门禁被 skipped（fail-open）。见台账 §12.171。
+      # 产物只是取证便利，不是代码门禁；失败仍在步骤上可见，但不阻断 job。
+      continue-on-error: true
       uses: actions/upload-artifact@v4
       with:
         name: maven-build-log
@@ -138,6 +144,9 @@ jobs:
         echo "::warning title=OWASP 扫描已跳过::未配置仓库 Secret NVD_API_KEY，依赖漏洞扫描未执行。请在 Settings → Secrets and variables → Actions 添加 NVD_API_KEY 以启用 CVSS>=7 阻断门禁。"
     - name: Upload Dependency Check Report
       if: always() && env.NVD_API_KEY != ''
+      # 存储配额/网络故障不得让后续安全门禁被 skipped（fail-open）。见台账 §12.171。
+      # 产物只是取证便利，不是代码门禁；失败仍在步骤上可见，但不阻断 job。
+      continue-on-error: true
       uses: actions/upload-artifact@v4
       with:
         name: dependency-check-report
@@ -209,6 +218,9 @@ jobs:
         PY
     - name: Upload License Governance Evidence
       if: always()
+      # 存储配额/网络故障不得让后续安全门禁被 skipped（fail-open）。见台账 §12.171。
+      # 产物只是取证便利，不是代码门禁；失败仍在步骤上可见，但不阻断 job。
+      continue-on-error: true
       uses: actions/upload-artifact@v4
       with:
         name: license-governance
@@ -220,6 +232,9 @@ jobs:
         retention-days: 90
     - name: Upload SBOM Artifact
       if: always()
+      # 存储配额/网络故障不得让后续安全门禁被 skipped（fail-open）。见台账 §12.171。
+      # 产物只是取证便利，不是代码门禁；失败仍在步骤上可见，但不阻断 job。
+      continue-on-error: true
       uses: actions/upload-artifact@v4
       with:
         name: cyclonedx-sbom
