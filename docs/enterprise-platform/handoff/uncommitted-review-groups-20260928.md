@@ -7498,3 +7498,52 @@ Artifact name is valid!
 
 - §12.164 正文与本台账第 6625 行所指外层归档路径已从 `20261009-outer-repo-snapshot\` 更新为 `20261010-outer-repo-latest\`（原目录已被本节的更完整归档取代并删除）。
 - §12.173 第五节「外层另有一个本地快照 ref…」已更新为列出**两个** snapshot ref 及其所在 bundle。
+
+## 12.175 2026-10-10 会话交接：外层 HANDOFF.md 重写 + 过时文档修订 + 无用文件清理（外层归档刷新为 FINAL）
+
+**所有者指令**：① 把当前任务/已完成/卡住/下一步/踩坑写进外层 `HANDOFF.md`；② 更新过时文档、清理无用代码或文档。
+
+### 一、HANDOFF.md 重写（外层，未纳入任何 git 仓）
+
+`C:\Users\Administrator\Desktop\zhicloud\HANDOFF.md` 由旧版（17,926 B，2026-10-09，已过期）重写为 13,115 B / 220 行，含六节：当前任务（含硬约束）、已完成（目录结构/删除清单/归档/文档/内层登记）、卡住的问题（外层不可推送 / artifact 配额 / VHDX 不可逆边界 / 既有 1 条 citations FAIL）、下一步（4 项待裁决 + 优先级）、踩过的坑（方法 4 条 / 环境 3 条 / 编码 3 条 / 私有仓成本）、关键事实速查。编码：UTF-8 无 BOM + LF。
+
+### 二、过时文档修订（外层，**只改被证伪的硬事实，保留其历史交付物性质**）
+
+核实方法：`gh api` 查远端分支/默认分支、`git rev-parse` 查 HEAD、实跑 `check_migration_contract.py` 取计数、`Get-ChildItem` 点文件数。
+
+| 文件 | 原说法 | 2026-10-10 实测 | 处置 |
+|---|---|---|---|
+| `README.md` | 分支 `upgrade/production-readiness`、commit `1c21183e` | 远端该分支 **HTTP 404**；现为 `master`，HEAD `7f864090b`（`1c21183e` 仍是其祖先） | 顶部新增「⚠️ 时效性说明」块列出 5 项差异；「源码基线」节标注为归档口径；行内逐条加「归档时口径 / 现为…」 |
+| `README.md` | 迁移契约 `tracked=15 / scanned=111`、V90–V104 | 最高 **V151**，`tracked=62 / scanned=158 / findings=0` | 行内补注 |
+| `README.md` | `evidence/production/` 47 个文件 | **129** 个 | 行内补注 |
+| `README.md` | 工作区 658 MB、脚本回归 `183/183 OK` | 1,266 MB；183/183 已不可复现 | 行内补注 |
+| `docs/enterprise-platform/00-README.md` | 「当前实施基线：分支 `upgrade/production-readiness`，commit `1c21183e`」 | 同上 | 该行改为「本文为 2026-09-26 归档口径，已过时；2026-10-10 实测：分支 `master`，HEAD `7f864090b`，`upgrade/production-readiness` 已 HTTP 404」 |
+
+**边界**：外层 docs（编号 00–16、26）整体是 2026-09-24/26 的**历史交付物**，其结论口径不应按今天的状态改写——那会让审计文档失真。故只标注时效性与差异，**不改写其结论**。
+
+### 三、清理无用文件（先验证可重建/冗余，再删）
+
+| 对象 | 体积 | 删除依据 |
+|---|---|---|
+| `script/**/__pycache__/`（4 个目录，25 个 .pyc） | 563,048 B | 可再生的字节码缓存；外层 `.gitignore` 本就有 `**/__pycache__/` 与 `*.py[cod]`，即**从未入库** |
+| `.tools/helm/helm-v3.19.0-20260927-141536.zip` | 18,475,692 B | 解压验证：**3/3 条目与同目录已解压的 `windows-amd64/` 逐字节一致**（`helm.exe`/`LICENSE`/`README.md`）；保留解压目录即可 |
+
+合计释放 **18.16 MB**。**未删**：`.tools/zhicloud-audit-residue/`（31 文件）——经全量内容哈希比对，在内层仓**无同内容副本**，且不被任何跟踪文档引用；删除会使其只剩归档一份，属所有者决策（已写入 HANDOFF §4.1 待裁决）。
+
+### 四、外层归档刷新为 FINAL（因为文档改了，旧 bundle 立即过期）
+
+§12.174 建的 bundle 快照是 `ffc099f7`（本次文档编辑**之前**的状态）。本轮文档一改，该快照即不再等于现状，故新增快照 ref 并重建 bundle：
+
+- 新增 `refs/snapshots/20261010-outer-repo-final` = `ce9682733`（**483 文件**）；
+- bundle 现含 **4 个 ref**：`master@01dfe6b`、`20261009@764485b`、`20261010-latest@ffc099f7`、`20261010-final@ce9682733`；
+- `outer-repo-full-with-latest-snapshot.bundle` 38.46 MB（SHA-256 `56e91918…`）、`outer-repo-history.bundle` `ea33b601…`、`tracked-changes.patch` 4.77 MB `7c50adb1…`；
+- **覆盖断言**：除两个 VHDX 外，工作树 live 文件 **0 个遗漏**；
+- **恢复演练通过**：`git clone <bundle>` → `ce9682733^{tree}` 与源仓 **hash 一致**；抽查 `README.md` 含「时效性说明」、`00-README.md` 含「归档口径」、`HANDOFF.md` 含「踩过的坑」均 True；已删的 helm zip / `__pycache__` / `.vhdx` 在快照内均为 **False**。
+
+**为什么保留三个 snapshot ref 而不只留 FINAL**：`764485b` 被 §12.164 正文引用、`ffc099f7` 被 §12.174 引用；删任一个都会制造**悬空引用**（本项目已三次踩过该坑）。三者共存只多几百 KB 对象，成本远低于悬空风险。
+
+### 五、状态
+
+- **状态不翻**：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、Go/No-Go=`No-Go`。本轮回合全是文档修订与文件清理，无任何生产等价验证。
+- 外层目录：22.21 GB → **1.44 GB**（含 .git）；`archive/` 42.3 MB；`Temp/` 0.1 MB。
+- 外层正常索引未受影响（`git diff --cached` = 0）；本轮只改工作树文件。
