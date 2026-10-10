@@ -6622,7 +6622,7 @@ hr+oa / protection+security / erp 全 exit 0
 
 **未闭环**：这 13 件均**未记录生成命令**，保留期/责任人与全项目同口径未指定（`R-G6-2` OPEN）。按 `00-README.md` §3.4，缺要素的结论只能记"待验证"，因此本次**只登记证据与边界，不据此关闭任何门禁**。`production_ready=false`、`gate3_passed=false`、`independent_review=false`、`Go/No-Go=No-Go` 均不变。
 
-**归档**：外层未提交内容已用 `git bundle`（全 refs）+ 临时索引快照提交 `764485bbf921dcf526e8a100e7fb7cfa8a980922` 完整归档于 `zhicloud\archive\20261010-outer-repo-latest\`（目录合计 42.33 MB，其中 `outer-repo-full-with-latest-snapshot.bundle` 36.58 MB；含 `MANIFEST.md` 与 `SHA256SUMS.txt`），并已通过"克隆 bundle → 还原快照 → 哈希比对"的恢复演练。外层工作树未改动，仍保留 6 改 + 85 未跟踪。
+**归档**：外层未提交内容已用 `git bundle`（全 refs）+ 临时索引快照提交 `764485bbf921dcf526e8a100e7fb7cfa8a980922` 完整归档于 `zhicloud\archive\20261010-outer-repo-latest\`（目录合计 42.33 MB，其中 `outer-repo-full-with-latest-snapshot.bundle` 36.58 MB；含 `MANIFEST.md` 与 `SHA256SUMS.txt`），并已通过"克隆 bundle → 还原快照 → 哈希比对"的恢复演练。外层工作树未改动，仍保留 6 改 + 85 未跟踪。**（补注：该快照 ref `764485b` 及当时的 bundle 已于 2026-10-10 随 ref 收敛删除、bundle 重建为 2 ref，见 §12.176；所述归档动作当时属实。）**
 
 ## 12.161 2026-10-09 证据入库策略切换：仓库转 private + 未跟踪 evidence 全量入 master
 
@@ -7447,7 +7447,7 @@ Artifact name is valid!
 ### 五、外层目录与「推送」的关系（补充核实）
 
 - 外层 `C:\Users\Administrator\Desktop\zhicloud` 的 HEAD（`01dfe6b35`）与远端 `master`（`1b9299366`）**无共同祖先**，且 `git merge-base --is-ancestor` 实测不可判——两者是**两条独立历史**。**不能 push**：push 会被拒（非快进）；`--force` 会**丢掉远端 master 上全部 400+ 个提交**（含本轮所有修复）。所以外层仓的处置**只能是归档或另开分支**，不是推送。
-- 外层另有本地快照 ref `refs/snapshots/20261009-outer-repo-snapshot`（`764485b`，2026-10-09，125 files changed / +82,722）与 `refs/snapshots/20261010-outer-repo-latest`（`ffc099f7`，2026-10-10），两者均从未推送，且都打包在 `archive\20261010-outer-repo-latest\outer-repo-full-with-latest-snapshot.bundle` 内。
+- 外层另有本地快照 ref `refs/snapshots/20261009-outer-repo-snapshot`（`764485b`，2026-10-09，125 files changed / +82,722）与 `refs/snapshots/20261010-outer-repo-latest`（`ffc099f7`，2026-10-10），两者均从未推送，且都打包在 `archive\20261010-outer-repo-latest\outer-repo-full-with-latest-snapshot.bundle` 内。**（补注：这两个 snapshot ref 已于 2026-10-10 删除，见 §12.176。）**
 - 外层 README 里写的「当前实施 commit `1c21183e2afb06d8257128eeefa47d6f274d4afe`」在远端**存在**（`gh api .../commits/1c21183e` 返回该 SHA），但 `upgrade/production-readiness` 分支在远端**不存在**（HTTP 404）；远端只有 `master` 一个分支。即外层 README 的分支描述与现实不符，属**过期表述**，未擅自改（外层仓不在本轮处置范围）。
 
 ### 六、状态
@@ -7461,7 +7461,7 @@ Artifact name is valid!
 
 ### 一、删除前的安全性核实（先核实再删）
 
-- **外层归档已存在且校验通过**：`archive\20261009-outer-repo-snapshot\` 的 `outer-repo-full-with-snapshot.bundle`（36.55 MB）SHA-256 `b85c9401…` 与 `SHA256SUMS.txt` 一致，`git bundle verify` 报 "records a complete history"，含 `refs/heads/master=01dfe6b35` 与 `refs/snapshots/20261009-outer-repo-snapshot=764485bbf`。**这推翻了「删除即永久丢失」的旧判断**。
+- **外层归档已存在且校验通过**：`archive\20261009-outer-repo-snapshot\` 的 `outer-repo-full-with-snapshot.bundle`（36.55 MB）SHA-256 `b85c9401…` 与 `SHA256SUMS.txt` 一致，`git bundle verify` 报 "records a complete history"，含 `refs/heads/master=01dfe6b35` 与 `refs/snapshots/20261009-outer-repo-snapshot=764485bbf`。**这推翻了「删除即永久丢失」的旧判断**。**（补注：该 2026-10-09 归档与 ref `764485b` 已于 2026-10-10 删除，见 §12.176。）**
 - **但 10-09 快照并未覆盖全部现存文件**：逐文件比对 489 个 live 文件（334 tracked + 155 未跟踪）vs 快照 453 个文件，**36 个文件不在快照内**，合计 20,522.1 MB —— 其中两个 VHDX 占 20,522.0 MB，其余 34 个是 `Temp/win2025-clean/*.ps1`、结果 JSON/TXT、`Temp/_fixwf.py`、`.env`（0 B）。另 `HANDOFF.md` 与 10-09 快照**内容不同**（快照里是旧版）。
 - **两个 VHDX 的性质（读 VHDX 头 + 比对脚本后确认）**：`WindowsServer2025Eval.vhdx`（11.7 GB）是 **Microsoft 官方 Windows Server 2025 Datacenter Evaluation 动态盘**（creator `10.0.20348.0`；`vhd-disks.ps1` 记录的是宿主磁盘清单，非 VHDX 属性）；`ZhiCloudClean-Diff.vhdx`（9.8 GB）是对它的 **differencing 子盘**（`create-vm.ps1` 直接用 `-VHDPath $diff` 建 VM）。**两者都不是任何产物的唯一载体**：
   - 子盘可随时由**官方原始镜像重新下载**并重跑 `Temp/e2e-prodlike/` 里的 55 个脚本重建（脚本已在**内层仓库** `zhicloud-audit-src2/Temp/e2e-prodlike/`，该目录保留在磁盘上）。
@@ -7472,7 +7472,7 @@ Artifact name is valid!
 ### 二、执行的动作
 
 1. **重建外层归档为「最新版」（可逆、先做）**：`archive\20261010-outer-repo-latest\`
-   - `outer-repo-full-with-latest-snapshot.bundle`（36.58 MB）—— 含 3 个 ref：`master@01dfe6b`、`20261009-outer-repo-snapshot@764485b`、**新增 `20261010-outer-repo-latest@ffc099f7`**。
+   - `outer-repo-full-with-latest-snapshot.bundle`（36.58 MB）—— 含 3 个 ref：`master@01dfe6b`、`20261009-outer-repo-snapshot@764485b`、**新增 `20261010-outer-repo-latest@ffc099f7`**。**（补注：这些 snapshot ref 已于 2026-10-10 删除，见 §12.176。）**
    - `outer-repo-history.bundle`（1.20 MB）、`tracked-changes.patch`（4.55 MB，delta 到最新快照，**排除 `.tools/**`** 以避开 77 MB Helm 二进制，它们在 bundle 内）。
    - `MANIFEST.md` + `SHA256SUMS.txt`。
    - **恢复演练已通过**：`git clone <bundle>` → `ffc099f7^{tree}` 与源仓树 **hash 一致**；抽查 `HANDOFF.md`、`Temp/win2025-clean/vm-e2e.ps1`、`vm-reconcile-results.json`、`docs/.../00-README.md` **逐字节相同**；`764485b`（453 文件）与 `ffc099f7`（484 文件）两代快照均可 checkout。
@@ -7484,7 +7484,7 @@ Artifact name is valid!
 
 - 外层目录 **22.21 GB → 1.44 GB**（释放约 20.77 GB）；`Temp/` 20,522 MB → **0.1 MB**。
 - 归档目录 **129.7 MB → 42.3 MB**（删掉 superseded 的 37.87 MB）。
-- 外层仓 refs：`master@01dfe6b`、`snapshots/20261009-outer-repo-snapshot@764485b`、`snapshots/20261010-outer-repo-latest@ffc099f7`（新增 ref 3 未被删除）。
+- 外层仓 refs：`master@01dfe6b`、`snapshots/20261009-outer-repo-snapshot@764485b`、`snapshots/20261010-outer-repo-latest@ffc099f7`（新增 ref 3 未被删除；**补注：全部 snapshot ref 已于 2026-10-10 删除，见 §12.176**）。
 - 归档 SHA-256 由 SHA256SUMS 复算**逐条一致**；bundle verify **ok**。
 - **内层不受影响**：`zhicloud-audit-src2/` 1,266 MB 未动，HEAD 仍 `b792efb96`。
 
@@ -7535,15 +7535,59 @@ Artifact name is valid!
 §12.174 建的 bundle 快照是 `ffc099f7`（本次文档编辑**之前**的状态）。本轮文档一改，该快照即不再等于现状，故新增快照 ref 并重建 bundle：
 
 - 新增 `refs/snapshots/20261010-outer-repo-final` = `ce9682733`（**483 文件**）；
-- bundle 现含 **4 个 ref**：`master@01dfe6b`、`20261009@764485b`、`20261010-latest@ffc099f7`、`20261010-final@ce9682733`；
+- bundle 现含 **4 个 ref**：`master@01dfe6b`、`20261009@764485b`、`20261010-latest@ffc099f7`、`20261010-final@ce9682733`；**（补注：3 个 snapshot ref 已于 2026-10-10 删除，bundle 收敛为 `master` + 单个 FINAL，见 §12.176。）**
 - `outer-repo-full-with-latest-snapshot.bundle` 38.46 MB（SHA-256 `56e91918…`）、`outer-repo-history.bundle` `ea33b601…`、`tracked-changes.patch` 4.77 MB `7c50adb1…`；
 - **覆盖断言**：除两个 VHDX 外，工作树 live 文件 **0 个遗漏**；
 - **恢复演练通过**：`git clone <bundle>` → `ce9682733^{tree}` 与源仓 **hash 一致**；抽查 `README.md` 含「时效性说明」、`00-README.md` 含「归档口径」、`HANDOFF.md` 含「踩过的坑」均 True；已删的 helm zip / `__pycache__` / `.vhdx` 在快照内均为 **False**。
 
-**为什么保留三个 snapshot ref 而不只留 FINAL**：`764485b` 被 §12.164 正文引用、`ffc099f7` 被 §12.174 引用；删任一个都会制造**悬空引用**（本项目已三次踩过该坑）。三者共存只多几百 KB 对象，成本远低于悬空风险。
+**为什么保留三个 snapshot ref 而不只留 FINAL**：`764485b` 被 §12.164 正文引用、`ffc099f7` 被 §12.174 引用；删任一个都会制造**悬空引用**（本项目已三次踩过该坑）。三者共存只多几百 KB 对象，成本远低于悬空风险。**（2026-10-10 更新：所有者改选做法 ii——先改引用再删 ref；上述三个 snapshot ref 已删除、引用已按 §12.176 改写，bundle 收敛为 2 ref。）**
 
 ### 五、状态
 
 - **状态不翻**：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、Go/No-Go=`No-Go`。本轮回合全是文档修订与文件清理，无任何生产等价验证。
 - 外层目录：22.21 GB → **1.44 GB**（含 .git）；`archive/` 42.3 MB；`Temp/` 0.1 MB。
 - 外层正常索引未受影响（`git diff --cached` = 0）；本轮只改工作树文件。
+
+
+## 12.176 2026-10-10 外层归档 snapshot ref 收敛（做法 ii）+ 审计残留删除 + 配额口径核实
+
+**所有者指令**：① 外层归档 snapshot ref 按**做法 (ii)** 收敛——「先改内层台账里的引用，再删 ref」；② `.tools/zhicloud-audit-residue/`「无用且不影响就删」；③ 核实 `QAverify` artifact 清理是否影响使用；④ 给出外层仓最终归宿建议。
+
+### 一、snapshot ref 收敛（做法 ii：先改引用、后删 ref）
+
+**背景**：外层 `archive\20261010-outer-repo-latest\` 的 bundle 原含 **5 个 ref**（`master` + 4 个 snapshot：`764485b`/`ffc099f7`/`ce9682733`/`99c491e9`）。其中前三个被本台账 §12.164/§12.174/§12.175 正文按 SHA 引用——直接删 ref 会制造**悬空引用**。
+
+**执行顺序（严格先改引用、后删 ref）**：
+
+1. **改引用**：本台账 §12.164（第 6625 行）、§12.173（第五节）、§12.174（一/二/三节）、§12.175（第四节）中所有按 SHA 指代上述 snapshot ref 的句子，就地补注「该 ref 已于 2026-10-10 随 ref 收敛删除，见 §12.176」，**保留其所述历史事实不抹**（归档动作当时确实执行过）。`00-README.md` 两条速览同步补注。
+2. **删 ref + 重建 bundle**：在外层仓删除 4 个 snapshot ref，仅保留 `master` 与**单个** `refs/snapshots/20261010-outer-repo-final`（新 commit，452 文件，含 HANDOFF v4）。bundle 重建为 **2 ref**。
+3. **删前安全性核实（无独有文件）**：逐条比对 4 个旧快照树与现行 FINAL 树的**路径差集**——唯一「在旧快照、不在 FINAL」的路径是已删的 `.tools/helm/helm-v3.19.0-20260927-141536.zip`（其解压目录 `windows-amd64/` 仍在 FINAL 内）；其余 0 独有。故删除不丢数据。
+4. **恢复演练（真跑）**：`git clone <新 bundle>` → FINAL 树 hash 与源仓一致；452 个文件**逐字节比对差异 0**；两个 VHDX、已删 helm zip、已删 `.tools/zhicloud-audit-residue/` 在克隆结果中**均不存在**。
+
+**边界**：旧版 HANDOFF（v1/v2/v3）原本随 `ffc099f7`/`ce9682733`/`99c491e9` 三个 ref 保存；ref 删除后**当前 bundle 不再包含这三版**。这是「只保留最新版」指令的直接结果。
+
+### 二、审计残留删除（`.tools/zhicloud-audit-residue/`）
+
+所有者裁决「无用且不影响就删」，**已删**（31 文件 / 1,393,603 B）。删前核实：
+
+- 外层仓**未跟踪**（`git ls-files .tools/zhicloud-audit-residue` 命中 0）；外层 `.gitignore`/`.git/info/exclude` 均无相关规则。
+- 不被任何**跟踪文档按路径**引用（外层 `git grep audit-residue` 命中 0）。
+- 31 个文件的 SHA-256 **无一被内层仓任何文件引用**（全量哈希扫描 20,891 个内层文件，仅 1 个同内容副本）。
+- 唯一同内容副本 `security-baseline-current.log` 在内层 `evidence/production/security-baseline-production-v116-2026-09-27.log` 已存在。
+- 若干**文件名**（`security-baseline-before/current/after.json`、`_tmp_split.py` 等）出现在内层「旧证据失效说明」清单（`13-安全基线扫描证据.md` §9）与 commit-readiness JSON 的 `temp_residue` 列表里——这些是**文件名列举**，不是路径引用；删除磁盘副本不影响那些文档。
+
+### 三、`QAverify` artifact 配额口径（清理是否影响使用）
+
+- 实测（`--paginate` 全量）：`QAverify`（**private**）**6 个 / 3,441.98 MB**；本仓（private）12 个 / 17.50 MB；`AmazonERP`（**public**）800 个 / 222.23 MB。
+- 按 GitHub 文档，artifact 配额只对**私有仓**计算：真实账号级私有占用 = `QAverify` 3,442.0 + 本仓 17.5 = **3,459.5 MB**，`AmazonERP` **不计入**。瓶颈来源是 `QAverify` 单仓。
+- `QAverify` 的 6 个 artifact 是 `qaverify-2.1.7/8/9/10/13/14-public` 安装包。**2.1.13、2.1.14 在公开仓 `QAverify-releases` 有对应 Release（v2.1.13/v2.1.14），清理无影响；2.1.7–2.1.10 无任何公开发布副本**（`QAverify-releases` 现有 Release 为 v2.1.11–v2.1.18、v2.1.22–v2.1.26）。
+- artifact 是发布流水线的**副产物**，不是更新器/自动更新链的取件源（清单 `api/v1/updates/check` 与安装包都在公开仓）。**结论**：清理不影响在用版本（≥2.1.11）的下载/更新；唯一代价是 2.1.7–2.1.10 旧包失去唯一留存。**执行与否待所有者拍板。**
+
+### 四、外层仓最终归宿（建议）
+
+建议**维持 bundle 归档、不推远端**：外层 HEAD `01dfe6b` 与远端 `master` 无共同祖先（推不上去，`--force` 会丢远端 400+ 提交）；另开分支的唯一收益（异地副本）已由 `archive/` bundle 实现，而成本是污染内层历史与制造「两份 docs 谁是权威」的歧义。若确需远端副本，唯一干净做法是**新建独立空仓**推 `archive/`，不动内层仓。
+
+### 五、状态
+
+- **状态不翻**：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、Go/No-Go=`No-Go`。本轮是外层文件清理与归档收敛 + 台账引用改写，无任何生产等价验证。
+- 内层本轮只改**文档**（本台账 + `00-README.md`），不触碰代码/迁移/门禁取值。
