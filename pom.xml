@@ -22,6 +22,7 @@
         <module>zhicloud-module-erp</module>
         <module>zhicloud-module-iot</module> <!-- 启用：IoT 物联网（设备/物模型/告警/设备消息） -->
         <module>zhicloud-module-mes</module>
+        <module>zhicloud-module-fms</module> <!-- 启用：FMS 财务管理系统（config 域后端，2026-10-10） -->
         <module>zhicloud-module-wms</module>
         <module>zhicloud-module-qms</module> <!-- QMS 质量管理系统模块（IQC/IPQC/OQC/CAPA） -->
         <module>zhicloud-module-im</module> <!-- 启用：IM 即时通讯（2026-10-10，V156 建 17 张 im_* 表） -->

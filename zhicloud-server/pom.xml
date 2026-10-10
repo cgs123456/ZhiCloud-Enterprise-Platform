@@ -41,6 +41,13 @@
             <artifactId>zhicloud-module-report</artifactId>
             <version>${revision}</version>
         </dependency>
+        <!-- 财务管理系统 FMS。已接进 server（2026-10-10）：config 域 13 张 fms_* 表由 V157 建表。 -->
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-module-fms</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
         <!-- 工作流。默认注释，保证编译速度 -->
         <dependency>
             <groupId>cn.zhicloud</groupId>

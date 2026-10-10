@@ -471,6 +471,20 @@
       "sha256": "0e882d2b2eea347e21b7c9e92416380985b78f11f6449d2ca25e0a00015dfdd8",
       "verification_file": "V156_verify.sql",
       "verification_sha256": "c423115123d294aa302f6765ae6171d4cbbbc52ba0975fa5c631df86f56a468c"
+    },
+    {
+      "version": 157,
+      "file": "V157__fms_config_tables.sql",
+      "sha256": "9c32268eff1ef97eb392b7f90ba42811884a8647f46f94f4ca8a104cd77e3093",
+      "verification_file": "V157_verify.sql",
+      "verification_sha256": "fa8b0d8607a0436c2e3c41fd73c729c3271a012d966e293373cee89909b7e06a"
+    },
+    {
+      "version": 158,
+      "file": "V158__fms_config_menu_seed.sql",
+      "sha256": "ee7c6901ad0149b6ee5e39a5cca8513ceb5359706de9e42c9d3e81f4deb13c2f",
+      "verification_file": "V158_verify.sql",
+      "verification_sha256": "48a664a52d5f78d881264839e525408c0538f86fd249a769de73a591c2bf0a8c"
     }
   ]
 }

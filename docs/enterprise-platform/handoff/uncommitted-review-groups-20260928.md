@@ -7749,3 +7749,42 @@ FMS/HRM 前端页面存在（80 + 198 个 .vue），但 **DB 里 0 条 `fms/*`�
 
 **遗留登记**：沙箱库 `mp_account` id=1 占位账号与 V154 的 jimu 字典种子保留（不影响断言口径，均为相对/元数据类）；FMS/HRM 未接线模块（458 端点）仍未动，待所有者排期。
 
+
+## 12.181 2026-10-10 FMS 后端首刀：config 域 11 资源 + 11 张表 + 36 菜单，真机 37 项端到端全通过
+
+**背景**：§12.179 把 FMS/HRM 记为「前端存在但既无菜单也无后端」的未接线模块（FMS 139 个前端端点、278 页 .vue，后端 0 行）。本条开始处理 FMS，采用「按前端契约反推生成后端」的方式，第一刀切 **config 配置域**。
+
+### 一、范围（先做后端已实现的，不伪造）
+
+FMS config 域拆 11 个资源：账套 account-set、成员 account-user、账套参数 finance-parameter、币别 currency、凭证字 voucher-word、常用摘要 digest、辅助核算 auxiliary(type+item)、凭证模板 voucher-template(+category)、财务指标 finance-indicator。**subject（科目树）与 initial-balance（初始余额）含真实业务逻辑（编码规则校验、试算平衡），本轮不建表、不种菜单、不写后端**，登记为下一增量——避免「后端未实现却种菜单」的重蹈 §12.179 覆辙。
+
+### 二、代码生成口径
+
+- **单一 spec 驱动**：一个临时生成器同时产出 Java（DO/Mapper/VO/Service/Controller）、V157 DDL、（菜单在 V158），三者字段/表名/权限串口径一致；生成器为会话级临时文件，已删除。
+- **HTTP 动词/参数逐一对齐前端** `src/api/fms/config/**`：读接口用 GET+query、写用 POST/PUT/DELETE+body、delete-list 用 query ids（与前端 axios `params` 一致）、multipart 导入用 `@RequestParam file`。`update-status` 前端发 body，后端用 SaveReqVO 收。
+- **类型口径**：String->varchar、Long->bigint、Integer->int、Boolean->bit(1)、BigDecimal->decimal(24,6)、LocalDateTime->datetime、数组/对象（科目辅助核算、凭证分录、标签列表）->json + `@TableField(typeHandler=JacksonTypeHandler.class)`+`autoResultMap`。全部租户表（TenantBaseDO）。
+- **账套成员/账套/账套参数为手写**（有真实逻辑：创建账套自动加 OWNER 成员、初始化建本位币+回填+建参数、成员列表 join AdminUserApi/DeptApi 组装昵称部门手机）；其余 8 资源为模板生成（标准 CRUD + 账套内唯一性校验 + 币别本位币唯一 + 系统预置辅助类别删除保护 + 辅助项 Excel 导入）。
+- **email 列**：前端 `FmsAccountUserVO.email` 依赖 `AdminUserRespDTO`，但该 RespDTO 无 email 字段（隐私），后端组装留空——与前端可选字段一致，不造假。
+
+### 三、迁移（V157 建表 + V158 种菜单，契约 tracked=69）
+
+| 版本 | 内容 | 校验 |
+|---|---|---|
+| V157__fms_config_tables.sql | 11 张 fms_* 表 | 临时库 zc_syntax_check 全量语法通过；V157_verify：表数=11、全部含 tenant_id、voucher_template.entries 为 json 列——真机 PASS |
+| V158__fms_config_menu_seed.sql | 1 目录 + 8 菜单 + 27 按钮 = 36 行，id 9000-9080 段 | 写法沿用 V134（NOT EXISTS 预检、只认 deleted=b'0'）；事务内 SOURCE+ROLLBACK 验证预检有效；V158_verify：目录/菜单/按钮计数与 component 非空——真机 PASS |
+
+`check_migration_contract.py` PASSED tracked=69 scanned=165；新文件均 LF、无 BOM（V158 一处 `NOW'` 笔误在语法测试中暴露并修复）。
+
+### 四、接线 + 真机端到端
+
+- root pom 启用 `zhicloud-module-fms`，server pom 接入；`mvn -pl zhicloud-module-fms -am` 与 server 打包均 SUCCESS。
+- 启动跑 Flyway 至 v158（自动建 11 表 + 种 36 菜单）。
+- **端到端探测 37 项全 PASS（code=0）**：建账套→初始化→读/详情→账套参数读改→币别(初始化自带 CNY + USD CRUD)→凭证字/摘要/辅类/辅项/模板分类/模板/指标创建→各 list/simple-list/page/改状态/成员列表→逐项删除回滚。断言落在库（V157/V158 verify 全绿）与接口（37/0）两侧，符合「业务流程真机跑通 + 断言落数据库行」口径。
+- 编译暴露并修复：生成器 import 前缀缺失（重生成修复）、辅助项跨包 VO 缺 import（补 import）、`rm` 误删 6 个手写 DO/Mapper（重建）。
+
+### 五、遗留
+
+- **FMS 剩余**：subject（科目，含 create/list/get-usage/update-status/import/export）、initial-balance（含 trial-balance/save/import）、home、ledger（账簿 8 类）、voucher（凭证主流程）、closing（结账）、report（三大报表）——共约 101 端点，多为重业务逻辑，待后续增量。
+- **HRM**：250 端点未动。
+- 沙箱库留下一次启动产生的 1 个测试账套（ZCSBX，已随探测删空子数据）——不影响断言相对口径。
+
