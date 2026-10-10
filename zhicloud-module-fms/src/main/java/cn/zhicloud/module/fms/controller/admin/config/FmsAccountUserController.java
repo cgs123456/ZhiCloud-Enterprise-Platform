@@ -46,6 +46,7 @@ public class FmsAccountUserController {
     @PutMapping("/update-default-status")
     @Operation(summary = "设置默认账套")
     @Parameter(name = "accountSetId", description = "账套编号", required = true, example = "1")
+    @PreAuthorize("@ss.hasPermission('fms:config:account-set:query')")
     public CommonResult<Boolean> updateDefaultStatus(@RequestParam("accountSetId") Long accountSetId) {
         accountUserService.updateDefaultStatus(getLoginUserId(), accountSetId);
         return success(true);
