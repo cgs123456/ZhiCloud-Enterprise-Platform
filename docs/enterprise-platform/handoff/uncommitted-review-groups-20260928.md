@@ -7389,3 +7389,68 @@ Artifact name is valid!
 
 - **四个硬标记一律不翻**：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、`Go/No-Go=No-Go`。本轮做的是 artifact 存储清理与文件事实核查，**没有任何生产等价验证**，不构成 gate3 / 独立复核证据；翻标记会违背项目自身的「先证据、后宣称」纪律。
 - **唯一更新**：artifact 配额条目由「本仓未清理」更新为「本仓已二次清理 40→12 个 / 58.2→17.5 MiB，保留最近 3 次 run；账号级瓶颈在他仓，仍 OPEN」。
+
+## 12.173 2026-10-10 未跟踪项清理执行 + .gitignore 加固 + 对 12.172 一处结论的更正
+
+所有者指令：「1 确认无用就删除；2 你觉得有没有必要推送」。
+
+### 一、已删除（释放 756.25 MB + 190 个一次性文件）
+
+**逐项删除，全部先经 `os.path.abspath` 断言落在工作区内。**
+
+| 对象 | 体积 | 删除理由（核实依据） |
+|---|---|---|
+| `Temp/e2e-prodlike/zhicloud-src-39fcebed.zip` | 489.48 MB | 内容是 `39fcebed` 提交的源码快照（18,287 条目），抽样 `pom.xml`/`README.md`/`start-backend.bat`/`start-frontend.bat` 与 `git show 39fcebed:<path>` **逐字节一致**；而 `39fcebed` 已是远端 `master` 的祖先（`git branch -r --contains` 命中 `origin/master`），**可从 git 完整重建**。全仓无任何引用 |
+| `Temp/e2e-prodlike/zhicloud-src-only-39fcebed.zip` | 28.34 MB | 同上（15,319 条目，同为 `39fcebed` 快照，无引用） |
+| `Temp/e2e-prodlike/downloads/`（jdk/maven/node.zip） | 238.43 MB | 安装包，可从 vendored 分发渠道重新下载；全仓无引用 |
+| `Temp/zc-live-server.env` | — | **含真实凭据**：`MASTER/SLAVE_DATASOURCE_PASSWORD`、`SPRING_DATA_REDIS_PASSWORD`、`SPRING_RABBITMQ_PASSWORD`、`MYBATIS_ENCRYPTOR_PASSWORD`、`API_ENCRYPT_REQUEST/RESPONSE_KEY`、`KD_NIAO_API_KEY` 等 21 行。实测其 MySQL 口令与 `docker inspect zc-live-mysql` 的 `MYSQL_ROOT_PASSWORD` **同一值**，可从容器环境重建，无需落盘 |
+| `Temp/zc-live-admin-password.txt` | — | 16 字节明文管理员口令；实测该口令**未**出现在 `Temp/zc-live-bootstrap-output.txt` 中（不同源），属一次性产物，无法从其它文件重建 |
+| `.blob-sha-ledger` | 40 B | 已过期的 git blob SHA（§12.172 已核实） |
+| `.tree-sha` | 0 B | 空文件，无用途 |
+| `Temp/` 其余 190 个一次性项 | ~7 MB | `Temp/_*.py`、`Temp/*.log`、`commit-msg*.txt`、`*.pid`、`reviewfix/`、`selector-test/` 等过程产物 |
+
+**保留**：`Temp/e2e-prodlike/` 的 55 个 VM 脚本与输出（`create-vm.ps1`/`vm-provision.ps1`/`unattend.xml`/`cert.pem`/`key.pem` 等），共 131.4 KB。理由：它们是 Windows Server 2025 干净机 E2E 的**唯一可复现载体**（`docs/enterprise-platform/evidence/production/clean-windows-bat-install-20261009/` 只保存了结果 JSON 与 README，**没有** .ps1 副本），且 `cert.pem` 有效期为 2026-10-09 → 2026-10-11。
+
+### 二、对 §12.172 一处结论的更正（重要）
+
+§12.172 第二节与第三节写：「`Temp/e2e-prodlike/` 被 `evidence/production/v151-default-oauth2-client-login-e2e-20261009.md` 与 handoff 按路径引用，删除会让引用悬空」——**这个说法不成立**。本轮逐条 `git grep` 实测：
+
+- `docs/enterprise-platform/evidence/**` 对 `Temp` 的引用只有**一处**（`v151-default-oauth2-client-login-e2e-20261009.md:76`：「明文仅存本机 `Temp/`，不入库、不提交」），是**泛指的目录名**，不指向 `e2e-prodlike` 下任何文件；
+- 对 `e2e-prodlike/<具体文件名>`（`create-vm.ps1`、`vm-provision.ps1`、`vm-start-backend.ps1`、`host-portproxy.ps1`、`inject-unattend.ps1`、`unattend.xml` 等）**命中 0 条**；
+- `key.pem` / `cert.pem` 的命中全部来自 evidence 目录自己的 `nginx.conf`（引用容器内 `/etc/nginx/*.pem`），不是引用 Temp 路径。
+
+即：§12.172 沿用了 §12.165 那句未经核实的话（`handoff` 第 6840 行），并把它当成事实写了两次。**这是同一类「引用了未经复核的上游陈述」的缺陷**，已在本节更正。保留 `e2e-prodlike` 的真实理由不是「引用悬空」，而是「它是该次 VM E2E 的唯一脚本载体」。
+
+### 三、`.gitignore` 加固（消除「口头约定」）
+
+§12.172 已指出：`Temp/`、`.blob-sha-ledger`、`.tree-sha` **均未被 `.gitignore` 覆盖**，只靠口头约定「不入仓」，任何 `git add -A` 都会误纳入。本轮在 `.gitignore` 末尾（`/META-INF/` 之后）新增：
+
+```
+# 本地工作中转目录 Temp/（一次性脚本、日志、VM 工具包与本地凭据）。
+# 该目录从不入库；此前仅靠口头约定「不入仓」，任何 `git add -A` 都会误纳入，故改为 .gitignore 强制。见 handoff 12.173。
+# 注意：Temp/e2e-prodlike/ 下的 VM 脚本与证书仍按原路径保留在磁盘上供追溯。
+/Temp/
+```
+
+**验证**：`git check-ignore -v Temp/` → `.gitignore:118:/Temp/  Temp/`（生效）；`.gitignore:109` 的 `!docs/enterprise-platform/evidence/production/**/*.log` 反忽略规则**逐字未动**，且 `git check-ignore -v .../prodlike-e2e-20261009/webhook.log` 仍无命中（反忽略继续生效）。
+
+### 四、关于「有没有必要推送」（结论）
+
+本轮**没有推送**，这是判断而非遗漏。三条依据：
+
+1. **本地改动全是文档级**：`.gitignore` 新增 `/Temp/`、本节台账、`README.md` 与 `00-README.md` 的同步修订。删掉的 756 MB 与 190 个文件**全部是未跟踪的本地文件**，`git` 根本不知道它们存在，删除不产生任何 commit diff。
+2. **推送需要与 CI 代价对齐**：master 每次推送触发一轮约 12 分钟的 CI（8 道门禁 + Maven 全量构建），而这次没有代码/门禁/迁移变化，CI 只能重复验证既有结论。**无新信息的 CI 跑一轮，收益接近零、成本是 12 分钟的运行额度和又一轮 artifact 配额失败告警。**
+3. **不推送的风险可控**：`.gitignore` 的 `/Temp/` 规则与文档修订都只在本地。若后续有真实代码改动要推，可以**并入同一批**再推一次，不额外增加 CI 轮次；而如果现在就推，后续真实改动要再推一次，等于多跑一轮。
+
+**建议**：本轮先不单独推送；等下一次有实质代码或门禁改动时，把 `.gitignore` 与文档修订**并入那一批**一起推。若所有者希望远端立刻反映「Temp 已被 .gitignore 排除」，随时可以单推，代价只是一轮 12 分钟 CI。
+
+### 五、外层目录与「推送」的关系（补充核实）
+
+- 外层 `C:\Users\Administrator\Desktop\zhicloud` 的 HEAD（`01dfe6b35`）与远端 `master`（`1b9299366`）**无共同祖先**，且 `git merge-base --is-ancestor` 实测不可判——两者是**两条独立历史**。**不能 push**：push 会被拒（非快进）；`--force` 会**丢掉远端 master 上全部 400+ 个提交**（含本轮所有修复）。所以外层仓的处置**只能是归档或另开分支**，不是推送。
+- 外层另有一个本地快照 ref `refs/snapshots/20261009-outer-repo-snapshot`（`764485b`，2026-10-09 快照，125 files changed / +82,722），同样从未推送。
+- 外层 README 里写的「当前实施 commit `1c21183e2afb06d8257128eeefa47d6f274d4afe`」在远端**存在**（`gh api .../commits/1c21183e` 返回该 SHA），但 `upgrade/production-readiness` 分支在远端**不存在**（HTTP 404）；远端只有 `master` 一个分支。即外层 README 的分支描述与现实不符，属**过期表述**，未擅自改（外层仓不在本轮处置范围）。
+
+### 六、状态
+
+- **状态不翻**：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、Go/No-Go=`No-Go`。本轮是本地文件清理与 .gitignore 加固，不构成任何生产等价验证。
+- §12.172 第二节/第三节中关于 `e2e-prodlike` 被 evidence「按路径引用」的表述，以本节为准（**作废**）。

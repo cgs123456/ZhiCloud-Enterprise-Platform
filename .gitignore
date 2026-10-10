@@ -111,3 +111,8 @@ __pycache__/
 # 仓库根目录的 META-INF（Spring Boot / Flowable 自动配置元数据）是构建或测试
 # 把工作目录当成输出目录产生的残留，不是源码；根锚定规则避免误伤 src/**/META-INF。
 /META-INF/
+
+# 本地工作中转目录 Temp/（一次性脚本、日志、VM 工具包与本地凭据）。
+# 该目录从不入库；此前仅靠口头约定「不入仓」，任何 `git add -A` 都会误纳入，故改为 .gitignore 强制。见 handoff 12.173。
+# 注意：Temp/e2e-prodlike/ 下的 VM 脚本与证书仍按原路径保留在磁盘上供追溯。
+/Temp/
