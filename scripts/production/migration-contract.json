@@ -485,6 +485,13 @@
       "sha256": "ee7c6901ad0149b6ee5e39a5cca8513ceb5359706de9e42c9d3e81f4deb13c2f",
       "verification_file": "V158_verify.sql",
       "verification_sha256": "48a664a52d5f78d881264839e525408c0538f86fd249a769de73a591c2bf0a8c"
+    },
+    {
+      "version": 159,
+      "file": "V159__fms_config_dict_seed.sql",
+      "sha256": "f20229dcc33164fb39cc52d02b16a8154344d4c8f52fc39968d791e7f6da0c8a",
+      "verification_file": "V159_verify.sql",
+      "verification_sha256": "2893e1ad79f7b6adad496e40906509e1c46e4068423d59ebe335ac0f1ecf8937"
     }
   ]
 }

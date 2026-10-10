@@ -7797,3 +7797,20 @@ FMS config 域拆 11 个资源：账套 account-set、成员 account-user、账�
 
 **教训（写操作默认带权限注解）**：生成器产出的 44 个标准写端点全部带 `@PreAuthorize` 模板，但**手写**的 3 个资源里漏了 1 个——恰好证明这条门禁的存在价值：它不看代码来源，只看最终落盘。后续手写资源（HRM、FMS 剩余域）在自测清单里把「每个 @*Mapping 写方法有 @PreAuthorize」列为显式条目，不再依赖 CI 兜底。
 
+
+## 12.183 2026-10-10 V159 补 FMS 字典种子——堵上「可见但下拉为空」的第二个口径缺口 + 一次编码自纠
+
+**发现**：§12.181 首刀把 8 个 config 菜单 + 后端跑通后，复查前端页面发现其中两类下拉不是写死常量，而是走**数据字典**：`FmsAccountSetMemberForm` 的成员级别（`getIntDictOptions(DICT_TYPE.FMS_ACCOUNT_USER_LEVEL)`）、`FmsFinanceIndicatorForm` 的取数报表类型（`DICT_TYPE.FMS_FINANCE_INDICATOR_TYPE`）。库里 `fms%` 字典 0 行——页面能打开、能提交，但这两个下拉是空的，即**「可见但选项不可用」**，与本轮「解决 28 个可见但不可用菜单」同一口径。
+
+**根因判定范围**：只种本刀 8 个可达菜单页面**实际引用**的 2 个字典；subject / initial-balance / closing / report 页面也引用 `fms_subject_category` 等，但那些菜单本刀**未种**（后端未实现），字典种子跟随各自后端增量一起落库——避免「种了字典却没有在用页面」的无主数据。取值严格对齐前端 `views/fms/utils/constants.ts` 与后端 `FmsAccountUserDO.LEVEL_*`：级别 1=主管 2=查看者 3=会计；指标类型 1=资产负债表 2=利润表（现金流量表无预置指标，留待报表域）。
+
+**一次编码自纠（据实登记）**：V159 落库时，我先用 `docker exec ... mysql -uroot < V159.sql` 手动喂了一遍做语法校验——但 `mysql` 客户端在此 stdin 通道下**默认连接字符集是 latin1**，把 UTF-8 字节当 latin1 再转 utf8mb4，导致 5 行标签**双重编码**（HEX 显示 `C3A4C2B8...`，即每个中文字节被当两个字符）。发现后：
+1. `DELETE` 掉这 5 行脏数据 + `system_dict_type` 两行；
+2. 手动喂的 V159 **没有写 flyway_schema_history**（我是裸 SQL 执行的，Flyway 不知道它跑过），清掉脏行后 Flyway 视 V159 为 pending；
+3. 重打 jar（让 V159 进 classpath 资源）→ 重启，由**应用自带的 Flyway 经 JDBC utf8mb4 连接**正式应用 V159。
+4. 复核：HEX 为 `E4B8BBE7AEA1`（"主管" 的标准 utf8mb4 三字节），`/admin-api/system/dict-data/simple-list` 返回 `主管/查看者/会计/资产负债表/利润表` 正确。
+
+**教训（并入 §12.182 的自测清单）**：种子数据（尤其含中文）一律**经 Flyway JDBC 渠道**落库验证，不要用 `mysql <` 手动喂来判断真机结果——两者的连接字符集不同，手动喂会双编码而 Flyway 不会。真机验证 = 让应用启动跑 Flyway，不是手工灌 SQL。
+
+**验证**：`check_migration_contract.py` PASSED tracked=70 scanned=166；V159_verify 三条（字典类型=2、成员级别行=3、指标类型行=2）真机全 PASS；应用 API 回读 5 行标签正确。
+
