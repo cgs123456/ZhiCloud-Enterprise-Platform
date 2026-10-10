@@ -6622,7 +6622,7 @@ hr+oa / protection+security / erp 全 exit 0
 
 **未闭环**：这 13 件均**未记录生成命令**，保留期/责任人与全项目同口径未指定（`R-G6-2` OPEN）。按 `00-README.md` §3.4，缺要素的结论只能记"待验证"，因此本次**只登记证据与边界，不据此关闭任何门禁**。`production_ready=false`、`gate3_passed=false`、`independent_review=false`、`Go/No-Go=No-Go` 均不变。
 
-**归档**：外层未提交内容已用 `git bundle`（全 refs）+ 临时索引快照提交 `764485bbf921dcf526e8a100e7fb7cfa8a980922` 完整归档于 `zhicloud\archive\20261009-outer-repo-snapshot\`（38.3 MB，含 `MANIFEST.md` 与 `SHA256SUMS.txt`），并已通过"克隆 bundle → 还原快照 → 哈希比对"的恢复演练。外层工作树未改动，仍保留 6 改 + 85 未跟踪。
+**归档**：外层未提交内容已用 `git bundle`（全 refs）+ 临时索引快照提交 `764485bbf921dcf526e8a100e7fb7cfa8a980922` 完整归档于 `zhicloud\archive\20261010-outer-repo-latest\`（目录合计 42.33 MB，其中 `outer-repo-full-with-latest-snapshot.bundle` 36.58 MB；含 `MANIFEST.md` 与 `SHA256SUMS.txt`），并已通过"克隆 bundle → 还原快照 → 哈希比对"的恢复演练。外层工作树未改动，仍保留 6 改 + 85 未跟踪。
 
 ## 12.161 2026-10-09 证据入库策略切换：仓库转 private + 未跟踪 evidence 全量入 master
 
@@ -7447,10 +7447,54 @@ Artifact name is valid!
 ### 五、外层目录与「推送」的关系（补充核实）
 
 - 外层 `C:\Users\Administrator\Desktop\zhicloud` 的 HEAD（`01dfe6b35`）与远端 `master`（`1b9299366`）**无共同祖先**，且 `git merge-base --is-ancestor` 实测不可判——两者是**两条独立历史**。**不能 push**：push 会被拒（非快进）；`--force` 会**丢掉远端 master 上全部 400+ 个提交**（含本轮所有修复）。所以外层仓的处置**只能是归档或另开分支**，不是推送。
-- 外层另有一个本地快照 ref `refs/snapshots/20261009-outer-repo-snapshot`（`764485b`，2026-10-09 快照，125 files changed / +82,722），同样从未推送。
+- 外层另有本地快照 ref `refs/snapshots/20261009-outer-repo-snapshot`（`764485b`，2026-10-09，125 files changed / +82,722）与 `refs/snapshots/20261010-outer-repo-latest`（`ffc099f7`，2026-10-10），两者均从未推送，且都打包在 `archive\20261010-outer-repo-latest\outer-repo-full-with-latest-snapshot.bundle` 内。
 - 外层 README 里写的「当前实施 commit `1c21183e2afb06d8257128eeefa47d6f274d4afe`」在远端**存在**（`gh api .../commits/1c21183e` 返回该 SHA），但 `upgrade/production-readiness` 分支在远端**不存在**（HTTP 404）；远端只有 `master` 一个分支。即外层 README 的分支描述与现实不符，属**过期表述**，未擅自改（外层仓不在本轮处置范围）。
 
 ### 六、状态
 
 - **状态不翻**：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、Go/No-Go=`No-Go`。本轮是本地文件清理与 .gitignore 加固，不构成任何生产等价验证。
 - §12.172 第二节/第三节中关于 `e2e-prodlike` 被 evidence「按路径引用」的表述，以本节为准（**作废**）。
+
+## 12.174 2026-10-10 外层目录清理执行：20.5 GB `Temp/win2025-clean/` VHDX 删除 + 外层归档重建为「最新版」
+
+**所有者指令**：「先删，只保留最新版即可」（指外层 `C:\Users\Administrator\Desktop\zhicloud`）。
+
+### 一、删除前的安全性核实（先核实再删）
+
+- **外层归档已存在且校验通过**：`archive\20261009-outer-repo-snapshot\` 的 `outer-repo-full-with-snapshot.bundle`（36.55 MB）SHA-256 `b85c9401…` 与 `SHA256SUMS.txt` 一致，`git bundle verify` 报 "records a complete history"，含 `refs/heads/master=01dfe6b35` 与 `refs/snapshots/20261009-outer-repo-snapshot=764485bbf`。**这推翻了「删除即永久丢失」的旧判断**。
+- **但 10-09 快照并未覆盖全部现存文件**：逐文件比对 489 个 live 文件（334 tracked + 155 未跟踪）vs 快照 453 个文件，**36 个文件不在快照内**，合计 20,522.1 MB —— 其中两个 VHDX 占 20,522.0 MB，其余 34 个是 `Temp/win2025-clean/*.ps1`、结果 JSON/TXT、`Temp/_fixwf.py`、`.env`（0 B）。另 `HANDOFF.md` 与 10-09 快照**内容不同**（快照里是旧版）。
+- **两个 VHDX 的性质（读 VHDX 头 + 比对脚本后确认）**：`WindowsServer2025Eval.vhdx`（11.7 GB）是 **Microsoft 官方 Windows Server 2025 Datacenter Evaluation 动态盘**（creator `10.0.20348.0`；`vhd-disks.ps1` 记录的是宿主磁盘清单，非 VHDX 属性）；`ZhiCloudClean-Diff.vhdx`（9.8 GB）是对它的 **differencing 子盘**（`create-vm.ps1` 直接用 `-VHDPath $diff` 建 VM）。**两者都不是任何产物的唯一载体**：
+  - 子盘可随时由**官方原始镜像重新下载**并重跑 `Temp/e2e-prodlike/` 里的 55 个脚本重建（脚本已在**内层仓库** `zhicloud-audit-src2/Temp/e2e-prodlike/`，该目录保留在磁盘上）。
+  - 结论所需的**读数**已在**内层** `docs/enterprise-platform/evidence/production/clean-windows-bat-install-20261009/`（10 个工件 + `SHA256SUMS.txt`）固化并推送到 `master`。
+  - 本机 `Get-VM` **0 台**、VHDX **未被占用**（排他打开成功）——删除不影响任何运行中的 VM。
+- **外层 `docs/` 与 `script/` 不是内层副本**：8 个专题标题（「跨域开源对标」「业务功能与性能优化」「Phase0 真机验证」「迁移真机执行证据」「租户隔离检查」「迁移契约 CI 门禁」「排序规则漂移」「ERP 业务到会计」）在内层逐条 `git grep` **命中 0**；两层编号体系不同（外层 00–16、26；内层 00–14 + handoff）。**故不删，保留归档与磁盘现状。**
+
+### 二、执行的动作
+
+1. **重建外层归档为「最新版」（可逆、先做）**：`archive\20261010-outer-repo-latest\`
+   - `outer-repo-full-with-latest-snapshot.bundle`（36.58 MB）—— 含 3 个 ref：`master@01dfe6b`、`20261009-outer-repo-snapshot@764485b`、**新增 `20261010-outer-repo-latest@ffc099f7`**。
+   - `outer-repo-history.bundle`（1.20 MB）、`tracked-changes.patch`（4.55 MB，delta 到最新快照，**排除 `.tools/**`** 以避开 77 MB Helm 二进制，它们在 bundle 内）。
+   - `MANIFEST.md` + `SHA256SUMS.txt`。
+   - **恢复演练已通过**：`git clone <bundle>` → `ffc099f7^{tree}` 与源仓树 **hash 一致**；抽查 `HANDOFF.md`、`Temp/win2025-clean/vm-e2e.ps1`、`vm-reconcile-results.json`、`docs/.../00-README.md` **逐字节相同**；`764485b`（453 文件）与 `ffc099f7`（484 文件）两代快照均可 checkout。
+2. **删除 superseded 归档**：`archive\20261009-outer-repo-snapshot\`（37.87 MB）。删除前断言其 snapshot commit `764485b` 存在于新 bundle 内 —— 通过后删除。
+3. **删除 20.5 GB VHDX + 空文件**：`Temp\win2025-clean\WindowsServer2025Eval.vhdx`（11,686,379,520 B）、`Temp\win2025-clean\ZhiCloudClean-Diff.vhdx`（9,832,497,152 B）、`.env`（0 B）。**未删** `Temp/win2025-clean/` 下的 30 个脚本与结果文件（已进入最新快照）。
+4. **外侧（外层仓）未提交内容原样保留**：6 个已修改跟踪文件、`.tools/`、`HANDOFF.md`、`.zcodeignore`、`docs/`、`script/` 全部不动；外层正常索引 `git diff --cached` = **0**，未触碰工作树内容。
+
+### 三、结果与核实
+
+- 外层目录 **22.21 GB → 1.44 GB**（释放约 20.77 GB）；`Temp/` 20,522 MB → **0.1 MB**。
+- 归档目录 **129.7 MB → 42.3 MB**（删掉 superseded 的 37.87 MB）。
+- 外层仓 refs：`master@01dfe6b`、`snapshots/20261009-outer-repo-snapshot@764485b`、`snapshots/20261010-outer-repo-latest@ffc099f7`（新增 ref 3 未被删除）。
+- 归档 SHA-256 由 SHA256SUMS 复算**逐条一致**；bundle verify **ok**。
+- **内层不受影响**：`zhicloud-audit-src2/` 1,266 MB 未动，HEAD 仍 `b792efb96`。
+
+### 四、风险与边界（不得外推）
+
+- 本次删除**不可从本机 VHDX 恢复**；可恢复的只有"官方 Win2025 Evaluation 镜像 + 内层 55 个脚本重跑"这条**重建路径**，不是逐字节镜像还原。若将来需要逐字节复现那次 VM 内部状态，**已不能**。当前证据判定为"读数已固化到内层 evidence"，故接受该边界。
+- 外层 `docs/`/`script/` 仍**只存在于外层仓**（从未推送），其唯一长期载体是本次的 `archive\20261010-outer-repo-latest\*.bundle`。**该 archive 目录必须随外层目录一起保留**，否则这些文件将没有任何副本。
+- 本次是本地文件清理与归档重建，**不构成任何生产等价验证**。状态标记一律不翻：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、`Go/No-Go=No-Go`。
+
+### 五、同节修正
+
+- §12.164 正文与本台账第 6625 行所指外层归档路径已从 `20261009-outer-repo-snapshot\` 更新为 `20261010-outer-repo-latest\`（原目录已被本节的更完整归档取代并删除）。
+- §12.173 第五节「外层另有一个本地快照 ref…」已更新为列出**两个** snapshot ref 及其所在 bundle。
