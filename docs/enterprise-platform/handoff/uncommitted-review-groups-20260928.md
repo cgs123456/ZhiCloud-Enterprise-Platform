@@ -7788,3 +7788,12 @@ FMS config 域拆 11 个资源：账套 account-set、成员 account-user、账�
 - **HRM**：250 端点未动。
 - 沙箱库留下一次启动产生的 1 个测试账套（ZCSBX，已随探测删空子数据）——不影响断言相对口径。
 
+
+## 12.182 2026-10-10 FMS 首刀 CI 回归一次：权限门禁抓到裸写接口（据实登记 + 修复）
+
+**事实**：§12.181 的提交 `cd7b5ac13` 在 GitHub Actions 失败——`Full-Repo @PreAuthorize / @PermitAll Gate` 步报 `[GAP] 数量 1 超过基线 0`，命中 `FmsAccountUserController.updateDefaultStatus`（`/update-default-status`，PUT）无 `@PreAuthorize`。上一刀（IM/MP/Report，`1587817ea`）CI 绿灯是因为当时该门禁只扫既有模块；FMS 新代码把盲区里漏的一个裸写接口带进了门禁视野。
+
+**处置**：提交 `e5199ed85` 给该端点补 `@PreAuthorize("@ss.hasPermission('fms:config:account-set:query')")`。选择依据：该端点语义是「当前登录用户设置自己的默认账套」（作用域已被 `getLoginUserId()` 收紧、服务层校验调用者是成员），不是管理他人；`query` 是账套菜单权限点中最轻的一档，不会把仅有记账权限的用户挡在门外——与仓库内其它自助写接口口径一致。门禁脚本本地按 CI 参数 `--include-app` 复跑 `[OK]`（524 个 Controller 文件零缺口）。
+
+**教训（写操作默认带权限注解）**：生成器产出的 44 个标准写端点全部带 `@PreAuthorize` 模板，但**手写**的 3 个资源里漏了 1 个——恰好证明这条门禁的存在价值：它不看代码来源，只看最终落盘。后续手写资源（HRM、FMS 剩余域）在自测清单里把「每个 @*Mapping 写方法有 @PreAuthorize」列为显式条目，不再依赖 CI 兜底。
+
