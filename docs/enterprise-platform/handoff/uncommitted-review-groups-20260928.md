@@ -7306,3 +7306,39 @@ GitHub 官方文档（`docs.github.com/en/billing/concepts/product-billing/githu
 
 - **状态不翻**：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、Go/No-Go=`No-Go`。
 - 本轮未改任何 Java 业务代码；workflow 仅新增 `continue-on-error: true` 与 2 行注释。
+### 七、修复后的 CI 实测读数（run `38014885897`，head `39f622989`）——并曝露一个新盲区
+
+CI 结论由 `failure` 转为 **success**，此前被跳过的 11 个步骤全部真正执行：
+
+| 步骤 | 修复前（`38006057454`） | 修复后（`38014885897`） |
+|---|---|---|
+| 13 Upload Surefire Reports | failure | success（仅表征，见下） |
+| 14 Upload Maven Build Log | failure | success（仅表征） |
+| 15 Security Check (deploy gate) | **skipped** | **success** |
+| 17 OWASP Dependency Check | **skipped** | skipped（未配 `NVD_API_KEY`，属预期） |
+| 20 Generate CycloneDX SBOM | **skipped** | **success** |
+| 21 Resolve Runtime Dependency Tree | **skipped** | **success** |
+| 22 Build License Inventory | **skipped** | **success** |
+| 23 License Policy Gate | **skipped** | **success** |
+| 25 License Posture Notice | **skipped** | **success** |
+
+但必须同时记下：**修复只消除了“门禁被跳过”，并未解除存储配额**。`38014885897` 的日志仍为：
+
+```
+With the provided path, there will be 762 files uploaded
+Artifact name is valid!
+##[error]Failed to CreateArtifact: Artifact storage quota has been hit. ...
+```
+
+共 4 处同样报错，且仓库 artifact 列表在这次 run 后**没有新增任何本 run 的产物**（仍为 40 个，最新一个仍是 `37889281329` 的）。这从反面再次确证了第三节的结论：**配额瓶颈不在本仓，清理本仓 378 MB 不足以恢复上传能力**。
+
+**新盲区（本节修复）**：`continue-on-error` 使上传失败在 job 结论里不可见——上述 run 中步骤 13/14 显示 `success`，而实际一份产物都没存下来。这与本 workflow 既有原则相冲：
+
+> “未配置 Key 时显式告警并跳过，而不是用 continue-on-error 伪装成通过”
+
+因此补上 `Artifact Upload Posture Notice`（`c3c5c0266`）：给 5 个 upload 步骤加 `id`，新增一个 `if: always()` 步骤读取各自 `outcome`，将失败的产物名以 `::warning` 打到日志并写入 job summary。语义与上述原则一致：**不阻断，但不隐瞒**。
+
+### 八、状态
+
+- **状态不翻**：`production_ready=false`、`gate3_passed=false`、`independent_review=false`、Go/No-Go=`No-Go`。
+- 本轮未改任何 Java 业务代码；台账修正了 §12.166 将该 CI 失败定性为“非代码缺陷”的偏差。
