@@ -492,6 +492,41 @@
       "sha256": "f20229dcc33164fb39cc52d02b16a8154344d4c8f52fc39968d791e7f6da0c8a",
       "verification_file": "V159_verify.sql",
       "verification_sha256": "2893e1ad79f7b6adad496e40906509e1c46e4068423d59ebe335ac0f1ecf8937"
+    },
+    {
+      "version": 161,
+      "file": "V161__hr_employee_hrm_superset.sql",
+      "sha256": "995a2a02bbc14916a98b0e1e835135c8752bc83dc95fb4b0c8e15d7d3590ac65",
+      "verification_file": "V161_verify.sql",
+      "verification_sha256": "446a95bf8bca68994832774971bdb1a2e776596fef495179deef4177af03c30a"
+    },
+    {
+      "version": 162,
+      "file": "V162__hr_employee_sub_tables.sql",
+      "sha256": "e320e9ff67e39ba44fa7c92420cfe07ad80c25a57f80e21bf583e74960d9ae0e",
+      "verification_file": "V162_verify.sql",
+      "verification_sha256": "cff922c3826c93ef77b064c3dc60dc1f88e9eb8fac4ed235459df27b9a807f84"
+    },
+    {
+      "version": 163,
+      "file": "V163__hrm_employee_dict_seed.sql",
+      "sha256": "bb3abe6425865abce0ac34a4036cf98f7f5c9d3235f3e9f8a4fbac5403b3563a",
+      "verification_file": "V163_verify.sql",
+      "verification_sha256": "b48d1e70210f903c336751c9b8a0c788dc6ed150897a7187e437fc1f2618f66c"
+    },
+    {
+      "version": 164,
+      "file": "V164__hrm_employee_dept_menu_seed.sql",
+      "sha256": "81378e65d4ec5e1e03f9d2751fa4b3fe9f9930b9badc1d5d5e2da424288ac607",
+      "verification_file": "V164_verify.sql",
+      "verification_sha256": "d2fdfc169ec4f94ea65c63818ce726314e8d7d71fb76cf79a373ddcc0d48d5de"
+    },
+    {
+      "version": 165,
+      "file": "V165__hr_employee_personal_note.sql",
+      "sha256": "028524a1c617ba963bd3d3df9b14dfd3aec4e5fb490397be050a1f59f97c69d2",
+      "verification_file": "V165_verify.sql",
+      "verification_sha256": "d16a210f553561322517ea386bc5629991788f7e14439d0eb62237bf6e2b61ac"
     }
   ]
 }

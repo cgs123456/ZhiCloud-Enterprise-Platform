@@ -7814,3 +7814,35 @@ FMS config 域拆 11 个资源：账套 account-set、成员 account-user、账�
 
 **验证**：`check_migration_contract.py` PASSED tracked=70 scanned=166；V159_verify 三条（字典类型=2、成员级别行=3、指标类型行=2）真机全 PASS；应用 API 回读 5 行标签正确。
 
+
+## 12.184 2026-10-11 HR/HRM 融合开工：地基迁移 V161-V164（单一员工表+双状态轴+组织树合一 system_dept）
+
+**所有者裁决**：「hrm 与 hr 进行融合，确保完美融合」。只读核实定融合架构：两侧是**同一人事域的两种颗粒度**——HR 后端 18 字段单状态轴 vs HRM 前端 45 字段双状态轴超集；HRM dept 页**本来就调 `@/api/system/dept`**（组织树单一真值的天然落点）；两侧无外部 Java 消费者、无 python 断言耦合；状态枚举值域互映可由数据反推（沙箱 41 员工实测：status 全 10，employment_type 10/20/30/40 各 11/10/10/10——映射无损）。
+
+**设计原则（每刀原子、不加破坏性中间态）**：V161 **纯加性**——只增 HRM 超集列 + 回填 + emp_no 放宽可空（HRM 允许待入职先建档），**不改名不删列**：旧 /hr 接口与 demo 工具链（schema-snapshot 黄金测试/生成器 fail-closed/invariants 断言）零冲击。旧列退役 = 后继迁移（待 /hrm 员工链验证通、旧页面删除后），与 V140「先接线后清理」同构。jobNumber/mobile/idNumber **不加镜像列**——DO/VO 边界显式映射 emp_no/phone/id_card，单一物理列零漂移。
+
+**迁移内容**：
+- **V161__hr_employee_hrm_superset.sql**：hr_employee +32 列（entry_status/employee_status/type 双轴+形式、sex 1男2女、birthday/entry_time/leave_time/regular_time datetime、user_id/leader_employee_id、档案资料组、岗位工作地组、salary_card_*、社保公积金号）；回填映射（gender 10/20→sex 1/2；status 10/20/30→entry_status 1/4/1；employment_type 10/20/30/40→employee_status 1/4/3/8 + type 1/2；在职正式补 regular_time=entry_time）；3 个新索引；**组织树合一**：hr_department 存活行按原 id 迁入 system_dept（id 同值→hr_employee/hr_position/hr_contract 的 dept 引用零改写；hr_department 表暂留存档，Java 栈退役在后继刀）。
+- **V162__hr_employee_sub_tables.sql**：员工子域 9 表（change_record 异动/quit_info/file/certificate/contact/education/work/training_experience/field_config 字段配置/hr_employee_contract）。
+- **V163__hrm_employee_dict_seed.sql**：员工域 4 字典（entry_status/status/type/education，对齐前端 constants.ts；sex 复用 system_user_sex）+ 档案填写通知模板（hrm_employee_profile_fill）+ 字段配置默认行（**必须种**：前端语义是「配置返回空数组→字段全隐藏」）。
+- **V164__hr_employee_field_config_dedup.sql**：真机抓出的校正——V163 的 kind=1 清单 `companyAge` 字面行**重复**，且 uk 的 entry_status 为 NULL 时 MySQL 不去重、单语句 NOT EXISTS 防不住同语句重复行 → kind=1 实际 35 行。V163 已入 flyway 历史不回改（哈希钉住），前向去重（保留最小 id）；沙箱与全新库收敛一致。
+
+**真机验证（zhicloud_sandbox_v140，Flyway JDBC 渠道应用）**：schema 至 V163 后 V161_verify 6 断言、V162_verify 3 断言、V163_verify 6 断言全 PASS（其中 V161_SUPSET_COLS 断言初版写 34、库实测新列 32——emp_no 仅 MODIFY 不加列，正文头注笔误不回改，verify 以库为准重钉哈希；V163_ARCHIVE_FIELDS FAIL 35 即上述重复，V164 修）。V164 事务内预演 kind1=34 后 ROLLBACK（待下次重启由 Flyway 正式应用）。契约 tracked=74、门禁 PASSED。
+
+**下一步（同增量内）**：hr pom 补 system 依赖→HrEmployeeDO 扩列→/hrm/employee 员工脊柱（25 端点：page/get/list/simple-*/status-count/dept-statistics/create(+list)/bound-user-id-list/update/confirm-entry/rehire/regular/transfer/promote/demote/convert-to-full-time/quit/cancel-quit/delete(-list)/export/import/send-profile-fill-message）+ 子资源（证书/联系人/三类经历/异动/离职/附件/工资卡/字段配置/操作日志）+ V165 菜单种子（/hrm 目录+员工/部门菜单，软删旧 /hr employee+department 菜单——退役口径）→ 打包重启 → 端到端断言。
+
+## 12.185 2026-10-11 HR/HRM 融合第二刀：V164/V165 真机应用 + /hrm/employee 全链后端（~60 端点）+ 端到端 50/50
+
+**V164 修复（先读后改）**：吸取 §12.176「连续盲改」教训，先 Read 实际内容再动手——损坏状态确认为 `VALUES(... AS ...)` 残留与 `SELECT` 行混写的杂交体。整体重写为已验证的 V158 `INSERT...SELECT t.* FROM (...UNION ALL...) t WHERE NOT EXISTS` 模式。重写前先对前端 `views/hrm/**` 逐页核对 v-hasPermi/checkPermi 契约，发现三处与初版种子不符：①「发送填写档案通知」由 `hrm:employee:update` 门控（index.vue:189），不设独立权限；②部门页 `hrm/dept/index` 复用平台 `/system/dept` 接口与既有 `system:dept:*` 权限，`hrm:dept:*` 全是凭空伪造——删 12 个假按钮，菜单行 permission 用 `system:dept:query`；③`personal-note:create/delete` 是 home 日历的真实消费方，后端将声明故种按钮。最终 11 行（目录 1+菜单 2+按钮 8），事务内 dry-run 二跑幂等后 ROLLBACK。
+
+**V165**：①V163 遗留修复——`hr_employee_field_config` kind=1 段 `companyAge` 字面行重复（id 31/32，uk 对 NULL 不去重），按同键保留最小 id 物理去重，`V163_ARCHIVE_FIELDS` 断言由 FAIL 35 回归 34；②新建 `hr_employee_personal_note`（home 日历备忘，前端契约只有 content+reminderTime，按登录用户 user_id 隔离）。事务内 dry-run（2→1、建表）后交 Flyway。契约 tracked=75、门禁 PASSED findings=0。
+
+**Java 层（zhicloud-module-hr）**：恢复被截断的 `HrEmployeeServiceImpl`（package/imports/类声明丢失，按 git HEAD 语义手写恢复，旧 /hr 契约不动）；新增 hrm 包：DO×11（change_record/quit_info/file/certificate/contact/education/work/training/contract(JacksonTypeHandler json)/field_config/personal_note）+ Mapper×10 + VO×30 + `HrmEmployeeService`/`Impl`（CRUD+confirm-entry/rehire/regular/transfer/promote/demote/convert-to-full-time/quit/cancel-quit+status-count/dept-statistics/bound-user-id-list/create-list-from-user/send-profile-fill-message(站内信模板 hrm_employee_profile_fill)/import(三策略)/export/template）+ `HrmEmployeeProfileService`/`Impl` + 两个 Controller。融合纪律落进代码：写路径 `syncLegacyColumns` 同步旧列（sex→gender、birthday→birth_date、entry_time→hire_date、leave_time→leave_date、entry_status→status、type×employee_status→employment_type），异动落 `hr_employee_change_record`（type 4-9+新旧快照），离职落 `hr_employee_quit_info`（old_employee_status 快照）。
+
+**四个真问题（各有代码级修复+证据）**：①`status` 双轴同名冲突——VO 的 status（员工状态轴）与 DO 的 status（旧列 10/20/30）按名 BeanUtils 误拷，H2 单测抓出（regularTime=null），convertToDO/buildRespVOList 显式轴迁移；②`@Resource` 按名注入撞 bean——`fileMapper` 字段名命中 infra `FileMapper`，启动即死（APPLICATION FAILED TO START: JDK dynamic proxy），字段更名 `hrmEmployeeFileMapper`；③软删占 uk_emp_no 物理唯一槽——离职员工删除后同工号重建 1062→500，deleteEmployee 先 `set(emp_no=null,user_id=null)` 再软删（单测「同工号可重建」断言）；④字段配置种子 tenant_id=1，租户 9001 查询为空——`getFieldConfigList` 懒惰供给（TenantUtils.executeIgnore 读种子→本租户 insertBatch），save 只动本租户行。
+
+**验证（真机 zhicloud_sandbox_v140）**：单测 33/33（新增 HRM 7 例：建档校验/旧列同步/离职 quit_info/取消离职清空/调岗异动记录/删除释放工号）；停服→repackage（jar 内层 V164=81378e65、V165=028524a1 与契约一致，5 个新 class 在位）→重启，Flyway 应用 2 迁移至 schema 165；V161-V165 verify 24/24 PASS；E2E 50/50（脚本 Temp/zc_hrm_e2e.py，日志 zc-hrm-e2e.log）：page/get/create/update/工号唯一负向/transfer(异动行)/certificate/salary-card/config 34 字段/status-count 5 页签/dept-statistics/send-profile-fill(skipped=1)/personal-note/导入模板/quit→cancel-quit→quit→delete 全链，断言双落点（API 响应+DB 行）；demo 租户菜单 9100/9110/9120 可见、10 个权限串全授予。
+
+**两个口径记录**：①手机号在 API 响应层被全局 PII 脱敏（application.yaml `zhicloud.ai.security.pii-mask.mask-phone: true`，138****8000，旧 /hr 同样脱敏）——断言口径=响应脱敏格式+DB 行原文（10/31 号断言），非缺陷；②E2E 中文 SQL 断言经 Windows argv 传参会变 `???`（本会话 6 个假阴性根因），改走 UTF-8 文件管道+`--default-character-set=utf8mb4`，并入 §13 复跑须知。
+
+**待办（后继增量）**：旧列退役迁移（/hrm 链已验证，待旧 /hr 页面/接口下线后）；合同域融合（hr_contract vs hr_employee_contract）；考勤/薪资/招聘/保险/portal/home 域接线；V164 的旧 /hr employee+department 菜单软删（退役口径，本刀未做——先让新链稳跑）。

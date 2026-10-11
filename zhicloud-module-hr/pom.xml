@@ -31,6 +31,13 @@
             <artifactId>zhicloud-spring-boot-starter-biz-tenant</artifactId>
         </dependency>
 
+        <!-- HRM 融合：站内信（档案填写通知）、部门/用户/操作日志 API -->
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-module-system</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
         <!-- Web 相关 -->
         <dependency>
             <groupId>cn.zhicloud</groupId>
