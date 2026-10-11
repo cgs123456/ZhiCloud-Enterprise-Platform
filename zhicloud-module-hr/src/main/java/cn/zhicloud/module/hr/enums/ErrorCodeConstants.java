@@ -60,7 +60,7 @@ public interface ErrorCodeConstants {
     ErrorCode HR_INTERVIEW_NOT_EXISTS = new ErrorCode(1_050_009_002, "面试记录不存在");
     ErrorCode HR_RESUME_STATUS_INVALID = new ErrorCode(1_050_009_003, "简历状态非法，无法操作");
 
-    // ========== HRM 员工档案融合（1-050-010-000） ==========
+    // ========== HRM 员工档案融合（1-050-015-000） ==========
     ErrorCode HRM_EMPLOYEE_NOT_EXISTS = new ErrorCode(1_050_015_000, "员工不存在");
     ErrorCode HRM_EMPLOYEE_JOB_NUMBER_REQUIRED = new ErrorCode(1_050_015_001, "在职员工的工号不能为空");
     ErrorCode HRM_EMPLOYEE_JOB_NUMBER_DUPLICATE = new ErrorCode(1_050_015_002, "工号已存在");
@@ -73,5 +73,14 @@ public interface ErrorCodeConstants {
     ErrorCode HRM_EMPLOYEE_QUIT_INFO_NOT_EXISTS = new ErrorCode(1_050_015_009, "离职信息不存在");
     ErrorCode HRM_EMPLOYEE_SUB_RECORD_NOT_EXISTS = new ErrorCode(1_050_015_010, "记录不存在");
     ErrorCode HRM_EMPLOYEE_NOT_IN_SERVICE = new ErrorCode(1_050_015_011, "员工不是在职状态，无法操作");
+
+    // ========== HRM 考勤（1-050-016-000） ==========
+    ErrorCode HRM_ATTENDANCE_CLOCK_NOT_EXISTS = new ErrorCode(1_050_016_000, "打卡记录不存在");
+    ErrorCode HRM_ATTENDANCE_GROUP_NOT_EXISTS = new ErrorCode(1_050_016_001, "考勤组不存在");
+    ErrorCode HRM_ATTENDANCE_GROUP_NAME_DUPLICATE = new ErrorCode(1_050_016_002, "考勤组名称已存在");
+    ErrorCode HRM_ATTENDANCE_HOLIDAY_NOT_EXISTS = new ErrorCode(1_050_016_003, "节假日不存在");
+    ErrorCode HRM_ATTENDANCE_HOLIDAY_DATE_DUPLICATE = new ErrorCode(1_050_016_004, "该日期已配置节假日");
+    ErrorCode HRM_ATTENDANCE_LEAVE_NOT_EXISTS = new ErrorCode(1_050_016_005, "请假记录不存在");
+    ErrorCode HRM_ATTENDANCE_DATE_INVALID = new ErrorCode(1_050_016_006, "日期格式非法，应为 yyyy-MM-dd");
 
 }

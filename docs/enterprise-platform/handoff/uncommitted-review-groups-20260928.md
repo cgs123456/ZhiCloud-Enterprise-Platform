@@ -7848,3 +7848,16 @@ FMS config 域拆 11 个资源：账套 account-set、成员 account-user、账�
 **待办（后继增量）**：旧列退役迁移（/hrm 链已验证，待旧 /hr 页面/接口下线后）；合同域融合（hr_contract vs hr_employee_contract）；考勤/薪资/招聘/保险/portal/home 域接线；V164 的旧 /hr employee+department 菜单软删（退役口径，本刀未做——先让新链稳跑）。
 
 **CI 追记（同日）**：`c9f7a440a` 推送后 CI「Error Code Uniqueness Gate」失败——HRM 段 `1_050_010_x` 与 IoT biz `DATA_RULE_*`（同 1_050_010_000/001）撞车。本地 `scripts/check_error_codes.py` 复现，扫描 1_050_000-014 全被占用，HRM 整段重排至空闲段 `1_050_015_x`（常量/单测断言/E2E 负向断言同步改），本地门禁 [OK] 1867 定义无重复、单测 33/33、真机 E2E 50/50 复绿后重推。教训：新模块开错误码段前先 `check_error_codes.py` 或 grep 全仓 `1_0XX_0XX_XXX` 已用段（IoT 子模块占段不在 hr 模块视野内）。
+## 12.186 2026-10-11 HRM 考勤域接线：V166 六表 + V167 菜单/字典 + /hrm/attendance 34 端点 + E2E 54/54
+
+**契约盘点**：HRM 剩余 7 域共 240 端点（attendance 28+6 统计、insurance 22、performance 40、recruit 35、salary 69、home 4、portal 41、operate-log 1）。按规模递增推进，本刀做**考勤域**（views/hrm/attendance，34 端点）。
+
+**V166（6 张表）**：hr_attendance_group（班次/地点/WiFi/特殊日期/扣款规则五组嵌套配置整体存 json 列——前端契约本就是整组提交，避免 7 张碎片表）、hr_attendance_group_employee（组-员工关联，(group_id,employee_id) 唯一）、hr_attendance_clock（打卡，(employee_id,attendance_time) 索引）、hr_attendance_holiday（(date) 唯一）、hr_attendance_leave（请假单，process_instance_id 待接 BPM）、hr_attendance_month_record（月度汇总，(employee_id,year,month) 唯一=幂等缓存）。V167：菜单 17 行（挂 9100 /hrm 下 9130-9173 段，5 个菜单页+12 按钮，权限串与页面 v-hasPermi 逐项核对）+ 字典 9 个 26 条（打卡类型/来源/状态/节假日类型/请假类型/是否/三种扣款方式；请假类型 8 值与 hr_leave_type.code 对齐）。
+
+**Java（考勤域）**：DO×6 + Mapper×6 + VO×22 + Service/Impl + Controller。聚合口径：①应出勤天数=按考勤组 shifts.weeks（无组回退周一~周五）逐日计，休息类节假日剔除、上班类补回；②月度汇总以打卡+请假行实时聚合后落 cache 行，打卡增删改即失效当月缓存（下次查询重算）；③扣款按考勤组 deduct_rule 三方法（1每月固定 2按分钟 3按次数）×异常计数；④考勤结果按最差状态呈现（旷工>缺卡>迟到/早退>正常）；⑤enrich：员工名/工号/部门名/考勤组名，按 deptIds（含子部门）+ search 关键字过滤。
+
+**真机验证（zhicloud_sandbox_v140）**：Flyway 至 schema 167；V166 verify 4/4、V167 verify 5/5；单测 40/40（新增考勤 7 例：打卡 CRUD/班次周一~周五命中与周日不排/月度聚合迟到 30 分钟与缺卡扣款 50/节假日重复拒/请假 enrich）；E2E **54/54**（Temp/zc_hrm_att_e2e.py + zc-hrm-att-e2e.log）：考勤组建→关联→json 列落值→my 命中→班次周五命中周日不排→打卡三态（正常/迟到/缺卡）→分页 enrich→导出→改删→节假日增改与重复拒→请假读侧+导出→月度汇总（迟到/缺卡/扣款/组名 enrich）→概况分页 dailyClockMap→月度详情 31 天日明细→每日明细→两种导出→权限 17 项全授予→字典 5 项。demo 租户菜单/字典可见。
+
+**四个工程发现**：①`@TableField(typeHandler=JacksonTypeHandler)` 的 json 列泛型必须**具体化**——`List<Object>`/`Object` 无法序列化（FAIL_ON_EMPTY_BEANS），改 `List<Map<String,Object>>`/`Map<String,Object>`；②H2 下 `year`/`month`/`day` 是保留字（MySQL 非保留可用，真机无碍）——测试连接串 `NON_KEYWORDS=value,year,month,day` 放行（与既有 value,year 同法）；③FastExcel **不支持嵌套 Map/List 列**——月度概况导出改用扁平 Excel VO（employeeName/jobNumber/deptName/year/month/clockDays），避免 Stream closed 500；④`information_schema.statistics` 每索引列一行——verify 断言索引用 `COUNT(*) = 列数` 或 `COUNT(DISTINCT index_name)`，不能用 `COUNT(*)=1`。
+
+**待办（后继域）**：insurance 22 / recruit 35 / performance 40 / portal 41 / salary 69 / home 4 / operate-log 1；考勤请假写侧接 BPM（process_instance_id 回填）；考勤组特殊日期/班次休息时段的排班细化（当前班次按周几匹配，未做时区/跨天班）。

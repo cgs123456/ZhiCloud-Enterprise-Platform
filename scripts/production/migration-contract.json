@@ -527,6 +527,20 @@
       "sha256": "028524a1c617ba963bd3d3df9b14dfd3aec4e5fb490397be050a1f59f97c69d2",
       "verification_file": "V165_verify.sql",
       "verification_sha256": "d16a210f553561322517ea386bc5629991788f7e14439d0eb62237bf6e2b61ac"
+    },
+    {
+      "version": 166,
+      "file": "V166__hrm_attendance_tables.sql",
+      "sha256": "2b230d494b26b4cb7496869722efa9deb210db3cb1b160522d14b78082020f40",
+      "verification_file": "V166_verify.sql",
+      "verification_sha256": "8bb769fd2d516cab3821c2b907cb7837a4ff469d78cacb0cf39ba6ad07e9f489"
+    },
+    {
+      "version": 167,
+      "file": "V167__hrm_attendance_menu_dict_seed.sql",
+      "sha256": "113feff2091e3a8fe92294d3f7ab1a0dbefb861b2dc9d45ce3e0bec963772504",
+      "verification_file": "V167_verify.sql",
+      "verification_sha256": "a997b14ea2cf7e04e64a86bd30ee0cdfe571c27cb632e0b433e1c20a319194e8"
     }
   ]
 }
