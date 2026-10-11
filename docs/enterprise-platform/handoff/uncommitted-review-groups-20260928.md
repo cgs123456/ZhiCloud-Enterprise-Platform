@@ -7890,3 +7890,18 @@ FMS config 域拆 11 个资源：账套 account-set、成员 account-user、账�
 **两个工程发现**：①`@Resource` 按 bean 名注入——招聘域 `postMapper` 撞 system 模块 `PostMapper`（启动/单测即 BeanNotOfRequiredTypeException），全部 mapper 字段加 `hrmRecruit`/`hrmEmployee` 前缀（同保险刀 fileMapper 教训的第二次复现，已成模式）；②E2E 脚本 GET/PUT 带中文 query 需 URL 百分号编码（Windows urllib 默认 ascii 编码，未编码抛 UnicodeEncodeError）。
 
 **待办（后继域）**：绩效 40 / 薪资 69 / portal 41 / home 4 / operate-log 1；保险 month-record；考勤请假接 BPM。
+## 12.189 2026-10-11 HRM 工作台与操作日志接线：V173 + home 4 端点 + operate-log 1 端点 + E2E 25/25
+
+**无新表刀**：home（HR 首页/团队工作台统计与日历）与 operate-log（详情页操作日志页签）都是**只读聚合**，复用既有表与 system 模块的 `OperateLogApi`，只加 V173 权限种子（2 按钮：hrm:home:query / hrm:operate-log:query，挂 9100 /hrm 目录下 9204-9205）。
+
+**统计口径（HrmHomeServiceImpl，全部真机验证）**：
+* HR 首页四块——员工概览（在职=entry_status∈{1,2,3}；本月入职/离职按 entry_time/leave_time 落本月；本月转正/调岗从 hr_employee_change_record 的 type=4/5 且 effect_time 落本月）；招聘概览（招聘中职位 status=1；流程中候选人 status∈{2..5}；待入职 6；已入职 8）；薪资概览（取最近月份 hr_salary 汇总 + 按部门聚合实发工资算占比，旧薪资域尚未融合）；待办（待入职 2/待离职 3/待转正=试用中 employee_status=2/本月生日按生日月/合同 30 天内到期未终止；待核算工资表诚实置 0——薪资核算域未接线）。
+* 日历：个人备忘（当前登录用户）+ 员工入职/转正/离职 + 候选人面试事项，按日期范围过滤并排序。
+* 团队工作台：以「当前登录用户绑定的员工」（user_id 反查）为 leader，其 leader_employee_id 指向他的员工为团队成员；产出团队人数/本月入职离职转正 + 状态/性别/年龄分段/司龄分段占比。
+* operate-log：bizType(1-5)→type 字符串映射（hrm_recruit_post/candidate/employee/performance_*），复用 `OperateLogApi.getOperateLogPage`。
+
+**真机验证（zhicloud_sandbox_v140）**：Flyway 至 schema 173；V173 verify 1/1；单测 56/56（无新单测——纯只读聚合，E2E 覆盖）；E2E **25/25**（Temp/zc_hrm_home_e2e.py + zc-hrm-home-e2e.log）：HR 统计四块字段齐 + DB 交叉验证（在职数、招聘中职位与库一致）→HR 日历字段齐与窄窗口→建 leader（绑定 demo_admin）+ 成员→团队统计 leader 解析与人数=1 与性别/年龄分段→团队日历含成员入职→操作日志分页结构→权限授予→清理（成员与 leader 先离职再删，软删 2 行）。
+
+**两个测试口径发现**：①DB 交叉验证必须带 tenant_id 过滤（真机库含 tenant 1 与 9001 两套数据，裸 COUNT 会把平台租户算进来，43 vs 44 差 1 即 tenant 1 的 1 行）；②「非离职员工禁止删除」在清理路径同样成立——E2E 清理需先 quit 再 delete（成员与 leader 皆然）。
+
+**待办（后继域）**：绩效 40 / 薪资 69 / portal 41；保险 month-record；考勤请假接 BPM。

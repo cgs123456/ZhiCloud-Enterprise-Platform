@@ -576,6 +576,13 @@
       "sha256": "67356bd1375319dbe007b387dbfea471d0f7cf8facdb1552a162d9abb77ace63",
       "verification_file": "V172_verify.sql",
       "verification_sha256": "30cc810c6d640956fce0a749bab97d191cc80659bf35c5d8f7524c9466c209c0"
+    },
+    {
+      "version": 173,
+      "file": "V173__hrm_home_operatelog_menu_seed.sql",
+      "sha256": "41b2a3200e3021599f6c83d23dfeb4ccaa2a9de1c0e0d32f7b429fa82e46cc78",
+      "verification_file": "V173_verify.sql",
+      "verification_sha256": "8ec9b6a6fa1f0e565392168e8c062569e7ef941975fa4d1471b870e798a25998"
     }
   ]
 }
