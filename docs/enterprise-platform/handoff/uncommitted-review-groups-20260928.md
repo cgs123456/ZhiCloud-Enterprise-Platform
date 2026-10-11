@@ -7927,3 +7927,16 @@ FMS config 域拆 11 个资源：账套 account-set、成员 account-user、账�
 **真机验证（zhicloud_sandbox_v140）**：Flyway 至 schema 177；V176 verify 3/3、V177 4/4；单测 74/74（新增薪资配置 9 例：薪资组建/重名拒/同步树与幂等/系统项拒删/自定义项开关/被引用计税规则拒删/usedGroupCount enrich/调薪模板/配置单条 upsert）；E2E **31/31**（Temp/zc_hrm_sal_e2e.py + zc-hrm-sal-e2e.log）：同步标准树（15 分类 + 34 叶子）→幂等（49 行不变）→系统项拒删→自定义项 CRUD+开关→计税规则 CRUD→薪资组建（引用计税规则，enrich 规则名/部门名）→重名拒→被引用计税规则拒删+usedGroupCount→调薪模板（json 2 项）→薪资配置单条 upsert（二次 update 仍 1 行）→权限 18 项全授予→字典 3 项→清理。demo 租户菜单/字典可见。
 
 **待办（后继）**：薪资 employee-info 8 + month-record 14 + month-employee-record 6 + change-record 4 + slip 3 + slip-template 5 + slip-send-record 5；portal 41 端点；保险 month-record；考勤请假接 BPM。
+## 12.192 2026-10-11 HRM 薪资业务域接线（薪资域第二刀）：V178/V179 + 43 端点 + E2E 39/39
+
+**范围**：薪资域剩余业务面——员工薪资档案（定薪/调薪记录）、月度工资表（建次月/核算/就绪度/工资项汇总）、员工月度工资（补录/异动计数/绩效系数）、工资条（模板/发放记录/工资条/阅读标记），共 43 端点。至此薪资域 69 端点全部接线。
+
+**迁移（V178/V179）**：V178 七表——hr_salary_employee_info（员工薪资档案，试用/转正工资 + 两组工资项 json）、hr_salary_employee_change_record（调薪记录，前后总额 + 两组工资项 json）、hr_salary_month_record（月度工资表头，应发/社保/公积金/个税/实发/公司承担 + 表头工资项 json）、hr_salary_month_employee_record（员工月度工资，出勤/应发/应税/个税/实发/绩效系数 + 工资项值 json）、hr_salary_slip_template（工资条模板，hideEmpty + 模板项 json）、hr_salary_slip_send_record（发放记录，发放人数/已查看数 + 发放项 json）、hr_salary_slip（员工工资条，readStatus）。V179：菜单 13 行（9237-9249：员工薪资/月度工资表/工资条发放三菜单页 + 10 按钮）。
+
+**Java**：DO×7 + Mapper×7 + VO×20 + Service/Impl + Controller（43 端点）。口径：①定薪 upsert 员工薪资档案并落一条调薪记录（before/after 总额由工资项求和现算）；②建次月工资表（year/month 顺延，重复月份拒绝）；③月度工资补录按员工 upsert，核算时从员工记录重算表头聚合（人数 + 六项金额），状态 5未核算→11已核算；④就绪度（应发/已定薪/未定薪/异动人数 + 异动类型分布）；⑤工资条发放按员工（或 all）生成工资条行；⑥工资条详情从员工月度工资的工资项值展开；⑦阅读标记 readStatus→1。全部 enrich 员工名/工号/手机/部门名/职位。
+
+**真机验证（zhicloud_sandbox_v140）**：Flyway 至 schema 179；V178 verify 3/3、V179 3/3；单测 74/74（本刀无新增单测——43 端点以 E2E 覆盖）；E2E **39/39**（Temp/zc_hrm_salbiz_e2e.py + zc-hrm-salbiz-e2e.log）：员工建档→定薪（档案 + 调薪记录双落行）→分页/详情 enrich→调薪记录列表/取消→建次月工资表→详情/最近/就绪度→月度工资补录→核算（状态 11 + 人数）→月度分页/列表/异动计数/绩效系数/工资项汇总→工资条模板 CRUD（json 2 项）→发放（生成工资条 1 行）→发放记录分页/详情→工资条分页/详情/标记已读（readStatus=1）→权限 13 项全授予→清理。demo 租户菜单可见。
+
+**工程注记**：本刀 Java 层由子代理（general-purpose）按我给出的精确规格生成（20 VO + Service/Impl + Controller 43 端点），我独立复验：`mvn compile` 通过、错误码唯一性门禁通过（1916 定义）、H2 测试 74/74、真机 E2E 39/39 全绿——子代理产出经全链验证后才登记。子代理披露的偏差（导入模板用空 Excel、compute-import 等价核算、noSalaryGroupEmployeeCount 置 0 等）均属本刀范围内的诚实简化。
+
+**待办（后继）**：portal 41 端点；保险 month-record；考勤请假接 BPM；旧 /hr 页面与接口退役。

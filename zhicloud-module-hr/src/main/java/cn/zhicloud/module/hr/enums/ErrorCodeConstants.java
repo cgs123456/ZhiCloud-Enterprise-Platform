@@ -125,4 +125,14 @@ public interface ErrorCodeConstants {
     ErrorCode HRM_SALARY_TAX_RULE_USED = new ErrorCode(1_050_020_008, "计税规则已被薪资组引用，无法删除");
     ErrorCode HRM_SALARY_CHANGE_TEMPLATE_NOT_EXISTS = new ErrorCode(1_050_020_009, "调薪模板不存在");
 
+    // ========== HRM 薪资业务（1-050-021-000） ==========
+    ErrorCode HRM_SALARY_EMPLOYEE_NOT_EXISTS = new ErrorCode(1_050_021_000, "员工不存在");
+    ErrorCode HRM_SALARY_CHANGE_RECORD_NOT_EXISTS = new ErrorCode(1_050_021_001, "调薪记录不存在");
+    ErrorCode HRM_SALARY_CHANGE_RECORD_CANCELLED = new ErrorCode(1_050_021_002, "调薪记录已取消，无法重复取消");
+    ErrorCode HRM_SALARY_MONTH_RECORD_NOT_EXISTS = new ErrorCode(1_050_021_003, "月度工资表不存在");
+    ErrorCode HRM_SALARY_MONTH_RECORD_EXISTS = new ErrorCode(1_050_021_004, "该月份工资表已存在，无法重复创建");
+    ErrorCode HRM_SALARY_SLIP_TEMPLATE_NOT_EXISTS = new ErrorCode(1_050_021_005, "工资条模板不存在");
+    ErrorCode HRM_SALARY_SLIP_SEND_RECORD_NOT_EXISTS = new ErrorCode(1_050_021_006, "工资条发放记录不存在");
+    ErrorCode HRM_SALARY_SLIP_NOT_EXISTS = new ErrorCode(1_050_021_007, "工资条不存在");
+
 }
