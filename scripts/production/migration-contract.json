@@ -583,6 +583,20 @@
       "sha256": "41b2a3200e3021599f6c83d23dfeb4ccaa2a9de1c0e0d32f7b429fa82e46cc78",
       "verification_file": "V173_verify.sql",
       "verification_sha256": "8ec9b6a6fa1f0e565392168e8c062569e7ef941975fa4d1471b870e798a25998"
+    },
+    {
+      "version": 174,
+      "file": "V174__hrm_performance_tables.sql",
+      "sha256": "75759fa119568ba51c750e115aa103e817cad7cc16454699e0c93f6940190141",
+      "verification_file": "V174_verify.sql",
+      "verification_sha256": "1b121d66d48fba15a3ce99e8c85cb7f94134f41f90a59ef9058df5919dc16028"
+    },
+    {
+      "version": 175,
+      "file": "V175__hrm_performance_menu_dict_seed.sql",
+      "sha256": "535db9c29b6562b0e5466a40a2bcf9956ff3b1a757bafbc315159244e4a6c3a9",
+      "verification_file": "V175_verify.sql",
+      "verification_sha256": "ffed6abe79f23a2dbf8b59e53b3af91436ab56b687849751064c1a83fea93293"
     }
   ]
 }

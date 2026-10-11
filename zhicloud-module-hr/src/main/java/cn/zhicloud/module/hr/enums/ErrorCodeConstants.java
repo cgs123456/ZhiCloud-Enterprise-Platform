@@ -101,4 +101,16 @@ public interface ErrorCodeConstants {
     ErrorCode HRM_RECRUIT_CANDIDATE_ALREADY_JOINED = new ErrorCode(1_050_018_006, "候选人已入职，无法重复转入");
     ErrorCode HRM_RECRUIT_INTERVIEW_NOT_EXISTS = new ErrorCode(1_050_018_007, "面试记录不存在");
 
+    // ========== HRM 绩效（1-050-019-000） ==========
+    ErrorCode HRM_PERFORMANCE_TEMPLATE_NOT_EXISTS = new ErrorCode(1_050_019_000, "考核模板不存在");
+    ErrorCode HRM_PERFORMANCE_TEMPLATE_NAME_DUPLICATE = new ErrorCode(1_050_019_001, "考核模板名称已存在");
+    ErrorCode HRM_PERFORMANCE_RESULT_TEMPLATE_NOT_EXISTS = new ErrorCode(1_050_019_002, "结果模板不存在");
+    ErrorCode HRM_PERFORMANCE_RESULT_TEMPLATE_NAME_DUPLICATE = new ErrorCode(1_050_019_003, "结果模板名称已存在");
+    ErrorCode HRM_PERFORMANCE_PLAN_NOT_EXISTS = new ErrorCode(1_050_019_004, "绩效计划不存在");
+    ErrorCode HRM_PERFORMANCE_PLAN_STATUS_INVALID = new ErrorCode(1_050_019_005, "绩效计划状态非法，无法操作");
+    ErrorCode HRM_PERFORMANCE_PLAN_ARCHIVED = new ErrorCode(1_050_019_006, "绩效计划已归档，无法修改");
+    ErrorCode HRM_PERFORMANCE_PLAN_RUNNING = new ErrorCode(1_050_019_007, "绩效计划进行中，无法删除");
+    ErrorCode HRM_PERFORMANCE_ASSESSMENT_NOT_EXISTS = new ErrorCode(1_050_019_008, "员工绩效考核不存在");
+    ErrorCode HRM_PERFORMANCE_ASSESSMENT_NOT_ARCHIVED = new ErrorCode(1_050_019_009, "该考核未归档");
+
 }

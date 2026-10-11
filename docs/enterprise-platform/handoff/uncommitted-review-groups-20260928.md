@@ -7905,3 +7905,14 @@ FMS config 域拆 11 个资源：账套 account-set、成员 account-user、账�
 **两个测试口径发现**：①DB 交叉验证必须带 tenant_id 过滤（真机库含 tenant 1 与 9001 两套数据，裸 COUNT 会把平台租户算进来，43 vs 44 差 1 即 tenant 1 的 1 行）；②「非离职员工禁止删除」在清理路径同样成立——E2E 清理需先 quit 再 delete（成员与 leader 皆然）。
 
 **待办（后继域）**：绩效 40 / 薪资 69 / portal 41；保险 month-record；考勤请假接 BPM。
+## 12.190 2026-10-11 HRM 绩效域接线：V174/V175 + 模板/计划/考核 40 端点 + E2E 40/40
+
+**迁移（V174/V175）**：V174 八表——hr_performance_assessment_template（考核模板，dimensions 维度数组含 quotas 指标数组 → json）、hr_performance_result_template（结果模板，levels 等级数组 → json）、hr_performance_plan（绩效计划，scopes 考评范围 + assessment_config/result_config 配置快照 + target_confirmation_stage/review_stages/result_audit_stages/appeal_stages 四类节点 → json）、hr_performance_assessment（员工考核，一计划一员工）、hr_performance_assessment_dimension/quota/stage（考核维度/指标/阶段三张明细）、hr_performance_process_record（流程记录，biz_type 1计划 2考核）。嵌套配置整体存 json（与考勤组/保险方案同法），控制表数量在 8 张。V175：菜单 13 行（9206-9218：计划/考核模板/结果模板三菜单页 + 10 按钮）+ 字典 7 类 30 条（计划状态/阶段状态/考核阶段处理状态/申诉状态/计分方式/上限类型/是否，值域对齐前端 constants.ts）。
+
+**Java**：DO×8 + Mapper×8 + VO×15 + Service/Impl + Controller×3。业务口径：①模板/结果模板 name 唯一（服务层校验，含软删陷阱规避）；模板 dimensions/levels 以 json 整体存取，维度数/指标数在响应层现算；②计划生命周期：草稿(1)/未开始(2) → startPlan（按 scopes 解析员工并生成员工考核，幂等）→ 进行中(3) → openScoring 推进自评 → archivePlan 归档（员工考核同步写 archive_time）→ 已归档(4)；terminatePlan → 已终止(5)；归档后修改拒绝(1050019006)、进行中删除拒绝(1050019007)；③状态/阶段/等级计数：计划按 status 五档，阶段/等级按计划下考核的 stage_type/result_level 聚合；④考评范围解析：scopes type=1 员工部门（deptIds 子树 + employeeIds）、type=2 聘用形式（employeeType）；⑤归档页/非归档页按 archive_time 是否为空分流（selectPage/selectArchivePage）；⑥流程记录：计划动作（建/改/开始/评分/归档/终止）落记录，考核流程记录按 biz 查询。
+
+**真机验证（zhicloud_sandbox_v140）**：Flyway 至 schema 175；V174 verify 4/4、V175 4/4；单测 65/65（新增绩效 9 例：模板维度指标计数/模板重名拒/结果模板等级/开始计划生成考核与生命周期守卫/归档后修改拒/进行中删除拒/状态计数五档/计划建记录/补录幂等）；E2E **40/40**（Temp/zc_hrm_perf_e2e.py + zc-hrm-perf-e2e.log）：模板建（维度 2 指标 3）→结果模板（等级 3）→员工建档 2 名→计划建（草稿）→模板名 enrich→状态计数 5 档→开始（生成 2 考核 + 流程记录 2）→考核分页/详情 enrich→阶段计数/等级计数→未分配员工→开启评分（阶段 3）→归档（考核同步归档 2）→归档页/归档详情/归档计划列表/归档流程记录→归档后修改拒→终止计划→权限 13 项全授予→字典 5 项→归档考核单条删除。demo 租户菜单/字典可见。
+
+**一个工程发现**：`startPlan` 是一次性状态迁移（草稿/未开始→进行中），非幂等操作——单测初版误断言「重复 start 不重复生成」，实为状态守卫正确拒绝（1050019005），据实修正断言口径（生命周期守卫是特性，非缺陷）。
+
+**待办（后继域）**：薪资 69 / portal 41 端点；保险 month-record；考勤请假接 BPM。
