@@ -106,6 +106,11 @@ public interface HrmPerformanceService {
 
     PageResult<HrmPerformanceAssessmentVO> getArchivePage(HrmPerformanceAssessmentPageReqVO reqVO);
 
+    /**
+     * 获得员工绩效档案分页（归档员工维度聚合：每员工一条，含最近考核 + 考核次数）
+     */
+    PageResult<HrmPerformanceArchiveEmployeeVO> getArchiveEmployeePage(HrmPerformanceAssessmentPageReqVO reqVO);
+
     HrmPerformanceAssessmentVO getArchive(Long id);
 
     List<HrmPerformancePlanVO> getArchivePlanSimpleList();

@@ -91,6 +91,14 @@ public class HrmPerformanceAssessmentController {
         return success(performanceService.getArchivePage(reqVO));
     }
 
+    @GetMapping("/archive-employee-page")
+    @Operation(summary = "获得员工绩效档案分页")
+    @PreAuthorize("@ss.hasPermission('hrm:performance:plan:query')")
+    public CommonResult<PageResult<HrmPerformanceArchiveEmployeeVO>> getArchiveEmployeePage(
+            @Valid HrmPerformanceAssessmentPageReqVO reqVO) {
+        return success(performanceService.getArchiveEmployeePage(reqVO));
+    }
+
     @GetMapping("/archive-get")
     @Operation(summary = "获得绩效归档详情")
     @Parameter(name = "id", description = "员工绩效考核编号", required = true)

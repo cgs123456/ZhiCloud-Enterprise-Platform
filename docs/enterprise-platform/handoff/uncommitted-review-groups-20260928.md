@@ -7996,3 +7996,12 @@ FMS config 域拆 11 个资源：账套 account-set、成员 account-user、账�
 **真机验证（zhicloud_sandbox_v140）**：单测 74/74；真机探针：提交请假（发起流程，ACT_RU_TASK=1）→ 撤销 → **ACT_RU_TASK=0 + ACT_HI_PROCINST.END_TIME_ 已置 + 假单 approval_status=4**（待办清零、流程闭环、无悬挂）。此前 §12.195 的 E2E 11/11 仍成立。
 
 **至此 HRM 全域 + 请假 BPM 双向（提交/审批/撤销）全部闭合**。
+## 12.197 2026-10-12 HRM 契约完整性扫描：补最后一个缺口，前端 356 契约 100% 覆盖
+
+**做法（只读扫描 → 定位 → 补齐）**：写脚本比对**前端 `api/hrm/**` 全部 `url:` 字面量**（356 个）与**后端 `zhicloud-module-hr` 全部 `@*Mapping` 路径**（391 个），归一化路径变量（`{id}`→`{}`）、剥 query 串与字符串拼接。首轮报 54 个「缺口」，剔除 query 串误报后**真缺口仅 1 个**：`GET /hrm/performance/assessment/archive-employee-page`（归档员工分页）——前端 `views/hrm/performance/assessment/index.vue` 归档页在消费，后端未实现。
+
+**补齐**：新增 `HrmPerformanceArchiveEmployeeVO`（员工维度聚合：员工基础信息 + 最近考核编号/计划名/评分/等级 + 考核次数）；`HrmPerformanceServiceImpl.getArchiveEmployeePage` 取全部已归档考核按员工分组（`LinkedHashMap` 保持稳定序）、关键字过滤（姓名/工号）、enrich 部门名、内存分页；Controller 加 `archive-employee-page` 端点（权限复用既有 `hrm:performance:plan:query`，无需新菜单）。纯加性、无迁移。
+
+**真机验证**：单测 74/74；真机探针 `GET /hrm/performance/assessment/archive-employee-page` → code=0、total=1（命中先前绩效 E2E 遗留的归档考核）。**至此前端 `api/hrm` 356 个契约 100% 有后端实现**。
+
+**方法论价值**：这把「覆盖率」从印象变成可复核的数字——脚本可复跑，后续任何前端新增 API 都能一键查出未接线项。契约完整性扫描应作为 HRM 域的收尾常规动作。

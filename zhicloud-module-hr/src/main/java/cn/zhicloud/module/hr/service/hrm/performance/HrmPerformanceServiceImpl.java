@@ -445,6 +445,75 @@ public class HrmPerformanceServiceImpl implements HrmPerformanceService {
     }
 
     @Override
+    public PageResult<HrmPerformanceArchiveEmployeeVO> getArchiveEmployeePage(HrmPerformanceAssessmentPageReqVO reqVO) {
+        // 归档员工维度聚合：取全部已归档考核，按员工分组
+        List<HrmPerformanceAssessmentDO> archived = hrmAssessmentMapper.selectList(
+                new LambdaQueryWrapper<HrmPerformanceAssessmentDO>()
+                        .isNotNull(HrmPerformanceAssessmentDO::getArchiveTime)
+                        .orderByDesc(HrmPerformanceAssessmentDO::getArchiveTime));
+        if (CollUtil.isEmpty(archived)) {
+            return PageResult.empty();
+        }
+        // 关键字过滤（员工姓名/工号）
+        Map<Long, List<HrmPerformanceAssessmentDO>> byEmployee = archived.stream()
+                .filter(a -> a.getEmployeeId() != null)
+                .collect(Collectors.groupingBy(HrmPerformanceAssessmentDO::getEmployeeId, LinkedHashMap::new, Collectors.toList()));
+        // 员工信息
+        Map<Long, HrEmployeeDO> employeeMap = hrmEmployeeMapper.selectByIds(byEmployee.keySet()).stream()
+                .collect(Collectors.toMap(HrEmployeeDO::getId, e -> e, (a, b) -> a));
+        // 计划名
+        Set<Long> planIds = archived.stream().map(HrmPerformanceAssessmentDO::getPlanId)
+                .filter(Objects::nonNull).collect(Collectors.toSet());
+        Map<Long, String> planNameMap = planIds.isEmpty() ? Collections.emptyMap()
+                : hrmPlanMapper.selectListByIds(planIds).stream()
+                        .collect(Collectors.toMap(HrmPerformancePlanDO::getId, HrmPerformancePlanDO::getName, (a, b) -> a));
+        // 部门名
+        Set<Long> deptIds = employeeMap.values().stream().map(HrEmployeeDO::getDeptId)
+                .filter(Objects::nonNull).collect(Collectors.toSet());
+        Map<Long, DeptRespDTO> deptMap = deptIds.isEmpty() ? Collections.emptyMap() : deptApi.getDeptMap(deptIds);
+        String search = reqVO.getSearch();
+        List<HrmPerformanceArchiveEmployeeVO> rows = new ArrayList<>();
+        for (Map.Entry<Long, List<HrmPerformanceAssessmentDO>> entry : byEmployee.entrySet()) {
+            HrEmployeeDO employee = employeeMap.get(entry.getKey());
+            if (employee == null) {
+                continue;
+            }
+            if (search != null && !search.isEmpty()
+                    && !(employee.getName() != null && employee.getName().contains(search))
+                    && !(employee.getEmpNo() != null && employee.getEmpNo().contains(search))) {
+                continue;
+            }
+            // 最近一次（列表已按 archive_time 倒序）
+            HrmPerformanceAssessmentDO latest = entry.getValue().get(0);
+            HrmPerformanceArchiveEmployeeVO vo = new HrmPerformanceArchiveEmployeeVO();
+            vo.setEmployeeId(employee.getId());
+            vo.setEmployeeName(employee.getName());
+            vo.setJobNumber(employee.getEmpNo());
+            vo.setDeptId(employee.getDeptId());
+            vo.setPostName(employee.getPostName());
+            vo.setMobile(employee.getPhone());
+            vo.setEmployeeStatus(employee.getEmployeeStatus());
+            vo.setEmployeeType(employee.getType());
+            vo.setLatestAssessmentId(latest.getId());
+            vo.setLatestPlanName(planNameMap.get(latest.getPlanId()));
+            vo.setLatestScore(latest.getScore());
+            vo.setLatestResultLevel(latest.getResultLevel());
+            vo.setAssessmentCount((long) entry.getValue().size());
+            DeptRespDTO dept = deptMap.get(employee.getDeptId());
+            if (dept != null) {
+                vo.setDeptName(dept.getName());
+            }
+            rows.add(vo);
+        }
+        // 内存分页
+        int pageNo = reqVO.getPageNo() != null && reqVO.getPageNo() > 0 ? reqVO.getPageNo() : 1;
+        int pageSize = reqVO.getPageSize() != null && reqVO.getPageSize() > 0 ? reqVO.getPageSize() : 10;
+        int from = Math.min((pageNo - 1) * pageSize, rows.size());
+        int to = Math.min(from + pageSize, rows.size());
+        return new PageResult<>(new ArrayList<>(rows.subList(from, to)), (long) rows.size());
+    }
+
+    @Override
     public HrmPerformanceAssessmentVO getArchive(Long id) {
         HrmPerformanceAssessmentDO assessment = validateAssessmentExists(id);
         if (assessment.getArchiveTime() == null) {
