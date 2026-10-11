@@ -632,6 +632,20 @@
       "sha256": "6fd98d7214752bddbd5fd3a51697366b284662ba97d5d35401eb8d5f67a5973d",
       "verification_file": "V180_verify.sql",
       "verification_sha256": "138ba6ca94dc3231c987768e8163cf9bd346369c1c99413ce087900646c656cd"
+    },
+    {
+      "version": 181,
+      "file": "V181__hrm_insurance_month_tables.sql",
+      "sha256": "2b024d7cc647805fceec549f5e1eb9633a208d1623af2dd98a6f252911da3c44",
+      "verification_file": "V181_verify.sql",
+      "verification_sha256": "4ea52469c05bcc974d64ca154baaa4e41b6cbed9f1b012e1c65d89498f48d382"
+    },
+    {
+      "version": 182,
+      "file": "V182__hrm_insurance_month_menu_seed.sql",
+      "sha256": "f03319af3c000df44794a85e5272db634ae67da2ce83dea926bf10fd84665512",
+      "verification_file": "V182_verify.sql",
+      "verification_sha256": "fe2b9d02ffa8c3c73578e5836c5852e03d4f0befb77223f54ccc3cd249003f17"
     }
   ]
 }

@@ -7955,3 +7955,18 @@ FMS config 域拆 11 个资源：账套 account-set、成员 account-user、账�
 **至此 HRM 全域接线完成**：员工档案（V161-165）、考勤（V166-167）、保险（V168-170）、招聘（V171-172）、工作台/操作日志（V173）、绩效（V174-175）、薪资配置（V176-177）、薪资业务（V178-179）、员工自助（V180）——共 20 个迁移、约 300 端点、契约 tracked=90。前端 views/hrm 全部页面接线完毕。
 
 **待办（后继）**：旧 /hr 页面与接口退役（软删旧菜单 + 删除 HrEmployee/Hrdepartment 后端）；保险 month-record（月度社保表，依赖计薪域）；考勤请假接 BPM 流程。
+## 12.194 2026-10-12 HRM 保险域月度社保接线：V181/V182 + 11 端点 + E2E 29/29（并修一处 json 写缺陷）
+
+**范围**：保险域收尾——月度社保表（首月/次月/最近/列表/详情/删除 6 端点）+ 员工月度社保记录（分页/详情/添加参保/改项目/停保/未参保列表 5 端点），共 11 端点。至此保险域 28 端点全部接线。
+
+**迁移（V181/V182）**：V181 两表——hr_insurance_month_record（月度社保表头：参保/停止人数 + 四项金额汇总）、hr_insurance_month_employee_record（员工月度社保：社保/公积金两组项目 json 快照 + 四项金额 + 参保状态）。V182：菜单 4 行（9254-9257：月度社保菜单页 + 3 按钮）。
+
+**Java**：DO×2 + Mapper×2 + VO×7 + Service/Impl + Controller（11 端点）。口径：①首月按指定年月创建、次月顺延（重复月份拒 1050023001）；②添加参保人员按员工绑定方案生成项目快照（社保组 type<10、公积金组 type≥10）+ 四项金额汇总，幂等跳过已存在；③表头汇总在添加/改项目/停保后重算（参保人数 + 停止人数 + 四项金额）；④enrich 员工姓名/工号/性别/年龄/手机/证件/部门名/职位/入职状态/员工状态/入职时间 + 方案名/参保地区（AreaUtils 现算）/社保账号（镜像 hr_employee）。
+
+**抓出并修复一个真缺陷（json 写路径）**：`LambdaUpdateWrapper.set(字段, List)` 会**绕开 `JacksonTypeHandler`**——列表被绑定为 binary 字符串，MySQL 报 `Cannot create a JSON value from a string with CHARACTER SET 'binary'`（E2E 首轮 500）。修法：json 列一律走 DO + `updateById`（typeHandler 生效）。同一模式在 portal 申诉（V180 的 appeal_file_urls）也是隐患——子代理当时用 `setSql("appeal_file_urls = '...'")` 手工拼串绕过，本次一并改正：给 `HrmPerformanceAssessmentDO` 补 `appealFileUrls` 字段（`@TableField(typeHandler=JacksonTypeHandler)`）+ `autoResultMap=true`，改用 `updateById`。**这是本会话第 4 个 json/typeHandler 类教训**（前三个：泛型须具体化、嵌套 Map/List 不可用于 Excel、json 列读要 autoResultMap），已并入 HRM 融合纪律。
+
+**真机验证（zhicloud_sandbox_v140）**：Flyway 至 schema 182；V181 verify 3/3、V182 2/2；单测 74/74；E2E **29/29**（Temp/zc_hrm_insm_e2e.py + zc-hrm-insm-e2e.log）：员工建档 + 方案建（社保 2 项 + 公积金 1 项）→绑定方案→首月表建（重复拒）→添加参保（项目快照 2+1、四项金额 500/1100/250/600、表头汇总重算）→分页/详情 enrich（员工名/方案名/参保地区「广东省 深圳市」）→改项目（整组替换 1+0、金额 480）→未参保列表→停保（状态 0、表头停止人数 1）→次月表（2026-02）+ 最近 + 年度列表 2 条→权限 4 项全授予→清理。
+
+**旧 /hr 退役评估（只读，结论：有阻塞项，不擅动）**：旧 `/hr` 13 个页面中，多数已被 HRM 覆盖（考勤/合同/员工/面试/招聘职位/请假/绩效/简历/薪资/社保），但 **`hr_position`（职位管理，6 端点 + 真机 10 行数据）在 HRM 中无对应物**——HRM 的「招聘职位」是招聘域概念、员工 `postName` 是自由文本，二者都不是「职位主数据」。`hr_leave_type` 已被 HRM 字典 `hrm_attendance_leave_type` 覆盖。**结论：旧 /hr 整体退役会丢失职位主数据能力，需所有者裁决**（选项：a. 保留旧 /hr position 页；b. 在 HRM 新建职位主数据域；c. 确认职位主数据不需要）。在裁决前**不删任何旧 /hr 代码/菜单**。
+
+**至此 HRM 全域（含保险月度）接线完成**：22 个迁移（V161-V182）、约 320 端点、契约 tracked=92。

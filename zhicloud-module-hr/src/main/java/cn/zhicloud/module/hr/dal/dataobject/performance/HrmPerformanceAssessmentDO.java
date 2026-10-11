@@ -8,6 +8,8 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import lombok.*;
 
+import java.util.List;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -16,7 +18,7 @@ import java.time.LocalDateTime;
  *
  * @author zhicloud
  */
-@TableName(value = "hr_performance_assessment", autoResultMap = false)
+@TableName(value = "hr_performance_assessment", autoResultMap = true)
 @KeySequence("hr_perf_assessment_seq")
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -120,6 +122,12 @@ public class HrmPerformanceAssessmentDO extends TenantBaseDO {
      * 申诉原因
      */
     private String appealReason;
+
+    /**
+     * 申诉附件地址列表
+     */
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private List<String> appealFileUrls;
 
     /**
      * 归档时间

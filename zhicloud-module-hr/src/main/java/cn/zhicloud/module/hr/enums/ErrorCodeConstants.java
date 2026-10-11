@@ -143,4 +143,9 @@ public interface ErrorCodeConstants {
     ErrorCode HRM_PORTAL_ASSESSMENT_NOT_OWN = new ErrorCode(1_050_022_004, "该绩效考核不属于当前员工，无法操作");
     ErrorCode HRM_PORTAL_SALARY_SLIP_NOT_OWN = new ErrorCode(1_050_022_005, "该工资条不属于当前员工，无法操作");
 
+    // ========== HRM 保险月度社保（1-050-023-000） ==========
+    ErrorCode HRM_INSURANCE_MONTH_RECORD_NOT_EXISTS = new ErrorCode(1_050_023_000, "月度社保表不存在");
+    ErrorCode HRM_INSURANCE_MONTH_RECORD_EXISTS = new ErrorCode(1_050_023_001, "该月份社保表已存在");
+    ErrorCode HRM_INSURANCE_MONTH_EMPLOYEE_NOT_EXISTS = new ErrorCode(1_050_023_002, "员工月度社保记录不存在");
+
 }

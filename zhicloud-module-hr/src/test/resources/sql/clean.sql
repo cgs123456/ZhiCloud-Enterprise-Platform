@@ -25,6 +25,8 @@ DELETE FROM "hr_insurance_scheme_project";
 DELETE FROM "hr_insurance_scheme";
 DELETE FROM "hr_insurance_standard_project";
 DELETE FROM "hr_insurance_standard_type";
+DELETE FROM "hr_insurance_month_employee_record";
+DELETE FROM "hr_insurance_month_record";
 DELETE FROM "hr_recruit_interview";
 DELETE FROM "hr_recruit_candidate";
 DELETE FROM "hr_recruit_config";

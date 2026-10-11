@@ -798,16 +798,14 @@ public class HrmPortalServiceImpl implements HrmPortalService {
     public void submitAppeal(HrmPortalPerformanceAppealReqVO reqVO) {
         HrEmployeeDO employee = resolveLoginEmployee();
         HrmPerformanceAssessmentDO assessment = validateOwnAssessment(reqVO.getAssessmentId(), employee.getId());
-        LambdaUpdateWrapper<HrmPerformanceAssessmentDO> update = new LambdaUpdateWrapper<HrmPerformanceAssessmentDO>()
-                .eq(HrmPerformanceAssessmentDO::getId, assessment.getId())
-                .set(HrmPerformanceAssessmentDO::getAppealReason, reqVO.getAppealReason())
-                .set(HrmPerformanceAssessmentDO::getAppealStatus, APPEAL_STATUS_PENDING)
-                .set(HrmPerformanceAssessmentDO::getStageType, STAGE_APPEAL_CONFIRM);
-        // 申诉附件列（V180 新增 appeal_file_urls）以 json 落库
-        if (CollUtil.isNotEmpty(reqVO.getAppealFileUrls())) {
-            update.setSql("appeal_file_urls = '" + JsonUtils.toJsonString(reqVO.getAppealFileUrls()).replace("'", "''") + "'");
-        }
-        hrmPerformanceAssessmentMapper.update(null, update);
+        // json 列必须走 DO + updateById（JacksonTypeHandler 生效）；LambdaUpdateWrapper.set() 绕开 typeHandler
+        HrmPerformanceAssessmentDO updateObj = new HrmPerformanceAssessmentDO();
+        updateObj.setId(assessment.getId());
+        updateObj.setAppealReason(reqVO.getAppealReason());
+        updateObj.setAppealStatus(APPEAL_STATUS_PENDING);
+        updateObj.setStageType(STAGE_APPEAL_CONFIRM);
+        updateObj.setAppealFileUrls(reqVO.getAppealFileUrls());
+        hrmPerformanceAssessmentMapper.updateById(updateObj);
         recordProcess(assessment.getId(), employee.getId(), "提交绩效申诉", reqVO.getAppealReason(), "STAGE");
     }
 
