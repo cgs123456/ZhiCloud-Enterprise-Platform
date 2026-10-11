@@ -7846,3 +7846,5 @@ FMS config 域拆 11 个资源：账套 account-set、成员 account-user、账�
 **两个口径记录**：①手机号在 API 响应层被全局 PII 脱敏（application.yaml `zhicloud.ai.security.pii-mask.mask-phone: true`，138****8000，旧 /hr 同样脱敏）——断言口径=响应脱敏格式+DB 行原文（10/31 号断言），非缺陷；②E2E 中文 SQL 断言经 Windows argv 传参会变 `???`（本会话 6 个假阴性根因），改走 UTF-8 文件管道+`--default-character-set=utf8mb4`，并入 §13 复跑须知。
 
 **待办（后继增量）**：旧列退役迁移（/hrm 链已验证，待旧 /hr 页面/接口下线后）；合同域融合（hr_contract vs hr_employee_contract）；考勤/薪资/招聘/保险/portal/home 域接线；V164 的旧 /hr employee+department 菜单软删（退役口径，本刀未做——先让新链稳跑）。
+
+**CI 追记（同日）**：`c9f7a440a` 推送后 CI「Error Code Uniqueness Gate」失败——HRM 段 `1_050_010_x` 与 IoT biz `DATA_RULE_*`（同 1_050_010_000/001）撞车。本地 `scripts/check_error_codes.py` 复现，扫描 1_050_000-014 全被占用，HRM 整段重排至空闲段 `1_050_015_x`（常量/单测断言/E2E 负向断言同步改），本地门禁 [OK] 1867 定义无重复、单测 33/33、真机 E2E 50/50 复绿后重推。教训：新模块开错误码段前先 `check_error_codes.py` 或 grep 全仓 `1_0XX_0XX_XXX` 已用段（IoT 子模块占段不在 hr 模块视野内）。

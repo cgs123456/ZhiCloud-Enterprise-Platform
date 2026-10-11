@@ -88,7 +88,7 @@ public class HrmEmployeeServiceImplTest extends BaseDbUnitTest {
         reqVO.setEntryStatus(1); // 在职必须有工号
         // 调用 + 校验
         assertException(() -> employeeService.createEmployee(reqVO),
-                1_050_010_001, "在职员工的工号不能为空");
+                1_050_015_001, "在职员工的工号不能为空");
     }
 
     @Test
@@ -101,7 +101,7 @@ public class HrmEmployeeServiceImplTest extends BaseDbUnitTest {
         reqVO.setName("王五");
         reqVO.setJobNumber("EMP002");
         assertException(() -> employeeService.createEmployee(reqVO),
-                1_050_010_002, "工号已存在");
+                1_050_015_002, "工号已存在");
     }
 
     @Test

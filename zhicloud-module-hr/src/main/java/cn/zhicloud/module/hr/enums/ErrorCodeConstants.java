@@ -61,17 +61,17 @@ public interface ErrorCodeConstants {
     ErrorCode HR_RESUME_STATUS_INVALID = new ErrorCode(1_050_009_003, "简历状态非法，无法操作");
 
     // ========== HRM 员工档案融合（1-050-010-000） ==========
-    ErrorCode HRM_EMPLOYEE_NOT_EXISTS = new ErrorCode(1_050_010_000, "员工不存在");
-    ErrorCode HRM_EMPLOYEE_JOB_NUMBER_REQUIRED = new ErrorCode(1_050_010_001, "在职员工的工号不能为空");
-    ErrorCode HRM_EMPLOYEE_JOB_NUMBER_DUPLICATE = new ErrorCode(1_050_010_002, "工号已存在");
-    ErrorCode HRM_EMPLOYEE_NOT_PENDING_ENTRY = new ErrorCode(1_050_010_003, "员工不是待入职状态，无法确认入职");
-    ErrorCode HRM_EMPLOYEE_NOT_LEFT = new ErrorCode(1_050_010_004, "员工不是离职状态，无法办理再入职");
-    ErrorCode HRM_EMPLOYEE_ALREADY_LEFT = new ErrorCode(1_050_010_005, "员工已离职，无法操作");
-    ErrorCode HRM_EMPLOYEE_USER_BOUND = new ErrorCode(1_050_010_006, "该后台用户已建立员工档案");
-    ErrorCode HRM_EMPLOYEE_STATUS_INVALID = new ErrorCode(1_050_010_007, "员工状态非法，无法操作");
-    ErrorCode HRM_EMPLOYEE_FIELD_CONFIG_NOT_EXISTS = new ErrorCode(1_050_010_008, "字段配置不存在");
-    ErrorCode HRM_EMPLOYEE_QUIT_INFO_NOT_EXISTS = new ErrorCode(1_050_010_009, "离职信息不存在");
-    ErrorCode HRM_EMPLOYEE_SUB_RECORD_NOT_EXISTS = new ErrorCode(1_050_010_010, "记录不存在");
-    ErrorCode HRM_EMPLOYEE_NOT_IN_SERVICE = new ErrorCode(1_050_010_011, "员工不是在职状态，无法操作");
+    ErrorCode HRM_EMPLOYEE_NOT_EXISTS = new ErrorCode(1_050_015_000, "员工不存在");
+    ErrorCode HRM_EMPLOYEE_JOB_NUMBER_REQUIRED = new ErrorCode(1_050_015_001, "在职员工的工号不能为空");
+    ErrorCode HRM_EMPLOYEE_JOB_NUMBER_DUPLICATE = new ErrorCode(1_050_015_002, "工号已存在");
+    ErrorCode HRM_EMPLOYEE_NOT_PENDING_ENTRY = new ErrorCode(1_050_015_003, "员工不是待入职状态，无法确认入职");
+    ErrorCode HRM_EMPLOYEE_NOT_LEFT = new ErrorCode(1_050_015_004, "员工不是离职状态，无法办理再入职");
+    ErrorCode HRM_EMPLOYEE_ALREADY_LEFT = new ErrorCode(1_050_015_005, "员工已离职，无法操作");
+    ErrorCode HRM_EMPLOYEE_USER_BOUND = new ErrorCode(1_050_015_006, "该后台用户已建立员工档案");
+    ErrorCode HRM_EMPLOYEE_STATUS_INVALID = new ErrorCode(1_050_015_007, "员工状态非法，无法操作");
+    ErrorCode HRM_EMPLOYEE_FIELD_CONFIG_NOT_EXISTS = new ErrorCode(1_050_015_008, "字段配置不存在");
+    ErrorCode HRM_EMPLOYEE_QUIT_INFO_NOT_EXISTS = new ErrorCode(1_050_015_009, "离职信息不存在");
+    ErrorCode HRM_EMPLOYEE_SUB_RECORD_NOT_EXISTS = new ErrorCode(1_050_015_010, "记录不存在");
+    ErrorCode HRM_EMPLOYEE_NOT_IN_SERVICE = new ErrorCode(1_050_015_011, "员工不是在职状态，无法操作");
 
 }
