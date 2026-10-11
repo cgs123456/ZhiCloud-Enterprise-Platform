@@ -8,6 +8,8 @@ import cn.zhicloud.framework.common.util.json.JsonUtils;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
 import cn.zhicloud.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.zhicloud.framework.security.core.util.SecurityFrameworkUtils;
+import cn.zhicloud.module.bpm.api.task.BpmProcessInstanceApi;
+import cn.zhicloud.module.bpm.api.task.dto.BpmProcessInstanceCreateReqDTO;
 import cn.zhicloud.module.hr.controller.admin.hrm.performance.vo.HrmPerformanceAssessmentDimensionVO;
 import cn.zhicloud.module.hr.controller.admin.hrm.performance.vo.HrmPerformanceAssessmentQuotaVO;
 import cn.zhicloud.module.hr.controller.admin.hrm.performance.vo.HrmPerformanceAssessmentStageVO;
@@ -91,7 +93,11 @@ public class HrmPortalServiceImpl implements HrmPortalService {
     private static final int APPEAL_STATUS_PASS = 2;
     private static final int APPEAL_STATUS_REJECT = 3;
     /** 请假审批状态（对齐 BPM 流程实例状态）：1审批中 4已取消 */
+    /** 请假流程定义 KEY（HRM 考勤请假专用；与旧 /hr 请假域 hr_leave_request 区分，避免监听器串扰） */
+    private static final String LEAVE_PROCESS_KEY = "hrm_leave_request";
     private static final int LEAVE_APPROVAL_RUNNING = 1;
+    private static final int LEAVE_APPROVAL_APPROVED = 2;
+    private static final int LEAVE_APPROVAL_REJECTED = 3;
     private static final int LEAVE_APPROVAL_CANCEL = 4;
     /** 绩效流程记录业务类型：2员工考核 */
     private static final int BIZ_TYPE_ASSESSMENT = 2;
@@ -143,6 +149,8 @@ public class HrmPortalServiceImpl implements HrmPortalService {
     private HrmEmployeeFieldConfigMapper hrmEmployeeFieldConfigMapper;
     @Resource
     private HrmEmployeePersonalNoteMapper hrmEmployeePersonalNoteMapper;
+    @Resource
+    private BpmProcessInstanceApi bpmProcessInstanceApi;
     @Resource
     private DeptApi deptApi;
 
@@ -305,6 +313,17 @@ public class HrmPortalServiceImpl implements HrmPortalService {
                 .approvalStatus(LEAVE_APPROVAL_RUNNING)
                 .build();
         hrmAttendanceLeaveMapper.insert(leave);
+        // 发起 BPM 审批流程（hr_leave_request；businessKey 回写假单编号，审批结果由监听器回写）
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("leaveType", leave.getType());
+        variables.put("day", leave.getDay());
+        String processInstanceId = bpmProcessInstanceApi.createProcessInstance(
+                SecurityFrameworkUtils.getLoginUserId(),
+                new BpmProcessInstanceCreateReqDTO().setProcessDefinitionKey(LEAVE_PROCESS_KEY)
+                        .setVariables(variables).setBusinessKey(String.valueOf(leave.getId())));
+        hrmAttendanceLeaveMapper.update(null, new LambdaUpdateWrapper<HrmAttendanceLeaveDO>()
+                .eq(HrmAttendanceLeaveDO::getId, leave.getId())
+                .set(HrmAttendanceLeaveDO::getProcessInstanceId, processInstanceId));
         return leave.getId();
     }
 
@@ -326,6 +345,36 @@ public class HrmPortalServiceImpl implements HrmPortalService {
                 .eq(HrmAttendanceLeaveDO::getId, leave.getId())
                 .set(HrmAttendanceLeaveDO::getApprovalStatus, LEAVE_APPROVAL_CANCEL)
                 .set(HrmAttendanceLeaveDO::getApprovalReason, reqVO.getReason())
+                .set(HrmAttendanceLeaveDO::getApprovalTime, LocalDateTime.now()));
+        // 注：BpmProcessInstanceApi 未暴露「取消实例」方法，此处只落本地撤销态；
+        // 在途流程实例的撤销属 BPM 侧能力，后续如需可在 bpm 模块补 API 后接入。
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateLeaveBpmResult(Long id, Integer bpmStatus, String processInstanceId) {
+        HrmAttendanceLeaveDO leave = hrmAttendanceLeaveMapper.selectById(id);
+        if (leave == null) {
+            return;
+        }
+        // 幂等：审批结果只能从「审批中」落一次（BPM 事件至少一次投递）
+        if (!Integer.valueOf(LEAVE_APPROVAL_RUNNING).equals(leave.getApprovalStatus())) {
+            return;
+        }
+        Integer approvalStatus;
+        if (Integer.valueOf(2).equals(bpmStatus)) {
+            approvalStatus = LEAVE_APPROVAL_APPROVED;
+        } else if (Integer.valueOf(3).equals(bpmStatus)) {
+            approvalStatus = LEAVE_APPROVAL_REJECTED;
+        } else if (Integer.valueOf(4).equals(bpmStatus)) {
+            approvalStatus = LEAVE_APPROVAL_CANCEL;
+        } else {
+            return; // RUNNING 等中间态不倒写
+        }
+        hrmAttendanceLeaveMapper.update(null, new LambdaUpdateWrapper<HrmAttendanceLeaveDO>()
+                .eq(HrmAttendanceLeaveDO::getId, id)
+                .set(HrmAttendanceLeaveDO::getApprovalStatus, approvalStatus)
+                .set(HrmAttendanceLeaveDO::getProcessInstanceId, processInstanceId)
                 .set(HrmAttendanceLeaveDO::getApprovalTime, LocalDateTime.now()));
     }
 

@@ -7970,3 +7970,18 @@ FMS config 域拆 11 个资源：账套 account-set、成员 account-user、账�
 **旧 /hr 退役评估（只读，结论：有阻塞项，不擅动）**：旧 `/hr` 13 个页面中，多数已被 HRM 覆盖（考勤/合同/员工/面试/招聘职位/请假/绩效/简历/薪资/社保），但 **`hr_position`（职位管理，6 端点 + 真机 10 行数据）在 HRM 中无对应物**——HRM 的「招聘职位」是招聘域概念、员工 `postName` 是自由文本，二者都不是「职位主数据」。`hr_leave_type` 已被 HRM 字典 `hrm_attendance_leave_type` 覆盖。**结论：旧 /hr 整体退役会丢失职位主数据能力，需所有者裁决**（选项：a. 保留旧 /hr position 页；b. 在 HRM 新建职位主数据域；c. 确认职位主数据不需要）。在裁决前**不删任何旧 /hr 代码/菜单**。
 
 **至此 HRM 全域（含保险月度）接线完成**：22 个迁移（V161-V182）、约 320 端点、契约 tracked=92。
+## 12.195 2026-10-12 HRM 考勤请假接 BPM：流程发起 + 审批回写全链跑通 + E2E 11/11
+
+**背景**：V166 建 `hr_attendance_leave` 时已预留 `process_instance_id` 列但未接流程（portal 提交只落「审批中」死态）。本刀补齐：员工自助提交请假自动发起 BPM 流程、审批结果经监听器回写假单。
+
+**实现**：
+* **流程发起**：`HrmPortalServiceImpl.createLeave` 落假单后调 `BpmProcessInstanceApi.createProcessInstance`（businessKey = hr_attendance_leave.id，variables 带 leaveType/day），流程号回写 `process_instance_id`；发起失败则事务回滚（假单不落死态）。
+* **审批回写**：新增 `HrmAttendanceLeaveStatusListener`（继承 `BpmProcessInstanceStatusEventListener`）监听流程状态，`updateLeaveBpmResult` 映射 BPM 状态（2通过/3驳回/4取消）到 `approval_status`（2/3/4），**幂等**——仅从「审批中(1)」落一次（BPM 事件至少一次投递），RUNNING 等中间态不倒写。
+* **流程定义播种**：`BpmProcessDefinitionSeedController.SEEDABLE_KEYS` 白名单加 `hrm_leave_request`；真机经 `/bpm/process-definition-seed/seed` 为 tenant 9001 播种（ACT_RE_PROCDEF 落行）。
+* **取消请假**：只落本地撤销态；BPM 实例撤销需 `BpmProcessInstanceApi` 暴露 cancel 方法（当前未暴露），已注释标注为后续可接入项，不伪造 API。
+
+**抓出并修复一个真缺陷（监听器 KEY 串扰）**：初版 HRM 请假复用旧 /hr 请假域的流程 KEY `hr_leave_request`，导致**两个监听器（旧 `HrLeaveRequestStatusListener` + 新 HRM 监听器）同时订阅同一 KEY**——审批时旧监听器按 businessKey 查 `hr_leave_request` 表（新假单在 `hr_attendance_leave`），抛 `HR_LEAVE_REQUEST_NOT_EXISTS(1050007003)` 打挂审批。修法：HRM 请假域改用**独立 KEY `hrm_leave_request`**（门户发起 + 监听器 + 播种白名单三处同步），与旧 /hr 域彻底隔离。E2E 首轮即抓出（审批返回 1050007003），修复后全绿。
+
+**真机验证（zhicloud_sandbox_v140）**：单测 74/74（HRM 无新增单测——BPM 链以 E2E 覆盖；旧 /hr 请假 BPM 单测 7/7 仍绿）；E2E **11/11**（Temp/zc_hrm_leavebpm_e2e.py + zc-hrm-leavebpm-e2e.log）：播种 hrm_leave_request（ACT_RE_PROCDEF 落行）→建档绑定→自助提交请假（假单待审批 + 流程号落库）→BPM 实例与待办任务存在→审批通过→监听器回写假单 `approval_status=2` + 审批时间→状态稳定→清理（先离职再删，与产品口径一致）。
+
+**待办（后继）**：BPM 实例取消 API（`BpmProcessInstanceApi.cancelProcessInstance`）供请假撤销同步撤流程；旧 /hr 退役（阻塞于 hr_position 主数据，待 owner 裁决）。

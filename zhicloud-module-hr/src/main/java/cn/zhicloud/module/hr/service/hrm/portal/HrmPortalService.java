@@ -57,6 +57,11 @@ public interface HrmPortalService {
     void cancelLeave(HrmPortalAttendanceLeaveCancelReqVO reqVO);
 
     /**
+     * 回写请假单的 BPM 审批结果（供流程状态监听器调用；幂等，仅从「审批中」落一次）
+     */
+    void updateLeaveBpmResult(Long id, Integer bpmStatus, String processInstanceId);
+
+    /**
      * 获得当前员工月度考勤详情（summary/dailyDetails/leaves）
      */
     Map<String, Object> getAttendanceMonthDetail(Integer year, Integer month);
