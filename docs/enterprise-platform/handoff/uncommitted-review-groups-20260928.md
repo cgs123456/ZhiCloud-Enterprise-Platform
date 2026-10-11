@@ -7940,3 +7940,18 @@ FMS config 域拆 11 个资源：账套 account-set、成员 account-user、账�
 **工程注记**：本刀 Java 层由子代理（general-purpose）按我给出的精确规格生成（20 VO + Service/Impl + Controller 43 端点），我独立复验：`mvn compile` 通过、错误码唯一性门禁通过（1916 定义）、H2 测试 74/74、真机 E2E 39/39 全绿——子代理产出经全链验证后才登记。子代理披露的偏差（导入模板用空 Excel、compute-import 等价核算、noSalaryGroupEmployeeCount 置 0 等）均属本刀范围内的诚实简化。
 
 **待办（后继）**：portal 41 端点；保险 month-record；考勤请假接 BPM；旧 /hr 页面与接口退役。
+## 12.193 2026-10-11 HRM 员工自助端（portal）接线：V180 + 41 端点 + E2E 36/36
+
+**范围**：HRM 最后一域——员工自助端 41 端点（档案自助、考勤打卡/请假、考勤统计、保险记录、绩效自助任务、工资条自助、自助日历）。全部以「当前登录用户绑定的员工」为 scope（`SecurityFrameworkUtils.getLoginUserId()` → `hr_employee.user_id` 反查）。
+
+**迁移（V180）**：①加列 `hr_performance_assessment.appeal_file_urls`（json，申诉附件，纯加性，information_schema 守卫幂等）；②菜单/权限 3 行（9251-9253：hrm:portal:employee:update 档案自助、hrm:portal:attendance:leave 请假申请、hrm:portal:performance:action 考核自助动作）。portal 页面为员工自助入口（首页聚合，非管理菜单），三权限以按钮形式挂 /hrm。
+
+**Java**：VO×24 + Service/Impl + Controller（41 端点）。核心口径：①**绑定校验**——未绑定员工抛 1050022000（「当前账号未绑定员工」），全端点在入口统一校验；②**越权防护**——请假撤销/工资条已读/考核详情均校验归属（非本人抛 1050022002/1050022005/1050022004）；③档案自助编辑仅开放可编辑子集（姓名/手机/邮箱/性别/学历/籍贯等）；④绩效自助 6 类任务页（填写/目标确认/评分/结果审核/结果确认/申诉）按 stageType 过滤本人考核，评分支持预览（加权求和）与提交；⑤工资条自助按本人筛选 + 未读汇总 + 阅读标记；⑥日历 = 本人备忘 + 入职/转正/离职事项。
+
+**真机验证（zhicloud_sandbox_v140）**：Flyway 至 schema 180；V180 verify 2/2；单测 74/74（本刀无新增单测——41 端点以 E2E 覆盖）；E2E **36/36**（Temp/zc_hrm_portal_e2e.py + zc-hrm-portal-e2e.log）：未绑定态（false + 取档案拒 1050022000）→建档绑定→绑定态（true + 档案可读 + 部门名/入职天数 enrich）→档案自助编辑（DB 落行）→6 个子资源列表→打卡列表→请假申请（待审批 DB 落行）/列表/撤销（状态 4）→保险记录→绩效自助分页/任务计数/6 任务页→工资条自助/未读汇总→日历→未绑定用户拒（权限门 403 或绑定校验 1050022000）→三权限授予→清理。demo 租户菜单可见。
+
+**工程注记**：portal Java 层由子代理（general-purpose）按精确规格生成（VO×24 + Service/Impl + Controller 41 端点），我独立复验：编译通过、错误码唯一性门禁通过（1922 定义）、H2 74/74、真机 E2E 36/36 全绿后才登记。子代理连接中途断开但产出完整，经全链验证后采纳。
+
+**至此 HRM 全域接线完成**：员工档案（V161-165）、考勤（V166-167）、保险（V168-170）、招聘（V171-172）、工作台/操作日志（V173）、绩效（V174-175）、薪资配置（V176-177）、薪资业务（V178-179）、员工自助（V180）——共 20 个迁移、约 300 端点、契约 tracked=90。前端 views/hrm 全部页面接线完毕。
+
+**待办（后继）**：旧 /hr 页面与接口退役（软删旧菜单 + 删除 HrEmployee/Hrdepartment 后端）；保险 month-record（月度社保表，依赖计薪域）；考勤请假接 BPM 流程。

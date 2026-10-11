@@ -135,4 +135,12 @@ public interface ErrorCodeConstants {
     ErrorCode HRM_SALARY_SLIP_SEND_RECORD_NOT_EXISTS = new ErrorCode(1_050_021_006, "工资条发放记录不存在");
     ErrorCode HRM_SALARY_SLIP_NOT_EXISTS = new ErrorCode(1_050_021_007, "工资条不存在");
 
+    // ========== HRM 员工自助端（1-050-022-000） ==========
+    ErrorCode HRM_PORTAL_EMPLOYEE_NOT_BOUND = new ErrorCode(1_050_022_000, "当前账号未绑定员工，无法使用员工自助功能");
+    ErrorCode HRM_PORTAL_EMPLOYEE_UPDATE_FORBIDDEN = new ErrorCode(1_050_022_001, "该字段不允许自助修改");
+    ErrorCode HRM_PORTAL_LEAVE_NOT_OWN = new ErrorCode(1_050_022_002, "只能操作本人的请假申请");
+    ErrorCode HRM_PORTAL_LEAVE_CANNOT_CANCEL = new ErrorCode(1_050_022_003, "当前请假状态不允许取消");
+    ErrorCode HRM_PORTAL_ASSESSMENT_NOT_OWN = new ErrorCode(1_050_022_004, "该绩效考核不属于当前员工，无法操作");
+    ErrorCode HRM_PORTAL_SALARY_SLIP_NOT_OWN = new ErrorCode(1_050_022_005, "该工资条不属于当前员工，无法操作");
+
 }

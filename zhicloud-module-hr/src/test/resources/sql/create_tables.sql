@@ -929,6 +929,7 @@ CREATE TABLE IF NOT EXISTS "hr_performance_assessment" (
     "result_comment" varchar(512),
     "appeal_status" int NOT NULL DEFAULT 0,
     "appeal_reason" varchar(512),
+    "appeal_file_urls" varchar(4000),
     "archive_time" timestamp,
     "creator" varchar(64) DEFAULT '',
     "create_time" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,

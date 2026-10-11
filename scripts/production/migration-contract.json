@@ -625,6 +625,13 @@
       "sha256": "ab2e7528fec8e243b3a26edd0bba54ad01464eb51ef3d0b01237d6be1c686116",
       "verification_file": "V179_verify.sql",
       "verification_sha256": "d23f1a759324de46db68699655b89de6db134270b9e97b781fed973a6770cb95"
+    },
+    {
+      "version": 180,
+      "file": "V180__hrm_portal_appeal_column_menu_seed.sql",
+      "sha256": "6fd98d7214752bddbd5fd3a51697366b284662ba97d5d35401eb8d5f67a5973d",
+      "verification_file": "V180_verify.sql",
+      "verification_sha256": "138ba6ca94dc3231c987768e8163cf9bd346369c1c99413ce087900646c656cd"
     }
   ]
 }
