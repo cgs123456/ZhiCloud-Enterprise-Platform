@@ -7879,3 +7879,14 @@ FMS config 域拆 11 个资源：账套 account-set、成员 account-user、账�
 **真机验证（zhicloud_sandbox_v140）**：Flyway 至 schema 170（应用 3 迁移）；V168 verify 5/5、V169 4/4、V170 3/3；单测 47/47（新增保险 7 例：金额重算/项目分组/重名拒/整组替换/被引用拒删/账号镜像双写/方案新建）；E2E **30/30**（Temp/zc_hrm_ins_e2e.py + zc-hrm-ins-e2e.log）：标准类型 3 项与 code 齐→标准项目 6 项 type 齐与金额现算（5000×0.16=800）→方案建（头金额 500/1100/250/600）→详情项目分组（社保 2+公积金 1）与 areaName「广东省 深圳市」→列表/精简列表→重名拒→修改整组替换（3→2 行、金额重算 1320）→员工建档→参保保存→账号镜像 hr_employee 双列→回读 enrich 方案名→被引用拒删→update-scheme→权限 7 项全授予→字典 11 项→解除引用后可删。demo 租户菜单/字典可见。
 
 **待办（后继）**：保险 month-record（月度社保表 11 端点，依赖计薪域）、员工月度参保记录；招聘 35 / 绩效 40 / 薪资 69 / portal 41 / home 4 / operate-log 1 域。
+## 12.188 2026-10-11 HRM 招聘域接线：V171/V172 + 职位/渠道/候选人/面试/配置 30 端点 + E2E 45/45
+
+**迁移（V171/V172）**：V171 六表——hr_recruit_post_type（职位类型树，parent_id 自引用）、hr_recruit_post（招聘职位，面试官 json 数组；薪资面议/年龄不限用 -1 由前端口径写入，服务层不解释）、hr_recruit_channel（渠道，system_flag 内置不可删）、hr_recruit_candidate（候选人，简历附件 json 数组 + 当前面试信息冗余便于列表）、hr_recruit_interview（面试，一候选人多轮）、hr_recruit_config（配置，淘汰原因字符串数组按租户一条 kind 区分）。与旧 /hr 招聘表（hr_job_posting/hr_resume/hr_interview）并存，旧表待旧页面退役后清理。V172：菜单 14 行（9190-9203：职位/候选人/渠道三菜单页 + 11 按钮）+ 字典 10 类 43 条（职位状态/工作性质/经验/学历/薪资单位/紧急度/候选人状态/候选人学历/面试方式/面试结果，值域对齐前端 constants.ts 枚举）。
+
+**Java**：DO×6 + Mapper×6 + VO×22 + Service/Impl + Controller×3。业务口径：①职位状态计数两档（0停止/1招聘中）；候选人状态计数八档全返回（前端页签）；②招聘进度 = 已入职候选人数 / 招聘人数（百分比，招 0 人置 0）；③面试创建推进候选人到「安排面试(3)」（仅当状态 ≤2 防回退），面试通过推进到「面试通过(4)」；④渠道删除——内置渠道需 transferChannelId 承接（引用候选人改指承接渠道），非内置直接软删；⑤候选人转员工复用员工域 createEmployee（工号唯一/在职必填同口径），成功后置已入职(8)并回填 employee_id + entry_time；⑥删除候选人连带软删其面试记录。
+
+**真机验证（zhicloud_sandbox_v140）**：Flyway 至 schema 172；V171 verify 4/4、V172 4/4；单测 56/56（新增招聘 9 例：职位默认状态/停招/渠道非内置/内置承接删除与候选人改指/候选人状态 8 档计数/面试推进候选人/面试通过推进/淘汰原因存取/转员工回填）；E2E **45/45**（Temp/zc_hrm_recruit_e2e.py + zc-hrm-recruit-e2e.log）：职位建→DB 落行→详情 areaName 现算与 deptName enrich→状态计数 2 档→停招→渠道建/状态/精简列表→候选人建→enrich 职位名渠道名→状态计数 8 档→面试建（候选人推进 3）→面试通过（推进 4）→面试列表→换渠道→淘汰原因存读→候选人淘汰(7)→内置渠道无承接拒删(1050018003)→承接删除后候选人改指→转员工（候选人 8 + 员工建档 REC-E2E-001）→职位进度 50%→权限 14 项全授予→字典 8 项。demo 租户菜单/字典可见。
+
+**两个工程发现**：①`@Resource` 按 bean 名注入——招聘域 `postMapper` 撞 system 模块 `PostMapper`（启动/单测即 BeanNotOfRequiredTypeException），全部 mapper 字段加 `hrmRecruit`/`hrmEmployee` 前缀（同保险刀 fileMapper 教训的第二次复现，已成模式）；②E2E 脚本 GET/PUT 带中文 query 需 URL 百分号编码（Windows urllib 默认 ascii 编码，未编码抛 UnicodeEncodeError）。
+
+**待办（后继域）**：绩效 40 / 薪资 69 / portal 41 / home 4 / operate-log 1；保险 month-record；考勤请假接 BPM。

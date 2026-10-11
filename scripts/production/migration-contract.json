@@ -562,6 +562,20 @@
       "sha256": "a8fcedc1a6a965b18901d5d8b1cfcda0b2ae7eee82e7227105c3afe3051e29a1",
       "verification_file": "V170_verify.sql",
       "verification_sha256": "cc5afdbe13b8ee1658c290139143ad6c4a4d83e4711f770cb6aa16ecaec4a9bc"
+    },
+    {
+      "version": 171,
+      "file": "V171__hrm_recruit_tables.sql",
+      "sha256": "15622105bf3ca03d362d3ef0677ecc455a1a48da89572af1c0d0c8818898cd6f",
+      "verification_file": "V171_verify.sql",
+      "verification_sha256": "dc05e0a2c15fde4050a1e598ec70a44f9d8119712767eda4219530a36cddcc7a"
+    },
+    {
+      "version": 172,
+      "file": "V172__hrm_recruit_menu_dict_seed.sql",
+      "sha256": "67356bd1375319dbe007b387dbfea471d0f7cf8facdb1552a162d9abb77ace63",
+      "verification_file": "V172_verify.sql",
+      "verification_sha256": "30cc810c6d640956fce0a749bab97d191cc80659bf35c5d8f7524c9466c209c0"
     }
   ]
 }

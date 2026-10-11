@@ -91,4 +91,14 @@ public interface ErrorCodeConstants {
     ErrorCode HRM_INSURANCE_STANDARD_PROJECT_NOT_EXISTS = new ErrorCode(1_050_017_004, "参保项目不存在");
     ErrorCode HRM_INSURANCE_AREA_REQUIRED = new ErrorCode(1_050_017_005, "参保地区不能为空");
 
+    // ========== HRM 招聘（1-050-018-000） ==========
+    ErrorCode HRM_RECRUIT_POST_NOT_EXISTS = new ErrorCode(1_050_018_000, "招聘职位不存在");
+    ErrorCode HRM_RECRUIT_CHANNEL_NOT_EXISTS = new ErrorCode(1_050_018_001, "招聘渠道不存在");
+    ErrorCode HRM_RECRUIT_CHANNEL_NAME_DUPLICATE = new ErrorCode(1_050_018_002, "招聘渠道名称已存在");
+    ErrorCode HRM_RECRUIT_CHANNEL_TRANSFER_REQUIRED = new ErrorCode(1_050_018_003, "系统内置渠道删除需指定承接渠道");
+    ErrorCode HRM_RECRUIT_CHANNEL_TRANSFER_INVALID = new ErrorCode(1_050_018_004, "承接渠道不能是自身");
+    ErrorCode HRM_RECRUIT_CANDIDATE_NOT_EXISTS = new ErrorCode(1_050_018_005, "候选人不存在");
+    ErrorCode HRM_RECRUIT_CANDIDATE_ALREADY_JOINED = new ErrorCode(1_050_018_006, "候选人已入职，无法重复转入");
+    ErrorCode HRM_RECRUIT_INTERVIEW_NOT_EXISTS = new ErrorCode(1_050_018_007, "面试记录不存在");
+
 }
