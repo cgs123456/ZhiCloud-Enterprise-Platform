@@ -7985,3 +7985,14 @@ FMS config 域拆 11 个资源：账套 account-set、成员 account-user、账�
 **真机验证（zhicloud_sandbox_v140）**：单测 74/74（HRM 无新增单测——BPM 链以 E2E 覆盖；旧 /hr 请假 BPM 单测 7/7 仍绿）；E2E **11/11**（Temp/zc_hrm_leavebpm_e2e.py + zc-hrm-leavebpm-e2e.log）：播种 hrm_leave_request（ACT_RE_PROCDEF 落行）→建档绑定→自助提交请假（假单待审批 + 流程号落库）→BPM 实例与待办任务存在→审批通过→监听器回写假单 `approval_status=2` + 审批时间→状态稳定→清理（先离职再删，与产品口径一致）。
 
 **待办（后继）**：BPM 实例取消 API（`BpmProcessInstanceApi.cancelProcessInstance`）供请假撤销同步撤流程；旧 /hr 退役（阻塞于 hr_position 主数据，待 owner 裁决）。
+## 12.196 2026-10-12 HRM 请假撤销同步撤 BPM 流程（闭合 §12.195 的待办项）
+
+**背景**：§12.195 请假接 BPM 时，撤销只落本地「已取消」态，在途流程实例残留（待办任务不消失）。本刀补齐。
+
+**实现**：`BpmProcessInstanceApi` 增加 `cancelProcessInstance(userId, processInstanceId, reason)`（薄封装既有 `BpmProcessInstanceService.cancelProcessInstanceByStartUser`，发起人视角）；`HrmPortalServiceImpl.cancelLeave` 在落本地撤销态后调它撤在途流程，**取消失败不阻断**（流程可能已结束，`try/catch` 记 warn 后本地撤销态照常）。
+
+**踩坑（接口加方法的连带影响）**：给 `BpmProcessInstanceApi` 加方法后，`CrmReceivableBpmTransactionIntegrationTest` 内的 `TestBpmProcessInstanceApi` 测试桩（实现该接口）编译失败（`does not override abstract method`）——**接口新增方法必须全仓 grep `implements 该接口` 同步桩**（本次 1 处，已补空实现）。这是 maven 多模块 testCompile 阶段暴露的，本地 `-pl zhicloud-module-hr` 单模块编译看不到。
+
+**真机验证（zhicloud_sandbox_v140）**：单测 74/74；真机探针：提交请假（发起流程，ACT_RU_TASK=1）→ 撤销 → **ACT_RU_TASK=0 + ACT_HI_PROCINST.END_TIME_ 已置 + 假单 approval_status=4**（待办清零、流程闭环、无悬挂）。此前 §12.195 的 E2E 11/11 仍成立。
+
+**至此 HRM 全域 + 请假 BPM 双向（提交/审批/撤销）全部闭合**。

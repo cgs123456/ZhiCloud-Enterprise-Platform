@@ -180,6 +180,11 @@ class CrmReceivableBpmTransactionIntegrationTest {
             throw new IllegalStateException("simulated rollback after BPM process start");
         }
 
+        @Override
+        public void cancelProcessInstance(Long userId, String processInstanceId, String reason) {
+            // 测试桩：取消实例无需真实引擎行为
+        }
+
         AtomicInteger getStartedCount() {
             return startedCount;
         }

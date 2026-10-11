@@ -35,6 +35,7 @@ import cn.zhicloud.module.system.api.dept.DeptApi;
 import cn.zhicloud.module.system.api.dept.dto.DeptRespDTO;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -66,6 +67,7 @@ import static cn.zhicloud.module.hr.enums.ErrorCodeConstants.*;
  *
  * @author zhicloud
  */
+@Slf4j
 @Service
 @Validated
 public class HrmPortalServiceImpl implements HrmPortalService {
@@ -346,8 +348,16 @@ public class HrmPortalServiceImpl implements HrmPortalService {
                 .set(HrmAttendanceLeaveDO::getApprovalStatus, LEAVE_APPROVAL_CANCEL)
                 .set(HrmAttendanceLeaveDO::getApprovalReason, reqVO.getReason())
                 .set(HrmAttendanceLeaveDO::getApprovalTime, LocalDateTime.now()));
-        // 注：BpmProcessInstanceApi 未暴露「取消实例」方法，此处只落本地撤销态；
-        // 在途流程实例的撤销属 BPM 侧能力，后续如需可在 bpm 模块补 API 后接入。
+        // 同步撤销在途 BPM 流程实例（发起人视角），避免残留待办
+        if (leave.getProcessInstanceId() != null) {
+            try {
+                bpmProcessInstanceApi.cancelProcessInstance(SecurityFrameworkUtils.getLoginUserId(),
+                        leave.getProcessInstanceId(), reqVO.getReason());
+            } catch (Exception ex) {
+                // 流程可能已结束（审批完成/已取消）→ 取消失败不影响本地撤销态
+                log.warn("[cancelLeave][假单({}) 流程实例({}) 取消失败]", leave.getId(), leave.getProcessInstanceId(), ex);
+            }
+        }
     }
 
     @Override
