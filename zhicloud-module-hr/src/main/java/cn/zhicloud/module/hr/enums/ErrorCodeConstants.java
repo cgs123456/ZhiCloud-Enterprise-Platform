@@ -83,4 +83,12 @@ public interface ErrorCodeConstants {
     ErrorCode HRM_ATTENDANCE_LEAVE_NOT_EXISTS = new ErrorCode(1_050_016_005, "请假记录不存在");
     ErrorCode HRM_ATTENDANCE_DATE_INVALID = new ErrorCode(1_050_016_006, "日期格式非法，应为 yyyy-MM-dd");
 
+    // ========== HRM 保险（1-050-017-000） ==========
+    ErrorCode HRM_INSURANCE_SCHEME_NOT_EXISTS = new ErrorCode(1_050_017_000, "社保方案不存在");
+    ErrorCode HRM_INSURANCE_SCHEME_NAME_DUPLICATE = new ErrorCode(1_050_017_001, "社保方案名称已存在");
+    ErrorCode HRM_INSURANCE_SCHEME_USED = new ErrorCode(1_050_017_002, "方案已被员工参保引用，无法删除");
+    ErrorCode HRM_INSURANCE_STANDARD_TYPE_NOT_EXISTS = new ErrorCode(1_050_017_003, "参保类型不存在");
+    ErrorCode HRM_INSURANCE_STANDARD_PROJECT_NOT_EXISTS = new ErrorCode(1_050_017_004, "参保项目不存在");
+    ErrorCode HRM_INSURANCE_AREA_REQUIRED = new ErrorCode(1_050_017_005, "参保地区不能为空");
+
 }

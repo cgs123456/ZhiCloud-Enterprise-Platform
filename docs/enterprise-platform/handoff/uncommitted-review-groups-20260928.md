@@ -7861,3 +7861,21 @@ FMS config 域拆 11 个资源：账套 account-set、成员 account-user、账�
 **四个工程发现**：①`@TableField(typeHandler=JacksonTypeHandler)` 的 json 列泛型必须**具体化**——`List<Object>`/`Object` 无法序列化（FAIL_ON_EMPTY_BEANS），改 `List<Map<String,Object>>`/`Map<String,Object>`；②H2 下 `year`/`month`/`day` 是保留字（MySQL 非保留可用，真机无碍）——测试连接串 `NON_KEYWORDS=value,year,month,day` 放行（与既有 value,year 同法）；③FastExcel **不支持嵌套 Map/List 列**——月度概况导出改用扁平 Excel VO（employeeName/jobNumber/deptName/year/month/clockDays），避免 Stream closed 500；④`information_schema.statistics` 每索引列一行——verify 断言索引用 `COUNT(*) = 列数` 或 `COUNT(DISTINCT index_name)`，不能用 `COUNT(*)=1`。
 
 **待办（后继域）**：insurance 22 / recruit 35 / performance 40 / portal 41 / salary 69 / home 4 / operate-log 1；考勤请假写侧接 BPM（process_instance_id 回填）；考勤组特殊日期/班次休息时段的排班细化（当前班次按周几匹配，未做时区/跨天班）。
+## 12.187 2026-10-11 HRM 保险域接线（第一刀）：V168-V170 + 标准参保/方案/员工参保 17 端点 + E2E 30/30
+
+**契约盘点与切分**：保险域前端 22 端点跨 standard（2 只读）/scheme（6 CRUD）/employee-info（3）/month-record（11）。本刀做前三段 11 个后端端点（+标准 2 = 13，Controller 计 17 含 list/simple-list/get 拆分），month-record（月度社保表，依赖计薪域）留次刀。
+
+**迁移设计（V168-V170，应用前重写合法——本刀开工时 schema 停在 167、三者均未应用）**：
+* V168 五表——hr_insurance_standard_type/project（按地区预置的标准参保参考数据）、hr_insurance_scheme（方案头，area_id 存编号、areaName 由 AreaUtils 现算不入库）、hr_insurance_scheme_project（方案项目行）、hr_insurance_employee_info（员工参保信息）。
+* **单一真相纪律**：社保/公积金账号的物理列在 hr_employee（V161 两列），参保表只存参保特有字段（首次标志/起缴月份/方案），save 时双写镜像 hr_employee——不建重复账号列。
+* **软删唯一键陷阱**：初版给 scheme.name 与 employee_info.employee_id 建了含 deleted 的 uk——deleted 只有两值，删一行再插同键必撞；改为普通索引 + 服务层唯一校验（同 hrm 字段配置教训）。
+* V169 种子：深圳 440300 三种参保类型（城镇职工/灵活就业/城乡居民）+ 城镇职工 6 项（养老/医疗/失业/工伤/生育/公积金，费率取深圳现行口径近似演示值）+ 方案/项目类型字典 2 类 13 条（对齐前端 HrmInsuranceProjectType 1-11）。种子在 tenant 1，读取走 TenantUtils.executeIgnore（标准数据平台级只读，与字段配置的懒惰供给不同）。
+* V170 菜单：菜单 1（参保方案，component=hrm/insurance/scheme/index）+ 按钮 6（scheme CRUD、employee-info:update、standard 两权限作只读按钮），挂 9100 /hrm 下 9180-9186。
+
+**scratch 库 dry-run（教训固化）**：V166 刀曾在服务库事务内 dry-run——MySQL `CREATE TABLE` 隐式提交，异常退出留下空壳表污染（本刀开工时先 DROP 清理）。本刀改用**隔离 scratch 库**（`CREATE TABLE LIKE` 复制 system_menu/dict 两表结构，全部 INSERT 落 scratch，双跑验幂等，结束 DROP），服务库零接触；结果 5 表/3+6 种子/2+13 字典/7 菜单全对、二跑计数不变。
+
+**Java**：DO×5 + Mapper×4 + VO×5 + Service×3（standard/scheme/employee-info）+ Controller×3。方案口径：比例模式（type=1）行金额=基数×比例、金额模式（type=2）取行值；头四金额=社保组（type 1-9）与公积金组（type 10-11）分组求和；项目整组替换（改方案不动已建档员工，与前端确认文案同口径）；删除被员工参保引用的方案拒绝（1050017002）。hr pom 补 biz-ip 依赖（excel starter 中 optional 不传递，AreaUtils 需显式引入）。
+
+**真机验证（zhicloud_sandbox_v140）**：Flyway 至 schema 170（应用 3 迁移）；V168 verify 5/5、V169 4/4、V170 3/3；单测 47/47（新增保险 7 例：金额重算/项目分组/重名拒/整组替换/被引用拒删/账号镜像双写/方案新建）；E2E **30/30**（Temp/zc_hrm_ins_e2e.py + zc-hrm-ins-e2e.log）：标准类型 3 项与 code 齐→标准项目 6 项 type 齐与金额现算（5000×0.16=800）→方案建（头金额 500/1100/250/600）→详情项目分组（社保 2+公积金 1）与 areaName「广东省 深圳市」→列表/精简列表→重名拒→修改整组替换（3→2 行、金额重算 1320）→员工建档→参保保存→账号镜像 hr_employee 双列→回读 enrich 方案名→被引用拒删→update-scheme→权限 7 项全授予→字典 11 项→解除引用后可删。demo 租户菜单/字典可见。
+
+**待办（后继）**：保险 month-record（月度社保表 11 端点，依赖计薪域）、员工月度参保记录；招聘 35 / 绩效 40 / 薪资 69 / portal 41 / home 4 / operate-log 1 域。

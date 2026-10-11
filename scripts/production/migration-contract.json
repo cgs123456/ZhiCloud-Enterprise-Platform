@@ -541,6 +541,27 @@
       "sha256": "113feff2091e3a8fe92294d3f7ab1a0dbefb861b2dc9d45ce3e0bec963772504",
       "verification_file": "V167_verify.sql",
       "verification_sha256": "a997b14ea2cf7e04e64a86bd30ee0cdfe571c27cb632e0b433e1c20a319194e8"
+    },
+    {
+      "version": 168,
+      "file": "V168__hrm_insurance_standard_tables.sql",
+      "sha256": "8f37b60e584a6ea747299116529cf07090daa925c5b77a2828226762474ae6e7",
+      "verification_file": "V168_verify.sql",
+      "verification_sha256": "069e015401299bb3d9c30018172f037b94aaa27932c3a0e0ca47cfc5b98064ca"
+    },
+    {
+      "version": 169,
+      "file": "V169__hrm_insurance_standard_seed.sql",
+      "sha256": "96be0475930c619690d874f8cae32a281465b053719aa674688a501aeda325ac",
+      "verification_file": "V169_verify.sql",
+      "verification_sha256": "9b9365881f42502566bb8ff0f0119dd8be8737ff643f93dca89c1e3bb29be758"
+    },
+    {
+      "version": 170,
+      "file": "V170__hrm_insurance_standard_menu_seed.sql",
+      "sha256": "a8fcedc1a6a965b18901d5d8b1cfcda0b2ae7eee82e7227105c3afe3051e29a1",
+      "verification_file": "V170_verify.sql",
+      "verification_sha256": "cc5afdbe13b8ee1658c290139143ad6c4a4d83e4711f770cb6aa16ecaec4a9bc"
     }
   ]
 }

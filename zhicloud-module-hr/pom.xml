@@ -31,6 +31,12 @@
             <artifactId>zhicloud-spring-boot-starter-biz-tenant</artifactId>
         </dependency>
 
+        <!-- HRM 保险：参保地区 areaName 现算（AreaUtils，excel starter 中为 optional 不传递） -->
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-spring-boot-starter-biz-ip</artifactId>
+        </dependency>
+
         <!-- HRM 融合：站内信（档案填写通知）、部门/用户/操作日志 API -->
         <dependency>
             <groupId>cn.zhicloud</groupId>
