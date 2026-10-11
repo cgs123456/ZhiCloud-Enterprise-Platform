@@ -113,4 +113,16 @@ public interface ErrorCodeConstants {
     ErrorCode HRM_PERFORMANCE_ASSESSMENT_NOT_EXISTS = new ErrorCode(1_050_019_008, "员工绩效考核不存在");
     ErrorCode HRM_PERFORMANCE_ASSESSMENT_NOT_ARCHIVED = new ErrorCode(1_050_019_009, "该考核未归档");
 
+    // ========== HRM 薪资配置（1-050-020-000） ==========
+    ErrorCode HRM_SALARY_GROUP_NOT_EXISTS = new ErrorCode(1_050_020_000, "薪资组不存在");
+    ErrorCode HRM_SALARY_GROUP_NAME_DUPLICATE = new ErrorCode(1_050_020_001, "薪资组名称已存在");
+    ErrorCode HRM_SALARY_OPTION_NOT_EXISTS = new ErrorCode(1_050_020_002, "薪资项不存在");
+    ErrorCode HRM_SALARY_OPTION_CODE_DUPLICATE = new ErrorCode(1_050_020_003, "薪资项编码已存在");
+    ErrorCode HRM_SALARY_OPTION_SYSTEM_CANNOT_DELETE = new ErrorCode(1_050_020_004, "系统默认薪资项不可删除");
+    ErrorCode HRM_SALARY_OPTION_SYSTEM_CANNOT_MODIFY = new ErrorCode(1_050_020_005, "系统默认薪资项不可修改");
+    ErrorCode HRM_SALARY_TAX_RULE_NOT_EXISTS = new ErrorCode(1_050_020_006, "计税规则不存在");
+    ErrorCode HRM_SALARY_TAX_RULE_NAME_DUPLICATE = new ErrorCode(1_050_020_007, "计税规则名称已存在");
+    ErrorCode HRM_SALARY_TAX_RULE_USED = new ErrorCode(1_050_020_008, "计税规则已被薪资组引用，无法删除");
+    ErrorCode HRM_SALARY_CHANGE_TEMPLATE_NOT_EXISTS = new ErrorCode(1_050_020_009, "调薪模板不存在");
+
 }

@@ -597,6 +597,20 @@
       "sha256": "535db9c29b6562b0e5466a40a2bcf9956ff3b1a757bafbc315159244e4a6c3a9",
       "verification_file": "V175_verify.sql",
       "verification_sha256": "ffed6abe79f23a2dbf8b59e53b3af91436ab56b687849751064c1a83fea93293"
+    },
+    {
+      "version": 176,
+      "file": "V176__hrm_salary_config_tables.sql",
+      "sha256": "6069e85bc820e13ddccbd59d5e1591db0add6f31f75adc686c4a6f9ffa2ebb87",
+      "verification_file": "V176_verify.sql",
+      "verification_sha256": "b59e317714578d96cc53fea696bef9e68fee8af73602ebc6173e15ded36ece99"
+    },
+    {
+      "version": 177,
+      "file": "V177__hrm_salary_config_menu_dict_seed.sql",
+      "sha256": "f4bcb280ffd65c0bd62f91eeb87de0ae04f60f5db537cc65e783322c1e068980",
+      "verification_file": "V177_verify.sql",
+      "verification_sha256": "1acb9f49c9fc4736a988adaa58247d53b6691e032c7e9649af91b07be78b2620"
     }
   ]
 }

@@ -7916,3 +7916,14 @@ FMS config 域拆 11 个资源：账套 account-set、成员 account-user、账�
 **一个工程发现**：`startPlan` 是一次性状态迁移（草稿/未开始→进行中），非幂等操作——单测初版误断言「重复 start 不重复生成」，实为状态守卫正确拒绝（1050019005），据实修正断言口径（生命周期守卫是特性，非缺陷）。
 
 **待办（后继域）**：薪资 69 / portal 41 端点；保险 month-record；考勤请假接 BPM。
+## 12.191 2026-10-11 HRM 薪资配置域接线（薪资域第一刀）：V176/V177 + 30 端点 + E2E 31/31
+
+**切分**：薪资域 69 端点跨 11 子域（config 5 + employee-info 8 + month-record 14 + month-employee-record 6 + change-record 4 + slip 3 + slip-template 5 + slip-send-record 5 等）。本刀做**配置域**（group/option/tax-rule/change-template/config，30 端点）；员工薪资档案/月度工资表/工资条留次刀。
+
+**迁移（V176/V177）**：V176 五表——hr_salary_group（薪资组，dept_ids/employee_ids → json，tax_rule_id 关联计税规则）、hr_salary_option（薪资项树：parent_code 自引用，system_flag 系统项不可删/不可改开关，计税/显示/计算/启用四开关）、hr_salary_tax_rule（计税规则）、hr_salary_change_template（调薪模板，options → json）、hr_salary_config（薪资配置单条）。V177：菜单 18 行（9219-9236：薪资组/薪资项/计税规则/调薪模板/薪资设置五菜单页 + 13 按钮）+ 字典 4 类 14 条（计税类型/薪资项类型/是否/调薪原因）。
+
+**Java**：DO×5 + Mapper×5 + VO×10 + Service/Impl + Controller。业务口径：①syncOption 按前端 HrmSalaryOptionCode 枚举初始化标准薪资项树（15 分类 + 34 叶子，幂等——已存在 code 跳过）；②系统项（system_flag=true）删除/开关拒绝；③计税规则被薪资组引用（tax_rule_id）时删除拒绝，列表响应带 usedGroupCount（引用数现算）；④薪资组 name 唯一，响应 enrich 计税规则名 + 部门名 + 员工名；⑤薪资配置单条语义（selectSingle；create 已存在返回既有 id，update 不存在则插入，永不产生第二行）。
+
+**真机验证（zhicloud_sandbox_v140）**：Flyway 至 schema 177；V176 verify 3/3、V177 4/4；单测 74/74（新增薪资配置 9 例：薪资组建/重名拒/同步树与幂等/系统项拒删/自定义项开关/被引用计税规则拒删/usedGroupCount enrich/调薪模板/配置单条 upsert）；E2E **31/31**（Temp/zc_hrm_sal_e2e.py + zc-hrm-sal-e2e.log）：同步标准树（15 分类 + 34 叶子）→幂等（49 行不变）→系统项拒删→自定义项 CRUD+开关→计税规则 CRUD→薪资组建（引用计税规则，enrich 规则名/部门名）→重名拒→被引用计税规则拒删+usedGroupCount→调薪模板（json 2 项）→薪资配置单条 upsert（二次 update 仍 1 行）→权限 18 项全授予→字典 3 项→清理。demo 租户菜单/字典可见。
+
+**待办（后继）**：薪资 employee-info 8 + month-record 14 + month-employee-record 6 + change-record 4 + slip 3 + slip-template 5 + slip-send-record 5；portal 41 端点；保险 month-record；考勤请假接 BPM。
