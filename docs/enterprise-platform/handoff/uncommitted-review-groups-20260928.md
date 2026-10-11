@@ -8019,3 +8019,14 @@ FMS config 域拆 11 个资源：账套 account-set、成员 account-user、账�
 
 **两个扫描维度的合并价值**：接口覆盖（§12.197）+ 字典覆盖（本刀）都做成可复跑脚本，HRM 域「前端契约 vs 后端实现」的完整性从印象变为可复核数字。**HRM 域至此：接口 356/356 有实现、字典引用 38/38 有种子。**
 **三维完整性扫描收口（§12.198 补充）**：本刀另跑第三个维度——**菜单链接**：比对前端 `views/hrm/**/*.vue`（198 个文件）与 DB `system_menu.component LIKE 'hrm/%' AND type=2`（23 个菜单页），**断链 0**（23 个菜单全部指向真实存在的前端文件）。三维扫描结论：**接口 356/356 有实现、字典引用 38/38 有种子、菜单 23/23 无断链**。三个扫描脚本均可复跑（前端新增 API/字典/页面时一键查缺口），作为 HRM 域收尾常规动作。
+## 12.199 2026-10-12 HRM 补职位主数据域（V184）——解除旧 /hr 退役阻塞，E2E 14/14
+
+**问题（§12.194 评估结论）**：旧 `/hr` 13 页中唯一在 HRM 无对应物的是 `hr_position`（职位主数据：职位编码/名称/所属部门/职级/基本工资，6 端点 + 真机 10 行数据），导致旧 `/hr` 无法整体退役。
+
+**方案（遵循「单一真相、不建平行表」纪律）**：**不新建表、不复制服务**——HRM 侧补 `/hrm/position` 入口**复用既有 `hr_position` 表与 `HrPositionService`**（同一套校验/同一份数据），前端新增 `views/hrm/position` 页（含部门树选择，比旧页更完整——旧页 `deptId` 是裸数字输入）。旧 `/hr/position` 与新 `/hrm/position` 并存，旧页面退役后旧入口随之下线。这样 HRM 成为 HR 的**完整超集**，且零数据迁移、零双写。
+
+**实现**：`HrmPositionController`（6 端点：page/get/list-by-dept/create/update/delete，复用 `HrPositionService`）；`HrPositionRespVO` 加 `deptName` 字段（HRM 页展示；旧 `/hr` 入口不调 enrich 方法，无副作用）；前端 `api/hrm/position/index.ts` + `views/hrm/position/{index,HrmPositionForm}.vue`（部门树替代裸 ID 输入，修掉旧页的语法错误——旧 `index.vue` queryParams 缺逗号、formRules 引用未定义 `required`）；V184 菜单 4 行（9258-9261：职位管理页 + 3 按钮）。
+
+**真机验证（zhicloud_sandbox_v140）**：Flyway 至 schema 184；V184 verify 2/2；单测 74/74；E2E **14/14**（Temp/zc_hrm_position_e2e.py + zc-hrm-position-e2e.log）：分页**读到旧表 10 行 DEMO 数据**（证明复用同表）→deptName enrich→创建（**DB 落 hr_position 表**）→编码重复被拒（1050002001，复用旧校验）→详情→修改→按部门列表→名称搜索→权限 4 项→删除软删。契约 tracked=94。
+
+**HRM 覆盖度更新**：至此 HRM 含职位主数据，**旧 /hr 13 页能力全部有 HRM 对应物**，退役阻塞解除（可执行旧 /hr 页面/接口/菜单退役，但属破坏性动作，仍待所有者确认时机）。

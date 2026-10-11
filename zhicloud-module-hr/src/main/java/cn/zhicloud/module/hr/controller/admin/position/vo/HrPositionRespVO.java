@@ -32,6 +32,10 @@ public class HrPositionRespVO {
     @ExcelProperty("所属部门 ID")
     private Long deptId;
 
+    @Schema(description = "所属部门名称（enrich，HRM 职位页展示）", example = "研发中心")
+    @ExcelProperty("所属部门")
+    private String deptName;
+
     @Schema(description = "职级", requiredMode = Schema.RequiredMode.REQUIRED, example = "10")
     @ExcelProperty(value = "职级", converter = DictConvert.class)
     @DictFormat(DictTypeConstants.HR_POSITION_LEVEL)

@@ -653,6 +653,13 @@
       "sha256": "57c450c57959ebb84c59668f6a2cdb6792541c701b94e37f2fbe8a318c6e0aae",
       "verification_file": "V183_verify.sql",
       "verification_sha256": "1bb59035c541572495e2de2926f7c1029740942471839c87bbb33d8c07d60f69"
+    },
+    {
+      "version": 184,
+      "file": "V184__hrm_position_menu_seed.sql",
+      "sha256": "5e90db215d77af2694a2a7bc3927e007e659ea29c95f176d293323f98795f103",
+      "verification_file": "V184_verify.sql",
+      "verification_sha256": "290cd2896e98bc200f1e45bd81da9cdc5c4a33cfea2ef4e3b097bd378a6adb1c"
     }
   ]
 }
