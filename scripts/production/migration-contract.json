@@ -646,6 +646,13 @@
       "sha256": "f03319af3c000df44794a85e5272db634ae67da2ce83dea926bf10fd84665512",
       "verification_file": "V182_verify.sql",
       "verification_sha256": "fe2b9d02ffa8c3c73578e5836c5852e03d4f0befb77223f54ccc3cd249003f17"
+    },
+    {
+      "version": 183,
+      "file": "V183__hrm_missing_dict_seed.sql",
+      "sha256": "57c450c57959ebb84c59668f6a2cdb6792541c701b94e37f2fbe8a318c6e0aae",
+      "verification_file": "V183_verify.sql",
+      "verification_sha256": "1bb59035c541572495e2de2926f7c1029740942471839c87bbb33d8c07d60f69"
     }
   ]
 }

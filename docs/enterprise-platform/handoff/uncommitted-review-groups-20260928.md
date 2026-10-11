@@ -8005,3 +8005,16 @@ FMS config 域拆 11 个资源：账套 account-set、成员 account-user、账�
 **真机验证**：单测 74/74；真机探针 `GET /hrm/performance/assessment/archive-employee-page` → code=0、total=1（命中先前绩效 E2E 遗留的归档考核）。**至此前端 `api/hrm` 356 个契约 100% 有后端实现**。
 
 **方法论价值**：这把「覆盖率」从印象变成可复核的数字——脚本可复跑，后续任何前端新增 API 都能一键查出未接线项。契约完整性扫描应作为 HRM 域的收尾常规动作。
+## 12.198 2026-10-12 HRM 字典完整性扫描：补 4 个「可见但下拉/标签为空」字典，缺口清零
+
+**做法（同类扫描，第二个维度）**：§12.197 扫的是**接口覆盖**（前端 url vs 后端 mapping），本刀扫**字典覆盖**——脚本解析前端 `utils/dict.ts` 常量映射，收集 `views/hrm/**` 与 `api/hrm/**` 里引用的所有 `DICT_TYPE.*` 实际字符串值，与库中 `system_dict_type`（type LIKE 'hrm_%'）比对。发现 **4 个被前端消费但库中无**：
+* `hrm_insurance_emp_status`（月度社保参保状态 0停止/1正常）—— `InsuranceMonthEmployeeDetail.vue` 等 dict-tag 消费
+* `hrm_salary_change_type`（薪资调整类型 1定薪/2调薪）—— salary employee-info 下拉 + dict-tag
+* `hrm_salary_change_record_status`（调整记录状态 0待生效/1已生效/2已取消）—— 调薪记录列表 dict-tag
+* `hrm_salary_slip_read_status`（工资条查看状态 0未读/1已读）—— 工资条列表下拉 + dict-tag
+
+**这正是 §12.183（FMS）记录的「可见但选项不可用」缺口同型**——页面能开、字段能提交，但下拉/标签是空的。V183 补 4 字典类型 + 9 字典数据，值域对齐前端 `constants.ts`（HrmInsuranceEmployeeStatus / HrmSalaryRecordType / HrmSalaryChangeRecordStatus / 工资条 readStatus）。scratch 库 dry-run 幂等（4 类型 + 9 数据，二跑不变）。
+
+**真机验证（zhicloud_sandbox_v140）**：Flyway 至 schema 183；V183 verify 3/3（类型齐 / 数据 9 条 / 每字典非空）；**复跑字典覆盖扫描 → 缺口 0**（前端引用 38 个，库中 40 个）。契约 tracked=93。
+
+**两个扫描维度的合并价值**：接口覆盖（§12.197）+ 字典覆盖（本刀）都做成可复跑脚本，HRM 域「前端契约 vs 后端实现」的完整性从印象变为可复核数字。**HRM 域至此：接口 356/356 有实现、字典引用 38/38 有种子。**
