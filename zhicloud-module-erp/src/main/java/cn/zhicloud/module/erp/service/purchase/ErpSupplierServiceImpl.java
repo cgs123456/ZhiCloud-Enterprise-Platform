@@ -7,6 +7,7 @@ import cn.zhicloud.module.erp.controller.admin.purchase.vo.supplier.ErpSupplierP
 import cn.zhicloud.module.erp.controller.admin.purchase.vo.supplier.ErpSupplierSaveReqVO;
 import cn.zhicloud.module.erp.dal.dataobject.purchase.ErpSupplierDO;
 import cn.zhicloud.module.erp.dal.mysql.purchase.ErpSupplierMapper;
+import cn.hutool.core.collection.CollUtil;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -78,6 +79,10 @@ public class ErpSupplierServiceImpl implements ErpSupplierService {
 
     @Override
     public List<ErpSupplierDO> getSupplierList(Collection<Long> ids) {
+        // 空集合必须短路：MyBatis-Plus 的 selectByIds 会展开成 `IN ()`，是非法 SQL
+        if (CollUtil.isEmpty(ids)) {
+            return List.of();
+        }
         return supplierMapper.selectByIds(ids);
     }
 

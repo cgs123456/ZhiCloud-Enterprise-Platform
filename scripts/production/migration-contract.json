@@ -667,6 +667,13 @@
       "sha256": "bd6dccca447bfe6a0584e6053c8d5e00d0483cfc88f9d75870993b6ad680f364",
       "verification_file": "V185_verify.sql",
       "verification_sha256": "68e16ca997ae74d7c54619d2785cfaec1caacc8bb50398d45c3ca46a7054c3c9"
+    },
+    {
+      "version": 186,
+      "file": "V186__erp_wms_mes_missing_menu_seed.sql",
+      "sha256": "ce7afdcc573ecf6bf4fd61b5471c47e02466660e82c11ce55024a04701d4794d",
+      "verification_file": "V186_verify.sql",
+      "verification_sha256": "b9892f9d99f3fd76960a6bef75e4765d293b20ef0fd512bcee24628aabbdcc24"
     }
   ]
 }

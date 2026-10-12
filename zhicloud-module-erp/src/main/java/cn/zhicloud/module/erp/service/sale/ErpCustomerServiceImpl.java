@@ -7,6 +7,7 @@ import cn.zhicloud.module.erp.controller.admin.sale.vo.customer.ErpCustomerPageR
 import cn.zhicloud.module.erp.controller.admin.sale.vo.customer.ErpCustomerSaveReqVO;
 import cn.zhicloud.module.erp.dal.dataobject.sale.ErpCustomerDO;
 import cn.zhicloud.module.erp.dal.mysql.sale.ErpCustomerMapper;
+import cn.hutool.core.collection.CollUtil;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -81,6 +82,10 @@ public class ErpCustomerServiceImpl implements ErpCustomerService {
 
     @Override
     public List<ErpCustomerDO> getCustomerList(Collection<Long> ids) {
+        // 空集合必须短路：MyBatis-Plus 的 selectByIds 会展开成 `IN ()`，是非法 SQL
+        if (CollUtil.isEmpty(ids)) {
+            return List.of();
+        }
         return customerMapper.selectByIds(ids);
     }
 
