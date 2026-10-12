@@ -34,6 +34,7 @@ export interface ProWorkOrderVO {
 }
 
 // MES 生产工单 API
+// 状态机：0 草稿 -> 1 已确认 -> 4 已派工 -> 5 报工中 -> 2 已完成 -> 6 已关闭；3 已取消为终态
 export const ProWorkOrderApi = {
   // 查询生产工单分页
   getWorkOrderPage: async (params: any) => {
@@ -65,18 +66,38 @@ export const ProWorkOrderApi = {
     return await request.download({ url: `/mes/pro/work-order/export-excel`, params })
   },
 
-  // 完成工单
+  // 确认工单（0 草稿 -> 1 已确认）
+  confirmWorkOrder: async (id: number) => {
+    return await request.put({ url: `/mes/pro/work-order/confirm?id=` + id })
+  },
+
+  // 派工工单（1 已确认 -> 4 已派工）
+  dispatchWorkOrder: async (id: number) => {
+    return await request.put({ url: `/mes/pro/work-order/dispatch?id=` + id })
+  },
+
+  // 工单开工（4 已派工 -> 5 报工中）
+  startWorkOrder: async (id: number) => {
+    return await request.put({ url: `/mes/pro/work-order/start?id=` + id })
+  },
+
+  // 工单报工（5 报工中，按增量累加已生产数量）
+  reportWorkOrder: async (id: number, incrQuantity: number) => {
+    return await request.put({ url: `/mes/pro/work-order/report?id=` + id + '&incrQuantity=' + incrQuantity })
+  },
+
+  // 完成工单（5 报工中 -> 2 已完成）
   finishWorkOrder: async (id: number) => {
     return await request.put({ url: `/mes/pro/work-order/finish?id=` + id })
+  },
+
+  // 关闭工单（2 已完成 -> 6 已关闭）
+  closeWorkOrder: async (id: number) => {
+    return await request.put({ url: `/mes/pro/work-order/close?id=` + id })
   },
 
   // 取消工单
   cancelWorkOrder: async (id: number) => {
     return await request.put({ url: `/mes/pro/work-order/cancel?id=` + id })
-  },
-
-  // 确认工单
-  confirmWorkOrder: async (id: number) => {
-    return await request.put({ url: `/mes/pro/work-order/confirm?id=` + id })
   }
 }

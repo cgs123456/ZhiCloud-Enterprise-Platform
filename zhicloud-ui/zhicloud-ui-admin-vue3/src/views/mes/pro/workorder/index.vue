@@ -209,6 +209,55 @@
           >
             取消
           </el-button>
+          <!-- 已确认：派工（1 -> 4） -->
+          <el-button
+            link
+            type="primary"
+            @click="handleDispatch(scope.row)"
+            v-hasPermi="['mes:pro-work-order:update']"
+            v-if="scope.row.status === MesProWorkOrderStatusEnum.CONFIRMED"
+          >
+            派工
+          </el-button>
+          <!-- 已派工：开工（4 -> 5） -->
+          <el-button
+            link
+            type="primary"
+            @click="handleStart(scope.row)"
+            v-hasPermi="['mes:pro-work-order:update']"
+            v-if="scope.row.status === MesProWorkOrderStatusEnum.DISPATCHED"
+          >
+            开工
+          </el-button>
+          <!-- 报工中：报工（累加已生产数量）、完工（5 -> 2） -->
+          <el-button
+            link
+            type="primary"
+            @click="handleReport(scope.row)"
+            v-hasPermi="['mes:pro-work-order:update']"
+            v-if="scope.row.status === MesProWorkOrderStatusEnum.REPORTING"
+          >
+            报工
+          </el-button>
+          <el-button
+            link
+            type="success"
+            @click="handleFinish(scope.row)"
+            v-hasPermi="['mes:pro-work-order:update']"
+            v-if="scope.row.status === MesProWorkOrderStatusEnum.REPORTING"
+          >
+            完工
+          </el-button>
+          <!-- 已完成：关闭（2 -> 6） -->
+          <el-button
+            link
+            type="info"
+            @click="handleClose(scope.row)"
+            v-hasPermi="['mes:pro-work-order:update']"
+            v-if="scope.row.status === MesProWorkOrderStatusEnum.FINISHED"
+          >
+            关闭
+          </el-button>
           <!-- 工单条码 -->
           <!-- DONE @芋艿：这里应该是打印；后面在跟进把；（AI 未修复原因：需要对接打印功能，标注为后续处理，需人工介入） -->
           <el-button
@@ -317,6 +366,66 @@ const handleCancel = async (id: number) => {
     await message.confirm('确认要取消该工单吗？取消后不可恢复。')
     await ProWorkOrderApi.cancelWorkOrder(id)
     message.success('工单已取消')
+    await getList()
+  } catch {}
+}
+
+// ========== 生产流转：确认 -> 派工 -> 开工 -> 报工 -> 完工 -> 关闭 ==========
+/** 派工（已确认 1 -> 已派工 4） */
+const handleDispatch = async (row: any) => {
+  try {
+    await message.confirm(`确认派工工单「${row.code}」？派工后将进入工序流转。`)
+    await ProWorkOrderApi.dispatchWorkOrder(row.id)
+    message.success('已派工')
+    await getList()
+  } catch {}
+}
+
+/** 开工（已派工 4 -> 报工中 5） */
+const handleStart = async (row: any) => {
+  try {
+    await message.confirm(`确认工单「${row.code}」开工？`)
+    await ProWorkOrderApi.startWorkOrder(row.id)
+    message.success('已开工')
+    await getList()
+  } catch {}
+}
+
+/** 报工（按增量累加已生产数量） */
+const handleReport = async (row: any) => {
+  try {
+    const { value } = await message.prompt(
+      `请输入本次报工数量（工单数量 ${row.quantity ?? 0}，已生产 ${row.quantityProduced ?? 0}）`,
+      '工单报工'
+    )
+    if (value === null || value === '') return
+    const qty = Number(value)
+    if (!Number.isFinite(qty) || qty <= 0) {
+      message.warning('报工数量必须为正数')
+      return
+    }
+    await ProWorkOrderApi.reportWorkOrder(row.id, qty)
+    message.success('报工成功')
+    await getList()
+  } catch {}
+}
+
+/** 完工（报工中 5 -> 已完成 2） */
+const handleFinish = async (row: any) => {
+  try {
+    await message.confirm(`确认工单「${row.code}」完工？完工后将进入可关闭状态。`)
+    await ProWorkOrderApi.finishWorkOrder(row.id)
+    message.success('已完工')
+    await getList()
+  } catch {}
+}
+
+/** 关闭（已完成 2 -> 已关闭 6） */
+const handleClose = async (row: any) => {
+  try {
+    await message.confirm(`确认关闭工单「${row.code}」？关闭后工单结束流转。`)
+    await ProWorkOrderApi.closeWorkOrder(row.id)
+    message.success('已关闭')
     await getList()
   } catch {}
 }

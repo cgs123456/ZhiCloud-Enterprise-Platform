@@ -73,7 +73,10 @@ export const MesProWorkOrderStatusEnum = {
   PREPARE: 0, // 草稿
   CONFIRMED: 1, // 已确认
   FINISHED: 2, // 已完成
-  CANCELED: 3 // 已取消
+  CANCELED: 3, // 已取消
+  DISPATCHED: 4, // 已派工
+  REPORTING: 5, // 报工中
+  CLOSED: 6 // 已关闭
 }
 
 /** MES 生产流转卡状态枚举（复用工单状态值） */
