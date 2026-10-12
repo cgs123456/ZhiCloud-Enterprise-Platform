@@ -88,9 +88,9 @@ class BpmProcessDefinitionSeedServiceTest {
      */
     private static final String OA_PROCESS_KEY = "oa_reimburse";
     /**
-     * HR 请假的流程定义 KEY，见 HrLeaveRequestServiceImpl 的 PROCESS_KEY
+     * HRM 请假的流程定义 KEY，见 HrmPortalServiceImpl 的 LEAVE_PROCESS_KEY
      */
-    private static final String HR_PROCESS_KEY = "hr_leave_request";
+    private static final String HR_PROCESS_KEY = "hrm_leave_request";
 
     @Resource
     private BpmProcessDefinitionSeedService seedService;
@@ -199,7 +199,7 @@ class BpmProcessDefinitionSeedServiceTest {
             taskService.complete(task.getId());
         });
 
-        // 6. 断言业务监听器（OaReimburseStatusListener、HrLeaveRequestStatusListener）收到的事件内容
+        // 6. 断言业务监听器（OaReimburseStatusListener、HrmAttendanceLeaveStatusListener）收到的事件内容
         List<BpmProcessInstanceStatusEvent> events = statusEventCollector.getEvents();
         assertEquals(1, events.size(), "流程结束后应发布一个状态事件");
         BpmProcessInstanceStatusEvent event = events.get(0);

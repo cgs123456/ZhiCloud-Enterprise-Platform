@@ -660,6 +660,13 @@
       "sha256": "5e90db215d77af2694a2a7bc3927e007e659ea29c95f176d293323f98795f103",
       "verification_file": "V184_verify.sql",
       "verification_sha256": "290cd2896e98bc200f1e45bd81da9cdc5c4a33cfea2ef4e3b097bd378a6adb1c"
+    },
+    {
+      "version": 185,
+      "file": "V185__retire_hr_legacy_menu.sql",
+      "sha256": "bd6dccca447bfe6a0584e6053c8d5e00d0483cfc88f9d75870993b6ad680f364",
+      "verification_file": "V185_verify.sql",
+      "verification_sha256": "68e16ca997ae74d7c54619d2785cfaec1caacc8bb50398d45c3ca46a7054c3c9"
     }
   ]
 }

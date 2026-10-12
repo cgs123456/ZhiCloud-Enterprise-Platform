@@ -8,14 +8,14 @@ import cn.zhicloud.module.hr.dal.dataobject.employee.HrEmployeeDO;
 import cn.zhicloud.module.hr.dal.dataobject.hrm.*;
 import cn.zhicloud.module.hr.dal.dataobject.recruit.HrmRecruitCandidateDO;
 import cn.zhicloud.module.hr.dal.dataobject.recruit.HrmRecruitPostDO;
-import cn.zhicloud.module.hr.dal.dataobject.salary.HrSalaryDO;
-import cn.zhicloud.module.hr.dal.dataobject.contract.HrContractDO;
+import cn.zhicloud.module.hr.dal.dataobject.salary2.HrmSalaryMonthEmployeeRecordDO;
+import cn.zhicloud.module.hr.dal.dataobject.salary2.HrmSalaryMonthRecordDO;
 import cn.zhicloud.module.hr.dal.mysql.employee.HrEmployeeMapper;
 import cn.zhicloud.module.hr.dal.mysql.hrm.*;
 import cn.zhicloud.module.hr.dal.mysql.recruit.HrmRecruitCandidateMapper;
 import cn.zhicloud.module.hr.dal.mysql.recruit.HrmRecruitPostMapper;
-import cn.zhicloud.module.hr.dal.mysql.salary.HrSalaryMapper;
-import cn.zhicloud.module.hr.dal.mysql.contract.HrContractMapper;
+import cn.zhicloud.module.hr.dal.mysql.salary2.HrmSalaryMonthEmployeeRecordMapper;
+import cn.zhicloud.module.hr.dal.mysql.salary2.HrmSalaryMonthRecordMapper;
 import cn.zhicloud.module.system.api.dept.DeptApi;
 import cn.zhicloud.module.system.api.dept.dto.DeptRespDTO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -39,8 +39,8 @@ import java.util.stream.Collectors;
  * * 员工概览：在职=entry_status in (1,2,3)；本月入职/离职/待入职/待离职按 entry_time/leave_time 落本月；
  *   本月转正/调岗从 hr_employee_change_record 的 type=4/5 且 effect_time 落本月。
  * * 招聘概览：招聘中职位=status=1；流程中候选人=status in (2,3,4,5)；待入职候选人=6；已入职候选人=8。
- * * 薪资概览：取最近一条 hr_salary 汇总（表为旧薪资域，尚未融合）；部门占比按部门聚合实发工资。
- * * 待办：待入职/待离职按状态计数；合同待到期=hr_contract 30 天内到期且未终止；待转正=试用中(employee_status=2)；
+ * * 薪资概览：取最近一个月度工资表（hr_salary_month_record）的实发合计；部门占比按员工所属部门聚合实发工资。
+ * * 待办：待入职/待离职按状态计数；合同待到期=hr_employee_contract 30 天内到期且未到期；待转正=试用中(employee_status=2)；
  *   待核算工资表=0（薪资核算域未接线，诚实置 0）；本月生日=生日月=当前月。
  * * 团队工作台：以「当前登录用户绑定的员工」为 leader，其 leader_employee_id 指向他的员工即团队成员。
  *
@@ -61,9 +61,11 @@ public class HrmHomeServiceImpl implements HrmHomeService {
     @Resource
     private HrmRecruitCandidateMapper hrmRecruitCandidateMapper;
     @Resource
-    private HrSalaryMapper hrmSalaryMapper;
+    private HrmSalaryMonthRecordMapper hrmSalaryMonthRecordMapper;
     @Resource
-    private HrContractMapper hrmContractMapper;
+    private HrmSalaryMonthEmployeeRecordMapper hrmSalaryMonthEmployeeRecordMapper;
+    @Resource
+    private HrmEmployeeContractMapper hrmEmployeeContractMapper;
     @Resource
     private DeptApi deptApi;
 
@@ -119,28 +121,31 @@ public class HrmHomeServiceImpl implements HrmHomeService {
 
     private HrmHrHomeSalarySurveyVO buildSalarySurvey() {
         HrmHrHomeSalarySurveyVO vo = new HrmHrHomeSalarySurveyVO();
-        List<HrSalaryDO> salaries = hrmSalaryMapper.selectList(new LambdaQueryWrapper<>());
-        if (CollUtil.isEmpty(salaries)) {
+        // 取最近一个月度工资表（HRM 自有 hr_salary_month_record）作为统计口径
+        HrmSalaryMonthRecordDO latest = hrmSalaryMonthRecordMapper.selectLast();
+        if (latest == null) {
             vo.setEmployeeCount(0L);
             vo.setRealPaySalary(BigDecimal.ZERO);
             vo.setDeptProportions(Collections.emptyList());
             return vo;
         }
-        // 取最近月份（salaryMonth 字符串降序）作为统计口径
-        String latestMonth = salaries.stream()
-                .map(HrSalaryDO::getSalaryMonth).filter(Objects::nonNull)
-                .max(String::compareTo).orElse(null);
-        List<HrSalaryDO> monthSalaries = latestMonth == null ? salaries
-                : salaries.stream().filter(s -> latestMonth.equals(s.getSalaryMonth())).collect(Collectors.toList());
-        vo.setEmployeeCount((long) monthSalaries.size());
-        BigDecimal total = monthSalaries.stream()
-                .map(s -> s.getNetSalary() != null ? s.getNetSalary() : BigDecimal.ZERO)
+        List<HrmSalaryMonthEmployeeRecordDO> monthRecords =
+                hrmSalaryMonthEmployeeRecordMapper.selectListByMonthRecordId(latest.getId());
+        if (CollUtil.isEmpty(monthRecords)) {
+            vo.setEmployeeCount(0L);
+            vo.setRealPaySalary(BigDecimal.ZERO);
+            vo.setDeptProportions(Collections.emptyList());
+            return vo;
+        }
+        vo.setEmployeeCount((long) monthRecords.size());
+        BigDecimal total = monthRecords.stream()
+                .map(s -> s.getRealPaySalary() != null ? s.getRealPaySalary() : BigDecimal.ZERO)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         vo.setRealPaySalary(total);
-        // 部门占比
-        Map<Long, List<HrSalaryDO>> byEmployee = monthSalaries.stream()
+        // 部门占比：员工月度工资按员工所属部门聚合
+        Map<Long, List<HrmSalaryMonthEmployeeRecordDO>> byEmployee = monthRecords.stream()
                 .filter(s -> s.getEmployeeId() != null)
-                .collect(Collectors.groupingBy(HrSalaryDO::getEmployeeId));
+                .collect(Collectors.groupingBy(HrmSalaryMonthEmployeeRecordDO::getEmployeeId));
         Map<Long, HrEmployeeDO> employeeMap = byEmployee.isEmpty() ? Collections.emptyMap()
                 : hrmEmployeeMapper.selectByIds(byEmployee.keySet()).stream()
                         .collect(Collectors.toMap(HrEmployeeDO::getId, e -> e, (a, b) -> a));
@@ -151,7 +156,7 @@ public class HrmHomeServiceImpl implements HrmHomeService {
                 return;
             }
             BigDecimal sum = list.stream()
-                    .map(s -> s.getNetSalary() != null ? s.getNetSalary() : BigDecimal.ZERO)
+                    .map(s -> s.getRealPaySalary() != null ? s.getRealPaySalary() : BigDecimal.ZERO)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             deptSalary.merge(employee.getDeptId(), sum, BigDecimal::add);
         });
@@ -184,13 +189,14 @@ public class HrmHomeServiceImpl implements HrmHomeService {
         int currentMonth = LocalDate.now().getMonthValue();
         vo.setToBirthdayCount(all.stream().filter(e -> e.getBirthday() != null
                 && e.getBirthday().getMonthValue() == currentMonth).count());
-        // 合同待到期：30 天内到期且未终止
+        // 合同待到期：HRM 员工合同 30 天内到期且未到期（hr_employee_contract.status != 2 已到期）
         LocalDate today = LocalDate.now();
         LocalDate deadline = today.plusDays(30);
-        List<HrContractDO> contracts = hrmContractMapper.selectList(new LambdaQueryWrapper<>());
-        vo.setToExpireContractCount(contracts.stream().filter(c -> c.getEndDate() != null
-                && !c.getEndDate().isBefore(today) && !c.getEndDate().isAfter(deadline)
-                && (c.getStatus() == null || c.getStatus() != 3)).count());
+        List<HrmEmployeeContractDO> contracts = hrmEmployeeContractMapper.selectList(new LambdaQueryWrapper<>());
+        vo.setToExpireContractCount(contracts.stream().filter(c -> c.getEndTime() != null
+                && !c.getEndTime().toLocalDate().isBefore(today)
+                && !c.getEndTime().toLocalDate().isAfter(deadline)
+                && (c.getStatus() == null || c.getStatus() != 2)).count());
         // 待核算工资表：薪资核算域未接线，诚实置 0
         vo.setToSalaryComputeCount(0L);
         return vo;

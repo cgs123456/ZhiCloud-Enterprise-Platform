@@ -95,7 +95,7 @@ public class HrmPortalServiceImpl implements HrmPortalService {
     private static final int APPEAL_STATUS_PASS = 2;
     private static final int APPEAL_STATUS_REJECT = 3;
     /** 请假审批状态（对齐 BPM 流程实例状态）：1审批中 4已取消 */
-    /** 请假流程定义 KEY（HRM 考勤请假专用；与旧 /hr 请假域 hr_leave_request 区分，避免监听器串扰） */
+    /** 请假流程定义 KEY（HRM 考勤请假专用） */
     private static final String LEAVE_PROCESS_KEY = "hrm_leave_request";
     private static final int LEAVE_APPROVAL_RUNNING = 1;
     private static final int LEAVE_APPROVAL_APPROVED = 2;
@@ -315,7 +315,7 @@ public class HrmPortalServiceImpl implements HrmPortalService {
                 .approvalStatus(LEAVE_APPROVAL_RUNNING)
                 .build();
         hrmAttendanceLeaveMapper.insert(leave);
-        // 发起 BPM 审批流程（hr_leave_request；businessKey 回写假单编号，审批结果由监听器回写）
+        // 发起 BPM 审批流程（hrm_leave_request；businessKey 回写假单编号，审批结果由监听器回写）
         Map<String, Object> variables = new HashMap<>();
         variables.put("leaveType", leave.getType());
         variables.put("day", leave.getDay());

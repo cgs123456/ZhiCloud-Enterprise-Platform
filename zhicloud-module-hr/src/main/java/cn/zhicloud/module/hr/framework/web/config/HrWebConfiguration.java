@@ -14,11 +14,11 @@ import org.springframework.context.annotation.Configuration;
 public class HrWebConfiguration {
 
     /**
-     * HR 模块的 API 分组
+     * HR 模块的 API 分组（旧 /hr 域已退役，分组对齐现存 /hrm 端点）
      */
     @Bean
-    public GroupedOpenApi hrGroupedOpenApi() {
-        return ZhiCloudSwaggerAutoConfiguration.buildGroupedOpenApi("hr");
+    public GroupedOpenApi hrmGroupedOpenApi() {
+        return ZhiCloudSwaggerAutoConfiguration.buildGroupedOpenApi("hrm");
     }
 
 }

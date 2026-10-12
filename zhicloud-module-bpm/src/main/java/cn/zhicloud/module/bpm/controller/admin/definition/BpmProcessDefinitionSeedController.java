@@ -34,9 +34,9 @@ import static cn.zhicloud.framework.common.pojo.CommonResult.success;
 public class BpmProcessDefinitionSeedController {
 
     /**
-     * 允许播种的流程定义 KEY：报销、请假、合同审批、公文审批
+     * 允许播种的流程定义 KEY：报销、HRM 请假、合同审批、公文审批
      */
-    private static final Set<String> SEEDABLE_KEYS = Set.of("oa_reimburse", "hr_leave_request",
+    private static final Set<String> SEEDABLE_KEYS = Set.of("oa_reimburse",
             "hrm_leave_request", "crm-contract-audit", "oa_document");
 
     @Resource
