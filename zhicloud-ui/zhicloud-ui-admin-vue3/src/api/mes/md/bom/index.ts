@@ -19,31 +19,31 @@ export interface BomVO {
 // Mes Bom API
 export const BomApi = {
   createBom: async (data: any) => {
-    // 创建Bom
+    // 创建 BOM
     return await request.post({ url: `/mes/md/bom/create`, data })
   },
   updateBom: async (data: any) => {
-    // 更新Bom
+    // 更新 BOM
     return await request.put({ url: `/mes/md/bom/update`, data })
   },
   deleteBom: async (id: number) => {
-    // 删除Bom
+    // 删除 BOM
     return await request.delete({ url: `/mes/md/bom/delete?id=` + id })
   },
   getBom: async (id: number) => {
-    // 获得Bom
+    // 获得 BOM
     return await request.get({ url: `/mes/md/bom/get?id=` + id })
   },
   getBomPage: async (params: any) => {
-    // 获得Bom分页
+    // 获得 BOM 分页
     return await request.get({ url: `/mes/md/bom/page`, params })
   },
-  BomExplode: async (data?: any) => {
+  BomExplode: async (productId: any) => {
     // BOM 递归展开
-    return await request.get({ url: `/mes/md/bom/explode`, params: data })
+    return await request.get({ url: `/mes/md/bom/explode?productId=` + productId })
   },
-  BomCalculateCost: async (data?: any) => {
+  BomCalculateCost: async (productId: any) => {
     // BOM 成本卷积
-    return await request.get({ url: `/mes/md/bom/calculate-cost`, params: data })
+    return await request.get({ url: `/mes/md/bom/calculate-cost?productId=` + productId })
   },
 }

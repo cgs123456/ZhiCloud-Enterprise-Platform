@@ -17,27 +17,27 @@ export interface StockBatchVO {
 // Erp StockBatch API
 export const StockBatchApi = {
   createStockBatch: async (data: any) => {
-    // 创建StockBatch
+    // 创建库存批次
     return await request.post({ url: `/erp/stock-batch/create`, data })
   },
   updateStockBatch: async (data: any) => {
-    // 更新StockBatch
+    // 更新库存批次
     return await request.put({ url: `/erp/stock-batch/update`, data })
   },
   deleteStockBatch: async (id: number) => {
-    // 删除StockBatch
+    // 删除库存批次
     return await request.delete({ url: `/erp/stock-batch/delete?id=` + id })
   },
   getStockBatch: async (id: number) => {
-    // 获得StockBatch
+    // 获得库存批次
     return await request.get({ url: `/erp/stock-batch/get?id=` + id })
   },
   getStockBatchPage: async (params: any) => {
-    // 获得StockBatch分页
+    // 获得库存批次分页
     return await request.get({ url: `/erp/stock-batch/page`, params })
   },
-  StockBatchExpiringList: async (data?: any) => {
+  StockBatchExpiringList: async (data: any) => {
     // 获得即将过期的批次列表
-    return await request.get({ url: `/erp/stock-batch/expiring-list`, params: data })
+    return await request.get({ url: `/erp/stock-batch/expiring-list`, data })
   },
 }

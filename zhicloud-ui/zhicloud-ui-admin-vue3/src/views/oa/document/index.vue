@@ -179,33 +179,33 @@ const total = ref(0)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  no: undefined
-  title: undefined
-  documentType: undefined
-  urgency: undefined
-  confidentiality: undefined
-  issuerUserId: undefined
-  issueDeptId: undefined
-  issueDate: undefined
-  content: undefined
-  processInstanceId: undefined
-  status: undefined
-  remark: undefined
-  reviewerUserId: undefined
-  reviewerName: undefined
-  reviewTime: undefined
-  reviewOpinion: undefined
-  signerUserId: undefined
-  signerName: undefined
-  signTime: undefined
-  signOpinion: undefined
-  archiverUserId: undefined
-  archiverName: undefined
-  archiveTime: undefined
-  archiveNo: undefined
-  mainSendDepts: undefined
-  copySendDepts: undefined
-  readCount: undefined
+  no: undefined,
+  title: undefined,
+  documentType: undefined,
+  urgency: undefined,
+  confidentiality: undefined,
+  issuerUserId: undefined,
+  issueDeptId: undefined,
+  issueDate: undefined,
+  content: undefined,
+  processInstanceId: undefined,
+  status: undefined,
+  remark: undefined,
+  reviewerUserId: undefined,
+  reviewerName: undefined,
+  reviewTime: undefined,
+  reviewOpinion: undefined,
+  signerUserId: undefined,
+  signerName: undefined,
+  signTime: undefined,
+  signOpinion: undefined,
+  archiverUserId: undefined,
+  archiverName: undefined,
+  archiveTime: undefined,
+  archiveNo: undefined,
+  mainSendDepts: undefined,
+  copySendDepts: undefined,
+  readCount: undefined,
 })
 const queryFormRef = ref()
 

@@ -145,23 +145,23 @@ const total = ref(0)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  no: undefined
-  inquiryId: undefined
-  inquiryNo: undefined
-  supplierId: undefined
-  supplierName: undefined
-  quoteDate: undefined
-  totalAmount: undefined
-  status: undefined
-  remark: undefined
-  inquiryItemId: undefined
-  productId: undefined
-  productName: undefined
-  quantity: undefined
-  unitPrice: undefined
-  amount: undefined
-  deliveryDate: undefined
-  remark: undefined
+  no: undefined,
+  inquiryId: undefined,
+  inquiryNo: undefined,
+  supplierId: undefined,
+  supplierName: undefined,
+  quoteDate: undefined,
+  totalAmount: undefined,
+  status: undefined,
+  remark: undefined,
+  inquiryItemId: undefined,
+  productId: undefined,
+  productName: undefined,
+  quantity: undefined,
+  unitPrice: undefined,
+  amount: undefined,
+  deliveryDate: undefined,
+  remark: undefined,
 })
 const queryFormRef = ref()
 

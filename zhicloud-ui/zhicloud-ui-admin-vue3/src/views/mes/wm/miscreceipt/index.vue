@@ -220,7 +220,7 @@ const queryParams = reactive({
   sourceDocType: undefined,
   sourceDocCode: undefined,
   status: undefined,
-  receiptDate: undefined
+  receiptDate: undefined,
 })
 const queryFormRef = ref()
 const formRef = ref()

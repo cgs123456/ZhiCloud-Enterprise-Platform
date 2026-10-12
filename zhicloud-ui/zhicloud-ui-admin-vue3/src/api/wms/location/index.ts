@@ -20,31 +20,31 @@ export interface LocationVO {
 // Wms Location API
 export const LocationApi = {
   createLocation: async (data: any) => {
-    // 创建Location
+    // 创建库位
     return await request.post({ url: `/wms/location/create`, data })
   },
   updateLocation: async (data: any) => {
-    // 更新Location
+    // 更新库位
     return await request.put({ url: `/wms/location/update`, data })
   },
   deleteLocation: async (id: number) => {
-    // 删除Location
+    // 删除库位
     return await request.delete({ url: `/wms/location/delete?id=` + id })
   },
   getLocation: async (id: number) => {
-    // 获得Location
+    // 获得库位
     return await request.get({ url: `/wms/location/get?id=` + id })
   },
   getLocationPage: async (params: any) => {
-    // 获得Location分页
+    // 获得库位分页
     return await request.get({ url: `/wms/location/page`, params })
   },
   getLocationList: async (params?: any) => {
-    // 获得Location列表
+    // 获得库位列表
     return await request.get({ url: `/wms/location/list`, params })
   },
   exportLocation: async (params: any) => {
-    // 导出Location Excel
-    return await request.download({ url: `/wms/location/export-excel`, params })
+    // 导出库位 Excel
+    return await.download({ url: `/wms/location/export-excel`, params })
   },
 }

@@ -6,12 +6,12 @@ export const OeeApi = {
     // 计算 OEE
     return await request.post({ url: `/mes/dv/oee/calculate`, data })
   },
-  OeeTrend: async (data?: any) => {
+  OeeTrend: async (data: any) => {
     // OEE 趋势图数据
-    return await request.get({ url: `/mes/dv/oee/trend`, params: data })
+    return await request.get({ url: `/mes/dv/oee/trend`, data })
   },
-  OeeRecordList: async (data?: any) => {
+  OeeRecordList: async (data: any) => {
     // OEE 记录列表
-    return await request.get({ url: `/mes/dv/oee/record/list`, params: data })
+    return await request.get({ url: `/mes/dv/oee/record/list`, data })
   },
 }

@@ -189,7 +189,7 @@ const queryParams = reactive({
   pageSize: 10,
   code: undefined,
   name: undefined,
-  type: undefined
+  type: undefined,
 })
 const queryFormRef = ref() // 搜索的表单
 const formRef = ref() // 表单弹窗

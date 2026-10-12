@@ -201,7 +201,7 @@ const queryParams = reactive({
   deptId: undefined,
   postName: undefined,
   statusCategory: HrmEmployeeStatusTab.ACTIVE as number,
-  changeType: undefined
+  changeType: undefined,
 }) // 查询参数
 const queryFormRef = ref<FormInstance>() // 查询表单
 const employeeInfoFormRef = ref<InstanceType<typeof SalaryEmployeeInfoForm>>() // 定薪/调薪表单

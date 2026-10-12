@@ -21,27 +21,27 @@ export interface TaxInvoiceLineVO {
 // Erp TaxInvoiceLine API
 export const TaxInvoiceLineApi = {
   createTaxInvoiceLine: async (data: any) => {
-    // 创建TaxInvoiceLine
+    // 创建发票明细
     return await request.post({ url: `/erp/tax-invoice-line/create`, data })
   },
   updateTaxInvoiceLine: async (data: any) => {
-    // 更新TaxInvoiceLine
+    // 更新发票明细
     return await request.put({ url: `/erp/tax-invoice-line/update`, data })
   },
   deleteTaxInvoiceLine: async (id: number) => {
-    // 删除TaxInvoiceLine
+    // 删除发票明细
     return await request.delete({ url: `/erp/tax-invoice-line/delete?id=` + id })
   },
   getTaxInvoiceLine: async (id: number) => {
-    // 获得TaxInvoiceLine
+    // 获得发票明细
     return await request.get({ url: `/erp/tax-invoice-line/get?id=` + id })
   },
   getTaxInvoiceLinePage: async (params: any) => {
-    // 获得TaxInvoiceLine分页
+    // 获得发票明细分页
     return await request.get({ url: `/erp/tax-invoice-line/page`, params })
   },
-  TaxInvoiceLineListByInvoice: async (data?: any) => {
+  TaxInvoiceLineListByInvoice: async (data: any) => {
     // 根据发票 ID 获得明细列表
-    return await request.get({ url: `/erp/tax-invoice-line/list-by-invoice`, params: data })
+    return await request.get({ url: `/erp/tax-invoice-line/list-by-invoice`, data })
   },
 }

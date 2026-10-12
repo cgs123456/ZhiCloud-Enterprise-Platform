@@ -14,9 +14,6 @@
       <el-form-item>
         <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
         <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
-        <el-button type="primary" plain @click="openForm('create')" v-hasPermi="['wms:inventory-alert:create']">
-          <Icon icon="ep:plus" class="mr-5px" /> 新增
-        </el-button>
       </el-form-item>
     </el-form>
   </ContentWrap>
@@ -33,22 +30,21 @@
       <el-table-column label="状态" align="center" prop="status" />
       <el-table-column label="备注" align="center" prop="remark" />
       <el-table-column label="创建时间" align="center" prop="createTime" :formatter="dateFormatter" />
-      <el-table-column label="操作" align="center" width="140">
+      <el-table-column label="操作" align="center" width="240">
         <template #default="scope">
-          <el-button link type="primary" @click="openForm('update', scope.row.id)" v-hasPermi="['wms:inventory-alert:update']">修改</el-button>
-          <el-button link type="danger" @click="handleDelete(scope.row.id)" v-hasPermi="['wms:inventory-alert:delete']">删除</el-button>
+
+          <el-button link type="success" @click="handleConfirm(scope.row)" v-if="scope.row.status === 10" v-hasPermi="['wms:inventory-alert:update']">确认预警</el-button>
+
+          <el-button link type="success" @click="handleProcess(scope.row)" v-if="scope.row.status === 20" v-hasPermi="['wms:inventory-alert:update']">处理预警</el-button>
         </template>
       </el-table-column>
     </el-table>
     <Pagination v-model:limit="queryParams.pageSize" v-model:page="queryParams.pageNo" :total="total" @pagination="getList" />
   </ContentWrap>
-
-  <InventoryAlertForm ref="formRef" @success="getList" />
 </template>
 <script setup lang="ts">
 import { dateFormatter } from '@/utils/formatTime'
 import { InventoryAlertApi } from '@/api/wms/inventory-alert'
-import InventoryAlertForm from './inventoryAlertForm.vue'
 
 defineOptions({ name: 'WmsInventoryAlert' })
 
@@ -60,12 +56,11 @@ const total = ref(0)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  alertType: undefined
-  warehouseId: undefined
-  productId: undefined
+  alertType: undefined,
+  warehouseId: undefined,
+  productId: undefined,
 })
 const queryFormRef = ref()
-const formRef = ref()
 
 const getList = async () => {
   loading.value = true
@@ -88,18 +83,30 @@ const resetQuery = () => {
   handleQuery()
 }
 
-const openForm = (type: string, id?: number) => {
-  formRef.value.open(type, id)
-}
 
-const handleDelete = async (id: number) => {
+
+onMounted(() => getList())
+</script>
+
+
+/** 触发域动作（后端无 CRUD，只有动作端点） */
+/** 确认预警（待确认 10 -> 待处理 20） */
+const handleConfirm = async (row: any) => {
   try {
-    await message.delConfirm()
-    await InventoryAlertApi.deleteInventoryAlert(id)
-    message.success('删除成功')
+    await message.confirm(`确认预警「${row.alertType}」？`)
+    await InventoryAlertApi.InventoryAlertConfirm(row.id)
+    message.success('已确认')
     await getList()
   } catch {}
 }
 
-onMounted(() => getList())
-</script>
+/** 处理预警（待处理 20 -> 已处理 30） */
+const handleProcess = async (row: any) => {
+  try {
+    await message.confirm(`确认已处理预警「${row.alertType}」？`)
+    await InventoryAlertApi.InventoryAlertProcess(row.id)
+    message.success('已处理')
+    await getList()
+  } catch {}
+}
+

@@ -115,14 +115,14 @@ const total = ref(0)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  machineryId: undefined
-  machineryName: undefined
-  iotDevicePk: undefined
-  iotProductId: undefined
-  protocolType: undefined
-  pointConfig: undefined
-  enabled: undefined
-  remark: undefined
+  machineryId: undefined,
+  machineryName: undefined,
+  iotDevicePk: undefined,
+  iotProductId: undefined,
+  protocolType: undefined,
+  pointConfig: undefined,
+  enabled: undefined,
+  remark: undefined,
 })
 const queryFormRef = ref()
 

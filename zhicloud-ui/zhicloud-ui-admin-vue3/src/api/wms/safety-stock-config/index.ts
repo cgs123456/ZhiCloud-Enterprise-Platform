@@ -18,23 +18,23 @@ export interface SafetyStockConfigVO {
 // Wms SafetyStockConfig API
 export const SafetyStockConfigApi = {
   createSafetyStockConfig: async (data: any) => {
-    // 创建SafetyStockConfig
+    // 创建安全库存配置
     return await request.post({ url: `/wms/safety-stock-config/create`, data })
   },
   updateSafetyStockConfig: async (data: any) => {
-    // 更新SafetyStockConfig
+    // 更新安全库存配置
     return await request.put({ url: `/wms/safety-stock-config/update`, data })
   },
   deleteSafetyStockConfig: async (id: number) => {
-    // 删除SafetyStockConfig
+    // 删除安全库存配置
     return await request.delete({ url: `/wms/safety-stock-config/delete?id=` + id })
   },
   getSafetyStockConfig: async (id: number) => {
-    // 获得SafetyStockConfig
+    // 获得安全库存配置
     return await request.get({ url: `/wms/safety-stock-config/get?id=` + id })
   },
   getSafetyStockConfigPage: async (params: any) => {
-    // 获得SafetyStockConfig分页
+    // 获得安全库存配置分页
     return await request.get({ url: `/wms/safety-stock-config/page`, params })
   },
 }

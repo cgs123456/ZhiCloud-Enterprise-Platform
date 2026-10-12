@@ -134,7 +134,7 @@ const loading = ref(true) // 列表的加载中
 const list = ref<MdItemTypeVO[]>([]) // 列表的数据
 const queryParams = reactive({
   name: undefined,
-  status: undefined
+  status: undefined,
 })
 const queryFormRef = ref() // 搜索的表单
 

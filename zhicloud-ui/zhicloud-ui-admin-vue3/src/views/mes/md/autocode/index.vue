@@ -142,7 +142,7 @@ const queryParams = reactive({
   pageSize: 10,
   code: undefined,
   name: undefined,
-  status: undefined
+  status: undefined,
 })
 const queryFormRef = ref()
 const exportLoading = ref(false)

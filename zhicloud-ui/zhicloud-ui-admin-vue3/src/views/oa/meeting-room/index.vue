@@ -114,16 +114,16 @@ const total = ref(0)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  title: undefined
-  roomId: undefined
-  organizerUserId: undefined
-  attendeeUserIds: undefined
-  startTime: undefined
-  endTime: undefined
-  status: undefined
-  reminderEnabled: undefined
-  reminderMinutes: undefined
-  remark: undefined
+  title: undefined,
+  roomId: undefined,
+  organizerUserId: undefined,
+  attendeeUserIds: undefined,
+  startTime: undefined,
+  endTime: undefined,
+  status: undefined,
+  reminderEnabled: undefined,
+  reminderMinutes: undefined,
+  remark: undefined,
 })
 const queryFormRef = ref()
 

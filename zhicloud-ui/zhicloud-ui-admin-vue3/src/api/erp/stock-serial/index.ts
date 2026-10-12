@@ -15,27 +15,27 @@ export interface StockSerialVO {
 // Erp StockSerial API
 export const StockSerialApi = {
   createStockSerial: async (data: any) => {
-    // 创建StockSerial
+    // 创建库存序列号
     return await request.post({ url: `/erp/stock-serial/create`, data })
   },
   updateStockSerial: async (data: any) => {
-    // 更新StockSerial
+    // 更新库存序列号
     return await request.put({ url: `/erp/stock-serial/update`, data })
   },
   deleteStockSerial: async (id: number) => {
-    // 删除StockSerial
+    // 删除库存序列号
     return await request.delete({ url: `/erp/stock-serial/delete?id=` + id })
   },
   getStockSerial: async (id: number) => {
-    // 获得StockSerial
+    // 获得库存序列号
     return await request.get({ url: `/erp/stock-serial/get?id=` + id })
   },
-  StockSerialScan: async (data?: any) => {
+  StockSerialScan: async (serialNo: any) => {
     // 扫码查询库存序列号
-    return await request.get({ url: `/erp/stock-serial/scan`, params: data })
+    return await request.get({ url: `/erp/stock-serial/scan?serialNo=` + serialNo })
   },
   getStockSerialPage: async (params: any) => {
-    // 获得StockSerial分页
+    // 获得库存序列号分页
     return await request.get({ url: `/erp/stock-serial/page`, params })
   },
 }

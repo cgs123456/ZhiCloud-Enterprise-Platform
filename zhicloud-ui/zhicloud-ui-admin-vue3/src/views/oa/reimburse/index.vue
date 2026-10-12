@@ -124,17 +124,17 @@ const total = ref(0)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  no: undefined
-  reimburseName: undefined
-  applicantUserId: undefined
-  deptId: undefined
-  reimburseType: undefined
-  reimburseDate: undefined
-  totalAmount: undefined
-  paymentStatus: undefined
-  processInstanceId: undefined
-  status: undefined
-  remark: undefined
+  no: undefined,
+  reimburseName: undefined,
+  applicantUserId: undefined,
+  deptId: undefined,
+  reimburseType: undefined,
+  reimburseDate: undefined,
+  totalAmount: undefined,
+  paymentStatus: undefined,
+  processInstanceId: undefined,
+  status: undefined,
+  remark: undefined,
 })
 const queryFormRef = ref()
 

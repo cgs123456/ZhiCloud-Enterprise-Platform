@@ -3,28 +3,28 @@ import request from '@/config/axios'
 // Mes DvDeviceData API
 export const DvDeviceDataApi = {
   getDvDeviceDataPage: async (params: any) => {
-    // 获得DvDeviceData分页
+    // 获得设备数据采集记录分页
     return await request.get({ url: `/mes/dv-device-data/page`, params })
   },
-  DvDeviceDataListByMachinery: async (data?: any) => {
+  DvDeviceDataListByMachinery: async (data: any) => {
     // 按设备与时间范围查询采集记录
-    return await request.get({ url: `/mes/dv-device-data/list-by-machinery`, params: data })
+    return await request.get({ url: `/mes/dv-device-data/list-by-machinery`, data })
   },
-  DvDeviceDataLatest: async (data?: any) => {
+  DvDeviceDataLatest: async (machineryId: any) => {
     // 获得设备最新一帧采集数据
-    return await request.get({ url: `/mes/dv-device-data/latest`, params: data })
+    return await request.get({ url: `/mes/dv-device-data/latest?machineryId=` + machineryId })
   },
   getDvDeviceData: async (id: number) => {
-    // 获得DvDeviceData
+    // 获得设备数据采集记录详情
     return await request.get({ url: `/mes/dv-device-data/get?id=` + id })
   },
   deleteDvDeviceData: async (id: number) => {
-    // 删除DvDeviceData
+    // 删除设备数据采集记录
     return await request.delete({ url: `/mes/dv-device-data/delete?id=` + id })
   },
-  DvDeviceDataCollect: async (data: any) => {
+  DvDeviceDataCollect: async (machineryId: any) => {
     // 手动触发一次设备数据采集
-    return await request.post({ url: `/mes/dv-device-data/collect`, data })
+    return await request.post({ url: `/mes/dv-device-data/collect?machineryId=` + machineryId })
   },
   DvDeviceDataStart: async (data: any) => {
     // 开启自动采集

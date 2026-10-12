@@ -189,7 +189,7 @@ const queryParams = reactive({
   locationId: undefined as number | undefined,
   positionX: undefined,
   positionY: undefined,
-  positionZ: undefined
+  positionZ: undefined,
 }) // 查询参数
 const queryFormRef = ref() // 查询表单 Ref
 

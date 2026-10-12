@@ -21,23 +21,23 @@ export interface WorkOrderCostVO {
 // Erp WorkOrderCost API
 export const WorkOrderCostApi = {
   createWorkOrderCost: async (data: any) => {
-    // 创建WorkOrderCost
+    // 创建工单成本归集
     return await request.post({ url: `/erp/work-order-cost/create`, data })
   },
   updateWorkOrderCost: async (data: any) => {
-    // 更新WorkOrderCost
+    // 更新工单成本归集
     return await request.put({ url: `/erp/work-order-cost/update`, data })
   },
   deleteWorkOrderCost: async (id: number) => {
-    // 删除WorkOrderCost
+    // 删除工单成本归集
     return await request.delete({ url: `/erp/work-order-cost/delete?id=` + id })
   },
   getWorkOrderCost: async (id: number) => {
-    // 获得WorkOrderCost
+    // 获得工单成本归集
     return await request.get({ url: `/erp/work-order-cost/get?id=` + id })
   },
   getWorkOrderCostPage: async (params: any) => {
-    // 获得WorkOrderCost分页
+    // 获得工单成本归集分页
     return await request.get({ url: `/erp/work-order-cost/page`, params })
   },
 }

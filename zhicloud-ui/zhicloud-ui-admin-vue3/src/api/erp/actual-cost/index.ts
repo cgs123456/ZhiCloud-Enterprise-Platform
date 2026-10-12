@@ -19,23 +19,23 @@ export interface ActualCostVO {
 // Erp ActualCost API
 export const ActualCostApi = {
   createActualCost: async (data: any) => {
-    // 创建ActualCost
+    // 创建实际成本
     return await request.post({ url: `/erp/actual-cost/create`, data })
   },
   updateActualCost: async (data: any) => {
-    // 更新ActualCost
+    // 更新实际成本
     return await request.put({ url: `/erp/actual-cost/update`, data })
   },
   deleteActualCost: async (id: number) => {
-    // 删除ActualCost
+    // 删除实际成本
     return await request.delete({ url: `/erp/actual-cost/delete?id=` + id })
   },
   getActualCost: async (id: number) => {
-    // 获得ActualCost
+    // 获得实际成本
     return await request.get({ url: `/erp/actual-cost/get?id=` + id })
   },
   getActualCostPage: async (params: any) => {
-    // 获得ActualCost分页
+    // 获得实际成本分页
     return await request.get({ url: `/erp/actual-cost/page`, params })
   },
 }

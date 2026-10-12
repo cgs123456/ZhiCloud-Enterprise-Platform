@@ -28,15 +28,15 @@ export interface PickTaskVO {
 // Wms PickTask API
 export const PickTaskApi = {
   getPickTaskPage: async (params: any) => {
-    // 获得PickTask分页
+    // 获得拣货任务分页
     return await request.get({ url: `/wms/pick-task/page`, params })
   },
-  PickTaskGenerate: async (data: any) => {
-    // 生成拣货任务
-    return await request.post({ url: `/wms/pick-task/generate`, data })
+  PickTaskGenerate: async (shipmentOrderId: number) => {
+    // 按出库单生成拣货任务
+    return await request.post({ url: `/wms/pick-task/generate?shipmentOrderId=` + shipmentOrderId })
   },
-  PickTaskConfirmPick: async (data: any) => {
+  PickTaskConfirmPick: async (taskId: number, pickedQuantity: number) => {
     // 确认拣货
-    return await request.put({ url: `/wms/pick-task/confirm-pick`, data })
-  },
+    return await request.put({ url: `/wms/pick-task/confirm-pick?taskId=` + taskId + `&pickedQuantity=` + pickedQuantity })
+  }
 }

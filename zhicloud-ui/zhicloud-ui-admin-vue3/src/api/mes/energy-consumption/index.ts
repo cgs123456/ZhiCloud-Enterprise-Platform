@@ -18,31 +18,31 @@ export interface EnergyConsumptionVO {
 // Mes EnergyConsumption API
 export const EnergyConsumptionApi = {
   createEnergyConsumption: async (data: any) => {
-    // 创建EnergyConsumption
+    // 创建能源消耗记录
     return await request.post({ url: `/mes/energy-consumption/create`, data })
   },
   updateEnergyConsumption: async (data: any) => {
-    // 更新EnergyConsumption
+    // 更新能源消耗记录
     return await request.put({ url: `/mes/energy-consumption/update`, data })
   },
   deleteEnergyConsumption: async (id: number) => {
-    // 删除EnergyConsumption
+    // 删除能源消耗记录
     return await request.delete({ url: `/mes/energy-consumption/delete?id=` + id })
   },
   getEnergyConsumption: async (id: number) => {
-    // 获得EnergyConsumption
+    // 获取能源消耗记录
     return await request.get({ url: `/mes/energy-consumption/get?id=` + id })
   },
   getEnergyConsumptionPage: async (params: any) => {
-    // 获得EnergyConsumption分页
+    // 获取能源消耗记录分页
     return await request.get({ url: `/mes/energy-consumption/page`, params })
   },
-  EnergyConsumptionSummary: async (data?: any) => {
+  EnergyConsumptionSummary: async (data: any) => {
     // 获取车间能源消耗汇总（按能源类型分组）
-    return await request.get({ url: `/mes/energy-consumption/summary`, params: data })
+    return await request.get({ url: `/mes/energy-consumption/summary`, data })
   },
   getEnergyConsumptionList: async (params?: any) => {
-    // 获得EnergyConsumption列表
+    // 获取车间能源消耗明细列表
     return await request.get({ url: `/mes/energy-consumption/list`, params })
   },
 }

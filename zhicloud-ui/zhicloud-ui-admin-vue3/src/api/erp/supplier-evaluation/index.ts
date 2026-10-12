@@ -22,31 +22,31 @@ export interface SupplierEvaluationVO {
 // Erp SupplierEvaluation API
 export const SupplierEvaluationApi = {
   createSupplierEvaluation: async (data: any) => {
-    // 创建SupplierEvaluation
+    // 创建供应商评估
     return await request.post({ url: `/erp/supplier-evaluation/create`, data })
   },
   updateSupplierEvaluation: async (data: any) => {
-    // 更新SupplierEvaluation
+    // 更新供应商评估
     return await request.put({ url: `/erp/supplier-evaluation/update`, data })
   },
-  deleteSupplierEvaluation: async (id: number) => {
-    // 删除SupplierEvaluation
-    return await request.delete({ url: `/erp/supplier-evaluation/delete?id=` + id })
+  deleteSupplierEvaluation: async (ids: any) => {
+    // 删除供应商评估
+    return await request.delete({ url: `/erp/supplier-evaluation/delete?ids=` + ids })
   },
   getSupplierEvaluation: async (id: number) => {
-    // 获得SupplierEvaluation
+    // 获得供应商评估
     return await request.get({ url: `/erp/supplier-evaluation/get?id=` + id })
   },
   getSupplierEvaluationPage: async (params: any) => {
-    // 获得SupplierEvaluation分页
+    // 获得供应商评估分页
     return await request.get({ url: `/erp/supplier-evaluation/page`, params })
   },
   SupplierEvaluationCalculate: async (data: any) => {
     // 自动计算供应商评估
     return await request.post({ url: `/erp/supplier-evaluation/calculate`, data })
   },
-  SupplierEvaluationItemList: async (data?: any) => {
+  SupplierEvaluationItemList: async (data: any) => {
     // 获得供应商评估指标项列表
-    return await request.get({ url: `/erp/supplier-evaluation/item/list`, params: data })
+    return await request.get({ url: `/erp/supplier-evaluation/item/list`, data })
   },
 }

@@ -21,19 +21,19 @@ export interface InventoryAlertVO {
 // Wms InventoryAlert API
 export const InventoryAlertApi = {
   getInventoryAlertPage: async (params: any) => {
-    // 获得InventoryAlert分页
+    // 获得库存预警分页
     return await request.get({ url: `/wms/inventory-alert/page`, params })
   },
   getInventoryAlert: async (id: number) => {
-    // 获得InventoryAlert
+    // 获得库存预警
     return await request.get({ url: `/wms/inventory-alert/get?id=` + id })
   },
-  InventoryAlertConfirm: async (data: any) => {
+  InventoryAlertConfirm: async (id: any) => {
     // 确认预警
-    return await request.put({ url: `/wms/inventory-alert/confirm`, data })
+    return await request.put({ url: `/wms/inventory-alert/confirm?id=` + id })
   },
-  InventoryAlertProcess: async (data: any) => {
+  InventoryAlertProcess: async (id: any) => {
     // 处理预警
-    return await request.put({ url: `/wms/inventory-alert/process`, data })
+    return await request.put({ url: `/wms/inventory-alert/process?id=` + id })
   },
 }

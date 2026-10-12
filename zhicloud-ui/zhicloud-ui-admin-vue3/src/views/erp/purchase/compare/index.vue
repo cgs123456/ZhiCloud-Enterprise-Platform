@@ -67,7 +67,7 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
   no: undefined,
-  inquiryNo: undefined
+  inquiryNo: undefined,
 })
 const queryFormRef = ref()
 

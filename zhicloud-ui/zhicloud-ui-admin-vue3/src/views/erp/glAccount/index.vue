@@ -152,24 +152,24 @@ const total = ref(0)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  parentId: undefined
-  code: undefined
-  name: undefined
-  type: undefined
-  typeName: undefined
-  balanceDirection: undefined
-  balanceDirectionName: undefined
-  level: undefined
-  isLeaf: undefined
-  openingDebit: undefined
-  openingCredit: undefined
-  currentDebit: undefined
-  currentCredit: undefined
-  closingDebit: undefined
-  closingCredit: undefined
-  status: undefined
-  sort: undefined
-  remark: undefined
+  parentId: undefined,
+  code: undefined,
+  name: undefined,
+  type: undefined,
+  typeName: undefined,
+  balanceDirection: undefined,
+  balanceDirectionName: undefined,
+  level: undefined,
+  isLeaf: undefined,
+  openingDebit: undefined,
+  openingCredit: undefined,
+  currentDebit: undefined,
+  currentCredit: undefined,
+  closingDebit: undefined,
+  closingCredit: undefined,
+  status: undefined,
+  sort: undefined,
+  remark: undefined,
 })
 const queryFormRef = ref()
 

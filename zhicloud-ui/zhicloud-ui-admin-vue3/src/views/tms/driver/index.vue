@@ -111,13 +111,13 @@ const total = ref(0)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  name: undefined
-  phone: undefined
-  licenseNo: undefined
-  licenseType: undefined
-  carrierId: undefined
-  status: undefined
-  remark: undefined
+  name: undefined,
+  phone: undefined,
+  licenseNo: undefined,
+  licenseType: undefined,
+  carrierId: undefined,
+  status: undefined,
+  remark: undefined,
 })
 const queryFormRef = ref()
 

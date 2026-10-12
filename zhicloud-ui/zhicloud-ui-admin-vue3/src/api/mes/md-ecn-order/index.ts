@@ -25,35 +25,35 @@ export interface MdEcnOrderVO {
 // Mes MdEcnOrder API
 export const MdEcnOrderApi = {
   createMdEcnOrder: async (data: any) => {
-    // 创建MdEcnOrder
+    // 创建 ECN 工程变更单
     return await request.post({ url: `/mes/md-ecn-order/create`, data })
   },
   updateMdEcnOrder: async (data: any) => {
-    // 更新MdEcnOrder
+    // 更新 ECN 工程变更单
     return await request.put({ url: `/mes/md-ecn-order/update`, data })
   },
   deleteMdEcnOrder: async (id: number) => {
-    // 删除MdEcnOrder
+    // 删除 ECN 工程变更单
     return await request.delete({ url: `/mes/md-ecn-order/delete?id=` + id })
   },
   getMdEcnOrder: async (id: number) => {
-    // 获得MdEcnOrder
+    // 获得 ECN 工程变更单
     return await request.get({ url: `/mes/md-ecn-order/get?id=` + id })
   },
   getMdEcnOrderPage: async (params: any) => {
-    // 获得MdEcnOrder分页
+    // 获得 ECN 工程变更单分页
     return await request.get({ url: `/mes/md-ecn-order/page`, params })
   },
-  MdEcnOrderSubmit: async (data: any) => {
+  MdEcnOrderSubmit: async (id: any) => {
     // 提交审核
-    return await request.put({ url: `/mes/md-ecn-order/submit`, data })
+    return await request.put({ url: `/mes/md-ecn-order/submit?id=` + id })
   },
   MdEcnOrderApprove: async (data: any) => {
     // 审核 ECN 单
     return await request.put({ url: `/mes/md-ecn-order/approve`, data })
   },
-  MdEcnOrderExecute: async (data: any) => {
+  MdEcnOrderExecute: async (id: any) => {
     // 执行变更
-    return await request.put({ url: `/mes/md-ecn-order/execute`, data })
+    return await request.put({ url: `/mes/md-ecn-order/execute?id=` + id })
   },
 }

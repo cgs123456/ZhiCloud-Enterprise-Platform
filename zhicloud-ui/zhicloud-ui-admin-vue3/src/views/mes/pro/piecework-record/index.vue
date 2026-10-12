@@ -53,7 +53,7 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
   workOrderId: undefined,
-  periodMonth: undefined
+  periodMonth: undefined,
 })
 const queryFormRef = ref()
 

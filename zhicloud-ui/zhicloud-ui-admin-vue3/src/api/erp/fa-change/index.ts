@@ -21,35 +21,35 @@ export interface FaChangeVO {
 // Erp FaChange API
 export const FaChangeApi = {
   createFaChange: async (data: any) => {
-    // 创建FaChange
+    // 创建资产变动申请
     return await request.post({ url: `/erp/fa-change/create`, data })
   },
   updateFaChange: async (data: any) => {
-    // 更新FaChange
+    // 更新资产变动申请
     return await request.put({ url: `/erp/fa-change/update`, data })
   },
   deleteFaChange: async (id: number) => {
-    // 删除FaChange
+    // 删除资产变动申请
     return await request.delete({ url: `/erp/fa-change/delete?id=` + id })
   },
   getFaChange: async (id: number) => {
-    // 获得FaChange
+    // 获取资产变动申请
     return await request.get({ url: `/erp/fa-change/get?id=` + id })
   },
   getFaChangePage: async (params: any) => {
-    // 获得FaChange分页
+    // 分页查询资产变动申请
     return await request.get({ url: `/erp/fa-change/page`, params })
   },
-  FaChangeApprove: async (data: any) => {
+  FaChangeApprove: async (id: any) => {
     // 审核通过资产变动申请
-    return await request.put({ url: `/erp/fa-change/approve`, data })
+    return await request.put({ url: `/erp/fa-change/approve?id=` + id })
   },
   FaChangeReject: async (data: any) => {
     // 驳回资产变动申请
     return await request.put({ url: `/erp/fa-change/reject`, data })
   },
-  FaChangeListByAsset: async (data?: any) => {
+  FaChangeListByAsset: async (data: any) => {
     // 查询某资产的变动历史
-    return await request.get({ url: `/erp/fa-change/list-by-asset`, params: data })
+    return await request.get({ url: `/erp/fa-change/list-by-asset`, data })
   },
 }

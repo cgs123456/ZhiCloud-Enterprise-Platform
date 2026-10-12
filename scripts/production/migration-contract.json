@@ -674,6 +674,27 @@
       "sha256": "ce7afdcc573ecf6bf4fd61b5471c47e02466660e82c11ce55024a04701d4794d",
       "verification_file": "V186_verify.sql",
       "verification_sha256": "b9892f9d99f3fd76960a6bef75e4765d293b20ef0fd512bcee24628aabbdcc24"
+    },
+    {
+      "version": 187,
+      "file": "V187__erp_wms_mes_action_menu_seed.sql",
+      "sha256": "472d5631d52e19148ca610f3ccc2ab7cd3ea5a7edbbb3504261fe4692576052d",
+      "verification_file": "V187_verify.sql",
+      "verification_sha256": "f3434da85ef8f7e8b6c160884f3a8bca6453fcff0f923336093829cef5a8f7ad"
+    },
+    {
+      "version": 188,
+      "file": "V188__fix_action_domain_buttons.sql",
+      "sha256": "6459623980e700badb1d97d075eb0032f257a870a9c6372b68c2660ef4191293",
+      "verification_file": "V188_verify.sql",
+      "verification_sha256": "67e842bff9a8ceb7c0e18da346cda51b1005f89fa6272602aac4584bd41da2f7"
+    },
+    {
+      "version": 189,
+      "file": "V189__fix_action_button_names.sql",
+      "sha256": "04ce8e372a161409f96e6f70f4d72a8b8f7d96f7f5cf47ca01b10578dd933d27",
+      "verification_file": "V189_verify.sql",
+      "verification_sha256": "48970469b4af7ca785851e9bf8be6ff0e34784d6f700f1568f35a37c38b98a69"
     }
   ]
 }

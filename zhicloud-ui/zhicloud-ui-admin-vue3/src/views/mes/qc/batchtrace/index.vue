@@ -116,7 +116,7 @@ const queryParams = reactive({
   vendorId: undefined,
   clientId: undefined,
   salesOrderCode: undefined,
-  purchaseOrderCode: undefined
+  purchaseOrderCode: undefined,
 })
 const queryFormRef = ref() // 搜索的表单
 const detailRef = ref() // 详情弹窗

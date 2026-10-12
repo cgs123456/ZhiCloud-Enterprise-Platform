@@ -22,5 +22,5 @@ export const PickPathApi = {
   optimizeBatchPickPath: async (waveOrderId: number) => {
     // 优化波次拣货路径
     return await request.get({ url: `/wms/pick-path/optimize-wave/` + waveOrderId })
-  },
+  }
 }

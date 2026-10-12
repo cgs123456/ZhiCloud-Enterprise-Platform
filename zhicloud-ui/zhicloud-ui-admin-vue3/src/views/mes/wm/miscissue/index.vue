@@ -219,7 +219,7 @@ const queryParams = reactive({
   sourceDocType: undefined,
   sourceDocCode: undefined,
   issueDate: undefined,
-  status: undefined
+  status: undefined,
 })
 const queryFormRef = ref() // 搜索的表单
 const formRef = ref() // 表单弹窗

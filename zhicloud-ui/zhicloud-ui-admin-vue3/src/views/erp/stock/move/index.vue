@@ -260,7 +260,7 @@ const queryParams = reactive({
   moveTime: [],
   status: undefined,
   remark: undefined,
-  creator: undefined
+  creator: undefined,
 })
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中

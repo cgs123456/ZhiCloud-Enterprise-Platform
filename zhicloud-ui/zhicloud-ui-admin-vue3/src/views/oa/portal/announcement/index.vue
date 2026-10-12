@@ -126,19 +126,19 @@ const total = ref(0)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  title: undefined
-  content: undefined
-  category: undefined
-  priority: undefined
-  publisherUserId: undefined
-  publisherName: undefined
-  targetScope: undefined
-  publishTime: undefined
-  expireTime: undefined
-  topFlag: undefined
-  status: undefined
-  viewCount: undefined
-  remark: undefined
+  title: undefined,
+  content: undefined,
+  category: undefined,
+  priority: undefined,
+  publisherUserId: undefined,
+  publisherName: undefined,
+  targetScope: undefined,
+  publishTime: undefined,
+  expireTime: undefined,
+  topFlag: undefined,
+  status: undefined,
+  viewCount: undefined,
+  remark: undefined,
 })
 const queryFormRef = ref()
 

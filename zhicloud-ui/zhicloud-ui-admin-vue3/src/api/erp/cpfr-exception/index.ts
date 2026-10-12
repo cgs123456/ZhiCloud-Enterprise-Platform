@@ -16,15 +16,15 @@ export interface CpfrExceptionVO {
 // Erp CpfrException API
 export const CpfrExceptionApi = {
   deleteCpfrException: async (id: number) => {
-    // 删除CpfrException
+    // 删除异常
     return await request.delete({ url: `/erp/cpfr-exception/delete?id=` + id })
   },
   getCpfrException: async (id: number) => {
-    // 获得CpfrException
+    // 获得异常
     return await request.get({ url: `/erp/cpfr-exception/get?id=` + id })
   },
   getCpfrExceptionPage: async (params: any) => {
-    // 获得CpfrException分页
+    // 获得异常分页
     return await request.get({ url: `/erp/cpfr-exception/page`, params })
   },
   CpfrExceptionHandle: async (data: any) => {

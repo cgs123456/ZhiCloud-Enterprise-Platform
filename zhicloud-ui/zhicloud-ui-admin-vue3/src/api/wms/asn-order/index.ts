@@ -28,35 +28,35 @@ export interface AsnOrderVO {
 // Wms AsnOrder API
 export const AsnOrderApi = {
   createAsnOrder: async (data: any) => {
-    // 创建AsnOrder
+    // 创建 ASN 到货通知单
     return await request.post({ url: `/wms/asn-order/create`, data })
   },
   updateAsnOrder: async (data: any) => {
-    // 更新AsnOrder
+    // 更新 ASN 到货通知单
     return await request.put({ url: `/wms/asn-order/update`, data })
   },
   deleteAsnOrder: async (id: number) => {
-    // 删除AsnOrder
+    // 删除 ASN 到货通知单
     return await request.delete({ url: `/wms/asn-order/delete?id=` + id })
   },
-  AsnOrderClose: async (data: any) => {
+  AsnOrderClose: async (id: any) => {
     // 关闭 ASN 到货通知单
-    return await request.put({ url: `/wms/asn-order/close`, data })
+    return await request.put({ url: `/wms/asn-order/close?id=` + id })
   },
-  AsnOrderConfirmArrival: async (data: any) => {
+  AsnOrderConfirmArrival: async (id: any) => {
     // 确认到货
-    return await request.put({ url: `/wms/asn-order/confirm-arrival`, data })
+    return await request.put({ url: `/wms/asn-order/confirm-arrival?id=` + id })
   },
-  AsnOrderConvertToReceipt: async (data: any) => {
+  AsnOrderConvertToReceipt: async (id: any) => {
     // 转收货单
-    return await request.post({ url: `/wms/asn-order/convert-to-receipt`, data })
+    return await request.post({ url: `/wms/asn-order/convert-to-receipt?id=` + id })
   },
   getAsnOrder: async (id: number) => {
-    // 获得AsnOrder
+    // 获得 ASN 到货通知单
     return await request.get({ url: `/wms/asn-order/get?id=` + id })
   },
   getAsnOrderPage: async (params: any) => {
-    // 获得AsnOrder分页
+    // 获得 ASN 到货通知单分页
     return await request.get({ url: `/wms/asn-order/page`, params })
   },
 }

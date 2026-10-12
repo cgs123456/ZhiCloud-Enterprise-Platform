@@ -162,7 +162,7 @@ const queryParams = reactive({
   code: undefined,
   name: undefined,
   type: undefined,
-  level: undefined
+  level: undefined,
 })
 const queryFormRef = ref() // 搜索的表单
 const formRef = ref() // 表单弹窗

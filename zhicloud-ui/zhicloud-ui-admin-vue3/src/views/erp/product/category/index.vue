@@ -132,7 +132,7 @@ const loading = ref(true) // 列表的加载中
 const list = ref<ProductCategoryVO[]>([]) // 列表的数据
 const queryParams = reactive({
   name: undefined,
-  status: undefined
+  status: undefined,
 })
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中

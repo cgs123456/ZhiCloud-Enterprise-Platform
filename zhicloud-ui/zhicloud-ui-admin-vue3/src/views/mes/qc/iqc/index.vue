@@ -223,7 +223,7 @@ const queryParams = reactive({
   checkResult: undefined,
   receiveDate: undefined,
   inspectDate: undefined,
-  inspectorUserId: undefined
+  inspectorUserId: undefined,
 })
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中

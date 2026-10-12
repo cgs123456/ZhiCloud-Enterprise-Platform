@@ -14,8 +14,8 @@
       <el-form-item>
         <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
         <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
-        <el-button type="primary" plain @click="openForm('create')" v-hasPermi="['wms:pick-task:create']">
-          <Icon icon="ep:plus" class="mr-5px" /> 新增
+        <el-button type="primary" plain @click="handleGenerate" v-hasPermi="['wms:pick-task:create']">
+          <Icon icon="ep:plus" class="mr-5px" /> 按出库单生成
         </el-button>
       </el-form-item>
     </el-form>
@@ -39,20 +39,16 @@
       <el-table-column label="创建时间" align="center" prop="createTime" :formatter="dateFormatter" />
       <el-table-column label="操作" align="center" width="140">
         <template #default="scope">
-          <el-button link type="primary" @click="openForm('update', scope.row.id)" v-hasPermi="['wms:pick-task:update']">修改</el-button>
-          <el-button link type="danger" @click="handleDelete(scope.row.id)" v-hasPermi="['wms:pick-task:delete']">删除</el-button>
+          <el-button link type="success" @click="handleConfirmPick(scope.row)" v-if="scope.row.status === 10" v-hasPermi="['wms:pick-task:update']">确认拣货</el-button>
         </template>
       </el-table-column>
     </el-table>
     <Pagination v-model:limit="queryParams.pageSize" v-model:page="queryParams.pageNo" :total="total" @pagination="getList" />
   </ContentWrap>
-
-  <PickTaskForm ref="formRef" @success="getList" />
 </template>
 <script setup lang="ts">
 import { dateFormatter } from '@/utils/formatTime'
 import { PickTaskApi } from '@/api/wms/pick-task'
-import PickTaskForm from './pickTaskForm.vue'
 
 defineOptions({ name: 'WmsPickTask' })
 
@@ -64,12 +60,11 @@ const total = ref(0)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  taskNo: undefined
-  shipmentOrderId: undefined
-  waveOrderId: undefined
+  taskNo: undefined,
+  shipmentOrderId: undefined,
+  waveOrderId: undefined,
 })
 const queryFormRef = ref()
-const formRef = ref()
 
 const getList = async () => {
   loading.value = true
@@ -92,18 +87,28 @@ const resetQuery = () => {
   handleQuery()
 }
 
-const openForm = (type: string, id?: number) => {
-  formRef.value.open(type, id)
+/** 按出库单生成拣货任务 */
+const handleGenerate = async () => {
+  try {
+    const { value } = await message.prompt('请输入出库单 ID', '生成拣货任务')
+    if (!value) return
+    await PickTaskApi.PickTaskGenerate(Number(value))
+    message.success('已生成拣货任务')
+    await getList()
+  } catch {}
 }
 
-const handleDelete = async (id: number) => {
+/** 确认拣货（待拣 10 -> 已拣 20） */
+const handleConfirmPick = async (row: any) => {
   try {
-    await message.delConfirm()
-    await PickTaskApi.deletePickTask(id)
-    message.success('删除成功')
+    const { value } = await message.prompt('请输入已拣数量', `确认拣货「${row.taskNo}」`)
+    if (value === null || value === '') return
+    await PickTaskApi.PickTaskConfirmPick(row.id, Number(value))
+    message.success('已确认拣货')
     await getList()
   } catch {}
 }
 
 onMounted(() => getList())
 </script>
+

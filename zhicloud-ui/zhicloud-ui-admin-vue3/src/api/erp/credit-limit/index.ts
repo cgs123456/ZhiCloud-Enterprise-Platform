@@ -19,23 +19,23 @@ export interface CreditLimitVO {
 // Erp CreditLimit API
 export const CreditLimitApi = {
   createCreditLimit: async (data: any) => {
-    // 创建CreditLimit
+    // 创建客户信用额度
     return await request.post({ url: `/erp/credit-limit/create`, data })
   },
   updateCreditLimit: async (data: any) => {
-    // 更新CreditLimit
+    // 更新客户信用额度
     return await request.put({ url: `/erp/credit-limit/update`, data })
   },
-  deleteCreditLimit: async (id: number) => {
-    // 删除CreditLimit
-    return await request.delete({ url: `/erp/credit-limit/delete?id=` + id })
+  deleteCreditLimit: async (ids: any) => {
+    // 删除客户信用额度
+    return await request.delete({ url: `/erp/credit-limit/delete?ids=` + ids })
   },
   getCreditLimit: async (id: number) => {
-    // 获得CreditLimit
+    // 获得客户信用额度
     return await request.get({ url: `/erp/credit-limit/get?id=` + id })
   },
   getCreditLimitPage: async (params: any) => {
-    // 获得CreditLimit分页
+    // 获得客户信用额度分页
     return await request.get({ url: `/erp/credit-limit/page`, params })
   },
 }

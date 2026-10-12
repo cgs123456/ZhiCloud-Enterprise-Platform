@@ -183,7 +183,7 @@ const queryParams = reactive({
   name: undefined,
   purchaseOrderCode: undefined,
   vendorId: undefined,
-  arrivalDate: undefined
+  arrivalDate: undefined,
 })
 const queryFormRef = ref() // 搜索的表单
 const formRef = ref() // 表单弹窗

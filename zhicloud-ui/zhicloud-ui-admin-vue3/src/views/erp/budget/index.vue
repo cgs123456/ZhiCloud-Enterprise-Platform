@@ -127,17 +127,17 @@ const total = ref(0)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  budgetNo: undefined
-  budgetYear: undefined
-  periodId: undefined
-  periodCode: undefined
-  departmentId: undefined
-  budgetType: undefined
-  budgetTypeName: undefined
-  totalAmount: undefined
-  status: undefined
-  statusName: undefined
-  remark: undefined
+  budgetNo: undefined,
+  budgetYear: undefined,
+  periodId: undefined,
+  periodCode: undefined,
+  departmentId: undefined,
+  budgetType: undefined,
+  budgetTypeName: undefined,
+  totalAmount: undefined,
+  status: undefined,
+  statusName: undefined,
+  remark: undefined,
 })
 const queryFormRef = ref()
 

@@ -161,27 +161,27 @@ const total = ref(0)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  voucherNo: undefined
-  voucherDate: undefined
-  periodId: undefined
-  periodCode: undefined
-  voucherType: undefined
-  voucherTypeName: undefined
-  attachmentCount: undefined
-  summary: undefined
-  debitTotal: undefined
-  creditTotal: undefined
-  status: undefined
-  statusName: undefined
-  preparedBy: undefined
-  approvedBy: undefined
-  approvedTime: undefined
-  remark: undefined
-  accountBookId: undefined
-  sourceEventId: undefined
-  sourceDocType: undefined
-  sourceDocId: undefined
-  sourceDocNo: undefined
+  voucherNo: undefined,
+  voucherDate: undefined,
+  periodId: undefined,
+  periodCode: undefined,
+  voucherType: undefined,
+  voucherTypeName: undefined,
+  attachmentCount: undefined,
+  summary: undefined,
+  debitTotal: undefined,
+  creditTotal: undefined,
+  status: undefined,
+  statusName: undefined,
+  preparedBy: undefined,
+  approvedBy: undefined,
+  approvedTime: undefined,
+  remark: undefined,
+  accountBookId: undefined,
+  sourceEventId: undefined,
+  sourceDocType: undefined,
+  sourceDocId: undefined,
+  sourceDocNo: undefined,
 })
 const queryFormRef = ref()
 

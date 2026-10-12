@@ -17,23 +17,23 @@ export interface BankAccountVO {
 // Erp BankAccount API
 export const BankAccountApi = {
   createBankAccount: async (data: any) => {
-    // 创建BankAccount
+    // 创建银行账户
     return await request.post({ url: `/erp/bank-account/create`, data })
   },
   updateBankAccount: async (data: any) => {
-    // 更新BankAccount
+    // 更新银行账户
     return await request.put({ url: `/erp/bank-account/update`, data })
   },
   deleteBankAccount: async (id: number) => {
-    // 删除BankAccount
+    // 删除银行账户
     return await request.delete({ url: `/erp/bank-account/delete?id=` + id })
   },
   getBankAccount: async (id: number) => {
-    // 获得BankAccount
+    // 获得银行账户
     return await request.get({ url: `/erp/bank-account/get?id=` + id })
   },
   getBankAccountPage: async (params: any) => {
-    // 获得BankAccount分页
+    // 获得银行账户分页
     return await request.get({ url: `/erp/bank-account/page`, params })
   },
 }

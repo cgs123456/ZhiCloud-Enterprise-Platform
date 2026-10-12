@@ -16,23 +16,23 @@ export interface CheckCyclePlanVO {
 // Wms CheckCyclePlan API
 export const CheckCyclePlanApi = {
   createCheckCyclePlan: async (data: any) => {
-    // 创建CheckCyclePlan
+    // 创建循环盘点计划
     return await request.post({ url: `/wms/check-cycle-plan/create`, data })
   },
   updateCheckCyclePlan: async (data: any) => {
-    // 更新CheckCyclePlan
+    // 更新循环盘点计划
     return await request.put({ url: `/wms/check-cycle-plan/update`, data })
   },
   deleteCheckCyclePlan: async (id: number) => {
-    // 删除CheckCyclePlan
+    // 删除循环盘点计划
     return await request.delete({ url: `/wms/check-cycle-plan/delete?id=` + id })
   },
   getCheckCyclePlan: async (id: number) => {
-    // 获得CheckCyclePlan
+    // 获得循环盘点计划
     return await request.get({ url: `/wms/check-cycle-plan/get?id=` + id })
   },
   getCheckCyclePlanPage: async (params: any) => {
-    // 获得CheckCyclePlan分页
+    // 获得循环盘点计划分页
     return await request.get({ url: `/wms/check-cycle-plan/page`, params })
   },
 }

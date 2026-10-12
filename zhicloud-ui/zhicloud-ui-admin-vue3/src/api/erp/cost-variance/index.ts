@@ -19,23 +19,23 @@ export interface CostVarianceVO {
 // Erp CostVariance API
 export const CostVarianceApi = {
   createCostVariance: async (data: any) => {
-    // 创建CostVariance
+    // 创建成本差异
     return await request.post({ url: `/erp/cost-variance/create`, data })
   },
   updateCostVariance: async (data: any) => {
-    // 更新CostVariance
+    // 更新成本差异
     return await request.put({ url: `/erp/cost-variance/update`, data })
   },
   deleteCostVariance: async (id: number) => {
-    // 删除CostVariance
+    // 删除成本差异
     return await request.delete({ url: `/erp/cost-variance/delete?id=` + id })
   },
   getCostVariance: async (id: number) => {
-    // 获得CostVariance
+    // 获得成本差异
     return await request.get({ url: `/erp/cost-variance/get?id=` + id })
   },
   getCostVariancePage: async (params: any) => {
-    // 获得CostVariance分页
+    // 获得成本差异分页
     return await request.get({ url: `/erp/cost-variance/page`, params })
   },
 }

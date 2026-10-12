@@ -128,18 +128,18 @@ const total = ref(0)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  vehicleId: undefined
-  operationDate: undefined
-  mileage: undefined
-  fuelConsumption: undefined
-  fuelCost: undefined
-  maintenanceCost: undefined
-  insuranceCost: undefined
-  inspectionCost: undefined
-  revenue: undefined
-  totalCost: undefined
-  profit: undefined
-  remark: undefined
+  vehicleId: undefined,
+  operationDate: undefined,
+  mileage: undefined,
+  fuelConsumption: undefined,
+  fuelCost: undefined,
+  maintenanceCost: undefined,
+  insuranceCost: undefined,
+  inspectionCost: undefined,
+  revenue: undefined,
+  totalCost: undefined,
+  profit: undefined,
+  remark: undefined,
 })
 const queryFormRef = ref()
 

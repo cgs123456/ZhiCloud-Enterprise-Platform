@@ -6,20 +6,20 @@ export const ApsApi = {
     // 生成排产
     return await request.post({ url: `/mes/pro/aps/generate`, data })
   },
-  ApsPlanList: async (data?: any) => {
+  ApsPlanList: async (data: any) => {
     // 排产计划列表
-    return await request.get({ url: `/mes/pro/aps/plan/list`, params: data })
+    return await request.get({ url: `/mes/pro/aps/plan/list`, data })
   },
-  ApsPlanGet: async (data?: any) => {
+  ApsPlanGet: async (id: any) => {
     // 获得排产计划
-    return await request.get({ url: `/mes/pro/aps/plan/get`, params: data })
+    return await request.get({ url: `/mes/pro/aps/plan/get?id=` + id })
   },
   ApsPlanReschedule: async (data: any) => {
     // 重排产
     return await request.put({ url: `/mes/pro/aps/plan/reschedule`, data })
   },
-  ApsWorkstationLoad: async (data?: any) => {
+  ApsWorkstationLoad: async (data: any) => {
     // 工位负荷
-    return await request.get({ url: `/mes/pro/aps/workstation-load`, params: data })
+    return await request.get({ url: `/mes/pro/aps/workstation-load`, data })
   },
 }

@@ -149,7 +149,7 @@ const queryParams = reactive({
   pageSize: 100,
   code: undefined,
   name: undefined,
-  status: undefined
+  status: undefined,
 })
 const queryFormRef = ref() // 搜索的表单
 const isExpandAll = ref(true) // 是否展开，默认全部展开

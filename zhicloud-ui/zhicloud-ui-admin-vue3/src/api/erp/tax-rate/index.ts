@@ -18,27 +18,27 @@ export interface TaxRateVO {
 // Erp TaxRate API
 export const TaxRateApi = {
   createTaxRate: async (data: any) => {
-    // 创建TaxRate
+    // 创建税率
     return await request.post({ url: `/erp/tax-rate/create`, data })
   },
   updateTaxRate: async (data: any) => {
-    // 更新TaxRate
+    // 更新税率
     return await request.put({ url: `/erp/tax-rate/update`, data })
   },
   deleteTaxRate: async (id: number) => {
-    // 删除TaxRate
+    // 删除税率
     return await request.delete({ url: `/erp/tax-rate/delete?id=` + id })
   },
   getTaxRate: async (id: number) => {
-    // 获得TaxRate
+    // 获得税率
     return await request.get({ url: `/erp/tax-rate/get?id=` + id })
   },
   getTaxRatePage: async (params: any) => {
-    // 获得TaxRate分页
+    // 获得税率分页
     return await request.get({ url: `/erp/tax-rate/page`, params })
   },
-  TaxRateGetDefault: async (data?: any) => {
+  TaxRateGetDefault: async (data: any) => {
     // 获得默认税率
-    return await request.get({ url: `/erp/tax-rate/get-default`, params: data })
+    return await request.get({ url: `/erp/tax-rate/get-default`, data })
   },
 }

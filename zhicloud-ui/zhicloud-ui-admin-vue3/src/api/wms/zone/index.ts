@@ -15,31 +15,31 @@ export interface ZoneVO {
 // Wms Zone API
 export const ZoneApi = {
   createZone: async (data: any) => {
-    // 创建Zone
+    // 创建库区
     return await request.post({ url: `/wms/zone/create`, data })
   },
   updateZone: async (data: any) => {
-    // 更新Zone
+    // 更新库区
     return await request.put({ url: `/wms/zone/update`, data })
   },
   deleteZone: async (id: number) => {
-    // 删除Zone
+    // 删除库区
     return await request.delete({ url: `/wms/zone/delete?id=` + id })
   },
   getZone: async (id: number) => {
-    // 获得Zone
+    // 获得库区
     return await request.get({ url: `/wms/zone/get?id=` + id })
   },
   getZonePage: async (params: any) => {
-    // 获得Zone分页
+    // 获得库区分页
     return await request.get({ url: `/wms/zone/page`, params })
   },
   getZoneList: async (params?: any) => {
-    // 获得Zone列表
+    // 获得库区列表
     return await request.get({ url: `/wms/zone/list`, params })
   },
   exportZone: async (params: any) => {
-    // 导出Zone Excel
-    return await request.download({ url: `/wms/zone/export-excel`, params })
+    // 导出库区 Excel
+    return await.download({ url: `/wms/zone/export-excel`, params })
   },
 }

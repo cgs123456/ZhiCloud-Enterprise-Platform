@@ -7,11 +7,11 @@ export const TpKpiApi = {
     return await request.post({ url: `/mes/dv/tp-kpi/calculate`, data })
   },
   getTpKpi: async (id: number) => {
-    // 获得TpKpi
+    // 获得 TPM KPI 指标
     return await request.get({ url: `/mes/dv/tp-kpi/get?id=` + id })
   },
-  TpKpiHistory: async (data?: any) => {
+  TpKpiHistory: async (data: any) => {
     // 查询设备 KPI 历史
-    return await request.get({ url: `/mes/dv/tp-kpi/history`, params: data })
+    return await request.get({ url: `/mes/dv/tp-kpi/history`, data })
   },
 }

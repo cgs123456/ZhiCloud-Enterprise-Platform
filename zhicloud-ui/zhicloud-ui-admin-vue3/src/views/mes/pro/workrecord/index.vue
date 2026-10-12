@@ -124,7 +124,7 @@ const queryParams = reactive({
   userId: undefined,
   workstationId: undefined,
   type: undefined,
-  createTime: undefined
+  createTime: undefined,
 })
 const queryFormRef = ref() // 搜索的表单
 

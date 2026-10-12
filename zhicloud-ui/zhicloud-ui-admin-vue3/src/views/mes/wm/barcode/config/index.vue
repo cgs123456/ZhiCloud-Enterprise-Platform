@@ -168,7 +168,7 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
   format: undefined,
-  bizType: undefined
+  bizType: undefined,
 })
 const queryFormRef = ref()
 

@@ -25,7 +25,7 @@ export interface BatchExpiryAlertVO {
 // Wms BatchExpiryAlert API
 export const BatchExpiryAlertApi = {
   getBatchExpiryAlertPage: async (params: any) => {
-    // 获得BatchExpiryAlert分页
+    // 获得批次效期预警分页
     return await request.get({ url: `/wms/batch-expiry-alert/page`, params })
   },
   BatchExpiryAlertScan: async (data: any) => {

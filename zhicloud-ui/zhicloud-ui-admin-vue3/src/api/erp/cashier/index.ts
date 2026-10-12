@@ -24,35 +24,35 @@ export interface CashierVO {
 // Erp Cashier API
 export const CashierApi = {
   createCashier: async (data: any) => {
-    // 创建Cashier
+    // 创建出纳单
     return await request.post({ url: `/erp/cashier/create`, data })
   },
   updateCashier: async (data: any) => {
-    // 更新Cashier
+    // 更新出纳单
     return await request.put({ url: `/erp/cashier/update`, data })
   },
-  deleteCashier: async (id: number) => {
-    // 删除Cashier
-    return await request.delete({ url: `/erp/cashier/delete?id=` + id })
+  deleteCashier: async (ids: any) => {
+    // 删除出纳单
+    return await request.delete({ url: `/erp/cashier/delete?ids=` + ids })
   },
   getCashier: async (id: number) => {
-    // 获得Cashier
+    // 获得出纳单
     return await request.get({ url: `/erp/cashier/get?id=` + id })
   },
   getCashierPage: async (params: any) => {
-    // 获得Cashier分页
+    // 获得出纳单分页
     return await request.get({ url: `/erp/cashier/page`, params })
   },
-  CashierSubmitBank: async (data: any) => {
+  CashierSubmitBank: async (id: any) => {
     // 提交银行（发送支付指令）
-    return await request.put({ url: `/erp/cashier/submit-bank`, data })
+    return await request.put({ url: `/erp/cashier/submit-bank?id=` + id })
   },
-  CashierSyncBankStatus: async (data: any) => {
+  CashierSyncBankStatus: async (id: any) => {
     // 同步银行状态
-    return await request.put({ url: `/erp/cashier/sync-bank-status`, data })
+    return await request.put({ url: `/erp/cashier/sync-bank-status?id=` + id })
   },
-  CashierBankStatement: async (data?: any) => {
+  CashierBankStatement: async (data: any) => {
     // 获取银行对账单（网银直联）
-    return await request.get({ url: `/erp/cashier/bank-statement`, params: data })
+    return await request.get({ url: `/erp/cashier/bank-statement`, data })
   },
 }

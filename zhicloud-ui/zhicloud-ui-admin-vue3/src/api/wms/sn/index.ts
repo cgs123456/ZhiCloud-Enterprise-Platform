@@ -28,43 +28,43 @@ export const SnApi = {
     return await request.post({ url: `/wms/sn/generate`, data })
   },
   createSn: async (data: any) => {
-    // 创建Sn
+    // 创建序列号
     return await request.post({ url: `/wms/sn/create`, data })
   },
   updateSn: async (data: any) => {
-    // 更新Sn
+    // 更新序列号
     return await request.put({ url: `/wms/sn/update`, data })
   },
   deleteSn: async (id: number) => {
-    // 删除Sn
+    // 删除序列号
     return await request.delete({ url: `/wms/sn/delete?id=` + id })
   },
   getSn: async (id: number) => {
-    // 获得Sn
+    // 获得序列号
     return await request.get({ url: `/wms/sn/get?id=` + id })
   },
-  SnGetBySn: async (data?: any) => {
+  SnGetBySn: async (sn: any) => {
     // 按序列号字符串获取
-    return await request.get({ url: `/wms/sn/get-by-sn`, params: data })
+    return await request.get({ url: `/wms/sn/get-by-sn?sn=` + sn })
   },
   getSnPage: async (params: any) => {
-    // 获得Sn分页
+    // 获得序列号分页
     return await request.get({ url: `/wms/sn/page`, params })
   },
-  SnBind: async (data: any) => {
+  SnBind: async (snId: any) => {
     // 序列号入库绑定
-    return await request.put({ url: `/wms/sn/bind`, data })
+    return await request.put({ url: `/wms/sn/bind?snId=` + snId })
   },
   SnShip: async (data: any) => {
     // 序列号出库解绑
     return await request.put({ url: `/wms/sn/ship`, data })
   },
-  SnReturn: async (data: any) => {
+  SnReturn: async (snId: any) => {
     // 序列号退货
-    return await request.put({ url: `/wms/sn/return`, data })
+    return await request.put({ url: `/wms/sn/return?snId=` + snId })
   },
-  SnTrace: async (data?: any) => {
+  SnTrace: async (snId: any) => {
     // 序列号追溯
-    return await request.get({ url: `/wms/sn/trace`, params: data })
+    return await request.get({ url: `/wms/sn/trace?snId=` + snId })
   },
 }

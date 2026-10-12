@@ -22,12 +22,12 @@ export const ConsolidationEngineApi = {
     // 批量生成所有合并范围的抵消分录
     return await request.post({ url: `/erp/consolidation-engine/generate-all-eliminations`, data })
   },
-  ConsolidationEngineConsolidatedBalanceSheet: async (data?: any) => {
+  ConsolidationEngineConsolidatedBalanceSheet: async (data: any) => {
     // 生成合并资产负债表
-    return await request.get({ url: `/erp/consolidation-engine/consolidated-balance-sheet`, params: data })
+    return await request.get({ url: `/erp/consolidation-engine/consolidated-balance-sheet`, data })
   },
-  ConsolidationEngineConsolidatedIncomeStatement: async (data?: any) => {
+  ConsolidationEngineConsolidatedIncomeStatement: async (data: any) => {
     // 生成合并利润表
-    return await request.get({ url: `/erp/consolidation-engine/consolidated-income-statement`, params: data })
+    return await request.get({ url: `/erp/consolidation-engine/consolidated-income-statement`, data })
   },
 }

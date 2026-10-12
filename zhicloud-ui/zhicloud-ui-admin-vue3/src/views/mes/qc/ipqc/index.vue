@@ -191,7 +191,7 @@ const queryParams = reactive({
   type: undefined,
   workOrderId: undefined,
   itemId: undefined,
-  checkResult: undefined
+  checkResult: undefined,
 })
 const queryFormRef = ref()
 const exportLoading = ref(false)

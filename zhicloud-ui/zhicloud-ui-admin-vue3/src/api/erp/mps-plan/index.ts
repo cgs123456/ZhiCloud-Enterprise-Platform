@@ -25,43 +25,43 @@ export interface MpsPlanVO {
 // Erp MpsPlan API
 export const MpsPlanApi = {
   createMpsPlan: async (data: any) => {
-    // 创建MpsPlan
+    // 创建主生产计划
     return await request.post({ url: `/erp/mps-plan/create`, data })
   },
   updateMpsPlan: async (data: any) => {
-    // 更新MpsPlan
+    // 更新主生产计划
     return await request.put({ url: `/erp/mps-plan/update`, data })
   },
-  deleteMpsPlan: async (id: number) => {
-    // 删除MpsPlan
-    return await request.delete({ url: `/erp/mps-plan/delete?id=` + id })
+  deleteMpsPlan: async (ids: any) => {
+    // 删除主生产计划
+    return await request.delete({ url: `/erp/mps-plan/delete?ids=` + ids })
   },
   getMpsPlan: async (id: number) => {
-    // 获得MpsPlan
+    // 获得主生产计划
     return await request.get({ url: `/erp/mps-plan/get?id=` + id })
   },
   getMpsPlanPage: async (params: any) => {
-    // 获得MpsPlan分页
+    // 获得主生产计划分页
     return await request.get({ url: `/erp/mps-plan/page`, params })
   },
   MpsPlanGenerate: async (data: any) => {
     // 生成 MPS 计划（核心算法）
     return await request.post({ url: `/erp/mps-plan/generate`, data })
   },
-  MpsPlanConfirm: async (data: any) => {
+  MpsPlanConfirm: async (id: any) => {
     // 确认主生产计划
-    return await request.put({ url: `/erp/mps-plan/confirm`, data })
+    return await request.put({ url: `/erp/mps-plan/confirm?id=` + id })
   },
-  MpsPlanReleaseMrp: async (data: any) => {
+  MpsPlanReleaseMrp: async (id: any) => {
     // 下发 MRP
-    return await request.put({ url: `/erp/mps-plan/release-mrp`, data })
+    return await request.put({ url: `/erp/mps-plan/release-mrp?id=` + id })
   },
-  MpsPlanClose: async (data: any) => {
+  MpsPlanClose: async (id: any) => {
     // 关闭主生产计划
-    return await request.put({ url: `/erp/mps-plan/close`, data })
+    return await request.put({ url: `/erp/mps-plan/close?id=` + id })
   },
-  MpsPlanDetailList: async (data?: any) => {
+  MpsPlanDetailList: async (data: any) => {
     // 获得主生产计划明细列表
-    return await request.get({ url: `/erp/mps-plan/detail/list`, params: data })
+    return await request.get({ url: `/erp/mps-plan/detail/list`, data })
   },
 }

@@ -10,16 +10,16 @@ export const MrpApi = {
     // 触发 MRP 计算
     return await request.post({ url: `/mes/pro/mrp/calculate`, data })
   },
-  getMrpResult: async (planId: number) => {
+  MrpResult{planid}: async (data: any) => {
     // 获取 MRP 计算结果
-    return await request.get({ url: `/mes/pro/mrp/result/` + planId })
+    return await request.get({ url: `/mes/pro/mrp/result/{planId}`, data })
   },
-  MrpPlanList: async (data?: any) => {
+  MrpPlanList: async (data: any) => {
     // MRP 计划列表
-    return await request.get({ url: `/mes/pro/mrp/plan/list`, params: data })
+    return await request.get({ url: `/mes/pro/mrp/plan/list`, data })
   },
-  MrpPlanGet: async (data?: any) => {
+  MrpPlanGet: async (id: any) => {
     // 获得 MRP 计划
-    return await request.get({ url: `/mes/pro/mrp/plan/get`, params: data })
+    return await request.get({ url: `/mes/pro/mrp/plan/get?id=` + id })
   },
 }

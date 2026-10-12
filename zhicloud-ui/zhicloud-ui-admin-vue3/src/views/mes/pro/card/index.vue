@@ -171,7 +171,7 @@ const queryParams = reactive({
   code: undefined,
   workOrderId: undefined,
   itemId: undefined,
-  batchCode: undefined
+  batchCode: undefined,
 })
 const queryFormRef = ref() // 搜索的表单
 const formRef = ref() // 表单弹窗

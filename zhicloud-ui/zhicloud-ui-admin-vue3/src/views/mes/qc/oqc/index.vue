@@ -190,7 +190,7 @@ const queryParams = reactive({
   clientId: undefined,
   batchCode: undefined,
   itemId: undefined,
-  checkResult: undefined
+  checkResult: undefined,
 })
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中

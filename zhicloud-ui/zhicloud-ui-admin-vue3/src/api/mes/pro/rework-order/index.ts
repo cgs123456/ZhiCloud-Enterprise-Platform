@@ -3,39 +3,39 @@ import request from '@/config/axios'
 // Mes ReworkOrder API
 export const ReworkOrderApi = {
   createReworkOrder: async (data: any) => {
-    // 创建ReworkOrder
+    // 基于原工单创建返工工单
     return await request.post({ url: `/mes/pro/rework-order/create`, data })
   },
   updateReworkOrder: async (data: any) => {
-    // 更新ReworkOrder
+    // 更新返工工单
     return await request.put({ url: `/mes/pro/rework-order/update`, data })
   },
   deleteReworkOrder: async (id: number) => {
-    // 删除ReworkOrder
+    // 删除返工工单
     return await request.delete({ url: `/mes/pro/rework-order/delete?id=` + id })
   },
   getReworkOrder: async (id: number) => {
-    // 获得ReworkOrder
+    // 获得返工工单
     return await request.get({ url: `/mes/pro/rework-order/get?id=` + id })
   },
   getReworkOrderPage: async (params: any) => {
-    // 获得ReworkOrder分页
+    // 获得返工工单分页
     return await request.get({ url: `/mes/pro/rework-order/page`, params })
   },
   exportReworkOrder: async (params: any) => {
-    // 导出ReworkOrder Excel
-    return await request.download({ url: `/mes/pro/rework-order/export-excel`, params })
+    // 导出返工工单 Excel
+    return await.download({ url: `/mes/pro/rework-order/export-excel`, params })
   },
-  ReworkOrderStart: async (data: any) => {
+  ReworkOrderStart: async (id: any) => {
     // 开工返工
-    return await request.put({ url: `/mes/pro/rework-order/start`, data })
+    return await request.put({ url: `/mes/pro/rework-order/start?id=` + id })
   },
-  ReworkOrderComplete: async (data: any) => {
+  ReworkOrderComplete: async (id: any) => {
     // 完工返工
-    return await request.put({ url: `/mes/pro/rework-order/complete`, data })
+    return await request.put({ url: `/mes/pro/rework-order/complete?id=` + id })
   },
-  ReworkOrderCancel: async (data: any) => {
+  ReworkOrderCancel: async (id: any) => {
     // 取消返工
-    return await request.put({ url: `/mes/pro/rework-order/cancel`, data })
+    return await request.put({ url: `/mes/pro/rework-order/cancel?id=` + id })
   },
 }

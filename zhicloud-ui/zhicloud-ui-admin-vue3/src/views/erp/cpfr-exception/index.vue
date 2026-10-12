@@ -58,9 +58,9 @@ const total = ref(0)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  forecastId: undefined
-  exceptionType: undefined
-  exceptionDescription: undefined
+  forecastId: undefined,
+  exceptionType: undefined,
+  exceptionDescription: undefined,
 })
 const queryFormRef = ref()
 const formRef = ref()

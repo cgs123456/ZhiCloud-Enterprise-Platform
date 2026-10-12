@@ -15,27 +15,27 @@ export interface CurrencyVO {
 // Erp Currency API
 export const CurrencyApi = {
   createCurrency: async (data: any) => {
-    // 创建Currency
+    // 创建币种
     return await request.post({ url: `/erp/currency/create`, data })
   },
   updateCurrency: async (data: any) => {
-    // 更新Currency
+    // 更新币种
     return await request.put({ url: `/erp/currency/update`, data })
   },
   deleteCurrency: async (id: number) => {
-    // 删除Currency
+    // 删除币种
     return await request.delete({ url: `/erp/currency/delete?id=` + id })
   },
   getCurrency: async (id: number) => {
-    // 获得Currency
+    // 获得币种
     return await request.get({ url: `/erp/currency/get?id=` + id })
   },
   getCurrencyPage: async (params: any) => {
-    // 获得Currency分页
+    // 获得币种分页
     return await request.get({ url: `/erp/currency/page`, params })
   },
   getCurrencyList: async (params?: any) => {
-    // 获得Currency列表
+    // 获得启用的币种精简列表
     return await request.get({ url: `/erp/currency/simple-list`, params })
   },
 }

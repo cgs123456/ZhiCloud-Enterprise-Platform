@@ -207,7 +207,7 @@ const queryParams = reactive({
   bizType: undefined,
   bizCode: undefined,
   bizName: undefined,
-  content: undefined
+  content: undefined,
 })
 const queryFormRef = ref()
 

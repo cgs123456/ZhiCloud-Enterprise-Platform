@@ -30,35 +30,35 @@ export interface FixedAssetVO {
 // Erp FixedAsset API
 export const FixedAssetApi = {
   createFixedAsset: async (data: any) => {
-    // 创建FixedAsset
+    // 创建固定资产
     return await request.post({ url: `/erp/fixed-asset/create`, data })
   },
   updateFixedAsset: async (data: any) => {
-    // 更新FixedAsset
+    // 更新固定资产
     return await request.put({ url: `/erp/fixed-asset/update`, data })
   },
   deleteFixedAsset: async (id: number) => {
-    // 删除FixedAsset
+    // 删除固定资产
     return await request.delete({ url: `/erp/fixed-asset/delete?id=` + id })
   },
   getFixedAsset: async (id: number) => {
-    // 获得FixedAsset
+    // 获取固定资产
     return await request.get({ url: `/erp/fixed-asset/get?id=` + id })
   },
   getFixedAssetPage: async (params: any) => {
-    // 获得FixedAsset分页
+    // 分页查询固定资产
     return await request.get({ url: `/erp/fixed-asset/page`, params })
   },
   FixedAssetCalculateDepreciation: async (data: any) => {
     // 计提月度折旧
     return await request.post({ url: `/erp/fixed-asset/calculate-depreciation`, data })
   },
-  FixedAssetApproveDepreciation: async (data: any) => {
+  FixedAssetApproveDepreciation: async (id: any) => {
     // 审核折旧记录
-    return await request.put({ url: `/erp/fixed-asset/approve-depreciation`, data })
+    return await request.put({ url: `/erp/fixed-asset/approve-depreciation?id=` + id })
   },
-  FixedAssetDepreciationList: async (data?: any) => {
+  FixedAssetDepreciationList: async (data: any) => {
     // 查询资产折旧记录列表
-    return await request.get({ url: `/erp/fixed-asset/depreciation-list`, params: data })
+    return await request.get({ url: `/erp/fixed-asset/depreciation-list`, data })
   },
 }

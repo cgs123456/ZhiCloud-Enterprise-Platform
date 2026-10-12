@@ -60,9 +60,9 @@ const total = ref(0)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  workshopId: undefined
-  workstationId: undefined
-  energyType: undefined
+  workshopId: undefined,
+  workstationId: undefined,
+  energyType: undefined,
 })
 const queryFormRef = ref()
 const formRef = ref()

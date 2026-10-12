@@ -16,23 +16,23 @@ export interface DockVO {
 // Wms Dock API
 export const DockApi = {
   createDock: async (data: any) => {
-    // 创建Dock
+    // 创建月台
     return await request.post({ url: `/wms/dock/create`, data })
   },
   updateDock: async (data: any) => {
-    // 更新Dock
+    // 更新月台
     return await request.put({ url: `/wms/dock/update`, data })
   },
   deleteDock: async (id: number) => {
-    // 删除Dock
+    // 删除月台
     return await request.delete({ url: `/wms/dock/delete?id=` + id })
   },
   getDock: async (id: number) => {
-    // 获得Dock
+    // 获得月台
     return await request.get({ url: `/wms/dock/get?id=` + id })
   },
   getDockPage: async (params: any) => {
-    // 获得Dock分页
+    // 获得月台分页
     return await request.get({ url: `/wms/dock/page`, params })
   },
 }
