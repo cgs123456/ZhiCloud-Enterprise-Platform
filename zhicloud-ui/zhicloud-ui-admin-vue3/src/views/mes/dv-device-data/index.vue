@@ -1,17 +1,18 @@
 <template>
   <ContentWrap>
+    <!-- 设备数据采集记录：数据由 SCADA 采集写入，无手工新增/修改 -->
     <el-form class="-mb-15px" :model="queryParams" ref="queryFormRef" :inline="true" label-width="90px">
       <el-form-item label="设备" prop="machineryId">
-        <el-input-number v-model="queryParams.machineryId" placeholder="请输入设备" clearable class="!w-240px" />
+        <el-input-number v-model="queryParams.machineryId" :controls="false" placeholder="设备 ID" clearable class="!w-240px" />
       </el-form-item>
       <el-form-item label="SCADA配置" prop="scadaConfigId">
-        <el-input-number v-model="queryParams.scadaConfigId" placeholder="请输入SCADA配置" clearable class="!w-240px" />
+        <el-input-number v-model="queryParams.scadaConfigId" :controls="false" placeholder="SCADA 配置 ID" clearable class="!w-240px" />
       </el-form-item>
       <el-form-item>
         <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
         <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
-        <el-button type="primary" plain @click="openForm('create')" v-hasPermi="['mes:dv-device-data:create']">
-          <Icon icon="ep:plus" class="mr-5px" /> 新增
+        <el-button type="primary" plain @click="handleCollect" v-hasPermi="['mes:dv-device-data:create']">
+          <Icon icon="ep:video-camera" class="mr-5px" /> 立即采集
         </el-button>
       </el-form-item>
     </el-form>
@@ -28,22 +29,18 @@
       <el-table-column label="状态" align="center" prop="status" />
       <el-table-column label="备注" align="center" prop="remark" />
       <el-table-column label="创建时间" align="center" prop="createTime" :formatter="dateFormatter" />
-      <el-table-column label="操作" align="center" width="140">
+      <el-table-column label="操作" align="center" width="90">
         <template #default="scope">
-          <el-button link type="primary" @click="openForm('update', scope.row.id)" v-hasPermi="['mes:dv-device-data:update']">修改</el-button>
           <el-button link type="danger" @click="handleDelete(scope.row.id)" v-hasPermi="['mes:dv-device-data:delete']">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
     <Pagination v-model:limit="queryParams.pageSize" v-model:page="queryParams.pageNo" :total="total" @pagination="getList" />
   </ContentWrap>
-
-  <DvDeviceDataForm ref="formRef" @success="getList" />
 </template>
 <script setup lang="ts">
 import { dateFormatter } from '@/utils/formatTime'
 import { DvDeviceDataApi } from '@/api/mes/dv-device-data'
-import DvDeviceDataForm from './dvDeviceDataForm.vue'
 
 defineOptions({ name: 'MesDvDeviceData' })
 
@@ -55,11 +52,10 @@ const total = ref(0)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  machineryId: undefined,
-  scadaConfigId: undefined,
+  machineryId: undefined as any,
+  scadaConfigId: undefined as any
 })
 const queryFormRef = ref()
-const formRef = ref()
 
 const getList = async () => {
   loading.value = true
@@ -82,8 +78,18 @@ const resetQuery = () => {
   handleQuery()
 }
 
-const openForm = (type: string, id?: number) => {
-  formRef.value.open(type, id)
+/** 立即采集一次设备数据 */
+const handleCollect = async () => {
+  if (!queryParams.machineryId) {
+    message.warning('请先填写设备 ID 再采集')
+    return
+  }
+  try {
+    await message.confirm('确认立即从 SCADA 采集该设备数据？')
+    await DvDeviceDataApi.DvDeviceDataCollect(queryParams.machineryId)
+    message.success('已触发采集')
+    await getList()
+  } catch {}
 }
 
 const handleDelete = async (id: number) => {

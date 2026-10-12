@@ -113,7 +113,7 @@ const loadDetail = async () => {
   loading.value = true
   try {
     let res: any
-    if (activeTab.value === 'aging') res = await ScmBiApi.ScmBiInventoryAging()
+    if (activeTab.value === 'aging') res = await ScmBiApi.ScmBiInventoryAging(queryParams)
     else if (activeTab.value === 'slow') res = await ScmBiApi.ScmBiSlowMovingInventory(queryParams)
     else if (activeTab.value === 'price') res = await ScmBiApi.ScmBiPriceFluctuation(queryParams)
     else res = await ScmBiApi.ScmBiSupplierPerformance(queryParams)

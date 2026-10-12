@@ -18,7 +18,6 @@ export interface ErpPurchaseInquiryVO {
   unit?: string
   unitPrice?: number
   deliveryDate?: Date
-  remark?: string
   createTime?: Date
 }
 

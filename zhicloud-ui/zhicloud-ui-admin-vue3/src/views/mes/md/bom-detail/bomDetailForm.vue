@@ -51,15 +51,16 @@ const formData = ref<any>({})
 const formRules = reactive({})
 const formRef = ref()
 
-const open = async (type: string, id?: number) => {
+const open = async (type: string, row?: any) => {
   dialogVisible.value = true
   dialogTitle.value = t('action.' + type)
   formType.value = type
   resetForm()
-  if (id) {
+  // 后端无 /get 单查端点，编辑时由列表页把整行传进来
+  if (row) {
     formLoading.value = true
     try {
-      formData.value = await BomDetailApi.getBomDetail(id)
+      formData.value = { ...row }
     } finally {
       formLoading.value = false
     }

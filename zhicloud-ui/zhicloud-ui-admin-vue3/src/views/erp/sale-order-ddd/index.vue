@@ -38,6 +38,8 @@
 <script setup lang="ts">
 import { SaleOrderDddApi } from '@/api/erp/sale-order-ddd'
 
+const message = useMessage()
+
 defineOptions({ name: 'ErpSaleOrderDdd' })
 
 const loading = ref(true)

@@ -45,7 +45,7 @@
 <script setup lang="ts">
 import { dateFormatter } from '@/utils/formatTime'
 import { DockApi } from '@/api/wms/dock'
-import DockForm from './dockForm.vue'
+import DockForm from './DockForm.vue'
 
 defineOptions({ name: 'WmsDock' })
 

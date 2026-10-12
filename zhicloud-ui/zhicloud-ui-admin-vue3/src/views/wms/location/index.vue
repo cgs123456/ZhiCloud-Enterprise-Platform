@@ -50,7 +50,7 @@
 <script setup lang="ts">
 import { dateFormatter } from '@/utils/formatTime'
 import { LocationApi } from '@/api/wms/location'
-import LocationForm from './locationForm.vue'
+import LocationForm from './LocationForm.vue'
 
 defineOptions({ name: 'WmsLocation' })
 

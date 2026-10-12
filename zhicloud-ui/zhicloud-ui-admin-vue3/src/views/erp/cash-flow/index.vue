@@ -14,9 +14,6 @@
       <el-form-item>
         <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
         <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
-        <el-button type="primary" plain @click="openForm('create')" v-hasPermi="['erp:cash-flow:create']">
-          <Icon icon="ep:plus" class="mr-5px" /> 新增
-        </el-button>
       </el-form-item>
     </el-form>
   </ContentWrap>
@@ -33,20 +30,16 @@
       <el-table-column label="创建时间" align="center" prop="createTime" :formatter="dateFormatter" />
       <el-table-column label="操作" align="center" width="140">
         <template #default="scope">
-          <el-button link type="primary" @click="openForm('update', scope.row.id)" v-hasPermi="['erp:cash-flow:update']">修改</el-button>
           <el-button link type="danger" @click="handleDelete(scope.row.id)" v-hasPermi="['erp:cash-flow:delete']">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
     <Pagination v-model:limit="queryParams.pageSize" v-model:page="queryParams.pageNo" :total="total" @pagination="getList" />
   </ContentWrap>
-
-  <CashFlowForm ref="formRef" @success="getList" />
 </template>
 <script setup lang="ts">
 import { dateFormatter } from '@/utils/formatTime'
 import { CashFlowApi } from '@/api/erp/cash-flow'
-import CashFlowForm from './cashFlowForm.vue'
 
 defineOptions({ name: 'ErpCashFlow' })
 
@@ -63,7 +56,6 @@ const queryParams = reactive({
   bankAccountId: undefined,
 })
 const queryFormRef = ref()
-const formRef = ref()
 
 const getList = async () => {
   loading.value = true
@@ -86,9 +78,6 @@ const resetQuery = () => {
   handleQuery()
 }
 
-const openForm = (type: string, id?: number) => {
-  formRef.value.open(type, id)
-}
 
 const handleDelete = async (id: number) => {
   try {

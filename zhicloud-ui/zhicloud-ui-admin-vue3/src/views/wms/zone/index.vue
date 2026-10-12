@@ -45,7 +45,7 @@
 <script setup lang="ts">
 import { dateFormatter } from '@/utils/formatTime'
 import { ZoneApi } from '@/api/wms/zone'
-import ZoneForm from './zoneForm.vue'
+import ZoneForm from './ZoneForm.vue'
 
 defineOptions({ name: 'WmsZone' })
 

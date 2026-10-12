@@ -24,7 +24,7 @@ export const ReworkOrderApi = {
   },
   exportReworkOrder: async (params: any) => {
     // 导出返工工单 Excel
-    return await.download({ url: `/mes/pro/rework-order/export-excel`, params })
+    return await request.download({ url: `/mes/pro/rework-order/export-excel`, params })
   },
   ReworkOrderStart: async (id: any) => {
     // 开工返工

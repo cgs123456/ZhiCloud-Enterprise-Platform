@@ -69,7 +69,7 @@ const summaryCards = computed(() => {
 const load = async () => {
   loading.value = true
   try {
-    const res: any = await DashboardApi.DashboardSnapshot()
+    const res: any = await DashboardApi.DashboardSnapshot({})
     snapshot.value = res
     summary.value = res?.summary ?? null
     workOrderStatus.value = Array.isArray(res?.workOrderStatus) ? res.workOrderStatus : []

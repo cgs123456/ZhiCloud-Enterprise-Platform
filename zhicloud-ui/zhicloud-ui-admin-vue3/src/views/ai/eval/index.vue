@@ -91,6 +91,7 @@
 
 <script lang="ts" setup>
 import { AiragEvalApi, type AiragEvalDatasetVO, type AiragEvalReportVO } from '@/api/airag/eval'
+import type { EChartsOption } from 'echarts'
 
 defineOptions({ name: 'AiRagEval' })
 
@@ -118,7 +119,7 @@ const reportStatusType = computed(() => {
   return report.value?.status === 1 ? 'success' : report.value?.status === 2 ? 'danger' : 'warning'
 })
 
-const trendChartOptions = computed(() => {
+const trendChartOptions = computed<EChartsOption>(() => {
   // 趋势按时间正序
   const rows = [...trend.value].reverse()
   return {

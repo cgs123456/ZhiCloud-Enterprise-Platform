@@ -45,7 +45,7 @@
 <script setup lang="ts">
 import { dateFormatter } from '@/utils/formatTime'
 import { CurrencyApi } from '@/api/erp/currency'
-import CurrencyForm from './currencyForm.vue'
+import CurrencyForm from './CurrencyForm.vue'
 
 defineOptions({ name: 'ErpCurrency' })
 

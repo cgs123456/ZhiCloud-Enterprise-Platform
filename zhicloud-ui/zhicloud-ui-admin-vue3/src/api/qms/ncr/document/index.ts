@@ -18,6 +18,29 @@ export interface NcrDocumentVO {
   createTime?: Date
 }
 
+// MRB 评审记录 VO
+export interface NcrMrbRecordVO {
+  id?: number
+  ncrId?: number
+  mrbDate?: number
+  mrbMembers?: string
+  decision?: number
+  conditionTerms?: string
+  remark?: string
+  creator?: string
+  createTime?: number
+}
+
+// MRB 处置决议 VO
+export interface NcrDispositionVO {
+  ncrId: number
+  mrbDate?: number
+  mrbMembers?: string
+  decision?: number
+  conditionTerms?: string
+  remark?: string
+}
+
 // 不合格品NCR API
 export const NcrDocumentApi = {
   // 查询不合格品NCR分页
@@ -43,4 +66,34 @@ export const NcrDocumentApi = {
   deleteNcrDocument: async (id: number) => {
     return await request.delete({ url: '/qms/ncr/delete?id=' + id })
   },
+
+  // 提交 MRB 评审（状态 10 待处理 -> 20 MRB 评审中）
+  submitForMrb: async (ncrId: number) => {
+    return await request.put({ url: '/qms/ncr/submit-mrb?ncrId=' + ncrId })
+  },
+
+  // 记录 MRB 处置决议（状态 20 -> 30 已处置）
+  recordDisposition: async (data: NcrDispositionVO) => {
+    return await request.put({ url: '/qms/ncr/record-disposition', data })
+  },
+
+  // 关闭 NCR 报告（状态 30 -> 40 已关闭）
+  // 受控操作：后端 @ElectronicSignature 要求 X-Electronic-Signature-* 三个头（21 CFR Part 11）
+  closeNcrDocument: async (id: number, sign?: { username: string; password: string; reason: string }) => {
+    return await request.put({
+      url: '/qms/ncr/close?id=' + id,
+      headers: sign
+        ? {
+            'X-Electronic-Signature-Username': sign.username,
+            'X-Electronic-Signature-Password': sign.password,
+            'X-Electronic-Signature-Reason': sign.reason
+          }
+        : undefined
+    })
+  },
+
+  // 获得 NCR 关联的 MRB 评审记录列表
+  getMrbRecordList: async (ncrId: number) => {
+    return await request.get({ url: '/qms/ncr/mrb-record/list?ncrId=' + ncrId })
+  }
 }

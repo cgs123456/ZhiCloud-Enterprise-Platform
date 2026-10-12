@@ -19,7 +19,6 @@ export interface ErpPurchaseQuoteVO {
   unitPrice?: number
   amount?: number
   deliveryDate?: Date
-  remark?: string
   createTime?: Date
 }
 

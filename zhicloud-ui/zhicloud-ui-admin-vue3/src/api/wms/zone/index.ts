@@ -40,6 +40,6 @@ export const ZoneApi = {
   },
   exportZone: async (params: any) => {
     // 导出库区 Excel
-    return await.download({ url: `/wms/zone/export-excel`, params })
+    return await request.download({ url: `/wms/zone/export-excel`, params })
   },
 }

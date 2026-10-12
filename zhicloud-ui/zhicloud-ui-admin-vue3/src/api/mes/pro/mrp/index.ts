@@ -10,9 +10,9 @@ export const MrpApi = {
     // 触发 MRP 计算
     return await request.post({ url: `/mes/pro/mrp/calculate`, data })
   },
-  MrpResult{planid}: async (data: any) => {
+  getMrpResult: async (planId: number) => {
     // 获取 MRP 计算结果
-    return await request.get({ url: `/mes/pro/mrp/result/{planId}`, data })
+    return await request.get({ url: `/mes/pro/mrp/result/` + planId })
   },
   MrpPlanList: async (data: any) => {
     // MRP 计划列表

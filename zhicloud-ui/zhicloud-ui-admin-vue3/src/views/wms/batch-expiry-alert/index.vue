@@ -38,10 +38,6 @@
       <el-table-column label="状态" align="center" prop="status" />
       <el-table-column label="备注" align="center" prop="remark" />
       <el-table-column label="创建时间" align="center" prop="createTime" :formatter="dateFormatter" />
-      <el-table-column label="操作" align="center" width="240">
-        <template #default="scope">
-        </template>
-      </el-table-column>
     </el-table>
     <Pagination v-model:limit="queryParams.pageSize" v-model:page="queryParams.pageNo" :total="total" @pagination="getList" />
   </ContentWrap>
@@ -87,13 +83,6 @@ const resetQuery = () => {
   handleQuery()
 }
 
-
-
-onMounted(() => getList())
-</script>
-
-
-/** 触发域动作（后端无 CRUD，只有动作端点） */
 /** 手动触发批次效期扫描 */
 const handleScan = async () => {
   try {
@@ -104,3 +93,5 @@ const handleScan = async () => {
   } catch {}
 }
 
+onMounted(() => getList())
+</script>

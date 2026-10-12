@@ -87,7 +87,6 @@ const formRules = reactive({
   creatorName: [required],
   productName: [required],
   unit: [required],
-  remark: [required],
 })
 
 const open = async (type: string, id?: number) => {

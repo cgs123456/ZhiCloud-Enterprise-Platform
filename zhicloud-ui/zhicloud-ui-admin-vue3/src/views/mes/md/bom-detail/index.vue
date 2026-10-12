@@ -33,7 +33,7 @@
       <el-table-column label="创建时间" align="center" prop="createTime" :formatter="dateFormatter" />
       <el-table-column label="操作" align="center" width="140">
         <template #default="scope">
-          <el-button link type="primary" @click="openForm('update', scope.row.id)" v-hasPermi="['mes:md:bom-detail:update']">修改</el-button>
+          <el-button link type="primary" @click="openForm('update', scope.row)" v-hasPermi="['mes:md:bom-detail:update']">修改</el-button>
           <el-button link type="danger" @click="handleDelete(scope.row.id)" v-hasPermi="['mes:md:bom-detail:delete']">删除</el-button>
         </template>
       </el-table-column>
@@ -86,8 +86,8 @@ const resetQuery = () => {
   handleQuery()
 }
 
-const openForm = (type: string, id?: number) => {
-  formRef.value.open(type, id)
+const openForm = (type: string, row?: any) => {
+  formRef.value.open(type, row)
 }
 
 const handleDelete = async (id: number) => {

@@ -52,7 +52,7 @@
 <script setup lang="ts">
 import { dateFormatter } from '@/utils/formatTime'
 import { SnApi } from '@/api/wms/sn'
-import SnForm from './snForm.vue'
+import SnForm from './SnForm.vue'
 
 defineOptions({ name: 'WmsSn' })
 

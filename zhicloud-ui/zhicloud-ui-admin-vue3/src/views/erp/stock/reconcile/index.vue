@@ -71,11 +71,12 @@ const report = ref<InventoryReconcileReport>()
 const handleRun = async () => {
   running.value = true
   try {
-    report.value = await InventoryReconcileApi.run()
-    if (report.value.consistent) {
+    const r: any = await InventoryReconcileApi.run()
+    report.value = r
+    if (r?.consistent) {
       message.success('库存对账一致')
     } else {
-      message.warning(`发现 ${report.value.mismatches.length} 条库存差异`)
+      message.warning(`发现 ${r?.mismatches?.length ?? 0} 条库存差异`)
     }
   } finally {
     running.value = false

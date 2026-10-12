@@ -52,7 +52,7 @@
 <script setup lang="ts">
 import { dateFormatter } from '@/utils/formatTime'
 import { CashierApi } from '@/api/erp/cashier'
-import CashierForm from './cashierForm.vue'
+import CashierForm from './CashierForm.vue'
 
 defineOptions({ name: 'ErpCashier' })
 

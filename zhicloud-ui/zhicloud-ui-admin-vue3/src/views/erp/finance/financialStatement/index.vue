@@ -81,7 +81,6 @@ const queryParams = reactive<any>({
   startDate: undefined,
   endDate: undefined
 })
-const queryFormRef = ref()
 
 const today = new Date()
 const iso = (d: Date) => d.toISOString().slice(0, 10)

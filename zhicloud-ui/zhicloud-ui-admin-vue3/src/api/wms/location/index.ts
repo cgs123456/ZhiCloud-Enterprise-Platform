@@ -45,6 +45,6 @@ export const LocationApi = {
   },
   exportLocation: async (params: any) => {
     // 导出库位 Excel
-    return await.download({ url: `/wms/location/export-excel`, params })
+    return await request.download({ url: `/wms/location/export-excel`, params })
   },
 }

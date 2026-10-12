@@ -49,6 +49,8 @@
 <script setup lang="ts">
 import { VatCalculationApi } from '@/api/erp/vat-calculation'
 
+const message = useMessage()
+
 defineOptions({ name: 'ErpVatCalculation' })
 
 const loading = ref(false)

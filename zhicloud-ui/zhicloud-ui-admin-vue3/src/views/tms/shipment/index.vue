@@ -94,21 +94,58 @@
       <el-table-column align="center" label="状态（10 待发车 / 20 运输中 / 30 已到达 / 40 已签收 / 50 已取消）" prop="status" min-width="120" />
       <el-table-column align="center" label="备注" prop="remark" min-width="120" show-overflow-tooltip />
       <el-table-column align="center" :formatter="dateFormatter" label="创建时间" prop="createTime" width="170" />
-      <el-table-column align="center" fixed="right" label="操作" width="140">
+      <el-table-column align="center" fixed="right" label="操作" width="330">
         <template #default="scope">
           <el-button
             v-hasPermi="['tms:shipment:update']"
             link
             type="primary"
             @click="openForm('update', scope.row.id)"
+            v-if="scope.row.status === 10"
           >
             修改
+          </el-button>
+          <el-button
+            v-hasPermi="['tms:shipment:update']"
+            link
+            type="warning"
+            @click="openDispatch(scope.row)"
+            v-if="scope.row.status === 10"
+          >
+            调度派车
+          </el-button>
+          <el-button
+            v-hasPermi="['tms:shipment:update']"
+            link
+            type="success"
+            @click="handleConfirmArrival(scope.row)"
+            v-if="scope.row.status === 20"
+          >
+            确认到达
+          </el-button>
+          <el-button
+            v-hasPermi="['tms:shipment:update']"
+            link
+            type="success"
+            @click="handleConfirmSign(scope.row)"
+            v-if="scope.row.status === 30"
+          >
+            确认签收
+          </el-button>
+          <el-button
+            v-hasPermi="['tms:shipment:query']"
+            link
+            type="info"
+            @click="openStops(scope.row)"
+          >
+            途经站点
           </el-button>
           <el-button
             v-hasPermi="['tms:shipment:delete']"
             link
             type="danger"
             @click="handleDelete(scope.row.id)"
+            v-if="scope.row.status === 10"
           >
             删除
           </el-button>
@@ -125,6 +162,45 @@
 
   <!-- 表单弹窗 -->
   <TmsShipmentForm ref="formRef" @success="getList" />
+
+  <!-- 调度派车弹窗：为运单匹配车辆与司机 -->
+  <Dialog v-model="dispatchVisible" title="调度派车" width="480">
+    <el-form
+      ref="dispatchFormRef"
+      v-loading="dispatchLoading"
+      :model="dispatchForm"
+      :rules="dispatchRules"
+      label-width="110px"
+    >
+      <el-form-item label="运单号">
+        <el-input :model-value="currentRow?.no" disabled class="!w-1/1" />
+      </el-form-item>
+      <el-form-item label="车辆编号" prop="vehicleId">
+        <el-input-number v-model="dispatchForm.vehicleId" :controls="false" :min="1" placeholder="请输入车辆编号" class="!w-1/1" />
+      </el-form-item>
+      <el-form-item label="司机编号" prop="driverId">
+        <el-input-number v-model="dispatchForm.driverId" :controls="false" :min="1" placeholder="请输入司机编号" class="!w-1/1" />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button type="primary" :disabled="dispatchLoading" @click="submitDispatch">确认派车</el-button>
+      <el-button @click="dispatchVisible = false">取 消</el-button>
+    </template>
+  </Dialog>
+
+  <!-- 途经站点弹窗 -->
+  <Dialog v-model="stopsVisible" title="途经站点" width="680">
+    <el-table v-loading="stopsLoading" :data="stops" stripe>
+      <el-table-column align="center" label="顺序" prop="stopOrder" width="80" />
+      <el-table-column align="center" label="地址" prop="address" min-width="160" show-overflow-tooltip />
+      <el-table-column align="center" label="联系人" prop="contactName" width="110" />
+      <el-table-column align="center" label="联系电话" prop="contactPhone" width="130" />
+      <el-table-column align="center" label="站点类型" prop="stopType" width="110" />
+      <el-table-column align="center" label="状态" prop="status" width="90" />
+      <el-table-column align="center" label="备注" prop="remark" min-width="120" show-overflow-tooltip />
+    </el-table>
+    <el-empty v-if="!stopsLoading && stops.length === 0" description="暂无途经站点" />
+  </Dialog>
 </template>
 
 <script lang="ts" setup>
@@ -184,6 +260,74 @@ const resetQuery = async () => {
 }
 
 const formRef = ref()
+
+// ========== 运输状态机：10 待发车 -> 20 运输中 -> 30 已到达 -> 40 已签收 ==========
+const currentRow = ref<any>(null)
+
+// ---- 调度派车（10 -> 20） ----
+const dispatchVisible = ref(false)
+const dispatchLoading = ref(false)
+const dispatchFormRef = ref()
+const dispatchForm = ref<any>({})
+const dispatchRules = reactive({
+  vehicleId: [{ required: true, message: '车辆编号不能为空', trigger: 'blur' }],
+  driverId: [{ required: true, message: '司机编号不能为空', trigger: 'blur' }]
+})
+
+const openDispatch = (row: any) => {
+  currentRow.value = row
+  dispatchForm.value = { id: row.id, vehicleId: undefined, driverId: undefined }
+  dispatchVisible.value = true
+}
+
+const submitDispatch = async () => {
+  await dispatchFormRef.value.validate()
+  dispatchLoading.value = true
+  try {
+    await TmsShipmentApi.dispatch(dispatchForm.value)
+    message.success('已派车，运单进入运输中')
+    dispatchVisible.value = false
+    await getList()
+  } finally {
+    dispatchLoading.value = false
+  }
+}
+
+/** 确认到达（20 -> 30） */
+const handleConfirmArrival = async (row: any) => {
+  try {
+    await message.confirm(`确认运单「${row.no}」已到达目的地？`)
+    await TmsShipmentApi.confirmArrival(row.id)
+    message.success('已确认到达')
+    await getList()
+  } catch {}
+}
+
+/** 确认签收（30 -> 40） */
+const handleConfirmSign = async (row: any) => {
+  try {
+    await message.confirm(`确认运单「${row.no}」已签收？`)
+    await TmsShipmentApi.confirmSign(row.id)
+    message.success('已确认签收')
+    await getList()
+  } catch {}
+}
+
+// ---- 途经站点 ----
+const stopsVisible = ref(false)
+const stopsLoading = ref(false)
+const stops = ref<any[]>([])
+
+const openStops = async (row: any) => {
+  currentRow.value = row
+  stopsVisible.value = true
+  stopsLoading.value = true
+  try {
+    stops.value = (await TmsShipmentApi.getShipmentStopList(row.id)) || []
+  } finally {
+    stopsLoading.value = false
+  }
+}
 
 const openForm = (type: string, id?: number) => {
   formRef.value.open(type, id)

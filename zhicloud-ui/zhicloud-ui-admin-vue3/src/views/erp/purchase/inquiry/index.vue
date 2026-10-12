@@ -156,7 +156,6 @@ const queryParams = reactive({
   unit: undefined,
   unitPrice: undefined,
   deliveryDate: undefined,
-  remark: undefined,
 })
 const queryFormRef = ref()
 

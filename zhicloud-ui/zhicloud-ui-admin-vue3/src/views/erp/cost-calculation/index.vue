@@ -24,6 +24,8 @@
 <script setup lang="ts">
 import { CostCalculationApi } from '@/api/erp/cost-calculation'
 
+const message = useMessage()
+
 defineOptions({ name: 'ErpCostCalculation' })
 
 const loading = ref(false)

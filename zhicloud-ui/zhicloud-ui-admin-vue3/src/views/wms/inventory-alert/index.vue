@@ -82,14 +82,6 @@ const resetQuery = () => {
   queryFormRef.value.resetFields()
   handleQuery()
 }
-
-
-
-onMounted(() => getList())
-</script>
-
-
-/** 触发域动作（后端无 CRUD，只有动作端点） */
 /** 确认预警（待确认 10 -> 待处理 20） */
 const handleConfirm = async (row: any) => {
   try {
@@ -109,4 +101,9 @@ const handleProcess = async (row: any) => {
     await getList()
   } catch {}
 }
+
+onMounted(() => getList())
+</script>
+
+
 
