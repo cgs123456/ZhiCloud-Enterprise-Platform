@@ -140,6 +140,34 @@
           >
             编辑
           </el-button>
+          <!-- 未转化线索才能转化、放公海、转移 -->
+          <el-button
+            v-if="!scope.row.transformStatus"
+            link
+            type="success"
+            @click="handleTransform(scope.row)"
+            v-hasPermi="['crm:clue:update']"
+          >
+            转化为客户
+          </el-button>
+          <el-button
+            v-if="!scope.row.transformStatus"
+            link
+            type="warning"
+            @click="handlePutPool(scope.row)"
+            v-hasPermi="['crm:clue:update']"
+          >
+            放入公海
+          </el-button>
+          <el-button
+            v-if="!scope.row.transformStatus"
+            link
+            type="primary"
+            @click="openTransfer(scope.row)"
+            v-hasPermi="['crm:clue:update']"
+          >
+            转移
+          </el-button>
           <el-button
             link
             type="danger"
@@ -162,6 +190,31 @@
 
   <!-- 表单弹窗：添加/修改 -->
   <ClueForm ref="formRef" @success="getList" />
+
+  <!-- 转移弹窗：选择新负责人 -->
+  <Dialog v-model="transferVisible" title="转移线索" width="440">
+    <el-form
+      ref="transferFormRef"
+      v-loading="transferSubmitting"
+      :model="transferForm"
+      :rules="transferRules"
+      label-width="110px"
+    >
+      <el-form-item label="新负责人" prop="newOwnerUserId">
+        <el-input-number
+          v-model="transferForm.newOwnerUserId"
+          :controls="false"
+          :min="1"
+          placeholder="请输入新负责人用户编号"
+          class="!w-1/1"
+        />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button type="primary" :disabled="transferSubmitting" @click="submitTransfer">确认转移</el-button>
+      <el-button @click="transferVisible = false">取 消</el-button>
+    </template>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
@@ -249,6 +302,54 @@ const handleDelete = async (id: number) => {
     // 刷新列表
     await getList()
   } catch {}
+}
+
+// ========== 线索运营动作：转化 / 放入公海 / 转移 ==========
+/** 转化为客户（转化后不再允许这些动作） */
+const handleTransform = async (row: any) => {
+  try {
+    await message.confirm(`确认将线索「${row.name}」转化为客户？转化后将生成对应客户档案。`)
+    await ClueApi.transformClue(row.id)
+    message.success('已转化为客户')
+    await getList()
+  } catch {}
+}
+
+/** 放入公海（释放负责人，供他人领取） */
+const handlePutPool = async (row: any) => {
+  try {
+    await message.confirm(`确认将线索「${row.name}」放入公海？放入后其他成员可领取。`)
+    await ClueApi.putCluePool(row.id)
+    message.success('已放入公海')
+    await getList()
+  } catch {}
+}
+
+// ---- 转移：选择新负责人（TransferReqVO.newOwnerUserId） ----
+const transferVisible = ref(false)
+const transferSubmitting = ref(false)
+const transferFormRef = ref()
+const transferForm = ref<any>({})
+const transferRules = reactive({
+  newOwnerUserId: [{ required: true, message: '新负责人不能为空', trigger: 'change' }]
+})
+
+const openTransfer = (row: any) => {
+  transferForm.value = { id: row.id, newOwnerUserId: undefined }
+  transferVisible.value = true
+}
+
+const submitTransfer = async () => {
+  await transferFormRef.value.validate()
+  transferSubmitting.value = true
+  try {
+    await ClueApi.transferClue(transferForm.value)
+    message.success('已转移')
+    transferVisible.value = false
+    await getList()
+  } finally {
+    transferSubmitting.value = false
+  }
 }
 
 /** 导出按钮操作 */

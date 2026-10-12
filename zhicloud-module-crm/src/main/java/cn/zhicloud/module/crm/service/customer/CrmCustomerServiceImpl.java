@@ -284,7 +284,7 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
             throw exception(customer.getLockStatus() ? CUSTOMER_LOCK_FAIL_IS_LOCK : CUSTOMER_UNLOCK_FAIL_IS_UNLOCK);
         }
         // 1.3 校验锁定上限
-        if (lockReqVO.getLockStatus()) {
+        if (Boolean.TRUE.equals(lockReqVO.getLockStatus())) {
             validateCustomerExceedLockLimit(userId);
         }
 
@@ -644,13 +644,13 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
     }
 
     private void validateCustomerIsLocked(CrmCustomerDO customer, Boolean pool) {
-        if (customer.getLockStatus()) {
+        if (Boolean.TRUE.equals(customer.getLockStatus())) {
             throw exception(pool ? CUSTOMER_LOCKED_PUT_POOL_FAIL : CUSTOMER_LOCKED, customer.getName());
         }
     }
 
     private void validateCustomerDeal(CrmCustomerDO customer) {
-        if (customer.getDealStatus()) {
+        if (Boolean.TRUE.equals(customer.getDealStatus())) {
             throw exception(CUSTOMER_ALREADY_DEAL);
         }
     }

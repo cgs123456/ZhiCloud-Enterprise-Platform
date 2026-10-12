@@ -214,8 +214,8 @@ public class CrmClueServiceImpl implements CrmClueService {
     public void transformClue(Long id, Long userId) {
         // 1.1 校验线索都存在
         CrmClueDO clue = validateClueExists(id);
-        // 1.2 存在已经转化的
-        if (clue.getTransformStatus()) {
+        // 1.2 存在已经转化的。历史数据该列可能为 NULL，按未转化处理，避免 NPE
+        if (Boolean.TRUE.equals(clue.getTransformStatus())) {
             throw exception(CLUE_TRANSFORM_FAIL_ALREADY);
         }
 

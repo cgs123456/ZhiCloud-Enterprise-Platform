@@ -76,3 +76,14 @@ export const transformClue = async (id: number) => {
 export const getFollowClueCount = async () => {
   return await request.get({ url: '/crm/clue/follow-count' })
 }
+
+// 线索放入公海（释放 owner，供他人领取）
+export const putCluePool = async (id: number) => {
+  return await request.put({ url: '/crm/clue/put-pool?id=' + id })
+}
+
+// 领取公海线索（支持批量，ids 为编号数组）
+export const receiveClue = async (ids: number[]) => {
+  return await request.put({ url: '/crm/clue/receive', params: { ids } })
+}
+
