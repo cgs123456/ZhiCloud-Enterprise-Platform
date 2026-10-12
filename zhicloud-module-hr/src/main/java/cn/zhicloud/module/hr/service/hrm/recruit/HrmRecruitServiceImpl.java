@@ -448,9 +448,11 @@ public class HrmRecruitServiceImpl implements HrmRecruitService {
                     .build();
             hrmRecruitConfigMapper.insert(config);
         } else {
-            hrmRecruitConfigMapper.update(null, new LambdaUpdateWrapper<HrmRecruitConfigDO>()
-                    .eq(HrmRecruitConfigDO::getId, config.getId())
-                    .set(HrmRecruitConfigDO::getContent, reqVO.getReasons()));
+            // json 列必须走 DO + updateById（JacksonTypeHandler 生效）；LambdaUpdateWrapper.set() 绕开 typeHandler
+            HrmRecruitConfigDO updateObj = new HrmRecruitConfigDO();
+            updateObj.setId(config.getId());
+            updateObj.setContent(reqVO.getReasons());
+            hrmRecruitConfigMapper.updateById(updateObj);
         }
     }
 
