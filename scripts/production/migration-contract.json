@@ -716,6 +716,13 @@
       "sha256": "9790bdde834a3b301063893f633a60301a1fa51f54dcd147a1b1b5a76bf75d5c",
       "verification_file": "V192_verify.sql",
       "verification_sha256": "bfcac9dbf651dd5432cd98a6cf675dafbb6f5094d19a921dad708bedfd727526"
+    },
+    {
+      "version": 193,
+      "file": "V193__account_set_voucher_flow.sql",
+      "sha256": "678961e007b72fe5b731d3e1c4a09692133f67d04fdcdb823b7fb8c63b8bc961",
+      "verification_file": "V193_verify.sql",
+      "verification_sha256": "50c9d2b5cf1873594ca3a498e397bde6afa5111d3824dc315619b5e740fb7133"
     }
   ]
 }

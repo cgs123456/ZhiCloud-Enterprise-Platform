@@ -80,6 +80,15 @@
             关联账簿
           </el-button>
           <el-button
+            v-if="scope.row.initialized"
+            link
+            type="info"
+            @click="openVoucherDialog(scope.row)"
+            v-hasPermi="['fms:config:account-set:query']"
+          >
+            凭证流水
+          </el-button>
+          <el-button
             v-if="!scope.row.initialized && scope.row.level !== FmsAccountUserLevelEnum.READ"
             link
             type="primary"
@@ -113,6 +122,32 @@
     <el-empty v-if="!bookLoading && books.length === 0" description="该账套尚未挂接账簿" />
     <template #footer>
       <el-button @click="bookVisible = false">关 闭</el-button>
+    </template>
+  </Dialog>
+
+  <!-- 账套下的 ERP 凭证流水（V193：账套 → 账簿 → 凭证） -->
+  <Dialog v-model="voucherVisible" title="账套凭证流水" width="960">
+    <el-table v-loading="voucherLoading" :data="vouchers" size="small" stripe>
+      <el-table-column align="center" label="凭证字号" prop="voucherNo" width="120" />
+      <el-table-column align="center" label="凭证日期" prop="voucherDate" width="120" />
+      <el-table-column align="center" label="会计期间" prop="periodCode" width="90" />
+      <el-table-column align="center" label="类型" prop="voucherTypeName" width="90" />
+      <el-table-column align="center" label="摘要" prop="summary" min-width="160" show-overflow-tooltip />
+      <el-table-column align="center" label="借方" prop="debitTotal" width="110" />
+      <el-table-column align="center" label="贷方" prop="creditTotal" width="110" />
+      <el-table-column align="center" label="状态" prop="statusName" width="90" />
+      <el-table-column align="center" label="制单人" prop="preparedBy" width="100" />
+    </el-table>
+    <el-empty v-if="!voucherLoading && vouchers.length === 0" description="该账套名下账簿暂无凭证流水" />
+    <Pagination
+      v-if="vouchers.length > 0"
+      v-model:page="voucherPage.pageNo"
+      v-model:limit="voucherPage.pageSize"
+      :total="voucherTotal"
+      @pagination="loadVouchers"
+    />
+    <template #footer>
+      <el-button @click="voucherVisible = false">关 闭</el-button>
     </template>
   </Dialog>
 
@@ -200,6 +235,33 @@ function accountingStandardText(standard?: number) {
   if (standard === 10) return '中国会计准则'
   if (standard === 20) return '国际会计准则'
   return standard ?? '-'
+}
+
+/** 查看账套下的 ERP 凭证流水（V193：账套 → 账簿 → 凭证） */
+const voucherVisible = ref(false)
+const voucherLoading = ref(false)
+const vouchers = ref<any[]>([])
+const voucherTotal = ref(0)
+const voucherPage = reactive({ pageNo: 1, pageSize: 10 })
+let voucherAccountSetId: number | undefined
+
+async function openVoucherDialog(accountSet: FmsAccountSetVO) {
+  voucherAccountSetId = accountSet.id
+  voucherPage.pageNo = 1
+  voucherVisible.value = true
+  await loadVouchers()
+}
+
+async function loadVouchers() {
+  if (!voucherAccountSetId) return
+  voucherLoading.value = true
+  try {
+    const page = await FmsAccountSetApi.getVoucherPage(voucherAccountSetId, voucherPage.pageNo, voucherPage.pageSize)
+    vouchers.value = page?.list || []
+    voucherTotal.value = page?.total || 0
+  } finally {
+    voucherLoading.value = false
+  }
 }
 
 /** 初始化 */

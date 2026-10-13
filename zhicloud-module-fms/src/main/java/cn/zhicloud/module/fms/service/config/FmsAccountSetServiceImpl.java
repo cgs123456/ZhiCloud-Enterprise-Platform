@@ -1,10 +1,14 @@
 package cn.zhicloud.module.fms.service.config;
 
+import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
 import cn.zhicloud.module.erp.api.ErpAccountBookApi;
+import cn.zhicloud.module.erp.api.ErpGlVoucherApi;
+import cn.zhicloud.module.erp.controller.admin.finance.vo.glvoucher.ErpGlVoucherPageReqVO;
 import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountBookRespVO;
 import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountSetInitializeReqVO;
 import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountSetSaveReqVO;
+import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountSetVoucherRespVO;
 import cn.zhicloud.module.fms.dal.dataobject.config.FmsAccountSetDO;
 import cn.zhicloud.module.fms.dal.dataobject.config.FmsAccountUserDO;
 import cn.zhicloud.module.fms.dal.dataobject.config.FmsFinanceParameterDO;
@@ -42,6 +46,10 @@ public class FmsAccountSetServiceImpl implements FmsAccountSetService {
      * ERP 账簿只读查询（V191 跨模块契约，经 erp.api 边界包；不直接 import ERP 的 mapper/service */
     @Resource
     private ErpAccountBookApi erpAccountBookApi;
+    /**
+     * ERP 会计凭证只读查询（V193 跨模块契约，经 erp.api 边界包） */
+    @Resource
+    private ErpGlVoucherApi erpGlVoucherApi;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -115,6 +123,26 @@ public class FmsAccountSetServiceImpl implements FmsAccountSetService {
         List<cn.zhicloud.module.erp.controller.admin.finance.vo.accountbook.ErpAccountBookRespVO> books =
                 erpAccountBookApi.getAccountBookListByAccountSetId(accountSetId);
         return BeanUtils.toBean(books, FmsAccountBookRespVO.class);
+    }
+
+    @Override
+    public PageResult<FmsAccountSetVoucherRespVO> getVoucherPage(Long accountSetId, Integer pageNo, Integer pageSize) {
+        if (accountSetId == null) {
+            return new PageResult<>(List.of(), 0L);
+        }
+        // 校验账套存在，避免为不存在的账套返回空页掩盖了编号错误
+        if (accountSetMapper.selectById(accountSetId) == null) {
+            throw exception(ACCOUNT_SET_NOT_EXISTS);
+        }
+        // 构造 ERP 侧查询条件：只传账套编号，账簿解析由 ERP 侧完成（单一来源是账簿）
+        ErpGlVoucherPageReqVO reqVO = new ErpGlVoucherPageReqVO();
+        reqVO.setAccountSetId(accountSetId);
+        reqVO.setPageNo(pageNo == null ? 1 : pageNo);
+        reqVO.setPageSize(pageSize == null ? 10 : pageSize);
+        PageResult<cn.zhicloud.module.erp.controller.admin.finance.vo.glvoucher.ErpGlVoucherRespVO> page =
+                erpGlVoucherApi.getGlVoucherPageByAccountSetId(reqVO);
+        // 边界处独立转换为 FMS 自己的 VO，不把 ERP 的 RespVO 直接泄漏给 FMS 前端
+        return new PageResult<>(BeanUtils.toBean(page.getList(), FmsAccountSetVoucherRespVO.class), page.getTotal());
     }
 
     @Override

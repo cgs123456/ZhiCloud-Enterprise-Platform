@@ -10,7 +10,7 @@ import cn.zhicloud.module.erp.controller.admin.finance.vo.glvoucher.ErpGlVoucher
 import cn.zhicloud.module.erp.controller.admin.finance.vo.glvoucher.ErpGlVoucherSaveReqVO;
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpGlVoucherDO;
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpGlVoucherEntryDO;
-import cn.zhicloud.module.erp.enums.finance.ErpGlVoucherStatusEnum;
+import cn.zhicloud.module.erp.service.finance.ErpGlVoucherConvert;
 import cn.zhicloud.module.erp.service.finance.ErpGlVoucherService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -76,7 +76,7 @@ public class ErpGlVoucherController {
         if (voucher == null) {
             return success(null);
         }
-        ErpGlVoucherRespVO respVO = convertToRespVO(voucher);
+        ErpGlVoucherRespVO respVO = ErpGlVoucherConvert.convert(voucher);
         // 填充分录
         List<ErpGlVoucherEntryDO> entries = glVoucherService.getGlVoucherEntryList(id);
         if (entries != null) {
@@ -96,7 +96,7 @@ public class ErpGlVoucherController {
         PageResult<ErpGlVoucherDO> pageResult = glVoucherService.getGlVoucherPage(pageReqVO);
         PageResult<ErpGlVoucherRespVO> result = new PageResult<>(
                 pageResult.getList() == null ? null
-                        : pageResult.getList().stream().map(this::convertToRespVO).toList(),
+                        : ErpGlVoucherConvert.convertList(pageResult.getList()),
                 pageResult.getTotal());
         return success(result);
     }
@@ -120,34 +120,8 @@ public class ErpGlVoucherController {
     }
 
     // ==================== 内部辅助方法 ====================
-
-    private ErpGlVoucherRespVO convertToRespVO(ErpGlVoucherDO voucher) {
-        ErpGlVoucherRespVO respVO = BeanUtils.toBean(voucher, ErpGlVoucherRespVO.class);
-        if (respVO.getStatus() != null) {
-            for (ErpGlVoucherStatusEnum statusEnum : ErpGlVoucherStatusEnum.values()) {
-                if (statusEnum.getStatus().equals(respVO.getStatus())) {
-                    respVO.setStatusName(statusEnum.getName());
-                    break;
-                }
-            }
-        }
-        if (respVO.getVoucherType() != null) {
-            respVO.setVoucherTypeName(getVoucherTypeName(respVO.getVoucherType()));
-        }
-        return respVO;
-    }
-
-    /**
-     * 凭证类型名称映射：10 收款 / 20 付款 / 30 转账 / 40 记账
-     */
-    private String getVoucherTypeName(Integer voucherType) {
-        return switch (voucherType) {
-            case 10 -> "收款";
-            case 20 -> "付款";
-            case 30 -> "转账";
-            case 40 -> "记账";
-            default -> "未知";
-        };
-    }
+    //
+    // 转换统一走 ErpGlVoucherConvert：FMS 侧按账套查凭证流水（ErpGlVoucherApiImpl）复用同一套
+    // 「状态名称 / 凭证类型名称」映射，避免两处逻辑漂移。
 
 }

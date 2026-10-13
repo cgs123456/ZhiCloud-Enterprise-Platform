@@ -1,10 +1,12 @@
 package cn.zhicloud.module.fms.controller.admin.config;
 
 import cn.zhicloud.framework.common.pojo.CommonResult;
+import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
 import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountSetInitializeReqVO;
 import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountSetRespVO;
 import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountBookRespVO;
+import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountSetVoucherRespVO;
 import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountSetSaveReqVO;
 import cn.zhicloud.module.fms.dal.dataobject.config.FmsAccountSetDO;
 import cn.zhicloud.module.fms.dal.dataobject.config.FmsAccountUserDO;
@@ -12,6 +14,7 @@ import cn.zhicloud.module.fms.service.config.FmsAccountSetService;
 import cn.zhicloud.module.fms.service.config.FmsAccountUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
@@ -75,6 +78,21 @@ public class FmsAccountSetController {
     public CommonResult<List<FmsAccountBookRespVO>> getAccountBookList(@RequestParam("id") Long id) {
         List<FmsAccountBookRespVO> list = accountSetService.getAccountBookList(id);
         return success(list);
+    }
+
+    @GetMapping("/vouchers")
+    @Operation(summary = "分页查询账套下的 ERP 凭证流水",
+            description = "V193：账套 → 账簿 → 凭证层级打通后账套详情页的凭证流水；跨模块只读查询，经 erp.api 边界包，不建平行表")
+    @Parameter(name = "id", description = "账套编号", required = true, example = "1")
+    @Parameters({
+            @Parameter(name = "pageNo", description = "页码", example = "1"),
+            @Parameter(name = "pageSize", description = "每页条数", example = "10") })
+    @PreAuthorize("@ss.hasPermission('fms:config:account-set:query')")
+    public CommonResult<PageResult<FmsAccountSetVoucherRespVO>> getVoucherPage(
+            @RequestParam("id") Long id,
+            @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
+            @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
+        return success(accountSetService.getVoucherPage(id, pageNo, pageSize));
     }
 
     @PostMapping("/create")

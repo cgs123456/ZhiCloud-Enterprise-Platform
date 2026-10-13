@@ -29,6 +29,7 @@ public interface ErpGlVoucherMapper extends BaseMapperX<ErpGlVoucherDO> {
     default PageResult<ErpGlVoucherDO> selectPage(ErpGlVoucherPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<ErpGlVoucherDO>()
                 .likeIfPresent(ErpGlVoucherDO::getVoucherNo, reqVO.getVoucherNo())
+                .inIfPresent(ErpGlVoucherDO::getAccountBookId, reqVO.getAccountBookIds())
                 .eqIfPresent(ErpGlVoucherDO::getVoucherType, reqVO.getVoucherType())
                 .eqIfPresent(ErpGlVoucherDO::getStatus, reqVO.getStatus())
                 .eqIfPresent(ErpGlVoucherDO::getPeriodId, reqVO.getPeriodId())

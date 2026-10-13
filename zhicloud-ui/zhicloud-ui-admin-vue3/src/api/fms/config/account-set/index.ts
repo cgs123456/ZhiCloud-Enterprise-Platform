@@ -72,5 +72,12 @@ export const FmsAccountSetApi = {
   // 获得账套关联的 ERP 账簿列表（V191 打通「账套 → 账簿 → 凭证」层级）
   getAccountBookList: async (id: number) => {
     return await request.get({ url: '/fms/config/account-set/account-books?id=' + id })
+  },
+
+  // 分页查询账套下的 ERP 凭证流水（V193：账套 → 账簿 → 凭证）
+  getVoucherPage: async (id: number, pageNo: number, pageSize: number) => {
+    return await request.get({
+      url: `/fms/config/account-set/vouchers?id=${id}&pageNo=${pageNo}&pageSize=${pageSize}`
+    })
   }
 }

@@ -11,12 +11,14 @@ import cn.zhicloud.module.erp.dal.dataobject.accounting.ErpAccountingEventDO;
 import cn.zhicloud.module.erp.dal.dataobject.accounting.ErpAccountingPostingDO;
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpGlAccountDO;
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpGlVoucherDO;
+import cn.zhicloud.module.erp.dal.dataobject.finance.ErpAccountBookDO;
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpGlVoucherEntryDO;
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpPeriodDO;
 import cn.zhicloud.module.erp.dal.mysql.accounting.ErpAccountingEventMapper;
 import cn.zhicloud.module.erp.dal.mysql.accounting.ErpAccountingPostingMapper;
 import cn.zhicloud.module.erp.dal.mysql.finance.ErpGlAccountMapper;
 import cn.zhicloud.module.erp.dal.mysql.finance.ErpGlVoucherEntryMapper;
+import cn.zhicloud.module.erp.dal.mysql.finance.ErpAccountBookMapper;
 import cn.zhicloud.module.erp.dal.mysql.finance.ErpGlVoucherMapper;
 import cn.zhicloud.framework.security.core.util.SecurityFrameworkUtils;
 import cn.zhicloud.framework.tenant.core.util.TenantUtils;
@@ -34,8 +36,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.zhicloud.module.erp.enums.ErrorCodeConstants.*;
@@ -71,6 +75,8 @@ public class ErpGlVoucherServiceImpl implements ErpGlVoucherService {
     private ErpAccountingPostingMapper accountingPostingMapper;
     @Resource
     private ErpAccountingEventMapper accountingEventMapper;
+    @Resource
+    private ErpAccountBookMapper accountBookMapper;
 
     // ==================== 凭证 CRUD ====================
 
@@ -216,6 +222,17 @@ public class ErpGlVoucherServiceImpl implements ErpGlVoucherService {
 
     @Override
     public PageResult<ErpGlVoucherDO> getGlVoucherPage(ErpGlVoucherPageReqVO pageReqVO) {
+        // V193：按 FMS 账套筛凭证——先把账套解析成它名下的账簿集合，再按账簿 IN 查询。
+        // 凭证不落 account_set_id 冗余列（账簿改挂账套时冗余列会漂移），单一来源是账簿。
+        if (pageReqVO.getAccountSetId() != null) {
+            List<Long> bookIds = accountBookMapper.selectListByAccountSetId(pageReqVO.getAccountSetId()).stream()
+                    .map(ErpAccountBookDO::getId).collect(Collectors.toList());
+            pageReqVO.setAccountBookIds(bookIds);
+            // 账套下无账簿：直接返回空页，避免 IN(空集合) 的语义歧义
+            if (bookIds.isEmpty()) {
+                return new PageResult<>(Collections.emptyList(), 0L);
+            }
+        }
         return glVoucherMapper.selectPage(pageReqVO);
     }
 

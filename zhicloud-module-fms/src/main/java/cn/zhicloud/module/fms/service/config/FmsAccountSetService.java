@@ -1,8 +1,10 @@
 package cn.zhicloud.module.fms.service.config;
 
+import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountBookRespVO;
 import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountSetInitializeReqVO;
 import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountSetSaveReqVO;
+import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountSetVoucherRespVO;
 import cn.zhicloud.module.fms.dal.dataobject.config.FmsAccountSetDO;
 import jakarta.validation.Valid;
 
@@ -32,5 +34,15 @@ public interface FmsAccountSetService {
      * @return 账簿列表，无则空列表
      */
     List<FmsAccountBookRespVO> getAccountBookList(Long accountSetId);
+
+    /**
+     * 分页查询账套下的 ERP 凭证流水（V193 只读；不建平行表，经 erp.api 边界包）
+     *
+     * @param accountSetId 账套编号
+     * @param pageNo 页码
+     * @param pageSize 每页条数
+     * @return 凭证分页结果
+     */
+    PageResult<FmsAccountSetVoucherRespVO> getVoucherPage(Long accountSetId, Integer pageNo, Integer pageSize);
 
 }

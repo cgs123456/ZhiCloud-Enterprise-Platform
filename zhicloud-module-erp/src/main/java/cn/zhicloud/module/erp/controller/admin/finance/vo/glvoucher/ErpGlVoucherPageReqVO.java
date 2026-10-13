@@ -8,6 +8,7 @@ import lombok.ToString;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static cn.zhicloud.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND;
 
@@ -19,6 +20,21 @@ public class ErpGlVoucherPageReqVO extends PageParam {
 
     @Schema(description = "凭证字号", example = "记-001")
     private String voucherNo;
+
+    /**
+     * FMS 账套编号（可空；按账套筛凭证流水，见 V193）
+     *
+     * <p>凭证只到 account_book_id，账簿再挂账套，故按账套筛凭证需先解析该账套下的
+     * 账簿集合后 IN 查询；不在 erp_gl_voucher 落 account_set_id 冗余列——账簿改挂账套
+     * 时冗余列会漂移（两套真相），单一来源是账簿。
+     */
+    @Schema(description = "FMS 账套编号（按账套筛凭证流水，见 V193）", example = "1")
+    private Long accountSetId;
+
+    /**
+     * 账簿编号集合（内部字段，由 accountSetId 解析后填充；不接收前端传值，避免越权跨账套查询）
+     */
+    private List<Long> accountBookIds;
 
     @Schema(description = "凭证类型", example = "40")
     private Integer voucherType;
