@@ -702,6 +702,20 @@
       "sha256": "a73a752dcb0722876adda57988496cc42eaaeef7e7cd243cac227596dba84940",
       "verification_file": "V190_verify.sql",
       "verification_sha256": "a67de9720d94b095753bd63002b45b330af3b753799ffad64fded4fd104de316"
+    },
+    {
+      "version": 191,
+      "file": "V191__erp_account_book_link_account_set.sql",
+      "sha256": "47fef5ddef88c61be2eca0140dac1c3d05548cb18d6b879d70e2cf628fb0ed92",
+      "verification_file": "V191_verify.sql",
+      "verification_sha256": "f56e2c89b597420f82c9a8e3a4544253788bfb957265aa7dadd841b6188ac568"
+    },
+    {
+      "version": 192,
+      "file": "V192__fix_v191_index_selfcheck.sql",
+      "sha256": "9790bdde834a3b301063893f633a60301a1fa51f54dcd147a1b1b5a76bf75d5c",
+      "verification_file": "V192_verify.sql",
+      "verification_sha256": "bfcac9dbf651dd5432cd98a6cf675dafbb6f5094d19a921dad708bedfd727526"
     }
   ]
 }

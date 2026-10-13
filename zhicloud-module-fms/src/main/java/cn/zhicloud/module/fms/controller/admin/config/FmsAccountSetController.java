@@ -4,6 +4,7 @@ import cn.zhicloud.framework.common.pojo.CommonResult;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
 import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountSetInitializeReqVO;
 import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountSetRespVO;
+import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountBookRespVO;
 import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountSetSaveReqVO;
 import cn.zhicloud.module.fms.dal.dataobject.config.FmsAccountSetDO;
 import cn.zhicloud.module.fms.dal.dataobject.config.FmsAccountUserDO;
@@ -36,7 +37,6 @@ public class FmsAccountSetController {
     private FmsAccountSetService accountSetService;
     @Resource
     private FmsAccountUserService accountUserService;
-
     @GetMapping("/list")
     @Operation(summary = "获得当前用户的账套列表")
     public CommonResult<List<FmsAccountSetRespVO>> getAccountSetList() {
@@ -65,6 +65,16 @@ public class FmsAccountSetController {
     public CommonResult<FmsAccountSetRespVO> getAccountSet(@RequestParam("id") Long id) {
         FmsAccountSetDO accountSet = accountSetService.getAccountSet(id);
         return success(BeanUtils.toBean(accountSet, FmsAccountSetRespVO.class));
+    }
+
+    @GetMapping("/account-books")
+    @Operation(summary = "获得账套关联的 ERP 账簿列表",
+            description = "V191 打通『账套 → 账簿 → 凭证』层级后，账套详情页据此展示本账套挂了哪些账簿；跨模块只读查询，经 erp.api 边界包")
+    @Parameter(name = "id", description = "账套编号", required = true, example = "1")
+    @PreAuthorize("@ss.hasPermission('fms:config:account-set:query')")
+    public CommonResult<List<FmsAccountBookRespVO>> getAccountBookList(@RequestParam("id") Long id) {
+        List<FmsAccountBookRespVO> list = accountSetService.getAccountBookList(id);
+        return success(list);
     }
 
     @PostMapping("/create")

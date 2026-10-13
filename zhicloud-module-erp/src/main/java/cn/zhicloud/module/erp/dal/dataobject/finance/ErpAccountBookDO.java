@@ -36,6 +36,13 @@ public class ErpAccountBookDO extends TenantBaseDO {
     @TableId
     private Long id;
     /**
+     * FMS 账套编号（可空；挂接后凭证可按账套维度汇总，见 V191）
+     *
+     * <p>刻意可空且不加外键：FMS 与 ERP 是独立 Modulith 模块，跨模块 FK 会让
+     * Flyway 建表顺序耦合两模块；存量账簿为 NULL，ERP 已验证的会计事件链零改动。
+     */
+    private Long accountSetId;
+    /**
      * 账簿编码（如 BOOK-CAS、BOOK-IFRS）
      */
     private String code;

@@ -71,6 +71,15 @@
             授权
           </el-button>
           <el-button
+            v-if="scope.row.initialized"
+            link
+            type="info"
+            @click="openBookDialog(scope.row)"
+            v-hasPermi="['fms:config:account-set:query']"
+          >
+            关联账簿
+          </el-button>
+          <el-button
             v-if="!scope.row.initialized && scope.row.level !== FmsAccountUserLevelEnum.READ"
             link
             type="primary"
@@ -83,6 +92,29 @@
       </el-table-column>
     </el-table>
   </ContentWrap>
+
+  <!-- 账套关联的 ERP 账簿 -->
+  <Dialog v-model="bookVisible" title="账套关联的账簿" width="560">
+    <el-table v-loading="bookLoading" :data="books" size="small" stripe>
+      <el-table-column align="center" label="账簿编码" prop="code" min-width="120" />
+      <el-table-column align="center" label="账簿名称" prop="name" show-overflow-tooltip />
+      <el-table-column align="center" label="会计准则" width="110">
+        <template #default="scope">
+          {{ accountingStandardText(scope.row.accountingStandard) }}
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="主账簿" width="90">
+        <template #default="scope">{{ scope.row.isPrimary ? '是' : '否' }}</template>
+      </el-table-column>
+      <el-table-column align="center" label="状态" width="80">
+        <template #default="scope">{{ scope.row.status === 0 ? '开启' : '关闭' }}</template>
+      </el-table-column>
+    </el-table>
+    <el-empty v-if="!bookLoading && books.length === 0" description="该账套尚未挂接账簿" />
+    <template #footer>
+      <el-button @click="bookVisible = false">关 闭</el-button>
+    </template>
+  </Dialog>
 
   <!-- 添加或修改账套 -->
   <FmsAccountSetForm ref="formRef" @success="getList" />
@@ -147,6 +179,27 @@ function openMemberForm(accountSet: FmsAccountSetVO) {
 /** 账套初始化成功 */
 async function handleInitializeSuccess() {
   await getList()
+}
+
+/** 查看账套关联的 ERP 账簿（V191 打通「账套 → 账簿 → 凭证」层级） */
+const bookVisible = ref(false)
+const bookLoading = ref(false)
+const books = ref<any[]>([])
+async function openBookDialog(accountSet: FmsAccountSetVO) {
+  bookVisible.value = true
+  bookLoading.value = true
+  books.value = []
+  try {
+    books.value = (await FmsAccountSetApi.getAccountBookList(accountSet.id!)) || []
+  } finally {
+    bookLoading.value = false
+  }
+}
+/** 会计准则文案（前端展示，避免直接依赖后端枚举） */
+function accountingStandardText(standard?: number) {
+  if (standard === 10) return '中国会计准则'
+  if (standard === 20) return '国际会计准则'
+  return standard ?? '-'
 }
 
 /** 初始化 */

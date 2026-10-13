@@ -31,9 +31,22 @@ public interface ErpAccountBookMapper extends BaseMapperX<ErpAccountBookDO> {
         return selectList(ErpAccountBookDO::getStatus, status);
     }
 
+    /**
+     * 按 FMS 账套查账簿列表（V191 打通「账套 → 账簿」层级后供跨模块只读查询）
+     *
+     * <p>只读、不建平行表：FMS 账套详情页据此展示「本账套挂了哪些账簿」。
+     */
+    default List<ErpAccountBookDO> selectListByAccountSetId(Long accountSetId) {
+        return selectList(new LambdaQueryWrapperX<ErpAccountBookDO>()
+                .eq(ErpAccountBookDO::getAccountSetId, accountSetId)
+                .orderByAsc(ErpAccountBookDO::getSort)
+                .orderByDesc(ErpAccountBookDO::getId));
+    }
+
     default PageResult<ErpAccountBookDO> selectPage(ErpAccountBookPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<ErpAccountBookDO>()
                 .likeIfPresent(ErpAccountBookDO::getCode, reqVO.getCode())
+                .eqIfPresent(ErpAccountBookDO::getAccountSetId, reqVO.getAccountSetId())
                 .likeIfPresent(ErpAccountBookDO::getName, reqVO.getName())
                 .eqIfPresent(ErpAccountBookDO::getAccountingStandard, reqVO.getAccountingStandard())
                 .eqIfPresent(ErpAccountBookDO::getCurrencyId, reqVO.getCurrencyId())

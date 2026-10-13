@@ -18,6 +18,14 @@
     </description>
 
     <dependencies>
+        <!-- ERP：FMS/ERP 财务融合（V191，台账 §12.212）后账套详情页要反向查
+             「本账套挂了哪些账簿」，经 erp.api 边界包只读查询；ERP 不依赖 FMS，不成环 -->
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-module-erp</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
         <!-- 业务组件 -->
         <dependency>
             <groupId>cn.zhicloud</groupId>

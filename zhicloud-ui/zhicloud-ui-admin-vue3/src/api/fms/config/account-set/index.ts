@@ -67,5 +67,10 @@ export const FmsAccountSetApi = {
   // 初始化账套
   initializeAccountSet: async (data: FmsAccountSetInitializeReqVO) => {
     return await request.put({ url: '/fms/config/account-set/initialize', data })
+  },
+
+  // 获得账套关联的 ERP 账簿列表（V191 打通「账套 → 账簿 → 凭证」层级）
+  getAccountBookList: async (id: number) => {
+    return await request.get({ url: '/fms/config/account-set/account-books?id=' + id })
   }
 }

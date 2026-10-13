@@ -16,6 +16,10 @@ public class ErpAccountBookRespVO {
     @ExcelProperty("编号")
     private Long id;
 
+    @Schema(description = "FMS 账套编号（可空；挂接后凭证可按账套维度汇总，见 V191）", example = "1")
+    @ExcelProperty("账套编号")
+    private Long accountSetId;
+
     @Schema(description = "账簿编码", requiredMode = Schema.RequiredMode.REQUIRED, example = "BOOK-CAS")
     @ExcelProperty("账簿编码")
     private String code;

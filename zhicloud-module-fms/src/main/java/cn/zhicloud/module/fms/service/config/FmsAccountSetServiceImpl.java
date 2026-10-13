@@ -1,6 +1,8 @@
 package cn.zhicloud.module.fms.service.config;
 
 import cn.zhicloud.framework.common.util.object.BeanUtils;
+import cn.zhicloud.module.erp.api.ErpAccountBookApi;
+import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountBookRespVO;
 import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountSetInitializeReqVO;
 import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountSetSaveReqVO;
 import cn.zhicloud.module.fms.dal.dataobject.config.FmsAccountSetDO;
@@ -36,6 +38,10 @@ public class FmsAccountSetServiceImpl implements FmsAccountSetService {
     private FmsAccountUserMapper accountUserMapper;
     @Resource
     private FmsFinanceParameterMapper financeParameterMapper;
+    /**
+     * ERP 账簿只读查询（V191 跨模块契约，经 erp.api 边界包；不直接 import ERP 的 mapper/service */
+    @Resource
+    private ErpAccountBookApi erpAccountBookApi;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -94,6 +100,21 @@ public class FmsAccountSetServiceImpl implements FmsAccountSetService {
     @Override
     public FmsAccountSetDO getAccountSet(Long id) {
         return accountSetMapper.selectById(id);
+    }
+
+    @Override
+    public List<FmsAccountBookRespVO> getAccountBookList(Long accountSetId) {
+        if (accountSetId == null) {
+            return List.of();
+        }
+        // 校验账套存在，避免为不存在的账套返回空列表掩盖了编号错误
+        if (accountSetMapper.selectById(accountSetId) == null) {
+            throw exception(ACCOUNT_SET_NOT_EXISTS);
+        }
+        // 跨模块只读查询，VO 在边界处独立转换（不把 ERP 的 RespVO 直接泄漏给 FMS 前端）
+        List<cn.zhicloud.module.erp.controller.admin.finance.vo.accountbook.ErpAccountBookRespVO> books =
+                erpAccountBookApi.getAccountBookListByAccountSetId(accountSetId);
+        return BeanUtils.toBean(books, FmsAccountBookRespVO.class);
     }
 
     @Override

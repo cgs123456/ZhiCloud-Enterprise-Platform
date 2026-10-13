@@ -15,6 +15,9 @@ public class ErpAccountBookPageReqVO extends PageParam {
     @Schema(description = "账簿编码", example = "BOOK-CAS")
     private String code;
 
+    @Schema(description = "FMS 账套编号（挂接后可按账套筛账簿，见 V191）", example = "1")
+    private Long accountSetId;
+
     @Schema(description = "账簿名称", example = "中国会计准则账簿")
     private String name;
 
