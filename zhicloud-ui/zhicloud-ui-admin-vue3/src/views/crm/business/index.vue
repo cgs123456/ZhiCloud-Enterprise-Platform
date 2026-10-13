@@ -143,6 +143,16 @@
           >
             编辑
           </el-button>
+          <!-- 未结束商机才能推进阶段；已结束只读 -->
+          <el-button
+            v-if="scope.row.endStatus == null"
+            v-hasPermi="['crm:business:update']"
+            link
+            type="success"
+            @click="openStatusForm(scope.row)"
+          >
+            推进阶段
+          </el-button>
           <el-button
             v-hasPermi="['crm:business:delete']"
             link
@@ -165,12 +175,58 @@
 
   <!-- 表单弹窗：添加/修改 -->
   <BusinessForm ref="formRef" @success="getList" />
+
+  <!-- 推进阶段弹窗：按状态组的可选阶段推进，或置为赢单/输单/无效 -->
+  <Dialog v-model="statusFormVisible" title="推进商机阶段" width="480">
+    <el-form
+      ref="statusFormRef"
+      v-loading="statusSubmitting"
+      :model="statusForm"
+      :rules="statusRules"
+      label-width="110px"
+    >
+      <el-form-item label="商机">
+        <el-input :model-value="currentRow?.name" disabled class="!w-1/1" />
+      </el-form-item>
+      <el-form-item label="当前阶段">
+        <el-input :model-value="currentRow?.statusName ?? '未开始'" disabled class="!w-1/1" />
+      </el-form-item>
+      <el-form-item label="新阶段" prop="statusId">
+        <el-select
+          v-model="statusForm.statusId"
+          placeholder="请选择新阶段"
+          class="!w-1/1"
+          @change="onStatusChange"
+        >
+          <el-option
+            v-for="s in statusOptions"
+            :key="s.id"
+            :label="stageLabel(s)"
+            :value="s.id!"
+          />
+        </el-select>
+      </el-form-item>
+      <!-- 赢单/输单是独立于阶段的结束标记（CrmBusinessUpdateStatusReqVO.endStatus） -->
+      <el-form-item label="结束标记">
+        <el-radio-group v-model="statusForm.endStatus">
+          <el-radio :value="undefined">不结束</el-radio>
+          <el-radio :value="1">赢单</el-radio>
+          <el-radio :value="2">输单</el-radio>
+        </el-radio-group>
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button type="primary" :disabled="statusSubmitting" @click="submitStatus">确认推进</el-button>
+      <el-button @click="statusFormVisible = false">取 消</el-button>
+    </template>
+  </Dialog>
 </template>
 
 <script lang="ts" setup>
 import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import * as BusinessApi from '@/api/crm/business'
+import { getBusinessStatusSimpleList, BusinessStatusVO } from '@/api/crm/business/status'
 import BusinessForm from './BusinessForm.vue'
 import { erpPriceTableColumnFormatter } from '@/utils'
 import { TabsPaneContext } from 'element-plus'
@@ -241,6 +297,56 @@ const openCustomerDetail = (id: number) => {
 const formRef = ref()
 const openForm = (type: string, id?: number) => {
   formRef.value.open(type, id)
+}
+
+// ========== 推进阶段 ==========
+const currentRow = ref<any>(null)
+const statusFormVisible = ref(false)
+const statusSubmitting = ref(false)
+const statusFormRef = ref()
+const statusOptions = ref<BusinessStatusVO[]>([])
+const statusForm = ref<any>({})
+const statusRules = reactive({
+  statusId: [{ required: true, message: '新阶段不能为空', trigger: 'change' }]
+})
+
+/** 阶段标签：带进度百分比（阶段本身无 endStatus，结束态由独立字段标记） */
+const stageLabel = (s: BusinessStatusVO) =>
+  s.percent != null ? `${s.name}（${s.percent}%）` : `${s.name}（进行中）`
+
+/** 选中 100% 阶段时默认带上赢单标记，其余清空 */
+const onStatusChange = (statusId: number) => {
+  const s = statusOptions.value.find((x) => x.id === statusId)
+  statusForm.value.endStatus = s?.percent === 100 ? 1 : undefined
+}
+
+const openStatusForm = async (row: any) => {
+  currentRow.value = row
+  statusForm.value = { id: row.id, statusId: undefined, endStatus: undefined }
+  statusFormVisible.value = true
+  // 该商机所属状态组的可选阶段；无状态组时无可选项
+  if (row.statusTypeId) {
+    try {
+      statusOptions.value = (await getBusinessStatusSimpleList(row.statusTypeId)) || []
+    } catch {
+      statusOptions.value = []
+    }
+  } else {
+    statusOptions.value = []
+  }
+}
+
+const submitStatus = async () => {
+  await statusFormRef.value.validate()
+  statusSubmitting.value = true
+  try {
+    await BusinessApi.updateBusinessStatus(statusForm.value)
+    message.success('已推进商机阶段')
+    statusFormVisible.value = false
+    await getList()
+  } finally {
+    statusSubmitting.value = false
+  }
 }
 
 /** 删除按钮操作 */
