@@ -19,6 +19,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.zhicloud.module.qms.enums.ErrorCodeConstants.*;
@@ -55,6 +57,25 @@ public class ElectronicSignatureAspect {
      */
     private static final String HEADER_REASON = "X-Electronic-Signature-Reason";
 
+    /**
+     * 解码签名请求头
+     *
+     * <p>HTTP 头只能是 Latin-1，非 ASCII 内容（中文签名理由、含特殊字符的密码）
+     * 必须由客户端 URL 编码后传输。此处按 UTF-8 解码；解码失败时原样返回，
+     * 让后续的密码校验按原值失败，避免把「没编码的明文」静默吞掉。
+     */
+    private static String decodeHeader(String value) {
+        if (value == null || value.indexOf('%') < 0) {
+            return value;
+        }
+        try {
+            return URLDecoder.decode(value, StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException ex) {
+            log.warn("[decodeHeader] 签名请求头 URL 解码失败，按原值继续: {}", ex.getMessage());
+            return value;
+        }
+    }
+
     @Resource
     private ElectronicSignatureLogService electronicSignatureLogService;
 
@@ -67,8 +88,11 @@ public class ElectronicSignatureAspect {
         HttpServletRequest request = getCurrentRequest();
 
         // 2. 从请求头获取签名凭据
-        String username = request != null ? request.getHeader(HEADER_USERNAME) : null;
-        String password = request != null ? request.getHeader(HEADER_PASSWORD) : null;
+        //    HTTP 头只能是 Latin-1，非 ASCII 内容（中文签名理由）必须由客户端 URL 编码后传输，
+        //    此处统一解码——否则中文用户的签名理由会按 ISO-8859-1 解码成乱码，
+        //    而 21 CFR Part 11 要求审计记录里的签署理由可读。
+        String username = decodeHeader(request != null ? request.getHeader(HEADER_USERNAME) : null);
+        String password = decodeHeader(request != null ? request.getHeader(HEADER_PASSWORD) : null);
         if (StrUtil.isBlank(username)) {
             throw exception(ELECTRONIC_SIGNATURE_USERNAME_REQUIRED);
         }
@@ -77,7 +101,7 @@ public class ElectronicSignatureAspect {
         }
 
         // 3. 若需要签名理由，校验理由
-        String reason = request != null ? request.getHeader(HEADER_REASON) : null;
+        String reason = decodeHeader(request != null ? request.getHeader(HEADER_REASON) : null);
         if (electronicSignature.requireReason() && StrUtil.isBlank(reason)) {
             throw exception(ELECTRONIC_SIGNATURE_REASON_REQUIRED);
         }

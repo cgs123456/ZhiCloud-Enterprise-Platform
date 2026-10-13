@@ -78,15 +78,18 @@ export const NcrDocumentApi = {
   },
 
   // 关闭 NCR 报告（状态 30 -> 40 已关闭）
-  // 受控操作：后端 @ElectronicSignature 要求 X-Electronic-Signature-* 三个头（21 CFR Part 11）
+  // 受控操作：后端 @ElectronicSignature 要求 X-Electronic-Signature-* 三个头（21 CFR Part 11）。
+  // HTTP 头只能是 Latin-1，含中文的签名理由/密码必须 URL 编码后传输，后端按 UTF-8 解码；
+  // 不编码会把中文理由写成乱码，而 Part 11 要求审计记录里的签署理由可读。
   closeNcrDocument: async (id: number, sign?: { username: string; password: string; reason: string }) => {
+    const enc = (v: string) => encodeURIComponent(v)
     return await request.put({
       url: '/qms/ncr/close?id=' + id,
       headers: sign
         ? {
-            'X-Electronic-Signature-Username': sign.username,
-            'X-Electronic-Signature-Password': sign.password,
-            'X-Electronic-Signature-Reason': sign.reason
+            'X-Electronic-Signature-Username': enc(sign.username),
+            'X-Electronic-Signature-Password': enc(sign.password),
+            'X-Electronic-Signature-Reason': enc(sign.reason)
           }
         : undefined
     })
