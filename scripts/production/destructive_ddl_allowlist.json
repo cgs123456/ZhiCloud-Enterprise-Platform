@@ -81,6 +81,13 @@
         "trade_order_log",
         "trade_statistics"
       ]
+    },
+    {
+      "file": "V190__fms_erp_finance_merge.sql",
+      "reason": "2026-10-13 所有者批准 FMS 与 ERP 财务融合：本位币统一走 ERP erp_currency 单一真相，fms_currency 冗余删除；历史本位币编码已回填 fms_account_set.currency_code，见台账 §12.210",
+      "tables": [
+        "fms_currency"
+      ]
     }
   ]
 }

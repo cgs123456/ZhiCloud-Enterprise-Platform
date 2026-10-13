@@ -130,8 +130,8 @@
 import type { FormInstance, FormRules } from 'element-plus'
 import { FmsAccountSetApi } from '@/api/fms/config/account-set'
 import type { FmsAccountSetVO } from '@/api/fms/config/account-set'
-import { FmsCurrencyApi } from '@/api/fms/config/currency'
-import type { FmsCurrencyVO } from '@/api/fms/config/currency'
+import { CurrencyApi } from '@/api/erp/currency'
+import type { CurrencyVO } from '@/api/erp/currency'
 import { FmsFinanceParameterApi } from '@/api/fms/config/finance-parameter'
 import type { FmsFinanceParameterVO } from '@/api/fms/config/finance-parameter'
 import { useFmsStore } from '@/views/fms/store/fms'
@@ -162,7 +162,7 @@ const accountSetId = computed(() => fmsStore.getAccountSetId) // 当前账套编
 const loading = ref(false) // 页面加载中
 const submitLoading = ref(false) // 提交按钮加载中
 const accountSet = ref<FmsAccountSetVO>() // 账套信息
-const currency = ref<FmsCurrencyVO>() // 本位币信息
+const currency = ref<CurrencyVO>() // 本位币信息（融合后取 ERP 币别单一真相）
 const financeParameter = ref<FmsFinanceParameterVO>() // 财务参数
 const originalLevel = ref(FMS_DEFAULT_SUBJECT_LEVEL) // 原科目级次
 const originalRules = ref(parseSubjectCodeRules(FMS_DEFAULT_SUBJECT_CODE_RULE)) // 原科目编码规则
@@ -199,7 +199,7 @@ async function getParameterData() {
     const [accountSetData, financeParameterData, currencyList] = await Promise.all([
       FmsAccountSetApi.getAccountSet(currentAccountSetId),
       FmsFinanceParameterApi.getFinanceParameter(currentAccountSetId),
-      FmsCurrencyApi.getCurrencySimpleList(currentAccountSetId)
+      CurrencyApi.getCurrencyList()
     ])
     if (accountSetId.value !== currentAccountSetId) return
 

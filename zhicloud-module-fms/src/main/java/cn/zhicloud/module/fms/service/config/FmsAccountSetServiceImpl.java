@@ -5,18 +5,15 @@ import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountSe
 import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountSetSaveReqVO;
 import cn.zhicloud.module.fms.dal.dataobject.config.FmsAccountSetDO;
 import cn.zhicloud.module.fms.dal.dataobject.config.FmsAccountUserDO;
-import cn.zhicloud.module.fms.dal.dataobject.config.FmsCurrencyDO;
 import cn.zhicloud.module.fms.dal.dataobject.config.FmsFinanceParameterDO;
 import cn.zhicloud.module.fms.dal.mysql.config.FmsAccountSetMapper;
 import cn.zhicloud.module.fms.dal.mysql.config.FmsAccountUserMapper;
-import cn.zhicloud.module.fms.dal.mysql.config.FmsCurrencyMapper;
 import cn.zhicloud.module.fms.dal.mysql.config.FmsFinanceParameterMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
@@ -37,8 +34,6 @@ public class FmsAccountSetServiceImpl implements FmsAccountSetService {
     private FmsAccountSetMapper accountSetMapper;
     @Resource
     private FmsAccountUserMapper accountUserMapper;
-    @Resource
-    private FmsCurrencyMapper currencyMapper;
     @Resource
     private FmsFinanceParameterMapper financeParameterMapper;
 
@@ -76,16 +71,13 @@ public class FmsAccountSetServiceImpl implements FmsAccountSetService {
         if (Boolean.TRUE.equals(accountSet.getInitialized())) {
             throw exception(ACCOUNT_SET_INITIALIZED);
         }
-        // 1. 创建本位币
-        FmsCurrencyDO currency = FmsCurrencyDO.builder()
-                .accountSetId(accountSet.getId()).code(reqVO.getCurrencyCode())
-                .name(reqVO.getCurrencyCode()).exchangeRate(new BigDecimal("1"))
-                .standard(true).build();
-        currencyMapper.insert(currency);
+        // 1.2 本位币改为直接记 code（2026-10-13 FMS/ERP 财务融合：删 fms_currency 表，
+        //     本位币统一走 ERP 的 erp_currency 单一真相，此处只存编码快照）
         // 2. 回填账套
         FmsAccountSetDO updateObj = new FmsAccountSetDO();
         updateObj.setId(accountSet.getId());
-        updateObj.setCurrencyId(currency.getId());
+        updateObj.setCurrencyId(0L);
+        updateObj.setCurrencyCode(reqVO.getCurrencyCode());
         updateObj.setStartTime(reqVO.getStartTime());
         updateObj.setStandard(reqVO.getStandard());
         updateObj.setInitialized(true);

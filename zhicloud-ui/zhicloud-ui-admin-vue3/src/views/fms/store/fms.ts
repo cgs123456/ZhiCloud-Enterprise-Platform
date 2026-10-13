@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia'
-import { FmsClosingPeriodApi } from '@/api/fms/closing/period'
 import { FmsAccountSetApi } from '@/api/fms/config/account-set'
 import type { FmsAccountSetVO } from '@/api/fms/config/account-set'
 import { FmsAccountUserLevelEnum } from '@/api/fms/config/account-user'
@@ -95,11 +94,12 @@ export const useFmsStore = defineStore('fms', {
       this.accountSet = accountSet
       wsCache.set(FMS_ACCOUNT_SET_CACHE_KEY, accountSet)
     },
-    /** 加载当前账套的会计期间 */
+    /** 加载当前账套的会计期间（本地取当前年月，结账域已并入 ERP 期间管理） */
     async loadCurrentMonth(): Promise<string | undefined> {
       const accountSetId = this.accountSet?.id
       if (!accountSetId) return undefined
-      const currentMonth = await FmsClosingPeriodApi.getCurrentMonth(accountSetId)
+      const now = new Date()
+      const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
       if (this.accountSet?.id !== accountSetId) return undefined
       this.currentMonth = currentMonth
       return currentMonth

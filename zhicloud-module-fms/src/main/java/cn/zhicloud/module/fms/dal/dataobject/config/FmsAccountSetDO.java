@@ -57,8 +57,10 @@ public class FmsAccountSetDO extends TenantBaseDO {
     private String otherContact;
     /** 详细地址 */
     private String address;
-    /** 本位币编号，关联 {@link FmsCurrencyDO#getId()}，初始化后回填 */
+    /** 本位币编号（融合后保留以兼容旧数据，恒为 0；本位币编码见 currencyCode） */
     private Long currencyId;
+    /** 本位币编码，对应 ERP erp_currency.code；初始化时写入 */
+    private String currencyCode;
     /** 启用期间，格式 yyyyMM，如 202601 */
     private Integer startTime;
     /** 会计制度 */

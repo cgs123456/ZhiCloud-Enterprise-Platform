@@ -61,7 +61,7 @@ defineOptions({ name: 'FmsAccountSetSwitch' })
 // ==================== 路由与状态 ====================
 
 const FMS_ROUTE_PREFIX = '/fms' // FMS 路由前缀
-const FMS_HOME_PATH = '/fms/home' // FMS 首页
+const FMS_HOME_PATH = '/fms/config/account-set' // 账套管理（原 FMS 首页已并入 ERP 财务，切换账套后落在账套管理）
 const FMS_ACCOUNT_SET_PATH = '/fms/config/account-set' // 账套管理
 
 const route = useRoute()

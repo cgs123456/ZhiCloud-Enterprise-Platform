@@ -1,5 +1,12 @@
 import request from '@/config/axios'
-import type { FmsVoucherAuxiliaryItemVO } from '@/api/fms/voucher'
+
+/** FMS 凭证辅助核算项目信息 */
+export interface FmsVoucherAuxiliaryItemVO {
+  type?: number // 辅助核算类型
+  typeId: number // 辅助核算类别编号
+  itemId: number // 辅助核算项目编号
+  name?: string // 辅助核算项目名称
+}
 
 /** FMS 凭证模板分录信息 */
 export interface FmsVoucherTemplateEntryVO {

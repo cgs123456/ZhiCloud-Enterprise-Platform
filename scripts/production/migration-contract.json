@@ -695,6 +695,13 @@
       "sha256": "04ce8e372a161409f96e6f70f4d72a8b8f7d96f7f5cf47ca01b10578dd933d27",
       "verification_file": "V189_verify.sql",
       "verification_sha256": "48970469b4af7ca785851e9bf8be6ff0e34784d6f700f1568f35a37c38b98a69"
+    },
+    {
+      "version": 190,
+      "file": "V190__fms_erp_finance_merge.sql",
+      "sha256": "a73a752dcb0722876adda57988496cc42eaaeef7e7cd243cac227596dba84940",
+      "verification_file": "V190_verify.sql",
+      "verification_sha256": "a67de9720d94b095753bd63002b45b330af3b753799ffad64fded4fd104de316"
     }
   ]
 }
