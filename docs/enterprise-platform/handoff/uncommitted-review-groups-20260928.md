@@ -8549,3 +8549,22 @@ TMS 四域（运费结算含试算弹窗与审核/结算状态机、运费对账
 ### 12.221.4 验证
 新增 `zc_enhancements_e2e.py` 真机 19/19：电子签三端点全链（init 回写/重复发起护栏/status 字段/download 无泄漏/不存在合同拒）、报表数据源与 V198 菜单、评论树（建两级树/树形返回/软删行为）。ts:check 0 错误；build:local 通过；契约 tracked=108；CRM/TMS 相关 8 脚本回归绿（一个偶发失败重跑通过）。CI 四作业全绿。
 
+## 12.222 2026-10-15 四个新方向落地：QMS 冒烟固化 / GPS 轨迹地图化 / CRM 统计 VO 修正 / 前端门禁补 lint（4 提交 + 1 个真实缺陷）
+
+### 12.222.1 QMS 剩余域 CRUD 冒烟（提交 4008a48b5）——抓到第 5 个真实缺陷
+按 HANDOFF 建议方向一执行。**先精确核实再动手**：源码调研发现原「8 个纯 CRUD 域」分类有偏差——spc 与 traceability 是**纯只读域**（无任何 write 端点），真正可跑 CRUD 冒烟的是 7 个域。新增 `zc_qms_crud_smoke_e2e.py` **49/49**，覆盖 fmea(document+item，rpn=S×O×D 自动算)、msa、检验项目/单据/记录、器具（含「有校准记录禁删」引用校验）、培训三件套、质量成本（String 枚举 + 期间校验）、spc/traceability 只读冒烟。软删/update 屏蔽 status/唯一键护栏全部按源码实证断言。
+
+**真实缺陷（第 5 个）**：FMEA 条目任何 select 必 500。根因：DO 字段 `function` 映射列 `item_function`（`function` 是 MySQL 8.0 保留字），但 MyBatis-Plus 生成 `SELECT item_function AS function` 时**别名未加反引号** → SQL 语法错误。create 能成功（insert 只写列名）只有 select 炸——查询功能自上线起从未可用。同型病根第 5 次出现（实现细节与运行环境约束不匹配：凭证不挂账簿/多版本唯一键/状态机断环/NOT NULL 列不计算/保留字别名）。修：字段改名 function→itemFunction（9 处，含前端；内部端点无对外消费者，按「删除优于兼容」）。
+
+### 12.222.2 TMS GPS 轨迹地图化（提交 e17391f3a）
+轨迹 tab 加 echarts：折线（按上报顺序）+ 散点（上报点）+ tooltip（时间/速度/位），下方保留明细表。经纬度直绘（局部范围可读，不引外部地图瓦片）。踩一个类型坑：`computed(() => ({...}))` 里 `xAxis.type: 'value'` 被推断成 string 而 `EChartsOption` 要字面量——须 `computed<EChartsOption>` 显式标注。
+
+### 12.222.3 CRM 统计 VO 字段名偏差（提交 baf5495c2）
+逐字段比对前端接口 vs 后端 RespVO（含继承、确认无 @JsonProperty）：**真破损 2 处**（`followupRecordCount/followupCustomerCount` 小写 p，后端大写 U，Jackson 精确匹配致 undefined——图表对、表格空白的典型半残状态）；**死声明 2 处**（customerType/customerSource 后端不存在，真实字段 industryId/source 视图本来就在用）；**接口说谎一处**（portrait 的 *Portion 后端不返回、前端自算，加注释标明派生值）。另登记两处低优先级：funnel.ts 的死端点声明、CustomerConversionStat.vue 类型标注不符（运行时无害）。
+
+### 12.222.4 前端门禁补 lint（提交 06603a08a）
+frontend-gate 加 Lint (eslint)。**决策依据是现状核实而非照单全收**：eslint 0 error（3 个 warning 不阻断）→ 进；prettier 有 **473 个文件**历史格式存量、stylelint 同类——直接进门禁会第一天就红，逼出大面积 --fix diff 淹没 review，作为后续治理项单独登记。
+
+### 12.222.5 验证
+QMS 单测 55/55；**全量回归 37 个 E2E 脚本全绿**（含新增 zc_qms_crud_smoke 49/49；两个偶发失败重跑均过）；ts:check 0 错误；build:local 通过；eslint 0 error；maven.yml YAML 结构校验通过；六道门禁全过。
+
