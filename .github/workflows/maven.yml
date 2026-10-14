@@ -6,8 +6,19 @@ name: Java CI with Maven
 on:
   push:
     branches: [ master ]
+    # 纯文档/证据类变更不触发任何作业——Java 门禁与前端门禁都不受其影响。
+    # 前端门禁历史上缺失（见 frontend-gate 作业注释），补上后更不能让
+    # 台账/README 编辑白白拉起两个 ~10 分钟的 job。
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'evidence/**'
   pull_request:
     branches: [ master ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'evidence/**'
 
 jobs:
   build:
@@ -291,6 +302,47 @@ jobs:
             for art in lost:
                 fh.write(f"- `{art}`\n")
         PY
+  # 前端门禁（2026-10-14 补，台账 §12.215）：ts:check + build:local 进 CI。
+  #
+  # 历史缺口：前端两个验证（vue-tsc 全量类型检查 + vite 构建）长期只在本地跑，
+  # CI 三作业（build / V77 repair / Windows launcher）全不覆盖前端——
+  # 前端改动「无人验」不是风险假设而是既成事实（§12.204 首轮 ts:check 修 17 个错、
+  # §12.214 修树组件类型错，都靠本地跑才发现）。
+  #
+  # 设计决策：
+  #   1) 独立 job 而非并入 build：前端依赖安装 2-4 分钟，并行不拖慢 Java 关键路径；
+  #      且前端失败与 Java 失败可分别定位，不互相掩盖。
+  #   2) pnpm 11.25.0 + Node 22：与 windows-launcher-contract 作业同款组合，
+  #      该组合已在 CI 实跑验证过；本地是 corepack pnpm 12.6.0，版本号以 CI 为准
+  #      （engines 要求 pnpm>=8.6.0，无冲突）。
+  #   3) --frozen-lockfile：lock 文件是依赖可复现的唯一依据，禁止 CI 静默改 lock。
+  #   4) 先 ts:check 后 build:local：类型错误最快暴露（约 1-2 分钟），
+  #      构建错误（约 1 分钟）在后；任一步失败即 job 失败。
+  #   5) paths-ignore 已排除 docs/**.md/evidence——纯文档编辑不拉起前端安装。
+  frontend-gate:
+    name: Frontend Gate (ts:check + build:local)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: zhicloud-ui/zhicloud-ui-admin-vue3
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 11.25.0
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: pnpm
+        cache-dependency-path: zhicloud-ui/zhicloud-ui-admin-vue3/pnpm-lock.yaml
+    - name: Install dependencies (frozen lockfile)
+      run: pnpm install --frozen-lockfile
+    - name: Type Check (vue-tsc)
+      run: pnpm ts:check
+    - name: Build (vite build:local)
+      run: pnpm build:local
   v77-repair-script:
     name: V77 Repair Script (MySQL 8.4)
     runs-on: ubuntu-latest
