@@ -87,7 +87,6 @@
 </template>
 
 <script lang="ts" setup>
-import { dateFormatter } from '@/utils/formatTime'
 import { FmsSubjectApi } from '@/api/fms/config/subject'
 import type { FmsSubjectVO } from '@/api/fms/config/subject'
 import FmsSubjectForm from './FmsSubjectForm.vue'
