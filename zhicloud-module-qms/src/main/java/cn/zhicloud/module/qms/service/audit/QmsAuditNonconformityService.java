@@ -2,6 +2,7 @@ package cn.zhicloud.module.qms.service.audit;
 
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.module.qms.controller.admin.audit.vo.QmsAuditNonconformityPageReqVO;
+import cn.zhicloud.module.qms.controller.admin.audit.vo.QmsAuditNonconformityCompleteReqVO;
 import cn.zhicloud.module.qms.controller.admin.audit.vo.QmsAuditNonconformityRectifyReqVO;
 import cn.zhicloud.module.qms.controller.admin.audit.vo.QmsAuditNonconformitySaveReqVO;
 import cn.zhicloud.module.qms.controller.admin.audit.vo.QmsAuditNonconformityVerifyReqVO;
@@ -61,6 +62,17 @@ public interface QmsAuditNonconformityService {
      * @param reqVO 整改信息
      */
     void rectifyNonconformity(@Valid QmsAuditNonconformityRectifyReqVO reqVO);
+
+    /**
+     * 完成整改，状态 20 整改中 -> 30 已整改
+     *
+     * <p>台账 §12.218：补齐五态状态机的断环。此前 rectify 后停在 20，而 verify 要求
+     * 30，中间无端点可推进——不符合项一旦提交整改便永远无法验证与关闭（真机实证：
+     * 在 20 下调 verify/close 均返回 1044000045 状态非法）。
+     *
+     * @param reqVO 完成整改信息（completionNote 可空，留空保留原整改措施）
+     */
+    void completeRectification(@Valid QmsAuditNonconformityCompleteReqVO reqVO);
 
     /**
      * 验证整改效果，状态 30 已整改 -> 40 已验证

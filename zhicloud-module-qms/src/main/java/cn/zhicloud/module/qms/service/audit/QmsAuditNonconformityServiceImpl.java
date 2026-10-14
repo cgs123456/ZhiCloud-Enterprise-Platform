@@ -3,6 +3,7 @@ package cn.zhicloud.module.qms.service.audit;
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
 import cn.zhicloud.module.qms.controller.admin.audit.vo.QmsAuditNonconformityPageReqVO;
+import cn.zhicloud.module.qms.controller.admin.audit.vo.QmsAuditNonconformityCompleteReqVO;
 import cn.zhicloud.module.qms.controller.admin.audit.vo.QmsAuditNonconformityRectifyReqVO;
 import cn.zhicloud.module.qms.controller.admin.audit.vo.QmsAuditNonconformitySaveReqVO;
 import cn.zhicloud.module.qms.controller.admin.audit.vo.QmsAuditNonconformityVerifyReqVO;
@@ -126,6 +127,28 @@ public class QmsAuditNonconformityServiceImpl implements QmsAuditNonconformitySe
         updateObj.setId(reqVO.getId());
         updateObj.setStatus(QmsNcStatusEnum.RECTIFYING.getStatus());
         updateObj.setRemark(reqVO.getAction());
+        nonconformityMapper.updateById(updateObj);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void completeRectification(QmsAuditNonconformityCompleteReqVO reqVO) {
+        // 1. 校验存在
+        QmsAuditNonconformityDO nonconformity = nonconformityMapper.selectById(reqVO.getId());
+        if (nonconformity == null) {
+            throw exception(AUDIT_NONCONFORMITY_NOT_EXISTS);
+        }
+        // 2. 校验状态：必须是整改中
+        if (!QmsNcStatusEnum.RECTIFYING.getStatus().equals(nonconformity.getStatus())) {
+            throw exception(AUDIT_NC_STATUS_INVALID);
+        }
+        // 3. 流转状态为已整改；completionNote 留空则保留 rectify 时记录的整改措施
+        QmsAuditNonconformityDO updateObj = new QmsAuditNonconformityDO();
+        updateObj.setId(reqVO.getId());
+        updateObj.setStatus(QmsNcStatusEnum.RECTIFIED.getStatus());
+        if (reqVO.getCompletionNote() != null && !reqVO.getCompletionNote().isBlank()) {
+            updateObj.setRemark(reqVO.getCompletionNote());
+        }
         nonconformityMapper.updateById(updateObj);
     }
 

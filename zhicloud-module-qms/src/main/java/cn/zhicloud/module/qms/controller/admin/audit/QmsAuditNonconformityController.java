@@ -83,6 +83,14 @@ public class QmsAuditNonconformityController {
         return success(true);
     }
 
+    @PutMapping("/complete-rectify")
+    @Operation(summary = "完成整改", description = "仅在状态为「整改中」时允许，流转为「已整改」；补齐五态状态机的断环（§12.218）")
+    @PreAuthorize("@ss.hasPermission('qms:audit:rectify')")
+    public CommonResult<Boolean> completeRectification(@Valid @RequestBody QmsAuditNonconformityCompleteReqVO reqVO) {
+        nonconformityService.completeRectification(reqVO);
+        return success(true);
+    }
+
     @PutMapping("/verify")
     @Operation(summary = "验证整改效果", description = "仅在状态为「已整改」时允许，流转为「已验证」")
     @PreAuthorize("@ss.hasPermission('qms:audit:verify')")
