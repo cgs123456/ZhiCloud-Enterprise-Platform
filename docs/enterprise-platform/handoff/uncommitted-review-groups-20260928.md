@@ -8359,3 +8359,26 @@ issueCount）、负向（报告缺 reportNo 拒）、计划/报告分页可查�
 **验证规模**：29 个 E2E 脚本 × 739 断言全绿。两个新脚本与既有 26 个同款结构（API + DB 双断言、
 幂等预清理、自包含）。三处小差异记录：CAPA/审核表的软删与清理用 `capa_no`/`plan_no` 前缀匹配。
 
+### 12.215.5 前端门禁进 CI 的收尾三修（提交 a451797c6 / d9e8bace6）——门禁自己抓出了两个真问题
+
+前端门禁首次进 CI（550779316）当场失败两轮，**每一次都是门禁价值的实证**：
+
+1. **首次失败：100+ 个 TS2304（Cannot find name 'computed'/'ref'/'useI18n'/'defineComponent'）**。
+   根因：unplugin-auto-import / unplugin-vue-components 生成的 `src/types/auto-imports.d.ts`
+   与 `auto-components.d.ts` 被 `.gitignore` 的 `auto-*.d.ts` 排除；本地因历史跑过 vite dev 而存在、
+   CI 干净 checkout 没有。且 `build/vite/index.ts` 配置 `dts: !isBuild && ...`——**只在非 build 模式
+   （vite dev）生成**，ts:check 与 build 都不产出。两个文件是确定性产物（内容只由 imports/globs 配置
+   决定，无时间戳无绝对路径），故入库（a451797c6），`.gitignore` 内注明维护要求。
+   **这条正是「前端改动无人验」长期存在的直接后果——没有 CI 就没人发现本地依赖了 gitignored 的生成物。**
+
+2. **二次失败：仅剩 1 个 TS6133（`FmsSubject` 页导入 dateFormatter 未使用）**。这是 §12.214
+   我自己写的代码里的问题。本地 ts:check 未报，因为 vue-tsc 的 `--incremental` 增量缓存
+   （`node_modules/.cache/vue-tsc/tsconfig.tsbuildinfo`）跳过了该文件；`rm -rf node_modules/.cache/vue-tsc`
+   后本地复现。修复见 d9e8bace6。
+   **教训：本地 ts:check 通过不等于 CI 通过，改动后应清 tsbuildinfo 缓存复跑一次全量。**
+
+3. 修完 CI 四作业全绿（build 8m52s / Frontend Gate 3m38s / V77 Repair / Windows Launcher）。
+
+**门禁收益量化**：从「进 CI」到「变绿」共抓到 2 类真问题（缺失的类型声明依赖 + 未使用导入），
+前者在无 CI 时永远不会被发现，后者本地被缓存掩盖。这印证了 §12.215.1 的立项理不是纸面风险。
+
