@@ -129,15 +129,19 @@
           </div>
         </div>
         <el-empty v-if="!trackLoading && tracks.length === 0" description="暂无轨迹数据" />
-        <el-table v-if="tracks.length > 0" :data="tracks" size="small" stripe>
-          <el-table-column align="center" label="上时间" prop="reportTime" width="200" />
-          <el-table-column align="center" label="车辆编号" prop="vehicleId" width="100" />
-          <el-table-column align="center" label="运单编号" prop="shipmentId" width="100" />
-          <el-table-column align="right" label="经度" prop="longitude" width="140" />
-          <el-table-column align="right" label="纬度" prop="latitude" width="140" />
-          <el-table-column align="right" label="速度" prop="speed" width="100" />
-          <el-table-column align="left" label="位置描述" prop="locationDesc" min-width="180" show-overflow-tooltip />
-        </el-table>
+        <template v-if="tracks.length > 0">
+          <!-- 轨迹图：折线（按时间）+ 散点（上报点），经纬度直绘（局部范围可读） -->
+          <Echart :height="420" :options="trackChartOption" />
+          <el-table :data="tracks" size="small" stripe>
+            <el-table-column align="center" label="上时间" prop="reportTime" width="200" />
+            <el-table-column align="center" label="车辆编号" prop="vehicleId" width="100" />
+            <el-table-column align="center" label="运单编号" prop="shipmentId" width="100" />
+            <el-table-column align="right" label="经度" prop="longitude" width="140" />
+            <el-table-column align="right" label="纬度" prop="latitude" width="140" />
+            <el-table-column align="right" label="速度" prop="speed" width="100" />
+            <el-table-column align="left" label="位置描述" prop="locationDesc" min-width="180" show-overflow-tooltip />
+          </el-table>
+        </template>
       </el-tab-pane>
     </el-tabs>
   </ContentWrap>
@@ -146,6 +150,7 @@
 <script lang="ts" setup>
 import { TmsGpsApi } from '@/api/tms/gps'
 import type { TmsGpsPositionVO } from '@/api/tms/gps'
+import type { EChartsOption } from 'echarts'
 
 defineOptions({ name: 'TmsGps' })
 
@@ -246,4 +251,44 @@ const loadVehicleTrack = async () => {
     trackLoading.value = false
   }
 }
+
+/** 轨迹图：经纬度直绘折线 + 上报点散点（局部范围可读；tooltip 给时间/速度/描述） */
+const trackChartOption = computed<EChartsOption>(() => {
+  const points = tracks.value.map((t: any) => ({
+    value: [Number(t.longitude), Number(t.latitude)],
+    time: t.reportTime,
+    speed: t.speed,
+    desc: t.locationDesc
+  }))
+  return {
+    tooltip: {
+      trigger: 'item',
+      formatter: (p: any) => {
+        const d = points[p.dataIndex]
+        if (!d) return ''
+        return `经度 ${d.value[0]}<br/>纬度 ${d.value[1]}<br/>上报时间 ${d.time ?? '-'}<br/>速度 ${d.speed ?? '-'} km/h<br/>位置 ${d.desc ?? '-'}`
+      }
+    },
+    grid: { left: 60, right: 40, top: 30, bottom: 40 },
+    xAxis: { type: 'value', scale: true, name: '经度', nameLocation: 'middle', nameGap: 25 },
+    yAxis: { type: 'value', scale: true, name: '纬度', nameLocation: 'middle', nameGap: 40 },
+    series: [
+      {
+        name: '行驶轨迹',
+        type: 'line',
+        data: points,
+        showSymbol: false,
+        lineStyle: { width: 2 },
+        smooth: false
+      },
+      {
+        name: '上报点',
+        type: 'scatter',
+        data: points,
+        symbolSize: 8,
+        itemStyle: { color: '#f56c6c' }
+      }
+    ]
+  }
+})
 </script>
