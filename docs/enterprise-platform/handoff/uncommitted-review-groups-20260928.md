@@ -8382,3 +8382,41 @@ issueCount）、负向（报告缺 reportNo 拒）、计划/报告分页可查�
 **门禁收益量化**：从「进 CI」到「变绿」共抓到 2 类真问题（缺失的类型声明依赖 + 未使用导入），
 前者在无 CI 时永远不会被发现，后者本地被缓存掩盖。这印证了 §12.215.1 的立项理不是纸面风险。
 
+## 12.217 2026-10-14 QMS 其余闭环 E2E 第三组：8D / 客户投诉 / 文档变更申请（抓到并修一个真实缺陷）
+
+延续 §12.216，再固化三个带流程动作的 QMS 域。**这次不是纯 E2E 固化——固化过程抓到一个真实缺陷并修复。**
+
+### 12.217.1 三个域的状态机（`zc_qms_flow2_e2e.py` 30/30）
+- **8D 报告**（EightDStatusEnum：0 草稿 → 10 D1 团队 → … → 70 D7 预防 → 80 D8 关闭）：
+  advance-stage 按状态码 +10 推进至 D7（next>70 停在 70）；已关闭(80)再推进被拒；
+  close 置 80 并写 closeTime（**带 @ElectronicSignature，需三签名头**）；通用 update 禁止改 status。
+- **客户投诉**（ComplaintStatusEnum：10 已登记 → 20 调查中 → 30 处理中 → 40 已关闭）：
+  advance-status 仅 10→20→30（30 再推进 nextStatus 返回 null 被拒）；close 置 40。
+- **文档变更申请**（QmsChangeRequestStatusEnum：10 待审 → 20 已审 / 30 已驳回）：
+  approve/reject 仅 PENDING(10) 允许；**approve 带 @ElectronicSignature 且有两个副作用**——
+  作废(30) 把原文档置 OBSOLETE(40)；修订(20)/新增(10) 自动建同 docNo 新版本草稿文档。
+
+### 12.217.2 抓到的真实缺陷：文档多版本与唯一键自相矛盾（V196 修复）
+approve 的「修订」分支自动插同 docNo 的新版本文档，但 V112 建表时唯一键是
+`uk_tenant_doc_no (tenant_id, doc_no)`——**同一 docNo 只允许一行**，插新版本必然撞唯一键，
+真机返回 **code 500**。设计上修订就要产生 v1.1/v2.0 多行，唯一键却禁止多行，是**模型自相矛盾**。
+
+修法（V196）：唯一键改 `uk_tenant_doc_no_version (tenant_id, doc_no, version)`——同 docNo 允许多版本，
+仍禁止同租户同 docNo 同版本重复。V112 正文受哈希钉住不可改，用本迁移反向修正。
+存量安全性：改前自检无同 (tenant_id, doc_no) 多行（沙箱 0 行）；有重复则 ALTER 报 1062 失败，
+从而阻止带病上线。4 项自检（旧键已删/新键在/三列覆盖/存量无冲突）。
+
+### 12.217.3 三个契约认知修正（均靠「读 service + 真机」而非猜）
+1. **8D 路径是 `/qms/eight-d/*`**（不是 `eight-d-report`）——按实体名猜 URL 段又一次踩坑（同 §12.203 教训）。
+2. **8D close 与文档变更 approve 都带 `@ElectronicSignature(requireReason=true)`**——需三签名头，
+   中文理由必须 URL 编码（§12.211 同款）；缺头返回 1044000031。
+3. **`incrementVersion("1.0")` 得 "1.1"**（minor+1）不是 "2.0"——初版断言写 2.0 失败，
+   读 service 确认口径。**又一例：断言写死具体值前先读实现**。
+4. **8D 表名是 `qms_eight_d_report`**（不是 `qms_8d_report`）——DB 断言前查 `@TableName`。
+5. **`document-change-request/reject` 用 `@RequestBody`**（`QmsDocumentChangeRequestRejectReqVO`），
+   不是 query param——探测端点先 `grep @*Mapping` 读真实签名。
+
+**验证规模**：31 个 E2E 脚本全绿（本会话新增第 5 个：zc_qms_flow2_e2e 30/30）；
+契约 tracked=106；全部门禁过（bare_throws / preauthorize 529 / error_codes 1926 /
+migration_contract / duplicate_ddl）。
+
