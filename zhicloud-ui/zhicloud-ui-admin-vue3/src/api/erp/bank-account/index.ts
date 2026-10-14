@@ -9,6 +9,7 @@ export interface BankAccountVO {
   bankBranch?: string // bankBranch
   balance?: number // balance
   currencyId?: number // currencyId
+  accountBookId?: number // 账簿编号（V195：挂账簿的账户其流水参与账套视角现金流量表）
   status?: number // status
   remark?: string // remark
   createTime?: number // createTime

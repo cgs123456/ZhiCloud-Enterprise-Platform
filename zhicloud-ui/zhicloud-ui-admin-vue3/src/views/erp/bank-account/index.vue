@@ -29,6 +29,11 @@
       <el-table-column label="开户行" align="center" prop="bankBranch" />
       <el-table-column label="余额" align="center" prop="balance" />
       <el-table-column label="币种" align="center" prop="currencyId" />
+      <el-table-column label="所属账簿" align="center" prop="accountBookId" width="140">
+        <template #default="scope">
+          <span>{{ bookName(scope.row.accountBookId) }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="状态" align="center" prop="status" />
       <el-table-column label="备注" align="center" prop="remark" />
       <el-table-column label="创建时间" align="center" prop="createTime" :formatter="dateFormatter" />
@@ -47,6 +52,7 @@
 <script setup lang="ts">
 import { dateFormatter } from '@/utils/formatTime'
 import { BankAccountApi } from '@/api/erp/bank-account'
+import { ErpAccountBookApi } from '@/api/erp/account-book'
 import BankAccountForm from './bankAccountForm.vue'
 
 defineOptions({ name: 'ErpBankAccount' })
@@ -65,6 +71,21 @@ const queryParams = reactive({
 })
 const queryFormRef = ref()
 const formRef = ref()
+
+/** 账簿 id → 名称映射（V195 列表展示所属账簿；取启用的账簿精简列表） */
+const bookMap = ref<Record<number, string>>({})
+const bookName = (id?: number) => (id ? bookMap.value[id] || `#${id}` : '-')
+const loadBooks = async () => {
+  try {
+    const books = (await ErpAccountBookApi.getErpAccountBookSimpleList()) || []
+    bookMap.value = books.reduce((acc: Record<number, string>, b: any) => {
+      acc[b.id] = `${b.code} ${b.name}`
+      return acc
+    }, {})
+  } catch {
+    bookMap.value = {}
+  }
+}
 
 const getList = async () => {
   loading.value = true
@@ -100,5 +121,8 @@ const handleDelete = async (id: number) => {
   } catch {}
 }
 
-onMounted(() => getList())
+onMounted(() => {
+  loadBooks()
+  getList()
+})
 </script>

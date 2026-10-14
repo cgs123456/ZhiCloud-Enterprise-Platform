@@ -730,6 +730,13 @@
       "sha256": "decc0946883c1c1d7bd7443db34ea65635136089de87972db605001ab0268509",
       "verification_file": "V194_verify.sql",
       "verification_sha256": "51f446e18729add195e686689d8db6f721955478079e0886dacfe5dc65110291"
+    },
+    {
+      "version": 195,
+      "file": "V195__bank_account_link_account_book.sql",
+      "sha256": "bb9082152a2c3d108fd2a0b833d44b840fc6605afd816567947e8698dae717b2",
+      "verification_file": "V195_verify.sql",
+      "verification_sha256": "46e7293410aab6f1ad0e6dc47757f78af427a67aa1f2418515aef5b669d0c06a"
     }
   ]
 }

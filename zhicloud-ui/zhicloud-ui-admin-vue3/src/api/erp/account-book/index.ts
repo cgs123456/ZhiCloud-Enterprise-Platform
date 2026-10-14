@@ -26,6 +26,10 @@ export const ErpAccountBookApi = {
   getErpAccountBook: async (id: number) => {
     return await request.get({ url: '/erp/account-book/get?id=' + id })
   },
+  // 查询启用的账簿精简列表（下拉选项；V195 银行账户挂账簿用）
+  getErpAccountBookSimpleList: async () => {
+    return await request.get({ url: '/erp/account-book/simple-list' })
+  },
   // 新增
   createErpAccountBook: async (data: ErpAccountBookVO) => {
     return await request.post({ url: '/erp/account-book/create', data })

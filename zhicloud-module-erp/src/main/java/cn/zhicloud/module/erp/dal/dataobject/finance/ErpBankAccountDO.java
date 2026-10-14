@@ -53,6 +53,14 @@ public class ErpBankAccountDO extends TenantBaseDO {
      */
     private Long currencyId;
     /**
+     * 账簿编号（可空；配了账簿的账户，其流水才参与账套视角现金流量表，见 V195）
+     *
+     * <p>V195（台账 §12.215）：erp_cash_flow 只到 bank_account_id 没有账簿关联，
+     * 给账户挂账簿后报表侧按「账簿 → 账户集合 → 流水」过滤，存量流水随账户
+     * 配置立即可见，无需回填流水表。
+     */
+    private Long accountBookId;
+    /**
      * 状态（0 启用 1 禁用）
      *
      * 枚举 {@link cn.zhicloud.framework.common.enums.CommonStatusEnum}

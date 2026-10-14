@@ -31,6 +31,9 @@ public class ErpBankAccountRespVO {
     @Schema(description = "币种编号", example = "1")
     private Long currencyId;
 
+    @Schema(description = "账簿编号（可空；配了账簿的账户，其流水才参与账套视角现金流量表）", example = "1024")
+    private Long accountBookId;
+
     @Schema(description = "状态（0 启用 1 禁用）", example = "0")
     private Integer status;
 

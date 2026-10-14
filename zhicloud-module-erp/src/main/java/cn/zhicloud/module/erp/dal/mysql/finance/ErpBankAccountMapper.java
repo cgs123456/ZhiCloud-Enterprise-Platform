@@ -7,6 +7,9 @@ import cn.zhicloud.module.erp.controller.admin.finance.vo.bankaccount.ErpBankAcc
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpBankAccountDO;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.Collection;
+import java.util.List;
+
 /**
  * ERP 银行账户 Mapper（P0-3）
  *
@@ -17,6 +20,19 @@ public interface ErpBankAccountMapper extends BaseMapperX<ErpBankAccountDO> {
 
     default ErpBankAccountDO selectByAccountNo(String accountNo) {
         return selectOne(ErpBankAccountDO::getAccountNo, accountNo);
+    }
+
+    /**
+     * 按账簿集合查账户（V195 账套视角现金流量表：账簿 → 账户 → 流水）
+     *
+     * <p>erp_cash_flow 只到 bank_account_id，给账户挂账簿（erp_bank_account.
+     * account_book_id）后，按账套查流水 = 先按账簿集合查账户，再用账户集合
+     * 过滤流水。空集合由调用方短路（避免 IN(空集合) 语义歧义）。
+     */
+    default List<ErpBankAccountDO> selectListByAccountBookIds(Collection<Long> accountBookIds) {
+        return selectList(new LambdaQueryWrapperX<ErpBankAccountDO>()
+                .inIfPresent(ErpBankAccountDO::getAccountBookId, accountBookIds)
+                .orderByAsc(ErpBankAccountDO::getId));
     }
 
     default PageResult<ErpBankAccountDO> selectPage(ErpBankAccountPageReqVO reqVO) {

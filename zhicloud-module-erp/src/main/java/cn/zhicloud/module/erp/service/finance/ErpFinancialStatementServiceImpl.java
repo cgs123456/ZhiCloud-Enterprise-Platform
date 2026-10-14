@@ -14,7 +14,9 @@ import cn.zhicloud.module.erp.dal.mysql.finance.ErpGlAccountMapper;
 import cn.zhicloud.module.erp.dal.mysql.finance.ErpGlVoucherEntryMapper;
 import cn.zhicloud.module.erp.dal.mysql.finance.ErpGlVoucherMapper;
 import cn.zhicloud.module.erp.dal.mysql.finance.ErpAccountBookMapper;
+import cn.zhicloud.module.erp.dal.mysql.finance.ErpBankAccountMapper;
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpAccountBookDO;
+import cn.zhicloud.module.erp.dal.dataobject.finance.ErpBankAccountDO;
 import cn.zhicloud.module.erp.enums.finance.ErpCashFlowBizTypeEnum;
 import cn.zhicloud.module.erp.enums.finance.ErpGlAccountTypeEnum;
 import cn.zhicloud.module.erp.enums.finance.ErpGlVoucherStatusEnum;
@@ -59,6 +61,9 @@ public class ErpFinancialStatementServiceImpl implements ErpFinancialStatementSe
     private ErpCashFlowMapper cashFlowMapper;
     @Resource
     private ErpAccountBookMapper accountBookMapper;
+    /** V195：账套视角现金流量表——账簿 → 银行账户 → 流水 */
+    @Resource
+    private ErpBankAccountMapper bankAccountMapper;
 
     @Override
     public ErpBalanceSheetRespVO generateBalanceSheet(Long accountSetId, LocalDate asOfDate) {
@@ -198,15 +203,13 @@ public class ErpFinancialStatementServiceImpl implements ErpFinancialStatementSe
         ErpCashFlowStatementRespVO respVO = new ErpCashFlowStatementRespVO();
         respVO.setStartDate(startDate);
         respVO.setEndDate(endDate);
-        List<Long> accountBookIds = resolveAccountBookIds(accountSetId);
 
         // 1. 优先基于银行流水（erp_cash_flow）
-        //    注意：erp_cash_flow 只到 bank_account_id，无账簿关联。指定账套时无法按账簿
-        //    过滤流水，与既有 ERP 侧行为（租户全量流水）保持同一口径——按账套出现金流
-        //    报表走下方凭证兜底分支（银行科目 1001/1002 变动经账簿链路过滤）。
-        List<ErpCashFlowDO> cashFlowList = accountSetId == null
-                ? cashFlowMapper.selectListByPeriod(startDate, endDate)
-                : List.of();
+        //    accountSetId 为 null：租户全量流水（既有 ERP 侧口径）；
+        //    指定账套：V195 给银行账户挂了 account_book_id，按「账簿 → 账户集合 → 流水」
+        //    过滤——账户配了账簿的流水才进账套报表，未配账户的流水不参与（与 V191 账簿
+        //    挂账套的显式配置语义一致，不做隐式归属推断）。
+        List<ErpCashFlowDO> cashFlowList = loadCashFlows(accountSetId, startDate, endDate);
         if (cashFlowList != null && !cashFlowList.isEmpty()) {
             respVO.setDataSource("CASH_FLOW");
             BigDecimal operating = BigDecimal.ZERO;
@@ -317,6 +320,30 @@ public class ErpFinancialStatementServiceImpl implements ErpFinancialStatementSe
         }
         return accountBookMapper.selectListByAccountSetId(accountSetId).stream()
                 .map(ErpAccountBookDO::getId).collect(Collectors.toList());
+    }
+
+    /**
+     * 加载现金流量表用的银行流水（V195）
+     *
+     * <p>accountSetId 为 null：租户全量（既有 ERP 侧口径）；
+     * 指定账套：账簿集合 → 挂在账簿下的银行账户集合 → 流水 IN 查询。
+     * 账簿为空或账户为空时返回空列表（调用方据此走凭证兜底分支），
+     * 不进 IN(空集合) 查询（语义歧义）。
+     */
+    private List<ErpCashFlowDO> loadCashFlows(Long accountSetId, LocalDate startDate, LocalDate endDate) {
+        if (accountSetId == null) {
+            return cashFlowMapper.selectListByPeriod(startDate, endDate);
+        }
+        List<Long> accountBookIds = resolveAccountBookIds(accountSetId);
+        if (accountBookIds.isEmpty()) {
+            return List.of();
+        }
+        List<Long> bankAccountIds = bankAccountMapper.selectListByAccountBookIds(accountBookIds).stream()
+                .map(ErpBankAccountDO::getId).collect(Collectors.toList());
+        if (bankAccountIds.isEmpty()) {
+            return List.of();
+        }
+        return cashFlowMapper.selectListByPeriodAndBankAccountIds(startDate, endDate, bankAccountIds);
     }
 
     /**

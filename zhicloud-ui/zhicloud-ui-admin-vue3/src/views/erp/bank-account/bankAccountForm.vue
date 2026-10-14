@@ -25,6 +25,16 @@
       <el-form-item label="币种" prop="currencyId">
         <el-input-number v-model="formData.currencyId" placeholder="请输入币种" />
       </el-form-item>
+      <el-form-item label="所属账簿" prop="accountBookId">
+        <el-select v-model="formData.accountBookId" class="w-100%" clearable placeholder="不选则不参与账套视角现金流量表">
+          <el-option
+            v-for="book in bookOptions"
+            :key="book.id"
+            :label="`${book.code} ${book.name}`"
+            :value="book.id"
+          />
+        </el-select>
+      </el-form-item>
       <el-form-item label="状态" prop="status">
         <el-input-number v-model="formData.status" placeholder="请输入状态" />
       </el-form-item>
@@ -40,6 +50,7 @@
 </template>
 <script setup lang="ts">
 import { BankAccountApi } from '@/api/erp/bank-account'
+import { ErpAccountBookApi } from '@/api/erp/account-book'
 
 defineOptions({ name: 'BankAccountForm' })
 
@@ -53,12 +64,23 @@ const formType = ref('')
 const formData = ref<any>({})
 const formRules = reactive({})
 const formRef = ref()
+/** 账簿下拉选项（V195：银行账户挂账簿后，其流水参与账套视角现金流量表） */
+const bookOptions = ref<any[]>([])
+
+const loadBooks = async () => {
+  try {
+    bookOptions.value = (await ErpAccountBookApi.getErpAccountBookSimpleList()) || []
+  } catch {
+    bookOptions.value = []
+  }
+}
 
 const open = async (type: string, id?: number) => {
   dialogVisible.value = true
   dialogTitle.value = t('action.' + type)
   formType.value = type
   resetForm()
+  await loadBooks()
   if (id) {
     formLoading.value = true
     try {
