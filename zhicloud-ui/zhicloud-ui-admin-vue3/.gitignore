@@ -4,7 +4,12 @@ dist
 dist-ssr
 /dist*
 pnpm-debug
-auto-*.d.ts
+# auto-imports.d.ts / auto-components.d.ts 是 unplugin 的**确定性产物**（内容只由
+# build/vite/index.ts 的 imports/globs 配置决定，无时间戳、无绝对路径），但只在
+# 非 build 模式（vite dev）生成。CI 跑 ts:check 时干净 checkout 没有这两个文件，
+# 全局自动导入的 computed/ref/useI18n 全部报 TS2304（前端门禁首次进 CI 即抓到）。
+# 故入库：CI 与本地类型检查口径一致，且文件随配置变更一并 review。
+# auto-*.d.ts
 .idea
 .history
 output/
