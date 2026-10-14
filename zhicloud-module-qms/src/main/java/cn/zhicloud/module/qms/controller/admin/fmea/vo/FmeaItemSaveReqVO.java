@@ -16,7 +16,7 @@ public class FmeaItemSaveReqVO {
     private Long fmeaId;
 
     @Schema(description = "功能", example = "密封")
-    private String function;
+    private String itemFunction;
 
     @Schema(description = "失效模式", requiredMode = Schema.RequiredMode.REQUIRED, example = "密封不良")
     @NotNull(message = "失效模式不能为空")

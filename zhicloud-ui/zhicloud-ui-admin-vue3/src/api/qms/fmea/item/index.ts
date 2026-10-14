@@ -4,7 +4,7 @@ import request from '@/config/axios'
 export interface FmeaItemVO {
   id?: number
   fmeaId?: number
-  function?: string
+  itemFunction?: string
   failureMode?: string
   failureEffect?: string
   severity?: number

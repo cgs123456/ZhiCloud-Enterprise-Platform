@@ -38,7 +38,7 @@
   <ContentWrap>
     <el-table v-loading="loading" :data="list" :show-overflow-tooltip="true" :stripe="true">
       <el-table-column align="center" label="FMEA 文档 ID" prop="fmeaId" min-width="110" />
-      <el-table-column align="center" label="功能" prop="function" min-width="110" />
+      <el-table-column align="center" label="功能" prop="itemFunction" min-width="110" />
       <el-table-column align="center" label="失效模式" prop="failureMode" min-width="110" />
       <el-table-column align="center" label="失效后果" prop="failureEffect" min-width="110" />
       <el-table-column align="center" label="严重度 S（1-10）" prop="severity" min-width="110" />

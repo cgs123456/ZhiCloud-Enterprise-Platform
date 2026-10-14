@@ -11,8 +11,8 @@
       <el-form-item label="FMEA 文档 ID" prop="fmeaId">
         <el-input-number v-model="formData.fmeaId" class="!w-1/1" :min="0" :controls="false" placeholder="请输入FMEA 文档 ID" />
       </el-form-item>
-      <el-form-item label="功能" prop="function">
-        <el-input v-model="formData.function" class="!w-1/1" placeholder="请输入功能" />
+      <el-form-item label="功能" prop="itemFunction">
+        <el-input v-model="formData.itemFunction" class="!w-1/1" placeholder="请输入功能" />
       </el-form-item>
       <el-form-item label="失效模式" prop="failureMode">
         <el-input v-model="formData.failureMode" class="!w-1/1" placeholder="请输入失效模式" />
@@ -67,7 +67,7 @@ const formRef = ref()
 
 const formData = ref<any>({})
 const formRules = reactive({
-  function: [required],
+  itemFunction: [required],
 
   failureMode: [required],
 

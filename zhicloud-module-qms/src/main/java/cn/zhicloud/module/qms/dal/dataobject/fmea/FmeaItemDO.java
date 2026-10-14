@@ -37,11 +37,13 @@ public class FmeaItemDO extends TenantBaseDO {
      * 功能
      *
      * 落库列名为 item_function：`function` 是 MySQL 8.0 保留字，
-     * 而 MyBatis-Plus 默认不转义标识符，裸用会导致 SQL 语法错误。
-     * Java 字段名保持 function，对外 API 字段名不变。
+     * 而 MyBatis-Plus 默认不转义标识符——`SELECT item_function AS function`
+     * 会因别名未加反引号报 SQL 语法错误（任何 select 必 500，§12.222 修复）。
+     * 故 Java 字段与对外 API 字段名统一改为 itemFunction（内部管理端点，
+     * 无对外消费者；按「删除优于兼容」直接改名）。
      */
     @TableField("item_function")
-    private String function;
+    private String itemFunction;
     /**
      * 失效模式
      */
