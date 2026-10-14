@@ -125,6 +125,20 @@ public class ErpGlVoucherServiceImpl implements ErpGlVoucherService {
                 throw exception(GL_VOUCHER_PERIOD_CLOSED, period.getCode());
             }
         }
+        // 账簿归属（§12.215 修 V191 断链）：SaveReqVO 未传账簿时，取「启用的主账簿」
+        // （不限会计准则，见 ErpAccountBookMapper#selectEnabledPrimary）挂上——会计事件链
+        // 此前因 SaveReqVO 无 accountBookId 字段，凭证 account_book_id 恒 NULL，
+        // 业务链凭证不归任何账套，账套视角报表看不到数。
+        // 显式传了账簿则原样使用（但必须存在，避免挂已删/不存在账簿）；
+        // 主账簿也不存在（未配账簿的租户）才留 NULL，既有手工凭证行为不变。
+        if (createReqVO.getAccountBookId() == null) {
+            ErpAccountBookDO primaryBook = accountBookMapper.selectEnabledPrimary();
+            if (primaryBook != null) {
+                createReqVO.setAccountBookId(primaryBook.getId());
+            }
+        } else if (accountBookMapper.selectById(createReqVO.getAccountBookId()) == null) {
+            throw exception(GL_VOUCHER_ACCOUNT_BOOK_NOT_EXISTS, createReqVO.getAccountBookId());
+        }
         // 保存凭证主表
         ErpGlVoucherDO voucher = BeanUtils.toBean(createReqVO, ErpGlVoucherDO.class);
         voucher.setDebitTotal(debitTotal);
@@ -184,6 +198,14 @@ public class ErpGlVoucherServiceImpl implements ErpGlVoucherService {
         }
         // 更新主表
         ErpGlVoucherDO updateObj = BeanUtils.toBean(updateReqVO, ErpGlVoucherDO.class);
+        // 账簿归属（§12.215）：未传账簿时沿用凭证已有账簿（不因前端省略该字段把
+        // 已挂账套的凭证退化成 NULL）；显式传则校验存在。createGlVoucher 的
+        // 「推断主账簿」不适用于 update——修改动作不应悄悄改归属。
+        if (updateReqVO.getAccountBookId() == null) {
+            updateObj.setAccountBookId(existing.getAccountBookId());
+        } else if (accountBookMapper.selectById(updateReqVO.getAccountBookId()) == null) {
+            throw exception(GL_VOUCHER_ACCOUNT_BOOK_NOT_EXISTS, updateReqVO.getAccountBookId());
+        }
         updateObj.setDebitTotal(debitTotal);
         updateObj.setCreditTotal(creditTotal);
         // 自动填充期间编码

@@ -58,6 +58,20 @@ public class ErpGlVoucherSaveReqVO {
     @Schema(description = "来源单据编号", example = "PI20260925001")
     private String sourceDocNo;
 
+    /**
+     * 账簿编号（可空；空表示默认主账簿）
+     *
+     * <p>V191（台账 §12.212）给 erp_account_book 挂了 account_set_id 后，「账套 → 账簿 →
+     * 凭证」层级已打通，但本 VO 一直没有 accountBookId 字段——会计事件链生成的凭证
+     * （createVoucher）无法指定账簿，account_book_id 恒为 NULL，业务链凭证实际不归
+     * 任何账套（§12.215 实证：沙箱 22/22 张凭证 account_book_id 为 NULL）。
+     *
+     * <p>本次补齐该字段：调用方（含会计事件链）显式传账簿；为空时由服务端按会计准则
+     * 推断主账簿，仍推断不出才留 NULL（手工凭证允许挂任意账簿）。
+     */
+    @Schema(description = "账簿编号（可空；空表示默认主账簿）", example = "1024")
+    private Long accountBookId;
+
     @Schema(description = "分录列表", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotEmpty(message = "凭证分录不能为空")
     @Valid

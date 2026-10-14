@@ -1,12 +1,15 @@
 package cn.zhicloud.module.erp.service.finance;
 
+import cn.zhicloud.framework.common.exception.ServiceException;
 import cn.zhicloud.framework.tenant.core.context.TenantContextHolder;
 import cn.zhicloud.module.erp.controller.admin.finance.vo.glvoucher.ErpGlVoucherEntryReqVO;
 import cn.zhicloud.module.erp.controller.admin.finance.vo.glvoucher.ErpGlVoucherSaveReqVO;
+import cn.zhicloud.module.erp.dal.dataobject.finance.ErpAccountBookDO;
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpGlAccountDO;
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpGlVoucherDO;
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpGlVoucherEntryDO;
 import cn.zhicloud.module.erp.dal.mysql.accounting.ErpAccountingPostingMapper;
+import cn.zhicloud.module.erp.dal.mysql.finance.ErpAccountBookMapper;
 import cn.zhicloud.module.erp.dal.mysql.finance.ErpGlAccountMapper;
 import cn.zhicloud.module.erp.dal.mysql.finance.ErpGlVoucherEntryMapper;
 import cn.zhicloud.module.erp.dal.mysql.finance.ErpGlVoucherMapper;
@@ -26,6 +29,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -45,6 +49,9 @@ class ErpGlVoucherPlatformAccountTest {
     @Mock
     private ErpAccountingPostingMapper accountingPostingMapper;
 
+    @Mock
+    private ErpAccountBookMapper accountBookMapper;
+
     private ErpGlVoucherServiceImpl glVoucherService;
 
     @BeforeEach
@@ -54,6 +61,11 @@ class ErpGlVoucherPlatformAccountTest {
         ReflectionTestUtils.setField(glVoucherService, "glVoucherEntryMapper", glVoucherEntryMapper);
         ReflectionTestUtils.setField(glVoucherService, "glAccountMapper", glAccountMapper);
         ReflectionTestUtils.setField(glVoucherService, "accountingPostingMapper", accountingPostingMapper);
+        // §12.215：createGlVoucher 新增「未传账簿时推断主账簿」逻辑，本测试不关心账簿归属，
+        // 统一 mock 成无主账簿（推断不出则 account_book_id 留 NULL，与原行为一致）。
+        // lenient：approve / 显式传账簿 等用例不会走到该查询，strict 模式会误报。
+        ReflectionTestUtils.setField(glVoucherService, "accountBookMapper", accountBookMapper);
+        lenient().when(accountBookMapper.selectEnabledPrimary()).thenReturn(null);
         TenantContextHolder.setTenantId(9001L);
     }
 
@@ -86,6 +98,54 @@ class ErpGlVoucherPlatformAccountTest {
         verify(glVoucherEntryMapper).insertBatch(entriesCaptor.capture());
         assertEquals("1122", entriesCaptor.getValue().get(0).getAccountCode());
         assertEquals("应收账款", entriesCaptor.getValue().get(0).getAccountName());
+    }
+
+    @Test
+    void createGlVoucherDefaultsToEnabledPrimaryBookWhenBookNotGiven() {
+        // §12.215 断链修复：SaveReqVO 无 accountBookId 时，createGlVoucher 应挂上
+        // 「启用的主账簿」——会计事件链此前生成的凭证 account_book_id 恒 NULL，
+        // 业务链凭证不归任何账套，账套视角报表（V191/V193）看不到数。
+        ErpAccountBookDO primaryBook = new ErpAccountBookDO();
+        primaryBook.setId(77L);
+        when(accountBookMapper.selectEnabledPrimary()).thenReturn(primaryBook);
+        when(glAccountMapper.selectById(3L)).thenAnswer(invocation -> platformAccount());
+        when(glVoucherMapper.selectByVoucherNo("V-9001-PB")).thenReturn(null);
+        when(glVoucherMapper.insert(any(ErpGlVoucherDO.class))).thenAnswer(invocation -> {
+            ((ErpGlVoucherDO) invocation.getArgument(0)).setId(502L);
+            return 1;
+        });
+
+        ErpGlVoucherSaveReqVO request = new ErpGlVoucherSaveReqVO();
+        request.setVoucherNo("V-9001-PB");
+        request.setVoucherDate(LocalDate.of(2026, 10, 8));
+        request.setEntries(List.of(entry(3L, BigDecimal.ONE, BigDecimal.ZERO),
+                entry(3L, BigDecimal.ZERO, BigDecimal.ONE)));
+
+        assertEquals(502L, glVoucherService.createGlVoucher(request));
+
+        ArgumentCaptor<ErpGlVoucherDO> voucherCaptor = ArgumentCaptor.forClass(ErpGlVoucherDO.class);
+        verify(glVoucherMapper).insert(voucherCaptor.capture());
+        assertEquals(77L, voucherCaptor.getValue().getAccountBookId());
+    }
+
+    @Test
+    void createGlVoucherRejectsNonExistentBook() {
+        // §12.215：显式传了账簿但不存在，必须拒绝而不是静默落 NULL（挂错账簿 =
+        // 凭证归错账套，报表口径被污染）。
+        when(accountBookMapper.selectById(999L)).thenReturn(null);
+        when(glAccountMapper.selectById(3L)).thenAnswer(invocation -> platformAccount());
+        when(glVoucherMapper.selectByVoucherNo("V-9001-BADBOOK")).thenReturn(null);
+
+        ErpGlVoucherSaveReqVO request = new ErpGlVoucherSaveReqVO();
+        request.setVoucherNo("V-9001-BADBOOK");
+        request.setVoucherDate(LocalDate.of(2026, 10, 8));
+        request.setAccountBookId(999L);
+        request.setEntries(List.of(entry(3L, BigDecimal.ONE, BigDecimal.ZERO),
+                entry(3L, BigDecimal.ZERO, BigDecimal.ONE)));
+
+        ServiceException ex = org.junit.jupiter.api.Assertions.assertThrows(
+                ServiceException.class, () -> glVoucherService.createGlVoucher(request));
+        assertEquals(1_030_702_012, ex.getCode());
     }
 
     @Test

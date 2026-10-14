@@ -232,6 +232,7 @@ ErrorCode PURCHASE_ORDER_ITEM_RETURN_FAIL_IN_EXCEED = new ErrorCode(1_030_101_00
     ErrorCode GL_VOUCHER_NOT_BALANCE = new ErrorCode(1_030_702_009, "凭证借贷不平衡：借方合计 {}，贷方合计 {}");
     ErrorCode GL_VOUCHER_ACCOUNT_NOT_LEAF = new ErrorCode(1_030_702_010, "分录({})所选科目({})不是末级科目");
     ErrorCode GL_VOUCHER_PERIOD_CLOSED = new ErrorCode(1_030_702_011, "会计期间({})已关账，不允许录入凭证");
+    ErrorCode GL_VOUCHER_ACCOUNT_BOOK_NOT_EXISTS = new ErrorCode(1_030_702_012, "凭证所属账簿({})不存在");
 
     // ========== ERP 会计事件 1-030-711-000 ==========
     ErrorCode ACCOUNTING_EVENT_REQUEST_INVALID = new ErrorCode(1_030_711_000, "会计事件请求无效：{}");
