@@ -744,6 +744,13 @@
       "sha256": "3ed425aceaa8a2c5ef73f54a56fac83527bfc0ad293cd1dd049a6738369e3a1c",
       "verification_file": "V196_verify.sql",
       "verification_sha256": "5d655b7fea175847d51cf5e9d5c6a5a40e8991a33c146d8a6c61725dafc9ff99"
+    },
+    {
+      "version": 197,
+      "file": "V197__tms_oa_crm_missing_domain_menus.sql",
+      "sha256": "f5b0655f7b67e1aa1ed99237ff69c925e233485ec4d9e62e3d2e32ee69f6f95b",
+      "verification_file": "V197_verify.sql",
+      "verification_sha256": "09ee98e019c112f861f298d4a81d0712628a906762e1c80848ee7a12289f74d6"
     }
   ]
 }
