@@ -737,6 +737,13 @@
       "sha256": "bb9082152a2c3d108fd2a0b833d44b840fc6605afd816567947e8698dae717b2",
       "verification_file": "V195_verify.sql",
       "verification_sha256": "46e7293410aab6f1ad0e6dc47757f78af427a67aa1f2418515aef5b669d0c06a"
+    },
+    {
+      "version": 196,
+      "file": "V196__qms_document_multi_version_unique_key.sql",
+      "sha256": "3ed425aceaa8a2c5ef73f54a56fac83527bfc0ad293cd1dd049a6738369e3a1c",
+      "verification_file": "V196_verify.sql",
+      "verification_sha256": "5d655b7fea175847d51cf5e9d5c6a5a40e8991a33c146d8a6c61725dafc9ff99"
     }
   ]
 }
