@@ -8505,3 +8505,28 @@ failure + Druid init datasource error，且 `docker exec` 内 mysql 正常**—�
 
 **验证**：回归 34 脚本零失败（QMS 邻近批次 202 断言 + 其余批次全绿）。
 
+## 12.220 2026-10-14 「未覆盖业务流程」逐项处理第一批：12 域前端 + 权限播种，并抓到**两个真实缺陷**（其一框架级）
+
+### 12.220.1 缺口的精确化（先核实再动手）
+按「前端 api 目录 vs 后端类级 @RequestMapping 域级比对」扫描 CRM/TMS/OA：名义缺口 28 个域，**真缺前端的只有 12 个**。其余 16 个分三类：① 前端 api+视图早已存在（statistics-product、statistics-performance-target、business-status、contract-config、customer-limit-config、customer-pool-config、product-category、receivable-plan、performance-config、follow-up-record 等，此前 HANDOFF 的「缺口清单」名义大于实际）；② `contract-esign` 权限套 `crm:contract:*` 已播种、无需新菜单；③ `clue-receive` 是 `@PermitAll` 外部接入端点，不适合做菜单页。**教训：缺口清单要从代码比对生成，不引二手结论。**
+
+### 12.220.2 12 域前端 + V197 权限播种（提交 ef03f0919）
+TMS 四域（运费结算含试算弹窗与审核/结算状态机、运费对账、车队运营、GPS 上报+轨迹查询）+ OA 四域（知识评论/知识版本/会议预约含冲突预检/日程含完成取消）+ CRM 四域（线索渠道/线索公海单例配置/销售订单含明细子表/售后工单五态机）。V197 播种 16 个缺权限域（含 4 个纯缺权限的既存域），权限串逐个读 `@PreAuthorize` 原文。
+
+### 12.220.3 真实缺陷一（框架级，本轮最严重）：LocalDateTime ISO 字符串静默变 epoch 0（提交 09fcde939）
+`ZhiCloudJacksonAutoConfiguration` 把 `LocalDateTime` 全局绑定到只认 EpochMillis 数字的
+`TimestampLocalDateTimeDeserializer`（`p.getValueAsLong()`）。传 ISO 字符串（`"2026-08-01T10:00:00"`）时返回 **0**，落库成 **1970-01-01 07:30:00**（东八区 epoch 0）——**无任何报错**，表单「保存成功」但时间是 1970，时段冲突检测恒 false。真机抓出：OA 会议预约 DB 里 start_time/end_time 全是 1970-01-01 07:30:00，check-conflict 恒 false。长期未暴露的原因：**既有前端全按毫秒数传参（数字路径一直正常）**，只有新接域（el-date-picker 原生产 ISO 串）才踩到。修复：字符串先试数字透传（保既存行为），再按 ISO 兼容格式解析，非法串抛异常（不静默）；单测 6 条锁死三种输入；zhicloud-common 18/18、starter-web 全绿；35 个 E2E 850 断言回归全绿（含大量按毫秒数传参的 CRM/TMS 域——证明没破坏既存行为）。
+
+### 12.220.4 真实缺陷二（域内）：运费结算创建必 500（提交 c80486b1b）
+`tms_freight.total_amount` NOT NULL 无默认值（V67），而 `createFreight` 从不算该字段（SaveReqVO 可空、前端表单不录）——不带 totalAmount 创建必 500 `Field 'total_amount' doesn't have a default value`，即该域创建功能从未可用。修：为空时按 `/calculate` 同口径兜底（单价×数量+附加-折扣，下限 0）。
+
+### 12.220.5 两处迁移踩坑（均已修）
+1. **`INSERT ... SELECT ... UNION ALL` 首个 SELECT 行必须带 `AS 列名`**——匿名派生表被 MySQL 推断列名时报 `Duplicate column name 'b'1''`（V158 是先例，抄漏了 AS；真机 Flyway success=0 抓出，直接 `mysql < sql` 单步复现最快）。
+2. **幂等条件不能只按 permission**：knowledge-version 菜单与 V64 已种「知识文章」同为 `oa:knowledge-article:query`(type=2)，被误拦，改按 id + 父级判定（同 §12.214 FMS 按钮复栽教训）。
+
+### 12.220.6 验证
+新增 `zc_new_domains_e2e.py` 真机 **42/42**：12 域逐个 create/流转/DB 断言/清理，含状态机护栏（已确认订禁删、单五态闭环、软删评论 status=1、评论数 ±1 副作用、冲突检测真阳性）、前置自建车辆/客户/文章（避免依赖沙箱预置数据的租户差异）、`ts:check` 0 错误、`build:local` 通过、契约 tracked=107 findings=0、5 道门禁全过。**回归 35 个 E2E 脚本 850 断言全绿。**
+
+### 12.220.7 剩余清单
+「未覆盖业务流程」里 CRM 剩：合同电子签（已有按钮位，属合同详情页增强）；TMS：运费报表（可按承运商/周期汇总）；OA：知识评论树形 UI 增强（当前为表格）。均为增强项，无已知缺陷。
+
