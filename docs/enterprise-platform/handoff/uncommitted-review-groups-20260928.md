@@ -8420,3 +8420,49 @@ approve 的「修订」分支自动插同 docNo 的新版本文档，但 V112 �
 契约 tracked=106；全部门禁过（bare_throws / preauthorize 529 / error_codes 1926 /
 migration_contract / duplicate_ddl）。
 
+## 12.218 2026-10-14 修审核不符合项五态状态机断环——第三个「设计与实现不匹配」缺陷（提交 f0c690c81）
+
+调研 QMS 剩余域（8D/投诉/文档变更之后）时，发现审核不符合项（QmsAuditNonconformity）
+有 rectify/verify/close 三个动作端点，是最后一组值得固化的流程域。**但真机一测就抓出死锁。**
+
+### 12.218.1 缺陷实证
+QmsNcStatusEnum 定义了**五态**（10 待整改 → 20 整改中 → 30 已整改 → 40 已验证 → 50 已关闭），
+但**只有三个动作端点**（rectify 10→20 / verify 30→40 / close 40→50），缺 20→30 一环。
+真机实证：不符合项 rectified 后停在 20，此时调 verify / close **均返回 1044000045 状态非法**
+（带正确电子签名头也一样——排除了签名问题，是纯状态死锁）。**不符合项一旦提交整改便永远
+无法验证与关闭**，该功能自上线起从未真正可用（前端也从未接这三个按钮，所以一直没人踩到）。
+
+同型病根第三次出现（前两次：V191 凭证不挂账簿、V196 文档多版本唯一键）：
+**状态机/模型设计与端点实现不匹配**——枚举写了五态，动作只覆盖三段。这类缺陷单测与静态
+门禁都抓不到，只有真机走流程才能暴露。
+
+### 12.218.2 修复
+- 新增 `PUT /qms/audit-nonconformity/complete-rectify`（20→30）。权限**复用既有
+  `qms:audit:rectify`**（V134 早已播种该权限串，不造平行权限串）。
+- `completionNote` 可空：留空则保留 rectify 时记录的整改措施。MyBatis-Plus `updateById`
+  的 NOT_NULL 字段策略天然不覆盖 null 字段，显式判空只为义清晰（不引入 LambdaUpdateWrapper）。
+- 前端补齐整个流程（此前**一个按钮都没有**）：api 补 rectify/complete-rectify/verify/close/
+  list-by-report；页面按状态显隐按钮（整改/完成整改/验证/关闭）+ 状态列 tag 化 +
+  两个电子签名弹窗（复用 NCR 页同款范式：`encodeURIComponent` 三头，§12.211）。
+
+### 12.218.3 验证
+单测 QMS 模块 55/55；新增 `zc_audit_nc_e2e.py` 真机 21/21：
+- **正向五态闭环**：10→20（rectify，含整改措施落 remark）→30（complete-rectify，
+  含 completionNote 覆盖）→40（verify，电子签名）→50（close，电子签名）
+- **负向证明护栏未被绕过**（这是本次修复的正确性关键——不是放宽校验换绿）：
+  10 直接 verify 拒、20 verify 拒（修复前这里就死锁）、30 重复 complete-rectify 拒、
+  50 重复 close 拒、complete-rectify 对不存在项报错
+- **completionNote 可空分支**：走完整链并留空 → 保留原整改措施
+- list-by-report / page 可查
+
+回归 33 个脚本全绿（两个偶发失败重跑均过——网络抖动非回归）；ts:check 0 错误；
+QMS 单测 55/55；全部门禁过（bare_throws / preauthorize 529 / error_codes 1926 /
+migration_contract tracked=106 / duplicate_ddl）。
+
+### 12.218.4 环境插曲（沙箱 MySQL 端口转发僵死）
+重打包重启时应用连不上 127.0.0.1:55101——容器内 MySQL 正常（`docker exec mysql -e SELECT 1`
+通），宿主端口映射显示在但连接被拒，是 Docker Desktop 的 vpnkit 转发僵死。`docker restart`
+无效，`docker stop` + `docker start` 后恢复。**现象：应用启动日志报 Communications link
+failure + Druid init datasource error，且 `docker exec` 内 mysql 正常**——据此判断是宿主侧
+端口转发而非 MySQL 本身故障。
+
