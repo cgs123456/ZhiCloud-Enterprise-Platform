@@ -66,7 +66,8 @@
 <script setup lang="ts">
 import {
   StatisticsCustomerApi,
-  CrmStatisticsCustomerSummaryByDateRespVO
+  CrmStatisticsCustomerSummaryByDateRespVO,
+  CrmStatisticsCustomerContractSummaryRespVO
 } from '@/api/crm/statistics/customer'
 import { EChartsOption } from 'echarts'
 import { dateFormatter } from '@/utils/formatTime'
@@ -78,7 +79,8 @@ defineOptions({ name: 'CustomerConversionStat' })
 const props = defineProps<{ queryParams: any }>() // 搜索参数
 
 const loading = ref(false) // 加载中
-const list = ref<CrmStatisticsCustomerSummaryByDateRespVO[]>([]) // 列表的数据
+// 实际装载的是 getContractSummary 的响应（合同转化统计），不是按日期的客户汇总
+const list = ref<CrmStatisticsCustomerContractSummaryRespVO[]>([]) // 列表的数据
 
 /** 柱状图配置：纵向 */
 const echartsOption = reactive<EChartsOption>({

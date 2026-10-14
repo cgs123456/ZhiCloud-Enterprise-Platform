@@ -64,7 +64,10 @@ export const StatisticFunnelApi = {
       params
     })
   },
-  // 6. 获取商机列表(按日期)
+  // 6. 获取商机列表(按日期)——漏斗页明细下钻，真实存在（CrmStatisticsFunnelController
+  //    getBusinessPageByDate，返回 PageResult<CrmBusinessRespVO>）。
+  //    §12.222 一度误判为死端点删掉，ts:check 立即抓到 BusinessSummary /
+  //    BusinessInversionRateSummary 两组件在用——删 api 声明前必须 grep views 引用。
   getBusinessPageByDate: (params: any) => {
     return request.get({
       url: '/crm/statistics-funnel/get-business-page-by-date',
