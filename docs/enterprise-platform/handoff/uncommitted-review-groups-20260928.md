@@ -8252,3 +8252,110 @@ sql_migration_lint 0 违规。
 （文件 3033205422 vs 规范化后 692881510），修正值必须取 Flyway 报错信息里
 「Resolved locally」的值，不能自己算。
 
+## 12.215 2026-10-14 FMS 增强收尾三件：前端进 CI + 修 V191 断链 + 账套视角现金流精度（V195）
+
+**本会话从「继续推进 FMS 相关增强项」出发，做完 §12.214 两项后按 HANDOFF 剩余清单继续，
+过程中调研抓出一个比增强项更重要的真实缺口（断链），一并修复。**
+
+### 12.215.1 前端门禁进 CI（提交 550779316）
+前端两个验证（vue-tsc 全量类型检查 + vite 构建）长期只在本地跑，CI 三作业（build / V77 repair /
+Windows launcher）全不覆盖前端——「前端改动无人验」不是风险假设而是既成事实（§12.204 首轮
+ts:check 修 17 个错、§12.214 修树组件类型错，都靠本地跑才发现）。新增独立 job `frontend-gate`：
+- 独立 job 而非并入 build：前端依赖安装 2-4 分钟，并行不拖慢 Java 关键路径；且前端失败与
+  Java 失败可分别定位，不互相掩盖。
+- pnpm 11.25.0 + Node 22：与既有 windows-launcher-contract 作业同款、已在 CI 实跑验证的组合
+  （本地是 corepack pnpm 12.6.0，engines 要求 pnpm>=8.6.0，无冲突）。
+- `--frozen-lockfile`：lock 是依赖可复现的唯一依据。本地校验 lock 与 package.json 0 偏差、
+  lockfileVersion 9.0。
+- 先 ts:check（1-2 分钟）后 build:local（约 1 分钟），任一失败即 job 失败。
+- `paths-ignore` 排除 `**.md` / `docs/**` / `evidence/**`：纯文档编辑不拉起两个 ~10 分钟 job。
+
+### 12.215.2 修 V191 断链：业务链凭证不挂账簿（提交 bf93363b8）——**本会话最有价值的发现**
+调研账套视角现金流精度时，顺链发现真实缺口：V191 给 erp_account_book 挂了 account_set_id、
+「账套 → 账簿 → 凭证」看似打通，但 `ErpGlVoucherSaveReqVO` **一直没有 accountBookId 字段**，
+会计事件链（`ErpAccountingEventServiceImpl.createVoucher`）生成的凭证 account_book_id 恒为 NULL。
+**沙箱实证：22/22 张凭证 account_book_id 为 NULL**——业务链凭证实际不归任何账套，
+§12.214 做的账套视角报表对业务数据完全看不到数（只有 E2E 手工挂账簿的凭证能验证）。
+这是 V191 自身留下的断链（三层只打通了前两层），性质是**已知缺陷**而非增强项，优先级更高。
+
+修复：
+- `ErpGlVoucherSaveReqVO` 补 `accountBookId`（可空）。
+- `createGlVoucher` 未传账簿时挂「启用的主账簿」（新增 `ErpAccountBookMapper.selectEnabledPrimary`，
+  **不限会计准则**——租户只配 IFRS 主账簿时按 CAS(10) 查会查不到又退化成 NULL）；显式传则校验
+  存在（新错误码 `1_030_702_012`），不静默落 NULL（挂错账簿 = 凭证归错账套，污染报表口径）。
+- `updateGlVoucher` 未传沿用已有账簿（不因前端省略字段把已挂账套的凭证退化成 NULL）；
+  createGlVoucher 的「推断主账簿」刻意不适用于 update——修改动作不应悄悄改归属。
+- 会计事件链调用方**零改动**（推断内置于 createGlVoucher）。
+
+**踩坑（重要，单测绿但真机不生效）**：`selectEnabledPrimary` 初版写成 `status = 0`
+（照 CommonStatusEnum 习惯），真机 E2E 立刻抓出——账簿用 `ErpAccountBookStatusEnum`
+（**10 启用 / 20 禁用**）。单测全绿因为 mock 不校验状态值语义；口径已写进 mapper 注释。
+教训：**单测用 mock 时，凡涉及枚举/状态值语义的分支，必须真机 E2E 复核**。
+
+验证：单测 6/6（新增 2 正向用例：推断主账簿、拒绝不存在账簿）+ ERP 全模块 171/171；
+新增 `zc_book_voucher_e2e.py` 真机 15/15（自动挂主账簿 / 显式挂指定 / 坏账簿拒 /
+update 不退化 / 账套凭证流水与资产负债表可见 / 未挂账套账簿凭证隔离）。
+
+### 12.215.3 账套视角现金流精度：银行账户挂账簿（V195，提交 a87a9ea33）
+§12.214 的现金流量表是唯一降级口径的表（erp_cash_flow 只到 bank_account_id 无账簿关联，
+指定账套时只能走凭证兜底，看不到按日期收/付款明细与投资/筹资活动归类）。调研后方案选型：
+- 方案 A 给 erp_cash_flow 加 account_book_id——存量流水无账簿可回填（流水 → 银行账户 →
+  账户也没账簿），历史流水按账套仍不可见；
+- **方案 B 给 erp_bank_account 加 account_book_id（采用）**——账户配好账簿后报表按
+  「账簿 → 账户集合 → 流水」过滤，存量流水随账户配置立即可见，不碰流水表结构、不碰唯一写入点；
+- 方案 C 保持凭证兜底——永远看不到流水口径明细。
+选 B 理由：加列可空、存量零影响（列空 = 不参与账套过滤，与现状一致）、无回填风险。
+
+实现：V195 加 `erp_bank_account.account_book_id` 可空列 + `(tenant_id, account_book_id)` 复合索引
+（与 V191 账簿挂账套同型）+ 4 项自检（列/索引在、存量零回填、流水表未被改动）；
+`ErpBankAccountMapper.selectListByAccountBookIds`（账簿 → 账户）+
+`ErpCashFlowMapper.selectListByPeriodAndBankAccountIds`（账户 → 流水）；报表侧
+`loadCashFlows`：账套非空走「账簿 → 账户 → 流水」，账簿/账户为空返回空列表（走凭证兜底，
+不进 IN(空集合)），不传账套仍取租户全量；前端银行账户表单加「所属账簿」下拉 + 列表列。
+
+**编译踩坑**：`LambdaQueryWrapperX` 的 `inIfPresent` 必须排在 `ge`/`le` 之前——`ge`/`le` 是父类型
+`LambdaQueryWrapper` 的方法，调用后链式返回父类型，会丢掉 X 的 `inIfPresent`（编译期
+"cannot find symbol" 直接抓出）。
+
+验证：契约 tracked=105 findings=0、lint 0 违规；新增 `zc_cashflow_book_e2e.py` 真机 17/17
+（流水口径 CASH_FLOW / 净流量 600 / 按日期明细 / 未挂账簿账户隔离 / ERP 全量口径含孤儿账户
+流水 / 空账套走兜底不报错）。
+
+### 12.215.4 QMS 其余闭环 E2E 固化（§12.216 见下）
+
+**本会话验证规模**：29 个 E2E 脚本 × 739 断言全绿（原 26 + 本会话新增 3：zc_book_voucher_e2e 15、
+zc_cashflow_book_e2e 17、zc_capa_e2e 20、zc_audit_e2e 20，去重后 29 个脚本）；
+ts:check 0 错误；build:local 通过；check_bare_throws / check_missing_preauthorize（529 Controller）/
+check_error_codes（1926）/ check_migration_contract（tracked=105）/ check_duplicate_ddl 全过。
+
+## 12.216 2026-10-14 QMS 其余闭环 E2E 固化：CAPA 阶段机 + 审核域（含一条契约认知修正）
+
+HANDOFF「下一步计划」第 4 项：QMS 其余流程按同款「提交→审批→回写」E2E 固化。
+已有 `zc_workflow_e2e.py` 覆盖不合格品 NCR；本次补两个域，均为**纯 E2E 固化，零产品代码改动**
+（端点与状态机早已实现，缺的是可复跑的验收断言）。
+
+### 12.216.1 CAPA 文档阶段机（`zc_capa_e2e.py` 20/20）
+阶段（CAPAStageEnum）：10 已创建 → 20 根本原因分析 → 30 纠正措施 → 40 预防措施 →
+50 有效性验证 → 60 已关闭；状态（CAPAStatusEnum）：10 待处理 / 20 处理中 / 30 已关闭。
+规则（CAPADocumentServiceImpl）：
+- transition 只允许前进/后退 1 步（差 ±10）；VERIFICATION→CORRECTIVE_ACTION 例外放行（验证不通过返工）。
+- 前进必填校验：20→30 需 rootCauseAnalysis、30→40 需 correctiveAction、40→50 需 preventiveAction、
+  50→60 需 verificationResult=PASSED(20)。
+- verify 仅在 50 阶段可提交；close 仅在 50 阶段且验证通过时允许。
+
+**契约认知修正（读 service 才确认）**：我初版 E2E 在 `verify` 提交「不通过」后**又调了一次
+transition 回 30**，被「仅允许 ±1 步」拒（code 1040103010）——查源码发现 `submitVerification`
+内「不通过」**已自动回退阶段到 30 并把 status 置回 10（待处理）**，且 verification_result
+保留为 30（不清空，清空只发生在「手动 transition 从 50 退回 30」的分支）。断言据此改为
+「DB 自动回退到 30 且状态回 10」。**又一例：写负向断言前先读 service 真实契约**（同 §12.205 MES finish 教训）。
+
+### 12.216.2 审核域（`zc_audit_e2e.py` 20/20）
+计划状态（QmsAuditPlanStatusEnum）：10 已计划 → 20 已执行 → 30 已完成；40 已取消。
+规则：execute 仅 10 允许、complete 仅 20 允许、cancel 仅 10/20 允许。
+覆盖：计划 A 走完 10→20→30、负向（10 直接 complete 拒、30 再 cancel 拒）、计划 B 走取消路径
+（10→40）、审核组成员 CRUD（create/list/delete）、审核报告创建（挂计划 + 结论 20 基本符合 +
+issueCount）、负向（报告缺 reportNo 拒）、计划/报告分页可查。
+
+**验证规模**：29 个 E2E 脚本 × 739 断言全绿。两个新脚本与既有 26 个同款结构（API + DB 双断言、
+幂等预清理、自包含）。三处小差异记录：CAPA/审核表的软删与清理用 `capa_no`/`plan_no` 前缀匹配。
+
