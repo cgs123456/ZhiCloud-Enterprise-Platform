@@ -26,6 +26,7 @@ export interface ContractVO {
   signContactName?: string
   signUserId: number
   signUserName: string
+  esignTaskId?: string // 电子签任务 ID（发起签署后由后端写入）
   remark: string
   createTime?: Date
   creator: string

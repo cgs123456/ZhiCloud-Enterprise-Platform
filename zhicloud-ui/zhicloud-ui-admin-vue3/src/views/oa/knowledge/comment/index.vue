@@ -73,12 +73,15 @@
         </template>
       </el-table-column>
     </el-table>
+    <!-- 树形模式（按文章查询）不展示分页；平铺模式分页 -->
     <Pagination
+      v-if="!isTreeMode"
       v-model:limit="queryParams.pageSize"
       v-model:page="queryParams.pageNo"
       :total="total"
       @pagination="getList"
     />
+    <el-empty v-if="isTreeMode && list.length === 0" description="输入文章编号查看该文章的评论树" />
   </ContentWrap>
 
   <!-- 表单弹窗 -->
@@ -97,6 +100,8 @@ const message = useMessage()
 const loading = ref(true)
 const list = ref<any[]>([])
 const total = ref(0)
+/** 树形模式：填了文章编号时走 /list 拿评论树（后端返回根评论列表 + children 嵌套） */
+const isTreeMode = computed(() => !!queryParams.articleId)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
@@ -108,6 +113,17 @@ const queryParams = reactive({
 const queryFormRef = ref()
 
 const getList = async () => {
+  if (isTreeMode.value) {
+    // 树形：按文章查全量评论树（无分页）
+    loading.value = true
+    try {
+      list.value = (await OaKnowledgeCommentApi.getCommentTreeByArticle(queryParams.articleId!)) || []
+    } finally {
+      loading.value = false
+    }
+    return
+  }
+  // 平铺：全站分页
   loading.value = true
   try {
     const data = await OaKnowledgeCommentApi.getOaKnowledgeCommentPage(queryParams)

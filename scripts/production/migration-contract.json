@@ -751,6 +751,13 @@
       "sha256": "f5b0655f7b67e1aa1ed99237ff69c925e233485ec4d9e62e3d2e32ee69f6f95b",
       "verification_file": "V197_verify.sql",
       "verification_sha256": "09ee98e019c112f861f298d4a81d0712628a906762e1c80848ee7a12289f74d6"
+    },
+    {
+      "version": 198,
+      "file": "V198__tms_freight_report_menu.sql",
+      "sha256": "8ab877144e334bc4bbc2dda62cf00f7f156d5e1cc1500d62db0bcbe421534de2",
+      "verification_file": "V198_verify.sql",
+      "verification_sha256": "c03a55080f31ea5486ceca1ca7a04684a4e406f4dfab3451116956631b117b70"
     }
   ]
 }
