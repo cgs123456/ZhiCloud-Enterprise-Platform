@@ -91,6 +91,22 @@ public class TmsFreightServiceImpl implements TmsFreightService {
         if (freight.getStatus() == null) {
             freight.setStatus(STATUS_PENDING_AUDIT);
         }
+        // total_amount 为 NOT NULL 无默认值列（V67），而 SaveReqVO 中该字段可选、前端
+        // 表单不提供录入（金额由「试算」或直接给定）——为空时按与 calculate 同口径兜底：
+        // 单价 × 数量 + 附加费 - 折扣，下限 0。显式传入的值不覆盖（§12.220 真实缺陷修复）。
+        if (freight.getTotalAmount() == null) {
+            BigDecimal quantity = freight.getBillingQuantity() == null
+                    ? BigDecimal.ZERO : freight.getBillingQuantity();
+            BigDecimal unitPrice = freight.getUnitPrice() == null
+                    ? BigDecimal.ZERO : freight.getUnitPrice();
+            BigDecimal surcharge = freight.getSurcharge() == null
+                    ? BigDecimal.ZERO : freight.getSurcharge();
+            BigDecimal discount = freight.getDiscountAmount() == null
+                    ? BigDecimal.ZERO : freight.getDiscountAmount();
+            BigDecimal computed = unitPrice.multiply(quantity)
+                    .add(surcharge).subtract(discount);
+            freight.setTotalAmount(computed.max(BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP));
+        }
         freightMapper.insert(freight);
         return freight.getId();
     }
