@@ -30,6 +30,9 @@ import static org.mockito.Mockito.when;
  * 作为「本年利润（未分配）」并入权益后，恒等式 资产 = 负债 + 权益 必须在任意
  * 已审核凭证组合下成立（盈利、亏损、损益互抵三种情形）。
  *
+ * <p>accountSetId 一律传 null（租户全量口径）——账套视角过滤的链路由 FMS 侧
+ * E2E（zc_fms_report_e2e.py）覆盖，此处只锁单体报表不变式。
+ *
  * @author 智云
  */
 @ExtendWith(MockitoExtension.class)
@@ -70,7 +73,7 @@ public class ErpFinancialStatementBalanceSheetTest {
         when(accountMapper.selectList(any())).thenReturn(List.of(
                 account(1L, "1001", 10),   // 资产
                 account(4L, "6001", 40))); // 收入
-        ErpBalanceSheetRespVO vo = statementService.generateBalanceSheet(AS_OF);
+        ErpBalanceSheetRespVO vo = statementService.generateBalanceSheet(null, AS_OF);
         assertEquals(0, new BigDecimal("1000").compareTo(vo.getTotalAssets()));
         assertEquals(0, BigDecimal.ZERO.compareTo(vo.getTotalLiabilities()));
         // 未分配利润 1000 进权益 → 恒等式
@@ -86,7 +89,7 @@ public class ErpFinancialStatementBalanceSheetTest {
         when(accountMapper.selectList(any())).thenReturn(List.of(
                 account(1L, "1001", 10),
                 account(5L, "6602", 50)));  // 费用（6xxx 归费用非成本）
-        ErpBalanceSheetRespVO vo = statementService.generateBalanceSheet(AS_OF);
+        ErpBalanceSheetRespVO vo = statementService.generateBalanceSheet(null, AS_OF);
         assertEquals(0, new BigDecimal("-300").compareTo(vo.getTotalAssets()));
         assertEquals(0, new BigDecimal("-300").compareTo(vo.getTotalEquity()));
         assertEquals(0, vo.getTotalAssets().compareTo(
@@ -102,7 +105,7 @@ public class ErpFinancialStatementBalanceSheetTest {
                 account(4L, "6001", 40),
                 account(5L, "6602", 50),
                 account(1L, "1001", 10)));
-        ErpBalanceSheetRespVO vo = statementService.generateBalanceSheet(AS_OF);
+        ErpBalanceSheetRespVO vo = statementService.generateBalanceSheet(null, AS_OF);
         assertEquals(0, BigDecimal.ZERO.compareTo(vo.getTotalAssets()));
         assertEquals(0, BigDecimal.ZERO.compareTo(vo.getTotalEquity()));
         assertEquals(0, vo.getTotalAssets().compareTo(
