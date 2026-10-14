@@ -341,6 +341,12 @@ jobs:
       run: pnpm install --frozen-lockfile
     - name: Type Check (vue-tsc)
       run: pnpm ts:check
+    - name: Lint (eslint)
+      # 只进 eslint：当前 0 error（存量 3 个 warning 不阻断退出码），状态稳定可作门禁。
+      # prettier / stylelint **暂不进 CI**：分别为 473 / 大量文件的历史存量不合规，
+      # 直接进必第一天就红——那会逼出「为过门禁而批量 --fix」的大面积格式 diff，
+      # 淹没有效 review。作为后续治理项单独推进，见台账 §12.222。
+      run: pnpm lint:eslint:check
     - name: Build (vite build:local)
       run: pnpm build:local
   v77-repair-script:
