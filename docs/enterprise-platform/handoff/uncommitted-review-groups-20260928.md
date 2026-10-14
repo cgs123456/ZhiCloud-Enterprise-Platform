@@ -8568,3 +8568,12 @@ frontend-gate 加 Lint (eslint)。**决策依据是现状核实而非照单全�
 ### 12.222.5 验证
 QMS 单测 55/55；**全量回归 37 个 E2E 脚本全绿**（含新增 zc_qms_crud_smoke 49/49；两个偶发失败重跑均过）；ts:check 0 错误；build:local 通过；eslint 0 error；maven.yml YAML 结构校验通过；六道门禁全过。
 
+## 12.223 2026-10-15 低优先级清理（提交 5f3f8c65c）——一次有价值的失败：误删 API 被前端门禁当场抓住
+
+§12.222.3 登记的两项低优先级清理：
+
+1. **CustomerConversionStat.vue 类型标注修正**：list ref 原标注 CrmStatisticsCustomerSummaryByDateRespVO[]，实际装载 getContractSummary 的响应，改为 CrmStatisticsCustomerContractSummaryRespVO[]。
+2. **funnel.ts 死端点清理——失败与恢复**：依据调研 agent 结论（「后端无此端点、无调用方」）删除 getBusinessPageByDate 声明，ts:check 当场报两处 TS2339（BusinessSummary.vue:224 / BusinessInversionRateSummary.vue:270 真实在用）。回源码核实：CrmStatisticsFunnelController:69 确有该端点——**调研结论错误**。已恢复声明并注释记录教训。
+
+**本次事件的真正价值**：这是前端门禁（ts:check 进 CI，06603a08a）上线后第一次实战抓住一次本可造成两个商机列表**静默白屏**的破坏性修改。若没有该门禁（或删除后未跑全量 ts:check），「看起来合理的清理」会直接进主干。门禁拦住的正是这类改动。教训沉淀：**删 api 声明前必须 grep views 引用，不接受未经验证的二手结论**——agent 调研同样要复核关键事实。
+
