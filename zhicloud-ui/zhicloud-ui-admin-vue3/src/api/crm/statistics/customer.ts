@@ -22,8 +22,8 @@ export interface CrmStatisticsFollowUpSummaryByDateRespVO {
 
 export interface CrmStatisticsFollowUpSummaryByUserRespVO {
   ownerUserName: string
-  followupRecordCount: number
-  followupCustomerCount: number
+  followUpRecordCount: number
+  followUpCustomerCount: number
 }
 
 export interface CrmStatisticsFollowUpSummaryByTypeRespVO {
@@ -36,8 +36,8 @@ export interface CrmStatisticsCustomerContractSummaryRespVO {
   contractName: string
   totalPrice: number
   receivablePrice: number
-  customerType: string
-  customerSource: string
+  industryId?: number // 客户行业（后端字段；旧 customerType 声明不存在，已删）
+  source?: string // 客户来源（后端字段；旧 customerSource 声明不存在，已删）
   ownerUserName: string
   creatorUserName: string
   createTime: Date

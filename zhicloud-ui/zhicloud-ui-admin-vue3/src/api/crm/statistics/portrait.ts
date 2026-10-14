@@ -1,5 +1,12 @@
 import request from '@/config/axios'
 
+/**
+ * 客户画像统计 VO。
+ *
+ * 注意 *Portion 字段：**后端不返回**（画像端点只给 customerCount/dealCount），
+ * 由各展示组件 fetch 后在前端 calculateProportion 自算并赋值（§12.222 核实）。
+ * 这里保留声明是为了让模板 prop 有类型，但它们是前端派生值、不是接口字段。
+ */
 export interface CrmStatisticCustomerBaseRespVO {
   customerCount: number
   dealCount: number
