@@ -8183,3 +8183,72 @@ FMS config 域拆 11 个资源：账套 account-set、成员 account-user、账�
 
 **单测 H2 同步（create_tables.sql / clean.sql）**：随旧 DO/Mapper 删除，把 hr_attendance/hr_contract/hr_department/hr_interview/hr_job_posting/hr_leave_balance/hr_leave_request/hr_leave_type/hr_performance/hr_resume/hr_salary/hr_social_insurance_base 共 12 张退役表的建表块与清理行从 H2 schema 摘除（字节级脚本 Temp/zc_prune_h2.py，LF 无 BOM 保持原样）；hr_employee / hr_position 保留。
 
+## 12.214 2026-10-14 FMS 增强两项：账套视角三大报表 + FMS 语境科目维护（V194）
+
+**背景**：交接文档「下一步计划」前两项落地——FMS/ERP 财务融合（V190–V193）后，账套配置层
+与凭证执行层已打通，但配置层只能看凭证流水，看不到「按账套出报表」；融合时删掉的 FMS 科目
+死页也未给出替代维护入口。
+
+**增强项一：账套视角三大报表（账套 → 账簿 → 凭证链路，凭证不落冗余列）**
+- ERP 侧 `ErpFinancialStatementService` 三方法统一加 `accountSetId` 首参（可空；null 为租户全量，
+  既有行为不变）。过滤口径与 V193 凭证流水完全一致：`resolveAccountBookIds` 先解析账簿集合，
+  再 `inIfPresent(accountBookId)` IN 查询；账套下无账簿直接返回空凭证集（避免 IN(空集合) 歧义）。
+- 现金流表的账套视角是**刻意降级**：`erp_cash_flow` 只到 `bank_account_id`，无账簿关联，
+  指定账套时无法按账簿过滤流水。选择保持与既有 ERP 侧行为同一口径（租户全量流水只在
+  accountSetId=null 时取），按账套出现金流一律走凭证兜底分支（银行科目 1001/1002 变动）——
+  不发明「银行账户挂账簿」的新结构（超出本次范围，登记为已知限制）。
+- 跨模块契约 `ErpFinancialStatementApi` + Impl 发布在 erp.api 边界包（与 ErpAccountBookApi/
+  ErpGlVoucherApi 同范式，禁止跨模块 import service/dal）；FMS 侧 `/fms/config/account-set/
+  {balance-sheet,income-statement,cash-flow-statement}` 三个只读端点 + 四个独立 VO
+  （FmsBalanceSheetRespVO/FmsIncomeStatementRespVO/FmsCashFlowStatementRespVO/
+  FmsFinancialStatementItemVO），边界处 BeanUtils 转换，不泄漏 ERP RespVO。
+- 前端账套页操作列加「财务报表」按钮 + 三 tab 弹窗（复用 ERP 报表的 StatementSection 形态，
+  FMS 侧复制一份小组件而非跨模块 import——两个用例、20 行组件，按「抽象延迟到第二个真实
+  用例」原则直接实现；ERP 侧不受影响）。
+
+**增强项二：FMS 语境会计科目维护（单一真相，不建第二套表）**
+- 设计决策：**不建 FMS 侧代理 Controller/平行表**。科目单一真相是 ERP `erp_gl_account`
+  （CRUD 端点 `/erp/gl-account`），FMS 页面直连该端点；权限串 `erp:gl-account:*` 全局唯一，
+  FMS 页经 `v-hasPermi` 复用。若建 FMS 侧 `fms:gl-account:*` 平行权限串，就会出现两套权限
+  真相，违背融合时「本位币并入单一真相」的同一纪律。
+- V194 在 FMS 目录（9000）下种「会计科目」菜单（id 9020，component `fms/config/subject/index`）。
+  **踩坑记录**：初版迁移同时种了 9021–9023 三个按钮（fms 树下），被 V158 幂等预检
+  （同 permission+type 全局一份）全部拦掉——沙箱实证按钮未插入。这正是幂等预检的正确语义：
+  按钮权限串与 ERP 侧 6750–6752 重复。最终版只种菜单，按钮复用 ERP 侧已有的 4 个权限串，
+  并加自检「ERP 侧科目按钮权限在位」固化该事实。
+- 前端新增 `api/fms/config/subject` + `views/fms/config/subject`（index 树形表格 +
+  FmsSubjectForm 表单），支持顶级/下级新增、编辑、删除；树构建防御孤儿节点挂顶级。
+
+**V194 迁移与契约**：只种菜单 + 6 项自检（账簿挂账套列/索引在【V191】、凭证表无
+account_set_id 冗余列【V193 防回归】、erp_gl_account 表在、ERP 侧科目按钮 4 权限在位、
+FMS 侧无 fms_subject/fms_gl_account/fms_account 平行表）。契约 tracked=104，findings=0，
+sql_migration_lint 0 违规。
+
+**真机验证（zhicloud_sandbox_v140，tenant 9001）**：
+- 新增 `Temp/zc_fms_report_e2e.py`（28 断言全绿）：建账套A/B → 账簿挂A → 租户科目（1002/6001）
+  → 凭证挂账簿 → 审核 → FMS 三表按账套汇总（资产 5000/净利润 5000/经营净流量 5000）
+  → 账套B 全空（隔离）→ 不存在账套报错 → VO 无 ERP 字段泄漏 → ERP 原端点无参回归
+  → ERP 端点带 accountSetId 与 FMS 口径一致。
+- 新增 `Temp/zc_fms_subject_e2e.py`（16 断言全绿）：ERP gl-account CRUD 全链 + 编码唯一护栏
+  + 枚举名称填充 + DB 落库与租户正确 + 删除后不可见 + 末级科目不能录入凭证分录
+  + V194 菜单在位 + 按钮权限全局在位 + 无平行科目表。
+- 回归 26 脚本 × 667 断言全绿（原 24 + 新 2）；ts:check 0 错误；build:local 通过；
+  check_bare_throws / check_missing_preauthorize（520 Controller）/ check_error_codes
+  （1925 定义）/ check_migration_contract 全过。
+
+**本次实证的既有现象（非本次引入，登记不修）**：
+1. `erp_gl_account` 种子科目 tenant_id=0（全局租户），报表汇总 `loadAccountMap()` 走租户过滤
+   查不到它们——沙箱里 ERP 财务报表对种子科目长期不可用。E2E 改用租户自建科目验证链路。
+   修它要动种子策略（改租户归属或报表查询忽略租户），影响面超出本次增强范围。
+2. `ErpGlVoucherSaveReqVO` 不接收 accountBookId，凭证挂账簿只能走 DB（V193 E2E 同口径），
+   前端ERP凭证页亦无法在创建时指定账簿——登记为已知限制。
+3. `updateGlVoucher` 重复插入分录（不先删旧分录）——本次调试时撞到，属既有缺陷，未修。
+
+**Flyway checksum 修复记录**：V194 初版在沙箱执行后调整了迁移正文（删按钮 INSERT 改自检），
+新旧版数据库净效果一致（按钮本就被幂等拦掉），但文件字节变了。按「错的用新迁移反向修正」
+纪律评估后选择 flyway repair 等效路径：直接更新沙箱 history 的 checksum 记录——该迁移尚未
+推送/无生产部署，repair 只改元数据不动 schema。**关键细节**：Flyway 的 checksum 是对
+**规范化后**的 SQL 内容算 CRC32（去注释统一空白），与文件原始字节 CRC32 不同
+（文件 3033205422 vs 规范化后 692881510），修正值必须取 Flyway 报错信息里
+「Resolved locally」的值，不能自己算。
+

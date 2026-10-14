@@ -89,6 +89,15 @@
             凭证流水
           </el-button>
           <el-button
+            v-if="scope.row.initialized"
+            link
+            type="info"
+            @click="openReportDialog(scope.row)"
+            v-hasPermi="['fms:config:account-set:query']"
+          >
+            财务报表
+          </el-button>
+          <el-button
             v-if="!scope.row.initialized && scope.row.level !== FmsAccountUserLevelEnum.READ"
             link
             type="primary"
@@ -151,6 +160,81 @@
     </template>
   </Dialog>
 
+  <!-- 账套视角三大报表（FMS/ERP 融合：数据来自 ERP 已审核凭证，账套 → 账簿 → 凭证链路） -->
+  <Dialog v-model="reportVisible" :title="`账套财务报表 - ${reportAccountSetName}`" width="960">
+    <el-form class="-mb-15px" :inline="true">
+      <el-form-item label="报表日期">
+        <el-date-picker
+          v-model="reportParams.asOfDate"
+          type="date"
+          value-format="YYYY-MM-DD"
+          class="!w-160px"
+          placeholder="资产负债表日期"
+        />
+      </el-form-item>
+      <el-form-item label="开始">
+        <el-date-picker
+          v-model="reportParams.startDate"
+          type="date"
+          value-format="YYYY-MM-DD"
+          class="!w-160px"
+          placeholder="利润表/现金流开始"
+        />
+      </el-form-item>
+      <el-form-item label="结束">
+        <el-date-picker
+          v-model="reportParams.endDate"
+          type="date"
+          value-format="YYYY-MM-DD"
+          class="!w-160px"
+          placeholder="利润表/现金流结束"
+        />
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="loadReports">
+          <Icon icon="ep:search" class="mr-5px" /> 生成报表
+        </el-button>
+      </el-form-item>
+    </el-form>
+    <el-tabs v-model="reportActiveTab" v-loading="reportLoading">
+      <el-tab-pane label="资产负债表" name="balance">
+        <el-row :gutter="12" class="mb-12px">
+          <el-col :span="8"><b>资产合计：</b>{{ report.balance?.totalAssets ?? 0 }}</el-col>
+          <el-col :span="8"><b>负债合计：</b>{{ report.balance?.totalLiabilities ?? 0 }}</el-col>
+          <el-col :span="8"><b>权益合计：</b>{{ report.balance?.totalEquity ?? 0 }}</el-col>
+        </el-row>
+        <FmsStatementSection title="资产" :items="report.balance?.assetItems || []" />
+        <FmsStatementSection title="负债" :items="report.balance?.liabilityItems || []" />
+        <FmsStatementSection title="所有者权益" :items="report.balance?.equityItems || []" />
+      </el-tab-pane>
+      <el-tab-pane label="利润表" name="income">
+        <el-row :gutter="12" class="mb-12px">
+          <el-col :span="6"><b>收入：</b>{{ report.income?.totalRevenue ?? 0 }}</el-col>
+          <el-col :span="6"><b>成本：</b>{{ report.income?.totalCost ?? 0 }}</el-col>
+          <el-col :span="6"><b>费用：</b>{{ report.income?.totalExpense ?? 0 }}</el-col>
+          <el-col :span="6"><b>净利润：</b>{{ report.income?.netProfit ?? 0 }}</el-col>
+        </el-row>
+        <FmsStatementSection title="收入" :items="report.income?.revenueItems || []" />
+        <FmsStatementSection title="成本" :items="report.income?.costItems || []" />
+        <FmsStatementSection title="费用" :items="report.income?.expenseItems || []" />
+      </el-tab-pane>
+      <el-tab-pane label="现金流量表" name="cashflow">
+        <el-row :gutter="12" class="mb-12px">
+          <el-col :span="6"><b>经营净流量：</b>{{ report.cashflow?.netOperatingCashFlow ?? 0 }}</el-col>
+          <el-col :span="6"><b>投资净流量：</b>{{ report.cashflow?.netInvestingCashFlow ?? 0 }}</el-col>
+          <el-col :span="6"><b>筹资净流量：</b>{{ report.cashflow?.netFinancingCashFlow ?? 0 }}</el-col>
+          <el-col :span="6"><b>现金净增加额：</b>{{ report.cashflow?.netCashFlow ?? 0 }}</el-col>
+        </el-row>
+        <FmsStatementSection title="经营活动" :items="report.cashflow?.operatingItems || []" />
+        <FmsStatementSection title="投资活动" :items="report.cashflow?.investingItems || []" />
+        <FmsStatementSection title="筹资活动" :items="report.cashflow?.financingItems || []" />
+      </el-tab-pane>
+    </el-tabs>
+    <template #footer>
+      <el-button @click="reportVisible = false">关 闭</el-button>
+    </template>
+  </Dialog>
+
   <!-- 添加或修改账套 -->
   <FmsAccountSetForm ref="formRef" @success="getList" />
   <!-- 初始化账套 -->
@@ -168,6 +252,7 @@ import { FmsAccountUserLevelEnum } from '@/api/fms/config/account-user'
 import FmsAccountSetForm from './FmsAccountSetForm.vue'
 import FmsAccountSetInitializeForm from './FmsAccountSetInitializeForm.vue'
 import FmsAccountSetMemberForm from './FmsAccountSetMemberForm.vue'
+import FmsStatementSection from './FmsStatementSection.vue'
 
 defineOptions({ name: 'FmsAccountSet' })
 
@@ -261,6 +346,58 @@ async function loadVouchers() {
     voucherTotal.value = page?.total || 0
   } finally {
     voucherLoading.value = false
+  }
+}
+
+/** 账套视角三大报表（FMS/ERP 融合：数据来自 ERP 已审核凭证，账套 → 账簿 → 凭证链路） */
+const reportVisible = ref(false)
+const reportLoading = ref(false)
+const reportActiveTab = ref('balance')
+const reportAccountSetName = ref('')
+const report = ref<any>({})
+const reportParams = reactive({
+  asOfDate: undefined as string | undefined,
+  startDate: undefined as string | undefined,
+  endDate: undefined as string | undefined
+})
+let reportAccountSetId: number | undefined
+
+const isoDate = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+
+async function openReportDialog(accountSet: FmsAccountSetVO) {
+  reportAccountSetId = accountSet.id
+  reportAccountSetName.value = accountSet.companyName || ''
+  reportActiveTab.value = 'balance'
+  report.value = {}
+  const today = new Date()
+  reportParams.asOfDate = isoDate(today)
+  reportParams.startDate = isoDate(new Date(today.getFullYear(), today.getMonth(), 1))
+  reportParams.endDate = isoDate(today)
+  reportVisible.value = true
+  await loadReports()
+}
+
+async function loadReports() {
+  if (!reportAccountSetId) return
+  reportLoading.value = true
+  try {
+    if (reportParams.asOfDate) {
+      report.value.balance = await FmsAccountSetApi.getBalanceSheet(reportAccountSetId, reportParams.asOfDate)
+    }
+    if (reportParams.startDate && reportParams.endDate) {
+      report.value.income = await FmsAccountSetApi.getIncomeStatement(
+        reportAccountSetId,
+        reportParams.startDate,
+        reportParams.endDate
+      )
+      report.value.cashflow = await FmsAccountSetApi.getCashFlowStatement(
+        reportAccountSetId,
+        reportParams.startDate,
+        reportParams.endDate
+      )
+    }
+  } finally {
+    reportLoading.value = false
   }
 }
 

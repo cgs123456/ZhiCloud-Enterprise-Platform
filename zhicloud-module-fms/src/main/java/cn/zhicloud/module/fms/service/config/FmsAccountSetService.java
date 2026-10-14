@@ -5,9 +5,13 @@ import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountBo
 import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountSetInitializeReqVO;
 import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountSetSaveReqVO;
 import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountSetVoucherRespVO;
+import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsBalanceSheetRespVO;
+import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsCashFlowStatementRespVO;
+import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsIncomeStatementRespVO;
 import cn.zhicloud.module.fms.dal.dataobject.config.FmsAccountSetDO;
 import jakarta.validation.Valid;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -44,5 +48,34 @@ public interface FmsAccountSetService {
      * @return 凭证分页结果
      */
     PageResult<FmsAccountSetVoucherRespVO> getVoucherPage(Long accountSetId, Integer pageNo, Integer pageSize);
+
+    /**
+     * 账套视角资产负债表（只读；数据来自 ERP 已审核凭证，经 erp.api 边界包）
+     *
+     * @param accountSetId 账套编号
+     * @param asOfDate 报表日期
+     * @return 资产负债表
+     */
+    FmsBalanceSheetRespVO getBalanceSheet(Long accountSetId, LocalDate asOfDate);
+
+    /**
+     * 账套视角利润表（只读；数据来自 ERP 已审核凭证，经 erp.api 边界包）
+     *
+     * @param accountSetId 账套编号
+     * @param startDate 起始日期
+     * @param endDate 结束日期
+     * @return 利润表
+     */
+    FmsIncomeStatementRespVO getIncomeStatement(Long accountSetId, LocalDate startDate, LocalDate endDate);
+
+    /**
+     * 账套视角现金流量表（只读；数据来自 ERP 已审核凭证，经 erp.api 边界包）
+     *
+     * @param accountSetId 账套编号
+     * @param startDate 起始日期
+     * @param endDate 结束日期
+     * @return 现金流量表
+     */
+    FmsCashFlowStatementRespVO getCashFlowStatement(Long accountSetId, LocalDate startDate, LocalDate endDate);
 
 }

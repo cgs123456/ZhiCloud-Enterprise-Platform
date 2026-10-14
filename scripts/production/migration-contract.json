@@ -723,6 +723,13 @@
       "sha256": "678961e007b72fe5b731d3e1c4a09692133f67d04fdcdb823b7fb8c63b8bc961",
       "verification_file": "V193_verify.sql",
       "verification_sha256": "50c9d2b5cf1873594ca3a498e397bde6afa5111d3824dc315619b5e740fb7133"
+    },
+    {
+      "version": 194,
+      "file": "V194__fms_subject_menu_and_report_selfcheck.sql",
+      "sha256": "decc0946883c1c1d7bd7443db34ea65635136089de87972db605001ab0268509",
+      "verification_file": "V194_verify.sql",
+      "verification_sha256": "51f446e18729add195e686689d8db6f721955478079e0886dacfe5dc65110291"
     }
   ]
 }

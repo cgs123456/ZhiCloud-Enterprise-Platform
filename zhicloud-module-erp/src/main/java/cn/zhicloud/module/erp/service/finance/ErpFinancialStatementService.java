@@ -11,6 +11,11 @@ import java.time.LocalDate;
  *
  * <p>提供单体层面的三大财务报表：资产负债表、利润表、现金流量表。
  *
+ * <p>账套视角（FMS/ERP 融合 V193 后）：所有方法均可选传 accountSetId——
+ * 传 null 时按租户全量汇总（既有行为不变），传值时按「账套 → 账簿 → 凭证」链路过滤
+ * （凭证只到 account_book_id，账簿再挂账套，故先解析账簿集合再 IN 查询，不在凭证
+ * 落 account_set_id 冗余列）。
+ *
  * @author 智云
  */
 public interface ErpFinancialStatementService {
@@ -18,27 +23,30 @@ public interface ErpFinancialStatementService {
     /**
      * 生成资产负债表（资产 = 负债 + 权益）
      *
+     * @param accountSetId FMS 账套编号（可空；null 为租户全量）
      * @param asOfDate 报表日期
      * @return 资产负债表
      */
-    ErpBalanceSheetRespVO generateBalanceSheet(LocalDate asOfDate);
+    ErpBalanceSheetRespVO generateBalanceSheet(Long accountSetId, LocalDate asOfDate);
 
     /**
      * 生成利润表（收入 - 成本 - 费用 = 利润）
      *
+     * @param accountSetId FMS 账套编号（可空；null 为租户全量）
      * @param startDate 起始日期
      * @param endDate   结束日期
      * @return 利润表
      */
-    ErpIncomeStatementRespVO generateIncomeStatement(LocalDate startDate, LocalDate endDate);
+    ErpIncomeStatementRespVO generateIncomeStatement(Long accountSetId, LocalDate startDate, LocalDate endDate);
 
     /**
      * 生成现金流量表（基于银行流水，无流水时基于凭证中银行科目变动）
      *
+     * @param accountSetId FMS 账套编号（可空；null 为租户全量）
      * @param startDate 起始日期
      * @param endDate   结束日期
      * @return 现金流量表
      */
-    ErpCashFlowStatementRespVO generateCashFlowStatement(LocalDate startDate, LocalDate endDate);
+    ErpCashFlowStatementRespVO generateCashFlowStatement(Long accountSetId, LocalDate startDate, LocalDate endDate);
 
 }

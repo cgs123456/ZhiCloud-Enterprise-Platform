@@ -3,12 +3,19 @@ package cn.zhicloud.module.fms.service.config;
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
 import cn.zhicloud.module.erp.api.ErpAccountBookApi;
+import cn.zhicloud.module.erp.api.ErpFinancialStatementApi;
 import cn.zhicloud.module.erp.api.ErpGlVoucherApi;
+import cn.zhicloud.module.erp.controller.admin.finance.vo.financialstatement.ErpBalanceSheetRespVO;
+import cn.zhicloud.module.erp.controller.admin.finance.vo.financialstatement.ErpCashFlowStatementRespVO;
+import cn.zhicloud.module.erp.controller.admin.finance.vo.financialstatement.ErpIncomeStatementRespVO;
 import cn.zhicloud.module.erp.controller.admin.finance.vo.glvoucher.ErpGlVoucherPageReqVO;
 import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountBookRespVO;
 import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountSetInitializeReqVO;
 import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountSetSaveReqVO;
 import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountSetVoucherRespVO;
+import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsBalanceSheetRespVO;
+import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsCashFlowStatementRespVO;
+import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsIncomeStatementRespVO;
 import cn.zhicloud.module.fms.dal.dataobject.config.FmsAccountSetDO;
 import cn.zhicloud.module.fms.dal.dataobject.config.FmsAccountUserDO;
 import cn.zhicloud.module.fms.dal.dataobject.config.FmsFinanceParameterDO;
@@ -20,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
@@ -50,6 +58,10 @@ public class FmsAccountSetServiceImpl implements FmsAccountSetService {
      * ERP 会计凭证只读查询（V193 跨模块契约，经 erp.api 边界包） */
     @Resource
     private ErpGlVoucherApi erpGlVoucherApi;
+    /**
+     * ERP 财务报表只读查询（FMS/ERP 融合，经 erp.api 边界包；账套视角三表） */
+    @Resource
+    private ErpFinancialStatementApi erpFinancialStatementApi;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -152,6 +164,29 @@ public class FmsAccountSetServiceImpl implements FmsAccountSetService {
             return List.of();
         }
         return accountSetMapper.selectListByIds(members.stream().map(FmsAccountUserDO::getAccountSetId).distinct().toList());
+    }
+
+    @Override
+    public FmsBalanceSheetRespVO getBalanceSheet(Long accountSetId, LocalDate asOfDate) {
+        validateExists(accountSetId);
+        ErpBalanceSheetRespVO balanceSheet = erpFinancialStatementApi.generateBalanceSheet(accountSetId, asOfDate);
+        return BeanUtils.toBean(balanceSheet, FmsBalanceSheetRespVO.class);
+    }
+
+    @Override
+    public FmsIncomeStatementRespVO getIncomeStatement(Long accountSetId, LocalDate startDate, LocalDate endDate) {
+        validateExists(accountSetId);
+        ErpIncomeStatementRespVO incomeStatement =
+                erpFinancialStatementApi.generateIncomeStatement(accountSetId, startDate, endDate);
+        return BeanUtils.toBean(incomeStatement, FmsIncomeStatementRespVO.class);
+    }
+
+    @Override
+    public FmsCashFlowStatementRespVO getCashFlowStatement(Long accountSetId, LocalDate startDate, LocalDate endDate) {
+        validateExists(accountSetId);
+        ErpCashFlowStatementRespVO cashFlowStatement =
+                erpFinancialStatementApi.generateCashFlowStatement(accountSetId, startDate, endDate);
+        return BeanUtils.toBean(cashFlowStatement, FmsCashFlowStatementRespVO.class);
     }
 
     private FmsAccountSetDO validateExists(Long id) {

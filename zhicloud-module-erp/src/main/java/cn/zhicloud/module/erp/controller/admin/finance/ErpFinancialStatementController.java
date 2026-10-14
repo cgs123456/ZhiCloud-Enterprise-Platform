@@ -35,28 +35,34 @@ public class ErpFinancialStatementController {
     @GetMapping("/balance-sheet")
     @Operation(summary = "生成资产负债表")
     @Parameter(name = "asOfDate", description = "报表日期", required = true, example = "2026-07-31")
+    @Parameter(name = "accountSetId", description = "FMS 账套编号（可空；按账套视角出报表，见 FMS/ERP 融合）", example = "1")
     @PreAuthorize("@ss.hasPermission('erp:financial-statement:query')")
     public CommonResult<ErpBalanceSheetRespVO> generateBalanceSheet(
+            @RequestParam(value = "accountSetId", required = false) Long accountSetId,
             @RequestParam("asOfDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate asOfDate) {
-        return success(financialStatementService.generateBalanceSheet(asOfDate));
+        return success(financialStatementService.generateBalanceSheet(accountSetId, asOfDate));
     }
 
     @GetMapping("/income-statement")
     @Operation(summary = "生成利润表")
+    @Parameter(name = "accountSetId", description = "FMS 账套编号（可空；按账套视角出报表，见 FMS/ERP 融合）", example = "1")
     @PreAuthorize("@ss.hasPermission('erp:financial-statement:query')")
     public CommonResult<ErpIncomeStatementRespVO> generateIncomeStatement(
+            @RequestParam(value = "accountSetId", required = false) Long accountSetId,
             @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
             @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate) {
-        return success(financialStatementService.generateIncomeStatement(startDate, endDate));
+        return success(financialStatementService.generateIncomeStatement(accountSetId, startDate, endDate));
     }
 
     @GetMapping("/cash-flow")
     @Operation(summary = "生成现金流量表")
+    @Parameter(name = "accountSetId", description = "FMS 账套编号（可空；按账套视角出报表，见 FMS/ERP 融合）", example = "1")
     @PreAuthorize("@ss.hasPermission('erp:financial-statement:query')")
     public CommonResult<ErpCashFlowStatementRespVO> generateCashFlowStatement(
+            @RequestParam(value = "accountSetId", required = false) Long accountSetId,
             @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
             @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate) {
-        return success(financialStatementService.generateCashFlowStatement(startDate, endDate));
+        return success(financialStatementService.generateCashFlowStatement(accountSetId, startDate, endDate));
     }
 
 }

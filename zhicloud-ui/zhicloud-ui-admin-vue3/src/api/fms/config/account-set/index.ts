@@ -79,5 +79,26 @@ export const FmsAccountSetApi = {
     return await request.get({
       url: `/fms/config/account-set/vouchers?id=${id}&pageNo=${pageNo}&pageSize=${pageSize}`
     })
+  },
+
+  // 账套视角资产负债表（FMS/ERP 融合：数据来自 ERP 已审核凭证）
+  getBalanceSheet: async (id: number, asOfDate: string) => {
+    return await request.get({
+      url: `/fms/config/account-set/balance-sheet?id=${id}&asOfDate=${asOfDate}`
+    })
+  },
+
+  // 账套视角利润表（FMS/ERP 融合：数据来自 ERP 已审核凭证）
+  getIncomeStatement: async (id: number, startDate: string, endDate: string) => {
+    return await request.get({
+      url: `/fms/config/account-set/income-statement?id=${id}&startDate=${startDate}&endDate=${endDate}`
+    })
+  },
+
+  // 账套视角现金流量表（FMS/ERP 融合：数据来自 ERP 已审核凭证）
+  getCashFlowStatement: async (id: number, startDate: string, endDate: string) => {
+    return await request.get({
+      url: `/fms/config/account-set/cash-flow-statement?id=${id}&startDate=${startDate}&endDate=${endDate}`
+    })
   }
 }

@@ -8,6 +8,9 @@ import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountSe
 import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountBookRespVO;
 import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountSetVoucherRespVO;
 import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsAccountSetSaveReqVO;
+import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsBalanceSheetRespVO;
+import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsCashFlowStatementRespVO;
+import cn.zhicloud.module.fms.controller.admin.config.vo.accountset.FmsIncomeStatementRespVO;
 import cn.zhicloud.module.fms.dal.dataobject.config.FmsAccountSetDO;
 import cn.zhicloud.module.fms.dal.dataobject.config.FmsAccountUserDO;
 import cn.zhicloud.module.fms.service.config.FmsAccountSetService;
@@ -18,10 +21,12 @@ import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -93,6 +98,49 @@ public class FmsAccountSetController {
             @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
         return success(accountSetService.getVoucherPage(id, pageNo, pageSize));
+    }
+
+    @GetMapping("/balance-sheet")
+    @Operation(summary = "账套视角资产负债表",
+            description = "FMS/ERP 融合：按账套出报表，数据来自 ERP 已审核凭证（账套 → 账簿 → 凭证链路），跨模块只读查询，经 erp.api 边界包")
+    @Parameters({
+            @Parameter(name = "id", description = "账套编号", required = true, example = "1"),
+            @Parameter(name = "asOfDate", description = "报表日期", required = true, example = "2026-07-31") })
+    @PreAuthorize("@ss.hasPermission('fms:config:account-set:query')")
+    public CommonResult<FmsBalanceSheetRespVO> getBalanceSheet(
+            @RequestParam("id") Long id,
+            @RequestParam("asOfDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate asOfDate) {
+        return success(accountSetService.getBalanceSheet(id, asOfDate));
+    }
+
+    @GetMapping("/income-statement")
+    @Operation(summary = "账套视角利润表",
+            description = "FMS/ERP 融合：按账套出报表，数据来自 ERP 已审核凭证（账套 → 账簿 → 凭证链路），跨模块只读查询，经 erp.api 边界包")
+    @Parameters({
+            @Parameter(name = "id", description = "账套编号", required = true, example = "1"),
+            @Parameter(name = "startDate", description = "起始日期", required = true, example = "2026-01-01"),
+            @Parameter(name = "endDate", description = "结束日期", required = true, example = "2026-01-31") })
+    @PreAuthorize("@ss.hasPermission('fms:config:account-set:query')")
+    public CommonResult<FmsIncomeStatementRespVO> getIncomeStatement(
+            @RequestParam("id") Long id,
+            @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+            @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate) {
+        return success(accountSetService.getIncomeStatement(id, startDate, endDate));
+    }
+
+    @GetMapping("/cash-flow-statement")
+    @Operation(summary = "账套视角现金流量表",
+            description = "FMS/ERP 融合：按账套出报表，数据来自 ERP 已审核凭证（账套 → 账簿 → 凭证链路），跨模块只读查询，经 erp.api 边界包")
+    @Parameters({
+            @Parameter(name = "id", description = "账套编号", required = true, example = "1"),
+            @Parameter(name = "startDate", description = "起始日期", required = true, example = "2026-01-01"),
+            @Parameter(name = "endDate", description = "结束日期", required = true, example = "2026-01-31") })
+    @PreAuthorize("@ss.hasPermission('fms:config:account-set:query')")
+    public CommonResult<FmsCashFlowStatementRespVO> getCashFlowStatement(
+            @RequestParam("id") Long id,
+            @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+            @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate) {
+        return success(accountSetService.getCashFlowStatement(id, startDate, endDate));
     }
 
     @PostMapping("/create")

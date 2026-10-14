@@ -13,6 +13,8 @@ import cn.zhicloud.module.erp.dal.mysql.finance.ErpCashFlowMapper;
 import cn.zhicloud.module.erp.dal.mysql.finance.ErpGlAccountMapper;
 import cn.zhicloud.module.erp.dal.mysql.finance.ErpGlVoucherEntryMapper;
 import cn.zhicloud.module.erp.dal.mysql.finance.ErpGlVoucherMapper;
+import cn.zhicloud.module.erp.dal.mysql.finance.ErpAccountBookMapper;
+import cn.zhicloud.module.erp.dal.dataobject.finance.ErpAccountBookDO;
 import cn.zhicloud.module.erp.enums.finance.ErpCashFlowBizTypeEnum;
 import cn.zhicloud.module.erp.enums.finance.ErpGlAccountTypeEnum;
 import cn.zhicloud.module.erp.enums.finance.ErpGlVoucherStatusEnum;
@@ -38,6 +40,9 @@ import java.util.stream.Collectors;
  *   <li>现金流量表：基于银行流水（erp_cash_flow），无流水时基于凭证中银行科目变动</li>
  * </ul>
  *
+ * <p>账套视角（FMS/ERP 融合，见 {@link ErpFinancialStatementService}）：accountSetId 非空时
+ * 按「账套 → 账簿 → 凭证」链路过滤（V193 同口径，凭证不落冗余列）。
+ *
  * @author 智云
  */
 @Service
@@ -52,11 +57,13 @@ public class ErpFinancialStatementServiceImpl implements ErpFinancialStatementSe
     private ErpGlAccountMapper accountMapper;
     @Resource
     private ErpCashFlowMapper cashFlowMapper;
+    @Resource
+    private ErpAccountBookMapper accountBookMapper;
 
     @Override
-    public ErpBalanceSheetRespVO generateBalanceSheet(LocalDate asOfDate) {
-        // 1. 获取截至报表日期的所有已审核凭证
-        List<Long> voucherIds = getApprovedVoucherIds(null, asOfDate);
+    public ErpBalanceSheetRespVO generateBalanceSheet(Long accountSetId, LocalDate asOfDate) {
+        // 1. 获取截至报表日期的已审核凭证（accountSetId 非空时按「账套 → 账簿 → 凭证」链路过滤）
+        List<Long> voucherIds = getApprovedVoucherIds(accountSetId, null, asOfDate);
         // 2. 按科目汇总借贷金额
         Map<Long, AccountSummary> accountSummaries = aggregateEntriesByAccount(voucherIds);
         // 3. 加载科目类型映射
@@ -128,9 +135,9 @@ public class ErpFinancialStatementServiceImpl implements ErpFinancialStatementSe
     }
 
     @Override
-    public ErpIncomeStatementRespVO generateIncomeStatement(LocalDate startDate, LocalDate endDate) {
-        // 1. 获取期间内已审核凭证
-        List<Long> voucherIds = getApprovedVoucherIds(startDate, endDate);
+    public ErpIncomeStatementRespVO generateIncomeStatement(Long accountSetId, LocalDate startDate, LocalDate endDate) {
+        // 1. 获取期间内已审核凭证（accountSetId 非空时按账簿链路过滤）
+        List<Long> voucherIds = getApprovedVoucherIds(accountSetId, startDate, endDate);
         // 2. 按科目汇总
         Map<Long, AccountSummary> accountSummaries = aggregateEntriesByAccount(voucherIds);
         // 3. 科目类型映射
@@ -187,13 +194,19 @@ public class ErpFinancialStatementServiceImpl implements ErpFinancialStatementSe
     }
 
     @Override
-    public ErpCashFlowStatementRespVO generateCashFlowStatement(LocalDate startDate, LocalDate endDate) {
+    public ErpCashFlowStatementRespVO generateCashFlowStatement(Long accountSetId, LocalDate startDate, LocalDate endDate) {
         ErpCashFlowStatementRespVO respVO = new ErpCashFlowStatementRespVO();
         respVO.setStartDate(startDate);
         respVO.setEndDate(endDate);
+        List<Long> accountBookIds = resolveAccountBookIds(accountSetId);
 
         // 1. 优先基于银行流水（erp_cash_flow）
-        List<ErpCashFlowDO> cashFlowList = cashFlowMapper.selectListByPeriod(startDate, endDate);
+        //    注意：erp_cash_flow 只到 bank_account_id，无账簿关联。指定账套时无法按账簿
+        //    过滤流水，与既有 ERP 侧行为（租户全量流水）保持同一口径——按账套出现金流
+        //    报表走下方凭证兜底分支（银行科目 1001/1002 变动经账簿链路过滤）。
+        List<ErpCashFlowDO> cashFlowList = accountSetId == null
+                ? cashFlowMapper.selectListByPeriod(startDate, endDate)
+                : List.of();
         if (cashFlowList != null && !cashFlowList.isEmpty()) {
             respVO.setDataSource("CASH_FLOW");
             BigDecimal operating = BigDecimal.ZERO;
@@ -233,9 +246,9 @@ public class ErpFinancialStatementServiceImpl implements ErpFinancialStatementSe
             return respVO;
         }
 
-        // 2. 无现金流数据时，基于凭证中银行科目（1001 库存现金 / 1002 银行存款）变动
+        // 2. 无现金流数据（或按账套视角，见上）时，基于凭证中银行科目（1001 库存现金 / 1002 银行存款）变动
         respVO.setDataSource("VOUCHER");
-        List<Long> voucherIds = getApprovedVoucherIds(startDate, endDate);
+        List<Long> voucherIds = getApprovedVoucherIds(accountSetId, startDate, endDate);
         Map<Long, AccountSummary> accountSummaries = aggregateEntriesByAccount(voucherIds);
         Map<Long, ErpGlAccountDO> accountMap = loadAccountMap();
         BigDecimal netChange = BigDecimal.ZERO;
@@ -270,18 +283,40 @@ public class ErpFinancialStatementServiceImpl implements ErpFinancialStatementSe
     /**
      * 获取已审核凭证编号列表
      *
+     * @param accountSetId FMS 账套编号（可空；null 为租户全量）
      * @param startDate 起始日期（资产负债表传 null）
      * @param endDate   结束日期
      */
-    private List<Long> getApprovedVoucherIds(LocalDate startDate, LocalDate endDate) {
+    private List<Long> getApprovedVoucherIds(Long accountSetId, LocalDate startDate, LocalDate endDate) {
+        List<Long> accountBookIds = resolveAccountBookIds(accountSetId);
+        // 指定账套但名下无账簿：无凭证可汇总，直接返回空（避免 IN(空集合) 语义歧义）
+        if (accountBookIds != null && accountBookIds.isEmpty()) {
+            return List.of();
+        }
         LambdaQueryWrapperX<ErpGlVoucherDO> wrapper = new LambdaQueryWrapperX<>();
         wrapper.eq(ErpGlVoucherDO::getStatus, ErpGlVoucherStatusEnum.APPROVED.getStatus());
+        wrapper.inIfPresent(ErpGlVoucherDO::getAccountBookId, accountBookIds);
         wrapper.le(ErpGlVoucherDO::getVoucherDate, endDate);
         if (startDate != null) {
             wrapper.ge(ErpGlVoucherDO::getVoucherDate, startDate);
         }
         List<ErpGlVoucherDO> vouchers = voucherMapper.selectList(wrapper);
         return vouchers.stream().map(ErpGlVoucherDO::getId).collect(Collectors.toList());
+    }
+
+    /**
+     * 解析账套名下的账簿编号集合（V193 同口径：凭证只到 account_book_id，
+     * 账簿再挂账套，按账套筛一律先解析账簿集合再 IN 查询，不在凭证落冗余列）
+     *
+     * @param accountSetId FMS 账套编号（可空）
+     * @return null 表示不按账簿过滤（租户全量）；空列表表示账套下无账簿
+     */
+    private List<Long> resolveAccountBookIds(Long accountSetId) {
+        if (accountSetId == null) {
+            return null;
+        }
+        return accountBookMapper.selectListByAccountSetId(accountSetId).stream()
+                .map(ErpAccountBookDO::getId).collect(Collectors.toList());
     }
 
     /**
