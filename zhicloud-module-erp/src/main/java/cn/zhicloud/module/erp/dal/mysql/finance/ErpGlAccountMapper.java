@@ -21,6 +21,20 @@ public interface ErpGlAccountMapper extends BaseMapperX<ErpGlAccountDO> {
         return selectOne(ErpGlAccountDO::getCode, code);
     }
 
+    /**
+     * 按编号加行锁查询科目（用于余额读-改-写，防止并发审核丢更新）
+     *
+     * <p>§12.226：凭证审核/反审核维护科目累计发生额与期末余额，是典型的
+     * read-modify-write。此前用 selectById 读、内存累加、updateById 全量覆盖——
+     * 并发审核两张命中同一科目的凭证时，后写会覆盖先写，导致金额少计。
+     * 加 FOR UPDATE 行锁后同一科目的余额维护串行化。必须在事务内调用。
+     */
+    default ErpGlAccountDO selectByIdForUpdate(Long id) {
+        return selectOne(new LambdaQueryWrapperX<ErpGlAccountDO>()
+                .eq(ErpGlAccountDO::getId, id)
+                .last("FOR UPDATE"));
+    }
+
     default List<ErpGlAccountDO> selectListByParentId(Long parentId) {
         return selectList(ErpGlAccountDO::getParentId, parentId);
     }

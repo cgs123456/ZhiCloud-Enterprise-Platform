@@ -151,7 +151,8 @@ class ErpGlVoucherPlatformAccountTest {
     @Test
     void approveGlVoucherUpdatesPlatformAccountInPlatformTenant() {
         ErpGlAccountDO platformAccount = platformAccount();
-        when(glAccountMapper.selectById(3L)).thenAnswer(invocation ->
+        // §12.226：余额维护改为加行锁读取（selectByIdForUpdate），测试同步 stub 该方法
+        when(glAccountMapper.selectByIdForUpdate(3L)).thenAnswer(invocation ->
                 Long.valueOf(0L).equals(TenantContextHolder.getTenantId()) ? platformAccount : null);
         when(glVoucherMapper.selectById(501L)).thenReturn(draftVoucher());
         when(glVoucherEntryMapper.selectListByVoucherId(501L)).thenReturn(List.of(

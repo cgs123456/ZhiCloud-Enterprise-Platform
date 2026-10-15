@@ -355,6 +355,10 @@ public class ErpGlVoucherServiceImpl implements ErpGlVoucherService {
 
     /**
      * 按科目聚合金额后逐科目更新一次余额，减少同一科目在同一次审核中的重复 SELECT/UPDATE。
+     *
+     * <p>§12.226：逐科目加行锁（updateAccountBalance 内 FOR UPDATE），故必须按
+     * **固定的科目编号顺序**加锁——两张凭证命中同一组科目但分录顺序不同时，
+     * 若按各自分录顺序加锁会形成交叉等待死锁。按 accountId 升序统一顺序。
      */
     private void updateAccountBalances(List<ErpGlVoucherEntryDO> entries, boolean isApprove) {
         Map<Long, BigDecimal[]> aggregated = new LinkedHashMap<>();
@@ -365,8 +369,10 @@ public class ErpGlVoucherServiceImpl implements ErpGlVoucherService {
             amounts[0] = amounts[0].add(debit);
             amounts[1] = amounts[1].add(credit);
         }
-        aggregated.forEach((accountId, amounts) ->
-                updateAccountBalance(accountId, amounts[0], amounts[1], isApprove));
+        // 按 accountId 升序加锁，保证并发事务的加锁顺序一致，避免死锁
+        aggregated.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .forEach(e -> updateAccountBalance(e.getKey(), e.getValue()[0], e.getValue()[1], isApprove));
     }
 
     /**
@@ -381,7 +387,9 @@ public class ErpGlVoucherServiceImpl implements ErpGlVoucherService {
      * </ul>
      */
     private void updateAccountBalance(Long accountId, BigDecimal debitAmount, BigDecimal creditAmount, boolean isApprove) {
-        ErpGlAccountDO account = selectAccountForVoucher(accountId);
+        // 加行锁读取（§12.226）：余额是读-改-写，必须锁住同一科目的并发维护，
+        // 否则并发审核两张命中同一科目的凭证时后写覆盖先写、金额少计。
+        ErpGlAccountDO account = selectAccountForVoucherForUpdate(accountId);
         if (account == null) {
             log.warn("[updateAccountBalance][科目({})不存在，跳过余额更新]", accountId);
             return;
@@ -418,6 +426,25 @@ public class ErpGlVoucherServiceImpl implements ErpGlVoucherService {
         update.setClosingDebit(closingDebit);
         update.setClosingCredit(closingCredit);
         TenantUtils.execute(account.getTenantId(), () -> glAccountMapper.updateById(update));
+    }
+
+    /**
+     * 加行锁查科目（余额维护专用，§12.226）
+     *
+     * <p>与 {@link #selectAccountForVoucher} 同一套租户解析逻辑（先当前租户、再平台租户），
+     * 但查询走 {@code selectByIdForUpdate}（FOR UPDATE）。仅用于余额读-改-写路径；
+     * 校验类调用仍用无锁版本，避免无谓扩大锁范围。必须在事务内调用。
+     */
+    private ErpGlAccountDO selectAccountForVoucherForUpdate(Long accountId) {
+        ErpGlAccountDO account = glAccountMapper.selectByIdForUpdate(accountId);
+        if (account != null) {
+            return account;
+        }
+        account = TenantUtils.execute(0L, () -> glAccountMapper.selectByIdForUpdate(accountId));
+        if (account != null && Long.valueOf(0L).equals(account.getTenantId())) {
+            return account;
+        }
+        return null;
     }
 
     private ErpGlAccountDO selectAccountForVoucher(Long accountId) {
