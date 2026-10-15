@@ -97,7 +97,10 @@ public class MesProWorkOrderServiceImpl implements MesProWorkOrderService {
         // 3. 更新
         MesProWorkOrderDO updateObj = BeanUtils.toBean(updateReqVO, MesProWorkOrderDO.class);
         updateObj.setVersion(oldWorkOrder.getVersion());
-        workOrderMapper.updateById(updateObj);
+        // §12.228：检查影响行数，版本冲突时抛错而非静默成功
+        if (workOrderMapper.updateById(updateObj) == 0) {
+            throw exception(PRO_WORK_ORDER_OPTIMISTIC_LOCK_FAIL);
+        }
     }
 
     @Override
@@ -170,10 +173,13 @@ public class MesProWorkOrderServiceImpl implements MesProWorkOrderService {
             throw exception(PRO_WORK_ORDER_NOT_PREPARE);
         }
 
-        // 2. 更新状态为已确认
-        workOrderMapper.updateById(new MesProWorkOrderDO().setId(id)
+        // 2. 更新状态为已确认（§12.228：检查影响行数，版本冲突时抛错而非静默成功）
+        int rows = workOrderMapper.updateById(new MesProWorkOrderDO().setId(id)
                 .setStatus(MesProWorkOrderStatusEnum.CONFIRMED.getStatus())
                 .setVersion(workOrder.getVersion()));
+        if (rows == 0) {
+            throw exception(PRO_WORK_ORDER_OPTIMISTIC_LOCK_FAIL);
+        }
     }
 
     @Override
@@ -185,10 +191,13 @@ public class MesProWorkOrderServiceImpl implements MesProWorkOrderService {
             throw exception(PRO_WORK_ORDER_NOT_CONFIRMED);
         }
 
-        // 2. 更新工单状态为已派工
-        workOrderMapper.updateById(new MesProWorkOrderDO().setId(id)
+        // 2. 更新工单状态为已派工（§12.228：检查影响行数）
+        int rows = workOrderMapper.updateById(new MesProWorkOrderDO().setId(id)
                 .setStatus(MesProWorkOrderStatusEnum.DISPATCHED.getStatus())
                 .setVersion(workOrder.getVersion()));
+        if (rows == 0) {
+            throw exception(PRO_WORK_ORDER_OPTIMISTIC_LOCK_FAIL);
+        }
     }
 
     @Override
@@ -200,10 +209,13 @@ public class MesProWorkOrderServiceImpl implements MesProWorkOrderService {
             throw exception(PRO_WORK_ORDER_NOT_DISPATCHED);
         }
 
-        // 2. 更新工单状态为报工中
-        workOrderMapper.updateById(new MesProWorkOrderDO().setId(id)
+        // 2. 更新工单状态为报工中（§12.228：检查影响行数）
+        int rows = workOrderMapper.updateById(new MesProWorkOrderDO().setId(id)
                 .setStatus(MesProWorkOrderStatusEnum.REPORTING.getStatus())
                 .setVersion(workOrder.getVersion()));
+        if (rows == 0) {
+            throw exception(PRO_WORK_ORDER_OPTIMISTIC_LOCK_FAIL);
+        }
     }
 
     @Override
@@ -223,11 +235,14 @@ public class MesProWorkOrderServiceImpl implements MesProWorkOrderService {
         // 3. 级联完成所有关联任务
         taskService.finishTaskByOrderId(id);
 
-        // 4. 更新工单状态为已完成
-        workOrderMapper.updateById(new MesProWorkOrderDO().setId(id)
+        // 4. 更新工单状态为已完成（§12.228：检查影响行数）
+        int rows = workOrderMapper.updateById(new MesProWorkOrderDO().setId(id)
                 .setStatus(MesProWorkOrderStatusEnum.FINISHED.getStatus())
                 .setFinishDate(LocalDateTime.now())
                 .setVersion(workOrder.getVersion()));
+        if (rows == 0) {
+            throw exception(PRO_WORK_ORDER_OPTIMISTIC_LOCK_FAIL);
+        }
     }
 
     @Override
@@ -239,10 +254,13 @@ public class MesProWorkOrderServiceImpl implements MesProWorkOrderService {
             throw exception(PRO_WORK_ORDER_NOT_CLOSED);
         }
 
-        // 2. 更新工单状态为已关闭
-        workOrderMapper.updateById(new MesProWorkOrderDO().setId(id)
+        // 2. 更新工单状态为已关闭（§12.228：检查影响行数）
+        int rows = workOrderMapper.updateById(new MesProWorkOrderDO().setId(id)
                 .setStatus(MesProWorkOrderStatusEnum.CLOSED.getStatus())
                 .setVersion(workOrder.getVersion()));
+        if (rows == 0) {
+            throw exception(PRO_WORK_ORDER_OPTIMISTIC_LOCK_FAIL);
+        }
     }
 
     @Override
@@ -262,11 +280,14 @@ public class MesProWorkOrderServiceImpl implements MesProWorkOrderService {
         // 2. 级联取消所有关联任务（草稿态尚无任务，调用为无害空操作）
         taskService.cancelTaskByOrderId(id);
 
-        // 3. 更新工单状态为已取消
-        workOrderMapper.updateById(new MesProWorkOrderDO().setId(id)
+        // 3. 更新工单状态为已取消（§12.228：检查影响行数）
+        int rows = workOrderMapper.updateById(new MesProWorkOrderDO().setId(id)
                 .setStatus(MesProWorkOrderStatusEnum.CANCELED.getStatus())
                 .setCancelDate(LocalDateTime.now())
                 .setVersion(workOrder.getVersion()));
+        if (rows == 0) {
+            throw exception(PRO_WORK_ORDER_OPTIMISTIC_LOCK_FAIL);
+        }
     }
 
     // ==================== 校验方法 ====================

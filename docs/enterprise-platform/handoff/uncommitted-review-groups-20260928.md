@@ -8692,3 +8692,50 @@ QMS 单测 55/55；**全量回归 37 个 E2E 脚本全绿**（含新增 zc_qms_c
 ### 12.227.4 方法论（已写入 HANDOFF §5.0）
 **「伪成功」只能靠并发实测发现**：验证手段是对同一单据并发发两个互斥动作，断言「恰好一个成功、另一个报冲突」；两个都返回成功即命中。这与 §12.226 的「反向对照实验」同属并发类缺陷的专用验证手法。
 
+## 12.228 2026-10-15 修缺口 #4：MES/QMS 状态流转「伪成功」（第 8 个真实缺陷）
+
+承接 §12.227（已真机证实、未修）。本条完成修复、验证与提交。
+
+### 12.228.1 修法
+`updateById` 返回 0 时抛冲突错误码（乐观锁标准用法），不再静默成功：
+
+- `MesProWorkOrderServiceImpl` 7 处：`updateWorkOrder`（:100）+ 六处状态流转 confirm/dispatch/start/finish/close/cancel
+- `InspectionOrderServiceImpl` 2 处：`updateInspectionOrder`（:97）、`submitInspection`（:178）
+- 新增错误码：`PRO_WORK_ORDER_OPTIMISTIC_LOCK_FAIL = 1_040_502_011`「工单已被其他操作修改，请刷新后重试」；`INSPECTION_ORDER_OPTIMISTIC_LOCK_FAIL`（QMS）
+
+### 12.228.2 错误码撞号（自查抓出，提交前已修）
+新增 QMS 错误码初版取 `1_044_000_014`，与既有 `INSPECTION_RECORD_NOT_EXISTS`（1_044_000_014「检验记录不存在」）**撞号**——全仓 1928 个 `ErrorCode` 字面量扫描显示这是**唯一一组撞号**，且**无任何门禁或单测校验错误码唯一性**，一直靠人工维持。
+
+- 危害定级「中」：异常是 `throw exception(errorCode)` 直接带 `msg` 抛出（`ServiceExceptionUtil.exception0(code, msg)`），**没有按 code 反查 msg 的机制**，前端也不按 code 分支（已 grep 确认 `zhicloud-ui` 无 `1044` 分支）→ 运行时消息不会错；但日志/排障按 code 定位会把两类问题混为一谈。
+- 修法：`1_044_000_014` 归既有的「检验记录不存在」，新常量改用未占用的 **`1_044_000_046`**（该段已用到 045，050/051 为电子签名预留）。MES 侧 `1_040_502_011` 无冲突（该段此前最大 010）。
+- **沉淀：新增 ErrorCode 常量前必须查重**，脚本 `Temp/zc_errcode_dup_scan.py`（全仓扫描约 30 秒，期望 `collision groups: 0`）。
+
+### 12.228.3 覆盖面普查：937 处是噪声，真缺陷面就是已修的 9 处
+修复后做了两轮扫描定口径（脚本 `Temp/zc_version_updatebyid_scan.py`）：
+
+| 口径 | 命中 | 结论 |
+|---|---|---|
+| 粗：全仓 `updateById` 返回值未检查 | **937 处** / 20 模块 | 绝大多数 DO 无 `@Version`，并发下是「后写覆盖先写」（丢更新，同 §12.226）而非「返回 0 静默失败」 |
+| 精：上下文真有 `setVersion(` 且返回值未检查 | **2 处** | 均**非缺陷**：`MultiAgentTopologyServiceImpl:63`（DO 无 `@Version`）、`QmsDocumentServiceImpl:142`（`version` 是 `String` 业务版本号，走 `incrementVersion()`，非 MP 乐观锁） |
+| 已正确检查返回值的同类调用点 | 33 处 | 如 `CrmBusinessServiceImpl` 三处 `int updated = businessMapper.updateById(...)`——仓内本就有正确范式，只是不统一 |
+
+**结论**：真缺陷面就是 MES 7 处 + QMS 2 处，本批已覆盖完整，**不应按 937 处机械改**。
+**建议（未做）**：加一条 CI 门禁——对「`@Version` DO 的 `updateById` 且上下文 `setVersion(`」强制要求检查返回值，低成本防回归。
+
+**教训：「扫出 N 处可疑」≠「N 处都是缺陷」。** 先定准口径再下结论，否则会把 937 处噪声当成 937 个缺陷写进交接文档，误导后续排期。
+
+### 12.228.4 验证
+- 新 E2E `zc_workorder_concurrency_e2e.py` **4/4**：10 并发对同一 CONFIRMED 工单 dispatch，恰好 1 个成功、其余被状态校验（1040502003）或版本冲突（1040502011）拦截，DB 最终 status=4 / version=1
+- 回归 `zc_mes_wo_e2e` **21/21**、`zc_qms_crud_smoke_e2e` **49/49**
+- 单测：MES **829/829**、QMS **55/55**；`mvn test-compile` 通过
+- 错误码查重：`collision groups: 0`
+- 重打包后用 `javap` 反编译运行 jar，确认两个新错误码已在部署件里（避免「改在磁盘、jar 是旧的」）
+
+### 12.228.5 剩余缺口复核（#3 / #5 确认仍在）
+- **#3 ERP 付款/收款单无幂等键**：`zhicloud-module-erp/.../service/finance/` 下 grep `idempoten|payloadHash` **零命中**（同模块仅 `ErpAccountingEventDO` 有幂等键，不是付款/收款单）。修法照抄 `CrmReceivableDO` 范式（`idempotencyKey` :100 + `payloadHash` :104 + 唯一键 + 冲突错误码）。
+- **#5 TMS 运单状态机无 CAS**：`zhicloud-module-tms` 下**无任何 DO 带 `@Version`**；`TmsShipmentServiceImpl` 6 处 `updateById`（:106/:169/:189/:213/:231/:238）为 `selectById` → 内存判状态 → `updateById`，并发重复派车会重复改写车辆/司机状态（:231/:238）。
+
+### 12.228.6 交接纪律（本次新增）
+**交接文档不能照抄上一版**：上一版写「工作区干净」，实际有 4 个未提交文件；写「#3–#5 待续」，实际 #4 已改完待提交。
+每次交接必须重新 `git status` / `git log`，并**实跑未提交改动的验证**（含反编译确认 jar 已含修复），不能只描述——这与 §12.223「不接受未验证的二手结论」是同一条纪律。
+

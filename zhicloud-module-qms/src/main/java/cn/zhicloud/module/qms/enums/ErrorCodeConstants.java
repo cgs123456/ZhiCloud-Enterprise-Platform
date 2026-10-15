@@ -17,6 +17,8 @@ public interface ErrorCodeConstants {
     ErrorCode INSPECTION_ORDER_NOT_EXISTS = new ErrorCode(1_044_000_011, "检验单不存在");
     ErrorCode INSPECTION_ORDER_NOT_SUBMIT = new ErrorCode(1_044_000_012, "检验单不是待检验或检验中状态，无法提交检验结果");
     ErrorCode INSPECTION_ORDER_NO_EXISTS = new ErrorCode(1_044_000_013, "生成检验单号失败，请重新提交");
+    // 1_044_000_014 已属检验记录（INSPECTION_RECORD_NOT_EXISTS），检验单侧改用未占用的 046
+    ErrorCode INSPECTION_ORDER_OPTIMISTIC_LOCK_FAIL = new ErrorCode(1_044_000_046, "检验单已被其他操作修改，请刷新后重试");
 
     // ========== QMS 检验记录（1-040-102-000） ==========
     ErrorCode INSPECTION_RECORD_NOT_EXISTS = new ErrorCode(1_044_000_014, "检验记录不存在");

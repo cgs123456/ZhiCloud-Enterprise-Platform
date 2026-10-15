@@ -27,6 +27,7 @@ import java.util.List;
 import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.zhicloud.module.qms.enums.ErrorCodeConstants.INSPECTION_ORDER_NOT_EXISTS;
 import static cn.zhicloud.module.qms.enums.ErrorCodeConstants.INSPECTION_ORDER_NOT_SUBMIT;
+import static cn.zhicloud.module.qms.enums.ErrorCodeConstants.INSPECTION_ORDER_OPTIMISTIC_LOCK_FAIL;
 
 /**
  * QMS 检验单 Service 实现类
@@ -94,7 +95,10 @@ public class InspectionOrderServiceImpl implements InspectionOrderService {
         updateObj.setStatus(null);
         // P2 @Version 乐观锁：携带已有版本号，避免并发覆盖
         updateObj.setVersion(oldOrder.getVersion());
-        inspectionOrderMapper.updateById(updateObj);
+        // §12.228：检查影响行数，版本冲突时抛错而非静默成功
+        if (inspectionOrderMapper.updateById(updateObj) == 0) {
+            throw exception(INSPECTION_ORDER_OPTIMISTIC_LOCK_FAIL);
+        }
     }
 
     @Override
@@ -175,7 +179,10 @@ public class InspectionOrderServiceImpl implements InspectionOrderService {
         updateObj.setStatus(orderStatus);
         updateObj.setVersion(order.getVersion());
         updateObj.setInspectTime(LocalDateTime.now());
-        inspectionOrderMapper.updateById(updateObj);
+        // §12.228：检查影响行数，版本冲突时抛错而非静默成功
+        if (inspectionOrderMapper.updateById(updateObj) == 0) {
+            throw exception(INSPECTION_ORDER_OPTIMISTIC_LOCK_FAIL);
+        }
     }
 
     private InspectionOrderDO validateInspectionOrderExists(Long id) {
