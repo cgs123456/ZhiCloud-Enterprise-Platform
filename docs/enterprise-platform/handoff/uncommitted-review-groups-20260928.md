@@ -8577,3 +8577,37 @@ QMS 单测 55/55；**全量回归 37 个 E2E 脚本全绿**（含新增 zc_qms_c
 
 **本次事件的真正价值**：这是前端门禁（ts:check 进 CI，06603a08a）上线后第一次实战抓住一次本可造成两个商机列表**静默白屏**的破坏性修改。若没有该门禁（或删除后未跑全量 ts:check），「看起来合理的清理」会直接进主干。门禁拦住的正是这类改动。教训沉淀：**删 api 声明前必须 grep views 引用，不接受未经验证的二手结论**——agent 调研同样要复核关键事实。
 
+## 12.224 2026-10-15 GPS 轨迹接百度地图 + 并发/幂等缺口调研（未开工，交接用）
+
+### 12.224.1 GPS 轨迹地图化（提交 fb9678e81，已完成）
+轨迹 tab 从 echarts 经纬度直绘升级为「真地图优先」：复用项目已内置的百度地图封装（`components/Map/src/utils.loadBaiduMapSdk`，IoT 设备地图等 4 处在用），画轨迹折线 + 起/终点/途经点标注 + 点击弹信息窗；**AK 未配置或 SDK 加载失败时静默回退 echarts**（项目 `.env` 未配 `VITE_BAIDU_MAP_KEY`，不兜底会把原本可用的图改成不可用）。ts:check 0 错误、eslint 0 error、build:local 通过。**未做浏览器目视验证**（沙箱无 AK，实跑走兜底路径）——接真实 AK 后需目视确认地图路径。
+
+### 12.224.2 并发与幂等缺口调研（**只调研，未动手修**，下一会话接手用）
+按 CLAUDE.md「面向并发与故障设计」要求做的覆盖度盘点。**Top 5 已逐条回源码复核**（前两轮吃过调研结论错误的亏，本次关键论断都做了二次验证）：
+
+**① [严重] `erp_stock` 缺 (product_id, warehouse_id) 唯一键** —— 已复核确认
+- 证据：`SHOW INDEX FROM erp_stock` 显示 `idx_erp_stock_warehouse_id_product_id` 的 `Non_unique=1`（普通索引，非唯一）；而 `ErpStockServiceImpl.java:89-90` 注释明确写「依赖 erp_stock 的 (product_id, warehouse_id) 唯一约束」，并 `catch (DuplicateKeyException)` 回查——**该约束不存在，异常永不触发**。
+- 后果：并发首建同一 (product, warehouse) 插两行 → `ErpStockMapper.selectByProductIdAndWarehouseId` 的 `selectOne` 抛 `TooManyResultsException`；CAS 按 id 更新致两行余额漂移。
+- 修法建议：新增迁移加唯一键 `uk_erp_stock_product_warehouse (tenant_id, product_id, warehouse_id)`；加之前需先查/清存量重复行（`GROUP BY product_id, warehouse_id HAVING COUNT(*)>1`）。
+
+**② [严重] ERP 凭证审核/反审核无锁无版本，科目余额读-改-写丢更新** —— 已复核确认
+- 证据：`ErpGlAccountDO` 无 `@Version`（grep 未命中）；`ErpGlVoucherServiceImpl.updateAccountBalance`（约 :383-420）是典型 `selectAccountForVoucher` → 内存 `currentDebit.add(...)` → `updateById` 全量覆盖。
+- 后果：并发审核两张命中同一科目的凭证，后写覆盖先写，累计发生额/期末余额少计。
+- 修法建议：改原子 CAS（`UPDATE erp_gl_account SET current_debit = current_debit + ?, ...`），与既有 `ErpStockMapper.updateCountIncrementNonNegative` 同范式；注意 `closingDebit/closingCredit` 需在同一 SQL 内按方向表达式算，或改由 current 列派生。
+
+**③ [高] ERP 付款单/收款单创建无幂等键**
+- 证据：`ErpFinancePaymentServiceImpl.java:78-107` / `ErpFinanceReceiptServiceImpl.java:78-107` 仅 `no = noRedisDAO.generate()` + `selectByNo` 应用层查重；DO 无 `idempotencyKey`/`payloadHash`。有 `(no, tenant_id)` 唯一键但挡不住「同业务意图生成不同单号」。
+- 修法建议：参照 `CrmReceivableDO` 的完整范式（幂等键 + payloadHash 指纹 + 唯一键 + 冲突抛专用错误码）——该实现是全仓最完整的，可直接照抄结构。
+
+**④ [高] MES 工单 / QMS 检验单 `@Version` 更新忽略影响行数（伪成功）**
+- 证据：`MesProWorkOrderServiceImpl` 多处、`InspectionOrderServiceImpl.java:95-97,176-178` 调 `updateById` 不检查返回值；版本冲突时 MyBatis-Plus 返回 0 行而方法仍返回「成功」。另 `mes_pro_work_order` 无唯一键（仅应用层 `selectByCode` 查重）。
+- 修法建议：`updateById` 返回 0 时抛冲突错误码（乐观锁标准用法）。
+
+**⑤ [中] TMS 运单状态机无 CAS / 无版本 / 无行锁**
+- 证据：`TmsShipmentServiceImpl.java:133-172 / 176-197 / 200-213` 均 `selectById` → 内存判状态 → `updateById`；`TmsShipmentDO` 无 `@Version`。
+- 后果：并发重复派车重复改写车辆/司机状态。
+
+**已有防护（对照参考，勿重复造）**：库存扣减四路都安全（ERP 条件 CAS `updateCountIncrementNonNegative` / 框架 `InventoryItemMapper.updateCountIncrement` + DuplicateKey 回查 / WMS `selectListByIdsForUpdate` 行锁 / MES `quantity >= absCount` CAS）；CRM 回款幂等最完整；outbox/inbox 有唯一键 + CAS + owner fencing + 租约，事件重投有去重。
+
+**明确「未找到」**：FMS 与 HR 模块均无 `@Version` / `FOR UPDATE` / idempotency（FMS 只有配置类 DO 无业务实体；HR 的 `hr_leave_balance` 有唯一键但未找到余额扣减 Service 实现，无法判定）。
+
