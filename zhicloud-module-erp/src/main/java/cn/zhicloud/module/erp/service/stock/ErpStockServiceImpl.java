@@ -86,8 +86,10 @@ public class ErpStockServiceImpl implements ErpStockService {
         // 1.1 查询当前库存
         ErpStockDO stock = stockMapper.selectByProductIdAndWarehouseId(productId, warehouseId);
         if (stock == null) {
-            // 并发初始化：捕获唯一约束冲突（依赖 erp_stock 的 (product_id, warehouse_id) 唯一约束），
-            // 冲突后重新查询已插入的记录，避免并发重复插入导致 TooManyResultsException
+            // 并发初始化：捕获唯一约束冲突后回查已插入记录，避免并发重复插入导致
+            // TooManyResultsException。依赖 V199 加的
+            // uk_erp_stock_tenant_product_warehouse (tenant_id, product_id, warehouse_id)
+            // ——该唯一键此前缺失（本段注释曾声称存在但仓库里没有），并发首建会插两行。
             stock = new ErpStockDO().setProductId(productId).setWarehouseId(warehouseId).setCount(BigDecimal.ZERO);
             try {
                 stockMapper.insert(stock);

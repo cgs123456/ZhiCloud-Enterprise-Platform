@@ -58,8 +58,6 @@ public class ErpStockDO extends BaseDO {
      * 锁定数量（已预留未出库的库存，例如销售订单确认后锁定）
      *
      * <p>可用库存 = count - lockedCount
-     *
-     * <p>TODO 配套 DDL：{@code ALTER TABLE erp_stock ADD COLUMN locked_count DECIMAL(20,4) DEFAULT 0 COMMENT '锁定数量';}
      */
     private BigDecimal lockedCount;
 

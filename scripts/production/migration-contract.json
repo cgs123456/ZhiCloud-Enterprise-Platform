@@ -758,6 +758,13 @@
       "sha256": "8ab877144e334bc4bbc2dda62cf00f7f156d5e1cc1500d62db0bcbe421534de2",
       "verification_file": "V198_verify.sql",
       "verification_sha256": "c03a55080f31ea5486ceca1ca7a04684a4e406f4dfab3451116956631b117b70"
+    },
+    {
+      "version": 199,
+      "file": "V199__erp_stock_unique_key.sql",
+      "sha256": "ea048d8c97569bfd476a012cd1e2858196b30d9fcfb742cc493f5083237ebdf8",
+      "verification_file": "V199_verify.sql",
+      "verification_sha256": "bbcd7851c7dceb809373342c1efa3c2bd360ffce00ccf9a02101d7cb45448a81"
     }
   ]
 }
