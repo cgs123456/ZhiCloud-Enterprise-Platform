@@ -8611,3 +8611,23 @@ QMS 单测 55/55；**全量回归 37 个 E2E 脚本全绿**（含新增 zc_qms_c
 
 **明确「未找到」**：FMS 与 HR 模块均无 `@Version` / `FOR UPDATE` / idempotency（FMS 只有配置类 DO 无业务实体；HR 的 `hr_leave_balance` 有唯一键但未找到余额扣减 Service 实现，无法判定）。
 
+## 12.225 2026-10-15 修并发缺口 #1：erp_stock 补唯一键（提交 d1dc9f2c3，第 6 个真实缺陷）
+
+§12.224.2 列出的并发/幂等 Top 5 中，**#1 已修**（其余 4 项待续，见该节修法建议）。
+
+### 12.225.1 缺陷与复核
+`ErpStockServiceImpl.updateStockCountIncrement` 的并发初始化路径注释写着「依赖 erp_stock 的 (product_id, warehouse_id) 唯一约束」并 `catch (DuplicateKeyException)` 回查——但**该唯一约束在仓库中不存在**。复核方式（不接受文本推断）：真机 `SHOW INDEX FROM erp_stock` 显示三个索引 `non_unique` 全为 1（`idx_erp_stock_warehouse_id_product_id` 是普通索引），同时读源码确认注释与 catch 分支确实依赖它。
+
+**后果**：并发首建同一 (产品, 仓库) 插入两行 → `selectByProductIdAndWarehouseId` 的 `selectOne` 抛 `TooManyResultsException`；且 CAS 按 id 更新，两行余额各自漂移。**注释在说谎**——这比缺约束本身更危险，会误导后续维护者以为已有防护。
+
+### 12.225.2 修复
+- **V199** 加唯一键 `uk_erp_stock_tenant_product_warehouse (tenant_id, product_id, warehouse_id)`。含 `tenant_id`（多租户下同一产品在不同租户可各有一行）；改前自检存量无重复行（`GROUP BY` 无结果），有重复则 ALTER 报 1062 失败、阻止带病上线。
+- 修正说谎注释为准确陈述（并注明此前缺失）。
+- 清理 `ErpStockDO.lockedCount` 上的过时 TODO（声称「配套 DDL 待执行」，真机该列已存在）——**顺手发现的第二处「注释与实现不符」**。
+
+### 12.225.3 验证
+新增 `zc_stock_unique_e2e.py` 真机 **8/8**：唯一键存在且 `non_unique=0`、覆盖三列、同维度重复插入被 1062 拒绝、该维度只有 1 行（修复前会 2 行）、不同租户同维度可各一行、库存分页接口无 `TooManyResultsException`。ERP 单测 171/171；契约 tracked=109 findings=0；ERP 相关 7 个 E2E 回归绿。
+
+### 12.225.4 顺带发现的通用模式（值得记）
+本会话 6 个缺陷里，「注释/文档声称有防护而实现没有」出现了 2 次（本次 + §12.222 FMEA 保留字）。**代码注释里的「依赖 X」「已保证 Y」属于可验证断言，发现时应顺手核实**——它们最容易在重构中失真，且会让人跳过实际检查。
+
