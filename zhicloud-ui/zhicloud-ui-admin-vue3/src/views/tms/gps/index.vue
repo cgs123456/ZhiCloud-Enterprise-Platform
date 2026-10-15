@@ -130,8 +130,13 @@
         </div>
         <el-empty v-if="!trackLoading && tracks.length === 0" description="暂无轨迹数据" />
         <template v-if="tracks.length > 0">
-          <!-- 轨迹图：折线（按时间）+ 散点（上报点），经纬度直绘（局部范围可读） -->
-          <Echart :height="420" :options="trackChartOption" />
+          <!-- 轨迹图：优先百度地图（真地图）；未配置 AK / 加载失败时回退 echarts 折线+散点 -->
+          <div
+            v-if="mapMode === 'baidu'"
+            ref="mapContainerRef"
+            class="w-full h-[460px] border-rounded"
+          ></div>
+          <Echart v-else :height="420" :options="trackChartOption" />
           <el-table :data="tracks" size="small" stripe>
             <el-table-column align="center" label="上时间" prop="reportTime" width="200" />
             <el-table-column align="center" label="车辆编号" prop="vehicleId" width="100" />
@@ -151,6 +156,7 @@
 import { TmsGpsApi } from '@/api/tms/gps'
 import type { TmsGpsPositionVO } from '@/api/tms/gps'
 import type { EChartsOption } from 'echarts'
+import { loadBaiduMapSdk } from '@/components/Map/src/utils'
 
 defineOptions({ name: 'TmsGps' })
 
@@ -252,7 +258,84 @@ const loadVehicleTrack = async () => {
   }
 }
 
-/** 轨迹图：经纬度直绘折线 + 上报点散点（局部范围可读；tooltip 给时间/速度/描述） */
+const mapMode = ref<'baidu' | 'chart'>('chart') // 真地图 / echarts 兜底
+const mapContainerRef = ref<HTMLElement>()
+let mapInstance: any = null
+
+/**
+ * 尝试初始化百度地图轨迹；AK 未配置或 SDK 加载失败时回退 echarts。
+ * 项目已内置百度地图（components/Map，IoT 设备地图等 4 处在用），但 .env 未配
+ * VITE_BAIDU_MAP_KEY 时 SDK 会 reject——必须兜底，否则把能用的图改成不可用。
+ */
+const initBaiduMap = async (points: any[]) => {
+  try {
+    await loadBaiduMapSdk()
+    if (!mapContainerRef.value || !window.BMapGL) {
+      mapMode.value = 'chart'
+      return
+    }
+    if (mapInstance) {
+      mapInstance.destroy?.()
+      mapInstance = null
+    }
+    const bmap = new window.BMapGL.Map(mapContainerRef.value)
+    bmap.enableScrollWheelZoom()
+    bmap.addControl(new window.BMapGL.ScaleControl())
+    bmap.addControl(new window.BMapGL.ZoomControl())
+    // 轨迹折线 + 起终点/途经点标注
+    const bPoints = points.map((p) => new window.BMapGL.Point(p.value[0], p.value[1]))
+    if (bPoints.length > 1) {
+      bmap.addOverlay(
+        new window.BMapGL.Polyline(bPoints, { strokeColor: '#409EFF', strokeWeight: 4, strokeOpacity: 0.8 })
+      )
+    }
+    points.forEach((p, idx) => {
+      const isStart = idx === 0
+      const isEnd = idx === points.length - 1 && points.length > 1
+      const color = isStart || isEnd ? '#f56c6c' : '#409Eff'
+      const mk = new window.BMapGL.Marker(bPoints[idx], {
+        icon: new window.BMapGL.Symbol(window.BMapGL.Symbol_TYPE.BACKWARD_CLOSED_ARROW, {
+          scale: isStart || isEnd ? 1.4 : 1,
+          fillColor: color,
+          fillOpacity: 0.9,
+          strokeColor: '#fff',
+          strokeWeight: 1
+        })
+      })
+      const label = isStart ? '起点' : isEnd ? '终点' : `G${idx}`
+      const content = `<div style="padding:6px;font-size:12px;line-height:1.7">
+        <b>${label}</b><br/>${p.time ?? '-'}<br/>速度 ${p.speed ?? '-'} km/h<br/>${p.desc ?? ''}</div>`
+      mk.addEventListener('click', () => {
+        bmap.openInfoWindow(new window.BMapGL.InfoWindow(content, { width: 200 }), bPoints[idx])
+      })
+      bmap.addOverlay(mk)
+    })
+    bmap.setViewport(bPoints)
+    mapInstance = bmap
+    mapMode.value = 'baidu'
+  } catch {
+    // AK 未配置 / SDK 失败 / 无网：静默回退 echarts（不阻塞查询功能）
+    mapMode.value = 'chart'
+  }
+}
+
+/** 查询后重绘：有坐标数据时尝试地图，否则直接兜底 */
+watch(tracks, async (val) => {
+  if (!val || val.length === 0) {
+    mapMode.value = 'chart'
+    return
+  }
+  const pts = val.map((t: any) => ({
+    value: [Number(t.longitude), Number(t.latitude)],
+    time: t.reportTime,
+    speed: t.speed,
+    desc: t.locationDesc
+  }))
+  await nextTick()
+  await initBaiduMap(pts)
+})
+
+/** 轨迹图：echarts 兜底（无地图时）——经纬度直绘折线 + 上报点散点 */
 const trackChartOption = computed<EChartsOption>(() => {
   const points = tracks.value.map((t: any) => ({
     value: [Number(t.longitude), Number(t.latitude)],
