@@ -115,4 +115,9 @@ __pycache__/
 # 本地工作中转目录 Temp/（一次性脚本、日志、VM 工具包与本地凭据）。
 # 该目录从不入库；此前仅靠口头约定「不入仓」，任何 `git add -A` 都会误纳入，故改为 .gitignore 强制。见 handoff 12.173。
 # 注意：Temp/e2e-prodlike/ 下的 VM 脚本与证书仍按原路径保留在磁盘上供追溯。
+# 审计留痕运行期产物：AuditLogPersistService 默认写 logs/audit/*.jsonl，
+# 第 40 行的 *.log 覆盖不到（后缀是 .jsonl，另有 .hash-chain），
+# 而内容是本机跑出来的真实审计记录（含 bizId/creator/requestUrl/traceId），
+# 绝不该进仓。若不排除，`git add .` / `git add -A` 会把本机调试期间的审计数据提交上去。
+/logs/audit/
 /Temp/

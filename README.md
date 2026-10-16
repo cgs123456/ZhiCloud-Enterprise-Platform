@@ -251,6 +251,24 @@ mvn spring-boot:run
 > 的内置默认值（MySQL `123456`、Redis `redis@2026`）。所以要么先设好上面几个环境变量再运行它，
 > 要么把 `script/docker/.env` 里的 `MYSQL_ROOT_PASSWORD` / `REDIS_PASSWORD` 保持为这两个默认值。
 
+#### 数据库不在 `127.0.0.1:3306` 时：连 URL 一起覆盖
+
+`application-local.yaml` 的数据源是 `${MASTER_DATASOURCE_URL:jdbc:mysql://127.0.0.1:3306/zhicloud_platform?...}`，
+即 host/port/库名同样可被环境变量覆盖。**只设密码不够**——宿主机 3306 未必是你的 MySQL：
+
+- 容器化了而发布端口不是 3306 时，用 `docker port <容器名> 3306/tcp` 查出真实端口再覆盖。
+  （实测踩过：本机 3306 的监听者是 Docker Desktop 自己的 `com.docker.backend`，属于**另一个**MySQL 容器，
+  连上去是 `Access denied for user 'root'@'172.17.0.1'`，而不是"服务没起来"。）
+- 要指向另一个库（例如装了夹具的 `zhicloud_sandbox_v140`），也必须覆盖 URL——换库名会改默认值里的路径部分。
+
+```bash
+export MASTER_DATASOURCE_URL='jdbc:mysql://127.0.0.1:<真实端口>/<库名>?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true'
+export SLAVE_DATASOURCE_URL='jdbc:mysql://127.0.0.1:<真实端口>/<库名>?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true'
+```
+
+> URL 里的参数是 Connector/J 的口径，改 host/port/库名时请照抄上面整串，不要只替换片段：
+> `nullCatalogMeansCurrent=true` 是 MyBatis-Plus 多租户/`selectJoinPage` 解析 catalog 的前提。
+
 后端 API 地址：`http://localhost:48080`。该地址返回未认证 JSON 是正常行为，不是前端管理界面。
 Docker Compose 的 `server` 服务会覆盖 `zhicloud.airag.enabled=true` 并提供 PostgreSQL+pgvector；
 上面第 1 步只启动了 mysql/redis/postgres 三个中间件，宿主机直跑时 `local` profile 的 `zhicloud.airag.enabled` 仍为默认 `false`。
