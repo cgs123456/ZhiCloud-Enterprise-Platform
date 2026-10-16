@@ -3,6 +3,7 @@ package cn.zhicloud.module.crm.service.salesorder;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjUtil;
+import cn.zhicloud.framework.common.exception.ErrorCode;
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.common.util.number.MoneyUtils;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
@@ -26,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -202,29 +204,65 @@ public class CrmSaleOrderServiceImpl implements CrmSaleOrderService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void confirmSaleOrder(Long id) {
-        // 1. 校验存在
-        CrmSaleOrderDO order = validateSaleOrderExists(id);
-        // 2. 只有草稿状态，可以确认
-        if (ObjUtil.notEqual(order.getStatus(), CrmSaleOrderStatusEnum.DRAFT.getStatus())) {
-            throw exception(SALE_ORDER_CONFIRM_FAIL_NOT_DRAFT);
-        }
-        // 3. 更新状态为已确认
-        saleOrderMapper.updateById(new CrmSaleOrderDO().setId(id)
-                .setStatus(CrmSaleOrderStatusEnum.CONFIRMED.getStatus()));
+        // 只有草稿状态，可以确认（CAS 条件更新，防并发覆盖/复活已取消订单）
+        transitionStatus(id, SALE_ORDER_CONFIRM_FAIL_NOT_DRAFT,
+                new CrmSaleOrderDO().setStatus(CrmSaleOrderStatusEnum.CONFIRMED.getStatus()),
+                CrmSaleOrderStatusEnum.DRAFT.getStatus());
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void submitSaleOrder(Long id, Long userId) {
-        // 1. 校验存在
-        CrmSaleOrderDO order = validateSaleOrderExists(id);
-        // 2. 只有草稿状态，可以提交审核（暂不接入 BPM，直接更新为已确认）
-        if (ObjUtil.notEqual(order.getStatus(), CrmSaleOrderStatusEnum.DRAFT.getStatus())) {
-            throw exception(SALE_ORDER_SUBMIT_FAIL_NOT_DRAFT);
+        // 暂不接入 BPM，直接更新为已确认（与 confirm 同一迁移，保留独立端点供后续接流程；CAS 同 confirm）
+        transitionStatus(id, SALE_ORDER_SUBMIT_FAIL_NOT_DRAFT,
+                new CrmSaleOrderDO().setStatus(CrmSaleOrderStatusEnum.CONFIRMED.getStatus()),
+                CrmSaleOrderStatusEnum.DRAFT.getStatus());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void shipSaleOrder(Long id) {
+        // 已确认 -> 已发货；发货状态同步为「已发货」（全量发货，无部分量跟踪）
+        transitionStatus(id, SALE_ORDER_SHIP_FAIL_NOT_CONFIRMED,
+                new CrmSaleOrderDO().setStatus(CrmSaleOrderStatusEnum.SHIPPED.getStatus())
+                        .setDeliveryStatus(CrmSaleOrderDeliveryStatusEnum.SHIPPED.getStatus()),
+                CrmSaleOrderStatusEnum.CONFIRMED.getStatus());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void completeSaleOrder(Long id) {
+        // 已发货 -> 已完成；发货状态同步为「已签收」（完成即签收闭环）
+        transitionStatus(id, SALE_ORDER_COMPLETE_FAIL_NOT_SHIPPED,
+                new CrmSaleOrderDO().setStatus(CrmSaleOrderStatusEnum.COMPLETED.getStatus())
+                        .setDeliveryStatus(CrmSaleOrderDeliveryStatusEnum.SIGNED.getStatus()),
+                CrmSaleOrderStatusEnum.SHIPPED.getStatus());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void cancelSaleOrder(Long id) {
+        // 草稿/已确认 -> 已取消；发货后不允许取消（货已出，退货不在本项）
+        transitionStatus(id, SALE_ORDER_CANCEL_FAIL,
+                new CrmSaleOrderDO().setStatus(CrmSaleOrderStatusEnum.CANCELED.getStatus()),
+                CrmSaleOrderStatusEnum.DRAFT.getStatus(), CrmSaleOrderStatusEnum.CONFIRMED.getStatus());
+    }
+
+    /**
+     * 状态流转统一实现：以「来源状态集合」做条件更新（CAS），并发下只有一个动作能生效
+     *
+     * <p>affected rows = 0 时回查一次给出精确原因（订单不存在 / 当前状态不允许该动作）。
+     * 不用「先查后改」是为了避免两个并发动作各自通过校验后互相覆盖（伪成功）。
+     */
+    private void transitionStatus(Long id, ErrorCode errorCode, CrmSaleOrderDO updateObj, Integer... fromStatuses) {
+        int updated = saleOrderMapper.updateByIdAndStatus(id, Arrays.asList(fromStatuses), updateObj);
+        if (updated == 0) {
+            CrmSaleOrderDO order = saleOrderMapper.selectById(id);
+            if (order == null) {
+                throw exception(SALE_ORDER_NOT_EXISTS);
+            }
+            throw exception(errorCode);
         }
-        // 3. 更新状态为已确认
-        saleOrderMapper.updateById(new CrmSaleOrderDO().setId(id)
-                .setStatus(CrmSaleOrderStatusEnum.CONFIRMED.getStatus()));
     }
 
     @Override

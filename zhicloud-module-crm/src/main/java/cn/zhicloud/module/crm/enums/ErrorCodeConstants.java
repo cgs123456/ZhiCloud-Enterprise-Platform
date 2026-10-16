@@ -136,6 +136,9 @@ public interface ErrorCodeConstants {
     ErrorCode SALE_ORDER_CONFIRM_FAIL_NOT_DRAFT = new ErrorCode(1_020_016_003, "销售订单确认失败，原因：订单不是草稿状态");
     ErrorCode SALE_ORDER_SUBMIT_FAIL_NOT_DRAFT = new ErrorCode(1_020_016_004, "销售订单提交审核失败，原因：订单没处在未提交状态");
     ErrorCode SALE_ORDER_DELETE_FAIL = new ErrorCode(1_020_016_005, "删除销售订单失败，原因：订单不是草稿状态");
+    ErrorCode SALE_ORDER_SHIP_FAIL_NOT_CONFIRMED = new ErrorCode(1_020_016_006, "销售订单发货失败，原因：订单不是已确认状态");
+    ErrorCode SALE_ORDER_COMPLETE_FAIL_NOT_SHIPPED = new ErrorCode(1_020_016_007, "销售订单完成失败，原因：订单不是已发货状态");
+    ErrorCode SALE_ORDER_CANCEL_FAIL = new ErrorCode(1_020_016_008, "销售订单取消失败，原因：订单不是草稿或已确认状态");
 
     // ========== 线索渠道 1_020_017_000 ==========
     ErrorCode CLUE_CHANNEL_NOT_EXISTS = new ErrorCode(1_020_017_000, "线索渠道不存在");

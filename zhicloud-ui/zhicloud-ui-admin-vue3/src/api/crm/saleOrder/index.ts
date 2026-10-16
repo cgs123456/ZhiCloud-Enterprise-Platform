@@ -105,5 +105,17 @@ export const CrmSaleOrderApi = {
   // 提交审批（仅草稿；暂不接入 BPM，直接更新为已确认）
   submitCrmSaleOrder: async (id: number) => {
     return await request.put({ url: `/crm/sale-order/submit?id=${id}` })
+  },
+  // 发货（仅已确认）
+  shipCrmSaleOrder: async (id: number) => {
+    return await request.put({ url: `/crm/sale-order/ship?id=${id}` })
+  },
+  // 完成（仅已发货）
+  completeCrmSaleOrder: async (id: number) => {
+    return await request.put({ url: `/crm/sale-order/complete?id=${id}` })
+  },
+  // 取消（仅草稿/已确认）
+  cancelCrmSaleOrder: async (id: number) => {
+    return await request.put({ url: `/crm/sale-order/cancel?id=${id}` })
   }
 }

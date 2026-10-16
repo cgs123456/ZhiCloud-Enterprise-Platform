@@ -10499,3 +10499,88 @@ E2E 具体断言（API + DB 双验）：建单传 `status=30` → 落库 10；PU
    （登记）。
 
 本节文档同步：next-steps 后记追加完成/订正两条；HANDOFF §3.2 第 2 项与 §四第 3 条加订正块。
+
+## 12.241 2026-10-16 CRM 销售订单生命周期在「已确认」处中断修复：ship/complete/cancel 端点补齐 + 确认链 CAS 加固（业务断点 3；ADR 先行）
+
+本节属性：HANDOFF §3.2 第 3 项「CRM 销售订单生命周期在「已确认」处中断」的收口。
+后端增量：3 个新端点 + 4 类 CAS 状态流转（含既有 confirm/submit 加固）；前端 1 api + 1 页面；
+零迁移、零权限新增（复用 V197 已有 `crm:sale-order:update`）。设计决策动手前定稿（§12.241.2）。
+
+### 12.241.1 缺陷面与口径复核
+
+- 状态机 `CrmSaleOrderStatusEnum` DRAFT(10)→CONFIRMED(20)→SHIPPED(30)→COMPLETED(40)；CANCELED(50)。
+  全仓对 SHIPPED/COMPLETED/CANCELED 的写入引用为 0——唯一写入者是 create（DRAFT）与
+  confirm/submit（CONFIRMED）；
+- 并发字段 `deliveryStatus` / `paymentStatus` 只写首值（未发货/未付款）；
+  PARTIAL_SHIPPED/PARTIAL_PAID/SIGNED/PAID 均不可达；
+- 端点面只有 confirm/submit，无 ship/complete/cancel；CRM 模块内无发货/签收/回款 Controller；
+- 既有 confirm/submit 为「先查后改」非 CAS——cancel 激活后竞态有真实后果
+  （confirm 可把已取消订单复活为已确认）；
+- 测试基建缺口：H2 场景 `create_tables.sql` 的 `crm_sale_order` 缺 `final_amount` 列
+  （对齐生产 V63；该表此前无任何测试覆盖，列缺失本次首次暴露）。
+
+### 12.241.2 设计决策（ADR 式，动手前定案）
+
+- **D1 端点补齐**：`PUT /crm/sale-order/ship`（CONFIRMED→SHIPPED，`deliveryStatus`→已发货(30)）＋
+  `PUT /crm/sale-order/complete`（SHIPPED→COMPLETED，`deliveryStatus`→已签收(40)）＋
+  `PUT /crm/sale-order/cancel`（DRAFT/CONFIRMED→CANCELED），权限均复用
+  `crm:sale-order:update`（V197 已播种，零迁移）。发货/完成同步推进并发字段（消除
+  「状态已发货、发货状态未发货」的自相矛盾展示）；SHIPPED 后不允许取消（货已出，退货不在本项）。
+- **D2 CAS 并发语义**：沿用 §12.237/§12.240 范式——`updateByIdAndStatus(id, fromStatuses, updateObj)`
+  条件更新，0 行回查区分「订单不存在」（1_020_016_000）与「状态不允许」
+  （ship→006 / complete→007 / cancel→008）；不「先查后改」，杜绝并发伪成功。
+- **D3 confirm/submit 加固为 CAS（本项必需件）**：cancel 引入后，「先查后改」的 confirm 可把
+  已取消订单复活（updateById 无状态条件）——此前 CANCELED 不可达、无形后果；本项激活取消路径后
+  即成真实缺陷，随本项收口（外部行为不变：003/004 错误码保持，仅并发语义收紧）。
+- **D4 明确不做**：PARTIAL_SHIPPED/PARTIAL_PAID 不实现（无部分发货量跟踪、无回款单实体，
+  造伪状态违反克制原则，§12.241.5 登记）；submit 接线 BPM 不做（无流程定义种子；模块内
+  contract/invoice 接 BPM 属既有差异，另立观察）；`paymentStatus` 不动（CRM 无回款驱动源）；
+  SHIPPED→CANCELED 不允许。
+- **D5 前端接线**：操作列按状态条件渲染（DRAFT: 修改/确认/提交/取消/删；CONFIRMED: 详情/发货/取消；
+  SHIPPED: 详情/完成；终态只读）+ `v-hasPermi`（同后端码）；动作成功 `getList()` 回读；
+  操作列宽 260→300（DRAFT 行 5 键，对齐 ERP 销售订单/CRM 工单惯例）。
+
+### 12.241.3 变更清单（9 文件：5 后端 + 1 新测试 + 2 前端 + 1 测试资源）
+
+- `enums/ErrorCodeConstants.java`：+1_020_016_006 / 007 / 008；
+- `dal/mysql/salesorder/CrmSaleOrderMapper.java`：+`updateByIdAndStatus`（CAS）；
+- `service/salesorder/CrmSaleOrderService.java` / `CrmSaleOrderServiceImpl.java`：
+  +`shipSaleOrder` / `completeSaleOrder` / `cancelSaleOrder`（私有 `transitionStatus` 统一实现）；
+  confirm/submit 加固为 CAS；
+- `controller/admin/salesorder/CrmSaleOrderController.java`：+3 端点（`@RequestParam id`）；
+- `service/salesorder/CrmSaleOrderServiceImplTest.java`（新增）：16 案——confirm 三出口、
+  ship 三出口（含 deliveryStatus 断言）、complete 三出口（含 SIGNED 断言）、
+  cancel 六案（草稿/已确认成功、发货/完成拒绝、重复取消拒绝、不存在）、复活竞态案
+  （取消后确认必败且状态保持 50）；
+- `api/crm/saleOrder/index.ts`：+`shipCrmSaleOrder` / `completeCrmSaleOrder` / `cancelCrmSaleOrder`；
+- `views/crm/saleOrder/index.vue`：头注释更新 + 操作列三态渲染 + 三个动作函数 + 列宽 260→300；
+- 测试资源 `zhicloud-module-crm/src/test/resources/sql/create_tables.sql`：`crm_sale_order`
+  +`final_amount`（对齐生产 V63；CRLF 保真修补）。
+
+### 12.241.4 验证读数
+
+- 单测 `CrmSaleOrderServiceImplTest` **16/16**；CRM 模块全量回归 **70/70**
+  （跳过 5 个需外部环境的 MySQL 集成案，Fail=0/Err=0）；
+- errcode 全仓扫描 1945 条 / **0 碰撞**；
+- reactor 重打包（`-pl zhicloud-server -am`）**BUILD SUCCESS**（01:07），新 jar 真机运行；
+- 真机 E2E（tenant 9001，`Temp\zc_crm_e2e.py`）**36/36**：建单→DRAFT(10,10,10)（单号生成）→
+  草稿发货/完成拒绝（006/007）→确认→CONFIRMED(20)（get 回读含明细；重复确认 003）→发货→
+  SHIPPED(30)+delivery(30)（重复发货 006）→**已发货取消拒绝（008，状态不动）**→完成→
+  COMPLETED(40)+delivery(40=SIGNED)（重复完成 007；已完成取消 008）→草稿直接取消→CANCELED(50)
+  （重复取消 008）→**取消后确认拒绝 003 且状态保持 50（复活检测）**→已确认取消
+  （delivery/payment 未动）→不存在出口 ×4（000）→清理零遗留；
+- 三层接线扫描 **19/19**；`pnpm ts:check` **EXIT=0**；`pnpm build:prod` **EXIT=0**；
+- 行尾保真：8 个内容文件全部 LF-only 保持（补丁脚本逐文件 `crlf==0` 断言后写入）；
+  测试资源为 CRLF，按 CRLF 锚点修补并断言 `crlf +1`、`bareLF` 不变。
+
+### 12.241.5 连带观察（登记，不动手）
+
+1. **部分发货/部分付款不可达**：PARTIAL_SHIPPED(20)/PARTIAL_PAID(20) 无驱动者（无部分量跟踪、
+   无回款单实体）；完成把 deliveryStatus 推到 SIGNED，但 paymentStatus 仍只有 UNPAID——
+   真实回款链须另立域（登记）。
+2. **submit 未接 BPM**：与 contract/invoice 接 `BpmProcessInstanceApi` 的三做法并存；
+   无销售订单流程定义种子，接线属组织流程建模（登记）。
+3. **updateSaleOrder/deleteSaleOrder 仍非 CAS**：编辑/删除仅校验草稿，与并发取消存在理论丢更新窗；
+   影响面小（草稿态），登记不扩权。
+
+本节文档同步：next-steps 后记追加完成/订正两条；HANDOFF §3.2 第 3 项与 §四第 3 条加订正块。

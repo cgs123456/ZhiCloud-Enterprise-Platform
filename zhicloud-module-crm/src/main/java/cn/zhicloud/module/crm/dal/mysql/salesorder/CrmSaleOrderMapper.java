@@ -7,6 +7,7 @@ import cn.zhicloud.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.zhicloud.module.crm.controller.admin.salesorder.vo.CrmSaleOrderPageReqVO;
 import cn.zhicloud.module.crm.dal.dataobject.salesorder.CrmSaleOrderDO;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.math.BigDecimal;
@@ -27,6 +28,15 @@ public interface CrmSaleOrderMapper extends BaseMapperX<CrmSaleOrderDO> {
 
     default CrmSaleOrderDO selectByNo(String no) {
         return selectOne(CrmSaleOrderDO::getNo, no);
+    }
+
+    /**
+     * 条件更新（CAS）：仅当当前状态在 {@code fromStatuses} 内时才更新，返回受影响行数
+     */
+    default int updateByIdAndStatus(Long id, Collection<Integer> fromStatuses, CrmSaleOrderDO updateObj) {
+        return update(updateObj, new LambdaUpdateWrapper<CrmSaleOrderDO>()
+                .eq(CrmSaleOrderDO::getId, id)
+                .in(CrmSaleOrderDO::getStatus, fromStatuses));
     }
 
     default PageResult<CrmSaleOrderDO> selectPage(CrmSaleOrderPageReqVO pageReqVO) {

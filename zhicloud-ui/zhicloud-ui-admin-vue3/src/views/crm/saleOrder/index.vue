@@ -1,4 +1,4 @@
-<!-- CRM 销售订单（软状态机：草稿可改/删/确认/提交；后续状态只读） -->
+<!-- CRM 销售订单（软状态机：草稿→已确认→已发货→已完成；草稿/已确认可取消） -->
 <template>
   <ContentWrap>
     <doc-alert title="【销售】销售订单管理" url="https://doc.zhicloud.cn/crm/sale-order/" />
@@ -70,9 +70,9 @@
       </el-table-column>
       <el-table-column align="center" label="负责人" prop="ownerUserName" min-width="100" />
       <el-table-column align="center" label="创建时间" prop="createTime" width="170" :formatter="dateFormatter" />
-      <el-table-column align="center" fixed="right" label="操作" width="260">
+      <el-table-column align="center" fixed="right" label="操作" width="300">
         <template #default="scope">
-          <!-- 仅草稿可编辑/删除/确认/提交 -->
+          <!-- 草稿：可修改/确认/提交/取消/删除 -->
           <template v-if="scope.row.status === STATUS.DRAFT">
             <el-button
               v-hasPermi="['crm:sale-order:update']"
@@ -99,6 +99,14 @@
               提交审批
             </el-button>
             <el-button
+              v-hasPermi="['crm:sale-order:update']"
+              link
+              type="danger"
+              @click="handleCancel(scope.row)"
+            >
+              取消
+            </el-button>
+            <el-button
               v-hasPermi="['crm:sale-order:delete']"
               link
               type="danger"
@@ -107,6 +115,53 @@
               删除
             </el-button>
           </template>
+          <!-- 已确认：可发货/取消 -->
+          <template v-else-if="scope.row.status === STATUS.CONFIRMED">
+            <el-button
+              v-hasPermi="['crm:sale-order:query']"
+              link
+              type="primary"
+              @click="openForm('detail', scope.row.id)"
+            >
+              详情
+            </el-button>
+            <el-button
+              v-hasPermi="['crm:sale-order:update']"
+              link
+              type="success"
+              @click="handleShip(scope.row)"
+            >
+              发货
+            </el-button>
+            <el-button
+              v-hasPermi="['crm:sale-order:update']"
+              link
+              type="danger"
+              @click="handleCancel(scope.row)"
+            >
+              取消
+            </el-button>
+          </template>
+          <!-- 已发货：可完成 -->
+          <template v-else-if="scope.row.status === STATUS.SHIPPED">
+            <el-button
+              v-hasPermi="['crm:sale-order:query']"
+              link
+              type="primary"
+              @click="openForm('detail', scope.row.id)"
+            >
+              详情
+            </el-button>
+            <el-button
+              v-hasPermi="['crm:sale-order:update']"
+              link
+              type="success"
+              @click="handleComplete(scope.row)"
+            >
+              完成
+            </el-button>
+          </template>
+          <!-- 已完成/已取消：只读详情 -->
           <template v-else>
             <el-button
               v-hasPermi="['crm:sale-order:query']"
@@ -237,6 +292,33 @@ const handleSubmit = async (row: any) => {
   try {
     await CrmSaleOrderApi.submitCrmSaleOrder(row.id)
     message.success('已提交')
+    await getList()
+  } catch {}
+}
+
+const handleShip = async (row: any) => {
+  try {
+    await message.confirm(`是否确认订单「${row.no}」发货？（仅已确认可发货）`)
+    await CrmSaleOrderApi.shipCrmSaleOrder(row.id)
+    message.success('已发货')
+    await getList()
+  } catch {}
+}
+
+const handleComplete = async (row: any) => {
+  try {
+    await message.confirm(`是否确认订单「${row.no}」已完成？（仅已发货可完成）`)
+    await CrmSaleOrderApi.completeCrmSaleOrder(row.id)
+    message.success('已完成')
+    await getList()
+  } catch {}
+}
+
+const handleCancel = async (row: any) => {
+  try {
+    await message.confirm(`是否取消订单「${row.no}」？（仅草稿/已确认可取消）`)
+    await CrmSaleOrderApi.cancelCrmSaleOrder(row.id)
+    message.success('已取消')
     await getList()
   } catch {}
 }

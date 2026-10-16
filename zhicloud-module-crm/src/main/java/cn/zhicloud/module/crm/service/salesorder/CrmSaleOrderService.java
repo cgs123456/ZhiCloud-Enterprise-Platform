@@ -82,6 +82,27 @@ public interface CrmSaleOrderService {
     void submitSaleOrder(Long id, Long userId);
 
     /**
+     * 发货销售订单（已确认 -> 已发货）
+     *
+     * @param id 编号
+     */
+    void shipSaleOrder(Long id);
+
+    /**
+     * 完成销售订单（已发货 -> 已完成）
+     *
+     * @param id 编号
+     */
+    void completeSaleOrder(Long id);
+
+    /**
+     * 取消销售订单（草稿/已确认 -> 已取消）
+     *
+     * @param id 编号
+     */
+    void cancelSaleOrder(Long id);
+
+    /**
      * 获得销售订单分页，基于指定合同
      *
      * @param pageReqVO 分页查询

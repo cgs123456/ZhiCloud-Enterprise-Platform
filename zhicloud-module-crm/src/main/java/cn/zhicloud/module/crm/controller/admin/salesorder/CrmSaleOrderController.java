@@ -167,6 +167,33 @@ public class CrmSaleOrderController {
         return success(true);
     }
 
+    @PutMapping("/ship")
+    @Operation(summary = "发货销售订单")
+    @Parameter(name = "id", description = "编号", required = true)
+    @PreAuthorize("@ss.hasPermission('crm:sale-order:update')")
+    public CommonResult<Boolean> shipSaleOrder(@RequestParam("id") Long id) {
+        saleOrderService.shipSaleOrder(id);
+        return success(true);
+    }
+
+    @PutMapping("/complete")
+    @Operation(summary = "完成销售订单")
+    @Parameter(name = "id", description = "编号", required = true)
+    @PreAuthorize("@ss.hasPermission('crm:sale-order:update')")
+    public CommonResult<Boolean> completeSaleOrder(@RequestParam("id") Long id) {
+        saleOrderService.completeSaleOrder(id);
+        return success(true);
+    }
+
+    @PutMapping("/cancel")
+    @Operation(summary = "取消销售订单")
+    @Parameter(name = "id", description = "编号", required = true)
+    @PreAuthorize("@ss.hasPermission('crm:sale-order:update')")
+    public CommonResult<Boolean> cancelSaleOrder(@RequestParam("id") Long id) {
+        saleOrderService.cancelSaleOrder(id);
+        return success(true);
+    }
+
     private List<CrmSaleOrderRespVO> buildSaleOrderDetailList(List<CrmSaleOrderDO> orderList) {
         if (CollUtil.isEmpty(orderList)) {
             return Collections.emptyList();

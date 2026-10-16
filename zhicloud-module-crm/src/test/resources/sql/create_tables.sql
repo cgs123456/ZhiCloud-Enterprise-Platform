@@ -504,6 +504,7 @@ CREATE TABLE IF NOT EXISTS "crm_sale_order" (
     "delivery_date" timestamp,
     "total_amount" decimal(20,2),
     "discount_amount" decimal(20,2),
+    "final_amount" decimal(20,2),
     "payment_status" int,
     "delivery_status" int,
     "status" int,
