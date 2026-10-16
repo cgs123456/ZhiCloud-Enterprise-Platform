@@ -52,7 +52,11 @@
       <el-table-column align="center" label="课程名称" prop="courseName" min-width="110" />
       <el-table-column align="center" label="讲师" prop="trainer" min-width="110" />
       <el-table-column align="center" label="计划日期" prop="planDate" min-width="110" />
-      <el-table-column align="center" label="状态" prop="status" min-width="110" />
+      <el-table-column align="center" label="状态" min-width="110" prop="status">
+        <template #default="scope">
+          <dict-tag :type="DICT_TYPE.QMS_TRAINING_PLAN_STATUS" :value="scope.row.status" />
+        </template>
+      </el-table-column>
       <el-table-column align="center" label="备注" prop="remark" min-width="120" />
       <el-table-column align="center" label="创建时间" prop="createTime" width="170" />
       <el-table-column align="center" :formatter="dateFormatter" label="创建时间" prop="createTime" width="170" />
@@ -92,6 +96,7 @@
 <script lang="ts" setup>
 import { dateFormatter } from '@/utils/formatTime'
 import { TrainingPlanApi } from '@/api/qms/training/plan'
+import { DICT_TYPE } from '@/utils/dict'
 import TrainingPlanForm from './TrainingPlanForm.vue'
 
 defineOptions({ name: 'TrainingPlan' })

@@ -1,6 +1,7 @@
 package cn.zhicloud.module.qms.controller.admin.ncr.vo;
 
 import cn.zhicloud.framework.common.validation.InEnum;
+import cn.zhicloud.module.qms.enums.qms.NcrStatusEnum;
 import cn.zhicloud.module.qms.enums.qms.NcrDefectLevelEnum;
 import cn.zhicloud.module.qms.enums.qms.NcrDispositionEnum;
 import cn.zhicloud.module.qms.enums.qms.NcrSourceEnum;
@@ -55,7 +56,12 @@ public class NcrDocumentSaveReqVO {
     @InEnum(NcrDispositionEnum.class)
     private Integer disposition;
 
-    @Schema(description = "状态", example = "10")
+    /**
+     * 状态。**服务端只读，不参与写入**：新增强制 OPEN、修改置空（§12.235.5）。
+     * @InEnum 用于在边界处拒绝垃圾值（此前连枚举约束都没有）。
+     */
+    @Schema(description = "状态（服务端只读，不参与写入）", example = "10")
+    @InEnum(NcrStatusEnum.class)
     private Integer status;
 
     @Schema(description = "备注", example = "随便")

@@ -45,9 +45,11 @@ public class QmsInstrumentServiceImpl implements QmsInstrumentService {
         // 插入
         QmsInstrumentDO instrument = BeanUtils.toBean(createReqVO, QmsInstrumentDO.class);
         // 默认状态为在用
-        if (instrument.getStatus() == null) {
-            instrument.setStatus(QmsInstrumentStatusEnum.IN_USE.getStatus());
-        }
+        // 状态无条件置为初始值，忽略调用方传入的任何 status。
+        // §12.235.5：此前「仅在 null 时补默认」，调用方即可在**建单**这一步直接写入终态，
+        // 跳过整个流转（该类可能连流转方法都没有），产生「未审即批/未做即完成」的记录。
+        // 状态只能由本模块的流转方法产生。
+        instrument.setStatus(QmsInstrumentStatusEnum.IN_USE.getStatus());
         instrumentMapper.insert(instrument);
         // 返回
         return instrument.getId();
@@ -62,6 +64,12 @@ public class QmsInstrumentServiceImpl implements QmsInstrumentService {
         validateCodeUnique(updateReqVO.getId(), updateReqVO.getCode());
         // 更新
         QmsInstrumentDO updateObj = BeanUtils.toBean(updateReqVO, QmsInstrumentDO.class);
+        // 状态不接受外部写入（§12.236.7）。本类**没有任何流转方法**，
+        // 若允许通用修改写状态，则「新增 + 修改」两步就能到达任意终态，
+        // 新增侧刚加的护栏形同虚设。
+        // MyBatis-Plus 的 updateById 跳过 null 字段，故置 null 的效果是
+        // 该列不进 UPDATE 语句 —— 调用方的 status 无法生效。
+        updateObj.setStatus(null);
         instrumentMapper.updateById(updateObj);
     }
 

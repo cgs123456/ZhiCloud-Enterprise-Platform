@@ -1,6 +1,8 @@
 package cn.zhicloud.module.qms.controller.admin.sqm.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import cn.zhicloud.module.qms.enums.qms.ScarStatusEnum;
+import cn.zhicloud.framework.common.validation.InEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -42,7 +44,12 @@ public class ScarSaveReqVO {
     @Schema(description = "纠正措施", example = "供应商调整工艺并增加首检")
     private String correctiveAction;
 
-    @Schema(description = "状态", example = "10")
+    /**
+     * 状态。**服务端只读，不参与写入**：新增由服务层强制置为初始值（§12.235.5）。
+     * @InEnum 用于在边界处拒绝垃圾值（此前连枚举约束都没有）。
+     */
+    @Schema(description = "状态（服务端只读，不参与写入）", example = "10")
+    @InEnum(ScarStatusEnum.class)
     private Integer status;
 
     @Schema(description = "关闭时间")

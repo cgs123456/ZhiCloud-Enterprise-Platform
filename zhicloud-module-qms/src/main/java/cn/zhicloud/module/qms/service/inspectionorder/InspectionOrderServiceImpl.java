@@ -47,10 +47,18 @@ public class InspectionOrderServiceImpl implements InspectionOrderService {
     public Long createInspectionOrder(InspectionOrderSaveReqVO createReqVO) {
         // 插入
         InspectionOrderDO inspectionOrder = BeanUtils.toBean(createReqVO, InspectionOrderDO.class);
-        // 默认状态为待检验
-        if (inspectionOrder.getStatus() == null) {
-            inspectionOrder.setStatus(InspectionOrderStatusEnum.PENDING.getStatus());
-        }
+        // 状态无条件置为「待检验」，忽略调用方传入的任何 status。
+        //
+        // §12.235.6：此前这里写的是「仅在 status == null 时补默认值」，于是调用方可以
+        // 在**建单**这一步直接传入 PASSED(30)，造出一张从未检验过的「已通过」检验单。
+        // 该状态正是 WMS 入库质检卡点的唯一判据 —— 一次 POST 即可放行本应被拦截的收货
+        // （WmsReceiptOrderServiceImpl#checkQualityGate -> InspectionOrderApi#isQualified，
+        // 只读 order.status == PASSED）。真机已实证。
+        //
+        // 这里与 updateInspectionOrder 的 setStatus(null) 是对称的两半：
+        // 状态只能由 submitInspection 依据 AQL 与缺陷严重度判定产生，
+        // 通用新增/修改都不接受外部状态值。
+        inspectionOrder.setStatus(InspectionOrderStatusEnum.PENDING.getStatus());
         inspectionOrderMapper.insert(inspectionOrder);
         // 返回
         return inspectionOrder.getId();

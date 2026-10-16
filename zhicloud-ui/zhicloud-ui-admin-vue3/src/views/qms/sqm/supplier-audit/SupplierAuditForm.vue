@@ -38,8 +38,10 @@
       <el-form-item label="审核报告" prop="auditReport">
         <el-input v-model="formData.auditReport" class="!w-1/1" placeholder="请输入审核报告" />
       </el-form-item>
+        <!-- status 只读：状态只能由流转方法写入（§12.236）。改为只读回显，避免"填了不生效"的静默欺骗。 -->
       <el-form-item label="状态" prop="status">
-        <el-input-number v-model="formData.status" class="!w-1/1" :min="0" :controls="false" placeholder="请输入状态" />
+        <dict-tag v-if="formType === 'update'" :type="DICT_TYPE.QMS_SUPPLIER_AUDIT_STATUS" :value="formData.status" />
+        <span v-else class="text-gray-400">保存后自动置为「已计划」</span>
       </el-form-item>
       <el-form-item label="备注" prop="remark">
         <el-input v-model="formData.remark" class="!w-1/1" type="textarea" :rows="2" placeholder="请输入备注" />
@@ -53,6 +55,7 @@
 </template>
 <script lang="ts" setup>
 import { SupplierAuditApi } from '@/api/qms/sqm/supplier-audit'
+import { DICT_TYPE } from '@/utils/dict'
 
 defineOptions({ name: 'SupplierAuditForm' })
 

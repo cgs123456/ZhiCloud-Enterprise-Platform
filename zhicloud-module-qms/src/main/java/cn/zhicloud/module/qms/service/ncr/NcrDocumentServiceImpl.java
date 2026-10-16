@@ -41,10 +41,15 @@ public class NcrDocumentServiceImpl implements NcrDocumentService {
     public Long createNcrDocument(NcrDocumentSaveReqVO createReqVO) {
         // 插入
         NcrDocumentDO ncrDocument = BeanUtils.toBean(createReqVO, NcrDocumentDO.class);
-        // 默认状态为待处理
-        if (ncrDocument.getStatus() == null) {
-            ncrDocument.setStatus(NcrStatusEnum.OPEN.getStatus());
-        }
+        // 状态与处置结论无条件重置为初始态，忽略调用方传入的任何值。
+        //
+        // §12.235.5（critical）：此前「仅在 null 时补默认」，于是建单即可直接传入
+        // CLOSED(40) 与 disposition=USE_AS_IS(50)/RETURN(60)，
+        // 造出一张从未走 MRB 评审、也没有任何 NcrMrbRecordDO 留痕的「已关闭」不合格品报告。
+        // MRB 记录是处置决策的证据本身，跳过它等于证据凭空产生。
+        // 状态只能由 submitForMrb/recordDisposition/closeNcrDocument 产生。
+        ncrDocument.setStatus(NcrStatusEnum.OPEN.getStatus());
+        ncrDocument.setDisposition(null);
         ncrDocumentMapper.insert(ncrDocument);
         // 返回
         return ncrDocument.getId();
@@ -57,8 +62,10 @@ public class NcrDocumentServiceImpl implements NcrDocumentService {
         validateNcrDocumentExists(updateReqVO.getId());
         // 更新
         NcrDocumentDO updateObj = BeanUtils.toBean(updateReqVO, NcrDocumentDO.class);
-        // 禁止通过通用更新修改状态，状态变更必须走 submitForMrb/recordDisposition/closeNcrDocument 等状态流转方法
+        // 禁止通过通用更新修改状态与处置结论，二者必须走
+        // submitForMrb/recordDisposition/closeNcrDocument 等状态流转方法（§12.235.5）
         updateObj.setStatus(null);
+        updateObj.setDisposition(null);
         ncrDocumentMapper.updateById(updateObj);
     }
 

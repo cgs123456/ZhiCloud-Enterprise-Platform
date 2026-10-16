@@ -51,7 +51,11 @@
       <el-table-column align="center" label="产品 ID" prop="productId" min-width="110" />
       <el-table-column align="center" label="工序 ID" prop="processId" min-width="110" />
       <el-table-column align="center" label="版本" prop="version" min-width="110" />
-      <el-table-column align="center" label="状态" prop="status" min-width="110" />
+      <el-table-column align="center" label="状态" min-width="110" prop="status">
+        <template #default="scope">
+          <dict-tag :type="DICT_TYPE.QMS_FMEA_STATUS" :value="scope.row.status" />
+        </template>
+      </el-table-column>
       <el-table-column align="center" label="备注" prop="remark" min-width="120" />
       <el-table-column align="center" label="创建时间" prop="createTime" width="170" />
       <el-table-column align="center" :formatter="dateFormatter" label="创建时间" prop="createTime" width="170" />
@@ -91,6 +95,7 @@
 <script lang="ts" setup>
 import { dateFormatter } from '@/utils/formatTime'
 import { FmeaDocumentApi } from '@/api/qms/fmea/document'
+import { DICT_TYPE } from '@/utils/dict'
 import FmeaDocumentForm from './FmeaDocumentForm.vue'
 
 defineOptions({ name: 'FmeaDocument' })

@@ -20,8 +20,11 @@
       <el-form-item label="版本号" prop="version">
         <el-input v-model="formData.version" class="!w-1/1" placeholder="请输入版本号" />
       </el-form-item>
+      <!-- 状态只读：新增由服务端强制 DRAFT，修改时状态变更必须走 submit/approve/reject 流转方法（§12.236）。
+           这里改为只读回显，避免"填了不生效"的静默欺骗；编辑态展示当前状态，新建态提示将置为草稿。 -->
       <el-form-item label="状态" prop="status">
-        <el-input-number v-model="formData.status" class="!w-1/1" :min="0" :controls="false" placeholder="请输入状态" />
+        <dict-tag v-if="formType === 'update'" :type="DICT_TYPE.QMS_DOC_STATUS" :value="formData.status" />
+        <span v-else class="text-gray-400">保存后自动置为「草稿」</span>
       </el-form-item>
       <el-form-item label="生效日期" prop="effectiveDate">
         <el-date-picker v-model="formData.effectiveDate" class="!w-1/1" value-format="YYYY-MM-DD" type="date" placeholder="请选择生效日期" />
@@ -29,8 +32,11 @@
       <el-form-item label="失效日期" prop="expiryDate">
         <el-date-picker v-model="formData.expiryDate" class="!w-1/1" value-format="YYYY-MM-DD" type="date" placeholder="请选择失效日期" />
       </el-form-item>
-      <el-form-item label="审批人 ID" prop="approverId">
-        <el-input-number v-model="formData.approverId" class="!w-1/1" :min="0" :controls="false" placeholder="请输入审批人 ID" />
+      <!-- 审批留痕只读：approveDate/approverId 由 approveDocument 产生（该端点挂 @ElectronicSignature），
+           通用表单不接受外部写入（§12.236.1 真机实证：建单直传 approverId 会被强制置空）。 -->
+      <el-form-item label="审批人" prop="approverId">
+        <span v-if="formData.approverId" class="text-gray-700">{{ formData.approverId }}</span>
+        <span v-else class="text-gray-400">待审批</span>
       </el-form-item>
       <el-form-item label="归属部门 ID" prop="ownerDeptId">
         <el-input-number v-model="formData.ownerDeptId" class="!w-1/1" :min="0" :controls="false" placeholder="请输入归属部门 ID" />
@@ -53,6 +59,7 @@
 </template>
 <script lang="ts" setup>
 import { QmsDocumentApi } from '@/api/qms/document'
+import { DICT_TYPE } from '@/utils/dict'
 
 defineOptions({ name: 'QmsDocumentForm' })
 

@@ -2,6 +2,7 @@ package cn.zhicloud.module.qms.controller.admin.inspectionorder.vo;
 
 import cn.zhicloud.framework.common.validation.InEnum;
 import cn.zhicloud.module.qms.enums.qms.InspectionBizTypeEnum;
+import cn.zhicloud.module.qms.enums.qms.InspectionOrderStatusEnum;
 import cn.zhicloud.module.qms.enums.qms.InspectionTypeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
@@ -47,7 +48,13 @@ public class InspectionOrderSaveReqVO {
     @Schema(description = "检验时间")
     private LocalDateTime inspectTime;
 
-    @Schema(description = "状态", example = "10")
+    /**
+     * 状态。**仅用于查询侧展示/回显，服务端不接受外部写入**：
+     * 新增由 createInspectionOrder 强制置为 PENDING，修改由 updateInspectionOrder 置空。
+     * 传了 @InEnum 是为了在边界处拒绝垃圾值（§12.235.6 之前连枚举约束都没有）。
+     */
+    @Schema(description = "状态（服务端只读，不参与写入）", example = "10")
+    @InEnum(InspectionOrderStatusEnum.class)
     private Integer status;
 
     @Schema(description = "AQL 接收数 Ac（缺陷数 <= Ac 判合格）", example = "1")

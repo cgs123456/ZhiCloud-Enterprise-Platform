@@ -38,10 +38,14 @@ public class QmsDocumentServiceImpl implements QmsDocumentService {
         validateDocNoUnique(null, createReqVO.getDocNo());
         // 插入
         QmsDocumentDO document = BeanUtils.toBean(createReqVO, QmsDocumentDO.class);
-        // 默认状态为草稿
-        if (document.getStatus() == null) {
-            document.setStatus(QmsDocStatusEnum.DRAFT.getStatus());
-        }
+        // 状态与审批留痕无条件置为初始态，忽略调用方传入的任何值。
+        // §12.235.1（真机实证）：此前「仅在 null 时补默认」，调用方可在**建单**这一步直接
+        // 传入 PUBLISHED(30)，造出一份「无审批人、无电子签名、无审批日期」的已发布受控文件
+        // —— 而 approveDocument 上挂着 @ElectronicSignature，说明「发布」本应是受控动作。
+        // 同类的 updateDocument 早已写了 setStatus(null)，这里补上缺失的另一半。
+        document.setStatus(QmsDocStatusEnum.DRAFT.getStatus());
+        document.setApproverId(null);
+        document.setApproveDate(null);
         // 默认版本号 1.0
         if (document.getVersion() == null) {
             document.setVersion("1.0");

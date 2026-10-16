@@ -29,8 +29,10 @@
       <el-form-item label="质量合格率" prop="qualityRate">
         <el-input-number v-model="formData.qualityRate" class="!w-1/1" :min="0" :controls="false" placeholder="请输入质量合格率" />
       </el-form-item>
+        <!-- grade 只读：等级必须与 ppm/准时率/质量率一致（§12.236）。改为只读回显，避免"填了不生效"的静默欺骗。 -->
       <el-form-item label="供应商等级" prop="grade">
-        <el-input v-model="formData.grade" class="!w-1/1" placeholder="请输入供应商等级" />
+        <dict-tag v-if="formType === 'update'" :type="DICT_TYPE.QMS_SUPPLIER_GRADE" :value="formData.grade" />
+        <span v-else class="text-gray-400">按 ppm/准时率/质量率自动计算</span>
       </el-form-item>
       <el-form-item label="评级日期" prop="ratingDate">
         <el-date-picker v-model="formData.ratingDate" class="!w-1/1" value-format="YYYY-MM-DD" type="date" placeholder="请选择评级日期" />
@@ -47,6 +49,7 @@
 </template>
 <script lang="ts" setup>
 import { SupplierRatingApi } from '@/api/qms/sqm/supplier-rating'
+import { DICT_TYPE } from '@/utils/dict'
 
 defineOptions({ name: 'SupplierRatingForm' })
 

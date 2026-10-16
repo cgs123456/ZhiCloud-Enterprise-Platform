@@ -1,6 +1,7 @@
 package cn.zhicloud.module.qms.service.inspectionorder;
 
 import cn.zhicloud.framework.test.core.ut.BaseDbUnitTest;
+import cn.zhicloud.module.qms.controller.admin.inspectionorder.vo.InspectionOrderSaveReqVO;
 import cn.zhicloud.module.qms.controller.admin.inspectionrecord.vo.InspectionRecordSaveReqVO;
 import cn.zhicloud.module.qms.dal.dataobject.inspectionorder.InspectionOrderDO;
 import cn.zhicloud.module.qms.dal.dataobject.inspectionrecord.InspectionRecordDO;
@@ -242,6 +243,83 @@ public class InspectionOrderServiceImplTest extends BaseDbUnitTest {
         InspectionOrderDO order = inspectionOrderMapper.selectById(id);
         assertNotNull(order);
         assertEquals(InspectionOrderStatusEnum.PENDING.getStatus(), order.getStatus());
+    }
+
+    // ------------------------------------------------------------------
+    // §12.235.6：建单状态护栏（critical）
+    //
+    // inspection-order 的状态会被 WMS 入库质检卡点直接当作判据：
+    //   WmsReceiptOrderServiceImpl#checkQualityGate -> InspectionOrderApi#isQualified
+    //   -> order.status == PASSED(30) 即放行。
+    // 所以「建单时能传 status」等价于「一次 POST 就能放行本应被拦截的收货」。
+    // 这组用例钉住的是 create 忽略外部 status 这件事，以及灰 updated 路径的对称性。
+    // ------------------------------------------------------------------
+
+    @Test
+    public void test_createInspectionOrder_ignoresSuppliedPassedStatus() {
+        // 攻击形态：建单直接传 PASSED(30)
+        InspectionOrderSaveReqVO createReqVO = new InspectionOrderSaveReqVO();
+        createReqVO.setOrderNo("QMS-BYPASS-PASSED-001");
+        createReqVO.setType(InspectionTypeEnum.IQC.getType());
+        createReqVO.setBizType(cn.zhicloud.module.qms.enums.qms.InspectionBizTypeEnum.PURCHASE_IN.getBizType());
+        createReqVO.setBizId(randomLongId());
+        createReqVO.setStatus(InspectionOrderStatusEnum.PASSED.getStatus());
+
+        Long id = inspectionOrderService.createInspectionOrder(createReqVO);
+
+        InspectionOrderDO order = inspectionOrderMapper.selectById(id);
+        // 必须仍是待检验：外部传入的终态不得生效
+        assertEquals(InspectionOrderStatusEnum.PENDING.getStatus(), order.getStatus());
+        // 业务关联要落库：这正是 isQualified 的查找键
+        assertNotNull(order.getBizId());
+    }
+
+    @Test
+    public void test_createInspectionOrder_ignoresSuppliedFailedStatus() {
+        // 对称检查：不止 PASSED，任何非 PENDING 状态都不生效
+        InspectionOrderSaveReqVO createReqVO = new InspectionOrderSaveReqVO();
+        createReqVO.setOrderNo("QMS-BYPASS-FAILED-001");
+        createReqVO.setType(InspectionTypeEnum.IQC.getType());
+        createReqVO.setStatus(InspectionOrderStatusEnum.FAILED.getStatus());
+
+        Long id = inspectionOrderService.createInspectionOrder(createReqVO);
+
+        InspectionOrderDO order = inspectionOrderMapper.selectById(id);
+        assertEquals(InspectionOrderStatusEnum.PENDING.getStatus(), order.getStatus());
+    }
+
+    @Test
+    public void test_createInspectionOrder_ignoresInspectingStatus() {
+        InspectionOrderSaveReqVO createReqVO = new InspectionOrderSaveReqVO();
+        createReqVO.setOrderNo("QMS-BYPASS-INSPECTING-001");
+        createReqVO.setType(InspectionTypeEnum.IQC.getType());
+        createReqVO.setStatus(InspectionOrderStatusEnum.INSPECTING.getStatus());
+
+        Long id = inspectionOrderService.createInspectionOrder(createReqVO);
+
+        InspectionOrderDO order = inspectionOrderMapper.selectById(id);
+        assertEquals(InspectionOrderStatusEnum.PENDING.getStatus(), order.getStatus());
+    }
+
+    @Test
+    public void test_updateInspectionOrder_ignoresSuppliedStatus() {
+        // 修改路径此前已有护栏（setStatus(null)），这里钉住它不被改掉，
+        // 与 create 的新护栏构成对称的两半。
+        InspectionOrderDO order = randomPojo(InspectionOrderDO.class, o -> {
+            o.setStatus(InspectionOrderStatusEnum.PENDING.getStatus());
+        });
+        inspectionOrderMapper.insert(order);
+
+        InspectionOrderSaveReqVO updateReqVO = new InspectionOrderSaveReqVO();
+        updateReqVO.setId(order.getId());
+        updateReqVO.setOrderNo(order.getOrderNo());
+        updateReqVO.setType(order.getType());
+        updateReqVO.setStatus(InspectionOrderStatusEnum.PASSED.getStatus());
+
+        inspectionOrderService.updateInspectionOrder(updateReqVO);
+
+        InspectionOrderDO updated = inspectionOrderMapper.selectById(order.getId());
+        assertEquals(InspectionOrderStatusEnum.PENDING.getStatus(), updated.getStatus());
     }
 
     @Test

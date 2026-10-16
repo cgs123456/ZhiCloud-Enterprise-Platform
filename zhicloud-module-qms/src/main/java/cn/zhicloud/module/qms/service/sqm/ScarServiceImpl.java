@@ -33,9 +33,11 @@ public class ScarServiceImpl implements ScarService {
     @Transactional(rollbackFor = Exception.class)
     public Long createScar(ScarSaveReqVO createReqVO) {
         ScarDO scar = BeanUtils.toBean(createReqVO, ScarDO.class);
-        if (scar.getStatus() == null) {
-            scar.setStatus(ScarStatusEnum.OPEN.getStatus());
-        }
+        // 状态无条件置为初始值，忽略调用方传入的任何 status。
+        // §12.235.5：此前「仅在 null 时补默认」，调用方即可在**建单**这一步直接写入终态，
+        // 跳过整个流转（该类可能连流转方法都没有），产生「未审即批/未做即完成」的记录。
+        // 状态只能由本模块的流转方法产生。
+        scar.setStatus(ScarStatusEnum.OPEN.getStatus());
         scarMapper.insert(scar);
         return scar.getId();
     }
@@ -45,6 +47,10 @@ public class ScarServiceImpl implements ScarService {
     public void updateScar(ScarSaveReqVO updateReqVO) {
         validateScarExists(updateReqVO.getId());
         ScarDO updateObj = BeanUtils.toBean(updateReqVO, ScarDO.class);
+        // 状态不接受外部写入：状态变更必须走 closeScar（§12.236.7）。
+        // MyBatis-Plus 的 updateById 跳过 null 字段，故置 null 的效果是
+        // 该列不进 UPDATE 语句 —— 调用方的 status 无法生效。
+        updateObj.setStatus(null);
         scarMapper.updateById(updateObj);
     }
 

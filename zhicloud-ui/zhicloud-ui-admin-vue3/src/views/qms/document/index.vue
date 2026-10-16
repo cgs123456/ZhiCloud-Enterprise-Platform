@@ -53,7 +53,11 @@
       <el-table-column align="center" label="标题" prop="title" min-width="110" />
       <el-table-column align="center" label="文件类型" prop="docType" min-width="110" />
       <el-table-column align="center" label="版本号" prop="version" min-width="110" />
-      <el-table-column align="center" label="状态" prop="status" min-width="110" />
+      <el-table-column align="center" label="状态" min-width="110" prop="status">
+        <template #default="scope">
+          <dict-tag :type="DICT_TYPE.QMS_DOC_STATUS" :value="scope.row.status" />
+        </template>
+      </el-table-column>
       <el-table-column align="center" label="生效日期" prop="effectiveDate" min-width="110" />
       <el-table-column align="center" label="失效日期" prop="expiryDate" min-width="110" />
       <el-table-column align="center" label="审批人 ID" prop="approverId" min-width="110" />
@@ -96,6 +100,7 @@
 <script lang="ts" setup>
 import { dateFormatter } from '@/utils/formatTime'
 import { QmsDocumentApi } from '@/api/qms/document'
+import { DICT_TYPE } from '@/utils/dict'
 import QmsDocumentForm from './QmsDocumentForm.vue'
 
 defineOptions({ name: 'QmsDocument' })

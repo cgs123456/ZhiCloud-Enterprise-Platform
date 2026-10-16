@@ -17,8 +17,10 @@
       <el-form-item label="优先级" prop="priority">
         <el-input-number v-model="formData.priority" class="!w-1/1" :min="0" :controls="false" placeholder="请输入优先级" />
       </el-form-item>
+        <!-- stage 只读：阶段只能由 transitionStage 写入（§12.236）。改为只读回显，避免"填了不生效"的静默欺骗。 -->
       <el-form-item label="当前阶段" prop="stage">
-        <el-input-number v-model="formData.stage" class="!w-1/1" :min="0" :controls="false" placeholder="请输入当前阶段" />
+        <span v-if="formData.stage" class="text-gray-700">{{ formData.stage }}</span>
+        <span v-else class="text-gray-400">保存后自动置为「已创建」</span>
       </el-form-item>
       <el-form-item label="问题描述" prop="problem">
         <el-input v-model="formData.problem" class="!w-1/1" type="textarea" :rows="2" placeholder="请输入问题描述" />
@@ -41,23 +43,33 @@
       <el-form-item label="截止日期" prop="dueDate">
         <el-date-picker v-model="formData.dueDate" class="!w-1/1" value-format="YYYY-MM-DD HH:mm:ss" type="datetime" placeholder="请选择截止日期" />
       </el-form-item>
+        <!-- closeDate 只读：关闭日期属于审计留痕，由关闭操作写入（§12.236）。改为只读回显，避免"填了不生效"的静默欺骗。 -->
       <el-form-item label="关闭日期" prop="closeDate">
-        <el-date-picker v-model="formData.closeDate" class="!w-1/1" value-format="YYYY-MM-DD HH:mm:ss" type="datetime" placeholder="请选择关闭日期" />
+        <span v-if="formData.closeDate" class="text-gray-700">{{ formData.closeDate }}</span>
+        <span v-else class="text-gray-400">由「关闭」操作产生</span>
       </el-form-item>
+        <!-- status 只读：状态只能由流转方法写入（§12.236）。改为只读回显，避免"填了不生效"的静默欺骗。 -->
       <el-form-item label="状态" prop="status">
-        <el-input-number v-model="formData.status" class="!w-1/1" :min="0" :controls="false" placeholder="请输入状态" />
+        <dict-tag v-if="formType === 'update'" :type="DICT_TYPE.QMS_CAPA_STATUS" :value="formData.status" />
+        <span v-else class="text-gray-400">保存后自动置为「待处理」</span>
       </el-form-item>
+        <!-- verificationResult 只读：验证结论只能由有效性验证写入（§12.236）。改为只读回显，避免"填了不生效"的静默欺骗。 -->
       <el-form-item label="有效性验证结果" prop="verificationResult">
-        <el-input-number v-model="formData.verificationResult" class="!w-1/1" :min="0" :controls="false" placeholder="请输入有效性验证结果" />
+        <span v-if="formData.verificationResult" class="text-gray-700">{{ formData.verificationResult }}</span>
+        <span v-else class="text-gray-400">由「有效性验证」产生</span>
       </el-form-item>
       <el-form-item label="有效性验证意见" prop="verificationComment">
         <el-input v-model="formData.verificationComment" class="!w-1/1" placeholder="请输入有效性验证意见" />
       </el-form-item>
+        <!-- verifiedBy 只读：验证人属于审计留痕，由有效性验证写入（§12.236）。改为只读回显，避免"填了不生效"的静默欺骗。 -->
       <el-form-item label="验证人" prop="verifiedBy">
-        <el-input v-model="formData.verifiedBy" class="!w-1/1" placeholder="请输入验证人" />
+        <span v-if="formData.verifiedBy" class="text-gray-700">{{ formData.verifiedBy }}</span>
+        <span v-else class="text-gray-400">由「有效性验证」产生</span>
       </el-form-item>
+        <!-- verifiedTime 只读：验证时间属于审计留痕，由有效性验证写入（§12.236）。改为只读回显，避免"填了不生效"的静默欺骗。 -->
       <el-form-item label="验证时间" prop="verifiedTime">
-        <el-date-picker v-model="formData.verifiedTime" class="!w-1/1" value-format="YYYY-MM-DD HH:mm:ss" type="datetime" placeholder="请选择验证时间" />
+        <span v-if="formData.verifiedTime" class="text-gray-700">{{ formData.verifiedTime }}</span>
+        <span v-else class="text-gray-400">由「有效性验证」产生</span>
       </el-form-item>
       <el-form-item label="备注" prop="remark">
         <el-input v-model="formData.remark" class="!w-1/1" type="textarea" :rows="2" placeholder="请输入备注" />
@@ -71,6 +83,7 @@
 </template>
 <script lang="ts" setup>
 import { CAPADocumentApi } from '@/api/qms/capa/document'
+import { DICT_TYPE } from '@/utils/dict'
 
 defineOptions({ name: 'CAPADocumentForm' })
 

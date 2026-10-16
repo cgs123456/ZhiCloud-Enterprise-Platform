@@ -53,7 +53,11 @@
       <el-table-column align="center" label="资格名称" prop="qualificationName" min-width="110" />
       <el-table-column align="center" label="取得日期" prop="qualifyDate" min-width="110" />
       <el-table-column align="center" label="到期日期" prop="expireDate" min-width="110" />
-      <el-table-column align="center" label="状态" prop="status" min-width="110" />
+      <el-table-column align="center" label="状态" min-width="110" prop="status">
+        <template #default="scope">
+          <dict-tag :type="DICT_TYPE.QMS_QUALIFICATION_STATUS" :value="scope.row.status" />
+        </template>
+      </el-table-column>
       <el-table-column align="center" label="备注" prop="remark" min-width="120" />
       <el-table-column align="center" label="创建时间" prop="createTime" width="170" />
       <el-table-column align="center" :formatter="dateFormatter" label="创建时间" prop="createTime" width="170" />
@@ -93,6 +97,7 @@
 <script lang="ts" setup>
 import { dateFormatter } from '@/utils/formatTime'
 import { QualificationApi } from '@/api/qms/training/qualification'
+import { DICT_TYPE } from '@/utils/dict'
 import QualificationForm from './QualificationForm.vue'
 
 defineOptions({ name: 'Qualification' })

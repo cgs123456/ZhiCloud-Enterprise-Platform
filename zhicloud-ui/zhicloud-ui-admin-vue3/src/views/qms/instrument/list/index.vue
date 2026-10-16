@@ -58,7 +58,11 @@
       <el-table-column align="center" label="精度等级" prop="accuracy" min-width="110" />
       <el-table-column align="center" label="测量范围" prop="measureRange" min-width="110" />
       <el-table-column align="center" label="计量单位" prop="unit" min-width="110" />
-      <el-table-column align="center" label="状态" prop="status" min-width="110" />
+      <el-table-column align="center" label="状态" min-width="110" prop="status">
+        <template #default="scope">
+          <dict-tag :type="DICT_TYPE.QMS_INSTRUMENT_STATUS" :value="scope.row.status" />
+        </template>
+      </el-table-column>
       <el-table-column align="center" :formatter="dateFormatter" label="创建时间" prop="createTime" width="170" />
       <el-table-column align="center" fixed="right" label="操作" width="140">
         <template #default="scope">
@@ -96,6 +100,7 @@
 <script lang="ts" setup>
 import { dateFormatter } from '@/utils/formatTime'
 import { QmsInstrumentApi } from '@/api/qms/instrument/list'
+import { DICT_TYPE } from '@/utils/dict'
 import QmsInstrumentForm from './QmsInstrumentForm.vue'
 
 defineOptions({ name: 'QmsInstrument' })

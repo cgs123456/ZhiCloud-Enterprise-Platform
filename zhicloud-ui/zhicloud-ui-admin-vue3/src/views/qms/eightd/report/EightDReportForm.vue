@@ -20,8 +20,10 @@
       <el-form-item label="关联 CAPA 编号 ID" prop="capaId">
         <el-input-number v-model="formData.capaId" class="!w-1/1" :min="0" :controls="false" placeholder="请输入关联 CAPA 编号 ID" />
       </el-form-item>
+        <!-- status 只读：状态只能由流转方法写入（§12.236）。改为只读回显，避免"填了不生效"的静默欺骗。 -->
       <el-form-item label="状态" prop="status">
-        <el-input-number v-model="formData.status" class="!w-1/1" :min="0" :controls="false" placeholder="请输入状态" />
+        <dict-tag v-if="formType === 'update'" :type="DICT_TYPE.QMS_EIGHT_D_STATUS" :value="formData.status" />
+        <span v-else class="text-gray-400">保存后自动置为「草稿」</span>
       </el-form-item>
       <el-form-item label="D1 团队成员" prop="d1TeamMembers">
         <el-input v-model="formData.d1TeamMembers" class="!w-1/1" placeholder="请输入D1 团队成员" />
@@ -59,6 +61,7 @@
 </template>
 <script lang="ts" setup>
 import { EightDReportApi } from '@/api/qms/eightd/report'
+import { DICT_TYPE } from '@/utils/dict'
 
 defineOptions({ name: 'EightDReportForm' })
 

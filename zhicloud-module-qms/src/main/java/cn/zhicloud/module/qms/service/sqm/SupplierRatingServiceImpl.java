@@ -41,11 +41,11 @@ public class SupplierRatingServiceImpl implements SupplierRatingService {
     @Transactional(rollbackFor = Exception.class)
     public Long createSupplierRating(SupplierRatingSaveReqVO createReqVO) {
         SupplierRatingDO supplierRating = BeanUtils.toBean(createReqVO, SupplierRatingDO.class);
-        // 若未指定等级，则按指标自动计算
-        if (supplierRating.getGrade() == null) {
-            supplierRating.setGrade(calculateGrade(supplierRating.getPpm(),
-                    supplierRating.getOnTimeRate(), supplierRating.getQualityRate()).getGrade());
-        }
+        // 等级无条件按指标计算，忽略调用方传入的 grade。
+        // §12.235.5：此前「未指定才自动算」，于是可以写入一个与同行 ppm/准时率/质量率
+        // 自相矛盾的等级（指标很差却 grade=A），评级结论失去可信度。
+        supplierRating.setGrade(calculateGrade(supplierRating.getPpm(),
+                supplierRating.getOnTimeRate(), supplierRating.getQualityRate()).getGrade());
         supplierRatingMapper.insert(supplierRating);
         return supplierRating.getId();
     }
@@ -55,6 +55,10 @@ public class SupplierRatingServiceImpl implements SupplierRatingService {
     public void updateSupplierRating(SupplierRatingSaveReqVO updateReqVO) {
         validateSupplierRatingExists(updateReqVO.getId());
         SupplierRatingDO updateObj = BeanUtils.toBean(updateReqVO, SupplierRatingDO.class);
+        // 等级不接受外部写入（§12.236.7）：必须与同行指标一致，
+        // 只能由 calculateGrade 依据 ppm/准时率/质量率算出。
+        // updateById 跳过 null 字段，故置 null 即「无法被改写」。
+        updateObj.setGrade(null);
         supplierRatingMapper.updateById(updateObj);
     }
 

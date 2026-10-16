@@ -401,6 +401,28 @@ export enum DICT_TYPE {
   MES_WM_BARCODE_BIZ_TYPE = 'mes_wm_barcode_biz_type', // MES 条码业务类型
   MES_WM_PACKAGE_STATUS = 'mes_wm_package_status', // MES 装箱单状态
 
+  // ========== QMS - 质量管理模块（§12.236.10，与 V202 字典种子、后端枚举逐一对齐） ==========
+  QMS_DOC_STATUS = 'qms_doc_status', // QMS 受控文档状态
+  QMS_NCR_STATUS = 'qms_ncr_status', // QMS 不合格品报告状态
+  QMS_NCR_DISPOSITION = 'qms_ncr_disposition', // QMS 不合格品处置方式
+  QMS_CAPA_STATUS = 'qms_capa_status', // QMS CAPA 状态
+  QMS_COMPLAINT_STATUS = 'qms_complaint_status', // QMS 客户投诉状态
+  QMS_EIGHT_D_STATUS = 'qms_eight_d_status', // QMS 8D 报告状态
+  QMS_FMEA_STATUS = 'qms_fmea_status', // QMS FMEA 状态
+  QMS_INSPECTION_ORDER_STATUS = 'qms_inspection_order_status', // QMS 检验单状态
+  QMS_INSTRUMENT_STATUS = 'qms_instrument_status', // QMS 计量器具状态
+  QMS_MSA_STATUS = 'qms_msa_status', // QMS MSA 分析状态
+  QMS_SCAR_STATUS = 'qms_scar_status', // QMS SCAR 状态
+  QMS_SUPPLIER_AUDIT_STATUS = 'qms_supplier_audit_status', // QMS 供应商审核状态
+  QMS_AUDIT_PLAN_STATUS = 'qms_audit_plan_status', // QMS 审核计划状态
+  QMS_TRAINING_PLAN_STATUS = 'qms_training_plan_status', // QMS 培训计划状态
+  QMS_QUALIFICATION_STATUS = 'qms_qualification_status', // QMS 资质状态
+  QMS_TRAINING_RECORD_STATUS = 'qms_training_record_status', // QMS 培训记录状态
+  QMS_SUPPLIER_GRADE = 'qms_supplier_grade', // QMS 供应商评级
+  QMS_AUDIT_NC_STATUS = 'qms_nc_status', // QMS 审核不符合项状态
+  QMS_CHANGE_REQUEST_STATUS = 'qms_change_request_status', // QMS 文件变更申请状态
+
+
   // ========== IM - 即时通讯模块  ==========
   IM_CONTENT_TYPE = 'im_content_type', // IM 内容类型
   IM_MESSAGE_STATUS = 'im_message_status', // IM 消息状态：0=正常 / 2=已撤回（私聊 / 群聊共用）

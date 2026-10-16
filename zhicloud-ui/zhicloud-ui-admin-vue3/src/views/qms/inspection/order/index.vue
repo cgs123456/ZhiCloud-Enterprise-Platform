@@ -57,7 +57,11 @@
       <el-table-column align="center" label="产品 ID" prop="productId" min-width="110" />
       <el-table-column align="center" label="检验员" prop="inspector" min-width="110" />
       <el-table-column align="center" label="检验时间" prop="inspectTime" width="170" />
-      <el-table-column align="center" label="状态" prop="status" min-width="110" />
+      <el-table-column align="center" label="状态" min-width="110" prop="status">
+        <template #default="scope">
+          <dict-tag :type="DICT_TYPE.QMS_INSPECTION_ORDER_STATUS" :value="scope.row.status" />
+        </template>
+      </el-table-column>
       <el-table-column align="center" label="备注" prop="remark" min-width="120" />
       <el-table-column align="center" :formatter="dateFormatter" label="创建时间" prop="createTime" width="170" />
       <el-table-column align="center" fixed="right" label="操作" width="140">
@@ -96,6 +100,7 @@
 <script lang="ts" setup>
 import { dateFormatter } from '@/utils/formatTime'
 import { InspectionOrderApi } from '@/api/qms/inspection/order'
+import { DICT_TYPE } from '@/utils/dict'
 import InspectionOrderForm from './InspectionOrderForm.vue'
 
 defineOptions({ name: 'InspectionOrder' })

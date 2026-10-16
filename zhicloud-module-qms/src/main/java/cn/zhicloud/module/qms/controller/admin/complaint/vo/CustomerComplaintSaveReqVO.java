@@ -1,6 +1,8 @@
 package cn.zhicloud.module.qms.controller.admin.complaint.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import cn.zhicloud.module.qms.enums.qms.ComplaintStatusEnum;
+import cn.zhicloud.framework.common.validation.InEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
@@ -53,7 +55,12 @@ public class CustomerComplaintSaveReqVO {
     @Schema(description = "关联 8D 报告 ID", example = "3072")
     private Long eightDId;
 
-    @Schema(description = "状态", example = "10")
+    /**
+     * 状态。**服务端只读，不参与写入**：新增由服务层强制置为初始值（§12.235.5）。
+     * @InEnum 用于在边界处拒绝垃圾值（此前连枚举约束都没有）。
+     */
+    @Schema(description = "状态（服务端只读，不参与写入）", example = "10")
+    @InEnum(ComplaintStatusEnum.class)
     private Integer status;
 
     @Schema(description = "备注", example = "随便")

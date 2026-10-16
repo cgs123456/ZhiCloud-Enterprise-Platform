@@ -58,7 +58,11 @@
       <el-table-column align="center" label="主审 ID" prop="leadAuditorId" min-width="110" />
       <el-table-column align="center" label="审核开始日期" prop="auditStartDate" min-width="110" />
       <el-table-column align="center" label="审核结束日期" prop="auditEndDate" min-width="110" />
-      <el-table-column align="center" label="状态" prop="status" min-width="110" />
+      <el-table-column align="center" label="状态" min-width="110" prop="status">
+        <template #default="scope">
+          <dict-tag :type="DICT_TYPE.QMS_AUDIT_PLAN_STATUS" :value="scope.row.status" />
+        </template>
+      </el-table-column>
       <el-table-column align="center" :formatter="dateFormatter" label="创建时间" prop="createTime" width="170" />
       <el-table-column align="center" fixed="right" label="操作" width="140">
         <template #default="scope">
@@ -96,6 +100,7 @@
 <script lang="ts" setup>
 import { dateFormatter } from '@/utils/formatTime'
 import { QmsAuditPlanApi } from '@/api/qms/audit/plan'
+import { DICT_TYPE } from '@/utils/dict'
 import QmsAuditPlanForm from './QmsAuditPlanForm.vue'
 
 defineOptions({ name: 'QmsAuditPlan' })

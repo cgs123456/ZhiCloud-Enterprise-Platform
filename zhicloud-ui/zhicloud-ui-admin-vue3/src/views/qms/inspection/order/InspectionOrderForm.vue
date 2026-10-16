@@ -32,8 +32,10 @@
       <el-form-item label="检验时间" prop="inspectTime">
         <el-date-picker v-model="formData.inspectTime" class="!w-1/1" value-format="YYYY-MM-DD HH:mm:ss" type="datetime" placeholder="请选择检验时间" />
       </el-form-item>
+        <!-- status 只读：状态只能由流转方法写入（§12.236）。改为只读回显，避免"填了不生效"的静默欺骗。 -->
       <el-form-item label="状态" prop="status">
-        <el-input-number v-model="formData.status" class="!w-1/1" :min="0" :controls="false" placeholder="请输入状态" />
+        <dict-tag v-if="formType === 'update'" :type="DICT_TYPE.QMS_INSPECTION_ORDER_STATUS" :value="formData.status" />
+        <span v-else class="text-gray-400">保存后自动置为「待检验」</span>
       </el-form-item>
       <el-form-item label="AQL 接收数 Ac（缺陷数 <= Ac 判合格）" prop="acceptanceQuantity">
         <el-input-number v-model="formData.acceptanceQuantity" class="!w-1/1" :min="0" :controls="false" placeholder="请输入AQL 接收数 Ac（缺陷数 <= Ac 判合格）" />
@@ -59,6 +61,7 @@
 </template>
 <script lang="ts" setup>
 import { InspectionOrderApi } from '@/api/qms/inspection/order'
+import { DICT_TYPE } from '@/utils/dict'
 
 defineOptions({ name: 'InspectionOrderForm' })
 

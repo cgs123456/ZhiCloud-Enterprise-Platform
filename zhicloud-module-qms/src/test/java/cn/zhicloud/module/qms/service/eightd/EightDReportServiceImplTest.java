@@ -47,6 +47,47 @@ public class EightDReportServiceImplTest extends BaseDbUnitTest {
         assertEquals(EightDStatusEnum.DRAFT.getStatus(), report.getStatus());
     }
 
+    // ------------------------------------------------------------------
+    // §12.235.5（critical）：建单状态护栏
+    //
+    // 8D 的阶段号本身就是「报告推进到第几步」的证据。旧实现只在 status 为 null
+    // 时补默认值，调用方即可在**建单**这一步直接传 D8_CLOSED(80)，
+    // 造出一份「D1~D7 内容全空」却已关闭的 8D 报告。
+    // ------------------------------------------------------------------
+
+    @Test
+    public void test_createEightDReport_ignoresSuppliedClosedStage() {
+        // 攻击形态：建单即传 D8_CLOSED（跳过 D1~D7 全部阶段内容）（§12.235.5）
+        cn.zhicloud.module.qms.controller.admin.eightd.vo.EightDReportSaveReqVO createReqVO =
+                new cn.zhicloud.module.qms.controller.admin.eightd.vo.EightDReportSaveReqVO();
+        createReqVO.setReportNo("8D-BYPASS-CLOSED-001");
+        createReqVO.setTitle("产品外观不良 8D 报告");
+        createReqVO.setStatus(EightDStatusEnum.D8_CLOSED.getStatus());
+
+        Long id = eightDReportService.createEightDReport(createReqVO);
+
+        EightDReportDO report = eightDReportMapper.selectById(id);
+        assertEquals(EightDStatusEnum.DRAFT.getStatus(), report.getStatus());
+        // 关闭时间只能由 closeEightDReport 写入
+        assertNull(report.getCloseTime());
+    }
+
+    @Test
+    public void test_createEightDReport_ignoresSuppliedMidStage() {
+        // 对称检查：任何非 DRAFT 阶段都不生效（§12.235.5）
+        cn.zhicloud.module.qms.controller.admin.eightd.vo.EightDReportSaveReqVO createReqVO =
+                new cn.zhicloud.module.qms.controller.admin.eightd.vo.EightDReportSaveReqVO();
+        createReqVO.setReportNo("8D-BYPASS-D4-001");
+        createReqVO.setTitle("尺寸超差 8D 报告");
+        createReqVO.setStatus(EightDStatusEnum.D4_ROOT_CAUSE.getStatus());
+
+        Long id = eightDReportService.createEightDReport(createReqVO);
+
+        EightDReportDO report = eightDReportMapper.selectById(id);
+        assertEquals(EightDStatusEnum.DRAFT.getStatus(), report.getStatus());
+    }
+
+
     @Test
     public void test_advanceStage_fromDraft() {
         // 准备数据：DRAFT 状态

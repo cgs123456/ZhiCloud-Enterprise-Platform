@@ -50,7 +50,11 @@
       <el-table-column align="center" label="评价人数量" prop="appraiserCount" min-width="120" />
       <el-table-column align="center" label="试验次数" prop="trialCount" min-width="110" />
       <el-table-column align="center" label="零件数量" prop="partCount" min-width="110" />
-      <el-table-column align="center" label="状态" prop="status" min-width="110" />
+      <el-table-column align="center" label="状态" min-width="110" prop="status">
+        <template #default="scope">
+          <dict-tag :type="DICT_TYPE.QMS_MSA_STATUS" :value="scope.row.status" />
+        </template>
+      </el-table-column>
       <el-table-column align="center" label="备注" prop="remark" min-width="120" />
       <el-table-column align="center" label="创建时间" prop="createTime" width="170" />
       <el-table-column align="center" :formatter="dateFormatter" label="创建时间" prop="createTime" width="170" />
@@ -90,6 +94,7 @@
 <script lang="ts" setup>
 import { dateFormatter } from '@/utils/formatTime'
 import { MsaStudyApi } from '@/api/qms/msa/study'
+import { DICT_TYPE } from '@/utils/dict'
 import MsaStudyForm from './MsaStudyForm.vue'
 
 defineOptions({ name: 'MsaStudy' })

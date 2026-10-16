@@ -779,6 +779,13 @@
       "sha256": "cd0ad9f86655f00bd552dd06fb9ca4a1923f3e255c5d89241d8f1c421a4ce775",
       "verification_file": "V201_verify.sql",
       "verification_sha256": "5f42d766c9a89b30e3802cb07385fb1aa5c0c9e1775e07d34221392d29e410a2"
+    },
+    {
+      "version": 202,
+      "file": "V202__qms_status_dict_seed.sql",
+      "sha256": "92fd1798b6668432b4e916b23b7d223be4223cdcae74644e179b6ca2448aeffa",
+      "verification_file": "V202_verify.sql",
+      "verification_sha256": "cd2a53d2b848f0783101bef4a0eaabeab0f6691a8610b26cff9b01803164a81e"
     }
   ]
 }

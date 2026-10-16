@@ -55,9 +55,11 @@ public class MsaStudyServiceImpl implements MsaStudyService {
         // 插入
         MsaStudyDO msaStudy = BeanUtils.toBean(createReqVO, MsaStudyDO.class);
         // 默认状态为草稿
-        if (msaStudy.getStatus() == null) {
-            msaStudy.setStatus(MsaStatusEnum.DRAFT.getStatus());
-        }
+        // 状态无条件置为初始值，忽略调用方传入的任何 status。
+        // §12.235.5：此前「仅在 null 时补默认」，调用方即可在**建单**这一步直接写入终态，
+        // 跳过整个流转（该类可能连流转方法都没有），产生「未审即批/未做即完成」的记录。
+        // 状态只能由本模块的流转方法产生。
+        msaStudy.setStatus(MsaStatusEnum.DRAFT.getStatus());
         msaStudyMapper.insert(msaStudy);
         // 返回
         return msaStudy.getId();

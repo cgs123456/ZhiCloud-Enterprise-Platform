@@ -54,7 +54,11 @@
       <el-table-column align="center" label="是否通过（0 否 1 是）" prop="passed" min-width="110" />
       <el-table-column align="center" label="证书编号" prop="certificateNo" min-width="110" />
       <el-table-column align="center" label="证书到期日" prop="certificateExpireDate" min-width="110" />
-      <el-table-column align="center" label="状态" prop="status" min-width="110" />
+      <el-table-column align="center" label="状态" min-width="110" prop="status">
+        <template #default="scope">
+          <dict-tag :type="DICT_TYPE.QMS_TRAINING_RECORD_STATUS" :value="scope.row.status" />
+        </template>
+      </el-table-column>
       <el-table-column align="center" label="备注" prop="remark" min-width="120" />
       <el-table-column align="center" :formatter="dateFormatter" label="创建时间" prop="createTime" width="170" />
       <el-table-column align="center" fixed="right" label="操作" width="140">
@@ -93,6 +97,7 @@
 <script lang="ts" setup>
 import { dateFormatter } from '@/utils/formatTime'
 import { TrainingRecordApi } from '@/api/qms/training/record'
+import { DICT_TYPE } from '@/utils/dict'
 import TrainingRecordForm from './TrainingRecordForm.vue'
 
 defineOptions({ name: 'TrainingRecord' })

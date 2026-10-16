@@ -28,13 +28,17 @@ public class TrainingRecordServiceImpl implements TrainingRecordService {
     @Resource
     private TrainingRecordMapper trainingRecordMapper;
 
+    /** 培训记录状态：未开始（见 TrainingRecordDO#status 注释；该域尚无枚举） */
+    private static final int TRAINING_RECORD_STATUS_NOT_STARTED = 10;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long createTrainingRecord(TrainingRecordSaveReqVO createReqVO) {
         TrainingRecordDO trainingRecord = BeanUtils.toBean(createReqVO, TrainingRecordDO.class);
-        if (trainingRecord.getStatus() == null) {
-            trainingRecord.setStatus(10);
-        }
+        // 状态无条件置为初始值，忽略调用方传入的任何 status（§12.235.5）。
+        // 该域尚无状态枚举（DO 注释：10=未开始 / 20=已完成），按「抽象延迟到第二个真实
+        // 用例」的原则不新造枚举，保留原字面量，仅补语义说明与常量名。
+        trainingRecord.setStatus(TRAINING_RECORD_STATUS_NOT_STARTED);
         trainingRecordMapper.insert(trainingRecord);
         return trainingRecord.getId();
     }
@@ -44,6 +48,12 @@ public class TrainingRecordServiceImpl implements TrainingRecordService {
     public void updateTrainingRecord(TrainingRecordSaveReqVO updateReqVO) {
         validateTrainingRecordExists(updateReqVO.getId());
         TrainingRecordDO updateObj = BeanUtils.toBean(updateReqVO, TrainingRecordDO.class);
+        // 状态不接受外部写入（§12.236.7）。本类**没有任何流转方法**，
+        // 若允许通用修改写状态，则「新增 + 修改」两步就能到达任意终态，
+        // 新增侧刚加的护栏形同虚设。
+        // MyBatis-Plus 的 updateById 跳过 null 字段，故置 null 的效果是
+        // 该列不进 UPDATE 语句 —— 调用方的 status 无法生效。
+        updateObj.setStatus(null);
         trainingRecordMapper.updateById(updateObj);
     }
 

@@ -1,6 +1,7 @@
 package cn.zhicloud.module.qms.service.capa;
 
 import cn.zhicloud.framework.test.core.ut.BaseDbUnitTest;
+import cn.zhicloud.module.qms.controller.admin.capa.vo.CAPADocumentSaveReqVO;
 import cn.zhicloud.module.qms.controller.admin.capa.vo.CAPAStageTransitionReqVO;
 import cn.zhicloud.module.qms.controller.admin.capa.vo.CAPAVerificationReqVO;
 import cn.zhicloud.module.qms.dal.dataobject.capa.CAPADocumentDO;
@@ -319,6 +320,83 @@ public class CAPADocumentServiceImplTest extends BaseDbUnitTest {
         assertNotNull(doc);
         assertEquals(CAPAStageEnum.CREATED.getStage(), doc.getStage());
         assertEquals(CAPAStatusEnum.OPEN.getStatus(), doc.getStatus());
+    }
+
+    // ==================== §12.235.5 建单状态护栏 ====================
+    //
+    // 此前 createCAPADocument 只在字段为 null 时补默认值，于是调用方可以在**建单**
+    // 这一步直接写入 stage=CLOSED、verificationResult=PASSED 以及
+    // closeDate/verifiedBy/verifiedTime —— 一份「一出生就已由某人验证并关闭」的 CAPA，
+    // 绕过 transitionStage 的字段完整性校验与 closeCAPADocument，
+    // 且审计留痕里的验证人/时间由调用方自填。
+    // 下面钉住：这些字段一律不接受外部写入。
+
+    @Test
+    public void test_createCAPADocument_ignoresSuppliedTerminalStageAndStatus() {
+        CAPADocumentSaveReqVO req = new CAPADocumentSaveReqVO();
+        req.setCapaNo("CAPA-BYPASS-STAGE-001");
+        req.setSource(cn.zhicloud.module.qms.enums.qms.CAPASourceEnum.INTERNAL.getSource());
+        req.setStatus(CAPAStatusEnum.CLOSED.getStatus());
+        req.setStage(CAPAStageEnum.CLOSED.getStage());
+
+        Long id = capaService.createCAPADocument(req);
+
+        CAPADocumentDO saved = capaDocumentMapper.selectById(id);
+        assertEquals(CAPAStatusEnum.OPEN.getStatus(), saved.getStatus());
+        assertEquals(CAPAStageEnum.CREATED.getStage(), saved.getStage());
+    }
+
+    @Test
+    public void test_createCAPADocument_ignoresSuppliedVerificationEvidence() {
+        // 攻击形态：建单即写入「已验证通过 + 验证人 + 验证时间 + 关闭日期」
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        CAPADocumentSaveReqVO req = new CAPADocumentSaveReqVO();
+        req.setCapaNo("CAPA-BYPASS-VERIFY-001");
+        req.setSource(cn.zhicloud.module.qms.enums.qms.CAPASourceEnum.INTERNAL.getSource());
+        req.setVerificationResult(CAPAVerificationResultEnum.PASSED.getResult());
+        req.setVerifiedBy("attacker");
+        req.setVerifiedTime(now);
+        req.setCloseDate(now);
+
+        Long id = capaService.createCAPADocument(req);
+
+        CAPADocumentDO saved = capaDocumentMapper.selectById(id);
+        assertNull(saved.getVerificationResult());
+        assertNull(saved.getVerifiedBy());
+        assertNull(saved.getVerifiedTime());
+        assertNull(saved.getCloseDate());
+    }
+
+    @Test
+    public void test_updateCAPADocument_ignoresSuppliedVerificationEvidence() {
+        CAPADocumentDO doc = randomPojo(CAPADocumentDO.class, o -> {
+            o.setStatus(CAPAStatusEnum.OPEN.getStatus());
+            o.setStage(CAPAStageEnum.CREATED.getStage());
+        });
+        capaDocumentMapper.insert(doc);
+
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        CAPADocumentSaveReqVO req = new CAPADocumentSaveReqVO();
+        req.setId(doc.getId());
+        req.setStatus(CAPAStatusEnum.CLOSED.getStatus());
+        req.setStage(CAPAStageEnum.CLOSED.getStage());
+        req.setVerificationResult(CAPAVerificationResultEnum.PASSED.getResult());
+        req.setVerifiedBy("attacker");
+        req.setVerifiedTime(now);
+        req.setCloseDate(now);
+
+        capaService.updateCAPADocument(req);
+
+        // 注意语义：MyBatis-Plus 的 updateById 默认跳过 null 字段，
+        // 所以「置 null」的实际效果是**该列不进 UPDATE 语句**，即保持原值不变。
+        // 因此这里断言「原值未被改写」，而不是「变成了 null」。
+        CAPADocumentDO updated = capaDocumentMapper.selectById(doc.getId());
+        assertEquals(CAPAStatusEnum.OPEN.getStatus(), updated.getStatus());
+        assertEquals(CAPAStageEnum.CREATED.getStage(), updated.getStage());
+        assertEquals(doc.getVerificationResult(), updated.getVerificationResult());
+        assertEquals(doc.getVerifiedBy(), updated.getVerifiedBy());
+        assertEquals(doc.getVerifiedTime(), updated.getVerifiedTime());
+        assertEquals(doc.getCloseDate(), updated.getCloseDate());
     }
 
 }

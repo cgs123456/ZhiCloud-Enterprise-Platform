@@ -51,7 +51,11 @@
       <el-table-column align="center" label="缺陷描述" prop="defectDescription" min-width="120" />
       <el-table-column align="center" label="根本原因" prop="rootCause" min-width="120" />
       <el-table-column align="center" label="纠正措施" prop="correctiveAction" min-width="120" />
-      <el-table-column align="center" label="状态" prop="status" min-width="110" />
+      <el-table-column align="center" label="状态" min-width="110" prop="status">
+        <template #default="scope">
+          <dict-tag :type="DICT_TYPE.QMS_SCAR_STATUS" :value="scope.row.status" />
+        </template>
+      </el-table-column>
       <el-table-column align="center" label="关闭时间" prop="closeTime" width="170" />
       <el-table-column align="center" :formatter="dateFormatter" label="创建时间" prop="createTime" width="170" />
       <el-table-column align="center" fixed="right" label="操作" width="140">
@@ -90,6 +94,7 @@
 <script lang="ts" setup>
 import { dateFormatter } from '@/utils/formatTime'
 import { ScarApi } from '@/api/qms/sqm/scar'
+import { DICT_TYPE } from '@/utils/dict'
 import ScarForm from './ScarForm.vue'
 
 defineOptions({ name: 'Scar' })

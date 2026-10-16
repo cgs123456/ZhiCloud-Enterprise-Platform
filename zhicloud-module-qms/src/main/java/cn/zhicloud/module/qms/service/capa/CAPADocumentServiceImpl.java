@@ -39,14 +39,19 @@ public class CAPADocumentServiceImpl implements CAPADocumentService {
     public Long createCAPADocument(CAPADocumentSaveReqVO createReqVO) {
         // 插入
         CAPADocumentDO capaDocument = BeanUtils.toBean(createReqVO, CAPADocumentDO.class);
-        // 默认状态为待处理
-        if (capaDocument.getStatus() == null) {
-            capaDocument.setStatus(CAPAStatusEnum.OPEN.getStatus());
-        }
-        // P0-4：默认阶段为 CREATED，默认优先级为 MEDIUM
-        if (capaDocument.getStage() == null) {
-            capaDocument.setStage(CAPAStageEnum.CREATED.getStage());
-        }
+        // 状态、阶段与「验证/关闭」留痕字段无条件重置为初始态，忽略调用方传入的任何值。
+        //
+        // §12.235.5（high）：此前「仅在 null 时补默认」，于是建单即可直接写入
+        // stage=CLOSED(60)、verificationResult=PASSED(20) 以及 closeDate/verifiedBy/verifiedTime，
+        // 造出一份「一出生就已由某人验证并关闭」的 CAPA —— 绕过了 transitionStage
+        // 的字段完整性校验和 closeCAPADocument，且留痕里的验证人/时间是调用方自己填的。
+        // 状态与阶段只能由 transitionStage/verifyCAPADocument/closeCAPADocument 产生。
+        capaDocument.setStatus(CAPAStatusEnum.OPEN.getStatus());
+        capaDocument.setStage(CAPAStageEnum.CREATED.getStage());
+        capaDocument.setVerificationResult(null);
+        capaDocument.setVerifiedBy(null);
+        capaDocument.setVerifiedTime(null);
+        capaDocument.setCloseDate(null);
         capaDocumentMapper.insert(capaDocument);
         // 返回
         return capaDocument.getId();
@@ -58,9 +63,15 @@ public class CAPADocumentServiceImpl implements CAPADocumentService {
         validateCAPADocumentExists(updateReqVO.getId());
         // 更新
         CAPADocumentDO updateObj = BeanUtils.toBean(updateReqVO, CAPADocumentDO.class);
-        // 禁止通过通用更新修改状态/阶段，状态变更必须走 transitionStage/closeCAPADocument 等状态流转方法
+        // 禁止通过通用更新修改状态/阶段，状态变更必须走 transitionStage/closeCAPADocument 等状态流转方法。
+        // 「验证/关闭」留痕字段同样不接受外部写入（§12.235.5）：verifiedBy/verifiedTime/
+        // closeDate/verificationResult 是审计留痕，必须由 verifyCAPADocument/closeCAPADocument 产生。
         updateObj.setStage(null);
         updateObj.setStatus(null);
+        updateObj.setVerificationResult(null);
+        updateObj.setVerifiedBy(null);
+        updateObj.setVerifiedTime(null);
+        updateObj.setCloseDate(null);
         capaDocumentMapper.updateById(updateObj);
     }
 

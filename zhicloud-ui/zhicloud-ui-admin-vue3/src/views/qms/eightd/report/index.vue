@@ -53,7 +53,11 @@
       <el-table-column align="center" label="标题" prop="title" min-width="110" />
       <el-table-column align="center" label="关联 NCR 编号 ID" prop="ncrId" min-width="110" />
       <el-table-column align="center" label="关联 CAPA 编号 ID" prop="capaId" min-width="110" />
-      <el-table-column align="center" label="状态" prop="status" min-width="110" />
+      <el-table-column align="center" label="状态" min-width="110" prop="status">
+        <template #default="scope">
+          <dict-tag :type="DICT_TYPE.QMS_EIGHT_D_STATUS" :value="scope.row.status" />
+        </template>
+      </el-table-column>
       <el-table-column align="center" label="D1 团队成员" prop="d1TeamMembers" min-width="110" />
       <el-table-column align="center" label="D2 问题描述" prop="d2ProblemDescription" min-width="120" />
       <el-table-column align="center" label="D3 临时遏制措施" prop="d3InterimAction" min-width="120" />
@@ -96,6 +100,7 @@
 <script lang="ts" setup>
 import { dateFormatter } from '@/utils/formatTime'
 import { EightDReportApi } from '@/api/qms/eightd/report'
+import { DICT_TYPE } from '@/utils/dict'
 import EightDReportForm from './EightDReportForm.vue'
 
 defineOptions({ name: 'EightDReport' })

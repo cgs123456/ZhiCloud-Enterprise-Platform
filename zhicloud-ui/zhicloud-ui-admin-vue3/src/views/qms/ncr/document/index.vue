@@ -58,7 +58,11 @@
       <el-table-column align="center" label="缺陷描述" prop="defectDescription" min-width="120" />
       <el-table-column align="center" label="缺陷等级" prop="defectLevel" min-width="110" />
       <el-table-column align="center" label="不合格数量" prop="quantity" min-width="110" />
-      <el-table-column align="center" label="处置方式" prop="disposition" min-width="110" />
+      <el-table-column align="center" label="处置方式" min-width="110" prop="disposition">
+        <template #default="scope">
+          <dict-tag :type="DICT_TYPE.QMS_NCR_DISPOSITION" :value="scope.row.disposition" />
+        </template>
+      </el-table-column>
       <el-table-column align="center" :formatter="dateFormatter" label="创建时间" prop="createTime" width="170" />
       <el-table-column align="center" fixed="right" label="操作" width="300">
         <template #default="scope">
@@ -199,6 +203,7 @@
 <script lang="ts" setup>
 import { dateFormatter } from '@/utils/formatTime'
 import { NcrDocumentApi } from '@/api/qms/ncr/document'
+import { DICT_TYPE } from '@/utils/dict'
 import NcrDocumentForm from './NcrDocumentForm.vue'
 
 defineOptions({ name: 'NcrDocument' })

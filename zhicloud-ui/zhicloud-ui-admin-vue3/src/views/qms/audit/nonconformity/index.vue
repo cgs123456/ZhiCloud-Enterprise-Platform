@@ -60,9 +60,7 @@
       <el-table-column align="center" label="整改截止日期" prop="correctiveActionDeadline" min-width="110" />
       <el-table-column align="center" label="状态" prop="status" min-width="110">
         <template #default="scope">
-          <el-tag :type="statusTagType(scope.row.status)" size="small">
-            {{ statusText(scope.row.status) }}
-          </el-tag>
+          <dict-tag :type="DICT_TYPE.QMS_AUDIT_NC_STATUS" :value="scope.row.status" />
         </template>
       </el-table-column>
       <el-table-column align="center" label="备注" prop="remark" min-width="120" show-overflow-tooltip />
@@ -209,6 +207,7 @@
 <script lang="ts" setup>
 import { dateFormatter } from '@/utils/formatTime'
 import { QmsAuditNonconformityApi } from '@/api/qms/audit/nonconformity'
+import { DICT_TYPE } from '@/utils/dict'
 import QmsAuditNonconformityForm from './QmsAuditNonconformityForm.vue'
 
 defineOptions({ name: 'QmsAuditNonconformity' })
@@ -232,15 +231,6 @@ const NC_STATUS_OPTIONS = [
   { value: NcStatus.CLOSED, label: '已关闭' }
 ]
 
-const statusText = (status?: number) =>
-  NC_STATUS_OPTIONS.find((item) => item.value === status)?.label ?? '-'
-const statusTagType = (status?: number) => {
-  if (status === NcStatus.CLOSED) return 'success'
-  if (status === NcStatus.VERIFIED) return 'warning'
-  if (status === NcStatus.RECTIFIED) return 'primary'
-  if (status === NcStatus.RECTIFYING) return 'info'
-  return 'danger'
-}
 
 const loading = ref(true)
 const list = ref<any[]>([])
