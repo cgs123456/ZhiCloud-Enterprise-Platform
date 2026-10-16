@@ -1,5 +1,6 @@
 package cn.zhicloud.module.qms.dal.mysql.instrument;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.mybatis.core.mapper.BaseMapperX;
 import cn.zhicloud.framework.mybatis.core.query.LambdaQueryWrapperX;
@@ -39,6 +40,20 @@ public interface QmsInstrumentCalibrationMapper extends BaseMapperX<QmsInstrumen
 
     default Long selectCountByInstrumentId(Long instrumentId) {
         return selectCount(QmsInstrumentCalibrationDO::getInstrumentId, instrumentId);
+    }
+
+    /**
+     * 查询器具「最新」一条校准记录（§12.238：器具 last/next 校准日期的派生基准）。
+     *
+     * <p>按校准日期降序、同日期按编号降序取第一条；校准日期为空的记录不参与派生。
+     */
+    default QmsInstrumentCalibrationDO selectLatestByInstrumentId(Long instrumentId) {
+        List<QmsInstrumentCalibrationDO> list = selectList(new LambdaQueryWrapperX<QmsInstrumentCalibrationDO>()
+                .eq(QmsInstrumentCalibrationDO::getInstrumentId, instrumentId)
+                .isNotNull(QmsInstrumentCalibrationDO::getCalibrationDate)
+                .orderByDesc(QmsInstrumentCalibrationDO::getCalibrationDate)
+                .orderByDesc(QmsInstrumentCalibrationDO::getId));
+        return CollUtil.getFirst(list);
     }
 
     /**

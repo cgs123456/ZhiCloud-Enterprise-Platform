@@ -22,6 +22,8 @@ public interface ErrorCodeConstants {
 
     // ========== QMS 检验记录（1-040-102-000） ==========
     ErrorCode INSPECTION_RECORD_NOT_EXISTS = new ErrorCode(1_044_000_014, "检验记录不存在");
+    // §12.238：明细只能挂在「待检验/检验中」的父单上；终态父单的明细冻结
+    ErrorCode INSPECTION_RECORD_ORDER_NOT_EDITABLE = new ErrorCode(1_044_000_047, "检验单不是待检验或检验中状态，无法变更检验记录");
 
     // ========== QMS CAPA 文档（1-040-103-000） ==========
     ErrorCode CAPA_DOCUMENT_NOT_EXISTS = new ErrorCode(1_044_000_015, "CAPA 文档不存在");

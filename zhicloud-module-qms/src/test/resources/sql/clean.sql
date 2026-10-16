@@ -15,4 +15,5 @@ DELETE FROM "qms_fmea_document";
 DELETE FROM "qms_training_plan";
 DELETE FROM "qms_training_record";
 DELETE FROM "qms_qualification";
+DELETE FROM "qms_instrument_calibration";
 DELETE FROM "qms_instrument";

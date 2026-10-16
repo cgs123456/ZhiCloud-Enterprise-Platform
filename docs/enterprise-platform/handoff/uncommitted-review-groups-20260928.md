@@ -10216,3 +10216,83 @@ E2E 具体断言（API + DB 双验）：建单传 `status=30` → 落库 10；PU
 2. **重启会丢 mock 密钥**：旧实例以环境变量 `MOCK_SECRET=zc-live-mock-` 启动（命令行里看不到），
    漏掉后 mock-secret 落回 yaml 默认 `test-only-for-local`，旧令牌 401。令牌规则 =
    `mock-secret` + 用户编号（`TokenAuthenticationFilter#mockLoginUser`）；补上 env 重启后 E2E 复跑 33/33。
+
+## 12.238 2026-10-16 QMS 两处邻近缺陷收口：检验记录父单可写护栏 + 器具校准日期派生刷新（业务清单 §1.2）
+
+本节属性：§12.235 复核块「已复核确认、但**不属于**『绕过审批』的邻近缺陷」的前两条（HANDOFF §3.3 同步登记）。
+按用户「逐项完成」指示收口：同型缺陷收尾的第二项（第一项 ERP 固定资产见 §12.237）。无新增端点、无迁移；
+新增错误码 1 个（`1_044_000_047`）。
+
+### 12.238.1 缺陷面（两处，均可复现）
+
+1. **检验记录不看父单状态**（`InspectionRecordServiceImpl` 的 create/update/delete）：
+   记录的增改删完全不校验父检验单。可给已判定（PASSED(30)/FAILED(40)）的检验单补一条
+   CRITICAL 不合格记录，造出「父单 PASSED、明细 FAIL」的自相矛盾单据；而下游判定**只读父单状态**——
+   `InspectionOrderApi#isQualified`（MES 完工入库，fail-closed）与 `#hasFailedInspection`
+   （WMS 发运 OQC 卡点）均只看检验单 status，明细里的 FAIL 不影响放行。
+   也可向不存在的 orderId 写入孤儿明细（无 FK、无任何校验）。
+2. **校准记录盲写器具日期**（`QmsInstrumentCalibrationServiceImpl#recordCalibration`）：
+   插入记录后把**本条记录**的日期无条件回写器具 `last/next_calibration_date`：
+   ①补录历史校准会把器具日期改旧（校准到期预警口径失真）；②update/delete 记录完全不回写——
+   删掉最新记录后器具仍指向已删除记录的值（滞留）。
+   实证：沙箱器具 5380000 的 last/next（2026-01-05/2027-01-05）停在**次新**记录 6420000 上，
+   最新记录 6420001（2026-07-04）未被反映——日期漂移的活例（demo 数据既有，非本项产生）。
+
+### 12.238.2 设计决策（ADR 式，动手前定案）
+
+- **D1（记录侧）父单可写窗口 = {待检验(10), 检验中(20)}**，create/update/delete 三入口统一
+  `validateOrderEditable`：父单不存在 → `INSPECTION_ORDER_NOT_EXISTS`(1_044_000_011)，
+  越窗 → 新错误码 `INSPECTION_RECORD_ORDER_NOT_EDITABLE`(1_044_000_047)。
+  理由：PASSED/FAILED 只由 `submitInspection` 依 AQL/严重度一次性判定，判定后明细是历史证据须冻结；
+  窗口与既有 `submitInspection` 准入（同两态枚举）对齐。update **双侧**校验（旧单 + 移动目标单）——
+  只堵 create 不够（update 可把任意明细改成不合格），move 到终态单等价于「补明细」。
+  被否：仅冻结 create；不校验 move。
+- **D2（校准侧）器具 last/next 改为「最新一条校准记录」的派生值**：按 `calibration_date` 降序、
+  同日期按 id 降序取第一条（日期为空的记录不参与）；create/update/delete 三入口统一
+  `refreshInstrumentCalibrationDates` 重算；无有效记录时**显式置 NULL**（`LambdaUpdateWrapper.set`，
+  因 `updateById` 跳过 null）；update 移动记录则新旧两侧器具都重算。next 口径不变：优先记录 next，
+  为空按器具周期推算（记录日期 + cycleDays）。
+  理由：盲写本条有回归面（回填改旧、删除滞留）；派生后「记录集 → 日期」自洽，任何记录写操作都会
+  自愈到一致。被否：仅 create 单调前进（advance-only，把「删最新滞留」留在原地）；update/delete 不重算。
+- **D3（范围）不动前端、不动器具 save 路径**：越权操作由后端明确报错（前端维持现样）；
+  器具 create/update 仍可直写日期（第三处写入窗口）——已登记为 §12.238.5 第 1 条，待所有者定夺是否收口。
+
+### 12.238.3 变更清单（8 个内容文件）
+
+| 文件 | 变更 |
+| --- | --- |
+| `.../qms/enums/ErrorCodeConstants.java` | +`INSPECTION_RECORD_ORDER_NOT_EDITABLE`(1_044_000_047) |
+| `.../service/inspectionrecord/InspectionRecordServiceImpl.java` | +父单护栏（create/update/delete；update 双端） |
+| `.../dal/mysql/instrument/QmsInstrumentCalibrationMapper.java` | +`selectLatestByInstrumentId`（日期/id 双降序） |
+| `.../service/instrument/QmsInstrumentCalibrationServiceImpl.java` | 盲写 → `refreshInstrumentCalibrationDates`（三入口） |
+| `src/test/resources/sql/create_tables.sql` | H2 测试库补 `qms_instrument_calibration` 表（此前缺表） |
+| `src/test/resources/sql/clean.sql` | +校准表清理行 |
+| `.../service/inspectionrecord/InspectionRecordOrderGuardTest.java` | 新：10 例（窗口内 CRUD、终态全拒、孤儿、move 双端） |
+| `.../service/instrument/QmsInstrumentCalibrationRefreshTest.java` | 新：7 例（回填/前进/订正回退/删最新回退/删光清空/换器具双侧） |
+
+### 12.238.4 验证读数
+
+- 单测：目标两类 **17/17**；QMS 模块全量 **118/118**（101 基线 + 17 新增）。
+- 真机（tenant 9001，`zc_qms_238_e2e.py`）：**50/50**——A 段 22 项（终态单建/改/删全拒
+  `1044000047`、孤儿拒 `1044000011`、move 拒、拒改后内容未变）；B 段 28 项（回填不改旧、前进、
+  订正回退、删最新回退、删光 NULL、不存在器具拒 `1044000033`）；探针数据自清理（活行 0）。
+- 回归（同一新 jar）：`zc_qms_verify_all_guards.py` **20/20**（§12.236 四域 create+update 护栏未回归）。
+- errcode 去重扫描：**1940/0**（上轮 1939/0，+1 无碰撞）。打包：reactor 43 项 BUILD SUCCESS，
+  新 fat jar 642,732,784B；流程＝停服 → 重打 → 以 `MOCK_SECRET` 重启 → E2E。
+- 验证过程注意（供后续 E2E 复用）：①记录 VO 的 `severity` 为 `@NotNull`，漏传即 400；
+  ②器具域 LocalDate 经 HTTP 序列化为 `[y,m,d]` 数组，断言需归一；③pwsh 下 Maven `-D` 参数必须加引号
+  （`-Dmaven.test.skip=true` 不加引号被拆成 `.test.skip=true` → Unknown lifecycle phase）。
+
+### 12.238.5 连带观察（登记，不动手）
+
+1. **器具 save 路径仍可直写 last/next**：`QmsInstrumentSaveReqVO` 含两日期字段，create 会播种、
+   update 仅置空 `status` 未置空日期——与 D2 的「派生」口径存在第三个写入窗口；前端器具表单
+   两个日期选择器仍可编辑。后果：手动改写会被下一次任意记录写操作（含删除）按记录集重算覆盖
+   （自愈向记录集，但对「手动维护」意图不友好；遗留器具若无可录证书号，将无法再手工补日期）。
+   收口方向若定「严格派生」：create 置 NULL、update 跳过 + 表单改只读回显（仿 status 的 B 方案）；
+   若定「日期可手工维护」，则 D2 语义需回调。需要时另立项。
+2. **器具域 LocalDate 序列化为 `[y,m,d]` 数组**（框架 Jackson 全局行为，非本轮引入）：实测
+   `/qms/instrument/get|page`、`/qms/instrument-calibration/page` 日期均为数组；前端校准记录列表
+   的两个日期列（`calibrationDate/nextCalibrationDate`）未加 formatter、器具表单两个
+   `el-date-picker`（`value-format="YYYY-MM-DD"`）与数组回显不匹配（编辑态回显存疑）。
+   影响面为展示层，建议作为小项处理（补 formatter / 归一），未在本项动手。
