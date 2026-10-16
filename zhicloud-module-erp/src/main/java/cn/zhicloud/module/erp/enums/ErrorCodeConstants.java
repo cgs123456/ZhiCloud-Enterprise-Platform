@@ -317,6 +317,9 @@ ErrorCode PURCHASE_ORDER_ITEM_RETURN_FAIL_IN_EXCEED = new ErrorCode(1_030_101_00
     ErrorCode FIXED_ASSET_HAS_DEPRECIATION_RECORDS = new ErrorCode(1_030_707_011, "资产({})存在折旧记录，无法删除");
     ErrorCode FIXED_ASSET_DEPRECIATION_GL_VOUCHER_FAIL = new ErrorCode(1_030_707_012, "折旧记录({})创建 GL 凭证失败，审核已回滚");
     ErrorCode FIXED_ASSET_BATCH_DEPRECIATION_PARTIAL_FAIL = new ErrorCode(1_030_707_013, "部分资产折旧计提失败，失败资产：{}");
+    ErrorCode FIXED_ASSET_IDLE_NOT_IN_USE = new ErrorCode(1_030_707_014, "资产({})只有在用状态才能闲置");
+    ErrorCode FIXED_ASSET_ENABLE_NOT_IDLE = new ErrorCode(1_030_707_015, "资产({})只有闲置状态才能启用");
+    ErrorCode FIXED_ASSET_ALREADY_TERMINAL = new ErrorCode(1_030_707_016, "资产({})已处置或报废，不能重复操作");
 
     // ========== ERP 预算管理 1-030-708-000 ==========
     ErrorCode BUDGET_NOT_EXISTS = new ErrorCode(1_030_708_000, "预算不存在");

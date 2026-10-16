@@ -62,7 +62,8 @@
         <el-input-number v-model="formData.netBookValue" placeholder="请输入netBookValue" />
       </el-form-item>
       <el-form-item label="状态" prop="status">
-        <el-input-number v-model="formData.status" placeholder="请输入状态" />
+        <el-tag v-if="formType === 'update'">{{ formData.statusName }}</el-tag>
+        <span v-else>在用（由「闲置 / 启用 / 处置 / 报废」操作流转）</span>
       </el-form-item>
       <el-form-item label="备注" prop="remark">
         <el-input v-model="formData.remark" placeholder="请输入备注" />

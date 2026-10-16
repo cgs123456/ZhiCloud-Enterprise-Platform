@@ -1,5 +1,6 @@
 package cn.zhicloud.module.erp.service;
 
+import cn.zhicloud.module.erp.controller.admin.finance.vo.fixedasset.ErpFixedAssetSaveReqVO;
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpFixedAssetDO;
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpFixedAssetDepreciationDO;
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpPeriodDO;
@@ -18,10 +19,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -292,6 +297,110 @@ public class ErpFixedAssetServiceImplTest {
         verify(depreciationMapper).updateById(captor.capture());
         assertEquals(20, captor.getValue().getStatus());
         assertNotNull(captor.getValue().getVoucherNo());
+    }
+
+    // ==================== 状态写入护栏（建单/修改不接受状态） ====================
+
+    private ErpFixedAssetSaveReqVO buildSaveReqVO(Long id, String code, Integer status) {
+        ErpFixedAssetSaveReqVO reqVO = new ErpFixedAssetSaveReqVO();
+        reqVO.setId(id);
+        reqVO.setCode(code);
+        reqVO.setName("测试资产");
+        reqVO.setOriginalValue(new BigDecimal("10000"));
+        reqVO.setSalvageValue(BigDecimal.ZERO);
+        reqVO.setUsefulLifeMonths(12);
+        reqVO.setCapitalizationDate(LocalDate.of(2026, 7, 1));
+        reqVO.setStatus(status);
+        return reqVO;
+    }
+
+    @Test
+    public void testCreateFixedAsset_ignoresCallerStatus() {
+        // 调用方传 status=30（已处置），落库必须仍是「在用」——建单不接受终态
+        when(fixedAssetMapper.selectByCode("FA-NEW")).thenReturn(null);
+
+        fixedAssetService.createFixedAsset(buildSaveReqVO(null, "FA-NEW",
+                ErpFixedAssetStatusEnum.DISPOSED.getStatus()));
+
+        ArgumentCaptor<ErpFixedAssetDO> captor = ArgumentCaptor.forClass(ErpFixedAssetDO.class);
+        verify(fixedAssetMapper).insert(captor.capture());
+        assertEquals(ErpFixedAssetStatusEnum.IN_USE.getStatus(), captor.getValue().getStatus());
+    }
+
+    @Test
+    public void testUpdateFixedAsset_doesNotWriteStatus() {
+        // 通用更新不接受 status：VO 里的 30 不得进 UPDATE（服务层已置空）
+        ErpFixedAssetDO existing = buildAsset(ErpDepreciationMethodEnum.STRAIGHT_LINE.getMethod(),
+                new BigDecimal("10000"), BigDecimal.ZERO, 12, 0, BigDecimal.ZERO);
+        when(fixedAssetMapper.selectById(ASSET_ID)).thenReturn(existing);
+        when(fixedAssetMapper.selectByCode("FA-001")).thenReturn(existing);
+
+        fixedAssetService.updateFixedAsset(buildSaveReqVO(ASSET_ID, "FA-001",
+                ErpFixedAssetStatusEnum.DISPOSED.getStatus()));
+
+        ArgumentCaptor<ErpFixedAssetDO> captor = ArgumentCaptor.forClass(ErpFixedAssetDO.class);
+        verify(fixedAssetMapper).updateById(captor.capture());
+        assertNull(captor.getValue().getStatus());
+    }
+
+    // ==================== 状态流转（生命周期） ====================
+
+    @Test
+    public void testIdleFixedAsset_usesCasUpdateFromInUse() {
+        when(fixedAssetMapper.updateByIdAndStatus(eq(ASSET_ID), anyCollection(), any())).thenReturn(1);
+
+        fixedAssetService.idleFixedAsset(ASSET_ID);
+
+        ArgumentCaptor<ErpFixedAssetDO> captor = ArgumentCaptor.forClass(ErpFixedAssetDO.class);
+        verify(fixedAssetMapper).updateByIdAndStatus(eq(ASSET_ID),
+                argThat(s -> s.contains(ErpFixedAssetStatusEnum.IN_USE.getStatus())),
+                captor.capture());
+        assertEquals(ErpFixedAssetStatusEnum.IDLE.getStatus(), captor.getValue().getStatus());
+    }
+
+    @Test
+    public void testDisposeFixedAsset_allowsInUseAndIdle() {
+        when(fixedAssetMapper.updateByIdAndStatus(eq(ASSET_ID), anyCollection(), any())).thenReturn(1);
+
+        fixedAssetService.disposeFixedAsset(ASSET_ID);
+
+        ArgumentCaptor<ErpFixedAssetDO> captor = ArgumentCaptor.forClass(ErpFixedAssetDO.class);
+        verify(fixedAssetMapper).updateByIdAndStatus(eq(ASSET_ID),
+                argThat(s -> s.contains(ErpFixedAssetStatusEnum.IN_USE.getStatus())
+                        && s.contains(ErpFixedAssetStatusEnum.IDLE.getStatus())),
+                captor.capture());
+        assertEquals(ErpFixedAssetStatusEnum.DISPOSED.getStatus(), captor.getValue().getStatus());
+    }
+
+    @Test
+    public void testEnableFixedAsset_notIdle_throwsException() {
+        // CAS 影响 0 行 + 回查当前为「在用」→ 拒绝（只有闲置状态才能启用）
+        when(fixedAssetMapper.updateByIdAndStatus(eq(ASSET_ID), anyCollection(), any())).thenReturn(0);
+        when(fixedAssetMapper.selectById(ASSET_ID)).thenReturn(buildAsset(
+                ErpDepreciationMethodEnum.STRAIGHT_LINE.getMethod(),
+                new BigDecimal("10000"), BigDecimal.ZERO, 12, 0, BigDecimal.ZERO));
+
+        assertThrows(Exception.class, () -> fixedAssetService.enableFixedAsset(ASSET_ID));
+    }
+
+    @Test
+    public void testDisposeFixedAsset_alreadyTerminal_throwsException() {
+        // 已处置（终态）不能再处置：CAS 0 行 + 回查状态 30 → 拒绝
+        when(fixedAssetMapper.updateByIdAndStatus(eq(ASSET_ID), anyCollection(), any())).thenReturn(0);
+        ErpFixedAssetDO asset = buildAsset(ErpDepreciationMethodEnum.STRAIGHT_LINE.getMethod(),
+                new BigDecimal("10000"), BigDecimal.ZERO, 12, 0, BigDecimal.ZERO);
+        asset.setStatus(ErpFixedAssetStatusEnum.DISPOSED.getStatus());
+        when(fixedAssetMapper.selectById(ASSET_ID)).thenReturn(asset);
+
+        assertThrows(Exception.class, () -> fixedAssetService.disposeFixedAsset(ASSET_ID));
+    }
+
+    @Test
+    public void testDisposeFixedAsset_notFound_throwsException() {
+        when(fixedAssetMapper.updateByIdAndStatus(eq(ASSET_ID), anyCollection(), any())).thenReturn(0);
+        when(fixedAssetMapper.selectById(ASSET_ID)).thenReturn(null);
+
+        assertThrows(Exception.class, () -> fixedAssetService.disposeFixedAsset(ASSET_ID));
     }
 
 }

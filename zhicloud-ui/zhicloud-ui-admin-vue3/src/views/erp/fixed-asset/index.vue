@@ -41,12 +41,16 @@
       <el-table-column label="depreciatedMonths" align="center" prop="depreciatedMonths" />
       <el-table-column label="accumulatedDepreciation" align="center" prop="accumulatedDepreciation" />
       <el-table-column label="netBookValue" align="center" prop="netBookValue" />
-      <el-table-column label="状态" align="center" prop="status" />
+      <el-table-column label="状态" align="center" prop="statusName" />
       <el-table-column label="备注" align="center" prop="remark" />
       <el-table-column label="创建时间" align="center" prop="createTime" :formatter="dateFormatter" />
-      <el-table-column label="操作" align="center" width="140">
+      <el-table-column label="操作" align="center" width="320">
         <template #default="scope">
           <el-button link type="primary" @click="openForm('update', scope.row.id)" v-hasPermi="['erp:fixed-asset:update']">修改</el-button>
+          <el-button v-if="scope.row.status === 10" link type="warning" @click="handleTransition(scope.row, 'idle')" v-hasPermi="['erp:fixed-asset:update']">闲置</el-button>
+          <el-button v-if="scope.row.status === 20" link type="success" @click="handleTransition(scope.row, 'enable')" v-hasPermi="['erp:fixed-asset:update']">启用</el-button>
+          <el-button v-if="scope.row.status === 10 || scope.row.status === 20" link type="danger" @click="handleTransition(scope.row, 'dispose')" v-hasPermi="['erp:fixed-asset:dispose']">处置</el-button>
+          <el-button v-if="scope.row.status === 10 || scope.row.status === 20" link type="danger" @click="handleTransition(scope.row, 'scrap')" v-hasPermi="['erp:fixed-asset:dispose']">报废</el-button>
           <el-button link type="danger" @click="handleDelete(scope.row.id)" v-hasPermi="['erp:fixed-asset:delete']">删除</el-button>
         </template>
       </el-table-column>
@@ -108,6 +112,30 @@ const handleDelete = async (id: number) => {
     await message.delConfirm()
     await FixedAssetApi.deleteFixedAsset(id)
     message.success('删除成功')
+    await getList()
+  } catch {}
+}
+
+const handleTransition = async (
+  row: any,
+  action: 'idle' | 'enable' | 'dispose' | 'scrap'
+) => {
+  const tips: Record<string, string> = {
+    idle: '确认将该资产设为闲置？',
+    enable: '确认启用该资产？',
+    dispose: '确认处置该资产？处置后为终态（已处置），不可再启用。',
+    scrap: '确认报废该资产？报废后为终态（已报废），不可再启用。',
+  }
+  try {
+    await message.confirm(`${tips[action]}资产：${row.name}`)
+    const apiMap = {
+      idle: FixedAssetApi.idleFixedAsset,
+      enable: FixedAssetApi.enableFixedAsset,
+      dispose: FixedAssetApi.disposeFixedAsset,
+      scrap: FixedAssetApi.scrapFixedAsset,
+    }
+    await apiMap[action](row.id)
+    message.success('操作成功')
     await getList()
   } catch {}
 }

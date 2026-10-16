@@ -786,6 +786,13 @@
       "sha256": "92fd1798b6668432b4e916b23b7d223be4223cdcae74644e179b6ca2448aeffa",
       "verification_file": "V202_verify.sql",
       "verification_sha256": "cd2a53d2b848f0783101bef4a0eaabeab0f6691a8610b26cff9b01803164a81e"
+    },
+    {
+      "version": 203,
+      "file": "V203__erp_fixed_asset_disposal_menu.sql",
+      "sha256": "877393d1c2cecf2341c30950d375d59eac8fa3d4f11f306e3d747315992248ac",
+      "verification_file": "V203_verify.sql",
+      "verification_sha256": "ec48a7681162fad77119c383f7884457b7aff619d71cfb2a36d9e7f87cbadc48"
     }
   ]
 }

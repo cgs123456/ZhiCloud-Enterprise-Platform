@@ -5,8 +5,10 @@ import cn.zhicloud.framework.mybatis.core.mapper.BaseMapperX;
 import cn.zhicloud.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.zhicloud.module.erp.controller.admin.finance.vo.fixedasset.ErpFixedAssetPageReqVO;
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpFixedAssetDO;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -23,6 +25,15 @@ public interface ErpFixedAssetMapper extends BaseMapperX<ErpFixedAssetDO> {
 
     default List<ErpFixedAssetDO> selectListByStatus(Integer status) {
         return selectList(ErpFixedAssetDO::getStatus, status);
+    }
+
+    /**
+     * 条件更新状态（CAS）：仅当当前状态在 {@code fromStatuses} 内时才更新，返回受影响行数
+     */
+    default int updateByIdAndStatus(Long id, Collection<Integer> fromStatuses, ErpFixedAssetDO updateObj) {
+        return update(updateObj, new LambdaUpdateWrapper<ErpFixedAssetDO>()
+                .eq(ErpFixedAssetDO::getId, id)
+                .in(ErpFixedAssetDO::getStatus, fromStatuses));
     }
 
     default PageResult<ErpFixedAssetDO> selectPage(ErpFixedAssetPageReqVO reqVO) {

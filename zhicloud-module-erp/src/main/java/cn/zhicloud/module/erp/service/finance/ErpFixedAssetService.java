@@ -46,6 +46,28 @@ public interface ErpFixedAssetService {
      */
     void deleteFixedAsset(Long id);
 
+    // ==================== 状态流转（生命周期） ====================
+
+    /**
+     * 闲置固定资产（在用 → 闲置）
+     */
+    void idleFixedAsset(Long id);
+
+    /**
+     * 启用固定资产（闲置 → 在用）
+     */
+    void enableFixedAsset(Long id);
+
+    /**
+     * 处置固定资产（在用/闲置 → 已处置，终态）
+     */
+    void disposeFixedAsset(Long id);
+
+    /**
+     * 报废固定资产（在用/闲置 → 已报废，终态）
+     */
+    void scrapFixedAsset(Long id);
+
     /**
      * 获取固定资产
      */

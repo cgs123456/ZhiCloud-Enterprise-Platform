@@ -92,6 +92,44 @@ public class ErpFixedAssetController {
         return success(result);
     }
 
+    // ==================== 状态流转（生命周期） ====================
+
+    @PutMapping("/idle")
+    @Operation(summary = "闲置固定资产", description = "用于：在用 → 闲置")
+    @Parameter(name = "id", description = "编号", required = true)
+    @PreAuthorize("@ss.hasPermission('erp:fixed-asset:update')")
+    public CommonResult<Boolean> idleFixedAsset(@RequestParam("id") Long id) {
+        fixedAssetService.idleFixedAsset(id);
+        return success(true);
+    }
+
+    @PutMapping("/enable")
+    @Operation(summary = "启用固定资产", description = "用于：闲置 → 在用")
+    @Parameter(name = "id", description = "编号", required = true)
+    @PreAuthorize("@ss.hasPermission('erp:fixed-asset:update')")
+    public CommonResult<Boolean> enableFixedAsset(@RequestParam("id") Long id) {
+        fixedAssetService.enableFixedAsset(id);
+        return success(true);
+    }
+
+    @PutMapping("/dispose")
+    @Operation(summary = "处置固定资产", description = "用于：在用/闲置 → 已处置（终态）")
+    @Parameter(name = "id", description = "编号", required = true)
+    @PreAuthorize("@ss.hasPermission('erp:fixed-asset:dispose')")
+    public CommonResult<Boolean> disposeFixedAsset(@RequestParam("id") Long id) {
+        fixedAssetService.disposeFixedAsset(id);
+        return success(true);
+    }
+
+    @PutMapping("/scrap")
+    @Operation(summary = "报废固定资产", description = "用于：在用/闲置 → 已报废（终态）")
+    @Parameter(name = "id", description = "编号", required = true)
+    @PreAuthorize("@ss.hasPermission('erp:fixed-asset:dispose')")
+    public CommonResult<Boolean> scrapFixedAsset(@RequestParam("id") Long id) {
+        fixedAssetService.scrapFixedAsset(id);
+        return success(true);
+    }
+
     // ==================== 折旧计提 ====================
 
     @PostMapping("/calculate-depreciation")

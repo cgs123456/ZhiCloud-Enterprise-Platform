@@ -1,5 +1,6 @@
 package cn.zhicloud.module.erp.service.finance;
 
+import cn.zhicloud.framework.common.exception.ErrorCode;
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
 import cn.hutool.extra.spring.SpringUtil;
@@ -25,6 +26,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
 import java.util.Objects;
 
 import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
@@ -106,9 +108,8 @@ public class ErpFixedAssetServiceImpl implements ErpFixedAssetService {
         if (asset.getDepreciationMethod() == null) {
             asset.setDepreciationMethod(ErpDepreciationMethodEnum.STRAIGHT_LINE.getMethod());
         }
-        if (asset.getStatus() == null) {
-            asset.setStatus(ErpFixedAssetStatusEnum.IN_USE.getStatus());
-        }
+        // 状态由服务端固定为「在用」：建单不接受调用方传入的状态（与 QMS 护栏同一条领域规则）
+        asset.setStatus(ErpFixedAssetStatusEnum.IN_USE.getStatus());
         if (asset.getSalvageValue() == null) {
             asset.setSalvageValue(BigDecimal.ZERO);
         }
@@ -137,7 +138,59 @@ public class ErpFixedAssetServiceImpl implements ErpFixedAssetService {
         updateObj.setDepreciatedMonths(existing.getDepreciatedMonths());
         updateObj.setAccumulatedDepreciation(existing.getAccumulatedDepreciation());
         updateObj.setNetBookValue(existing.getNetBookValue());
+        // 状态只能由 idle/enable/dispose/scrap 流转方法写入；
+        // MyBatis-Plus 跳过 null 字段 = 该列不进 UPDATE（保持原值），防止通用更新直写状态
+        updateObj.setStatus(null);
         fixedAssetMapper.updateById(updateObj);
+    }
+
+    // ==================== 状态流转（生命周期） ====================
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void idleFixedAsset(Long id) {
+        transitionStatus(id, ErpFixedAssetStatusEnum.IDLE, FIXED_ASSET_IDLE_NOT_IN_USE,
+                ErpFixedAssetStatusEnum.IN_USE.getStatus());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void enableFixedAsset(Long id) {
+        transitionStatus(id, ErpFixedAssetStatusEnum.IN_USE, FIXED_ASSET_ENABLE_NOT_IDLE,
+                ErpFixedAssetStatusEnum.IDLE.getStatus());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void disposeFixedAsset(Long id) {
+        transitionStatus(id, ErpFixedAssetStatusEnum.DISPOSED, FIXED_ASSET_ALREADY_TERMINAL,
+                ErpFixedAssetStatusEnum.IN_USE.getStatus(), ErpFixedAssetStatusEnum.IDLE.getStatus());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void scrapFixedAsset(Long id) {
+        transitionStatus(id, ErpFixedAssetStatusEnum.SCRAPPED, FIXED_ASSET_ALREADY_TERMINAL,
+                ErpFixedAssetStatusEnum.IN_USE.getStatus(), ErpFixedAssetStatusEnum.IDLE.getStatus());
+    }
+
+    /**
+     * 状态流转统一实现：以「来源状态集合」做条件更新（CAS），并发下只有一个动作能生效
+     *
+     * <p>affected rows = 0 时回查一次给出精确原因（资产不存在 / 当前状态不允许该动作）。
+     * 不用「先查后改」是为了避免两个并发动作各自通过校验后互相覆盖（伪成功）。
+     */
+    private void transitionStatus(Long id, ErpFixedAssetStatusEnum target, ErrorCode errorCode,
+                                  Integer... fromStatuses) {
+        int updated = fixedAssetMapper.updateByIdAndStatus(id, Arrays.asList(fromStatuses),
+                ErpFixedAssetDO.builder().status(target.getStatus()).build());
+        if (updated == 0) {
+            ErpFixedAssetDO asset = fixedAssetMapper.selectById(id);
+            if (asset == null) {
+                throw exception(FIXED_ASSET_NOT_EXISTS);
+            }
+            throw exception(errorCode, asset.getCode());
+        }
     }
 
     @Override

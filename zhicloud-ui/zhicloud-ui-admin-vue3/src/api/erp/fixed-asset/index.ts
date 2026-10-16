@@ -61,4 +61,20 @@ export const FixedAssetApi = {
     // 查询资产折旧记录列表
     return await request.get({ url: `/erp/fixed-asset/depreciation-list`, data })
   },
+  idleFixedAsset: async (id: number) => {
+    // 闲置固定资产（在用 → 闲置）
+    return await request.put({ url: `/erp/fixed-asset/idle?id=` + id })
+  },
+  enableFixedAsset: async (id: number) => {
+    // 启用固定资产（闲置 → 在用）
+    return await request.put({ url: `/erp/fixed-asset/enable?id=` + id })
+  },
+  disposeFixedAsset: async (id: number) => {
+    // 处置固定资产（在用/闲置 → 已处置，终态）
+    return await request.put({ url: `/erp/fixed-asset/dispose?id=` + id })
+  },
+  scrapFixedAsset: async (id: number) => {
+    // 报废固定资产（在用/闲置 → 已报废，终态）
+    return await request.put({ url: `/erp/fixed-asset/scrap?id=` + id })
+  },
 }

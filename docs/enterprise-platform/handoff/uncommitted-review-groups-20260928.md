@@ -10128,3 +10128,91 @@ CAPA 缺 `problem`），**不是修复失效**。
 - `check_commit_readiness.py`：required=17/17、tracked=17；warnings 4 条
   （均为 V200/V201 未跟踪的提醒，随 A 入库归零，提交完成后复跑应为 0）；
 - 前端：`ts:check`、`build:prod` exit=0。
+
+## 12.237 2026-10-16 ERP 固定资产「状态直落」收口 + 生命周期流转四端点 + V203（业务清单 §1.1）
+
+按「按清单逐项完成」指示开工的第一项。它是两个清单的同一件事：
+业务清单 §1.1（与 QMS 同型的状态直落缺陷）与 next-steps §4 第 4 项（处置/报废路径缺失）。
+定性为「护栏（修 bug）+ 处置/报废（新增端点）」的混合体：设计定案在动手前完成（§12.237.2），
+实现与验证分四层——源码护栏 → 流转端点 → 前端 → 迁移。
+
+### 12.237.1 缺陷面（修 bug 的一侧）
+
+HEAD `fdc1d4e00` 时点：
+- `ErpFixedAssetServiceImpl#createFixedAsset`：`status` 仅在其为 null 时兜底 IN_USE，否则**原样落库**
+  —— 调用方可建单即写 `DISPOSED(30)` / `SCRAPPED(40)` 终态或任意脏值；
+- `ErpFixedAssetServiceImpl#updateFixedAsset`：`BeanUtils.toBean` 直落，**`status` 随请求带入即原样写库**
+  （`updateById` 对非 null 字段直写）；
+- `ErpFixedAssetSaveReqVO.status` 无 `@InEnum`，脏值可穿透到 SQL；
+- `DISPOSED(30)` / `SCRAPPED(40)` 全模块零引用，处置/报废无任何受控入口。
+
+#### 订正（历史原文不回改）
+
+§12.234.2 第 4 条与 next-steps §4 注（本轮已同步订正）写「**且没有任何代码能把它改回**」——
+**不成立**。当时代码里 `update` 直落 `status`，任何一次携带 `status` 的通用更新都会把它
+**原样写回**：既能写终态、也能随手把 30 改回 10 或改成任意值。
+这恰恰是缺陷的另一半——缺的是**受控**的状态写入者与处置路径，而不是「改回的办法」。订正以此节为准。
+
+### 12.237.2 设计决策（ADR 式，动手前定案）
+
+- **D1 状态只能由流转方法写入（领域不变式）**。create 无条件 `setStatus(IN_USE)`（建单不表态）；
+  update 一律 `updateObj.setStatus(null)`（MyBatis-Plus 跳过 null 列 → 状态列不进 UPDATE、保持原值）。
+  否掉的备选：从 VO 删掉 status（破坏对外契约）；update 时比较新旧状态报错（把状态机逻辑泄漏进通用更新）。
+  另一个必须同批的理由：若只堵 update 而不补流转端点，会把现网唯一的「改回」手段封死。
+- **D2 生命周期端点 4 个**：`PUT /erp/fixed-asset/idle|enable|dispose|scrap`，`id` 为查询参数
+  （`@RequestParam("id")`，与本控制器既有端点形态一致）。转移表：idle {在用 10}→闲置 20；
+  enable {20}→10；dispose {10,20}→已处置 30（终态）；scrap {10,20}→已报废 40（终态）。
+  否掉的备选：单一 `transition` 端点带目标参数（前端与权限都难表达）。
+- **D3 并发用 CAS**。Mapper 新增
+  `default int updateByIdAndStatus(Long id, Collection<Integer> fromStatuses, ErpFixedAssetDO updateObj)`
+  （`LambdaUpdateWrapper`：单条 `UPDATE ... WHERE id=? AND status IN (...)`）；0 行时回查，
+  区分「不存在」（1030707000）与「来源状态不匹配」（按动作给精确码）。两个并发动作只有一个能成功。
+  沿用仓库既有风格（§12.231 TMS 运单状态机同为 CAS）。
+- **D4 权限划分**：idle/enable 非终态、可逆 → 复用 `erp:fixed-asset:update`；
+  dispose/scrap 终态、不可逆 → 新权限 `erp:fixed-asset:dispose`（最小权限）。
+- **D5 错误码**（沿用 1_030_707_0xx 段，+3 个）：`FIXED_ASSET_IDLE_NOT_IN_USE`=1_030_707_014、
+  `FIXED_ASSET_ENABLE_NOT_IDLE`=1_030_707_015、`FIXED_ASSET_ALREADY_TERMINAL`=1_030_707_016。
+- **D6 边界闸**：`ErpFixedAssetSaveReqVO.status` 补 `@InEnum(ErpFixedAssetStatusEnum.class)`，
+  垃圾值在 400 层挡住、不落库。
+
+### 12.237.3 变更清单（13 个内容文件）
+
+- 后端 7：`ErpFixedAssetService`（+4 方法）、`ErpFixedAssetServiceImpl`（护栏 + 4 流转 + CAS 私有助手
+  `transitionStatus`）、`ErpFixedAssetMapper`（`updateByIdAndStatus`）、`ErpFixedAssetController`（4 端点）、
+  `ErpFixedAssetSaveReqVO`（`@InEnum`）、`ErrorCodeConstants`（+3 码）、`ErpFixedAssetServiceImplTest`（+7 用例，12→19）。
+- 前端 3：`api/erp/fixed-asset/index.ts`（+4 函数）、`views/erp/fixed-asset/index.vue`（状态列改 `statusName`、
+  流转按钮：状态门控 + `v-hasPermi` + `handleTransition`）、`fixedAssetForm.vue`（状态改只读展示）。
+- 迁移 2：`V203__erp_fixed_asset_disposal_menu.sql`（按钮 id 9605、parent 9373、不写 `system_role_menu`（V134 口径））、
+  `V203_verify.sql`；两文件均 LF / 无 BOM / 尾换行，mig 2407B sha256 `877393d1…`、verify 642B sha256 `ec48a768…`。
+- 登记 1：`migration-contract.json`（新增 V203 块，37277B）。
+
+### 12.237.4 验证读数
+
+| 层 | 手段 | 读数 |
+| --- | --- | --- |
+| 单测（类） | `-Dtest=ErpFixedAssetServiceImplTest` | **19/19**（新 7 例：建单护栏 / 更新护栏 / CAS 参数断言 / 三条拒绝路径） |
+| 单测（模块） | `mvn -o -pl zhicloud-module-erp test` | **184/184**，0 failures / 0 errors |
+| 前端类型 | `pnpm ts:check` | exit=0 |
+| 前端构建 | `pnpm build:prod` | exit=0（8451 模块，50.98s；§5.4 教训「ts:check 过不代表能构建，两步都要跑」） |
+| 迁移契约 | `check_migration_contract.py` | PASSED tracked=113 scanned=209 findings=0 |
+| 迁移 lint | V203 两文件（并入契约检查） | 0 违规 |
+| 错误码去重 | 全仓扫描 | 1939 字面量 / 0 撞号 |
+| 真机迁移 | 启动时 Flyway（沙箱 `zhicloud_sandbox_v140`） | `Successfully applied 2 migrations`（V202、V203）→ `now at version v203`；`flyway_schema_history` V203 记录 success=1 |
+| 迁移验证 | `V203_verify.sql` 原样真机执行 | **2/2 PASS**（V203_DISPOSE_PERM / V203_NO_ORPHAN） |
+| 真机 E2E | `Temp/zc_erp_fixed_asset_e2e.py`（33 断言，tenant 9001） | **33/33 PASS** |
+
+E2E 具体断言（API + DB 双验）：建单传 `status=30` → 落库 10；PUT 传 `status=30` → 其余字段确实更新、
+状态列未进 UPDATE（仍 10）；idle→20、enable→10；重复动作按序被拒 1030707014 / 1030707015 / 1030707016；
+对已处置资产 enable/idle 被拒；dispose→30、scrap→40（终态）；`status=999` → 400 且不落行；
+不存在 id → 1030707000；分页 `statusName`=已处置/已报废；清理后活行 0。
+真机 SQL 日志留下 CAS 原形：
+`UPDATE erp_fixed_asset SET status=?, update_time=?, updater=? WHERE deleted=0 AND (id=? AND status IN (?,?)) AND tenant_id=9001`。
+
+### 12.237.5 过程教训（环境）
+
+1. **重打包失败先怀疑进程占用**：`spring-boot:repackage` 最后一步 `Unable to rename ...jar → ...jar.original`
+   失败——旧 server 进程锁着 jar（`maven-jar-plugin` 已先把旧 fat jar 覆盖成 850KB 薄 jar）。
+   停进程后重跑即 BUILD SUCCESS。HANDOFF §5.5 记过同题，这次是复现：**改前先停服**。
+2. **重启会丢 mock 密钥**：旧实例以环境变量 `MOCK_SECRET=zc-live-mock-` 启动（命令行里看不到），
+   漏掉后 mock-secret 落回 yaml 默认 `test-only-for-local`，旧令牌 401。令牌规则 =
+   `mock-secret` + 用户编号（`TokenAuthenticationFilter#mockLoginUser`）；补上 env 重启后 E2E 复跑 33/33。

@@ -1,5 +1,7 @@
 package cn.zhicloud.module.erp.controller.admin.finance.vo.fixedasset;
 
+import cn.zhicloud.framework.common.validation.InEnum;
+import cn.zhicloud.module.erp.enums.finance.ErpFixedAssetStatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -65,7 +67,8 @@ public class ErpFixedAssetSaveReqVO {
     @Schema(description = "对应折旧费用科目编号", example = "3")
     private Long depreciationExpenseAccountId;
 
-    @Schema(description = "状态", example = "10")
+    @Schema(description = "状态（建单固定为「在用」，修改不接受该字段；状态变更走 idle/enable/dispose/scrap 端点）", example = "10")
+    @InEnum(ErpFixedAssetStatusEnum.class)
     private Integer status;
 
     @Schema(description = "备注", example = "备注")
