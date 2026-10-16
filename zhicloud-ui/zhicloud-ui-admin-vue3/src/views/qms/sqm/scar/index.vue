@@ -58,8 +58,18 @@
       </el-table-column>
       <el-table-column align="center" label="关闭时间" prop="closeTime" width="170" />
       <el-table-column align="center" :formatter="dateFormatter" label="创建时间" prop="createTime" width="170" />
-      <el-table-column align="center" fixed="right" label="操作" width="140">
+      <el-table-column align="center" fixed="right" label="操作" width="240">
         <template #default="scope">
+          <!-- 未关闭：关闭 -->
+          <el-button
+            v-if="scope.row.status !== ScarStatus.CLOSED"
+            v-hasPermi="['qms:scar:update']"
+            link
+            type="success"
+            @click="handleClose(scope.row)"
+          >
+            关闭
+          </el-button>
           <el-button
             v-hasPermi="['qms:scar:update']"
             link
@@ -100,6 +110,13 @@ import ScarForm from './ScarForm.vue'
 defineOptions({ name: 'Scar' })
 
 const message = useMessage()
+
+/** SCAR 状态机（与后端 ScarStatusEnum 对齐；§12.239 接线） */
+const ScarStatus = {
+  OPEN: 10,
+  IN_PROGRESS: 20,
+  CLOSED: 30
+} as const
 
 const loading = ref(true)
 const list = ref<any[]>([])
@@ -146,6 +163,16 @@ const handleDelete = async (id: number) => {
     await message.delConfirm()
     await ScarApi.deleteScar(id)
     message.success('删除成功')
+    await getList()
+  } catch {}
+}
+
+/** 关闭（→ 30 已关闭） */
+const handleClose = async (row: any) => {
+  try {
+    await message.confirm(`是否确认关闭 SCAR「${row.scarNo}」？`)
+    await ScarApi.closeScar(row.id)
+    message.success('已关闭')
     await getList()
   } catch {}
 }

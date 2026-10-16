@@ -42,4 +42,9 @@ export const ScarApi = {
   deleteScar: async (id: number) => {
     return await request.delete({ url: '/qms/scar/delete?id=' + id })
   },
+
+  // 关闭（→ 30 已关闭；§12.239 接线）
+  closeScar: async (id: number) => {
+    return await request.put({ url: '/qms/scar/close?id=' + id })
+  }
 }

@@ -43,4 +43,19 @@ export const QmsAuditPlanApi = {
   deleteQmsAuditPlan: async (id: number) => {
     return await request.delete({ url: '/qms/audit-plan/delete?id=' + id })
   },
+
+  // 开始执行（10 已计划 → 20 执行中；§12.239 接线）
+  executeQmsAuditPlan: async (id: number) => {
+    return await request.put({ url: '/qms/audit-plan/execute?id=' + id })
+  },
+
+  // 完成（20 执行中 → 30 已完成）
+  completeQmsAuditPlan: async (id: number) => {
+    return await request.put({ url: '/qms/audit-plan/complete?id=' + id })
+  },
+
+  // 取消（10/20 → 40 已取消）
+  cancelQmsAuditPlan: async (id: number) => {
+    return await request.put({ url: '/qms/audit-plan/cancel?id=' + id })
+  }
 }

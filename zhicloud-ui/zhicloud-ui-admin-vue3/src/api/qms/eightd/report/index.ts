@@ -46,4 +46,14 @@ export const EightDReportApi = {
   deleteEightDReport: async (id: number) => {
     return await request.delete({ url: '/qms/eight-d/delete?id=' + id })
   },
+
+  // 推进阶段（D(n) → D(n+1)；D7 封顶不再推进；§12.239 接线）
+  advanceEightDReportStage: async (id: number) => {
+    return await request.put({ url: '/qms/eight-d/advance-stage?id=' + id })
+  },
+
+  // 关闭（→ D8 已关闭；受控操作：需电子签名）
+  closeEightDReport: async (id: number, headers?: Record<string, string>) => {
+    return await request.put({ url: '/qms/eight-d/close?id=' + id, headers })
+  }
 }

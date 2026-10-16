@@ -40,4 +40,19 @@ export const MsaStudyApi = {
   deleteMsaStudy: async (id: number) => {
     return await request.delete({ url: '/qms/msa/delete?id=' + id })
   },
+
+  // 测量数据列表（§12.239 接线 MSA 数据闭环）
+  getMsaMeasurementList: async (studyId: number) => {
+    return await request.get({ url: '/qms/msa/measurement/list?studyId=' + studyId })
+  },
+
+  // 保存测量数据
+  saveMsaMeasurement: async (data: any) => {
+    return await request.post({ url: '/qms/msa/measurement/save', data })
+  },
+
+  // 计算 Gage R&R（副作用：研究状态置为已完成 30）
+  calculateMsaGageRR: async (studyId: number) => {
+    return await request.get({ url: '/qms/msa/calculate-gage-rr?studyId=' + studyId })
+  }
 }

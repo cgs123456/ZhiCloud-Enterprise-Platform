@@ -46,4 +46,14 @@ export const CustomerComplaintApi = {
   deleteCustomerComplaint: async (id: number) => {
     return await request.delete({ url: '/qms/customer-complaint/delete?id=' + id })
   },
+
+  // 状态推进（10 已登记 → 20 调查中 → 30 处理中；§12.239 接线）
+  advanceCustomerComplaintStatus: async (id: number) => {
+    return await request.put({ url: '/qms/customer-complaint/advance-status?id=' + id })
+  },
+
+  // 关闭（→ 40 已关闭）
+  closeCustomerComplaint: async (id: number) => {
+    return await request.put({ url: '/qms/customer-complaint/close?id=' + id })
+  }
 }

@@ -60,8 +60,38 @@
       <el-table-column align="center" label="影响范围" prop="impactScope" min-width="110" />
       <el-table-column align="center" label="处理方式" prop="handleType" min-width="110" />
       <el-table-column align="center" :formatter="dateFormatter" label="创建时间" prop="createTime" width="170" />
-      <el-table-column align="center" fixed="right" label="操作" width="140">
+      <el-table-column align="center" fixed="right" label="操作" width="300">
         <template #default="scope">
+          <!-- 10 已登记：开始调查 -->
+          <el-button
+            v-if="scope.row.status === ComplaintStatus.REGISTERED"
+            v-hasPermi="['qms:customer-complaint:update']"
+            link
+            type="primary"
+            @click="handleAdvance(scope.row)"
+          >
+            开始调查
+          </el-button>
+          <!-- 20 调查中：进入处理 -->
+          <el-button
+            v-if="scope.row.status === ComplaintStatus.INVESTIGATING"
+            v-hasPermi="['qms:customer-complaint:update']"
+            link
+            type="primary"
+            @click="handleAdvance(scope.row)"
+          >
+            进入处理
+          </el-button>
+          <!-- 未关闭：关闭 -->
+          <el-button
+            v-if="scope.row.status !== ComplaintStatus.CLOSED"
+            v-hasPermi="['qms:customer-complaint:update']"
+            link
+            type="success"
+            @click="handleClose(scope.row)"
+          >
+            关闭
+          </el-button>
           <el-button
             v-hasPermi="['qms:customer-complaint:update']"
             link
@@ -101,6 +131,20 @@ import CustomerComplaintForm from './CustomerComplaintForm.vue'
 defineOptions({ name: 'CustomerComplaint' })
 
 const message = useMessage()
+
+/** 投诉状态机（与后端 ComplaintStatusEnum 对齐；§12.239 接线） */
+const ComplaintStatus = {
+  REGISTERED: 10,
+  INVESTIGATING: 20,
+  HANDLING: 30,
+  CLOSED: 40
+} as const
+
+/** 推进动作的展示名（仅用于确认文案） */
+const ADVANCE_LABEL: Record<number, string> = {
+  10: '开始调查',
+  20: '进入处理'
+}
 
 const loading = ref(true)
 const list = ref<any[]>([])
@@ -149,6 +193,28 @@ const handleDelete = async (id: number) => {
     await message.delConfirm()
     await CustomerComplaintApi.deleteCustomerComplaint(id)
     message.success('删除成功')
+    await getList()
+  } catch {}
+}
+
+/** 状态推进（10 → 20 → 30） */
+const handleAdvance = async (row: any) => {
+  try {
+    await message.confirm(
+      `是否确认「${ADVANCE_LABEL[row.status] ?? '推进'}」投诉「${row.complaintNo}」？`
+    )
+    await CustomerComplaintApi.advanceCustomerComplaintStatus(row.id)
+    message.success('状态已推进')
+    await getList()
+  } catch {}
+}
+
+/** 关闭（→ 40 已关闭） */
+const handleClose = async (row: any) => {
+  try {
+    await message.confirm(`是否确认关闭投诉「${row.complaintNo}」？`)
+    await CustomerComplaintApi.closeCustomerComplaint(row.id)
+    message.success('已关闭')
     await getList()
   } catch {}
 }

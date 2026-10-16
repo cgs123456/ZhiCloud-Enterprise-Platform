@@ -42,4 +42,14 @@ export const QmsDocumentChangeRequestApi = {
   deleteQmsDocumentChangeRequest: async (id: number) => {
     return await request.delete({ url: '/qms/document-change-request/delete?id=' + id })
   },
+
+  // 批准变更申请（10 待审 → 20 已批准；受控操作：需电子签名；批准后自动执行变更）
+  approveQmsDocumentChangeRequest: async (id: number, headers?: Record<string, string>) => {
+    return await request.put({ url: '/qms/document-change-request/approve?id=' + id, headers })
+  },
+
+  // 驳回变更申请（10 待审 → 30 已驳回；reason 写入备注）
+  rejectQmsDocumentChangeRequest: async (data: { id: number; reason: string }) => {
+    return await request.put({ url: '/qms/document-change-request/reject', data })
+  }
 }

@@ -41,4 +41,9 @@ export const QmsDocumentDistributeApi = {
   deleteQmsDocumentDistribute: async (id: number) => {
     return await request.delete({ url: '/qms/document-distribute/delete?id=' + id })
   },
+
+  // 归还（登记归还数量与日期；仅更新分发行）
+  returnQmsDocumentDistribute: async (data: { id: number; returnedQty: number; returnedDate: string }) => {
+    return await request.put({ url: '/qms/document-distribute/return', data })
+  }
 }

@@ -64,8 +64,41 @@
         </template>
       </el-table-column>
       <el-table-column align="center" :formatter="dateFormatter" label="创建时间" prop="createTime" width="170" />
-      <el-table-column align="center" fixed="right" label="操作" width="140">
+      <el-table-column align="center" fixed="right" label="操作" width="280">
         <template #default="scope">
+          <!-- 10 已计划：开始执行 -->
+          <el-button
+            v-if="scope.row.status === AuditPlanStatus.PLANNED"
+            v-hasPermi="['qms:audit:execute']"
+            link
+            type="primary"
+            @click="handleExecute(scope.row)"
+          >
+            开始执行
+          </el-button>
+          <!-- 20 执行中：完成 -->
+          <el-button
+            v-if="scope.row.status === AuditPlanStatus.EXECUTING"
+            v-hasPermi="['qms:audit:execute']"
+            link
+            type="success"
+            @click="handleComplete(scope.row)"
+          >
+            完成
+          </el-button>
+          <!-- 10/20：取消 -->
+          <el-button
+            v-if="
+              scope.row.status === AuditPlanStatus.PLANNED ||
+              scope.row.status === AuditPlanStatus.EXECUTING
+            "
+            v-hasPermi="['qms:audit:execute']"
+            link
+            type="danger"
+            @click="handleCancel(scope.row)"
+          >
+            取消
+          </el-button>
           <el-button
             v-hasPermi="['qms:audit:update']"
             link
@@ -106,6 +139,14 @@ import QmsAuditPlanForm from './QmsAuditPlanForm.vue'
 defineOptions({ name: 'QmsAuditPlan' })
 
 const message = useMessage()
+
+/** 审核计划状态机（与后端 QmsAuditPlanStatusEnum 对齐；§12.239 接线执行闭环） */
+const AuditPlanStatus = {
+  PLANNED: 10,
+  EXECUTING: 20,
+  COMPLETED: 30,
+  CANCELLED: 40
+} as const
 
 const loading = ref(true)
 const list = ref<any[]>([])
@@ -154,6 +195,36 @@ const handleDelete = async (id: number) => {
     await message.delConfirm()
     await QmsAuditPlanApi.deleteQmsAuditPlan(id)
     message.success('删除成功')
+    await getList()
+  } catch {}
+}
+
+/** 开始执行（10 已计划 → 20 执行中） */
+const handleExecute = async (row: any) => {
+  try {
+    await message.confirm(`是否确认开始执行审核计划「${row.planNo}」？`)
+    await QmsAuditPlanApi.executeQmsAuditPlan(row.id)
+    message.success('已开始执行')
+    await getList()
+  } catch {}
+}
+
+/** 完成（20 执行中 → 30 已完成） */
+const handleComplete = async (row: any) => {
+  try {
+    await message.confirm(`是否确认完成审核计划「${row.planNo}」？`)
+    await QmsAuditPlanApi.completeQmsAuditPlan(row.id)
+    message.success('已完成')
+    await getList()
+  } catch {}
+}
+
+/** 取消（10/20 → 40 已取消） */
+const handleCancel = async (row: any) => {
+  try {
+    await message.confirm(`是否确认取消审核计划「${row.planNo}」？`)
+    await QmsAuditPlanApi.cancelQmsAuditPlan(row.id)
+    message.success('已取消')
     await getList()
   } catch {}
 }

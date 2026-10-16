@@ -10296,3 +10296,122 @@ E2E 具体断言（API + DB 双验）：建单传 `status=30` → 落库 10；PU
    的两个日期列（`calibrationDate/nextCalibrationDate`）未加 formatter、器具表单两个
    `el-date-picker`（`value-format="YYYY-MM-DD"`）与数组回显不匹配（编辑态回显存疑）。
    影响面为展示层，建议作为小项处理（补 formatter / 归一），未在本项动手。
+
+## 12.239 2026-10-16 QMS 前端流程入口全量收口：20 个流程端点接线（业务断点 1；ADR 先行）
+
+本节属性：HANDOFF §3.2 第 1 项「QMS 受控文档审批闭环（19 个流程端点无前端入口）」的收口，
+亦订正 next-steps §3.1 行「19 处流程端点未动（已声明）」。纯前端增量：零后端改动、零迁移、
+零字典变更；按「每项先 ADR」要求，设计决策在动手前定稿（§12.239.2）。
+
+### 12.239.1 缺陷面与口径复核
+
+断点源自 §12.234.2 第 1 条（QMS 受控文档审批流：后端完整、前端零入口）。本项动手前重扫
+三层（后端端点 / api 层 URL / 页面调用函数名），现网缺口为 **20 个端点**：
+
+- 27 个流程端点 = 已全接线 7（audit-nonconformity ×4，见 §12.218；ncr ×3，更早轮接线、
+  账内未单列，commit `464bd3854`）+ 未接线 20；
+- 未接线 20 = 原「19」（audit-plan 3、capa 3、customer-complaint 2、document 4、
+  document-change-request 2、document-distribute 1、eight-d 2、inspection-order 1、scar 1）
+  + `POST /qms/msa/measurement/save`（数据级 save，非状态迁移，原计数未含；纳入理由：
+  无测量录入入口则 MSA 闭环不可用、`calculate-gage-rr` 无数据可算——同时接线配套的
+  `GET /qms/msa/measurement/list` 与 `GET /qms/msa/calculate-gage-rr`）。
+
+20 端点契约要点（权限码 = 后端 `@PreAuthorize` 同码，按钮 `v-hasPermi` 直接复用；
+前置态为后端校验的源状态，UI 按同口径显隐）：
+
+| # | 端点 | 前置态 | 输入 | 电子签名 |
+|---|---|---|---|---|
+| 1 | `PUT /qms/document/submit` | 10 草稿 | id | - |
+| 2 | `PUT /qms/document/approve` | 20 待审 | id + fileUrl(可选) | 需要（原因） |
+| 3 | `PUT /qms/document/reject` | 20 待审 | id + reason | 需要（原因） |
+| 4 | `PUT /qms/document/revoke` | 30 已发布 | id | - |
+| 5 | `PUT /qms/document-change-request/approve` | 10 待审 | id | 需要（原因） |
+| 6 | `PUT /qms/document-change-request/reject` | 10 待审 | id + reason | - |
+| 7 | `PUT /qms/document-distribute/return` | 无 | id + 归还数量 + 归还日期 | - |
+| 8 | `PUT /qms/audit-plan/execute` | 10 已计划 | id | - |
+| 9 | `PUT /qms/audit-plan/complete` | 20 执行中 | id | - |
+| 10 | `PUT /qms/audit-plan/cancel` | 10/20 | id | - |
+| 11 | `PUT /qms/capa/transition` | 10–50 逐段；50→30 为回退 | id + targetStage | - |
+| 12 | `PUT /qms/capa/verify` | 50 验证 | 结果 + 说明(+验证人) | - |
+| 13 | `PUT /qms/capa/close` | 50 且结果=通过 | id | 需要（原因） |
+| 14 | `PUT /qms/customer-complaint/advance-status` | 10/20 | id | - |
+| 15 | `PUT /qms/customer-complaint/close` | 无（UI 收敛） | id | - |
+| 16 | `PUT /qms/eight-d/advance-stage` | < D8 | id | - |
+| 17 | `PUT /qms/eight-d/close` | 无（UI 收敛） | id | 需要（原因） |
+| 18 | `POST /qms/inspection-order/submit` | 10/20 | orderId + 记录数组 | - |
+| 19 | `POST /qms/msa/measurement/save`（补充） | 无 | studyId + 测量值 | - |
+| 20 | `PUT /qms/scar/close` | 无（UI 收敛） | id | - |
+
+### 12.239.2 设计决策（ADR 式，动手前定案）
+
+- **D1 交互范式**：沿用 §12.218 在 audit-nonconformity 页建立的既定范式——操作列按钮按
+  源状态条件渲染 + `v-hasPermi`（与后端同码）；无输入迁移用 `message.confirm`
+  （`try/catch {}` 包裹，与仓库主流页面一致）；需输入的走 Dialog；挂 `@ElectronicSignature`
+  的动作在 Dialog 内附「电子签名（21 CFR Part 11）」区块（用户名/密码/签名原因，
+  `encodeURIComponent` 后走 `X-Electronic-Signature-*` 头）。不新造组件与样式。
+- **D2 边界与数据流**：只调用既有后端端点（零后端改动、零迁移、零字典变更）；签名头只在
+  api 层函数内透传，页面只收表单值；动作成功 `getList()` 回读；失败走全局错误通道
+  （后端错误码文案直接可见）。
+- **D3 显示门槛**：以「后端前置态」为按钮显示条件、终态不再显示动作；对后端无前置校验的
+  动作（customer-complaint/close、eight-d/close、scar/close）UI 仍按业务合理态收敛
+  （未关闭才显示），不放大后端缺口、也不放行明显不合业务的入口。
+- **D4 明确不做**：① 不提供「经 capa/transition 直达 CLOSED」入口——该路径绕过关闭签名，
+  UI 只给「验证 →（通过后）关闭」；② 不收集后端接收即弃的输入（capa/transition 的
+  remark）；③ 不在 8D 的 D7 显示「推进阶段」（后端 clamp 为静默 no-op）。
+- **D5 附属修复**（同页既存缺陷，随本项一并收口）：`document/change-request` 与
+  `document/distribute` 两页共 6 处 `v-hasPermi="['']"`（空权限码：普通角色按钮全部隐藏，
+  仅 `*:*:*` 超管可见）——按后端权限码修正为 `qms:document:change` /
+  `qms:document:distribute`（两码在 V134 均有种子）。
+
+### 12.239.3 变更清单（20 个内容文件：10 api + 10 页面）
+
+- `api/qms/document/index.ts` + `views/qms/document/index.vue`：submit / approve（签名，
+  可带定稿 fileUrl）/ reject（签名 + 驳回原因）/ revoke；
+- `api/qms/document/change-request/index.ts` + 页面：approve（签名）/ reject（驳回原因）；
+- `api/qms/document/distribute/index.ts` + 页面：return（归还数量 + 日期对话框）；
+- `api/qms/audit/plan/index.ts` + 页面：execute / complete / cancel（三条 confirm）；
+- `api/qms/capa/document/index.ts` + 页面：transition（逐段推进 + 50→30 退回）/ verify
+  （结果 + 说明对话框）/ close（签名）；
+- `api/qms/complaint/customer/index.ts` + 页面：advance-status（10→20 / 20→30）/ close；
+- `api/qms/eightd/report/index.ts` + 页面：advance-stage（D(n)→D(n+1)）/ close（签名）；
+- `api/qms/inspection/order/index.ts` + 页面：submit（记录编辑对话框：预填已有记录 + 行增删
+  + 行级必填校验 + 至少一条；记录 RespVO 无 severity 字段，预填默认「严重」）；
+- `api/qms/msa/study/index.ts` + 页面：measurement/save（测量值录入对话框）+ measurement/list
+  + calculate-gage-rr（结果对话框：样本数、EV/AV/GageRR/PV/TV、%EV/%AV/%GRR/%PV）；
+- `api/qms/sqm/scar/index.ts` + 页面：close。
+
+页面新增常量（与后端枚举对齐，供按钮门槛与选项）：`DocStatus`、`CRStatus`、
+`AuditPlanStatus`、`CapaStage` + `CAPAVerificationResult`、`ComplaintStatus`、`EightDStatus`、
+`InspectOrderStatus`、`ScarStatus`；检验结果 / 严重度选项为页面内联常量。
+
+### 12.239.4 验证读数
+
+- 三层接线扫描（端点 × api × 页面调用）：**27/27 全绿**（此前 7/27；本次 20 个端点全部
+  api+页面双 Y）。
+- `pnpm ts:check` **EXIT=0**；`pnpm build:prod` **EXIT=0**（built in 1m 8s，dist-prod
+  正常产出）。
+- 行尾完整性：20 个改动文件全部 `crlf=0`（LF-only 保持）、`ends_nl=true`（脚本逐文件读取
+  断言 + 终检核对）。
+- 空权限码普查：QMS views 全目录 `v-hasPermi="['']"` 残留 **0**（修复前 6）。
+- 未做浏览器交互验证（环境无登录态驱动）：登记为验证缺口；交互面以「后端契约逐条复核 +
+  类型/构建双门禁」替代，真实点击冒烟留待后续。
+- prettier 基线说明：本批 12 个文件 `prettier --check` 不过；但未涉改基线文件（ncr、
+  nonconformity、audit/report、inspection/record 等）同样不过——属仓库既有状态，未新增
+  格式化门禁面；本轮未做全量格式化（避免无关重排的 diff 噪音）。
+
+### 12.239.5 连带观察（登记，不动手）
+
+1. **受控文档 approve 不写审批人**：`QmsDocumentServiceImpl` 的 approve 只写 `approveDate`、
+   `fileUrl`、`version`（create 时 `approverId/approveDate` 置 null），`approverId` 无任何
+   路径落库——文档列表「审批人 ID」列将恒空；如需展示须后端补齐（登记）。
+2. **8D close 无前置态**：后端不校验当前 D 阶段即可关闭（D1 也允许关）；UI 按「< D8 才
+   显示关闭」收敛，不放大缺口（登记）。
+3. **投诉 close 可重复关闭**：后端无幂等态校验，重复调用均成功；UI 未关闭才显示关闭（登记）。
+4. **SCAR `IN_PROGRESS(20)` 不可达**：无状态推进端点、update 屏蔽 `status`——UI 只提供
+   「关闭」；状态机中段语义缺口属既有登记，未借本项扩权。
+5. **检验记录 RespVO 无 `severity`**：submit 弹窗预填已有记录时严重度只能默认「严重」，
+   提交前需人工确认（已写进代码注释）；精确回填须后端补字段（登记）。
+6. **MSA 页重复「创建时间」列**：`views/qms/msa/study/index.vue` 两个同 prop 列并排
+   （展示层小瑕疵，非本轮引入；与 §12.234 系列展示层小项同类，登记）。
+
+本节文档同步：next-steps 后记追加完成/订正两条；HANDOFF §3.2 第 1 项与 §四第 3 条加订正块。

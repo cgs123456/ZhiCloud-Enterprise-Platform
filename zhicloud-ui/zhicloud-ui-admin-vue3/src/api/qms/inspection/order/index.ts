@@ -41,4 +41,12 @@ export const InspectionOrderApi = {
   deleteInspectionOrder: async (id: number) => {
     return await request.delete({ url: '/qms/inspection-order/delete?id=' + id })
   },
+
+  // 提交检验（10/20 → 按 AQL 判定 30 合格 / 40 不合格；records 为检验记录数组；§12.239 接线）
+  submitInspectionOrder: async (orderId: number, records: any[]) => {
+    return await request.post({
+      url: '/qms/inspection-order/submit?orderId=' + orderId,
+      data: records
+    })
+  }
 }

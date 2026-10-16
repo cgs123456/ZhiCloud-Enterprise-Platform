@@ -44,4 +44,25 @@ export const QmsDocumentApi = {
   deleteQmsDocument: async (id: number) => {
     return await request.delete({ url: '/qms/document/delete?id=' + id })
   },
+
+  // 提交审批（10 草稿 → 20 待审批；§12.239 接线审批闭环）
+  submitQmsDocument: async (id: number) => {
+    return await request.put({ url: '/qms/document/submit?id=' + id })
+  },
+
+  // 审批通过并发布（20 待审批 → 30 已发布；受控操作：需电子签名；fileUrl 可选定稿文件）
+  approveQmsDocument: async (id: number, fileUrl?: string, headers?: Record<string, string>) => {
+    const suffix = fileUrl ? '&fileUrl=' + encodeURIComponent(fileUrl) : ''
+    return await request.put({ url: '/qms/document/approve?id=' + id + suffix, headers })
+  },
+
+  // 驳回（20 待审批 → 10 草稿；受控操作：需电子签名；reason 写入文档备注）
+  rejectQmsDocument: async (data: { id: number; reason: string }, headers?: Record<string, string>) => {
+    return await request.put({ url: '/qms/document/reject', data, headers })
+  },
+
+  // 作废（30 已发布 → 40 已作废）
+  revokeQmsDocument: async (id: number) => {
+    return await request.put({ url: '/qms/document/revoke?id=' + id })
+  }
 }

@@ -49,4 +49,24 @@ export const CAPADocumentApi = {
   deleteCAPADocument: async (id: number) => {
     return await request.delete({ url: '/qms/capa/delete?id=' + id })
   },
+
+  // 阶段推进（target = 当前阶段 + 10；也用于 50 验证 → 30 纠正措施的退回；§12.239 接线）
+  transitionCAPADocument: async (data: { id: number; targetStage: number }) => {
+    return await request.put({ url: '/qms/capa/transition', data })
+  },
+
+  // 提交验证结果（50 验证阶段；不通过时后端自动退回 30 纠正措施）
+  verifyCAPADocument: async (data: {
+    id: number
+    verificationResult: number
+    verificationComment: string
+    verifiedBy?: string
+  }) => {
+    return await request.put({ url: '/qms/capa/verify', data })
+  },
+
+  // 关闭（50 验证且结果通过；受控操作：需电子签名）
+  closeCAPADocument: async (id: number, headers?: Record<string, string>) => {
+    return await request.put({ url: '/qms/capa/close?id=' + id, headers })
+  }
 }

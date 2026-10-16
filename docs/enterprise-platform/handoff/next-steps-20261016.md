@@ -173,3 +173,5 @@
 - **§1.2 QMS 两处已完成**（台账 §12.238）：①检验记录父单护栏——create/update/delete 三入口，可写窗口=待检验/检验中；越窗 `1044000047`、孤儿 `1044000011`；②器具 last/next 改「最新校准记录」派生刷新——回填不改旧、订正/删除回退、删光置 NULL。证据：单测 17/17、QMS 118/118、真机 E2E 50/50、回归 `zc_qms_verify_all_guards.py` 20/20、errcode 1940/0、reactor 打包 SUCCESS。
 - **新登记两个发现（未修，待所有者定夺）**：①器具 create/update 仍可直写 last/next 日期（与派生口径冲突；前端表单两处日期仍可编辑）；②器具域接口 LocalDate 序列化为 `[y,m,d]` 数组，校准记录列表两列未加 formatter、表单日期选择器回显存疑（非本轮引入）。详见台账 §12.238.5。
 - 其余待办不变：六断点其余 5 项（每项先 ADR）、小项与验证缺口，继续逐项推进。
+- **业务断点 1（QMS 前端流程端点）已完成**（台账 §12.239）：20 个流程端点全接线——原「19」＋ `msa/measurement/save` 补充（配套接线 `measurement/list`、`calculate-gage-rr` 两读端点），10 个 api 文件＋10 个页面（5 处电子签名对话框、受控文档/审核计划/CAPA/投诉/8D/SCAR 状态机按钮、检验记录编辑弹窗、MSA 测量录入＋Gage R&R 结果弹窗）；附属修复 `document/change-request`、`document/distribute` 两页 6 处空权限码 `v-hasPermi="['']"`（此前普通角色按钮被全隐藏）。证据：三层接线扫描 27/27、`ts:check`/`build:prod` 均 exit=0、20 文件行尾 LF 保真（浏览器点击冒烟未做，登记为验证缺口）。
+- **订正上文两处口径**：§3.1 行「19 处流程端点未动」与「六断点其余 5 项」以本行为准——QMS 断点已完成，六断点剩余 **4 项**（APS confirm、CRM 生命周期、WMS 库位、MRP confirm；每项先 ADR），继续逐项推进。
