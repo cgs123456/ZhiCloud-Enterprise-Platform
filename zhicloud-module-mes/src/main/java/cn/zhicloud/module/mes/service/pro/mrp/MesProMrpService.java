@@ -60,4 +60,13 @@ public interface MesProMrpService {
      */
     PageResult<MesProMrpPlanDO> getMrpPlanPage(MesProMrpPlanPageReqVO pageReqVO);
 
+    /**
+     * 确认 MRP 计划
+     *
+     * 仅「已计算」状态可确认；确认后计划锁定为「已确认」，不再可重新计算。
+     *
+     * @param id 计划编号
+     */
+    void confirmMrpPlan(Long id);
+
 }

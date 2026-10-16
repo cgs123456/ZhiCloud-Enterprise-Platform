@@ -33,6 +33,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,6 +43,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_MRP_PLAN_NOT_CALCULATED;
 import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_MRP_PLAN_NOT_DRAFT;
 import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_MRP_PLAN_NOT_EXISTS;
 
@@ -233,6 +235,22 @@ public class MesProMrpServiceImpl implements MesProMrpService {
     @Override
     public PageResult<MesProMrpPlanDO> getMrpPlanPage(MesProMrpPlanPageReqVO pageReqVO) {
         return mrpPlanMapper.selectPage(pageReqVO);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void confirmMrpPlan(Long id) {
+        // CAS：仅「已计算」可确认；affected=0 时回查一次给出精确原因（并发下只有一个动作能生效）
+        int updated = mrpPlanMapper.updateByIdAndStatus(id,
+                Collections.singletonList(MesProMrpPlanStatusEnum.CALCULATED.getStatus()),
+                MesProMrpPlanDO.builder().status(MesProMrpPlanStatusEnum.CONFIRMED.getStatus()).build());
+        if (updated == 0) {
+            MesProMrpPlanDO plan = mrpPlanMapper.selectById(id);
+            if (plan == null) {
+                throw exception(PRO_MRP_PLAN_NOT_EXISTS);
+            }
+            throw exception(PRO_MRP_PLAN_NOT_CALCULATED);
+        }
     }
 
     // ==================== 校验方法 ====================

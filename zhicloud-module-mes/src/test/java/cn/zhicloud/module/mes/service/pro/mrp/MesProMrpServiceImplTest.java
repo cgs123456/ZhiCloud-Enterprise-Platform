@@ -35,6 +35,7 @@ import java.util.Map;
 
 import jakarta.annotation.Resource;
 import static cn.zhicloud.framework.test.core.util.AssertUtils.assertServiceException;
+import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_MRP_PLAN_NOT_CALCULATED;
 import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_MRP_PLAN_NOT_DRAFT;
 import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_MRP_PLAN_NOT_EXISTS;
 import static org.junit.jupiter.api.Assertions.*;
@@ -395,6 +396,43 @@ public class MesProMrpServiceImplTest extends BaseDbUnitTest {
         PageResult<MesProMrpPlanDO> page = new PageResult<>(Collections.emptyList(), 0L);
         when(mrpPlanMapper.selectPage(any(MesProMrpPlanPageReqVO.class))).thenReturn(page);
         assertEquals(0, mrpService.getMrpPlanPage(new MesProMrpPlanPageReqVO()).getTotal());
+    }
+
+    // ========== confirmMrpPlan（CAS：仅已计算可确认） ==========
+
+    @Test
+    public void testConfirmMrpPlan_success() {
+        when(mrpPlanMapper.updateByIdAndStatus(eq(PLAN_ID),
+                eq(Collections.singletonList(MesProMrpPlanStatusEnum.CALCULATED.getStatus())),
+                any(MesProMrpPlanDO.class))).thenReturn(1);
+
+        mrpService.confirmMrpPlan(PLAN_ID);
+
+        // 仅允许 CALCULATED(1) 的来源状态，且写入目标状态为 CONFIRMED(2)
+        verify(mrpPlanMapper).updateByIdAndStatus(eq(PLAN_ID),
+                eq(Collections.singletonList(MesProMrpPlanStatusEnum.CALCULATED.getStatus())),
+                argThat(p -> p.getStatus() != null
+                        && p.getStatus().equals(MesProMrpPlanStatusEnum.CONFIRMED.getStatus())));
+        // 成功路径不回查
+        verify(mrpPlanMapper, never()).selectById(anyLong());
+    }
+
+    @Test
+    public void testConfirmMrpPlan_notExists() {
+        when(mrpPlanMapper.updateByIdAndStatus(anyLong(), anyList(), any(MesProMrpPlanDO.class)))
+                .thenReturn(0);
+        when(mrpPlanMapper.selectById(PLAN_ID)).thenReturn(null);
+
+        assertServiceException(() -> mrpService.confirmMrpPlan(PLAN_ID), PRO_MRP_PLAN_NOT_EXISTS);
+    }
+
+    @Test
+    public void testConfirmMrpPlan_notCalculated() {
+        when(mrpPlanMapper.updateByIdAndStatus(anyLong(), anyList(), any(MesProMrpPlanDO.class)))
+                .thenReturn(0);
+        when(mrpPlanMapper.selectById(PLAN_ID)).thenReturn(buildPlan(MesProMrpPlanStatusEnum.DRAFT.getStatus()));
+
+        assertServiceException(() -> mrpService.confirmMrpPlan(PLAN_ID), PRO_MRP_PLAN_NOT_CALCULATED);
     }
 
 }

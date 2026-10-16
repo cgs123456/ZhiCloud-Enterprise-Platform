@@ -74,4 +74,13 @@ public class MesProMrpController {
         return success(BeanUtils.toBean(plan, MesProMrpPlanRespVO.class));
     }
 
+    @PutMapping("/plan/confirm")
+    @Operation(summary = "确认 MRP 计划")
+    @Parameter(name = "id", description = "MRP 计划编号", required = true, example = "1024")
+    @PreAuthorize("@ss.hasPermission('mes:pro-mrp:calculate')")
+    public CommonResult<Boolean> confirmMrpPlan(@RequestParam("id") Long id) {
+        mrpService.confirmMrpPlan(id);
+        return success(true);
+    }
+
 }

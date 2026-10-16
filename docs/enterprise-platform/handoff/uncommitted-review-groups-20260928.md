@@ -10661,3 +10661,75 @@ E2E 具体断言（API + DB 双验）：建单传 `status=30` → 落库 10；PU
 5. **SN 建号 productId 可空但库表 NOT NULL**：沙箱实证无商品建号=500 系统异常；属输入校验缺口，登记待定夺。
 
 本节文档同步：next-steps 后记二追加完成/订正两条；HANDOFF §3.2 第 5 项与 §四第 3 条加订正块。
+
+## 12.243 2026-10-16 MES MRP 计划「无法确认」修复：确认端点补齐（CALCULATED→CONFIRMED，CAS）（业务断点 5；ADR 先行）
+
+本节属性：清单第 6 项「MES MRP 计划无法确认」的收口（HANDOFF §3.2 第 6 项；**六断点收官项**）。
+后端增量：1 个端点 + 1 个 CAS 状态流转（激活既存休眠码）；前端占位页修正为真列表（计算/确认/结果）。
+零迁移、零新错误码、零新权限。设计决策动手前定稿（§12.243.2）。
+
+### 12.243.1 缺陷面与口径复核
+
+- `MesProMrpPlanStatusEnum` DRAFT(0)→CALCULATED(1)→CONFIRMED(2)：CONFIRMED **全仓零写入**
+  （仅枚举定义；「确认」边只存在于枚举注释）；`MesProMrpController` 仅 create/calculate/result/list/get 五端点；
+- 休眠错误码 `PRO_MRP_PLAN_NOT_CALCULATED`(1_046_000_017)「只有已计算状态的 MRP 计划才能确认」
+  已定义、全仓从未使用（专为此端点预留，激活即可、零新码）；
+- 权限面只有 `mes:pro-mrp:create/calculate/query`（V188 菜单 9746-9748），无 update/confirm 串；
+- 前端 api `MrpCalculate` 用 body 传参，与后端 `@RequestParam` 不符（既有传参 bug）；
+  `views/mes/pro/mrp/index.vue` 为占位页（列名=结果字段、查询参数与计划分页 VO 不符，无状态列与操作入口）；
+- **语义口径（ERP 孪生对照）**：同仓 ERP 侧 `ErpMrpPlanServiceImpl#confirmMrpPlan` 的「确认」=
+  仅 CALCULATED→CONFIRMED 状态写入，不自动转采购单/生产工单——本仓 MRP「确认」的领域语义=批准计算结果；
+- 计划状态唯一读侧消费点=calculate 的「仅 DRAFT 可计算」校验；确认后不可再计算（无重算/重开路径）；
+- 沙箱：`mes_pro_mrp_plan`/`mes_pro_mrp_result` 存在且 0 行（真机 E2E 基线即空表）。
+
+### 12.243.2 设计决策（ADR 式，动手前定案）
+
+- **D1 端点**：`PUT /mes/pro/mrp/plan/confirm?id=`（Boolean 返回；对齐 APS `/plan/confirm?id=` 样式）。
+- **D2 状态机与并发**：CAS 条件更新 CALCULATED→CONFIRMED（`MesProMrpPlanMapper.updateByIdAndStatus`，
+  与 APS 同签名 default 方法）；affected=0 回查一次：不存在→`PRO_MRP_PLAN_NOT_EXISTS`(1_040_510_000)、
+  存在→激活休眠码 017。不用「先查后改」（防并发各自通过校验后互相覆盖）。
+- **D3 权限**：复用 `mes:pro-mrp:calculate`（零迁移；计算与确认同属计划作业动作面）。
+- **D4 前端**：占位页修正为真计划列表（planNo/planDate/status 页内映射/remark/操作列：计算[仅 DRAFT]、
+  确认[仅 CALCULATED]、结果[弹窗复用 getMrpResult]）；api 增 `MrpPlanConfirm`、修 `MrpCalculate` query 传参；
+  状态用页内映射不用 dict-tag（对齐 APS 先例：字典无种子）。
+- **D5 明确不做**：①不落「转采购/生产建议」（ERP 孪生亦无；独立课题）；②不加取消/重开/重算路径；
+  ③不加计划删除端点（现状既无）；④不播种 `mes_pro_mrp_plan_status` 字典；⑤不修 `validateMrpPlanNoUnique`
+  借错码（重复 planNo 抛「计划不存在」，既有测试已钉住该行为）；⑥不启用休眠码
+  `PRO_MRP_PLAN_WORK_ORDER_EMPTY`(1_046_000_015)；⑦不加 MES 控制器测试层（模块无先例，端点由真机 E2E 覆盖）。
+- **D6 验证**：单测 27/27（+3 案）、MES 回归 843/843、errcode 全仓 1947/0 碰撞、reactor 重打包、
+  真机 E2E 19/19、接线扫描 18/18、`ts:check`/`build:prod` EXIT=0。
+
+### 12.243.3 变更清单（7 文件：4 后端 + 1 测试 + 2 前端）
+
+- `service/pro/mrp/MesProMrpService.java`：+`confirmMrpPlan` 声明；
+- `service/pro/mrp/MesProMrpServiceImpl.java`：+CAS 确认实现（激活休眠码 017）；
+- `dal/mysql/pro/mrp/MesProMrpPlanMapper.java`：+`updateByIdAndStatus`（CAS 条件更新）；
+- `controller/admin/pro/mrp/MesProMrpController.java`：+`PUT /plan/confirm`；
+- `MesProMrpServiceImplTest`：+3 案（成功 CAS 参数/不存在/非已计算）；
+- `api/mes/pro/mrp/index.ts`：+`MrpPlanConfirm`、修 `MrpCalculate` 传参；
+- `views/mes/pro/mrp/index.vue`：占位页重写（真计划列表 + 计算/确认/结果 + 结果弹窗）。
+
+### 12.243.4 验证读数
+
+- 单测 `MesProMrpServiceImplTest` **27/27**（+3 新案）；MES 模块全量回归 **843/843**（+3）；
+- errcode 全仓扫描 **1947 条 / 0 碰撞**（零新码：激活既存 017）；
+- reactor 重打包（`-pl zhicloud-server -am`）**BUILD SUCCESS**，新 jar 真机运行；
+- 真机 E2E（tenant 9001，`Temp\\zc_mrp243_e2e.py`）**19/19**：创建（DRAFT）→草稿确认拒(017)→
+  不存在确认拒(1_040_510_000)→计算（状态=1）→确认成功（状态=2）→重复确认拒(017，CAS 生效)→
+  列表过滤（planNo+status=2）与详情断言→已确认再计算拒(016)→清理零遗留（计划/结果总量回基线 0）；
+- 接线扫描 **18/18**；`pnpm ts:check` **EXIT=0**；`pnpm build:prod` **EXIT=0**；
+- 行尾保真：5 个 Java 文件 LF-only、2 个前端文件 LF-only（整页重写保持 LF）。
+
+### 12.243.5 连带观察（登记，不动手）
+
+1. **确认后无下游动作**：CONFIRMED 仅为批准态；「转采购/生产建议」落地为独立课题（ERP 孪生同现状）。
+2. **计算不可重跑**：calculate 仅 DRAFT——CALCULATED/CONFIRMED 后无重算路径（如需重算须另建计划）。
+3. **重复 planNo 错码**：`validateMrpPlanNoUnique` 借抛 `PRO_MRP_PLAN_NOT_EXISTS`（语义错位；
+   既有测试钉住该行为，修正将改既有测试期望，独立评估）。
+4. **休眠码 WORK_ORDER_EMPTY**：`PRO_MRP_PLAN_WORK_ORDER_EMPTY`(1_046_000_015) 仍无引用
+   （空工单返回空结果而非报错的现状维持）。
+5. **字典无种子**：`mes_pro_mrp_plan_status` 类型声明存在但迁移无数据（同 APS 观察；前端页内映射回避）。
+6. **六断点收官**：本项为清单 6 项业务断点的最后一项，全部完成（QMS §12.239、APS §12.240、
+   CRM §12.241、ERP 固定资产 §12.237、WMS 库位 §12.242 与本节）。
+
+本节文档同步：next-steps 后记二追加完成/收官两条；HANDOFF §3.2 第 6 项与 §四第 3 条加订正块。
