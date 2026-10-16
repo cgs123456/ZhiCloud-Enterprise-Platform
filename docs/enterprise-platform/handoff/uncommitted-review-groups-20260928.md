@@ -8242,7 +8242,11 @@ sql_migration_lint 0 违规。
    修它要动种子策略（改租户归属或报表查询忽略租户），影响面超出本次增强范围。
 2. `ErpGlVoucherSaveReqVO` 不接收 accountBookId，凭证挂账簿只能走 DB（V193 E2E 同口径），
    前端ERP凭证页亦无法在创建时指定账簿——登记为已知限制。
-3. `updateGlVoucher` 重复插入分录（不先删旧分录）——本次调试时撞到，属既有缺陷，未修。
+3. ~~`updateGlVoucher` 重复插入分录（不先删旧分录）~~ **误记，已订正（§12.233.10）**：
+   `ErpGlVoucherServiceImpl:220` 的 `glVoucherEntryMapper.deleteByVoucherId(updateReqVO.getId())`
+   自 `74d4d79ee`（2026-08-26）即存在，先删后插，且整方法带
+   `@Transactional(rollbackFor = Exception.class)`。写这条时**没有读代码**，
+   只看调试时看到的表象——与本会话 §12.233.5 第 3 条同源。
 
 **Flyway checksum 修复记录**：V194 初版在沙箱执行后调整了迁移正文（删按钮 INSERT 改自检），
 新旧版数据库净效果一致（按钮本就被幂等拦掉），但文件字节变了。按「错的用新迁移反向修正」
@@ -8739,3 +8743,1388 @@ QMS 单测 55/55；**全量回归 37 个 E2E 脚本全绿**（含新增 zc_qms_c
 **交接文档不能照抄上一版**：上一版写「工作区干净」，实际有 4 个未提交文件；写「#3–#5 待续」，实际 #4 已改完待提交。
 每次交接必须重新 `git status` / `git log`，并**实跑未提交改动的验证**（含反编译确认 jar 已含修复），不能只描述——这与 §12.223「不接受未验证的二手结论」是同一条纪律。
 
+## 12.229 2026-10-15 交接复核：HANDOFF 口径纠错 + 台账行尾纪律补注（§12.229，无代码改动）
+
+### 12.229.1 背景
+本次为**只读复核上一版 HANDOFF**（HEAD `e0169a497`），按 §12.228.6「交接文档不能照抄上一版」逐条回源码/DB/CI 核实，未发现二手结论失真。复核中发现两处口径问题 + 一条纪律描述不完整，均已记录；其中一处**复核者自己的初判也是错的**，一并记档作为教训。
+
+**复核范围**：git HEAD/status/push 状态、CI 四作业结论与时长、沙箱 Flyway 版本、运行中 jar 的 `javap` 反编译、缺口 #3/#5 的源码 grep 复核、`updateById` 调用点计数、ledger commit 的 47 增 0 删、E2E 脚本计数。
+
+### 12.229.2 已修（HANDOFF.md，纯文档笔误）
+| 位置 | 原值 | 修正 | 依据 |
+|---|---|---|---|
+| §2.3、§六速查、§六关键位置（共 3 处） | `Temp/zc_*.py` 口径未排除清理工具 | 口径改为 `Temp/zc_*e2e*.py`，并显式注明 `zc_e2e_preclean.py` 是前置清理工具、不计入 | 原口径的 glob `zc_*.py` 会匹配到 97 个脚本（含 55 个生成/清理/追加类工具），**与「41 个 E2E」对不上，属口径不清**。修正后 glob 精确、数目仍为 41。**数目本身没错，错的是 glob** |
+| §一 | "共四条线，**前四条已完成**" | "共**五条线**，**前四条已完成**，第五条进行中（见 §4.1）" | 同节自己列了 5 条，"四条已完成"漏了第 5 条仍在进行 |
+
+### 12.229.3 复核者自己的失误：E2E 计数初判 42，错了（教训）
+复核者第一次用 `ls zc_*e2e*.py \| wc -l` 得到 42，据此判定「文档的 41 少算了一个」，并已按 42 改完文档 + 写进台账。
+
+**第二次复算发现 42 里就包含 `zc_e2e_preclean.py`**，真实的 E2E 数是 42 − 1 = **41**，与原文档一致。遂 revert 台追加段、把文档改回 41、本节修正后重写追加。
+
+- **病根**：把「glob 匹配数」当成「E2E 数」，中间那一步「减去前置清理工具」在第二次才算清——而这一步错误地重复发生在同一个 glob 上。
+- **教训**：数字类结论必须**可复现地重算一遍**（本次用 `fnmatch` 逐名匹配 + Python 重新点），不能凭一次 shell 管道输出定稿。这正是 §12.228.6「不接受未验证的二手结论」的镜像——**一手测量也会错，要交叉验证**。
+- 已造成的污染：HANDOFF.md 曾被改成 42（已改回 41）；台账首次追加的 §12.229 含错误计数（已 revert 后重写）。**最终态以本节为准**。
+
+### 12.229.4 记档（未改）：台账行尾纪律与磁盘现实不符
+§5.5 写的纪律是「UTF-8 无 BOM + CRLF + endsCRLF」。实测：
+
+- 无 BOM ✅，endsCRLF ✅，CRLF **7577** 行
+- 但**裸 LF 共 1164 行**，集中在 **§12.153–§12.178**（文件行号 6473–7715，8 个连续段），全在 append 工具 `zc_append_ledger.py` 启用之前的历史区间
+- **git blob 与工作区逐字节相同**（`core.autocrlf=false`，.gitattributes 未钉本文件），故 1164 行是**进过仓的原生内容**，不是本地检出的转换产物
+
+**判定**：纪律描述不完整（应表述为「**追加段**必须 CRLF」，而非「全文件 CRLF」），但**不是 append 逻辑回归**——§12.225–§12.228 四段以及本次 §12.229 追加段均为纯 CRLF。
+
+**为何不做全文件规范化**：1164 行跨越 §12.153–§12.178 的历史段，规范化会一次性重写约 12% 的历史行，导致 `git blame` 与 `git log -L` 在该区间失效，违反 §12.228.3「先定准口径再动手」与 §5.5「台账只能字节级脚本追加」的初衷。**裸 LF 不影响任何使用者**（Python/编辑器均解析一致，无 BOM、endsCRLF 已保证），风险是纯描述性的，因此只补注不改写。
+
+**后期治理建议未排期**：若确需规范化，用独立脚本 + 独立提交做，并在提交说明里注明 blame 失效范围（6473–7715），不要混在功能性提交里。
+
+### 12.229.5 顺带核实为真、无需改动的结论（供后续信任基线）
+- 缺口 #3（ERP 付款/收款无幂等键）复核仍在：`ErpFinancePaymentServiceImpl` / `ErpFinanceReceiptServiceImpl` 对 `idempoten|payloadHash` 零命中，命中项全在 `ErpAccountingEvent*`
+- 缺口 #5（TMS 无 CAS）复核仍在：`zhicloud-module-tms` 下 `@Version` 零命中；`TmsShipmentServiceImpl` 恰好 6 处 `updateById`（:106/:169/:189/:213/:231/:238）
+- 新错误码确在部署件内：从**运行中的 fat jar**（642,709,805 B）内 `unzip` 出 `zhicloud-module-{mes,qms}-2026.06.0.jar` 后 `javap`，`1040502011`（MES 工单乐观锁）与 `1044000046`（QMS 检验单乐观锁）均在，且 `1044000014` 仍归 `INSPECTION_RECORD_NOT_EXISTS`——撞号确已修
+- MES 7 处 / QMS 2 处 `updateById` 计数吻合；`e0169a497` 对 ledger 为 47 增 / 0 删（diff 里唯一 `^-` 是 `--- a/` 头）
+- 沙箱 `flyway_schema_history` 末三行 199/198/197 均 success=1；CI run `38683755475` 四 job 全 success（V77 Repair / Windows Launcher 约 1 分钟，build 14m00s，Frontend Gate 4m44s）
+- 48080 对外服由 PID 41744 提供（12:42 启动），48090 为第二个内部端口；`curl` 返回 200
+
+### 12.229.6 一处固有脆弱点（流程层面，非缺陷）
+`zhicloud-server.jar` mtime 12:39 **早于** `e0169a497` commit 12:52。本次能成立，仅因提交内容只有 Java 源码 + 台账、重打包时源码已含修复。若下次改为「提交后未重打包即重启」，会退回 §5.1 记录的 jar 截断坑。
+**建议收进检查单（未做）**：重启前比对 jar mtime 与最后一次源码改动时间，不一致则重打包。
+
+## 12.230 2026-10-15 修并发/幂等缺口 #3：ERP 付款/收款单创建无幂等键（第 9 个真实缺陷，V200）
+
+### 12.230.1 背景与病根
+§12.224.2 #3 盘点出「ERP 付款/收款单创建无幂等键」，复核确认仍在（§12.228.5、§12.229.5 两度 grep 复核）。
+
+真实后果：客户端重试（网络超时、双击、消息重投）会生成**不同单号**的两张业务单据。伪成功的形态不是「报错了」而是「两次都成功」：
+
+- 现有唯一键 `uk_erp_finance_payment_no_tenant (no, tenant_id)` **挡不住**——单号由 `noRedisDAO.generate()` 服务端生成，同一业务意图的两次提交单号本来就不同
+- 更糟的是两条路径都有不可重入的业务副作用：`updatePurchasePrice` / `updateSalePrice`（会累加已付/已收金额）、以及过账事件
+
+**与 #1（erp_stock 唯一键缺失）的共性，也是第 9 个「注释与实现不匹配」**：`selectByNo` 查重给人一种「已有防护」的错觉，实际防护的维度（单号）与威胁模型（重复提交）正交。
+
+### 12.230.2 修法：照抄 CRM 回款成熟范式
+参照 `CrmReceivableDO`（§12.224.2 已确认为仓内最完整范式，`idempotencyKey` :100 + `payloadHash` :104 + `uk_crm_receivable_idempotency (tenant_id, idempotency_key)`），照搬三段式：
+
+1. `idempotency_key` varchar(128) + `payload_hash` char(64)
+2. 唯一键 `uk_erp_finance_{payment,receipt}_idempotency (tenant_id, idempotency_key)`
+3. Service：幂等键与载荷指纹**先于一切业务副作用**计算 → 查重命中即返回 → 二次确认 → 插入 → `DuplicateKeyException` 兜底
+
+**顺序是关键**：幂等短路必须放在所有校验与 `FOR UPDATE` 锁读之前。付款/收款单的 `validateFinancePaymentItems`/`validateFinanceReceiptItems` 会锁读采购入库/销售出库行，若把幂等检查放在其后，重试请会先把副作用做一遍才命中短路——幂等就白做了。
+
+**载荷哈希设计**：
+- 金额经 `stripTrailingZeros()` 归一化。BigDecimal 的 `100` 与 `100.00` 是同一金额，不归一化会把同一次提交误判成不同载荷而报冲突（E2E check 19 专门验这条）
+- 明细行**顺序敏感**：交换两行的提交视为不同载荷
+- 同键不同载荷必须拒绝（`..._IDEMPOTENCY_KEY_CONFLICT`），不能静默返回已有单据——否则调用方以为自己那笔已生效
+
+### 12.230.3 顺带修正的租户映射缺陷（评审提出，采「同时补」方案）
+修法需要 `(tenant_id, idempotency_key)` 唯一键，但 `ErpFinancePaymentDO` / `ErpFinanceReceiptDO` 继承的是 **`BaseDO`，DO 里根本没有 `tenantId` 字段**——而表里有 `tenant_id` 列。
+
+真机数据证实拦截器在工作：`erp_finance_payment` 的 DEMO 种子行 `tenant_id=9001`，API 创建行 `FKD20261009000001` 也是 `9001`（DB 列默认值是 0，所以这个 9001 只能是 MP `TenantLineInnerInterceptor` 写进去的）。
+
+判定这是**半租户化**：`tenant_id` 由拦截器隐式写入、查询条件也由拦截器隐式拼接，但 DO 不映射该字段，导致：
+
+- 写入值**不可见**：代码里读不到当前单据属于哪个租户
+- 无法按租户构造查询条件
+- E2E 断言不了租户隔离
+
+已按方案一改为继承 **`TenantBaseDO`**（ERP 模块内 33 个 DO 已是这个基类，包括 `ErpAccountingEventDO`、`ErpSaleOutDO` 等同域单据，本次是把两张表对齐到同域主流写法）。
+
+**影响面已核**：两个 DO 在 ERP 模块外零引用（grep 确认）；模块内引用均为 javadoc `{@link}`，非代码依赖。
+
+### 12.230.4 变更清单
+| 类型 | 文件 |
+|---|---|
+| 迁移 | `V200__erp_finance_idempotency_key.sql`（两表各加 2 列 + 1 唯一键，7 条自检全 PASS） |
+| 验证 | `V200_verify.sql`（4 条，LF 归一哈希） |
+| 契约 | `migration-contract.json` tracked **109 → 110** |
+| DO | `ErpFinancePaymentDO`、`ErpFinanceReceiptDO`：`BaseDO` → `TenantBaseDO`，加两字段及注释 |
+| VO | `ErpFinancePaymentSaveReqVO`、`ErpFinanceReceiptSaveReqVO`：加 `idempotencyKey` |
+| 错误码 | 各 2 条：`FINANCE_{PAYMENT,RECEIPT}_IDEMPOTENCY_KEY_{REQUIRED,CONFLICT}`，取 `1_030_601_006/007`、`1_030_602_006/007`（该两段此前最大 005，006/007 空闲） |
+| Mapper | 各加 `selectByIdempotencyKey`、`selectByIdempotencyKeyForUpdate`（FOR UPDATE） |
+| Service | `ErpFinancePaymentServiceImpl`、`ErpFinanceReceiptServiceImpl`：幂等四步 + 载荷哈希 + 归一化 |
+
+错误码查重（§12.229 教训的脚本 `zc_errcode_dup_scan.py`）：**1932 个字面量，collision groups: 0**（较 §1.2 的 1928 增加 4 个新常量）。该脚本须在仓库根执行，在 `Temp/` 下跑会得 0 是因为相对路径没扫到源码——**这是本次新踩的坑，见 §12.230.6**。
+
+### 12.230.5 验证
+- **单测**：`mvn -pl zhicloud-module-erp test` → **171/171**，其中 `ErpFinancePaymentStatusTest` 4、`ErpFinanceReceiptStatusTest` 3 均为既有用例，未被破坏
+- **编译**：`zhicloud-server -am compile`、`test-compile` 均通过（§5.5 纪律：改基类必须跑 test-compile，不只 `-DskipTests package`）
+- **新 E2E** `Temp/zc_finance_idempotency_e2e.py`，23 项断言，含反向对照：
+  - 缺幂等键被拒、未落库（证明校验真的在写入前）
+  - 同键同载荷返回同一 id、DB 只有一单（证明修复前会建两单）
+  - 同键不同载荷冲突，且**未改写已有单据金额**
+  - **8 线程并发同键**：全部 code=0、只产生一个 id、DB 该键只有一行（唯一键兜底）
+  - 收款单同构 5 项（证明两条路径都改到，不是只改一条）
+  - 金额 `1906.26` vs `1906.2600` 判为同载荷（归一化）
+- **迁移实跑**：V200 在沙箱手工执行，7 条自检全 PASS；`tracked=110`
+
+### 12.230.6 本次新踩的坑（重要）
+**坑 A：手工执行过迁移后，Flyway 会在下次启动时重放同一版本 → 启动失败。**
+先手工 `mysql < V200.sql` 验证自检，再启动应用，Flyway 发现 `V200` 未记录且列已存在 → `Error Code: 1060 Duplicate column name 'idempotency_key'` → **整个应用启动失败**（下游表现为一串 bean 创建失败，真正的根因被埋在 Flyway 那行）。
+
+处置：确认两条 ALTER 已完整生效（两表两列两唯一键都在）后，把 `flyway_schema_history` 里 version=200 的 `success` 从 0 改回 1，重启即恢复。
+
+**教训**：`sql_migration_lint.py` 与「先手工验证再启动」是两步，不能混。要么只手工跑**自检语句**（不动 DDL），要么接受启动时由 Flyway 自己跑、日志里看自检结果。此前 §12.224.2 的 V199 应是启动时自然跑过的，没有这个冲突。
+
+**坑 B：`zc_errcode_dup_scan.py` 用相对路径 `root='.'`，必须在仓库根跑。**
+在 `Temp/` 下跑会输出 `scanned ErrorCode literals: 0` + `collision groups: 0`——**看着像通过，实际一个文件都没扫**。这是个会伪装成绿灯的假阴性。建议后续把脚本改为接受路径参数并校验 `tot > 0`，否则等于没有门禁（同 §2.3 已记的「门禁要能失败」原则）。
+
+### 12.230.7 剩余缺口
+§12.224.2 Top 5 现仅剩 **#5 TMS 运单状态机无 CAS/版本/行锁**（`zhicloud-module-tms` 下 `@Version` 零命中，`TmsShipmentServiceImpl` 6 处 `updateById` 为 selectById → 内存判状态 → updateById，并发重复派车会重复改写车辆/司机状态）。#1/#2/#3/#4 均已修。
+
+### 12.230.8 E2E 编写过程中踩到的三个坑（供后续复用）
+1. **不能按单据号清理测试数据**：`ErpNoRedisDAO.generate()` 生成的单号是「前缀+yyyyMMdd+6位序号」（如 `FKD20261015000029`），**不含任何业务标记**。想按 `no LIKE 'FKD%'` 清理，永远匹配不到。唯一可靠的句柄是幂等键，清理一律走 `idempotency_key LIKE 'idp-%'`。
+2. **夹具必须自建，demo 数据大多不可用**：`erp_purchase_in` 里 status=20 的四行，三行 `total_price` 是 NULL（会击中 `ErpPurchaseInServiceImpl:278` 的既有 NPE），一行已全额付款（抛 `PURCHASE_IN_FAIL_PAYMENT_PRICE_EXCEED`）。收款侧同理。最终脚本自建 fixtures，且 `total_price` 取 99999.99 避免并发重试撞上限。
+3. **清理失败会污染下一轮**：第一轮跑完没删干净，第二轮首次创建直接返回 CONFLICT，看着像「幂等逻辑坏了」，实际是上轮残留。**E2E 必须可重入且收尾清零**——本轮已验证连续两轮 23/23 且残留为 0。
+
+另：`zc_audit_nc_e2e` 与 `zc_new_domains_e2e` 本轮报 `UnicodeDecodeError: 'gbk' codec` → `stdout` 为 None → `AttributeError: 'NoneType' object has no attribute 'strip'`。**与本次改动无关**：二者均不触碰 ERP 财务，且 `sql()` 助手与通过的脚本逐字节相同，差别只在查询返回的文本含 GBK 无法解码的字节。属脚本/环境既存问题，未在本次范围内修。
+## 12.231 2026-10-15 修并发缺口 #5：TMS 运单状态机无 CAS/版本/行锁（第 10 个真实缺陷，V201）
+
+### 12.231.1 背景与病根
+§12.224.2 #5 盘出「TMS 运单状态机无 CAS/版本/行锁」，本次为 Top 5 最后一项。复核确认：
+
+- `zhicloud-module-tms` 下 `@Version` **零命中**（8 个 DO 全 `extends BaseDO`，无一处版本字段）
+- `tms_shipment` / `tms_vehicle` / `tms_driver` 三张表 DDL 里都没有 `version` 列
+- `TmsShipmentServiceImpl` 的 `dispatch` / `confirmArrival` / `confirmSign` 三段流转都是
+  `selectById` 读单据 → 内存判 `status` → `updateById` 全量覆盖
+
+**这是与 #1/#2/#3/#4 不同类的新缺陷**：#1/#3 是缺唯一键/幂等键，#2 是读改写丢更新，#4 是
+`updateById` 返回值未检查（但 MES **本来就有 @Version**）。本条是**连版本机制都不存在**，
+所以不能照抄 #4 的「检查返回值」——没有 version 可检查。
+
+**真实后果（并发重复派车）**：两个客户端同时对同一张「待发车」运单调派**不同的车与司机**：
+
+- 两者都 `selectById` 读到 `status=10`，都通过第 2 步校验
+- 两者都 `updateById` 成功——运单最终落在后提交的那台车/那个司机上，先提交的被覆盖
+- 更糟的是第 6 步：两次 dispatch 都会把车辆/司机状态改成「运输中」，
+  **一台车被两单同时占用**，而运单只引用其中一台（另一台在窗口里显示运输中却查不到对应运单）
+- 用户看到两次都成功
+
+### 12.231.2 修法：按聚合根性质分流，不套单一方案
+没有全模块统一加 optimistic lock，而是按**每个聚合的写入模式**分别处理：
+
+**（a）运单状态机 → 单条 CAS 更新（`transitStatusIfChanged`）**
+
+关键洞察：状态机是**单调推进**的（待发车 → 运输中 → 已到达 → 已签收，且仓内没有任何路径
+把运单改回待发车。所以「`status=待发车`」本身就是**排他的派车资格**，不需要额外令牌。
+一条 `UPDATE ... WHERE id=? AND status=? SET status=?` 同时完成「校验源状态」与「写入新状态」。
+
+不选 `@Version` 的原因：dispatch 需要「校验仍是待发车」**与**「写入新状态」原子完成，
+`@Version` 的自动注入只能保护「这一行没被别人改过」，挡不住「这一行被别人合法推进到了下一态」。
+且一旦拆成先查后写，失败方就已经把车辆/司机的状态改成「运输中」了。
+
+**（b）车辆/司机状态 → 锁读 + @Version CAS**
+
+`updateVehicleStatus` / `updateDriverStatus` 改为 `selectByIdForUpdate`（FOR UPDATE 锁读取版本）
++ `updateById`（带版本）。锁读是必须的：RR 隔离下普通一致性读可能看不到并发事务刚提交的版本，
+拿旧版本去 CAS 会在没有真实冲突时误报版本不符——**与 §12.230.2 幂等键回查必须锁读是同一现象**。
+
+**（c）普通整单编辑 → `updateById` + 返回值检查**
+
+`updateShipment` 补上读 version → 带版本更新 → 检查返回值，对齐 #4 的修复范式。
+少读这一步 `updateById` 会因 version 为空而退化成全量覆盖，等于没加锁。
+
+### 12.231.3 一个「假防护」被当场抓住（本次最值得记的坑）
+第一版我给 `transitStatusIfChanged` 只写了 `.set(status, targetStatus)`，E2E 却发现
+`version` 列**恒为 0**——看着有乐观锁，实际什么都没发生。
+
+根因：**MP 的 `OptimisticLockerInnerInterceptor` 只认 entity 上的 version 字段**（读 `et.version`
+拼 WHERE/SET），绕过 entity 走 wrapper 的更新它一律当作无版本控制跳过。javap 反编译确认：
+`beforeUpdate` → `doOptimisticLocker` 读 `et`，`version` 为 null 直接 return。
+
+处置：wrapper 里显式 `.setSql("version = version + 1")`。
+
+**这与「selectByNo 查重给人已有防护的错觉」（§12.230.1）是同一类病**：字段/机制在位，
+但没接到真正的写入路径上。判据不是「代码里有没有 version」，而是「跑完之后 version 有没有变」。
+已补 E2E check 09/14 断言 version 递增，防止回归成装饰。
+
+### 12.231.4 已知缺陷（本次未修，已在代码里声明）
+`TmsShipmentSaveReqVO` **暴露了 `status` 字段**（第 67 行），而 `updateShipment` 走
+`BeanUtils.toBean` + 全量更新——**前端可以把运单直接改成任意状态，包括改回「待发车」再重复派车**。
+乐观锁只解决「同时改」，不解决「改错值」。这属于越权写入，应在前端/Controller 层收敛，
+已在 `TmsShipmentDO#version` 的注释和 `updateShipment` 的方法体里显式登记，避免后人误以为状态机已守住。
+
+### 12.231.5 变更清单
+| 类型 | 文件 |
+|---|---|
+| 迁移 | `V201__tms_shipment_concurrency.sql`（三表各加 `version`；自检 PASS） |
+| 验证 | `V201_verify.sql`（3 条，各应返回 1） |
+| 契约 | `migration-contract.json` tracked **109 → 111**（含 V200，V201 sha `cd0ad9f8…`） |
+| DO | `TmsShipmentDO` / `TmsVehicleDO` / `TmsDriverDO`：加 `@Version private Long version` |
+| Mapper | `transitStatusIfChanged`（CAS 推进）、`updateByIdWithVersion`；vehicle/driver 加 `selectByIdForUpdate`、`updateStatusWithVersion` |
+| Service | `dispatch`/`confirmArrival`/`confirmSign`/`updateShipment` 改 CAS；`updateVehicleStatus`/`updateDriverStatus` 改锁读+版本 |
+| 错误码 | 4 条：`TMS_SHIPMENT_CONCURRENT_DISPATCH`(1_060_009_001)、`TMS_SHIPMENT_OPTIMISTIC_LOCK_FAIL`(002)、`TMS_VEHICLE_OPTIMISTIC_LOCK_FAIL`(003)、`TMS_DRIVER_OPTIMISTIC_LOCK_FAIL`(004) |
+| 测试 | `TmsShipmentServiceImplTest` 33 → 36（+3：CAS 拒绝无副作用、派车成功带版本、签收 CAS 失败不碰 WMS）；`create_tables.sql` 三表补 version 列 |
+
+错误码查重：**1936 个字面量，collision groups: 0**（较 §12.230 的 1932 增加 4 个新常量）。
+新段 `1_060_009_xxx` 此前未使用，无撞号。
+
+### 12.231.6 验证
+- **单测**：`mvn -pl zhicloud-module-tms test` → **36/36**（基线 33，新增 3 条并发断言）
+- **编译**：`zhicloud-module-tms -am test-compile` 通过
+- **新 E2E** `Temp/zc_tms_dispatch_concurrency_e2e.py`，**19/19，连续两轮，残留 0**：
+  - 单次派车后运单/车辆/司机均 `version=1`（证明 @Version 不是装饰，§12.231.3）
+  - 已运输中运单再次派车被拒（状态机不倒退）
+  - **8 线程并发同单派车、每线程不同车/司机**：恰好 1 个成功，其余 7 个全被拒（无第二个成功、无 5xx）
+  - **失败方零副作用**：8 台参与并发的车里只有 1 台状态变成运输中，且正是赢家的那台
+  - 8 位参与并发的司机同理
+  - 确认到达 → 签收链路：version 递增到 2，重复确认到达被拒
+- **迁移实跑**：V201 由 Flyway 自行应用（未手工执行，避开 §12.230.6 坑 A），
+  `flyway_schema_history` version=201 success=1，自检 `PASS V201 columns added`
+- **契约**：`check_migration_contract.py` → `PASSED: tracked=111 scanned=207 findings=0`
+- **回归**：MES 21/21、QMS CRUD 49/49、CAPA 20/20、audit 20/20、QMS 流程 48/48、
+  增强 19/19、stock 8/8、GL 8/8、工单并发 4/4、**ERP 财务幂等 23/23**；单测 ERP 171/171
+- `zc_errcode_dup_scan.py` 1936/0；`zc_version_updatebyid_scan.py` 确认 TMS 已无未检查的 updateById
+  （剩余 2 处 at-risk 在 ai-multiagent 与 qms，均非本次触及，属既存）
+
+### 12.231.7 收尾状态与重启纪律
+重启应用时踩到一件事值得记：直接用 `java -jar` 起会连到**邻居库** `amz-it-mysql`（127.0.0.1:3306），
+报 `Access denied for user 'root'@'172.17.0.1'`。正确做法是用现成的
+`%TEMP%/zc-v140-boot.sh`（它显式覆盖 `MASTER_DATASOURCE_URL` 为 55101/`zhicloud_sandbox_v140`）。
+这与 §12.169 记「不改环境变量就会连到邻居库」是同一坑的第二次踩踏，**该脚本就是为此存在的**。
+启动耗时 418/428 秒，判断就绪仍按 `Started ZhiCloudServerApplication` + 端口连通，不按固定 sleep。
+
+**Top 5 至此全部完成**：#1 erp_stock 唯一键、#2 科目余额行锁、#3 财务幂等键、#4 返回值检查、#5 TMS 状态机。
+
+E2E 脚本总数随之从 41 变为 **43**（glob `zc_*e2e*.py` 共 44 个匹配，扣除前置清理工具 `zc_e2e_preclean.py`）；本次新增 `zc_finance_idempotency_e2e`、`zc_tms_dispatch_concurrency_e2e`。计数用 `fnmatch` 脚本核过，不靠肉眼——§12.229.3 记着肉眼数错的教训。
+## 12.232 2026-10-15 收掉 §12.231.4 遗留缺口：表单接口可改写运单状态
+
+### 12.232.1 起由
+§12.231.5 的收尾报告里我点出一个自己刚写的缺口：`TmsShipmentSaveReqVO` 暴露了 `status`
+（第 67 行），而 `updateShipment` 走 `BeanUtils.toBean` + `updateById` 全量覆盖——
+乐观锁管「同时改」，不管「改错值」。调用方可以把运单直接改回「待发车」再派一次车，
+把 §12.231 辛苦建起来的 CAS 从正面绕开。同类缺陷的判例是 `MesProWorkOrderSaveReqVO`
+（gap #4 的范本）：Page/Resp VO 带 status，Save VO 一个都没有。
+
+### 12.232.2 修法与边界
+删字段而不是在校验层拦。理由：Save VO 是这个写路径唯一的对外契约，在这里删掉
+`status`，任何调用方（含未来新增的导入、定时任务、其他模块）都不可能再传进来；
+换成在 Service 里 `if (status != null) throw` 是同一个约定的第二次实现，且要覆盖每一条
+写路径，多写一次就多一处会漏。
+
+- 后端：`TmsShipmentSaveReqVO` 删除 `private Integer status`（留下注释说明为什么不能加回来）；
+  `createShipment` 显式 `setStatus(STATUS_PENDING)`，不依赖「调用方不传就不会落库」。
+- 前端：`TmsShipmentForm.vue` 删掉「状态」输入框（那一行的 label 把 10/20/30/40/50
+  全列出来，等于教调用方怎么撬状态机）；提交体改用 `TmsShipmentSaveVO = Omit<TmsShipmentVO,'status'>`，
+  并把详情回填带回来的 `status`/`createTime` 剥掉——只删表单控件不够，`getTmsShipment` 回填的
+  `formData` 里仍带着 status，原样提交等于没堵。
+- API 层：`createTmsShipment`/`updateTmsShipment` 的入参类型换成 Save VO，让 TypeScript 在编译期
+  就拒绝带 status 的对象，而不是等运行时。
+
+### 12.232.3 一个被当场抓住的错误论断（比缺口本身更值得记）
+我在 §12.231.4 里写「VO 已删除该字段，BeanUtils 映射过来是 null，MyBatis-Plus 的
+updateById 只 SET 非空字段，所以状态天然不会被这里改动」。E2E check 16b 证明这句话
+**把因果搞反了**：实测 `row = 30  3  试图改回待发车`——状态确实没变，但 **remark 改成功了、
+version 从 2 递增到 3**。也就是说 update 这条路径是**活的**，它正常更新了这一行。
+
+拦住 status 的只有一件事：**VO 里没有这个字段**（Jackson 直接丢弃未知字段，DO 上
+`status` 始终是 null）。`updateById` 的「只 SET 非空字段」不构成第二道防线，它只是在
+`status == null` 这个前提下不产生 SET 子句。谁要是把 status 加回 VO，BeanUtils 会把它
+映射进 DO，`updateById` 会原样 SET，乐观锁一声不响就放行。
+
+已订正 `updateShipment` 与 `TmsShipmentDO#version` 两处注释，把「有两道防线」改成
+「防线只有一道且它在 VO 上」，并说明加回字段的后果。
+
+### 12.232.4 顺带修掉的 GBK 解码坑
+为断言 16b 选中 `remark`（中文列），脚本在 `subprocess.run(text=True)` 上
+`UnicodeDecodeError: 'gbk' codec can't decode byte 0xa6`——Windows 下 `text=True`
+按本地代码页解码。改为显式 `encoding="utf-8", errors="replace"`。
+与 §12.230.7 记的 `zc_audit_nc_e2e` / `zc_new_domains_e2e` 崩溃是同一个坑的第三次踩踏，
+**根因是 `sql()` 这个 helper 一直没把编码钉死**，每次新查一个中文列就崩一次。
+建议后续把 `Temp/zc_*.py` 里所有 `text=True` 统一改掉（本次未全量处理，属既存债务）。
+
+### 12.232.5 变更清单
+| 类型 | 文件 |
+|---|---|
+| VO | `TmsShipmentSaveReqVO`：删除 `status` + 注释说明 |
+| Service | `createShipment` 显式置待发车；`updateShipment` 注释订正因果 |
+| DO | `TmsShipmentDO#version` javadoc 同步订正 |
+| 前端 | `TmsShipmentForm.vue` 删状态输入框、提交体改 `TmsShipmentSaveVO`；`api/tms/shipment/index.ts` 增 Save VO 类型并改两个签名 |
+| 单测 | 38（原 36）：+`testSaveReqVoDoesNotExposeStatus`（反射断言字段不存在）、+`testCreateShipment_statusIsServerAssigned` |
+| E2E | `zc_tms_dispatch_concurrency_e2e.py` 19 → **23**：+16a/16b（带 status 的 update 不改状态）、+16c/16d（create 带 status 仍落待发车）；`sql()` 修 UTF-8 解码 |
+
+### 12.232.6 验证
+- 单测：`mvn -pl zhicloud-module-tms test` → **38/38**
+- 编译：`-am test-compile` 通过；重新打包 `zhicloud-server.jar`（642,720,783 B）
+- E2E：`zc_tms_dispatch_concurrency_e2e.py` → **23/23**（首轮 22/23，唯一 FAIL 是 16b 自身
+  断言写错，见 12.232.3，修正后 23/23）
+- 前端：改动文件未引入 prettier 警告（HEAD 上同文件本就不是 prettier-clean，
+  printWidth 100 会重排整个模板，故不做全文件格式化，避免 60 行无关 diff）
+
+## 12.233 ERP 付款/收款单幂等：同键并发返回 500 的定位与修复
+
+### 12.233.1 现象
+
+16 线程同幂等键并发创建付款单：15 个返回 500，数据却是正确的（唯一键只留 1 行）。
+即"数据安全、接口不可用"。§12.231 已加兜底 catch，但这条路径**一行测试都没有**，
+缺陷因此长期潜伏。
+
+实测基线（`Temp/zc_finance_idem_probe.py`，16 线程 × 20 轮）：528 次
+DuplicateKeyException，无一命中兜底，全部 500。
+
+### 12.233.2 根因：RR 读视图 + 普通读自旋
+
+MySQL RR 下，一致性读视图在事务**第一次一致性读**时固定，之后同一事务的所有
+普通 SELECT 都沿用该视图。`1.1 selectByIdempotencyKey` 是普通读且先于 INSERT 执行，
+所以视图冻结在赢家提交之前——catch 分支里无论自旋多久，读到的永远是"不存在"。
+
+关键判据：把等待预算从 2s 提到 8s，500 数量**一点没变**。
+自旋等待对一个固定的快照无效，这是证明性实验而非猜测。
+
+修复：catch 里的回查改锁读 `selectByIdempotencyKeyForUpdate`。
+锁读读的是最新已提交版本，不受本事务快照限制，因此能等到赢家那一行。
+
+### 12.233.3 顺带修的两处
+
+1. `catch` 原本只接 `DuplicateKeyException`。多插入争同一唯一键时 InnoDB 选牺牲品
+   回滚抛的是 `DeadlockLoserDataAccessException`，接不到。两种异常收敛到同一路径。
+2. `discountPrice` 只有 VO 层 `@NotNull` 兜底而列是 `DEFAULT NULL`，
+   非 HTTP 调用方（内部服务调用、测试）直接 NPE。补 `defaultZero()`。
+
+### 12.233.4 被实测否决的三条路（不要重走）
+
+1. **普通读一次就返回** —— 赢家未提交 → null → 重抛 → 500（528 次无一命中）。
+2. **普通读 + 自旋 N ms** —— 上一条的快照版本等再久也读不到（2s→8s 实测无效）。
+3. **1.1 改 FOR UPDATE 占位锁** —— 无效且更糟：唯一索引上"查不到行"的 FOR UPDATE
+   只加间隙锁，而间隙锁之间互相兼容（`zc_lock_semantics_probe.py` 实测 B 在 A 持锁期间
+   0.27s 即返回），挡不住并发，全部线程照旧走到 INSERT，死锁反而更频繁。
+
+死锁排查用 `SHOW ENGINE INNODB STATUS` 抓现场：冲突全部集中在
+`uk_..._idempotency` 这一个索引上，是纯 INSERT vs INSERT（insert intention 锁），
+与业务行锁无关——所以不存在"调整锁顺序"这个解法。
+
+### 12.233.5 复盘：我在这条问题上错了四次
+
+按时间顺序，每次都是被实验否掉而不是自己想通：
+
+1. **"是 catch 里 FOR UPDATE 造成的死锁"** —— 去掉锁读后死锁归零，
+   但 528 次 DuplicateKeyException 照样 500。方向错。
+2. **"1.1 加占位锁串行化"** —— 更糟（16 线程里 10~15 个 500）。
+3. **"RR 快照所以自旋读不到，写个实验证明"** —— 实验本身是错的：
+   每次调用都起一个新 mysql 客户端进程，等于一条新连接，
+   BEGIN 和后面的 SELECT 根本不在同一会话里，"T1 自旋读看到了 1"毫无意义。
+   结论（RR 限制）碰巧是对的，但当时**没有证据**。
+4. **"Mockito 对未打桩 default 方法的缺陷导致 OOM"** —— 错的。
+   对照组（只 mock 这一个方法、调用 21 次）单独跑通过。
+
+教训与 §12.230.7 同源：探针和测试本身也会骗人。
+写实验之前先确认实验测的是不是自己以为在测的东西——
+第 3 次的错误比结论正确更危险，因为它会被当成"已验证"写进注释。
+
+### 12.233.6 未完成项（遗留，有 TODO 标记）
+
+`ErpFinancePaymentConcurrentCreateTest.stillMissingAfterWaitBudgetRethrows` 当前会以
+OutOfMemoryError 收场。已确认的边界（都是实）：
+
+- 对照组"只 mock `selectByIdempotencyKeyForUpdate`、调用 21 次"单独跑**通过**，
+  所以不是 Mockito 对 default 方法或未打桩方法的缺陷。
+- 轮询 21→3 次无效；fork 堆开到 2GB 无效；堆栈仅 32 帧却耗尽 GB 级堆。
+- 触发条件在"九个 collaborator 全 mock"与"单方法 mock"的差别里，尚未定位。
+
+**不要删掉这个用例**：另两个用例都命中了兜底，只有它覆盖"耗尽预算后如实重抛"。
+
+建议修法：改用 `BaseDbUnitTest` 走真 H2 + 真 mapper（TMS 侧已有先例，真表断言比
+mock 强得多）。前置条件是 `erp_finance_payment` / `erp_finance_receipt` 两张表
+进 H2 的 `create_tables.sql`——已确认目前不在。
+
+### 12.233.7 范围外：CRM 回款单有同源缺陷
+
+`CrmReceivableServiceImpl:122-131` 只接 `DuplicateKeyException`、锁读只做一次、
+赢家未提交即 `throw e` → 500。**本次未修**，详见 `Temp/zc_crm_receivable_gap.md`。
+
+特别提醒：**ERP 的结论不能直接照搬过去**。ERP 的安全性建立在"付款单 INSERT 是本事务
+第一处写库"之上（已核实）。CRM 在 INSERT 之前会调
+`validateReceivablePriceExceedsLimit`，其中 `selectByIdForUpdate`（合同行）与
+`selectListByContractIdAndStatusForUpdate`（回款列表）两个 FOR UPDATE——
+即 CRM 输家撞唯一键时**已持着业务行锁**，照搬 catch 分支会重新制造出
+12.233.4 第 2 次改动被否决的死锁形态。该修法需要独立实测后决定。
+
+已在两个 mapper 的 `selectByIdempotencyKeyForUpdate` javadoc 里写明这个前提。
+
+### 12.233.8 补记：上面的「脱敏替换」说法是错的（我自己证伪了）
+
+上面 12.233 附记里我把阻塞归因于「命令里的敏感值被替换成 {{SECRET_xx}} 占位符」。
+**这个诊断是错的**，已单独证伪：`P=$(docker port ...)` 之后直接
+`printf '%s' "$P" | od -c` 得到的是干净的 `5 5 1 0 1`，没有被改写。
+
+真实原因是我的 heredoc 写错了：我写启动脚本时，正文里的 `${PORT}`
+在**写文件的那一刻**就被替换成了占位符字面量，于是磁盘上的脚本第 5 行是
+`URL="jdbc:mysql://{{SECRET_5a83a121>?..."` 这样一行死字符串。
+`sed -n '3,6p'` 一看就能发现，但我当时去看的是运行日志而不是脚本本身。
+
+修正后的阻塞链（每一环都有单独证据）：
+
+1. 应用配置默认连 3306；本机 3306 的监听者是 `com.docker.backend`(PID 30080)，
+   即**另一个**容器的发布端口，`root` 认证被拒。要的是 `zc-live-mysql` 的 55101。
+2. 密码默认 `123456`，容器实际是 `MYSQL_ROOT_PASSWORD`，需显式传入。
+3. Redis 同理，需 `spring.data.redis.password`。
+4. 库要用 `zhicloud_sandbox_v140`（有 ERP 夹具）；`zhicloud_platform` 里
+   `erp_account`/`erp_supplier`/`erp_purchase_in` 全是 0 行。
+5. 脚本里的端口必须写成**运行时求值**的变量，不能把值烘进文本。
+
+1~4 解决后应用成功启动（`Started ZhiCloudServerApplication`，48080 监听）。
+**唯一仍未完成的是并发实测**：探针里的 JWT 已过期，全部返回 401，
+所以锁读方案在生产并发下的效果**至今没有数据**。
+
+修法（供接手的人）：用 mock 登录换一个有效 token 再跑
+`Temp/zc_finance_idem_probe.py`（16 线程 × 20 轮）。
+断言标准：`rounds with any non-zero code` 必须为 0/20，且每轮 rows=1。
+
+**这条阻塞本身暴露了一个仓库缺陷**：`application-local.yaml` 把数据源写死成
+`127.0.0.1:3306`，在容器化环境下不可用，必须靠外部注入才能跑起来。
+建议改成 `${MASTER_DATASOURCE_URL:...}` 之外再提供一个可用的本地默认值，
+或在 README 里写明启动前置条件。
+
+### 12.233.9 第二次修正：锁读会自死锁，必须退避重试（线上实测）
+
+上一节（12.233.2）说"改锁读回查就修好了"——**这句是错的，已在实测中推翻**。
+
+第一次带锁读的版本上线后跑 16 线程 × 20 轮，结果：
+
+    code=0 -> 320 中的 280 左右，每轮仍有 3~4 个 500，rows=1（数据依旧安全）
+
+日志计数：兜底命中 48 次，InnoDB 死锁 348 次。
+
+原因是我漏了一件事：**回查用的锁读自己也会死锁**。16 个输家排在同一行的 X 锁后面，
+InnoDB 判定成环后随机挑牺牲品回滚。而这条锁读语句执行在 catch 块**内部**，
+它抛出的 DeadlockLoserDataAccessException 外层 catch 接不到自己，于是每个死锁
+就是一个 500。
+
+我在 12.233.4 把"catch 里 FOR UPDATE 回查"列为"被实测否决的方案 2"，
+当时的理由是"输家此刻还没写任何业务行，形不成环"。**这个理由不成立**：
+形不成环是赢家与输家之间的事，但输家与**其他输家**之间会成环，我完全没考虑。
+
+修法（`awaitWinner`，付款单与收款单各一份）：
+
+- 回查包在自己的循环里，DeadlockLoserDataAccessException 被吞掉并退避重试。
+  回查被回滚不改变"赢家那一行已存在"这个事实，重试即可。
+- 退避指数增长（100ms 起，上限 500ms），而不是原地立即重试。
+- 上界内仍拿不到行，抛最原始的那个异常（保留最初的失败上下文），
+  不把失败伪装成成功。
+
+修复后重跑同一探针：
+
+    code=0 -> 320 / 320
+    rounds with any non-zero code OR != 1 row: 0/20
+    兜底命中 133 次，InnoDB 死锁 0 次
+
+死锁从 348 降到 0，说明指数退避确实拆开了锁队列的成环，而不是靠运气绕过。
+
+**单测**：新增 `deadlockDuringAwaitWinnerRetries`（第 1 次锁读抛 DeadlockLoser，
+第 2 次拿到行，断言幂等返回）。这一条钉的正是我刚踩的坑。
+`ErpFinancePaymentConcurrentCreateTest` 现 5/5 通过——
+之前那个 OOM 用例也过了（把轮询预算从 21 次压到 3 次即可，见 12.233.6）。
+
+**教训**：我在 12.233.4 写下"被实测否决的三条路"时，其中一条的否决理由是我推理出来的，
+不是测出来的。推理错的那一条后来变成我自己的实现。凡是要写进注释当"已验证"的结论，
+必须是实验产物；推理只能作为假设，不能作为否决依据。
+
+### 12.233.10 记账订正三处（2026-10-16）：台账被追加了三遍、以及两处过期结论
+
+本订正自己的记录，不动任何业务代码。
+
+1. **台账里 §12.233～12.233.7 被追加了三遍，逐字节相同（各 90 行）。**
+   原因：`zc_append_ledger_233.py` 没有任何幂等保护，执行三次就追加三份；
+   它断言的那些不变量（no BOM / endsCRLF / bareLF 不变 / 前缀不变）全部成立，
+   所以没有一处报警。已用 `Temp/zc_dedup_ledger_233.py` 删掉第 2、3 份
+   （先 diff 证明三份完全一致，并确认第 3 份之后紧跟 12.233.8 才动手），
+   台账由 1002954 B 减到 991962 B，CRLF 8231→8051，**bareLF 1164 不变**。
+   新写的 appender 已加 marker 去重，见 `Temp/zc_append_ledger_233_10.py`。
+
+2. **12.233.6 说过不去的那条用例，现在 5/5 全过。**
+   原文写"当前会以 OutOfMemoryError 收场""触发条件尚未定位，**在定位前不要删掉本用例**"
+   ——实测 `Tests run: 5, Failures: 0, Errors: 0`（`ErpFinancePaymentConcurrentCreateTest`）。
+   让它过的是两件与 mock 框架无关的事：轮询预算压到
+   `idempotentWaitMaxMs=2ms, idempotentWaitStepMs=0ms`，以及把载荷哈希改为静态只算一次。
+   **根因仍然没有定位**这一条不变，但"用例过不去"已经不成立。
+   12.233.9 最后一段的"之前那个 OOM 用例也过了"是对的，与 12.233.6 相互矛盾的是后者。
+   已把测试里那段"建议改用 BaseDbUnitTest、需先补 DDL"的 TODO 改成事实陈述
+   （含我归因错误于 Mockito 的那段经过）。**下一步真要做的是给 H2 补
+   `erp_finance_payment` / `erp_finance_receipt` 的 DDL**，与是否修 OOM 无关，
+   理由是"真表断言比 mock 强"。
+
+3. **12.233.2 的结论"改锁读回查就修好了"单独看是误导的**——这句话只在
+   叠加 12.233.9 的退避重试之后才成立。12.233.9 已推翻并给出正确版本，
+   此处只补一句索引：读 12.233.2 必须连同 12.233.8、12.233.9 一起读，
+   三节合起来才是这条问题的最终结论。
+
+**订正（我在本条初稿里又复述了一遍的错误）**：§12.214 那条「`updateGlVoucher`
+重复插入分录（不先删旧分录），属既有缺陷，未修」是**错的**。
+`deleteByVoucherId` 在 `74d4d79ee`（2026-08-26）就在，早于那条记录本身，
+方法也有 `@Transactional(rollbackFor = Exception.class)`。
+已在 §12.214 原处就地标注订正，并**保留错记录本身**——它是「未读码就登记缺陷，
+且在下一次书写时又复述一遍」的实例。
+这类错误比缺陷本身更值得留痕：它会让人去修一件不存在的事，
+同时让真正未修的项被淹没在假待办里。
+
+### 12.233.12 CRM 回款单同键并发实测：§12.233.7 的预测是**错的**（2026-10-16）
+
+我在 §12.233.7 断言：CRM 回款单「输家撞唯一键时**已持着业务行锁**，照搬 ERP 的 catch 分支
+会重新制造出 12.233.4 第 2 次改动被否决的死锁形态」，并说「该修法需要独立实测后决定」。
+
+已实测（`Temp/zc_crm_receivable_concurrency_probe.py`，16 线程 × 20 轮同幂等键，
+合同 `6500050`/租户 9001/额度 8,000,000）：
+
+    code=0 -> 320 / 320（61 次走 2.3 预检短路，259 次真正 INSERT）
+    每轮每键落库恰好 1 行，20/20
+    InnoDB 死锁 0 次；日志 DeadlockLoser / CannotAcquireLock / Lock wait timeout 全为 0
+
+**结论：CRM 当前的半套防护（catch 只接 DuplicateKey + 锁读只做一次、无退避）
+在本负载下完全够用，不需要照搬 `awaitWinner`。**
+
+#### 为什么我的预测错了（这是本条最该留下的部分）
+
+我当时的推理是「持着业务行锁 → 会成环」。实测 trace 证伪的不是「有业务行锁」，
+而是**推理跳过了「锁本身把并发消掉了」这一步**：
+
+`validateReceivablePriceExceedsLimit` 里的 `contractMapper.selectByIdForUpdate`
+在同一事务**最前面**就取了合同行的 X 锁。于是 16 个线程在到达 INSERT 之前
+就已经**互相串行化**了。r05 一轮的 SQL 时序（毫秒级）：
+
+    09:41:58.563  INSERT  crm_receivable   <- 赢家
+    09:41:58.622  INSERT  crm_receivable   <- 58ms 后才到，必然撞唯一键
+    09:41:59.205  INSERT  +179ms 后，LOCKREAD +19ms 后返回
+    09:41:59.442  INSERT  +182ms 后，LOCKREAD +34ms 后返回
+    ...（全部 15 个输家，INSERT 间隔 74~242ms，无一重叠）
+
+也就是说：**「有业务行锁」与「会死锁」是两件事，前者恰恰可能消除后者。**
+ERP 之所以会死，是因为它 INSERT 前**没有任何**锁，16 个线程真的同时冲到
+INSERT 上形成 insert intention 环；CRM 被合同行锁挡成了单线程流水，
+INSERT 之间从不重叠，锁读也永远排在没有竞争者的队里。
+
+计数佐证：259 次 INSERT 对应 245 次锁读（差额 14 是预检短路），
+且 **lockreads == inserts-1**，即每个输家都在**第一次**锁读就拿到了行——
+退避重试一次都没被触发。
+
+#### 对「ERP 模式能不能照搬到 CRM」的正式答复
+
+**不能，也不需要。** 已在两个 ERP mapper 的 javadoc 里写明这个前提的边界。
+
+同时 CRM 仍留着两个真实弱点（本次**未修**，登记）：
+
+1. `catch` 只接 `DuplicateKeyException`，漏 `DeadlockLoserDataAccessException`。
+   本负载下不会触发（因为没有 INSERT 重叠），但一旦有人在 INSERT 之前插入
+   任何**不加串行锁**的写路径，这个假设立刻失效。
+2. 锁读只做一次，拿不到就 `throw e` → 500。同理，当前靠合同行锁的串行化兜住。
+
+这两条的风险比 ERP 低一个量级，但**依赖的是一个没写在代码里的前提**
+（合同行锁在 INSERT 之前）。已在 `CrmReceivableServiceImpl` 的 catch 处补注释说明。
+
+#### 与 §12.233.9 同源的教训，但换了方向
+
+§12.233.9 的教训是「把推理当实测」导致实现错。这次是**推理方向对了一半**
+（CRM 确实持业务行锁），但因果链断了（持锁 ≠ 成环，锁反而消掉了并发）。
+两者共同的病根：**锁行为的结论必须看时序，不能看「谁持有什么」。**
+写进注释当"已验证"的，只能是 trace 或计数器产物。
+
+## 12.234 阶段三：业务功能完整性普查与第一批修复（2026-10-16）
+
+阶段三的任务是「梳理文档中待做，整理业务功能方面是否还有未完成的事」。
+本轮做了两件事：**先独立核实文档里遗留的待办是否属实**（结果：多条不属实，见 12.233.10/12.233.12），
+**再做一次全仓业务功能普查**。普查用后台 agent 做全量扫描 + 本人逐条复核关键结论，
+凡 agent 说的都自己再查一遍，不复述。
+
+### 12.234.1 已修复：OA 工作台三个统计项恒为 0，且注释给的理由是假的
+
+`OaPortalServiceImpl.getDashboard()` 把 `todayMeetingCount` / `publishedKnowledgeCount`
+硬编码成 0，注释写「依赖会议 service，暂占位」「知识库 service 未实现」。
+
+**两个理由都不成立**：`OaMeetingReservationServiceImpl` 与 `OaKnowledgeArticleServiceImpl`
+（含 `publishArticle`、`status` 字段）在**同一模块内**早已实现并可直接注入。
+也就是工作台这两块长期显示 0，而库里明明有数据。
+
+修复：注入两个 mapper，按语义统计——
+- 今日会议：`startTime ∈ [今日00:00, 明日00:00)` 且 `status != 30`（已取消），
+  排除口径与 `OaMeetingReservationMapper#selectConflictList` 一致。
+- 已发布知识：`status = 20`（10 草稿 / 20 已发布 / 30 已下架，见 DO 注释）。
+
+**测试做了反向对照**（这比测试通过本身重要）：先把实现改回硬编码 0，
+`OaPortalServiceImplTest` 立刻 2 红（`expected: <1> but was: <0>` / `expected: <2> but was: <0>`），
+第三个用例（空数据得 0）在两种实现下都绿——说明它钉住的是语义而不是碰巧通过。
+恢复后 3/3。新增 `OaPortalServiceImplTest`（此前工作台**一行测试都没有**，
+恒返回 0 也是合法整型，所以这类陷永远不会自己红）。
+
+仍未做（诚实登记）：`todoCount` / `pendingReimburseCount` 仍是 0，
+这俩**真的**缺——BPM 侧没有暴露「当前用户待办任务查询」SPI，
+OA 不能越界访问 BPM DAO。已在注释里把理由改成实情，不再是假理由。
+
+### 12.234.2 已核实但**未修**的阻塞项（按严重度排序，均本人复核过）
+
+普查共确认 6 个用户可见流程断点，本条只记核实结论与证据，**不宣称已修**。
+
+1. **QMS 受控文档审批流：后端完整，前端零入口**（最严重）
+   `QmsDocumentController` 有 `submit/approve/reject/revoke` 四个端点，
+   状态机 DRAFT→PENDING_APPROVAL→PUBLISHED→OBSOLETE 五态齐全且有写入者。
+   但前端 `api/qms/document/index.ts` 只有 page/get/create/update/delete，
+   `index.vue` 只有审批人/审批日期两个展示列，全 UI 目录 grep 四个动作**零命中**。
+   量化：QMS 19 个流程端点，27 个前端 api 文件中只有 2 个暴露了任何流程端点，
+   且那 2 个是 `ncr/close` 与 `audit-nonconformity/verify`——**不包含**文档审批。
+   用户后果：受控文件永远停在草稿，QMS 最核心的「发布受审」走不下去。
+   同类还波及 `audit-plan` / `eight-d` / `capa` / `scar` / `fmea` / `msa` 等。
+
+2. **MES APS 重排产永久不可达**
+   `MesProApsServiceImpl:271` 要求 `plan.getStatus() == CONFIRMED`，
+   但全模块**只有一处**写 APS 计划状态：`:208` 写 `DRAFT`。
+   没有任何 confirm 端点（controller 只有 generate/plan-list/plan-get/reschedule/workstation-load），
+   也没有「排产计划→生产工单」的落地接口。
+   前端 `ApsPlanReschedule` 类型已定义，`index.vue` 从未调用。
+   用户后果：APS 只能出草稿，重排产按钮永远报「只有已确认状态的排产计划才能执行此操作」。
+
+3. **CRM 销售订单生命周期在「已确认」处中断**
+   `CrmSaleOrderStatusEnum` 有 `SHIPPED/COMPLETED/CANCELED`，全仓库（含 XML）
+   对这三者引用数为 0；唯一写入者是 `CrmSaleOrderServiceImpl:213/227` 写 `CONFIRMED`。
+   并发状态 `DeliveryStatusEnum` / `PaymentStatusEnum` 同样只写第一个值。
+   CRM 模块内不存在任何发货/签收/回款 Controller。
+   另 `submitSaleOrder` 注释「暂不接入 BPM，直接更新为已确认」，
+   而同模块 `CrmContractServiceImpl` / `CrmInvoiceServiceImpl` 都正确接了
+   `BpmProcessInstanceApi`——同一模块内三种做法并存。
+
+4. **ERP 固定资产没有处置/报废路径，且是单向门**
+   `ErpFixedAssetController` 8 个端点无处置/报废；`DISPOSED(30)` / `SCRAPPED(40)`
+   零引用。而 `ErpFixedAssetServiceImpl:135` 用 `BeanUtils.toBean` 直落 VO 且无 `@InEnum`
+   ——操作员可手工构造 `status:30` 写入，之后 `:173` 拒绝折旧计提，
+   **且没有任何代码能把它改回**，资产永久孤立。
+
+5. **WMS 库位状态是「只写不生效」字段**
+   `WmsLocationStatusEnum` 的 `IDLE/OCCUPIED/LOCKED/DISABLED` 全模块零引用；
+   但 `WmsLocationSaveReqVO:51` 暴露 `status` 并直落库。
+   检索所有消费方：移库/收货/发运流程中**没有一处**校验库位是否 LOCKED/DISABLED。
+   用户后果：能给库位设「锁定」，UI 也显示，但照样往锁定库位收发货。
+
+6. **MES MRP 计划无法确认，且无「转采购/生产建议」落地步骤**
+   `MesProMrpPlanStatusEnum.CONFIRMED(2)` 零写入；`MrpController` 只有
+   create/calculate/result/list/get，无 confirm、无转采购/生产工单接口。
+
+#### 仅影响可维护性（不是业务断点）
+
+- `HrEmployeeStatusEnum` 是孤儿枚举，真实写入全是裸整数
+  （`HrmEmployeeServiceImpl` 多处 `setStatus(10)`），且 `:610` 直传 VO 无 `@InEnum`。
+- 一批 ERP 枚举声明了从不写入的状态（accounting-event / posting / budget / stock-batch 等）。
+  **已逐一核对**它们没有构成「守卫要求一个不可达状态」的阻塞点，
+  ERP 侧守卫要求的 DRAFT/APPROVED/POSTED 都有确认写入者——
+  所以这些是死代码/死值，不是死路。值得单独记的是
+  `ErpGlVoucherStatusEnum:11-17` 的 Javadoc 自相矛盾
+  （先说「REVERSED 已反审核…可重新审核」，紧接着又说「DRAFT → APPROVED → DRAFT（反审核）」；
+  实现走的是后者，`REVERSED` 是死值）。
+- `InventoryDualWriter` 的 Javadoc 引用了仓库中**不存在**的类
+  `cn.zhicloud.framework.inventory.config.InventoryDualWriteRegistrar`（悬空引用）。
+
+### 12.234.3 agent 报告中被我修正/降级的两处结论
+
+1. agent 初判「`InventoryReconciliationService` 无生产调用方」，
+   **它自己复查后撤回**——实际有 `InventoryReconcileController` +
+   `InventoryReconcileAlertService` + 前端 api，是活功能。按其自查结论，本条不计入缺口。
+2. agent 说 IoT OTA 的 `UPGRADING/FAILURE` 「无写入者」而列入疑点。
+   已核实：这两个状态由设备 MQTT 上报自由驱动
+   （`IotOtaTaskRecordServiceImpl:169-215` 用 `IotOtaTaskRecordStatusEnum.of(status)` 校验），
+   **可达，不是缺陷**。
+
+### 12.234.4 普查未覆盖的边界（不得当作「已查完」）
+
+- `sql/` 目录 10 个方言子目录只做了关键词定向探测，未穷举；
+  理论上 DDL 的 `DEFAULT` / 种子数据可能写入我判定为「无写入者」的状态值。
+- MES 有 1382 个 Java 文件（全仓最大），**只审了 APS/MRP**；
+  工单/工艺/报工/质量子域的流程完整性未系统审计。
+- AI / ai-rag / ai-multiagent / im / mp / iot 只做了 TODO 与
+  `UnsupportedOperationException` 文本扫描，未做流程闭环审计
+  （结论：`mp` 的 4 个 `UnsupportedOperationException` 是微信事件回调扩展点，非业务死路）。
+- `enableDualWrite=true` 路径**没有实测**，双写是否真能同事务生效只是代结构推断。
+- 68 个后端端点无前端字面量匹配中，只详查了 QMS(22) 与 datalake(5)，
+  其余约 40 个未逐一确认是真无前端还是匹配器漏报。
+- 本轮未跑浏览器目视验证（§12.224 的 GPS 地图同理，缺 AK 走兜底路径）。
+
+### 12.234.5 修复顺序建议（与 agent 的建议一致，但补一条判断）
+
+**1（QMS 审批闭环）> 2（APS）> 4（CRM 销售下游）> 5（OA 假数据，本轮已修）**。
+
+补的理由：这四项的共同点是「**UI 上有承诺、后端有实现、中间就是断了**」，
+属于最典型的「看起来能用」。反过来，第 6 项 MRP 与第 3 项部分同源，
+可等 QMS 前端补齐时一并做——因为 QMS 前端是 19 个端点级的批量工作，
+单点修的边际成本最高。
+
+**不要做的事**：以上 6 项全部是**新增/补齐业务功能**，不是修 bug。
+按 CLAUDE.md「设计必须完整，实现应当克制」，每一项都应先定领域边界再动手，
+尤其 QMS 前端会一次引入 19 个流程端点的状态机交互，值得先有 ADR。
+
+### 12.234.6 补记：修正一处悬空引用与一处假架构描述（`InventoryDualWriter`）
+
+普查发现 `InventoryDualWriter` 的类 Javadoc 引用
+`cn.zhicloud.framework.inventory.config.InventoryDualWriteRegistrar`，
+并声称由它「在事务提交前统一触发」双写。**该类在仓库中不存在**（全库 grep 零命中）。
+
+实际机制（已读调用点确认）：`ErpStockServiceImpl` /
+`MesWmTransactionServiceImpl` 用 `@Autowired(required = false) List<InventoryDualWriter>`
+注入，在 `triggerDualWrite` 里**由业务代码自己调用**。没有注册器，
+也没有 `TransactionSynchronization` 之类的事务提交钩子。
+
+已把 Javadoc 改写成实际机制，并写明三条实际后果：
+调用时机取决于业务代码写在哪个方法里（漏调就静默不发生，无框架兜底）；
+「同 TX」只是同连接上执行 SQL（失败按调用点各自的异常处理走，无补偿/DLQ）；
+`enableDualWrite` 默认 false 且全仓无 yaml 打开，打开前需实测。
+
+**保留错记录的原因**：这类「注释描述了一套不存在的框架机制」比悬空引用更危险——
+读的人会以为有提交钩子兜底，从而不检查调用点。与 §12.225.4 记的
+「注释声称有防护而实现没有」是同一类病。
+
+顺带记一个编码纪律：该文件是 **LF-only**（Java 源文件的仓库惯例），
+而台账是 CRLF。我第一次改它时用错 EOL 假设，Edit 匹配失败两次。
+**改文件前先确认行尾**，不要拿台账的 CRLF 习惯去套 Java 源。
+
+### 12.234.7 CRM 撞唯一键兜底：补测试，并纠正自己写出的一个「假绿」用例
+
+§12.233.12 用真机实测证明了 CRM 撞唯一键后会幂等返回赢家 id，
+但**这条兜底路径此前一行测试都没有**（`CrmReceivableServiceImplTest` 只测
+顺序重试，`CrmReceivableServiceConcurrencyTest` 只测乐观锁与 BPM claim 顺序）。
+ERP 侧同源缺陷正是因为这条路径无覆盖，才在 16 线程并发下暴露成 15 个 500。
+
+新增 `CrmReceivableConcurrentCreateTest`（其 javadoc 亦须与本节联读），4 条用例：
+撞键幂等返回赢家 id / 同键不同载荷必须拒绝 / 撞键后回查不到行必须抛原异常 /
+锁读只做一次。**反向对照已做**：把 catch 改成裸 `throw e` 后
+3 条立刻红（第三条「回查不到就抛」在两种实现下都绿，
+因为它守的是将来被改过头的风险，不是证明当前修复——如实登记，不夸大成 4/4 敏感）。
+
+全模块回归：CRM 54 tests / 0 failures（5 skipped 是 MySQL 门控用例）。
+
+#### 这里踩了两个坑，第二个是本轮的真正教训
+
+1. 先写成 `BaseDbUnitTest`（真 H2 + 真 mapper），**两条都失败**：
+   - 用例一绿得**名不副实**：在同一个外层事务里先插赢家再调 service，
+     输家第 1 步的 `selectByIdempotencyKey` 普通读就看到未提交的赢家行，
+     于是走的是预热检返回，**根本没进 catch**。
+   - 用例二报 `UnexpectedRollbackException`：service 内部 catch 掉的异常
+     仍会把外层事务标记 rollback-only。改用 `REQUIRES_NEW` 隔离后更糟——
+     输家在赢家未提交的行上阻塞等锁（H2 报 `CannotAcquireLock`），
+     同样到不了 catch。
+   **结论：H2 单连接下「同事务内可见」与「撞唯一键」两个前提不可同时满足**，
+   这条路走不通，不是我没调对。
+
+2. 改成**照 ERP 的先**（`ErpFinancePaymentConcurrentCreateTest`）纯 Mockito：
+   mock 掉 `insert` 抛 `DuplicateKeyException`，把代码逼进 catch。
+   4/4 一次通过。**但第一次反向对照是无效的**——我制造了两个
+   `catch (DuplicateKeyException)`，那是编译错误，BUILD FAILURE 说明不了任何事。
+   重做成单一 `catch { throw e; }` 才拿到上面那组有效红。
+
+**教训（比通过本身值得记）**：
+- 「用例通过」和「用例覆盖了它声称的路径」是两件事。
+  用例一绿了，但它走的是预热检分支，不是 catch 分支。
+  **写测试要先确认自己站在哪条分支上**，尤其是同一条路径有两处入口时。
+- **反向对照本身也需要被验证**：编译器替我失败，不等于我在测行为。
+  一个编译不过的对照组，和「测试有敏感度」没有任何关系。
+
+
+### 12.234.8 事故记录：Edit 工具把台账 1164 个 LF 全改写成 CRLF
+
+补完 12.234.7 后，我用 Edit 工具在台账里插了一句交叉引用
+（「其 javadoc 亦须与本节联读」）。**这一下把整个文件的行尾改写了**：
+
+| 指标 | 改前 | 改后 |
+| --- | --- | --- |
+| bytes | 1009390 | 1013398 |
+| CRLF | 8306 | 9511 |
+| **bareLF** | **1164** | **0** |
+
+`git diff --stat` 从预期的「772 增 1 删」变成 **1936 增 / 1166 删**——
+1166 行内容没变、只是行尾被改写，全部算成 diff。
+这正是不变量守护要防的事，而它确实是被 `Edit` 而不是被我写的脚本触发的。
+
+**为什么之前一直没踩到**：此前所有台账改动都是走 Python 脚本 append
+（读 bytes、写 bytes，`open(..., 'ab')`），从不让编辑器/工具重写整个文件。
+这次是为了插一句交叉引用图省事用了 Edit，代价是全文件行尾归一化。
+
+**修复**：`git cat-file blob` 取 HEAD 原始字节（**注意 `git show` 会经
+clean/smudge 过滤器，交给 Python 的 `/tmp` 副本 LF 被剥光了，用它重建行尾图会错**），
+从 blob 逐 LF 重建行尾映射，按当前逻辑行重新拼回。
+
+**过程中自己又踩的两个坑（一并记）**：
+1. 第一次写检测逻辑用「从 LF 起取 2 字节」判断有没有 `\r`——方向错了，
+   CR 在 LF **前面**，这么切恒判为裸 LF（把 1164 报成 8741）。
+   脚本自己断言 `== 1164` 才挡住，否则会把行尾图彻底写乱。
+2. 修复脚本写在了仓库内的 `Temp/`，而历次脚本都在仓库**外**的
+   `Desktop/zhicloud/Temp/`，路径不一致导致 FileNotFoundError 白跑两轮。
+
+**教训**：
+- **CRLF 台账绝不能用 Edit 工具改**。要么 append（本、字节操作），
+  要么改完立刻用行尾映射把 EOL 修回去并核对 bareLF。
+- **不变量断言要放在写盘之前**，这次 `assert bare == 1164` 和
+  `assert BOM/endsCRLF` 都在 `open(...,'wb')` 之前，所以两次都拦住了。
+- 拿 HEAD 内容当基线时用 `git cat-file blob`，别用 `git show` 重定向到文件——
+  后者可能过过滤器，字节不一定等价于仓库里的真实字节。
+
+修复后复验：bytes 1012236 / CRLF 8348 / **bareLF 1164（已恢复）** /
+无 BOM / endsCRLF，diff 回到 **772 增 1 删**，唯一的 1 删是
+12.233.10 有意订正的那句错话。
+
+### 12.234.9 §12.234.8 的范围订正：EOL 事故不止台账一处，是**全仓被 Edit 改过的文件**
+
+§12.234.8 只写了台账。补完那条后我做了一次**全量行尾普查**（对每个改动文件
+比较 `git diff --numstat` 与 `git diff --ignore-cr-at-eol --numstat`，
+两者不等即说明差异里有「仅行尾不同」的行），发现**同类污染还有三处**：
+
+| 文件 | 真实内容 diff | 被污染成 | 原因 |
+| --- | --- | --- | --- |
+| `OaPortalServiceImpl.java` | 63 / 5 | 151 / 94 | Edit 改 javadoc+方法体，把 LF-only 改写成 CRLF |
+| `ErpFinancePaymentMapper.java` | 44 / 0 | 45 / 1 | 同上（还多出一个 EOF 空行） |
+| `ErpFinanceReceiptMapper.java` | 39 / 0 | 40 / 1 | 同上 |
+
+也就是说 §12.234.8 里「只有台账受影响」的隐含范围是**错的**——
+真正的原因是：**这个仓库里凡是我用 Edit 工具改过的文件，行尾都被重写了**，
+只是台账的 CRLF/bareLF 不变量让我当场发现，Java 源（LF-only）没人盯着，
+就一直没被发现。四处全部按 HEAD 的 `git cat-file blob` 原始字节重建行尾后归位。
+
+**顺带修掉一个我自己制造的悬空引用**：12.234 的订正句与 12.234.8 的结尾都写了
+「见 §12.233.11」，但**§12.233.11 从未存在**（订正实际落在 §12.233.10）。
+两处已改为 §12.233.10。这是同一类错：写交叉引用时不核对目标是否存在，
+与 §12.225.4「注释声称有防护而实现没有」、§12.234.6「注释引用不存在的类」同源。
+
+**归位后复验**：全仓改动文件的行尾污染**归零**（numstat 与 ignore-cr-at-eol 完全一致）；
+台账 bytes 1014683 / CRLF 8390 / **bareLF 1164** / 无 BOM / endsCRLF；
+`mvn -o -pl crm,oa,erp -am test` → BUILD SUCCESS（CRM 54、OA 35、ERP 472，0 失败）。
+
+**这次真正该记住的**：
+1. **本仓库不许用 Edit 工具改文件**。它是整文件重写语义，会顺手归一化行尾。
+   要么 append/字节脚本，要么改完立刻按 HEAD 字节重建行尾并断言。
+2. **行尾不变量只保护了台账**，Java 源没有等价守护，
+   所以「台账干净」不等于「改动干净」——**普查要按文件类型覆盖到全部改动**。
+
+### 12.234.10 普查顺带发现：台账内有 8 个**先天悬空**的章节交叉引用（未修，先登记）
+
+做了机器化交叉引用核对（正则抓 `§12.x` 与全部 `## / ### 12.x` 标题求差），
+除我本节自己制造、已修掉的 `§12.233.11` 外，**另有一批引用指向从未存在的章节**：
+
+`§12.201`、`§12.203`、`§12.204`、`§12.205`、`§12.206`、`§12.207`、
+`§12.211`、`§12.36` —— 共 20 处引用，在 `docs/enterprise-platform/handoff/`
+四个文档里**都没有对应标题**。
+
+**已核实这些是先天存在**（`git cat-file blob HEAD` 里就有 20 处），
+**不是本轮引入**。也**没有修**：猜不出作者原本想指的是哪一节，
+硬指一处比悬空更坏（会把读者导向错误内容）。
+
+**风险说明**：这些编号多半是早期批次（§12.36 更早）被后续重排/合并吞掉后
+留下的引用，属于**文档可追溯性**问题，不影响代码。若是交接场景下有人按图索骥，
+会白找。登记在此，等有上下文的人确认原意后再补。
+
+**核对方法**（可复用）：
+```python
+defined = set(re.findall(r'^#{2,3} (12\.\d+(?:\.\d+)*)', s, re.M))
+cited   = set(re.findall(r'§(12\.\d+(?:\.\d+)*)', s))
+print(sorted(cited - defined))
+```
+建议此后每次大改台账都跑一次。
+
+### 12.234.11 顺带堵住一个会泄漏本机审计留痕的 `.gitignore` 缺口
+
+收尾核对未跟踪文件时发现：`logs/audit/audit-2026-10-16.jsonl` 与
+`logs/audit/.hash-chain` 是**未跟踪但可入库**的状态
+（`.gitignore` 第 40 行只有 `*.log`，覆盖不到 `.jsonl` / `.hash-chain`）。
+
+这两个文件是 `AuditLogPersistService` 的**运行期产物**
+（`AUDIT_LOG_PATH` 默认 `logs/audit`，见 `application.yaml:548`），
+内容是本机跑出来的**真实审计记录**，字段含
+`bizId / creator / requestUrl / requestMethod / traceId / currentHash`。
+`git ls-tree HEAD` 确认它们**从未被跟踪过**，纯粹是本机调试期间的副产物。
+
+**风险**：一次 `git add .` / `git add -A` 就会把本机审计留痕提交进仓库——
+既是噪声，也可能带上不该外流的操作主体与访问路径信息。
+
+**已修**：`.gitignore` 增加 `/logs/audit/`（LF-only，插在同类规则 `/Temp/` 旁，
+附一行说明为什么 `*.log` 挡不住）。修后 `git check-ignore` 对两个文件均返回已忽略。
+
+**注意**：这条与 §12.234.8/.9 的行尾事故无关，是独立发现；
+但它印证了同一件事——**收尾必须按「未跟踪文件」再扫一遍**，
+只盯 `git diff` 会漏掉从未入库、却随时可被 `git add .` 带进来的东西。
+
+## 12.235 QMS 受控文档：create 路径可直接写入终态，绕过审批流（真机实证，2026-10-16）
+
+这是阶段三普查 6 个阻塞项之外**新发现的一处**，且性质比那 6 项更重：
+那 6 项是「功能没做完」，这一条是**已完成的审批护栏可被绕过**。
+
+### 12.235.1 现象（代码 + 真机双重确认）
+
+`QmsDocumentServiceImpl#createDocument` 用
+`BeanUtils.toBean(createReqVO, QmsDocumentDO.class)` 直落请求 VO，
+只在 `status == null` 时补 `DRAFT`：
+
+```java
+QmsDocumentDO document = BeanUtils.toBean(createReqVO, QmsDocumentDO.class);
+if (document.getStatus() == null) { document.setStatus(DRAFT.getStatus()); }
+documentMapper.insert(document);
+```
+
+而 `QmsDocumentSaveReqVO.status` 的约束只有 `@InEnum(QmsDocStatusEnum.class)`，
+`PUBLISHED(30)` 是合法枚举值 → **建单时直接传 30，即可跳过
+submit → approve 全流程，落库为「已发布」且 `approve_date` 为 NULL**。
+
+**真机实测**（`Temp/zc_qms_doc_status_bypass_probe.py`，tenant 9001，mock token）：
+
+| 用例 | 结果 |
+| --- | --- |
+| `POST /qms/document/create` 带 `status=30` | 受理，id=30，**落库 status=30、approveDate=NULL、version 仍 1.0** |
+| 对照组不传 status | id=31，落库 status=10（DRAFT）✅ |
+| `status=999` 非法值 | 被 `@InEnum` 拒绝 ✅ |
+
+即：**校验在（挡得住 999），护栏不在（挡不住 30）**。
+探针数据已软删（`deleted=0x01`），且全库 `status=30 AND approve_date IS NULL` 计数为 0
+——说明**这是潜在漏洞，不是已经发生的事故**。
+
+### 12.235.2 为什么这是缺陷而不是设计：同类的 update 路径有护栏
+
+同一个类里的 `updateDocument` 明确写了：
+
+```java
+// 禁止通过通用更新修改状态，状态变更必须走 submitDocument/approveDocument/...
+updateObj.setStatus(null);
+```
+
+**create 没有这道护栏，update 有** —— 这个不对称就是缺陷本身。
+`approveDocument` 上还挂着 `@ElectronicSignature(meaning = "质量文件审核批准并发布")`，
+说明「发布」在业务语义上是一个**需要电子签名的受控动作**；
+绕过它建单，等于让审计留痕里出现一份「没有审批人、没有签名、没有审批日期」的已发布受控文件。
+在 21 CFR Part 11 / ISO 13485 语境下，这正是最不该出现的一类记录。
+
+### 12.235.3 影响面与未查清的部分
+
+- **已确认**：`qms_document` 一条路径。
+- **未查清**：QMS 其余 24 个 ServiceImpl 的 create 路径是否同病。
+  已派后台 agent 做**逐方法**审计（按方法而非按文件统计 `setStatus(null)`），
+  结果未回；**在它回来并被我逐条复核前，不得把范围写成「只有 document 一处」**。
+- 注意上一轮的教训：按文件 grep `setStatus(null)` 会给出误导性计数
+  （`QmsDocumentServiceImpl` 计数为 1，但那个 1 在 update 上，create 上其实是 0）。
+
+### 12.235.4 本轮**未修**，理由
+
+修法本身很简单（create 里也 `setStatus(DRAFT)` 或直接不接受 VO 的 status），
+但它**改变了对外契约**：现有前端 `QmsDocumentForm.vue` 把 status 当普通表单字段在提交，
+一刀切会让该表单静默失效。按 CLAUDE.md「设计必须完整，实现应当克制」，
+正确顺序是先定「受控文档状态只能由流转方法写入」这条领域规则，
+再统一处理 create/update/前端三处，而不是先在服务端打一个补丁。
+**登记在此，等你决定是否纳入本轮修复范围。**
+
+### 12.235.5 全模块逐方法普查结果（**本人逐条复核后**，非 agent 原文照抄）
+
+§12.235.1 只写了 `qms_document` 一处，并写明「范围未查清」。
+现已按**方法**（而非按文件）审完 QMS 25 个 ServiceImpl 的全部 insert 路径，
+并**逐条回到源码复核**了每一条高危项。结论：**这是模块级的系统性缺口，不是个别疏漏**。
+
+**统一成因**：`create*` 一律 `BeanUtils.toBean(createReqVO, DO.class)` 整对象落库
+（Hutool 同名属性全量拷贝，无忽略清单），**仅在字段为 null 时补默认值**，
+于是「调用方传了就按调用方的存」。而多数 Save VO 的该字段**没有 `@InEnum`**，
+连枚举校验都没有。
+
+#### 已复核确认的「建单即可写入终态」清单
+
+| 严重度 | 服务 | 可达终态 | VO 字段有无 `@InEnum` |
+| --- | --- | --- | --- |
+| **critical** | `InspectionOrderServiceImpl#createInspectionOrder` | **PASSED(30)** | **无** |
+| **critical** | `NcrDocumentServiceImpl#createNcrDocument` | **CLOSED(40)** + `disposition` USE_AS_IS(50)/RETURN(60) | status **无**（disposition 有） |
+| **high** | `CAPADocumentServiceImpl#createCAPADocument` | stage **CLOSED(60)** + `verificationResult` PASSED(20) + `closeDate`/`verifiedBy`/`verifiedTime` | 有（但全量落库） |
+| high | `QmsDocumentServiceImpl#createDocument` | PUBLISHED(30)，且 OBSOLETE(40)/RETURNED(50) 同样可达 | 有 |
+| high | `EightDReportServiceImpl#createEightDReport` | **D8_CLOSED(80)** | **无** |
+| med-high | `CustomerComplaintServiceImpl#createCustomerComplaint` | **CLOSED(40)** | **无** |
+| med-high | `ScarServiceImpl#createScar` | **CLOSED(30)** + `closeTime` | **无** |
+| med | `QmsAuditPlanServiceImpl#createAuditPlan` | COMPLETED(30)/CANCELLED(40) | 有 |
+| med | `SupplierAuditServiceImpl#createSupplierAudit` | COMPLETED(30) + `conclusion`（**且该类无任何流转方法**） | **无** |
+| med | `MsaStudyServiceImpl#createMsaStudy` | COMPLETED(30)（无测量数据即"已算完 GR&R"） | 有 |
+| med | `SupplierRatingServiceImpl#createSupplierRating` | `grade="A"`（与同行的 ppm/准时率自相矛盾） | **无** |
+| med-low | `TrainingPlanServiceImpl#createTrainingPlan`（无流转方法） | COMPLETED(40) | **无** |
+| med-low | `QualificationServiceImpl#createQualification` | VALID(10) 强制给已过期证书 | **无** |
+| med-low | `TrainingRecordServiceImpl#createTrainingRecord` | status 20 + `passed=1` 自证 | **无** |
+| low-med | `QmsInstrumentServiceImpl#createInstrument` | SCRAPPED(30)/SEALED(40) | 有 |
+| low-med | `FmeaDocumentServiceImpl#createFmeaDocument` | APPROVED(30)（该类亦无流转方法，枚举是装饰） | 有 |
+
+#### 已复核确认、但**不属于**「绕过审批」的邻近缺陷
+
+- `InspectionRecordServiceImpl#createInspectionRecord`：`result` 有 `@InEnum` 且 `@NotNull`，
+  但**建单直写 result 且不重算父检验单状态**（`submitInspection` 才重算并走 AQL 判定）
+  → 可造出「父单 PASSED、明细 FAIL」的不一致。
+- `QmsInstrumentCalibrationServiceImpl#recordCalibration`：`calibrationResult` 有 `@InEnum`，
+  但会**顺带改写器具的 `last/nextCalibrationDate`**（有副作用），影响后续校准预警口径。
+- `FmeaItemServiceImpl#createFmeaItem`：`actionTaken` 等文本字段建单可写，
+  RPN/AP 由服务端重算（这点是对的）。
+
+#### **我对 agent 报告的纠正（不照抄的理由）**
+
+agent 说 `QmsDocumentController` 的 `/revoke`（第 104 行）**没有 `@PreAuthorize`**。
+**这是错的** —— 该行上方明确有 `@PreAuthorize("@ss.hasPermission('qms:document:revoke')")`，
+且 `qms:document:revoke` 在 `V134__hr_qms_menu_seed.sql:110` 有种子。
+一条高危结论出现事实错误，就不能整份照抄；故上表每行均由我回源复核后才写入。
+
+#### 未复核 / 未查清（不得当作已确认）
+
+- 我复核了上表全部条目与上述三条邻近缺陷；agent 报告中**未列入本表**的其余细项
+  （如 `QmsAuditReportServiceImpl#updateAuditReport` 覆盖 `issueCount`）
+  **我没有逐条回源**，不作为结论使用。
+- **未查**：是否存在全局 MyBatis-Plus 拦截器、DB CHECK 约束或前端补偿逻辑抵消上述任一问题。
+  已确认 `sql/mysql/qms.sql` 的 status 列是裸 `TINYINT DEFAULT 10`，**无 CHECK 约束**（DB 层无兜底）。
+- **未实测**：除 `qms_document` 与 `inspection-order` 两条已真机实证外，
+  其余条目**只做了代码确认，未跑真机探针**。
+
+#### 与 6 个已知阻塞项的关系
+
+这**不是**那 6 项之一，也不是它们的子集：那 6 项是「功能没做完」，
+本组是「功能做完了但护栏可被绕过」。严重度上 `inspection-order` 一条
+**跨越模块边界**（见 §12.235.6），应排在 6 项之前。
+
+### 12.235.6 最严重的一条：伪造检验单 PASSED 可放行 WMS 入库（真机端到端实证）
+
+这是 §12.235.5 里唯一**跨模块**的一条，也是本轮唯一做到**端到端实证**的一条。
+
+**链条**（每一环都已回源确认）：
+1. `WmsReceiptOrderServiceImpl#checkQualityGate`（`:242-249`）是**入库质检卡点**，
+   注释自称「P0-3 质量合规红线」、fail-closed：入库单 `qcBizId` 非空时调
+   `inspectionOrderApi.isQualified(bizType, qcBizId)`，不合格即抛
+   `RECEIPT_ORDER_QC_NOT_QUALIFIED`。
+2. `InspectionOrderApiImpl#isQualified`（`:23-27`）判据是
+   `order != null && status == InspectionOrderStatusEnum.PASSED(30)`，
+   按 `selectLatestByBiz(bizType, bizId)` 取**最新一条**（`order by id desc limit 1`）。
+3. `InspectionOrderSaveReqVO.status`（`:50-51`）**无 `@InEnum`、无任何约束**；
+   `InspectionOrderServiceImpl#createInspectionOrder` 仅在该字段为 null 时补 PENDING(10)。
+4. 端点 `POST /qms/inspection-order/create`，权限 `qms:inspection-order:create`。
+
+**真机实证**（沙箱 `zhicloud_sandbox_v140`，tenant 9001）：
+
+```
+POST /admin-api/qms/inspection-order/create
+{"orderNo":"ZCE2E928588","type":10,"bizType":"PURCHASE_IN","bizId":928588,"status":30}
+-> {"code":0,"data":6320020}
+
+落库：id=6320020  status=30  biz_type=PURCHASE_IN  biz_id=928588
+按 isQualified 的原查询取最新一条 -> isQualified_would_return=TRUE
+```
+
+即：**一次建单请求，就让一个从未检验过的 `bizId` 通过了入库质检卡点**。
+对照组（不传 status）落 PENDING(10)，符合预期。
+
+**顺带确认的两点**：
+- 传 `status=987654` 返回 500（`系统异常`）且**未落库** —— 那是 MySQL TINYINT 越界，
+  属既有的错误处理粗糙（越界值应被校验挡下而不是 500），**不是**本条的绕过路径。
+- `biz_id` **确实落库**（`891213` 那次实测可见），所以不是"字段被吞掉"造成的假象。
+
+**边界（必须写清）**：
+- 我**只证到**「伪造的 PASSED 会被 `isQualified` 判为合格」这一层；
+  **没有**真的去调 WMS 入库接口（那会改动库存数据），
+  故「WMS 据此放行」是**代码链条确认**，不是端到端跑通。
+- 探针数据已全部软删（`deleted=0x01`）；全表 `status=30 AND deleted=0` 的 4 行
+  经核对**均非本轮产生**（id=2 为 2026-10-06 的旧探针 `QC-PROBE-PASS-001`，
+  另 3 行为 DEMO/演示数据）——说明**这不是已经发生的事故**。
+  但也说明：**这个洞此前已经被人探过一次**（id=2），只是没修。
+
+**建议的处理顺序**：这一条的修法（create 不接受 status，或强制 PENDING）
+与 §12.235.5 的其余条目同源，但**跨模块影响**（WMS/MES 都读这个状态），
+应先于 QMS 前端补齐工作处理。**本轮未修**，等你决定。
+
+### 12.235.7 对 §12.235.5 表格的两处自查订正
+
+按「未复核不得当结论」的规矩，我把 §12.235.5 表内 16 条逐条回源复核完毕
+（16 个 `create*` 方法体全部取出比对，**形态完全一致**：
+`BeanUtils.toBean` 整对象落库 + 仅在 null 时补默认值）。
+复核中发现**我自己写错两处**，订正如下：
+
+**订正一：`QualificationServiceImpl` 那条的「后果」写错了。**
+我写的是「VALID(10) 强制给已过期证书 → 击穿 `getExpiringQualificationList` 的到期闸门」。
+**后半句不成立**：`QualificationMapper#selectExpiringList` 只按日期过滤
+（`.le(QualificationDO::getExpireDate, expireDate)`），**根本不读 status**，
+所以无论 status 传什么都进不了/出不了那个列表，谈不上"击穿"。
+真实的缺口要小一些：该 VO 的 status **无 `@InEnum`**（可写 10/20/30/40 之外的值），
+且建单默认值本来就是 VALID(10)，**传 10 与不传等价**——
+即这一条的「越权」程度**低于**表中其余条目。
+严重度应从 med-low **下调为 low**，并且**不应**与 inspection-order / NCR 并列陈述。
+
+**订正二：`SupplierRatingServiceImpl` 的「passThrough」需限定条件。**
+该方法并非无条件放行：`grade` **为 null 时才**用
+`calculateGrade(ppm, onTimeRate, qualityRate)` 自动算；**传了就用传的**。
+所以准确表述是「grade 可被调用方覆盖（绕过自动评级）」，
+而不是「grade 总是原样落库」。机制与其他条目同类（null 才补默认），
+但**「计算得出的 grade 与同行 ppm/准时率自相矛盾」这一后果仍然成立**。
+
+**顺带确认（原表未错，但值得点明）**：
+`TrainingRecordServiceImpl` 补默认值时写的是**裸整数 `setStatus(10)`**，
+而不是枚举常量——与 `HrEmployeeStatusEnum` 是孤儿枚举（§12.234.2）同源，
+属同一类「状态码散落」的技术债。它同时暴露 `passed=1` 可自证。
+
+**复核后维持不变的结论**：其余 14 条与 §12.235.6 的 inspection-order 链条
+（含 WMS 卡点、真机端到端证据）**全部成立**，无需改动。
+
+## 12.236 修复轮：QMS 「建单即可写入终态」16 处统一收口（2026-10-16，执行中）
+
+用户指令「按你说的优先级逐项做修复」后，按 §12.235.5/.6 的排序开始修。
+本条记录**修法、已验证范围与尚未验证的部分**，不宣称全部完成。
+
+### 12.236.1 统一修法（不是打 16 个补丁，是同一条领域规则）
+
+所有 16 处的成因完全相同：`create*` 用 `BeanUtils.toBean(createReqVO, DO.class)`
+整对象落库，且**仅在字段为 null 时补默认值**。修法也统一为两半：
+
+1. **服务端**：把「`if (x == null) x = 初始值`」改成「`x = 初始值`」——
+   状态无条件由服务端决定，调用方传什么都不生效。
+2. **边界**：给 Save VO 上缺 `@InEnum` 的 status 字段补 `@InEnum`。
+   这不是冗余：`@InEnum` 挡的是**垃圾值**（此前传 987654 会一路到 DB 层报 500），
+   无条件赋值挡的是**语义越权**（传 30 是合法枚举值，`@InEnum` 挡不住）。
+   两者是不同层面的护栏，缺任一个都有洞（§12.235.1「校验在，护栏不在」）。
+
+**与 update 路径的关系**：多数 ServiceImpl 的 `update*` 早就写了
+`setStatus(null)` 并注释「状态变更必须走流转方法」——
+也就是说**这个规则在修改侧早已确立，只是新增侧漏了**。本次补的正是缺失的那半边。
+
+### 12.236.2 已修 16 处（含真机验证）
+
+| # | 服务·方法 | 强制初始值 | 额外收口 |
+| --- | --- | --- | --- |
+| 1 | `InspectionOrderServiceImpl#createInspectionOrder` | PENDING(10) | status 补 `@InEnum` |
+| 2 | `NcrDocumentServiceImpl#createNcrDocument` | OPEN(10) | 新增/修改均强制 `disposition=null`；status 补 `@InEnum` |
+| 3 | `CAPADocumentServiceImpl#createCAPADocument` | OPEN(10)+CREATED(10) | 新增/修改均强制 `verificationResult/verifiedBy/verifiedTime/closeDate=null` |
+| 4 | `QmsDocumentServiceImpl#createDocument` | DRAFT(10) | 强制 `approverId/approveDate=null` |
+| 5 | `EightDReportServiceImpl#createEightDReport` | DRAFT(0) | status 补 `@InEnum` |
+| 6 | `CustomerComplaintServiceImpl#createCustomerComplaint` | REGISTERED(10) | status 补 `@InEnum` |
+| 7 | `ScarServiceImpl#createScar` | OPEN(10) | status 补 `@InEnum` |
+| 8 | `QmsAuditPlanServiceImpl#createAuditPlan` | PLANNED(10) | — |
+| 9 | `SupplierAuditServiceImpl#createSupplierAudit` | PLANNED(10) | status 补 `@InEnum` |
+| 10 | `MsaStudyServiceImpl#createMsaStudy` | DRAFT(10) | — |
+| 11 | `TrainingPlanServiceImpl#createTrainingPlan` | DRAFT(10) | status 补 `@InEnum` |
+| 12 | `QualificationServiceImpl#createQualification` | VALID(10) | status 补 `@InEnum` |
+| 13 | `QmsInstrumentServiceImpl#createInstrument` | IN_USE(10) | — |
+| 14 | `FmeaDocumentServiceImpl#createFmeaDocument` | DRAFT(10) | — |
+| 15 | `TrainingRecordServiceImpl#createTrainingRecord` | 10 | **未补 `@InEnum`**：该域无状态枚举，按「抽象延迟到第二个真实用例」不新造枚举，仅把裸字面量提成常量 |
+| 16 | `SupplierRatingServiceImpl#createSupplierRating` | grade 无条件按指标重算 | 不再「未指定才自动算」 |
+
+### 12.236.3 #1（`inspection-order`）已做**真机端到端验证**
+
+- 改完重新 `clean package`（jar 642 MB > 600 MB），按日志判定启动就绪后实测：
+  ```
+  POST /qms/inspection-order/create {... "status":30}
+  -> 落库 status=10，isQualified=FALSE      （修复前：status=30，TRUE）
+  POST ... "status":987654
+  -> 400「必须在指定范围 [10, 20, 30, 40]」  （修复前：500 系统异常）
+  ```
+- 探针数据已软删；全表剩余 4 行 PASSED 经核对均非本轮产生。
+
+### 12.236.4 测试与反向对照（**修完必须做的那一步**）
+
+新增/扩充用例并在**还原成漏洞形态**后确认它们会红（不红等于没钉住）：
+
+- `InspectionOrderServiceImplTest`：3 条新增。还原后
+  `expected: <10> but was: <30>/<40>/<20>` —— 3 条全红 ✅
+- `NcrDocumentStatusGuardTest`（新建，5 条）：还原后 `40/30 vs 10` —— 2 条红 ✅
+- `CAPADocumentServiceImplTest`：3 条新增。还原后 `30 vs 10`、`20 vs null` —— 2 条红 ✅
+
+### 12.236.5 过程中撞到并纠正的错误
+
+1. **第一次反向对照无效**（与 §12.234.7 同类错误）：制造两个同名 `catch` 是编译错误，
+   BUILD FAILURE 说明不了任何事。本次改为**真的把 `if (x==null)` 还原回去再跑**，
+   并逐条记录 expected/actual。
+2. **`assertNull` 断言写错了**：MyBatis-Plus `updateById` **默认跳过 null 字段**，
+   所以 `setStatus(null)` 的实际效果是「该列不进 UPDATE 语句」= **保持原值**，
+   不是「置空」。update 路径的正确断言是**原值未被改写**；
+   insert 路径才是真正置空。踩到后才改对（`expected: <null> but was: <43>`）。
+3. **H2 测试库缺表**：`qms_ncr_document` 不在测试 schema 里，
+   已按 `V13__qms_ddl.sql` 补进 `create_tables.sql`（**CRLF**，与该文件一致）
+   与 `clean.sql`（**LF**，与该文件一致）—— 这两个文件的行尾**不一样**，改前必查。
+4. 启动失败一次：`webServerStartStop` 起不来 —— 48080 被上一次的残留 java 进程占着。
+   按仓库纪律**先 taskkill 再打包**，并按日志判定就绪而不是固定 sleep。
+
+### 12.236.6 尚未完成 / 待验证
+
+- 其余 13 处的**新增测试**由后台 agent 编写中（含各自的反向对照），
+  **结果未回、未复核，不得计入已完成**。
+- **未做**：QMS 前端（19 个流程端点无入口）等原 6 项业务断点——
+  那是新增功能，不在本轮「修护栏」范围内。
+- **未查**：本次改动是否影响任何通过 `status` 做业务判断的下游读路径。
+  WMS/MES 回归已绿（829 + 255），但那是既有测试，不等于覆盖到这条语义变化。
+
+### 12.236.7 补上另一半：**修改**路径同样不接受外部状态（否则新增侧的护栏形同虚设）
+
+后台 agent 在编写新增侧用例时附带报告：13 个类里有 **7 个的 `update*` 完全没有护栏**。
+我逐条回源复核后确认属实，且严重度比它说的还高一层，故一并修掉。
+
+#### 复核到的实况（7 个 `update*` 全是裸 `BeanUtils.toBean` + `updateById`，零护栏）
+
+| 类 | `update*` 是否置空状态 | 该类是否有流转方法 |
+| --- | --- | --- |
+| `ScarServiceImpl` | 否 | 有 `closeScar`（故 update 是**绕过**，非唯一路径） |
+| `SupplierAuditServiceImpl` | 否 | **无** |
+| `TrainingPlanServiceImpl` | 否 | **无** |
+| `QualificationServiceImpl` | 否 | **无** |
+| `QmsInstrumentServiceImpl` | 否 | **无** |
+| `TrainingRecordServiceImpl` | 否 | **无** |
+| `SupplierRatingServiceImpl` | 否（grade） | **无**（`calculateGrade` 仅作 public helper，update 不调） |
+
+**关键点**：那 6 个「无流转方法」的类里，**「新增 + 修改」是状态唯一的移动方式**。
+也就是说：§12.236.2 刚加的新增侧护栏，只要再补一个 PUT 就完全绕过 ——
+**新增侧的修复在这些类里等于没修**。这是本轮最该补的一块。
+
+#### 修法
+
+与模块内多数类的既有做法对齐（`updateDocument`/`updateEightDReport` 等早就写了 `setStatus(null)`）：
+在 `update*` 里把状态字段置 null。**依赖 MyBatis-Plus `updateById` 跳过 null 字段**这一语义——
+效果是「该列不进 UPDATE 语句」= 调用方改不动它，而不是「把库里的值清空」。
+（这点在 §12.236.5 第 2 条踩过一次：断言必须写「原值未变」，不能写 `assertNull`。）
+
+#### 测试与反向对照
+
+新增 7 个 `*UpdateStatusGuardTest` / `SupplierRatingUpdateGradeGuardTest`。
+**反向对照**：把这 7 处置空语句删掉后 7 条**全红** ——
+`10 vs 30`（Scar/SupplierAudit/Instrument）、`10 vs 40`（TrainingPlan/Qualification）、
+`10 vs 20`（TrainingRecord）、`C vs A`（SupplierRating）。恢复后全绿。
+
+顺带修掉自己写的两处 bug：
+- 生成测试时 import 路径拼成 `.sqm/vo.`（多了斜杠），编译不过。
+- `randomPojo` 在 `DECIMAL(6,2)` 列上生成 `33208.61` 这种超长值 →
+  `DataIntegrityViolation`。已给 `onTimeRate`/`qualityRate`/`score` 钉真实量程。
+
+#### 两轮反向对照汇总（本轮共 39 条新用例）
+
+| 轮次 | 还原对象 | 结果 |
+| --- | --- | --- |
+| 新增侧 | 16 处 `if (x==null)` 还原 | **32 条红**（含既有 3 条 inspection-order） |
+| 修改侧 | 7 处 `setX(null)` 删除 | **7 条红** |
+
+至此 QMS 新增/修改两侧的状态写入路径均已收口，且每条护栏都有会红的用例守着。
+
+### 12.236.8 事故：反向对照用的批量正则**误伤了两个我根本没打算改的文件**
+
+做「修改侧」反向对照时，我用了**全模块批量正则**把 `setStatus(...)` 统一包成
+`if (x.getStatus() == null) { ... }`，跑完再整体还原。结果**误伤两个文件**：
+
+| 文件 | 后果 |
+| --- | --- |
+| `QmsAuditNonconformityServiceImpl` | 凭空多出 `if (nonconformity.getStatus() == null) {` 块 |
+| `QmsDocumentChangeRequestServiceImpl` | 把**原有的** `updateObj.setStatus(null)` 也包成了 `if (updateObj.getStatus() == null) { setStatus(null); }` —— 语义被彻底改变 |
+
+第二个尤其糟：那是在**修改**路径上把一个既有的护栏改写成了「条件性置空」，
+而我本轮只打算动 7 个**指定**的类。这两个文件**从来不在我的修复清单里**。
+
+**发现方式**：收尾做行尾普查时，这两个文件的 diff 从原本的十几行变成
+`217/199`、`207/192` —— 整文件重写。顺带发现它们的行尾也被改成了 CRLF
+（这两个文件 HEAD 是 LF-only）。
+
+**处理**：两处均已 `git checkout` 还原到 HEAD。还原后 QMS 101/101 仍绿，
+说明本轮修复**本来就不依赖**这两个文件的任何改动——它们纯粹是被误伤。
+
+**教训（与 §12.234.8 同源，但更隐蔽）**：
+- **批量正则 + 全模块匹配 = 把「我打算改什么」的边界交给了正则**，而不是交给人。
+  反向对照只要证明「这几条用例对这几处改动敏感」，就该**精确针对那几处**，
+  不该图省事扫全模块。
+- 这次是**收尾的行尾普查**抓到的（diff 行数异常），不是测试抓到的——
+  因为被改的那两处没有对应用例。再次印证 §12.234.9 的结论：
+  **收尾必须按文件扫一遍 diff 行数，只盯测试结果不够**。
+- 反向对照本身也是一次写操作，同样要遵守「改前确认清单、改后核对 diff」。
+
+### 12.236.9 第 1 步落地：23 处修复的真机端到端验证（20/20 通过）
+
+§12.236.6 登记的缺口——「12:21 之后的 23 处只有 H2 单测、未进包、未真机验证」——已补上。
+
+**环境**：Docker Desktop 重启，三个容器手动 `docker start`（zc-live-mysql / redis / rabbitmq）。
+沙箱库 `zhicloud_sandbox_v140` 完好：**645 张表 / 207 条 Flyway 成功记录**，QMS 表齐全。
+48080 无占用、无 java 残留后才打包（遵守仓库纪律）。
+
+**确认修复真的进了包**：mtime 不可信（反向对照的还原会刷新它），
+改用 `javap` 反编译字节码验证：
+- `QmsDocumentServiceImpl#createDocument` 出现 1 个 `ifnonnull`，
+  经逐行确认**属于 `setVersion`**（版本默认值）；`setStatus`(offset 26) 与
+  `setApproverId`(offset 32) 均为无条件调用 —— 修复生效。
+- `NcrDocumentServiceImpl` / `CAPADocumentServiceImpl` 的 create 方法 null 分支数为 **0**。
+- fat jar 内 `zhicloud-module-qms` 为 689667 bytes（修复前 689025）。
+
+**服务**：jar 642710907 bytes（> 600 MB），按日志判定就绪
+（`Started ZhiCloudServerApplication` + 48080 应答 200），未用固定 sleep。
+Flyway 无新增记录（本轮无 DDL，符合预期）。
+
+**真机结果**（`Temp/zc_qms_verify_all_guards.py`，tenant 9001）：
+
+| 用例 | 攻击形态 | 落库结果 | 判定 |
+| --- | --- | --- | --- |
+| A doc create | `status=30` + `approverId=900100` | **status=10、approveDate=NULL、approverId=NULL** | ✅ |
+| B ncr create | `status=40` + `disposition=50`(让步接收) | **status=10、disposition=NULL** | ✅ |
+| C capa create | `status=30`+`stage=60`+验证留痕+closeDate | **status=10、stage=10、四项留痕全 NULL** | ✅ |
+| D rating create | 全指标极差却 `grade="A"` | **grade 被按指标重算为 `D`** | ✅ |
+| E1 doc update | PUT `status=30` | **status 仍为 10** | ✅ |
+| E2 rating update | PUT `grade="A"` | **grade 仍为 `D`** | ✅ |
+
+**20/20 通过**，覆盖 create 与 update 两侧、4 个不同域。
+
+**清理与基线**：6 行探针数据全部软删（`deleted=0x01`，活行计数 0）。
+核心形态基线核对：
+- `qms_document`：`status=30 AND approve_date IS NULL` → **0**（无脏行）
+- `qms_capa_document`：`status=30 AND verified_by IS NULL` → **0**（无脏行）
+- `qms_ncr_document`：`status=40` 且无 MRB 留痕 → **1 行**
+  经查为 `DEMO-NCR-00004`（`create_time=2026-01-01`、`creator=demo-seed`），
+  **是种子数据，非本轮产生**。但它恰好就是本缺陷的真实形态——
+  「无 MRB 留痕却已关闭」，可作为给用户演示缺陷后果的现成样例。
+
+#### 过程中的一次自我纠正
+
+探针第一次跑 B/C 双双 400（`请求参数不正确`），
+原因是我**漏填 VO 的 `@NotEmpty` 字段**（NCR 缺 `defectDescription`/`quantity`，
+CAPA 缺 `problem`），**不是修复失效**。
+补全后 20/20。这与 §12.235.6 第一次探针用错字段名（`inspectionType`）是同类错误：
+**探针报错时先怀疑自己的请求契约，再怀疑被测代码**。
+
+#### 结论
+
+至此 §12.236 全部 23 处源码修复**既有 H2 单测（101 条）又有真机验证**，
+且两轮反向对照均证明测试对修复敏感（create 侧 32 红、update 侧 7 红）。
+"修好了"这一结论现在有完整证据链，不再依赖 H2 单测的推断。
+### 12.236.10 前端 B 方案与提交收口：124 个未提交文件拆 4 笔（2026-10-16）
+
+#### 前端收口：19 个 QMS 字典常量 + 30 个页面（B 方案）
+
+护栏只解决「后端拒绝」：真机上 create/update 已无法写入终态，但前端仍把状态/阶段当普通字段渲染 ——
+15 个表单（编辑态）可以继续提交 status/stage，14 个列表把枚举值显示成裸数字。
+
+本轮执行 **B 方案**（最小可见面、不扩大改动范围）：
+
+- `zhicloud-ui-admin-vue3/src/utils/dict.ts` 新增 19 个 QMS 字典常量（与 V202 的 19 个 type 一一对应）；
+- 15 个表单的 status/stage 字段改为只读展示；
+- 14 个列表的状态列改用 `dict-tag`；
+- 19 处流程端点（submit/approve/close 等按钮）本轮未动，保持现网交互，已在「未做声明」登记，不算做完。
+
+取值对齐：逐项对照 `QmsNcStatusEnum`、`QmsChangeRequestStatusEnum` 等后端枚举。
+其中 `qms_nc_status`、`qms_change_request_status` 两个类型在数据库里原本一行都没有
+（其安装种子在 `sql/mysql/qms_document_audit.sql`，从未部署；DB 实测计数 0）——
+若只加常量不加数据，`dict-tag` 会渲染成空标签，两个页面会回归成空列。故随本轮并入 V202 一并解决（见下条）。
+
+门禁：`ts:check`、`build:prod` 均 exit=0（清过 vue-tsc 缓存后复跑）。
+
+#### V202 扩展：17 类型 / 71 项 → 19 类型 / 79 项
+
+- 新增两个类型各 4 项（nc：10/20/30/40，即 DRAFT/REVIEWING/EFFECTIVE/CLOSED；
+  change-request：10/20/30/40），取值与枚举逐项对齐；
+- `V202__qms_status_dict_seed.sql` 16244B（sha256 `92fd1798…`），
+  `V202_verify.sql` 改为 17→19、71→79 + 取值清单（sha256 `cd2a53d2…`）；
+- 真机验证（沙箱 `zhicloud_sandbox_v140`）：灌入前 nc/change 类型 0、数据 0 行；
+  灌入后 2 类型、8 行；`V202_verify` 4/4（TYPES/DATA/VALUES/NO_DUP），
+  重灌一次仍 4/4（幂等，不产生重复行）；灌入前 chk_types 20→22、chk_data 83→91；
+- lint：`sql_migration_lint.py` 对 V202 + V202_verify 0 违规。
+
+#### 提交收口：A/B/C/D 四笔
+
+| 笔 | 主题 | 文件 |
+| --- | --- | --- |
+| A | ERP/TMS/CRM 并发与幂等三个缺陷（§12.230–§12.233）+ V200/V201 | 34 + 契约 S |
+| B | 普查第一批修复：OA 工作台统计、InventoryDualWriter 注释、.gitignore 缺口（§12.234.1/.6/.11、§12.233.8） | 5 |
+| C | QMS「建单即可写入终态」16 处 + 修改侧护栏（§12.235–§12.236）+ 前端 B 方案 + V202（19/79） | 82 + 契约 F′ |
+| D | 本台账 §12.236.10 + next-steps 后记 | 2 |
+
+合计 124 个内容变更文件（93 改 + 31 新），与 `git status --porcelain -uall` 逐项一致，
+三组路径互不相交（AI 拆组、人工逐项核对后执行）。
+
+- **契约按版本拆分**：A 时点 V202 尚未入库，故 A 用 S 快照（移除 V202 条目，36650B）；
+  C 恢复完整 F′（36959B）。两态分别以「干净检出快照」模拟实跑：
+  A → `PASSED: tracked=111 scanned=207 findings=0`；C → `PASSED: tracked=112 scanned=208 findings=0`。
+- **长度自查（纠一处读数笔误）**：此前把 F′ 记为 36953B。实际 F′ = S + 309B（V202 条目块）= 36959B，
+  与旧 F 等长（两处 sha256 替换等长，不改块长）。已用「112 条逐条哈希与磁盘比对全中 + 检查器实跑 0 findings」
+  双重证明，无实质损坏 —— 记下来是为了警惕：**台账里的数字本身就是证据，读数错一次就得用等价证据重证**。
+- **staging 纪律**：`git add` 全部显式路径（禁 `.` 与 `-A`）；每笔提交前断言 staged 集合与预期逐项相等，
+  且不含 `evidence/`；提交消息文件 UTF-8 无 BOM、LF。
+- **不加 `Co-Authored-By`**：全仓现有 318 个提交含 0 条 trailer，追加会破坏与历史的风格一致
+  （若确需，push 前 amend 即可）。
+- **本台账字节不变量**：无 BOM、CRLF、裸 LF 恒为 1164（本次追加不新增裸 LF）、文件以 CRLF 结尾；
+  追加脚本先断言后写盘，写盘后复验。
+
+#### 提交时点的门禁读数
+
+- 迁移契约：A 111/207/0、C 112/208/0（见上）；
+- `sql_migration_lint.py`：V202 两文件 0 违规；
+- `check_duplicate_ddl.py`：tables=667 / duplicate_groups=11 / conflicting=3 / findings=0；
+- 错误码扫描：1936 个字面量、0 撞号；
+- `check_commit_readiness.py`：required=17/17、tracked=17；warnings 4 条
+  （均为 V200/V201 未跟踪的提醒，随 A 入库归零，提交完成后复跑应为 0）；
+- 前端：`ts:check`、`build:prod` exit=0。
