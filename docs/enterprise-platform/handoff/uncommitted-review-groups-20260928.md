@@ -10733,3 +10733,72 @@ E2E 具体断言（API + DB 双验）：建单传 `status=30` → 落库 10；PU
    CRM §12.241、ERP 固定资产 §12.237、WMS 库位 §12.242 与本节）。
 
 本节文档同步：next-steps 后记二追加完成/收官两条；HANDOFF §3.2 第 6 项与 §四第 3 条加订正块。
+
+## 12.244 2026-10-17 MES APS generate 占用时间线收口：真重叠语义 + 未终结状态过滤（A 组第 1 项；ADR 先行）
+
+本节属性：台账 §12.240.5 第 1 条「generate 占用时间线同病」登记的收口（A 组加固/清理小项第 1 项）。
+后端单点修复（MES APS）：查询语义与占位状态过滤两处；零迁移、零新错误码、零新权限、零前端改动。
+设计决策动手前定稿（§12.244.2）。
+
+### 12.244.1 缺陷面与口径复核
+
+- `MesProApsServiceImpl#generateSchedule` 第 4 步以 plural 查询构建「工位下次可用时间」；
+  旧查询为**「被包含」语义**（`plannedEndTime <= endTime AND plannedStartTime >= startTime`）
+  且**无状态过滤**。三个后果：①左跨计划（start < 窗口起点 < end）漏计 → 可用时间低估
+  → 新计划可能与既有计划重叠；②已取消/已完成计划仍占位 → 产能虚耗；③右跨计划
+  （start 在窗内、end 超出窗口）漏计 → 同①重叠风险；
+- 全仓复核：旧 plural 方法唯一引用点即 generate（第 172 行）；
+  singular 方法 `selectListByWorkstationAndTimeRange` 被 `getWorkstationLoad`（工位负载展示）使用，
+  **口径不同，本项不动**；
+- 对照：§12.240 已将重排产冲突检测改为真重叠 + 状态过滤（`selectListOverlappingByWorkstation`），
+  本项为同族遗留的收口。
+
+### 12.244.2 设计决策（ADR 式，动手前定案）
+
+- **D1 查询改名 + 改语义**：`selectListByWorkstationIdsAndTimeRange` →
+  `selectListOverlappingByWorkstationIdsAndTimeRange`；条件改为
+  `plannedStartTime < endTime AND plannedEndTime > startTime`（左跨/右跨/被包含全覆盖）、
+  状态 ∈ {DRAFT, CONFIRMED, EXECUTING}（已取消/已完成不占位）、起止时间显式非空；
+  旧方法**删除**（无其他消费方，遵循「删除优于兼容」）。被否：保留旧名换语义（名不副实）；
+  新旧双轨（兼容层无消费方）。
+- **D2 可用时间模型不变（max(end) 标量）**：跨窗计划贡献完整 end（> endDate）→ 该工位本窗口内不可排
+  → 由 `ApsAllocationHelper.allocate` 的 `plannedEnd.isAfter(endDate)` 检查跳过
+  （**宁漏排不重叠**，fail-safe）。被否：按「空隙」精确建模（标量模型为 GREEDY/TOC/遗传三策略
+  共用契约，动它=动算法）；截断到窗口终点（与不截断在 allocate 中实际等效，不加复杂度）。
+- **D3 范围（明确不做）**：不动 singular 查询与负载展示、reschedule（§12.240 已收口）、
+  算法策略与 allocate、generate 重复排产校验（`selectListByWorkOrderIds` 已含状态过滤）、前端。
+- **D4 验证链**：单测 +3 案 → MES 模块回归 → reactor 重打包 → 真机 E2E（单工位摆景 +
+  工位状态快照复原）→ errcode 去重扫描。
+- **D5 文档**：本节 + next-steps 后记三；不涉及 HANDOFF 追踪行（A 组清单不在 §3.2/§四）。
+
+### 12.244.3 变更清单（3 文件：2 后端 + 1 测试）
+
+- `dal/mysql/pro/aps/MesProApsPlanMapper.java`：plural 方法改名 + 真重叠 + 状态过滤 + 起止非空
+  （javadoc 标注旧语义缺陷与出处）；
+- `service/pro/aps/MesProApsServiceImpl.java`：generate 调用点切换 + 占用时间线注释更新；
+- `MesProApsServiceImplTest`：+3 案——左跨推后可用时间（并断言以新方法查询）、空集保持窗口起点、
+  跨窗 fail-safe（可用时间 > endDate）。
+
+### 12.244.4 验证读数
+
+- 单测 `MesProApsServiceImplTest` **14/14**（11 + 3 新案）；MES 模块全量回归 **846/846**（Fail/Err/Skip=0）；
+- errcode 全仓扫描 **1947 条 / 0 碰撞**（零新码）；
+- reactor 重打包（`-pl zhicloud-server -am`）**BUILD SUCCESS**，新 jar（642736472B，12:04）真机运行；
+- 真机 E2E（tenant 9001，`Temp\zc_aps244_e2e.py`）**41/41**（单工位摆景：其余 7 个启用工位
+  临时禁用、finally 复原）：
+  ①基线——干净区 P1 起点 == 窗口起点（P1=[2026-10-18 00:00, 10:00)，时长 10h）；
+  ②左跨几何——W2 起点 02:30 落在 P1 区间内且 P1 不被窗口包含（旧「被包含」查询必漏），
+  P2 起点被精确收口到 P1.end（10:00）且 > W2 起点 02:30（旧语义落点即 02:30 → 与 P1 重叠）；
+  ③取消解除——已取消 P3 不再占位，同窗复排 P4 起点回到窗口起点（若仍占位将被推到 P3.end）；
+  ④右跨 fail-safe——P4 右跨出窗（end > 窗终点），generate 返回空且 WO5 无计划落库；
+  ⑤清理零遗留、8 个工位状态复原（启用数 8）。
+- 行尾保真：3 个 Java 文件 LF-only 保持。
+
+### 12.244.5 连带观察（登记，不动手）
+
+1. **singular 查询仍为「被包含」口径**：`getWorkstationLoad`（工位负载展示）同源查询只显示完全落入
+   窗口的计划——左跨/右跨计划在该视图缺失；属展示层口径，是否改另定。
+2. **标量可用时间模型的固有代价**：跨窗计划会把工位整窗保守封锁（窗口内早段空闲被放弃）；
+   如后续要「空隙利用」，需改算法契约（独立课题）。
+
+本节文档同步：next-steps 后记三追加 A 组第 1 项完成；HANDOFF 无对应追踪行。

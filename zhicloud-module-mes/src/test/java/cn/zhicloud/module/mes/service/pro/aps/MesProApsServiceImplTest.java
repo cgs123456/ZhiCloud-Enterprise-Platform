@@ -1,10 +1,16 @@
 package cn.zhicloud.module.mes.service.pro.aps;
 
 import cn.zhicloud.framework.test.core.ut.BaseDbUnitTest;
+import cn.zhicloud.module.mes.controller.admin.pro.aps.vo.MesProApsGenerateReqVO;
+import cn.zhicloud.module.mes.dal.dataobject.md.workstation.MesMdWorkstationDO;
 import cn.zhicloud.module.mes.dal.dataobject.pro.aps.MesProApsPlanDO;
+import cn.zhicloud.module.mes.dal.dataobject.pro.workorder.MesProWorkOrderDO;
 import cn.zhicloud.module.mes.dal.mysql.pro.aps.MesProApsPlanMapper;
 import cn.zhicloud.module.mes.enums.pro.MesProApsPlanStatusEnum;
+import cn.zhicloud.module.mes.enums.pro.MesProWorkOrderStatusEnum;
 import cn.zhicloud.module.mes.service.md.workstation.MesMdWorkstationService;
+import cn.zhicloud.module.mes.service.pro.aps.strategy.ApsContext;
+import cn.zhicloud.module.mes.service.pro.aps.strategy.ApsResult;
 import cn.zhicloud.module.mes.service.pro.aps.strategy.ApsStrategy;
 import cn.zhicloud.module.mes.service.pro.route.MesProRouteProductService;
 import cn.zhicloud.module.mes.service.pro.workorder.MesProWorkOrderService;
@@ -14,9 +20,12 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 import static cn.zhicloud.framework.test.core.util.AssertUtils.assertServiceException;
@@ -26,6 +35,7 @@ import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_APS_PLAN_NOT_D
 import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_APS_PLAN_NOT_EXISTS;
 import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_APS_PLAN_RESCHEDULE_TIME_INVALID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -39,7 +49,8 @@ import static org.mockito.Mockito.when;
  * {@link MesProApsServiceImpl} 的单元测试（mock mapper，无需 H2 表）
  *
  * 覆盖业务断点 2：确认/取消状态流转（CAS + 精确错误出口）+ 重排产修正
- *（起止同步平移保持时长、真重叠冲突检测、已取消/已完成不阻断）。
+ *（起止同步平移保持时长、真重叠冲突检测、已取消/已完成不阻断）；
+ * A 组第 1 项：generate 工位占用时间线（真重叠 + 状态过滤，§12.244）。
  */
 @Import(MesProApsServiceImpl.class)
 public class MesProApsServiceImplTest extends BaseDbUnitTest {
@@ -216,5 +227,84 @@ public class MesProApsServiceImplTest extends BaseDbUnitTest {
         assertServiceException(() -> apsService.reschedule(PLAN_ID, START.minusHours(1)),
                 PRO_APS_PLAN_NOT_EXISTS);
     }
+
+    // ==================== 生成排产：工位占用时间线（§12.244 真重叠 + 状态过滤） ====================
+
+    private MesProApsGenerateReqVO buildGenerateReq(Long workOrderId) {
+        MesProApsGenerateReqVO reqVO = new MesProApsGenerateReqVO();
+        reqVO.setWorkOrderIds(List.of(workOrderId));
+        reqVO.setStartDate(START);
+        reqVO.setEndDate(END);
+        return reqVO;
+    }
+
+    private MesProWorkOrderDO buildGenerateWorkOrder() {
+        return MesProWorkOrderDO.builder()
+                .id(1000L).code("WO-1")
+                .status(MesProWorkOrderStatusEnum.CONFIRMED.getStatus())
+                .quantity(BigDecimal.TEN) // 无工艺路线回退 1h/件 → 时长 10h
+                .build();
+    }
+
+    /**
+     * 执行一次 generate 并捕获传给策略的上下文（供断言工位可用时间）
+     */
+    private ApsContext captureGenerateContext(List<MesProApsPlanDO> existingPlans) {
+        MesProWorkOrderDO workOrder = buildGenerateWorkOrder();
+        when(workOrderService.getWorkOrderList(any())).thenReturn(new ArrayList<>(List.of(workOrder)));
+        when(apsPlanMapper.selectListByWorkOrderIds(any())).thenReturn(Collections.emptyList());
+        when(workstationService.getWorkstationListByStatus(any()))
+                .thenReturn(List.of(MesMdWorkstationDO.builder().id(WORKSTATION_ID).build()));
+        when(apsPlanMapper.selectListOverlappingByWorkstationIdsAndTimeRange(any(), any(), any()))
+                .thenReturn(existingPlans);
+        ArgumentCaptor<ApsContext> contextCaptor = ArgumentCaptor.forClass(ApsContext.class);
+        when(apsStrategy.schedule(any(), contextCaptor.capture()))
+                .thenReturn(ApsResult.builder().plans(Collections.emptyList())
+                        .skippedWorkOrderIds(new HashSet<>()).build());
+
+        apsService.generateSchedule(buildGenerateReq(workOrder.getId()));
+
+        return contextCaptor.getValue();
+    }
+
+    @Test
+    public void testGenerate_leftStraddlePlanPushesAvailabilityToItsEnd() {
+        // 左跨计划 [START-3h, START+10h)：start < 窗口起点，旧「被包含」查询必漏
+        MesProApsPlanDO leftStraddle = MesProApsPlanDO.builder()
+                .id(200L).workstationId(WORKSTATION_ID)
+                .plannedStartTime(START.minusHours(3)).plannedEndTime(START.plusHours(10))
+                .status(MesProApsPlanStatusEnum.DRAFT.getStatus())
+                .build();
+
+        ApsContext context = captureGenerateContext(List.of(leftStraddle));
+
+        assertEquals(START.plusHours(10), context.getWorkstationAvailableTime().get(WORKSTATION_ID));
+        verify(apsPlanMapper).selectListOverlappingByWorkstationIdsAndTimeRange(
+                eq(List.of(WORKSTATION_ID)), eq(START), eq(END));
+    }
+
+    @Test
+    public void testGenerate_noExistingPlansAvailabilityAtStartDate() {
+        ApsContext context = captureGenerateContext(Collections.emptyList());
+
+        assertEquals(START, context.getWorkstationAvailableTime().get(WORKSTATION_ID));
+    }
+
+    @Test
+    public void testGenerate_planSpanningBeyondEndFailsSafe() {
+        // 右跨到窗口之外 [START+2h, END+5h)：可用时间被推到窗口外 → 该工位本窗口内不可排（fail-safe）
+        MesProApsPlanDO spanning = MesProApsPlanDO.builder()
+                .id(201L).workstationId(WORKSTATION_ID)
+                .plannedStartTime(START.plusHours(2)).plannedEndTime(END.plusHours(5))
+                .status(MesProApsPlanStatusEnum.EXECUTING.getStatus())
+                .build();
+
+        ApsContext context = captureGenerateContext(List.of(spanning));
+
+        LocalDateTime availability = context.getWorkstationAvailableTime().get(WORKSTATION_ID);
+        assertEquals(END.plusHours(5), availability);
+        assertTrue(availability.isAfter(END));
+    }
+
 
 }

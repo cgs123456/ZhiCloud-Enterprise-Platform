@@ -43,20 +43,31 @@ public interface MesProApsPlanMapper extends BaseMapperX<MesProApsPlanDO> {
     }
 
     /**
-     * 按工位 ID 集合查询时间范围内的排产计划（一次 IN 查询替代按工位逐个查询的 N+1）
+     * 按工位 ID 集合查询与 [startTime, endTime) 时间窗存在重叠的排产计划（generate 占用时间线）
+     *
+     * 一次 IN 查询替代按工位逐个查询的 N+1；采用「重叠」语义（左跨/右跨/被包含全覆盖），
+     * 且仅 DRAFT/CONFIRMED/EXECUTING 状态的记录占用工位资源（已取消/已完成的计划不占位）。
+     * 旧版「被包含」语义（`le(endTime).ge(startTime)`）会漏计左跨计划，导致排产可用时间被低估
+     *（§12.240.5 登记、§12.244 收口）。
      *
      * @param workstationIds 工位编号集合
      * @param startTime 开始时间
      * @param endTime 结束时间
      * @return 排产计划列表（按计划开始时间升序）
      */
-    default List<MesProApsPlanDO> selectListByWorkstationIdsAndTimeRange(Collection<Long> workstationIds,
+    default List<MesProApsPlanDO> selectListOverlappingByWorkstationIdsAndTimeRange(Collection<Long> workstationIds,
                                                                           LocalDateTime startTime,
                                                                           LocalDateTime endTime) {
         return selectList(new LambdaQueryWrapperX<MesProApsPlanDO>()
                 .in(MesProApsPlanDO::getWorkstationId, workstationIds)
-                .le(MesProApsPlanDO::getPlannedEndTime, endTime)
-                .ge(MesProApsPlanDO::getPlannedStartTime, startTime)
+                .isNotNull(MesProApsPlanDO::getPlannedStartTime)
+                .isNotNull(MesProApsPlanDO::getPlannedEndTime)
+                .lt(MesProApsPlanDO::getPlannedStartTime, endTime)
+                .gt(MesProApsPlanDO::getPlannedEndTime, startTime)
+                .in(MesProApsPlanDO::getStatus,
+                        cn.zhicloud.module.mes.enums.pro.MesProApsPlanStatusEnum.DRAFT.getStatus(),
+                        cn.zhicloud.module.mes.enums.pro.MesProApsPlanStatusEnum.CONFIRMED.getStatus(),
+                        cn.zhicloud.module.mes.enums.pro.MesProApsPlanStatusEnum.EXECUTING.getStatus())
                 .orderByAsc(MesProApsPlanDO::getPlannedStartTime));
     }
 

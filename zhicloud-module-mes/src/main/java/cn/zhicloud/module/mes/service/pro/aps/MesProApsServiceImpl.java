@@ -167,9 +167,12 @@ public class MesProApsServiceImpl implements MesProApsService {
 
         // 4. 读取区间内已有的排产计划，构建工位占用时间线
         // 工位下次可用时间 = 已有计划的最晚结束时间（不早于排产开始时间）
+        // 查询采用「重叠」语义（左跨/右跨/被包含全覆盖）且仅未终结状态（DRAFT/CONFIRMED/EXECUTING）占位：
+        // 旧「被包含」查询会漏计左跨计划（可用时间低估 → 新计划可能与既有计划重叠）、
+        // 且已取消/已完成计划仍占位（可用时间虚高）（§12.240.5 登记、§12.244 收口）
         // 一次 IN 查询 + 内存按 workstationId 分组，避免按工位逐个查询的 N+1
         Map<Long, LocalDateTime> workstationAvailableTime = new HashMap<>();
-        List<MesProApsPlanDO> rangePlans = apsPlanMapper.selectListByWorkstationIdsAndTimeRange(
+        List<MesProApsPlanDO> rangePlans = apsPlanMapper.selectListOverlappingByWorkstationIdsAndTimeRange(
                 workstations.stream().map(MesMdWorkstationDO::getId).collect(Collectors.toList()),
                 reqVO.getStartDate(), reqVO.getEndDate());
         Map<Long, List<MesProApsPlanDO>> plansByWorkstation = rangePlans.stream()
