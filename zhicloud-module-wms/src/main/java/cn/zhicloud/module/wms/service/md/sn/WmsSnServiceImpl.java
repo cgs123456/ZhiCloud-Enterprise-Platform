@@ -14,6 +14,7 @@ import cn.zhicloud.module.wms.dal.dataobject.md.sn.WmsSnDO;
 import cn.zhicloud.module.wms.dal.mysql.md.sn.WmsSnMapper;
 import cn.zhicloud.module.wms.enums.md.WmsSnStatusEnum;
 import cn.zhicloud.module.wms.service.md.item.WmsItemService;
+import cn.zhicloud.module.wms.service.md.location.WmsLocationService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -65,6 +66,8 @@ public class WmsSnServiceImpl implements WmsSnService {
     private WmsSnMapper snMapper;
     @Resource
     private WmsItemService itemService;
+    @Resource
+    private WmsLocationService locationService;
 
     // ==================== 生成 ====================
 
@@ -187,6 +190,10 @@ public class WmsSnServiceImpl implements WmsSnService {
                 && !WmsSnStatusEnum.BOUND.getStatus().equals(status)) {
             throw exception(SN_STATUS_INVALID, status);
         }
+        // 目标库位（若指定）必须存在且未锁定/禁用（货物上架库位门禁）
+        if (locationId != null) {
+            locationService.validateLocationUsable(locationId);
+        }
         WmsSnDO updateObj = new WmsSnDO().setId(snId)
                 .setInventoryId(inventoryId)
                 .setBatchId(batchId)
@@ -230,6 +237,10 @@ public class WmsSnServiceImpl implements WmsSnService {
         // 仅允许「已出库」状态退货
         if (!WmsSnStatusEnum.SHIPPED.getStatus().equals(status)) {
             throw exception(SN_STATUS_INVALID, status);
+        }
+        // 退货库位（若指定）必须存在且未锁定/禁用（货物上架库位门禁）
+        if (locationId != null) {
+            locationService.validateLocationUsable(locationId);
         }
         WmsSnDO updateObj = new WmsSnDO().setId(snId)
                 .setWarehouseId(warehouseId)

@@ -5,10 +5,15 @@ import cn.zhicloud.module.wms.controller.admin.md.sn.vo.WmsSnGenerateReqVO;
 import cn.zhicloud.module.wms.controller.admin.md.sn.vo.WmsSnSaveReqVO;
 import cn.zhicloud.module.wms.controller.admin.md.sn.vo.WmsSnTraceRespVO;
 import cn.zhicloud.module.wms.dal.dataobject.md.item.WmsItemDO;
+import cn.zhicloud.module.wms.dal.dataobject.md.location.WmsLocationDO;
 import cn.zhicloud.module.wms.dal.dataobject.md.sn.WmsSnDO;
+import cn.zhicloud.module.wms.dal.mysql.md.location.WmsLocationMapper;
 import cn.zhicloud.module.wms.dal.mysql.md.sn.WmsSnMapper;
+import cn.zhicloud.module.wms.enums.md.WmsLocationStatusEnum;
 import cn.zhicloud.module.wms.enums.md.WmsSnStatusEnum;
 import cn.zhicloud.module.wms.service.md.item.WmsItemService;
+import cn.zhicloud.module.wms.service.md.location.WmsLocationServiceImpl;
+import cn.zhicloud.module.wms.service.md.zone.WmsZoneService;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Import;
@@ -16,9 +21,13 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static cn.zhicloud.framework.test.core.util.AssertUtils.assertServiceException;
 import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.ITEM_NOT_EXISTS;
+import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.LOCATION_DISABLED;
+import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.LOCATION_LOCKED;
+import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.LOCATION_NOT_EXISTS;
 import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.SN_DUPLICATE;
 import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.SN_GENERATE_QUANTITY_INVALID;
 import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.SN_NOT_BOUND;
@@ -30,15 +39,21 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
-@Import(WmsSnServiceImpl.class)
+@Import({WmsSnServiceImpl.class, WmsLocationServiceImpl.class})
 public class WmsSnServiceImplTest extends BaseDbUnitTest {
+
+    private static final AtomicInteger LOCATION_SEQ = new AtomicInteger(1);
 
     @Resource
     private WmsSnServiceImpl snService;
     @Resource
     private WmsSnMapper snMapper;
+    @Resource
+    private WmsLocationMapper locationMapper;
     @MockitoBean
     private WmsItemService itemService;
+    @MockitoBean
+    private WmsZoneService zoneService;
 
     @Test
     public void testGenerateSnList_success() {
@@ -166,9 +181,10 @@ public class WmsSnServiceImplTest extends BaseDbUnitTest {
         create.setSn("B1");
         create.setProductId(100L);
         Long id = snService.createSn(create);
-        snService.bindInventory(id, 10L, 20L, 30L, 40L, 50L, 60L);
+        Long locationId = insertLocation(WmsLocationStatusEnum.IDLE.getStatus());
+        snService.bindInventory(id, 10L, 20L, 30L, 40L, locationId, 60L);
         WmsSnDO db = snMapper.selectById(id);
-        assertEquals(50L, db.getLocationId());
+        assertEquals(locationId, db.getLocationId());
         assertEquals(WmsSnStatusEnum.IN_STOCK.getStatus(), db.getStatus());
         assertNotNull(db.getBoundTime());
     }
@@ -205,7 +221,8 @@ public class WmsSnServiceImplTest extends BaseDbUnitTest {
         create.setSn("S1");
         create.setProductId(100L);
         Long id = snService.createSn(create);
-        snService.bindInventory(id, 1L, 2L, 3L, 4L, 5L, 6L);
+        Long locationId = insertLocation(WmsLocationStatusEnum.IDLE.getStatus());
+        snService.bindInventory(id, 1L, 2L, 3L, 4L, locationId, 6L);
         snService.unbindAndShip(id, 99L);
         WmsSnDO db = snMapper.selectById(id);
         assertEquals(WmsSnStatusEnum.SHIPPED.getStatus(), db.getStatus());
@@ -230,12 +247,15 @@ public class WmsSnServiceImplTest extends BaseDbUnitTest {
         create.setSn("R1");
         create.setProductId(100L);
         Long id = snService.createSn(create);
-        snService.bindInventory(id, 1L, 2L, 3L, 4L, 5L, 6L);
+        Long bindLocationId = insertLocation(WmsLocationStatusEnum.IDLE.getStatus());
+        snService.bindInventory(id, 1L, 2L, 3L, 4L, bindLocationId, 6L);
         snService.unbindAndShip(id, 99L);
-        snService.returnSn(id, 7L, 8L);
+        Long returnLocationId = insertLocation(WmsLocationStatusEnum.IDLE.getStatus());
+        snService.returnSn(id, 7L, returnLocationId);
         WmsSnDO db = snMapper.selectById(id);
         assertEquals(WmsSnStatusEnum.RETURNED.getStatus(), db.getStatus());
         assertEquals(7L, db.getWarehouseId());
+        assertEquals(returnLocationId, db.getLocationId());
     }
 
     @Test
@@ -272,6 +292,67 @@ public class WmsSnServiceImplTest extends BaseDbUnitTest {
         when(itemService.getItem(100L)).thenReturn(null);
         WmsSnTraceRespVO resp = snService.trace(id);
         assertNull(resp.getProductCode());
+    }
+
+    // ==================== 断点 4 新增：库位状态门禁 ====================
+
+    @Test
+    public void testBindInventory_locationNotExists() {
+        when(itemService.getItem(100L)).thenReturn(new WmsItemDO());
+        WmsSnSaveReqVO create = new WmsSnSaveReqVO();
+        create.setSn("B4");
+        create.setProductId(100L);
+        Long id = snService.createSn(create);
+        assertServiceException(() -> snService.bindInventory(id, 10L, 20L, 30L, 40L, 999999L, 60L),
+                LOCATION_NOT_EXISTS);
+    }
+
+    @Test
+    public void testBindInventory_locationLocked() {
+        when(itemService.getItem(100L)).thenReturn(new WmsItemDO());
+        WmsSnSaveReqVO create = new WmsSnSaveReqVO();
+        create.setSn("B5");
+        create.setProductId(100L);
+        Long id = snService.createSn(create);
+        Long locationId = insertLocation(WmsLocationStatusEnum.LOCKED.getStatus());
+        assertServiceException(() -> snService.bindInventory(id, 10L, 20L, 30L, 40L, locationId, 60L),
+                LOCATION_LOCKED);
+        // 绑定失败后序列号不被污染
+        WmsSnDO db = snMapper.selectById(id);
+        assertNull(db.getLocationId());
+        assertEquals(WmsSnStatusEnum.GENERATED.getStatus(), db.getStatus());
+    }
+
+    @Test
+    public void testReturnSn_locationDisabled() {
+        when(itemService.getItem(100L)).thenReturn(new WmsItemDO());
+        WmsSnSaveReqVO create = new WmsSnSaveReqVO();
+        create.setSn("R3");
+        create.setProductId(100L);
+        Long id = snService.createSn(create);
+        Long bindLocationId = insertLocation(WmsLocationStatusEnum.IDLE.getStatus());
+        snService.bindInventory(id, 1L, 2L, 3L, 4L, bindLocationId, 6L);
+        snService.unbindAndShip(id, 99L);
+        Long disabledLocationId = insertLocation(WmsLocationStatusEnum.DISABLED.getStatus());
+        assertServiceException(() -> snService.returnSn(id, 7L, disabledLocationId), LOCATION_DISABLED);
+        // 退货失败后序列号保持已出库
+        assertEquals(WmsSnStatusEnum.SHIPPED.getStatus(), snMapper.selectById(id).getStatus());
+    }
+
+    // ==================== 断点 4 新增：真库位行构造 ====================
+
+    private Long insertLocation(Integer status) {
+        WmsLocationDO location = WmsLocationDO.builder()
+                .zoneId(1L)
+                .warehouseId(1L)
+                .code("SN-LOC-" + LOCATION_SEQ.getAndIncrement())
+                .name("测试库位")
+                .type(10)
+                .status(status)
+                .sort(1)
+                .build();
+        locationMapper.insert(location);
+        return location.getId();
     }
 
 }

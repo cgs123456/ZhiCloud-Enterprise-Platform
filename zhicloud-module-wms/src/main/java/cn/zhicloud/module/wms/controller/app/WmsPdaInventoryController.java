@@ -16,6 +16,7 @@ import cn.zhicloud.module.wms.dal.mysql.inventory.WmsInventoryMapper;
 import cn.zhicloud.module.wms.dal.mysql.md.item.WmsItemSkuMapper;
 import cn.zhicloud.module.wms.dal.mysql.md.location.WmsLocationMapper;
 import cn.zhicloud.module.wms.service.md.item.WmsItemService;
+import cn.zhicloud.module.wms.service.md.location.WmsLocationService;
 import cn.zhicloud.module.wms.service.md.warehouse.WmsWarehouseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -56,6 +57,8 @@ public class WmsPdaInventoryController {
     private WmsWarehouseService warehouseService;
     @Resource
     private WmsItemService itemService;
+    @Resource
+    private WmsLocationService locationService;
 
     @PostMapping("/scan-location")
     @Operation(summary = "扫描库位，返回库存信息")
@@ -107,6 +110,9 @@ public class WmsPdaInventoryController {
     @Operation(summary = "确认移库")
     @PreAuthorize("@ss.hasPermission('wms:pda:move')")
     public CommonResult<Boolean> confirmMove(@Valid @RequestBody WmsPdaConfirmMoveReqVO reqVO) {
+        // 校验来源/目标库位存在且未锁定/禁用（库位状态门禁）
+        locationService.validateLocationUsable(reqVO.getFromLocationId());
+        locationService.validateLocationUsable(reqVO.getToLocationId());
         // 简化实现：校验 SKU 存在库存，移库在库存模型无库位维度，记录操作即可
         WmsInventoryDO inventory = inventoryMapper.selectBySkuIdAndWarehouseId(
                 reqVO.getSkuId(), null);

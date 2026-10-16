@@ -21,3 +21,4 @@ DELETE FROM "wms_asn_order";
 DELETE FROM "wms_inventory_batch";
 DELETE FROM "wms_sn";
 DELETE FROM "wms_dock";
+DELETE FROM "wms_location";

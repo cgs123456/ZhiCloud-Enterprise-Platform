@@ -9,12 +9,14 @@ import cn.zhicloud.module.wms.controller.admin.md.location.vo.WmsLocationSaveReq
 import cn.zhicloud.module.wms.dal.dataobject.md.location.WmsLocationDO;
 import cn.zhicloud.module.wms.dal.dataobject.md.zone.WmsZoneDO;
 import cn.zhicloud.module.wms.dal.mysql.md.location.WmsLocationMapper;
+import cn.zhicloud.module.wms.enums.md.WmsLocationStatusEnum;
 import cn.zhicloud.module.wms.service.md.zone.WmsZoneService;
 import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -62,6 +64,8 @@ public class WmsLocationServiceImpl implements WmsLocationService {
     }
 
     private void validateLocationSaveData(WmsLocationSaveReqVO reqVO) {
+        // 校验状态取值合法（IDLE/OCCUPIED/LOCKED/DISABLED）
+        validateLocationStatus(reqVO.getStatus());
         // 校验库区存在，并以库区所属仓库为准回填 warehouseId
         WmsZoneDO zone = zoneService.validateZoneExists(reqVO.getZoneId());
         reqVO.setWarehouseId(zone.getWarehouseId());
@@ -94,6 +98,12 @@ public class WmsLocationServiceImpl implements WmsLocationService {
         }
     }
 
+    private void validateLocationStatus(Integer status) {
+        if (!Arrays.asList(WmsLocationStatusEnum.ARRAYS).contains(status)) {
+            throw exception(LOCATION_STATUS_INVALID);
+        }
+    }
+
     @Override
     public void deleteLocation(Long id) {
         // 校验存在
@@ -110,6 +120,19 @@ public class WmsLocationServiceImpl implements WmsLocationService {
         WmsLocationDO location = locationMapper.selectById(id);
         if (location == null) {
             throw exception(LOCATION_NOT_EXISTS);
+        }
+        return location;
+    }
+
+    @Override
+    public WmsLocationDO validateLocationUsable(Long id) {
+        WmsLocationDO location = validateLocationExists(id);
+        // 锁定/禁用库位视为冻结：禁止货物进出（IDLE/OCCUPIED 正常放行）
+        if (WmsLocationStatusEnum.LOCKED.getStatus().equals(location.getStatus())) {
+            throw exception(LOCATION_LOCKED);
+        }
+        if (WmsLocationStatusEnum.DISABLED.getStatus().equals(location.getStatus())) {
+            throw exception(LOCATION_DISABLED);
         }
         return location;
     }

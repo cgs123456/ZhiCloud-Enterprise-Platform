@@ -16,6 +16,7 @@ import cn.zhicloud.module.wms.dal.dataobject.order.dock.WmsDockDO;
 import cn.zhicloud.module.wms.dal.mysql.order.asn.WmsAsnOrderMapper;
 import cn.zhicloud.module.wms.service.md.item.WmsItemService;
 import cn.zhicloud.module.wms.service.md.item.WmsItemSkuService;
+import cn.zhicloud.module.wms.service.md.location.WmsLocationService;
 import cn.zhicloud.module.wms.service.md.warehouse.WmsWarehouseService;
 import cn.zhicloud.module.wms.service.order.asn.WmsAsnOrderDetailService;
 import cn.zhicloud.module.wms.service.order.dock.WmsDockService;
@@ -59,6 +60,8 @@ public class WmsPdaReceiptController {
     private WmsItemSkuService itemSkuService;
     @Resource
     private WmsItemService itemService;
+    @Resource
+    private WmsLocationService locationService;
 
     @PostMapping("/scan-asn")
     @Operation(summary = "扫描 ASN 条码，返回 ASN 详情")
@@ -114,6 +117,10 @@ public class WmsPdaReceiptController {
     @Operation(summary = "确认收货")
     @PreAuthorize("@ss.hasPermission('wms:pda:receipt')")
     public CommonResult<Boolean> confirmReceipt(@Valid @RequestBody WmsPdaConfirmReceiptReqVO reqVO) {
+        // 上架库位（若指定）必须存在且未锁定/禁用（库位状态门禁）
+        if (reqVO.getLocationId() != null) {
+            locationService.validateLocationUsable(reqVO.getLocationId());
+        }
         asnOrderDetailService.addReceivedQuantity(reqVO.getDetailId(), reqVO.getReceivedQuantity());
         return success(true);
     }

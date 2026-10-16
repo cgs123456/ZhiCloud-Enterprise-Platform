@@ -62,6 +62,8 @@ public interface ErrorCodeConstants {
     ErrorCode LOCATION_BARCODE_DUPLICATE = new ErrorCode(1_060_107_002, "库位条码重复");
     ErrorCode LOCATION_HAS_INVENTORY = new ErrorCode(1_060_107_003, "删除失败！库位已存在库存余额！");
     ErrorCode LOCATION_STATUS_INVALID = new ErrorCode(1_060_107_004, "库位状态不合法");
+    ErrorCode LOCATION_LOCKED = new ErrorCode(1_060_107_005, "库位已锁定，禁止货物出入库！");
+    ErrorCode LOCATION_DISABLED = new ErrorCode(1_060_107_006, "库位已禁用，禁止货物出入库！");
 
     // ========== WMS 入库单 1-060-200-000 ==========
     ErrorCode RECEIPT_ORDER_NOT_EXISTS = new ErrorCode(1_060_200_000, "入库单不存在");

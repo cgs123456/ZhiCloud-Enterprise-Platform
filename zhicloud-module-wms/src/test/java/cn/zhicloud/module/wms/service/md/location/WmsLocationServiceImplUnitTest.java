@@ -7,6 +7,7 @@ import cn.zhicloud.module.wms.controller.admin.md.location.vo.WmsLocationSaveReq
 import cn.zhicloud.module.wms.dal.dataobject.md.location.WmsLocationDO;
 import cn.zhicloud.module.wms.dal.dataobject.md.zone.WmsZoneDO;
 import cn.zhicloud.module.wms.dal.mysql.md.location.WmsLocationMapper;
+import cn.zhicloud.module.wms.enums.md.WmsLocationStatusEnum;
 import cn.zhicloud.module.wms.service.md.zone.WmsZoneService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,7 +51,7 @@ public class WmsLocationServiceImplUnitTest {
         reqVO.setName("A-01-01");
         reqVO.setBarcode(barcode);
         reqVO.setType(1);
-        reqVO.setStatus(0);
+        reqVO.setStatus(10);
         reqVO.setSort(1);
         return reqVO;
     }
@@ -160,6 +161,63 @@ public class WmsLocationServiceImplUnitTest {
         assertEquals(1, locationService.getLocationListByWarehouseId(77L).size());
         assertEquals(1, locationService.getLocationList(List.of(1L)).size());
         assertTrue(locationService.getLocationList(Collections.emptyList()).isEmpty());
+    }
+
+    // ==================== 断点 4 新增：状态值域与可用性门禁 ====================
+
+    @Test
+    public void testCreateLocation_statusInvalid() {
+        WmsLocationSaveReqVO reqVO = buildSaveReqVO(null, "BC001");
+        reqVO.setStatus(99);
+        ServiceException ex = assertThrows(ServiceException.class,
+                () -> locationService.createLocation(reqVO));
+        assertEquals(LOCATION_STATUS_INVALID.getCode(), ex.getCode());
+    }
+
+    @Test
+    public void testUpdateLocation_statusInvalid() {
+        when(locationMapper.selectById(5L)).thenReturn(WmsLocationDO.builder().id(5L).build());
+        WmsLocationSaveReqVO reqVO = buildSaveReqVO(5L, "BC001");
+        reqVO.setStatus(0);
+        ServiceException ex = assertThrows(ServiceException.class,
+                () -> locationService.updateLocation(reqVO));
+        assertEquals(LOCATION_STATUS_INVALID.getCode(), ex.getCode());
+    }
+
+    @Test
+    public void testValidateLocationUsable_notExists() {
+        when(locationMapper.selectById(404L)).thenReturn(null);
+        ServiceException ex = assertThrows(ServiceException.class,
+                () -> locationService.validateLocationUsable(404L));
+        assertEquals(LOCATION_NOT_EXISTS.getCode(), ex.getCode());
+    }
+
+    @Test
+    public void testValidateLocationUsable_locked() {
+        when(locationMapper.selectById(5L)).thenReturn(WmsLocationDO.builder().id(5L)
+                .status(WmsLocationStatusEnum.LOCKED.getStatus()).build());
+        ServiceException ex = assertThrows(ServiceException.class,
+                () -> locationService.validateLocationUsable(5L));
+        assertEquals(LOCATION_LOCKED.getCode(), ex.getCode());
+    }
+
+    @Test
+    public void testValidateLocationUsable_disabled() {
+        when(locationMapper.selectById(5L)).thenReturn(WmsLocationDO.builder().id(5L)
+                .status(WmsLocationStatusEnum.DISABLED.getStatus()).build());
+        ServiceException ex = assertThrows(ServiceException.class,
+                () -> locationService.validateLocationUsable(5L));
+        assertEquals(LOCATION_DISABLED.getCode(), ex.getCode());
+    }
+
+    @Test
+    public void testValidateLocationUsable_idleAndOccupiedPass() {
+        when(locationMapper.selectById(5L)).thenReturn(WmsLocationDO.builder().id(5L)
+                .status(WmsLocationStatusEnum.IDLE.getStatus()).build());
+        assertEquals(5L, locationService.validateLocationUsable(5L).getId());
+        when(locationMapper.selectById(6L)).thenReturn(WmsLocationDO.builder().id(6L)
+                .status(WmsLocationStatusEnum.OCCUPIED.getStatus()).build());
+        assertEquals(6L, locationService.validateLocationUsable(6L).getId());
     }
 
 }

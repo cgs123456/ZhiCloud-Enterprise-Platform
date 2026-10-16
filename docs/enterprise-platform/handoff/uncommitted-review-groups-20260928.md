@@ -10584,3 +10584,80 @@ E2E 具体断言（API + DB 双验）：建单传 `status=30` → 落库 10；PU
    影响面小（草稿态），登记不扩权。
 
 本节文档同步：next-steps 后记追加完成/订正两条；HANDOFF §3.2 第 3 项与 §四第 3 条加订正块。
+
+## 12.242 2026-10-16 WMS 库位状态「只写不生效」修复：状态值域收口 + 四处作业门禁（业务断点 4；ADR 先行）
+
+本节属性：清单 §4 第 5 项「WMS 库位状态『只写不生效』」的收口（HANDOFF §3.2 第 5 项）。
+后端增量：1 个门禁方法 + 1 个值域校验 + 2 个新错误码 + 4 个作业出口接线；零迁移、零权限新增、
+零前端改动。设计决策动手前定稿（§12.242.2）。
+
+### 12.242.1 缺陷面与口径复核
+
+- `WmsLocationStatusEnum` IDLE(10)/OCCUPIED(20)/LOCKED(30)/DISABLED(40) 全仓**零代码引用**
+  （除枚举自身与 DO 注释）——四个状态没有任何消费方（「只写」）；
+- `WmsLocationSaveReqVO.status` 仅 `@NotNull`，create/update 经 `BeanUtils.toBean` **直落库**，
+  无值域校验（任意整数可写）；专用错误码 `LOCATION_STATUS_INVALID`(1_060_107_004) 定义后从未使用（休眠码）；
+- 带 locationId 的作业入口全量清点（「不生效」面）：SN bind/return（locationId 直写 `wms_sn`，
+  连存在性都不校验）；PDA confirm-move（from/to 被完全忽略）；PDA confirm-receipt（VO 携带上架库位
+  但 handler 不读）——锁定/禁用库位照样收发货；
+- 防误伤边界（不构成消费点的位置）：`wms_inventory` 无 location_id 维度（门禁只能在作业入口做）；
+  拣货任务 locationId 是 inventory.id 占位伪值（不接门禁）；PDA 主作业面（putaway/pick/check）无库位参数字段；
+- 测试基建缺口：H2 场景 `create_tables.sql` 缺 `wms_location` 建表（生产由 V72 迁移创建），
+  `clean.sql` 亦未清理该表——本次一并补齐（对齐 V72 列定义）。
+
+### 12.242.2 设计决策（ADR 式，动手前定案）
+
+- **D1 写侧收口（状态值域）**：`validateLocationSaveData` 首步校验 status ∈ {10,20,30,40}，
+  非法抛既有休眠码 `LOCATION_STATUS_INVALID`(1_060_107_004)；create/update 同受控。
+  不用 VO `@InEnum`：模块惯例为服务侧校验，且激活专用码、零新码。
+- **D2 读侧门禁（单一入口）**：`WmsLocationService.validateLocationUsable(id)`——不存在→
+  1_060_107_000；LOCKED→新码 005「库位已锁定，禁止货物出入库！」；DISABLED→新码 006
+  「库位已禁用，禁止货物出入库！」；IDLE/OCCUPIED 放行并返回库位 DO。语义统一：**锁定/禁用=冻结，
+  货物进出皆拒**（「禁入不禁出」单向出清语义不做，登记）；status 为 NULL 按放行（DDL NOT NULL，仅防御）。
+- **D3 接入 4 个作业出口、6 次调用**：SN bind、SN return（locationId 非空时）、PDA confirm-move
+  （from 与 to 各一次）、PDA confirm-receipt（locationId 非空时）。校验顺序：SN 状态机检查在前、
+  库位门禁在后（既有错误码语义优先）；移库 from 先于 to。
+- **D4 明确不做**：①不引入库存库位维度（根因声明性登记）；②OCCUPIED 不自动派生；
+  ③不加 lock/unlock/disable/enable 专用端点（复用 update 改 status，受 D1 约束）；
+  ④拣货伪 locationId 不接门禁；⑤scan-location 只读不拦截；⑥deleteLocation 的
+  `LOCATION_HAS_INVENTORY` 维持 TODO；⑦confirm-receipt 的 locationId 仍不落库（只做门禁）。
+- **D5 前端零改动**：既有 UI 已支持设置/展示状态（字典已播种）；`ts:check`/`build:prod` 仅作回归。
+
+### 12.242.3 变更清单（12 文件：6 后端 + 2 修改测试 + 2 新测试 + 2 测试资源）
+
+- `enums/ErrorCodeConstants.java`：+1_060_107_005 / 006；
+- `service/md/location/WmsLocationService.java` / `WmsLocationServiceImpl.java`：
+  +`validateLocationUsable`（门禁）+ `validateLocationStatus`（值域，激活休眠码）；
+- `service/md/sn/WmsSnServiceImpl.java`：bindInventory / returnSn 门禁；
+- `controller/app/WmsPdaInventoryController.java`：confirmMove from/to 门禁；
+- `controller/app/WmsPdaReceiptController.java`：confirmReceipt locationId 门禁；
+- `WmsLocationServiceImplUnitTest`（修改）：builder status=0→10 + 6 新案（值域 2、门禁 4）；
+- `WmsSnServiceImplTest`（修改）：3 既有案改用真实库位行 + 3 新案（不存在/锁定/禁用）；
+- `WmsPdaInventoryControllerTest`（新增）：5 案（from/to 不存在、from 锁定、to 禁用、放行成功）；
+- `WmsPdaReceiptControllerTest`（新增）：4 案（不存在、禁用、null 兼容放行、空闲放行且写收货量）；
+- 测试资源 `create_tables.sql`：+`wms_location`（对齐 V72，CRLF 补丁 crlf+25）；`clean.sql`：+清理（crlf+1）。
+
+### 12.242.4 验证读数
+
+- 单测 4 类 **47/47**（新增 18 案：6 + 3 + 5 + 4）；WMS 模块全量回归 **273/273**（30 类，Fail/Err/Skip=0）；
+- errcode 全仓扫描 **1947 条 / 0 碰撞**（+2 新码）；
+- reactor 重打包（`-pl zhicloud-server -am`）**BUILD SUCCESS**，新 jar 真机运行；
+- 真机 E2E（tenant 9001，`Temp\zc_wms242_e2e.py`）**41/41**：值域负向（create/update status=99→004，
+  未落库）；锁定/禁用负向四出口（bind/return/move/receipt→005/006，SN 不被污染、状态保持）；
+  放行正案（IDLE 绑定→IN_STOCK→出库→退货→RETURNED，locationId 逐跳断言）；不存在库位负向（000）；
+  空闲间移库成功；删除端点收尾；清理零遗留且 DEMO 库位总数未变（48 行）；
+- 接线扫描 **19/19**；`pnpm ts:check` **EXIT=0**；`pnpm build:prod` **EXIT=0**；
+- 行尾保真：8 个 Java 文件 LF-only 保持；2 个测试 SQL 为 CRLF 修补（crlf +25 / +1，bareLF=0）。
+- E2E 环境口径注记：SN 建号在沙箱要求 `product_id`（列 NOT NULL 无默认；VO 层可空）——
+  E2E 传既有 tenant 9001 商品 id（920000）；输入校验缺口另行登记（§12.242.5 第 5 条）。
+
+### 12.242.5 连带观察（登记，不动手）
+
+1. **库存无库位维度**（根因声明）：锁定/禁用无法在库存行强制，仅在带 locationId 的作业入口门禁；
+   `deleteLocation` 的 `LOCATION_HAS_INVENTORY` 校验仍 TODO（依赖维度接入）。
+2. **LOCKED 语义=冻结（进出皆拒）**：如需「禁入不禁出」的单向出清语义，另行设计。
+3. **OCCUPIED 不派生不自动流转**：占用/释放待库位维度接入后实现；当前为用户可写状态。
+4. **拣货任务 locationId 占位**（inventory.id）：待维度接入后一并替换与门禁。
+5. **SN 建号 productId 可空但库表 NOT NULL**：沙箱实证无商品建号=500 系统异常；属输入校验缺口，登记待定夺。
+
+本节文档同步：next-steps 后记二追加完成/订正两条；HANDOFF §3.2 第 5 项与 §四第 3 条加订正块。

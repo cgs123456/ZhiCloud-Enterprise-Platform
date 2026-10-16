@@ -47,6 +47,14 @@ public interface WmsLocationService {
     WmsLocationDO validateLocationExists(Long id);
 
     /**
+     * 校验库位可用于货物进出（存在，且状态为「空闲/占用」）
+     *
+     * @param id 编号
+     * @return 库位
+     */
+    WmsLocationDO validateLocationUsable(Long id);
+
+    /**
      * 获得库位
      *
      * @param id 编号
