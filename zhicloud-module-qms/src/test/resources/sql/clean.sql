@@ -4,6 +4,7 @@ DELETE FROM "qms_inspection_record";
 DELETE FROM "qms_capa_document";
 DELETE FROM "qms_ncr_document";
 DELETE FROM "qms_eight_d_report";
+DELETE FROM "qms_document_change_request";
 DELETE FROM "qms_document";
 DELETE FROM "qms_customer_complaint";
 DELETE FROM "qms_scar";

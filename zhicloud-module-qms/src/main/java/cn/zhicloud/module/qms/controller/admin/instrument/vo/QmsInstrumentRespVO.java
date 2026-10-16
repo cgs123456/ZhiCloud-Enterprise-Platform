@@ -5,11 +5,14 @@ import cn.zhicloud.framework.excel.core.convert.DictConvert;
 import cn.zhicloud.module.qms.enums.DictTypeConstants;
 import cn.idev.excel.annotation.ExcelIgnoreUnannotated;
 import cn.idev.excel.annotation.ExcelProperty;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import static cn.zhicloud.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY;
 
 @Schema(description = "管理后台 - QMS 计量器具台账 Response VO")
 @Data
@@ -76,10 +79,12 @@ public class QmsInstrumentRespVO {
 
     @Schema(description = "上次校准日期", example = "2024-01-01")
     @ExcelProperty("上次校准日期")
+    @JsonFormat(pattern = FORMAT_YEAR_MONTH_DAY)
     private LocalDate lastCalibrationDate;
 
     @Schema(description = "下次校准日期", example = "2025-01-01")
     @ExcelProperty("下次校准日期")
+    @JsonFormat(pattern = FORMAT_YEAR_MONTH_DAY)
     private LocalDate nextCalibrationDate;
 
     @Schema(description = "备注", example = "随便")

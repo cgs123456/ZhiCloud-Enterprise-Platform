@@ -2,6 +2,7 @@ package cn.zhicloud.module.qms.service.document;
 
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
+import cn.zhicloud.framework.security.core.util.SecurityFrameworkUtils;
 import cn.zhicloud.module.qms.controller.admin.document.vo.QmsDocumentChangeRequestPageReqVO;
 import cn.zhicloud.module.qms.controller.admin.document.vo.QmsDocumentChangeRequestSaveReqVO;
 import cn.zhicloud.module.qms.dal.dataobject.document.QmsDocumentChangeRequestDO;
@@ -112,6 +113,8 @@ public class QmsDocumentChangeRequestServiceImpl implements QmsDocumentChangeReq
         updateReq.setId(id);
         updateReq.setStatus(QmsChangeRequestStatusEnum.APPROVED.getStatus());
         updateReq.setApproveDate(LocalDateTime.now());
+        // 审批人落库（同受控文档 approve；列表「审批人 ID」列的唯一写入者；无会话时为 null，由 updateById 忽略）
+        updateReq.setApproverId(SecurityFrameworkUtils.getLoginUserId());
         changeRequestMapper.updateById(updateReq);
         // 4. 根据变更类型处理文档：修订->发布新版本文档；作废->将原文档置为已作废
         Integer changeType = changeRequest.getChangeType();

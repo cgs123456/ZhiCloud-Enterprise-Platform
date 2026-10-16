@@ -3,6 +3,7 @@ package cn.zhicloud.module.qms.controller.admin.instrument.vo;
 import cn.zhicloud.framework.common.validation.InEnum;
 import cn.zhicloud.module.qms.enums.instrument.QmsInstrumentCategoryEnum;
 import cn.zhicloud.module.qms.enums.instrument.QmsInstrumentStatusEnum;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -68,10 +69,12 @@ public class QmsInstrumentSaveReqVO {
 
     @Schema(description = "上次校准日期", example = "2024-01-01")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY)
+    @JsonFormat(pattern = FORMAT_YEAR_MONTH_DAY)
     private LocalDate lastCalibrationDate;
 
     @Schema(description = "下次校准日期", example = "2025-01-01")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY)
+    @JsonFormat(pattern = FORMAT_YEAR_MONTH_DAY)
     private LocalDate nextCalibrationDate;
 
     @Schema(description = "备注", example = "随便")

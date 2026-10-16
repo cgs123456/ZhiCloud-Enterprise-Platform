@@ -2,6 +2,7 @@ package cn.zhicloud.module.qms.service.document;
 
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
+import cn.zhicloud.framework.security.core.util.SecurityFrameworkUtils;
 import cn.zhicloud.module.qms.controller.admin.document.vo.QmsDocumentPageReqVO;
 import cn.zhicloud.module.qms.controller.admin.document.vo.QmsDocumentSaveReqVO;
 import cn.zhicloud.module.qms.dal.dataobject.document.QmsDocumentDO;
@@ -139,6 +140,8 @@ public class QmsDocumentServiceImpl implements QmsDocumentService {
         updateObj.setId(id);
         updateObj.setStatus(QmsDocStatusEnum.PUBLISHED.getStatus());
         updateObj.setApproveDate(LocalDateTime.now());
+        // 审批人落库（§12.239.5 登记；列表「审批人 ID」列的唯一写入者；无会话时为 null，由 updateById 忽略）
+        updateObj.setApproverId(SecurityFrameworkUtils.getLoginUserId());
         if (fileUrl != null) {
             updateObj.setFileUrl(fileUrl);
         }

@@ -48,12 +48,12 @@
     <el-table v-loading="loading" :data="list" :show-overflow-tooltip="true" :stripe="true">
       <el-table-column align="center" label="器具 ID" prop="instrumentId" min-width="110" />
       <el-table-column align="center" label="校准证书编号" prop="calibrationNo" min-width="110" />
-      <el-table-column align="center" label="校准日期" prop="calibrationDate" min-width="110" />
+      <el-table-column align="center" :formatter="dateFormatter2" label="校准日期" prop="calibrationDate" min-width="110" />
       <el-table-column align="center" label="校准机构" prop="calibrationOrganization" min-width="110" />
       <el-table-column align="center" label="校准结果" prop="calibrationResult" min-width="110" />
       <el-table-column align="center" label="校准证书附件 URL" prop="calibrationCertificateUrl" min-width="110" />
       <el-table-column align="center" label="偏差值" prop="deviation" min-width="110" />
-      <el-table-column align="center" label="下次校准日期" prop="nextCalibrationDate" min-width="110" />
+      <el-table-column align="center" :formatter="dateFormatter2" label="下次校准日期" prop="nextCalibrationDate" min-width="110" />
       <el-table-column align="center" label="备注" prop="remark" min-width="120" />
       <el-table-column align="center" label="排序" prop="sort" min-width="110" />
       <el-table-column align="center" :formatter="dateFormatter" label="创建时间" prop="createTime" width="170" />
@@ -91,7 +91,7 @@
 </template>
 
 <script lang="ts" setup>
-import { dateFormatter } from '@/utils/formatTime'
+import { dateFormatter, dateFormatter2 } from '@/utils/formatTime'
 import { QmsInstrumentCalibrationApi } from '@/api/qms/instrument/calibration'
 import QmsInstrumentCalibrationForm from './QmsInstrumentCalibrationForm.vue'
 

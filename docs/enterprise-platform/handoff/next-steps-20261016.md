@@ -198,3 +198,4 @@
   errcode 1947/0 碰撞、reactor 重打包 SUCCESS、真机 E2E 41/41（左跨几何收口 + 取消解除 +
   右跨 fail-safe + 清理零遗留、工位状态复原）。
 - 其余 A 组项（A2–A6）继续逐项推进（每项先 ADR）。
+- **A2 QMS 器具域日期归一 + approverId 落库已完成**（台账 §12.245）：5 个 VO 共 10 个 LocalDate 字段补 `@JsonFormat(pattern="yyyy-MM-dd")`（模块内 29 处先例，器具域系遗漏），校准记录列表两列补 `dateFormatter2`；`approveDocument`/`approveChangeRequest` 各加一句 `setApproverId(getLoginUserId())`（列表「审批人 ID」列的唯一写入者；create 侧已被 §12.235.5 钉死）。证据：新单测 7/7、QMS 回归 125/125、errcode 1947/0 碰撞、reactor 重打包 SUCCESS、真机 E2E 23/23（日期字符串形状 + 改期回显 + 签名门禁未破坏 + 清理零遗留）、`ts:check`/`build:prod` exit=0。缺口：approverId 真机落库不可达（mock 身份过不了电子签名），以单测覆盖；新发现文档域 LocalDate 同病与变更申请 insert 路径存疑，均已登记未动手。

@@ -10802,3 +10802,82 @@ E2E 具体断言（API + DB 双验）：建单传 `status=30` → 落库 10；PU
    如后续要「空隙利用」，需改算法契约（独立课题）。
 
 本节文档同步：next-steps 后记三追加 A 组第 1 项完成；HANDOFF 无对应追踪行。
+
+## 12.245 2026-10-17 QMS 器具域日期归一 + 受控文档/变更申请 approverId 落库（A 组第 2 项；ADR 先行）
+
+本节属性：台账 §12.238.5 第 2 条（器具域 LocalDate 数组 + 校准列表缺 formatter + 表单回显存疑）
+与 §12.239.5 第 1 条（approve 不写 approverId，列表列恒空）的收口（A 组小项第 2 项）。
+后端小修（5 个 VO 注解 + 2 处审批落库 + H2 补 1 表）+ 前端小修（1 页 2 列 formatter）；
+零迁移、零新错误码、零新权限。设计决策动手前定稿（§12.245.2）。
+
+### 12.245.1 缺陷面与口径复核
+
+- **数组根因**：`application.yaml:61-63` 全局 `write-dates-as-timestamps: true` → 无
+  `@JsonFormat` 的 `LocalDate` 序列化为 `[y,m,d]` 数组。器具域 5 个 VO 共 10 个
+  `LocalDate` 字段全部缺注解（Save×2 Resp×2：instrument 2+2、calibration 2+2、
+  expiring-soon Resp 2）；同模块 training/complaint/sqm 等域同类字段已有
+  `@JsonFormat(pattern="yyyy-MM-dd")`（29 处先例）——器具域是遗漏。
+  精确刻画（单测证伪）：该开关下无注解 `LocalDateTime` 输出 `[y,m,d,H,M,S]` 数组；
+  生产环境 `LocalDateTime` 由框架自定义 `TimestampLocalDateTimeSerializer` 输出 epoch 毫秒数，
+  与本项无关（前端 createTime 列已有 formatter）。
+- **前端**：`calibration/index.vue:51/56` 两日期列无 formatter（同页 createTime 有）；
+  器具 `list/index.vue` 不展示日期列，不动；表单 4 个 `el-date-picker(value-format="YYYY-MM-DD")`
+  在后端回字符串后自然回显，不动。
+- **approverId**：`approveDocument` 只写 status/approveDate/fileUrl/version；
+  `approveChangeRequest` 只写 status/approveDate；两 DO 均有字段、两列表页均有「审批人 ID」列
+  （恒空）。create 侧已被 §12.235.5 护栏钉死（直传强制置空），唯一合法写入者即 approve。
+
+### 12.245.2 设计决策（ADR 式，动手前定案）
+
+- **D1 日期归一以后端 `@JsonFormat` 为主**：5 个 VO 的 10 个 `LocalDate` 字段加
+  `@JsonFormat(pattern = FORMAT_YEAR_MONTH_DAY)`（Save 侧 JSON 字符串对称解析，与
+  `@DateTimeFormat` 并存分工；Resp 侧输出 `"YYYY-MM-DD"`）。前端两列加
+  `:formatter="dateFormatter2"`。被否：只修前端兼容数组（date-picker 回显仍断）；
+  全局关 timestamps（爆炸半径全仓）。
+- **D2 范围**：不动 PageReqVO 的 `LocalDate[]`（GET query 正确）、`LocalDateTime createTime`、
+  §12.238.5 第 1 条（save 直写 vs 派生口径，待定夺）；不重算存量日期。
+- **D3 approverId 两处各加一句话**：`setApproverId(SecurityFrameworkUtils.getLoginUserId())`；
+  变更申请 approve 同因同形一并收口（超 §12.239.5-1 字面但同属一事）。无会话返回 null，
+  由 `updateById` 忽略。从签名日志反查被否（日志是审计轨迹，非业务字段）。
+- **D4 验证链**：单测 7 案 → QMS 回归 → errcode → 重打包重启 → 真机 E2E →
+  `ts:check`/`build:prod`；无新增接线。
+- **D5 缺口**：approverId 真机落库不可达（mock 身份无密码，过不了电子签名）——单测覆盖，
+  真机只证门禁未破坏；浏览器回显冒烟未做。
+
+### 12.245.3 变更清单（11 文件：7 后端 + 2 测试资源 + 1 新测试类…实为 2 新测试 + 1 前端）
+
+- 5 个器具域 VO：`+@JsonFormat`（Save×2：`QmsInstrumentSaveReqVO`、
+  `QmsInstrumentCalibrationSaveReqVO`；Resp×3：`QmsInstrumentRespVO`、
+  `QmsInstrumentCalibrationRespVO`、`QmsInstrumentExpiringSoonRespVO`）；
+- `QmsDocumentServiceImpl#approveDocument` / `QmsDocumentChangeRequestServiceImpl#approveChangeRequest`：
+  `+setApproverId(getLoginUserId())`；
+- `views/qms/instrument/calibration/index.vue`：两日期列 `+:formatter="dateFormatter2"`；
+- H2 `create_tables.sql`：+`qms_document_change_request` 建表（对齐 V112，CRLF 补丁）；
+  `clean.sql`：+清理行（LF 保持）；
+- 新测试 `QmsApproveApproverIdTest`（3 案：document 落库/无会话仍 null/change-request 落库）、
+  `QmsInstrumentDateFormatTest`（4 案：两 RespVO 字符串形状 + 无注解对照数组 + Save 反序列化）。
+
+### 12.245.4 验证读数
+
+- 新单测 **7/7**；QMS 模块全量回归 **125/125**（118 + 7，Fail/Err/Skip=0）；
+- errcode 全仓扫描 **1947 条 / 0 碰撞**（零新码）；
+- reactor 重打包（`-pl zhicloud-server -am`）**BUILD SUCCESS**，新 jar（642736848B，12:43）真机运行；
+- 真机 E2E（tenant 9001，`Temp\zc_qms245_e2e.py`）**23/23**：器具建单（字符串入参）→
+  get/page 日期字符串 → 改期回显 → 校准 record/page 字符串 → overdue 字符串
+  （附带实证 §12.238 派生语义仍在：record 回写把器具 next 覆盖为记录值）→
+  文档建单→submit→无签名头 approve 预期拒 `1_044_000_031` 且 DB 仍 PENDING(20)（门禁未破坏）→
+  清理零遗留；
+- `pnpm ts:check` **EXIT=0**；`pnpm build:prod` **EXIT=0**；
+- 行尾保真：7 个 Java + 2 个新测试 LF-only；vue LF-only；H2 建表 CRLF 补丁、clean LF 保持。
+
+### 12.245.5 连带观察（登记，不动手）
+
+1. **文档域 LocalDate 同病（新发现）**：`QmsDocumentSaveReqVO/RespVO` 的
+   `effectiveDate/expiryDate`、`QmsDocumentChangeRequestSaveReqVO/RespVO` 的 `applyDate`
+   同样缺 `@JsonFormat`（同因：全局 timestamps）。本项只收口登记面的器具域，文档域另立小项。
+2. **变更申请 REVISE/CREATE approve 的 insert 路径存疑**：`approveChangeRequest` 在修订/新增分支
+   按原 `docNo` 直接 insert 新版本文档，未走 `docNo` 重复校验——若库表有唯一约束则冲突。
+   本项单测用 OBSOLETE 分支避开，未实证；独立评估。
+3. **approverId 真机落库仍是缺口**（D5）：待有签名能力的身份再补真机证明。
+
+本节文档同步：next-steps 后记三追加 A 组第 2 项完成；HANDOFF 无对应追踪行。

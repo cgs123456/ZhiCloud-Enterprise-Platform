@@ -2,6 +2,7 @@ package cn.zhicloud.module.qms.controller.admin.instrument.vo;
 
 import cn.zhicloud.framework.common.validation.InEnum;
 import cn.zhicloud.module.qms.enums.instrument.QmsCalibrationResultEnum;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -31,6 +32,7 @@ public class QmsInstrumentCalibrationSaveReqVO {
     @Schema(description = "校准日期", requiredMode = Schema.RequiredMode.REQUIRED, example = "2024-01-01")
     @NotNull(message = "校准日期不能为空")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY)
+    @JsonFormat(pattern = FORMAT_YEAR_MONTH_DAY)
     private LocalDate calibrationDate;
 
     @Schema(description = "校准机构", example = "中国计量科学研究院")
@@ -52,6 +54,7 @@ public class QmsInstrumentCalibrationSaveReqVO {
 
     @Schema(description = "下次校准日期", example = "2025-01-01")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY)
+    @JsonFormat(pattern = FORMAT_YEAR_MONTH_DAY)
     private LocalDate nextCalibrationDate;
 
     @Schema(description = "备注", example = "随便")

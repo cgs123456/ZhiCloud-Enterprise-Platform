@@ -5,11 +5,14 @@ import cn.zhicloud.framework.excel.core.convert.DictConvert;
 import cn.zhicloud.module.qms.enums.DictTypeConstants;
 import cn.idev.excel.annotation.ExcelIgnoreUnannotated;
 import cn.idev.excel.annotation.ExcelProperty;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+
+import static cn.zhicloud.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY;
 
 /**
  * QMS 校准到期预警 Response VO
@@ -64,10 +67,12 @@ public class QmsInstrumentExpiringSoonRespVO {
 
     @Schema(description = "上次校准日期", example = "2024-01-01")
     @ExcelProperty("上次校准日期")
+    @JsonFormat(pattern = FORMAT_YEAR_MONTH_DAY)
     private LocalDate lastCalibrationDate;
 
     @Schema(description = "下次校准日期", requiredMode = Schema.RequiredMode.REQUIRED, example = "2025-01-01")
     @ExcelProperty("下次校准日期")
+    @JsonFormat(pattern = FORMAT_YEAR_MONTH_DAY)
     private LocalDate nextCalibrationDate;
 
     @Schema(description = "距下次校准剩余天数（负数表示已逾期）", example = "7")
