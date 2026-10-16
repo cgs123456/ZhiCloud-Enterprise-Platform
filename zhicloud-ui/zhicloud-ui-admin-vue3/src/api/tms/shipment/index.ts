@@ -1,6 +1,6 @@
 import request from '@/config/axios'
 
-// TMS 运单 VO
+// TMS 运单 VO（读取用，含服务端下发的状态）
 export interface TmsShipmentVO {
   id?: number
   no?: string
@@ -22,6 +22,10 @@ export interface TmsShipmentVO {
   remark?: string
   createTime?: Date
 }
+
+// 新增/修改提交的字段：刻意不含 status。运单状态由 dispatch/确认到达/签收推进，
+// 表单提交改状态会把运单改回「待发车」从而绕过并派车互斥（后端同口径已移除该字段）。
+export type TmsShipmentSaveVO = Omit<TmsShipmentVO, 'status'>
 
 // 调度请求 VO：匹配车辆/司机
 export interface TmsShipmentDispatchVO {
@@ -54,11 +58,11 @@ export const TmsShipmentApi = {
     return await request.get({ url: '/tms/shipment/get?id=' + id })
   },
   // 新增
-  createTmsShipment: async (data: TmsShipmentVO) => {
+  createTmsShipment: async (data: TmsShipmentSaveVO) => {
     return await request.post({ url: '/tms/shipment/create', data })
   },
   // 修改
-  updateTmsShipment: async (data: TmsShipmentVO) => {
+  updateTmsShipment: async (data: TmsShipmentSaveVO) => {
     return await request.put({ url: '/tms/shipment/update', data })
   },
   // 删除

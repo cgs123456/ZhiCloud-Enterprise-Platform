@@ -4,6 +4,7 @@ import cn.zhicloud.framework.mybatis.core.dataobject.BaseDO;
 import com.baomidou.mybatisplus.annotation.KeySequence;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.Version;
 import lombok.*;
 
 /**
@@ -56,5 +57,13 @@ public class TmsDriverDO extends BaseDO {
      * 备注
      */
     private String remark;
+    /**
+     * 乐观锁版本号
+     *
+     * <p>同 {@code TmsVehicleDO#version}：司机状态由运单状态推进时改写，
+     * 无版本列时并发派车会互相覆盖（一个司机被两单同时调度）。</p>
+     */
+    @Version
+    private Long version;
 
 }

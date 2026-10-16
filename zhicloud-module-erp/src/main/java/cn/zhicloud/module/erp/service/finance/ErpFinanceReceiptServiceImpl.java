@@ -3,6 +3,8 @@ package cn.zhicloud.module.erp.service.finance;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.crypto.digest.DigestUtil;
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.common.util.collection.CollectionUtils;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
@@ -25,6 +27,10 @@ import cn.zhicloud.module.erp.service.sale.ErpSaleOutService;
 import cn.zhicloud.module.erp.service.sale.ErpSaleReturnService;
 import cn.zhicloud.module.system.api.user.AdminUserApi;
 import jakarta.annotation.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DeadlockLoserDataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -35,6 +41,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.zhicloud.framework.common.util.collection.CollectionUtils.*;
@@ -50,6 +57,20 @@ import static cn.zhicloud.module.erp.enums.ErrorCodeConstants.*;
 @Service
 @Validated
 public class ErpFinanceReceiptServiceImpl implements ErpFinanceReceiptService {
+
+    private static final Logger log = LoggerFactory.getLogger(ErpFinanceReceiptServiceImpl.class);
+    /**
+     * 唯一键冲突后等赢家提交的上界（毫秒）。仅用于 catch (DuplicateKeyException｜DeadlockLoser) 的自旋重试。
+     *
+     * <p>非 static final：E2E/单测需要把步长压到 0 来瞬跑 21 轮轮询。
+     * 生产值经 16 线程 × 20 轮实测：赢家在 100ms 内必然提交，从未触到上界。</p>
+     */
+    private long idempotentWaitMaxMs = 2000L;
+
+    /**
+     * 自旋步长（毫秒）。20 次退避足够覆盖一次本地事务提交。
+     */
+    private long idempotentWaitStepMs = 100L;
 
     @Resource
     private ErpFinanceReceiptMapper financeReceiptMapper;
@@ -76,20 +97,41 @@ public class ErpFinanceReceiptServiceImpl implements ErpFinanceReceiptService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long createFinanceReceipt(ErpFinanceReceiptSaveReqVO createReqVO) {
-        // 1.1 校验订单项的有效性
+        // 1.1 幂等键与载荷指纹必须先于任何业务副作用计算和校验（同 CRM 回款范式）。
+        // 收款单的业务副作用（updateSalePrice、过账事件）不可重入，
+        // 若放在校验之后，重试请求会先把副作用做一遍才命中幂等短路。
+        String idempotencyKey = validateAndNormalizeIdempotencyKey(createReqVO.getIdempotencyKey());
+        String payloadHash = buildReceiptPayloadHash(createReqVO);
+        // 1.1 幂等预检：普通读。刻意不加锁——RR 下唯一索引上「查不到行」的 FOR UPDATE
+        // 只加间隙锁，而同 gap 的间隙锁互相兼容（§12.233.4 实测：A 持锁期间 B 0.27s 即返回），
+        // 占位锁根本挡不住并发。这里只是快速失败：真正拦住重复提交的是后面的唯一键。
+        ErpFinanceReceiptDO existing = financeReceiptMapper.selectByIdempotencyKey(idempotencyKey);
+        if (existing != null) {
+            return resolveIdempotentReceipt(existing, payloadHash);
+        }
+
+        // 1.2 校验订单项的有效性
         List<ErpFinanceReceiptItemDO> receiptItems = validateFinanceReceiptItems(
                 createReqVO.getCustomerId(), createReqVO.getItems());
-        // 1.2 校验客户
+        // 1.3 校验客户
         customerService.validateCustomer(createReqVO.getCustomerId());
-        // 1.3 校验结算账户
+        // 1.4 校验结算账户
         if (createReqVO.getAccountId() != null) {
             accountService.validateAccount(createReqVO.getAccountId());
         }
-        // 1.4 校验财务人员
+        // 1.5 校验财务人员
         if (createReqVO.getFinanceUserId() != null) {
             adminUserApi.validateUser(createReqVO.getFinanceUserId());
         }
-        // 1.5 生成收款单号，并校验唯一性
+        // 1.6 冗余的二次确认：真正拦住重复提交的是 insert 处的唯一键 + catch 分支里的
+        // 锁读回查，1.1/1.6 都只是快速失败路径，这里理论上必然查不到。
+        // 保留它不为功能，只为防御：万一将来有人调整唯一键或插入顺序，这道兜底仍在。
+        // 成本是一次索引点查，相对整个建单事务可忽略。
+        existing = financeReceiptMapper.selectByIdempotencyKey(idempotencyKey);
+        if (existing != null) {
+            return resolveIdempotentReceipt(existing, payloadHash);
+        }
+        // 1.7 生成收款单号，并校验唯一性
         String no = noRedisDAO.generate(ErpNoRedisDAO.FINANCE_RECEIPT_NO_PREFIX);
         if (financeReceiptMapper.selectByNo(no) != null) {
             throw exception(FINANCE_RECEIPT_NO_EXISTS);
@@ -97,9 +139,24 @@ public class ErpFinanceReceiptServiceImpl implements ErpFinanceReceiptService {
 
         // 2.1 插入收款单
         ErpFinanceReceiptDO receipt = BeanUtils.toBean(createReqVO, ErpFinanceReceiptDO.class, in -> in
-                .setNo(no).setStatus(ErpAuditStatus.PROCESS.getStatus()));
+                .setNo(no).setStatus(ErpAuditStatus.PROCESS.getStatus())
+                .setIdempotencyKey(idempotencyKey).setPayloadHash(payloadHash));
         calculateTotalPrice(receipt, receiptItems);
-        financeReceiptMapper.insert(receipt);
+        try {
+            financeReceiptMapper.insert(receipt);
+        } catch (DuplicateKeyException | DeadlockLoserDataAccessException e) {
+            // 同键并发的两种失败形态，收敛到同一条幂等回查路径（同付款单，详见其方法注释）：
+            //   - DuplicateKeyException：我插入时那一行已提交
+            //   - DeadlockLoserDataAccessException：多插入争同一唯一键，insert intention 锁成环
+            //
+            // 回查必须锁读而不能普通读 + 自旋：RR 下本事务的一致性读视图在第一次普通读
+            // （1.1）时就固定了，早于赢家提交，自旋再久也读不到那一行。
+            // 锁读本身也会死锁，退避重试的逻辑见 awaitWinner。
+            ErpFinanceReceiptDO existing2 = awaitWinner(idempotencyKey, e);
+            log.info("[createFinanceReceipt][幂等={} 并发重复提交，返回已有 id={}]",
+                    idempotencyKey, existing2.getId());
+            return resolveIdempotentReceipt(existing2, payloadHash);
+        }
         // 2.2 插入收款单项
         receiptItems.forEach(o -> o.setReceiptId(receipt.getId()));
         financeReceiptItemMapper.insertBatch(receiptItems);
@@ -107,6 +164,100 @@ public class ErpFinanceReceiptServiceImpl implements ErpFinanceReceiptService {
         // 3. 更新销售出库、退货的收款金额情况
         updateSalePrice(receiptItems);
         return receipt.getId();
+    }
+
+
+    /**
+     * 等赢家那一行变得可见，上界内做不到就把始异常抛出去。
+     *
+     * <p>必须吞掉回查期间的死锁并重试：16 线程同键并发时输家们排在同一行 X 锁后面，
+     * InnoDB 判定成环后挑牺牲品回滚，抛出的 DeadlockLoserDataAccessException 若直接冒出去
+     * 就是 500（实测 348 次）。而回查被回滚不改变「赢家那一行已存在」这个事实，
+     * 退避后重试即可。真正该如实抛出的是超过上界仍等不到。</p>
+     */
+    private ErpFinanceReceiptDO awaitWinner(String idempotencyKey, RuntimeException fallback) {
+        long deadline = System.currentTimeMillis() + idempotentWaitMaxMs;
+        long backoff = idempotentWaitStepMs;
+        RuntimeException lastDeadlock = null;
+        while (true) {
+            try {
+                ErpFinanceReceiptDO existing = financeReceiptMapper.selectByIdempotencyKeyForUpdate(idempotencyKey);
+                if (existing != null) {
+                    return existing;
+                }
+            } catch (DeadlockLoserDataAccessException de) {
+                lastDeadlock = de;
+            }
+            if (System.currentTimeMillis() >= deadline) {
+                throw lastDeadlock != null ? lastDeadlock : fallback;
+            }
+            try {
+                Thread.sleep(backoff);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                throw fallback;
+            }
+            backoff = Math.min(backoff * 2, 500L);
+        }
+    }
+
+    /**
+     * 校验并规范化客户端幂等键：必填、长度上限 128（与列 varchar(128) 一致）。
+     */
+    private String validateAndNormalizeIdempotencyKey(String idempotencyKey) {
+        String normalized = StrUtil.trimToNull(idempotencyKey);
+        if (normalized == null) {
+            throw exception(FINANCE_RECEIPT_IDEMPOTENCY_KEY_REQUIRED);
+        }
+        if (normalized.length() > 128) {
+            throw exception(FINANCE_RECEIPT_IDEMPOTENCY_KEY_REQUIRED);
+        }
+        return normalized;
+    }
+
+    /**
+     * 命中已有收款单时的裁决：载荷一致才返回原单，不一致必须拒绝。
+     *
+     * <p>不能无条件返回已有单据：客户端若复用了幂等键但换了金额/客户，
+     * 静默返回原单会让调用方以为自己提交的那笔已经生效。</p>
+     */
+    private Long resolveIdempotentReceipt(ErpFinanceReceiptDO existing, String payloadHash) {
+        if (!Objects.equals(existing.getPayloadHash(), payloadHash)) {
+            throw exception(FINANCE_RECEIPT_IDEMPOTENCY_KEY_CONFLICT);
+        }
+        return existing.getId();
+    }
+
+    /**
+     * 创建请求载荷的 SHA-256。
+     *
+     * <p>金额经 {@link #normalizeAmount} 去掉尾部零：BigDecimal 的 100 与 100.00
+     * 表示同一金额，不归一化会把同一次提交误判成不同载荷。明细行按传入顺序参与哈希。</p>
+     */
+    private String buildReceiptPayloadHash(ErpFinanceReceiptSaveReqVO reqVO) {
+        StringBuilder payload = new StringBuilder();
+        payload.append(hashValue(reqVO.getCustomerId()))
+                .append('|').append(hashValue(reqVO.getAccountId()))
+                .append('|').append(hashValue(reqVO.getFinanceUserId()))
+                .append('|').append(hashValue(reqVO.getReceiptTime()))
+                .append('|').append(hashValue(normalizeAmount(reqVO.getDiscountPrice())))
+                .append('|').append(hashValue(reqVO.getRemark()));
+        if (CollUtil.isNotEmpty(reqVO.getItems())) {
+            // 明细顺序敏感：交换两行的提交被视为不同载荷
+            reqVO.getItems().forEach(item -> payload.append('|')
+                    .append(hashValue(item.getBizType()))
+                    .append('|').append(hashValue(item.getBizId()))
+                    .append('|').append(hashValue(normalizeAmount(item.getReceiptPrice()))));
+        }
+        return DigestUtil.sha256Hex(payload.toString());
+    }
+
+    private String hashValue(Object value) {
+        return value == null ? "<null>" : value.toString();
+    }
+
+    private String normalizeAmount(BigDecimal amount) {
+        return amount == null ? null : amount.stripTrailingZeros().toPlainString();
     }
 
     @Override
@@ -141,7 +292,10 @@ public class ErpFinanceReceiptServiceImpl implements ErpFinanceReceiptService {
 
     private void calculateTotalPrice(ErpFinanceReceiptDO receipt, List<ErpFinanceReceiptItemDO> receiptItems) {
         receipt.setTotalPrice(getSumValue(receiptItems, ErpFinanceReceiptItemDO::getReceiptPrice, BigDecimal::add, BigDecimal.ZERO));
-        receipt.setReceiptPrice(receipt.getTotalPrice().subtract(receipt.getDiscountPrice()));
+        // discountPrice 在 VO 上仅由 @NotNull 约束，DB 列是 DEFAULT NULL（V82:344），
+        // 非 HTTP 入口（内部调用、单测、集成）不受该注解保护，必须按 0 兜底，
+        // 否则 subtract(null) 抛 NPE 变成 500。
+        receipt.setReceiptPrice(receipt.getTotalPrice().subtract(defaultZero(receipt.getDiscountPrice())));
     }
 
     @Override

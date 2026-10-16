@@ -185,6 +185,8 @@ ErrorCode PURCHASE_ORDER_ITEM_RETURN_FAIL_IN_EXCEED = new ErrorCode(1_030_101_00
     ErrorCode FINANCE_PAYMENT_APPROVE_FAIL = new ErrorCode(1_030_601_003, "审核失败，只有未审核的付款单才能审核");
     ErrorCode FINANCE_PAYMENT_NO_EXISTS = new ErrorCode(1_030_601_004, "生成付款单号失败，请重新提交");
     ErrorCode FINANCE_PAYMENT_UPDATE_FAIL_APPROVE = new ErrorCode(1_030_601_005, "付款单({})已审核，无法修改");
+    ErrorCode FINANCE_PAYMENT_IDEMPOTENCY_KEY_REQUIRED = new ErrorCode(1_030_601_006, "创建付款单失败，原因：客户端幂等键不能为空");
+    ErrorCode FINANCE_PAYMENT_IDEMPOTENCY_KEY_CONFLICT = new ErrorCode(1_030_601_007, "创建付款单失败，原因：幂等键已被不同请求载荷使用");
 
     // ========== ERP 收款单 1-030-602-000 ==========
     ErrorCode FINANCE_RECEIPT_NOT_EXISTS = new ErrorCode(1_030_602_000, "收款单不存在");
@@ -193,6 +195,8 @@ ErrorCode PURCHASE_ORDER_ITEM_RETURN_FAIL_IN_EXCEED = new ErrorCode(1_030_101_00
     ErrorCode FINANCE_RECEIPT_APPROVE_FAIL = new ErrorCode(1_030_602_003, "审核失败，只有未审核的收款单才能审核");
     ErrorCode FINANCE_RECEIPT_NO_EXISTS = new ErrorCode(1_030_602_004, "生成收款单号失败，请重新提交");
     ErrorCode FINANCE_RECEIPT_UPDATE_FAIL_APPROVE = new ErrorCode(1_030_602_005, "收款单({})已审核，无法修改");
+    ErrorCode FINANCE_RECEIPT_IDEMPOTENCY_KEY_REQUIRED = new ErrorCode(1_030_602_006, "创建收款单失败，原因：客户端幂等键不能为空");
+    ErrorCode FINANCE_RECEIPT_IDEMPOTENCY_KEY_CONFLICT = new ErrorCode(1_030_602_007, "创建收款单失败，原因：幂等键已被不同请求载荷使用");
 
     // ========== ERP 会计期间 1-030-700-000 (P0-6) ==========
     ErrorCode PERIOD_NOT_EXISTS = new ErrorCode(1_030_700_000, "会计期间不存在");

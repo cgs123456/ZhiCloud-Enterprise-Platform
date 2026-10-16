@@ -34,4 +34,20 @@ public interface TmsDriverMapper extends BaseMapperX<TmsDriverDO> {
         return selectList(TmsDriverDO::getStatus, status);
     }
 
+    /**
+     * 锁读司机，同 {@code TmsVehicleMapper#selectByIdForUpdate}：CAS 前取版本号必须是锁读。
+     */
+    default TmsDriverDO selectByIdForUpdate(Long id) {
+        return selectOne(new LambdaQueryWrapperX<TmsDriverDO>()
+                .eq(TmsDriverDO::getId, id)
+                .last("FOR UPDATE"));
+    }
+
+    /**
+     * 按已知版本 CAS 改写司机状态，同 {@code TmsVehicleMapper#updateStatusWithVersion}。
+     */
+    default int updateStatusWithVersion(TmsDriverDO updateObj) {
+        return updateById(updateObj);
+    }
+
 }

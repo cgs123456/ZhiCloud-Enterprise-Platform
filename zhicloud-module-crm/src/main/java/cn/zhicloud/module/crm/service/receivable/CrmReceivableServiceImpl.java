@@ -114,6 +114,23 @@ public class CrmReceivableServiceImpl implements CrmReceivableService {
         }
 
         // 3. 插入回款
+        //
+        // 并发前提（§12.233.12 真机实测 16 线程 × 20 轮：320/320 全成功、0 死锁、
+        // 每键恰好 1 行）：2.1 的 `contractMapper.selectByIdForUpdate` 在本事务**最前面**
+        // 就取了合同行的 X 锁，把 16 个线程串行化后才走到 INSERT —— 实测 259 次 INSERT
+        // 里，赢家之后每个输家的 INSERT 间隔 74~242ms，**从不重叠**，因此既没有
+        // INSERT vs INSERT 的 insert intention 环，锁读也排在没有竞争者的队里
+        // （lockreads == inserts-1，每个输家第一次锁读就拿到行，退避一次都没触发）。
+        //
+        // **这意味着本 catch 比 ERP 版本"简陋"是安全的，但安全性依赖那个没写在前面的前提**：
+        //   - catch 只接 DuplicateKeyException，不接 DeadlockLoserDataAccessException；
+        //   - 锁读只做一次，拿不到就抛 → 用户看到 500。
+        // 二者当前不会触发。但若将来有人在 INSERT 之前加入任何**不串行化**的写路径
+        // （绕过合同行锁），串行化前提立刻失效，必须改成像 ERP 的 `awaitWinner`
+        // 那样退避重试。ERP 侧修法见 `ErpFinancePaymentServiceImpl#awaitWinner`。
+        //
+        // 不要因为这个 catch 简单就照抄到 ERP 去，反之亦然 —— 两处的锁序不同：
+        // ERP 建单前没有任何锁（会死锁，实测 348 次），CRM 有合同行锁（不会）。
         CrmReceivableDO receivable = BeanUtils.toBean(createReqVO, CrmReceivableDO.class)
                 .setNo(no).setAuditStatus(CrmAuditStatusEnum.DRAFT.getStatus())
                 .setIdempotencyKey(idempotencyKey).setPayloadHash(payloadHash).setVersion(0);
@@ -125,7 +142,7 @@ public class CrmReceivableServiceImpl implements CrmReceivableService {
             if (existing == null) {
                 throw e;
             }
-            log.warn("[createReceivable][幂等键={} 并发重复提交，返回已有 id={}]",
+            log.info("[createReceivable][幂等键={} 并发重复提交，返回已有 id={}]",
                     idempotencyKey, existing.getId());
             return resolveIdempotentReceivable(existing, payloadHash);
         }

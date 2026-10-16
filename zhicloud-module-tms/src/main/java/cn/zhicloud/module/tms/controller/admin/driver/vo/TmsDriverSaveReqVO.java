@@ -27,8 +27,9 @@ public class TmsDriverSaveReqVO {
     @Schema(description = "承运商编号", example = "2048")
     private Long carrierId;
 
-    @Schema(description = "状态（10 可用 / 20 运输中 / 30 休假）", example = "10")
-    private Integer status;
+    // 刻意不暴露 status：司机状态由 dispatch / 确认到达 / 签收推进（§12.231/§12.233）。
+    // 暴露可编辑的 status 等于允许把「运输中」的司机改回「可用」，绕开 dispatch 的可用性校验，
+    // 同一个司机会被两单同时派走。同 TmsShipmentSaveReqVO / TmsVehicleSaveReqVO 的处理。
 
     @Schema(description = "备注", example = "随便")
     private String remark;

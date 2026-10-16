@@ -53,9 +53,6 @@
       <el-form-item label="实际到达时间" prop="actualArrivalTime">
         <el-date-picker v-model="formData.actualArrivalTime" type="date" value-format="YYYY-MM-DD" class="!w-1/1" placeholder="请选择实际到达时间" />
       </el-form-item>
-      <el-form-item label="状态（10 待发车 / 20 运输中 / 30 已到达 / 40 已签收 / 50 已取消）" prop="status">
-        <el-input-number v-model="formData.status" class="!w-1/1" :controls="false" placeholder="请输入状态（10 待发车 / 20 运输中 / 30 已到达 / 40 已签收 / 50 已取消）" />
-      </el-form-item>
       <el-form-item label="备注" prop="remark">
         <el-input v-model="formData.remark" class="!w-1/1" placeholder="请输入备注" />
       </el-form-item>
@@ -67,9 +64,17 @@
   </Dialog>
 </template>
 <script lang="ts" setup>
-import { TmsShipmentApi } from '@/api/tms/shipment'
+import { TmsShipmentApi, type TmsShipmentSaveVO } from '@/api/tms/shipment'
 
 defineOptions({ name: 'TmsShipmentForm' })
+
+// 运单状态不在表单里：它由「调度 / 确认到达 / 签收」推进，表单编辑状态会把运单
+// 改回「待发车」从而绕过并派车互斥（后端 §12.231 的 CAS 前提是状态单调不回退）。
+// 提交体因此刻意不含 status，详情回填到的多余字段也在这里剥掉。
+const toSaveVO = (raw: any): TmsShipmentSaveVO => {
+  const { status, createTime, ...rest } = raw
+  return rest as TmsShipmentSaveVO
+}
 
 const { t } = useI18n()
 const message = useMessage()
@@ -112,7 +117,7 @@ const submitForm = async () => {
   await formRef.value.validate()
   formLoading.value = true
   try {
-    const data = formData.value
+    const data = toSaveVO(formData.value)
     if (formType.value === 'create') {
       await TmsShipmentApi.createTmsShipment(data)
       message.success(t('common.createSuccess'))

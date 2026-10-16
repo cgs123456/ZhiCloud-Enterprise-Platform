@@ -15,6 +15,7 @@ import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.e
 import static cn.zhicloud.module.tms.enums.ErrorCodeConstants.TMS_DRIVER_LICENSE_NO_DUPLICATE;
 import static cn.zhicloud.module.tms.enums.ErrorCodeConstants.TMS_DRIVER_NOT_AVAILABLE;
 import static cn.zhicloud.module.tms.enums.ErrorCodeConstants.TMS_DRIVER_NOT_EXISTS;
+import static cn.zhicloud.module.tms.enums.ErrorCodeConstants.TMS_DRIVER_OPTIMISTIC_LOCK_FAIL;
 
 /**
  * TMS 司机 Service 实现类
@@ -47,8 +48,17 @@ public class TmsDriverServiceImpl implements TmsDriverService {
     public void updateDriver(TmsDriverSaveReqVO updateReqVO) {
         validateDriverExists(updateReqVO.getId());
         validateLicenseNoUnique(updateReqVO.getId(), updateReqVO.getLicenseNo());
+        // §12.231/§12.233：先读拿 version——少了这步 updateById 会退化成无条件全量覆盖。
+        // VO 不暴露 status，映射过来是 null，updateById 不会改写状态列。
+        TmsDriverDO old = driverMapper.selectById(updateReqVO.getId());
+        if (old == null) {
+            throw exception(TMS_DRIVER_NOT_EXISTS, updateReqVO.getId());
+        }
         TmsDriverDO updateObj = BeanUtils.toBean(updateReqVO, TmsDriverDO.class);
-        driverMapper.updateById(updateObj);
+        updateObj.setVersion(old.getVersion());
+        if (driverMapper.updateById(updateObj) == 0) {
+            throw exception(TMS_DRIVER_OPTIMISTIC_LOCK_FAIL, updateReqVO.getId());
+        }
     }
 
     @Override

@@ -14,6 +14,7 @@ import org.springframework.validation.annotation.Validated;
 import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.zhicloud.module.tms.enums.ErrorCodeConstants.TMS_VEHICLE_NOT_AVAILABLE;
 import static cn.zhicloud.module.tms.enums.ErrorCodeConstants.TMS_VEHICLE_NOT_EXISTS;
+import static cn.zhicloud.module.tms.enums.ErrorCodeConstants.TMS_VEHICLE_OPTIMISTIC_LOCK_FAIL;
 import static cn.zhicloud.module.tms.enums.ErrorCodeConstants.TMS_VEHICLE_PLATE_NO_DUPLICATE;
 
 /**
@@ -47,8 +48,18 @@ public class TmsVehicleServiceImpl implements TmsVehicleService {
     public void updateVehicle(TmsVehicleSaveReqVO updateReqVO) {
         validateVehicleExists(updateReqVO.getId());
         validatePlateNoUnique(updateReqVO.getId(), updateReqVO.getPlateNo());
+        // §12.231/§12.233：先读是为了拿 version 并确认存在——没有这一步 updateById 会因
+        // version 为空退化成无条件全量覆盖，等于把刚加的乐观锁变成了装饰。
+        // VO 不暴露 status，所以 BeanUtils 映射过来的 status 是 null，updateById 不 SET 它。
+        TmsVehicleDO old = vehicleMapper.selectById(updateReqVO.getId());
+        if (old == null) {
+            throw exception(TMS_VEHICLE_NOT_EXISTS, updateReqVO.getId());
+        }
         TmsVehicleDO updateObj = BeanUtils.toBean(updateReqVO, TmsVehicleDO.class);
-        vehicleMapper.updateById(updateObj);
+        updateObj.setVersion(old.getVersion());
+        if (vehicleMapper.updateById(updateObj) == 0) {
+            throw exception(TMS_VEHICLE_OPTIMISTIC_LOCK_FAIL, updateReqVO.getId());
+        }
     }
 
     @Override

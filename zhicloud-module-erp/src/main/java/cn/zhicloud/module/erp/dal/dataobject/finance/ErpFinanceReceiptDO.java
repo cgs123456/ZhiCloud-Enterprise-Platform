@@ -1,6 +1,6 @@
 package cn.zhicloud.module.erp.dal.dataobject.finance;
 
-import cn.zhicloud.framework.mybatis.core.dataobject.BaseDO;
+import cn.zhicloud.framework.tenant.core.db.TenantBaseDO;
 import cn.zhicloud.module.erp.dal.dataobject.sale.ErpCustomerDO;
 import com.baomidou.mybatisplus.annotation.KeySequence;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ErpFinanceReceiptDO extends BaseDO {
+public class ErpFinanceReceiptDO extends TenantBaseDO {
 
     /**
      * 编号
@@ -82,5 +82,19 @@ public class ErpFinanceReceiptDO extends BaseDO {
      * 备注
      */
     private String remark;
+
+    /**
+     * 客户端幂等键。与 tenant_id 组成唯一键，防止同一请求重复创建收款单。
+     *
+     * <p>为什么需要它：收款单号由服务端 {@code noRedisDAO} 生成，同一业务意图的两次提交
+     * （网络超时重试、双击、消息重投）会拿到不同单号，(no, tenant_id) 唯一键挡不住。
+     * 该键必须由客户端随创建请求传入，见 {@code ErpFinanceReceiptSaveReqVO#idempotencyKey}。</p>
+     */
+    private String idempotencyKey;
+
+    /**
+     * 创建请求载荷的 SHA-256。同键不同载荷必须拒绝，不能误返回其他业务单据。
+     */
+    private String payloadHash;
 
 }

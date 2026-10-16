@@ -765,6 +765,20 @@
       "sha256": "ea048d8c97569bfd476a012cd1e2858196b30d9fcfb742cc493f5083237ebdf8",
       "verification_file": "V199_verify.sql",
       "verification_sha256": "bbcd7851c7dceb809373342c1efa3c2bd360ffce00ccf9a02101d7cb45448a81"
+    },
+    {
+      "version": 200,
+      "file": "V200__erp_finance_idempotency_key.sql",
+      "sha256": "6335b95196110a58e9b21610e308ed17e852469517a37d25fe0fdb6a31067c43",
+      "verification_file": "V200_verify.sql",
+      "verification_sha256": "e5535bbaaba38b210546d45927f7665fa14c954ddf3cd13ab05d0e535c851d55"
+    },
+    {
+      "version": 201,
+      "file": "V201__tms_shipment_concurrency.sql",
+      "sha256": "cd0ad9f86655f00bd552dd06fb9ca4a1923f3e255c5d89241d8f1c421a4ce775",
+      "verification_file": "V201_verify.sql",
+      "verification_sha256": "5f42d766c9a89b30e3802cb07385fb1aa5c0c9e1775e07d34221392d29e410a2"
     }
   ]
 }

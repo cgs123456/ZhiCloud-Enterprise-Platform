@@ -54,4 +54,10 @@ public interface ErrorCodeConstants {
     // ========== TMS 车队运营（1-060-008-000） ==========
     ErrorCode TMS_FLEET_OPERATION_NOT_EXISTS = new ErrorCode(1_047_000_020, "车队运营记录不存在");
 
+    // ========== TMS 并发（1-060-009-000） ==========
+    ErrorCode TMS_SHIPMENT_CONCURRENT_DISPATCH = new ErrorCode(1_060_009_001, "运单({})已被其他请求派车，请刷新后重试");
+    ErrorCode TMS_SHIPMENT_OPTIMISTIC_LOCK_FAIL = new ErrorCode(1_060_009_002, "运单({})已被其他请求修改，请刷新后重试");
+    ErrorCode TMS_VEHICLE_OPTIMISTIC_LOCK_FAIL = new ErrorCode(1_060_009_003, "车辆({})已被其他请求修改，请刷新后重试");
+    ErrorCode TMS_DRIVER_OPTIMISTIC_LOCK_FAIL = new ErrorCode(1_060_009_004, "司机({})已被其他请求修改，请刷新后重试");
+
 }

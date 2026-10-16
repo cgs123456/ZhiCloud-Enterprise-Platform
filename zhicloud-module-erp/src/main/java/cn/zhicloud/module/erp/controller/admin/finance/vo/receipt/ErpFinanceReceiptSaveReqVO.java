@@ -39,6 +39,10 @@ public class ErpFinanceReceiptSaveReqVO {
     @Schema(description = "备注", example = "你猜")
     private String remark;
 
+    @Schema(description = "客户端幂等键。创建收款单时必填；同一租户内同键同载荷返回原单，同键不同载荷拒绝",
+            example = "01J8Y6T4K9Q2W3E4R5T6Y7U8I9")
+    private String idempotencyKey;
+
     @Schema(description = "收款项列表", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotEmpty(message = "收款项列表不能为空")
     @Valid

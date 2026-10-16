@@ -63,8 +63,10 @@ public class TmsShipmentSaveReqVO {
     @Schema(description = "实际到达时间")
     private LocalDateTime actualArrivalTime;
 
-    @Schema(description = "状态（10 待发车 / 20 运输中 / 30 已到达 / 40 已签收 / 50 已取消）", example = "10")
-    private Integer status;
+    // 刻意不暴露 status：运单状态是状态机的产物，只能由 dispatch/confirmArrival/confirmSign
+    // 推进。此前这里有一个可编辑的 status 字段（前端表单还给配了输入框），调用方能把运单
+    // 直接改回「待发车」再重复派车——并发 CAS（§12.231）的前提是状态单调不回退，
+    // 留这个口子等于在自己的防护上凿洞。同 MesProWorkOrderSaveReqVO 的处理。
 
     @Schema(description = "备注", example = "随便")
     private String remark;
