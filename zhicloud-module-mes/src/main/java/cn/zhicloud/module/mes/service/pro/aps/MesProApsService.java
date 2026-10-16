@@ -44,6 +44,20 @@ public interface MesProApsService {
     void reschedule(Long planId, LocalDateTime newStartTime);
 
     /**
+     * 确认排产计划（草稿 → 已确认）
+     *
+     * @param id 排产计划编号
+     */
+    void confirmPlan(Long id);
+
+    /**
+     * 取消排产计划（草稿/已确认/执行中 → 已取消）
+     *
+     * @param id 排产计划编号
+     */
+    void cancelPlan(Long id);
+
+    /**
      * 获得排产计划
      *
      * @param id 编号

@@ -10415,3 +10415,87 @@ E2E 具体断言（API + DB 双验）：建单传 `status=30` → 落库 10；PU
    （展示层小瑕疵，非本轮引入；与 §12.234 系列展示层小项同类，登记）。
 
 本节文档同步：next-steps 后记追加完成/订正两条；HANDOFF §3.2 第 1 项与 §四第 3 条加订正块。
+
+## 12.240 2026-10-16 MES APS 重排产不可达修复：confirm/cancel 端点补齐 + 重排产两处修正（业务断点 2；ADR 先行）
+
+本节属性：HANDOFF §3.2 第 2 项「MES APS 重排产不可达（无 confirm 端点）」的收口。
+后端增量：2 个新端点 + 1 组 CAS 状态流转 + 重排产两处缺陷修正；前端 1 api + 1 页面；
+零迁移、零权限新增（复用 V188 已有 `mes:pro-aps:update`）。设计决策动手前定稿（§12.240.2）。
+
+### 12.240.1 缺陷面与口径复核
+
+双死锁链：
+- `generateSchedule` 产物恒 DRAFT(0)；而重排产要求 CONFIRMED(1)（`PRO_APS_PLAN_NOT_CONFIRMED`），
+  全仓无任何路径能让计划进入 CONFIRMED——重排产实际不可达（死代码），计划改期诉求无路可走；
+- 重复排产错误 1_040_509_008 文案指引「先取消原计划」，但取消端点同样不存在——用户照提示
+  操作也无路，同一工单被 DRAFT 计划永久卡死。
+
+重排产可达后暴露的两处实现缺陷（此前死代码未暴露）：
+1. 步骤 5 只写 `plannedStartTime` 不写 `plannedEndTime`，与注释「保持时长不变」矛盾——
+   时长漂移（移动 1 小时会让 16 天计划变成 16 天 1 小时）、占用窗虚化；
+2. 步骤 4 冲突候选用「被包含」语义查询（`start<=x AND end<=y`），左跨/右跨重叠查不出来——
+   与注释「与新时段重叠时拒绝」不符，可双重占用工位。
+
+### 12.240.2 设计决策（ADR 式，动手前定案）
+
+- **D1 端点补齐**：`PUT /mes/pro/aps/plan/confirm`（DRAFT→CONFIRMED）＋
+  `PUT /mes/pro/aps/plan/cancel`（DRAFT/CONFIRMED/EXECUTING→CANCELLED），权限均复用
+  `mes:pro-aps:update`（V188 已播种，零迁移）。cancel 属闭环必需件——它正是既有错误文案
+  指定的人工补救路径，不是推测性扩展。EXECUTING/COMPLETED 无驱动者（无报工联动），
+  不实现假迁移。
+- **D2 CAS 并发语义**：沿用 §12.237 范式——`updateByIdAndStatus(id, fromStatuses, updateObj)`
+  条件更新，0 行回查区分「不存在」（1_040_509_000）与「状态不允许」（confirm→011
+  「只有草稿状态的排产计划才能确认」/ cancel→012「排产计划「{}」当前状态不允许取消」）；
+  不「先查后改」，杜绝并发伪成功。
+- **D3 重排产随本项修正**：① 结束时间随开始时间同步平移（时长保持）；② 冲突检测换用
+  `selectListOverlappingByWorkstation`（真重叠：`start < end' AND end > start'`；仅
+  DRAFT/CONFIRMED/EXECUTING 占用工位，CANCELLED/COMPLETED 不阻断），实现与注释声明对齐。
+- **D4 明确不做**：generate 侧占用时间线同为「被包含」语义（左跨漏计 + 无状态过滤）不动——
+  影响排产算法本身，另立观察（§12.240.5）；不做前端「生成排产」入口（工单多选 + 日期范围
+  属另一交互面）；不造新权限串；无迁移。
+- **D5 前端接线**：操作列按状态条件渲染（0 确认 / 1 重排产 / 0·1 取消）+ `v-hasPermi`
+  （同后端码）；重排产走 Dialog（datetime 字符串，反序列化器 §12.220 已兼容）；状态/优先级
+  用页内映射（`mes_pro_aps_plan_status/priority` 字典类型存在但无种子数据，不用 dict-tag）；
+  动作成功 `getList()` 回读。
+
+### 12.240.3 变更清单（8 文件：5 后端 + 1 新测试 + 2 前端）
+
+- `enums/ErrorCodeConstants.java`：+1_040_509_011 / 012；
+- `dal/mysql/pro/aps/MesProApsPlanMapper.java`：+`updateByIdAndStatus`（CAS）、
+  +`selectListOverlappingByWorkstation`（真重叠 + 活跃状态过滤）；
+- `service/pro/aps/MesProApsService.java` / `MesProApsServiceImpl.java`：+`confirmPlan` /
+  `cancelPlan`（私有 `transitionStatus` 统一实现）；reschedule 步骤 4/5 修正；
+- `controller/admin/pro/aps/MesProApsController.java`：+2 端点（`@RequestParam id`）；
+- `service/pro/aps/MesProApsServiceImplTest.java`（新增，mock mapper）：11 案——confirm 三出口、
+  cancel 三出口、reschedule 五案（成功平移/左跨冲突/自身豁免/非确认态/时间越界）＋
+  「已改用重叠查询、不再用被包含查询」断言；
+- `api/mes/pro/aps/index.ts`：+`ApsPlanConfirm` / `ApsPlanCancel`；
+- `views/mes/pro/aps/index.vue`：状态/优先级/时间格式化 + 操作列 + 重排产弹窗 + 动作逻辑。
+
+### 12.240.4 验证读数
+
+- 单测 `MesProApsServiceImplTest` **11/11**；MES 模块全量回归 **840/840**（49 报告文件，
+  Fail=0/Err=0）；
+- errcode 全仓扫描 1942 条 / **0 碰撞**；
+- reactor 重打包（`-pl zhicloud-server -am`）**BUILD SUCCESS**（01:44），新 jar 真机运行；
+- 真机 E2E（tenant 9001，`Temp\zc_aps_e2e.py`）**34/34**：generate→DRAFT(0)→confirm→
+  CONFIRMED(1)（重复确认 011、不存在 000）→重排产（起止同步 +1h 出库核对、时长保持、越界 003、
+  不存在 000）→DRAFT 不可重排 002→**右跨重叠拒绝 003**（几何打印：planA 不被 straddle 窗包含、
+  旧「被包含」查询必漏）→自身豁免（原地重排成功）→cancel→CANCELLED(4)（重复取消 012）→
+  已取消不阻断重排（planB 移入已取消原窗成功）→**同工单重新排产成功（死锁解除）**→
+  DRAFT 阻断重复排产 008→清理后零遗留；
+- 三层接线扫描 **11/11**；`pnpm ts:check` **EXIT=0**；`pnpm build:prod` **EXIT=0**；
+- 行尾保真：8 个改动文件全部 LF-only 保持（补丁脚本逐文件 `crlf==0` 断言后写入）。
+
+### 12.240.5 连带观察（登记，不动手）
+
+1. **generate 占用时间线同病**：`selectListByWorkstationIdsAndTimeRange` 亦为「被包含」语义、
+   且无状态过滤——左跨计划漏计 + 已取消/已完成计划仍占位阻断。影响排产算法本身
+   （`/generate` 的结果正确性），另立小项（登记）。
+2. **重排产并发窗口**：reschedule 为「先校验后 update」而非 CAS——同计划并发重排为丢更新
+   （内容更新而非状态迁移，状态 CAS 亦不能序列化此类竞争）；理论窗极小，登记不扩权。
+3. **APS 字典无种子**：`mes_pro_aps_plan_status` / `mes_pro_aps_plan_priority` 字典类型
+   在 Java 侧存在（`DictTypeConstants`）但无数据种子——页面改用页内映射；如需字典化须补种子
+   （登记）。
+
+本节文档同步：next-steps 后记追加完成/订正两条；HANDOFF §3.2 第 2 项与 §四第 3 条加订正块。

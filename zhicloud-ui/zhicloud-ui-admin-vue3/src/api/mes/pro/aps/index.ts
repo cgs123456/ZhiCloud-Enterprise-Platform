@@ -18,6 +18,14 @@ export const ApsApi = {
     // 重排产
     return await request.put({ url: `/mes/pro/aps/plan/reschedule`, data })
   },
+  ApsPlanConfirm: async (id: any) => {
+    // 确认排产计划（草稿 → 已确认）
+    return await request.put({ url: `/mes/pro/aps/plan/confirm?id=` + id })
+  },
+  ApsPlanCancel: async (id: any) => {
+    // 取消排产计划（草稿/已确认 → 已取消）
+    return await request.put({ url: `/mes/pro/aps/plan/cancel?id=` + id })
+  },
   ApsWorkstationLoad: async (data: any) => {
     // 工位负荷
     return await request.get({ url: `/mes/pro/aps/workstation-load`, data })

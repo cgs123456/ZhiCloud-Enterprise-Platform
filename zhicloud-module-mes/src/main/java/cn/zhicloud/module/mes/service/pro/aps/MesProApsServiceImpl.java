@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import cn.zhicloud.framework.common.enums.CommonStatusEnum;
+import cn.zhicloud.framework.common.exception.ErrorCode;
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.module.mes.controller.admin.pro.aps.vo.MesProApsGenerateReqVO;
 import cn.zhicloud.module.mes.controller.admin.pro.aps.vo.MesProApsPlanPageReqVO;
@@ -34,6 +35,7 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -44,9 +46,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_APS_PLAN_CANNOT_CANCEL;
 import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_APS_PLAN_CAPACITY_EXCEEDED;
 import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_APS_PLAN_DATE_RANGE_INVALID;
 import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_APS_PLAN_NOT_CONFIRMED;
+import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_APS_PLAN_NOT_DRAFT;
 import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_APS_PLAN_NOT_EXISTS;
 import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_APS_PLAN_RESCHEDULE_TIME_INVALID;
 import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_APS_PLAN_WORK_ORDER_DUPLICATE;
@@ -275,10 +279,11 @@ public class MesProApsServiceImpl implements MesProApsService {
         if (newStartTime == null || !newStartTime.isBefore(plan.getPlannedEndTime())) {
             throw exception(PRO_APS_PLAN_RESCHEDULE_TIME_INVALID);
         }
-        // 4. 工单时段冲突检测：新时段 [newStartTime, plannedEndTime) 与同工位其他计划重叠时拒绝
+        // 4. 工单时段冲突检测：新时段 [newStartTime, newEndTime) 与同工位其他计划重叠时拒绝
+        //    查询采用「重叠」语义（左跨/右跨/被包含全覆盖），且已取消/已完成的计划不占用工位资源
         long durationHours = ChronoUnit.HOURS.between(plan.getPlannedStartTime(), plan.getPlannedEndTime());
         LocalDateTime newEndTime = newStartTime.plusHours(durationHours);
-        List<MesProApsPlanDO> sameWorkstationPlans = apsPlanMapper.selectListByWorkstationAndTimeRange(
+        List<MesProApsPlanDO> sameWorkstationPlans = apsPlanMapper.selectListOverlappingByWorkstation(
                 plan.getWorkstationId(), newStartTime, newEndTime);
         for (MesProApsPlanDO other : sameWorkstationPlans) {
             // 排除自身，仅校验其他计划是否与新时段重叠
@@ -291,9 +296,44 @@ public class MesProApsServiceImpl implements MesProApsService {
                 throw exception(PRO_APS_PLAN_RESCHEDULE_TIME_INVALID);
             }
         }
-        // 5. 更新计划开始时间（保持时长不变）
+        // 5. 更新计划时段（保持时长不变：开始/结束时间同步平移，避免时长漂移与占用窗虚化）
         apsPlanMapper.updateById(new MesProApsPlanDO().setId(planId)
-                .setPlannedStartTime(newStartTime));
+                .setPlannedStartTime(newStartTime)
+                .setPlannedEndTime(newEndTime));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void confirmPlan(Long id) {
+        transitionStatus(id, MesProApsPlanStatusEnum.CONFIRMED, PRO_APS_PLAN_NOT_DRAFT,
+                MesProApsPlanStatusEnum.DRAFT.getStatus());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void cancelPlan(Long id) {
+        transitionStatus(id, MesProApsPlanStatusEnum.CANCELLED, PRO_APS_PLAN_CANNOT_CANCEL,
+                MesProApsPlanStatusEnum.DRAFT.getStatus(), MesProApsPlanStatusEnum.CONFIRMED.getStatus(),
+                MesProApsPlanStatusEnum.EXECUTING.getStatus());
+    }
+
+    /**
+     * 状态流转统一实现：以「来源状态集合」做条件更新（CAS），并发下只有一个动作能生效
+     *
+     * <p>affected rows = 0 时回查一次给出精确原因（计划不存在 / 当前状态不允许该动作）。
+     * 不用「先查后改」是为了避免两个并发动作各自通过校验后互相覆盖（伪成功）。
+     */
+    private void transitionStatus(Long id, MesProApsPlanStatusEnum target, ErrorCode errorCode,
+                                  Integer... fromStatuses) {
+        int updated = apsPlanMapper.updateByIdAndStatus(id, Arrays.asList(fromStatuses),
+                MesProApsPlanDO.builder().status(target.getStatus()).build());
+        if (updated == 0) {
+            MesProApsPlanDO plan = apsPlanMapper.selectById(id);
+            if (plan == null) {
+                throw exception(PRO_APS_PLAN_NOT_EXISTS);
+            }
+            throw exception(errorCode, plan.getPlanNo());
+        }
     }
 
     @Override

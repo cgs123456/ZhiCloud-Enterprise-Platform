@@ -68,6 +68,24 @@ public class MesProApsController {
         return success(true);
     }
 
+    @PutMapping("/plan/confirm")
+    @Operation(summary = "确认排产计划")
+    @Parameter(name = "id", description = "编号", required = true, example = "1024")
+    @PreAuthorize("@ss.hasPermission('mes:pro-aps:update')")
+    public CommonResult<Boolean> confirmApsPlan(@RequestParam("id") Long id) {
+        apsService.confirmPlan(id);
+        return success(true);
+    }
+
+    @PutMapping("/plan/cancel")
+    @Operation(summary = "取消排产计划")
+    @Parameter(name = "id", description = "编号", required = true, example = "1024")
+    @PreAuthorize("@ss.hasPermission('mes:pro-aps:update')")
+    public CommonResult<Boolean> cancelApsPlan(@RequestParam("id") Long id) {
+        apsService.cancelPlan(id);
+        return success(true);
+    }
+
     @GetMapping("/workstation-load")
     @Operation(summary = "工位负荷")
     @PreAuthorize("@ss.hasPermission('mes:pro-aps:query')")
