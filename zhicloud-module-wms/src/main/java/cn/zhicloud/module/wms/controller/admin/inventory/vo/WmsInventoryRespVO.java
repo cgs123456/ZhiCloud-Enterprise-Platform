@@ -31,6 +31,8 @@ public class WmsInventoryRespVO {
 
     @Schema(description = "仓库编号", requiredMode = Schema.RequiredMode.REQUIRED, example = "8192")
     private Long warehouseId;
+    @Schema(description = "库位编号（0 = 未定位；V205 库位维度接入）", example = "12288")
+    private Long locationId;
     @Schema(description = "仓库名称", example = "成品仓")
     private String warehouseName;
 

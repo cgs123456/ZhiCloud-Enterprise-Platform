@@ -800,6 +800,13 @@
       "sha256": "790ac154c90861f37d4247a8a387db056d8762996d91ea9b7b0220de46d5119c",
       "verification_file": "V204_verify.sql",
       "verification_sha256": "7c9a8489e6b2bc2d5974daba802dba146389a5859e3ef5a40717d4edf2b06745"
+    },
+    {
+      "version": 205,
+      "file": "V205__wms_inventory_location_dimension.sql",
+      "sha256": "95299955d90b16d8a0c98f09deec791b6a8e061c942a29cba42534fe413ad0ab",
+      "verification_file": "V205_verify.sql",
+      "verification_sha256": "e86dbffd2591833e21080221eb1d2cd231cdc75777a69dbb74f280a3feba5517"
     }
   ]
 }

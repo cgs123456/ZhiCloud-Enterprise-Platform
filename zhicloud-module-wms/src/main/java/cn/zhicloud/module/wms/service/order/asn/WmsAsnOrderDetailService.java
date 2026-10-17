@@ -48,7 +48,8 @@ public interface WmsAsnOrderDetailService {
      *
      * @param detailId 明细编号
      * @param receivedQuantity 本次收货数量
+     * @param locationId 收货库位编号（null/0 = 未指定；V205 收货库位落库，ADR 259 D5）
      */
-    void addReceivedQuantity(Long detailId, java.math.BigDecimal receivedQuantity);
+    void addReceivedQuantity(Long detailId, java.math.BigDecimal receivedQuantity, Long locationId);
 
 }

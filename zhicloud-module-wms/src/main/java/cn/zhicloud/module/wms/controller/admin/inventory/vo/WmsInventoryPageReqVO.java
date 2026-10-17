@@ -47,6 +47,9 @@ public class WmsInventoryPageReqVO extends PageParam {
     @Schema(description = "仓库编号", example = "2048")
     private Long warehouseId;
 
+    @Schema(description = "库位编号（0 = 未定位；不传 = 全部）", example = "12288")
+    private Long locationId;
+
     @Schema(description = "最小库存数量", example = "0.01")
     private BigDecimal minQuantity;
 

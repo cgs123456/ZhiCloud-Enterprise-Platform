@@ -20,6 +20,7 @@ import cn.zhicloud.module.wms.dal.mysql.order.wave.WmsWaveOrderDetailMapper;
 import cn.zhicloud.module.wms.dal.mysql.order.wave.WmsWaveOrderMapper;
 import cn.zhicloud.module.wms.service.md.item.WmsItemService;
 import cn.zhicloud.module.wms.service.md.item.WmsItemSkuService;
+import cn.zhicloud.module.wms.service.md.location.WmsLocationService;
 import cn.zhicloud.module.wms.service.md.warehouse.WmsWarehouseService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
+import java.util.stream.Collectors;
 import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.zhicloud.framework.common.util.collection.CollectionUtils.convertSet;
 import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.SHIPMENT_ORDER_NOT_EXISTS;
@@ -82,6 +83,8 @@ public class WmsPickPathServiceImpl implements WmsPickPathService {
     private WmsItemSkuService itemSkuService;
     @Resource
     private WmsItemService itemService;
+    @Resource
+    private WmsLocationService locationService; // V205：冻结库位批查（ADR 259 D7/D8）
 
     @Override
     @Transactional(rollbackFor = Exception.class, readOnly = true)
@@ -134,8 +137,13 @@ public class WmsPickPathServiceImpl implements WmsPickPathService {
         List<WmsPickPathLocationRespVO> locations = new ArrayList<>();
         Set<Long> processedInventoryIds = new HashSet<>();
         for (WmsShipmentOrderDetailDO detail : details) {
-            WmsInventoryDO inventory = inventoryMapper.selectBySkuIdAndWarehouseId(
+            List<WmsInventoryDO> inventoryRows = inventoryMapper.selectListBySkuIdAndWarehouseId(
                     detail.getSkuId(), detail.getWarehouseId());
+            WmsInventoryDO inventory = WmsInventoryMapper.pickPrimary(inventoryRows,
+                    locationService.selectFrozenLocationIds(inventoryRows.stream()
+                            .map(WmsInventoryDO::getLocationId)
+                            .filter(rowLocation -> rowLocation != null && rowLocation != 0L)
+                            .collect(Collectors.toSet())));
             if (inventory == null) {
                 log.warn("[buildLocationsFromShipmentDetails][出库明细 SKU={} 仓库={} 无库存行，跳过]",
                         detail.getSkuId(), detail.getWarehouseId());
@@ -157,8 +165,13 @@ public class WmsPickPathServiceImpl implements WmsPickPathService {
         List<WmsPickPathLocationRespVO> locations = new ArrayList<>();
         Set<Long> processedInventoryIds = new HashSet<>();
         for (WmsWaveOrderDetailDO detail : details) {
-            WmsInventoryDO inventory = inventoryMapper.selectBySkuIdAndWarehouseId(
+            List<WmsInventoryDO> inventoryRows = inventoryMapper.selectListBySkuIdAndWarehouseId(
                     detail.getSkuId(), warehouseId);
+            WmsInventoryDO inventory = WmsInventoryMapper.pickPrimary(inventoryRows,
+                    locationService.selectFrozenLocationIds(inventoryRows.stream()
+                            .map(WmsInventoryDO::getLocationId)
+                            .filter(rowLocation -> rowLocation != null && rowLocation != 0L)
+                            .collect(Collectors.toSet())));
             if (inventory == null) {
                 log.warn("[buildLocationsFromWaveDetails][波次明细 SKU={} 仓库={} 无库存行，跳过]",
                         detail.getSkuId(), warehouseId);

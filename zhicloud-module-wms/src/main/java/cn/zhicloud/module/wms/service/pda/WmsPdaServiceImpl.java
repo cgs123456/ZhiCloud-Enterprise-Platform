@@ -17,6 +17,7 @@ import cn.zhicloud.module.wms.dal.dataobject.inventory.WmsInventoryBatchDO;
 import cn.zhicloud.module.wms.dal.dataobject.inventory.WmsInventoryDO;
 import cn.zhicloud.module.wms.dal.dataobject.md.item.WmsItemDO;
 import cn.zhicloud.module.wms.dal.dataobject.md.item.WmsItemSkuDO;
+import cn.zhicloud.module.wms.dal.dataobject.md.location.WmsLocationDO;
 import cn.zhicloud.module.wms.dal.dataobject.md.warehouse.WmsWarehouseDO;
 import cn.zhicloud.module.wms.dal.dataobject.order.check.WmsCheckOrderDO;
 import cn.zhicloud.module.wms.dal.dataobject.order.check.WmsCheckOrderDetailDO;
@@ -41,6 +42,7 @@ import cn.zhicloud.module.wms.service.inventory.dto.WmsInventoryCheckReqDTO;
 import cn.zhicloud.module.wms.service.inventory.slotting.WmsSlottingService;
 import cn.zhicloud.module.wms.service.md.item.WmsItemService;
 import cn.zhicloud.module.wms.service.md.item.WmsItemSkuService;
+import cn.zhicloud.module.wms.service.md.location.WmsLocationService;
 import cn.zhicloud.module.wms.service.md.warehouse.WmsWarehouseService;
 import cn.zhicloud.module.wms.service.order.check.WmsCheckOrderDetailService;
 import cn.zhicloud.module.wms.service.order.receipt.WmsReceiptOrderDetailService;
@@ -67,6 +69,9 @@ import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.INVENTORY_BATCH_FE
 import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.INVENTORY_BATCH_QUANTITY_NOT_ENOUGH;
 import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.INVENTORY_NOT_EXISTS;
 import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.ITEM_SKU_NOT_EXISTS;
+import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.LOCATION_DISABLED;
+import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.LOCATION_LOCKED;
+import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.LOCATION_WAREHOUSE_MISMATCH;
 import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.PDA_ORDER_STATUS_CHANGED;
 import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.RECEIPT_ORDER_NOT_EXISTS;
 import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.SHIPMENT_ORDER_NOT_EXISTS;
@@ -121,6 +126,8 @@ public class WmsPdaServiceImpl implements WmsPdaService {
     private WmsInventoryBatchService inventoryBatchService;
     @Resource
     private WmsSlottingService slottingService;
+    @Resource
+    private WmsLocationService locationService; // V205 库位门禁/冻结集批查（ADR 259 D6/D7）
 
     @Override
     public WmsPdaLoginRespVO login(WmsPdaLoginReqVO reqVO) {
@@ -187,27 +194,38 @@ public class WmsPdaServiceImpl implements WmsPdaService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void executePutaway(WmsPdaPutawayReqVO reqVO) {
+        // 0. V205 接位两验（ADR 259 D6）：显式库位时「可用性 + 归仓」双验，拒绝路径零副作用；
+        //    未指定 = 落未定位 0 哨兵行（基线行为不变）
+        Long targetLocationId = reqVO.getLocationId();
+        long locationId = targetLocationId == null ? 0L : targetLocationId;
+        if (targetLocationId != null) {
+            WmsLocationDO location = locationService.validateLocationUsable(targetLocationId);
+            if (!reqVO.getWarehouseId().equals(location.getWarehouseId())) {
+                throw exception(LOCATION_WAREHOUSE_MISMATCH);
+            }
+        }
         // 1. 校验仓库存在
         warehouseService.validateWarehouseExists(reqVO.getWarehouseId());
         // 2. 校验 SKU 存在
         itemSkuService.validateItemSkuExists(reqVO.getSkuId());
         // 3. 校验批次未过期（P0-13：FEFO 保质期管理）
         slottingService.validateBatchNotExpired(reqVO.getBatchNo(), reqVO.getExpiryDate());
-        // 4. 增加库存三维字段（PDA 上架 = 入库，使用 IN 类型同步更新 available）
+        // 4. 增加库存三维字段（PDA 上架 = 入库，IN 同步 available；显式库位落定位行，V205）
         changeInventoryTyped(0L, "PDA-PUTAWAY", WmsOrderTypeEnum.RECEIPT.getType(),
-                reqVO.getWarehouseId(), reqVO.getSkuId(), reqVO.getQuantity(),
+                reqVO.getWarehouseId(), reqVO.getSkuId(), reqVO.getQuantity(), locationId,
                 WmsInventoryChangeTypeEnum.IN, reqVO.getRemark());
-        // 5. 上架 Slotting：合并到已有批次或新建批次
-        WmsInventoryDO inventory = inventoryMapper.selectBySkuIdAndWarehouseId(
-                reqVO.getSkuId(), reqVO.getWarehouseId());
+        // 5. 上架 Slotting：批次挂所选库存行（V205：三元键精确回查，批次与库存行同源）
+        WmsInventoryDO inventory = inventoryMapper.selectBySkuIdAndWarehouseIdAndLocationId(
+                reqVO.getSkuId(), reqVO.getWarehouseId(), locationId);
         if (inventory == null) {
             // 理论上 changeInventory(IN) 已创建库存行，此处兜底
             throw exception(INVENTORY_NOT_EXISTS);
         }
         slottingService.mergeOrCreateBatch(inventory, reqVO.getBatchNo(),
                 reqVO.getProductionDate(), reqVO.getExpiryDate(), reqVO.getQuantity());
-        log.info("[executePutaway][PDA 上架成功，仓库={} SKU={} 数量={} 批次={}]",
-                reqVO.getWarehouseId(), reqVO.getSkuId(), reqVO.getQuantity(), reqVO.getBatchNo());
+        log.info("[executePutaway][PDA 上架成功，仓库={} SKU={} 数量={} 批次={} 库位={}]",
+                reqVO.getWarehouseId(), reqVO.getSkuId(), reqVO.getQuantity(), reqVO.getBatchNo(),
+                locationId == 0L ? "未定位" : locationId);
     }
 
     @Override
@@ -228,17 +246,24 @@ public class WmsPdaServiceImpl implements WmsPdaService {
         }
         // 3. 校验 SKU 存在
         itemSkuService.validateItemSkuExists(reqVO.getSkuId());
-        // 4. 查询库存行（必须存在才能拣货）
-        WmsInventoryDO inventory = inventoryMapper.selectBySkuIdAndWarehouseId(
+        // 4. 查询库存行（必须存在才能拣货）——V205 主行选择器（ADR 259 D7/D8）：
+        //    0 行（未定位）有货优先，否则定位行可用量降序；锁定/禁用库位的行不参与选择
+        List<WmsInventoryDO> inventoryRows = inventoryMapper.selectListBySkuIdAndWarehouseId(
                 reqVO.getSkuId(), reqVO.getWarehouseId());
+        WmsInventoryDO inventory = WmsInventoryMapper.pickPrimary(inventoryRows,
+                locationService.selectFrozenLocationIds(inventoryRows.stream()
+                        .map(WmsInventoryDO::getLocationId)
+                        .filter(rowLocation -> rowLocation != null && rowLocation != 0L)
+                        .collect(Collectors.toSet())));
         if (inventory == null) {
             throw exception(INVENTORY_NOT_EXISTS);
         }
-        // 5. P0-13：FEFO 批次分配——先到期先出
+        // 5. P0-13：FEFO 批次分配——先到期先出（批次挂库存行，与所选行同源）
         applyFefoAndDeductBatches(inventory.getId(), reqVO.getQuantity());
-        // 6. 扣减库存三维字段（PDA 拣货 = 出库，使用 OUT 类型同步校验 available）
+        // 6. 扣减库存三维字段（PDA 拣货 = 出库）：OUT 精确所选行——显式携带行库位（含 0 = 未定位行），
+        //    不触发 P-deduct 分配，保证批次扣减与库存行扣减同源（ADR 259 D3/D7）
         changeInventoryTyped(shipmentOrder.getId(), shipmentOrder.getNo(), WmsOrderTypeEnum.SHIPMENT.getType(),
-                reqVO.getWarehouseId(), reqVO.getSkuId(), reqVO.getQuantity(),
+                reqVO.getWarehouseId(), reqVO.getSkuId(), reqVO.getQuantity(), inventory.getLocationId(),
                 WmsInventoryChangeTypeEnum.OUT, reqVO.getRemark());
         log.info("[executePick][PDA 拣货成功，出库单={} 仓库={} SKU={} 数量={}]",
                 shipmentOrder.getNo(), reqVO.getWarehouseId(), reqVO.getSkuId(), reqVO.getQuantity());
@@ -580,9 +605,11 @@ public class WmsPdaServiceImpl implements WmsPdaService {
      * P0-13：带变更类型的库存变更（IN/OUT/LOCK 等，同步三维字段）
      *
      * @param changeType 变更类型；IN/OUT 用正数 quantity，方向由类型决定
+     * @param locationId 库位编号（V205，ADR 259 D6/D7：0 = 未定位单行精确；非 0 = 定位行精确。
+     *                   始终显式赋值，不传 null——null 的 OUT 会触发 P-deduct 跨位分配，破坏批次同源）
      */
     private void changeInventoryTyped(Long orderId, String orderNo, Integer orderType,
-                                      Long warehouseId, Long skuId, BigDecimal quantity,
+                                      Long warehouseId, Long skuId, BigDecimal quantity, long locationId,
                                       WmsInventoryChangeTypeEnum changeType, String remark) {
         WmsInventoryChangeReqDTO reqDTO = new WmsInventoryChangeReqDTO();
         reqDTO.setOrderId(orderId);
@@ -593,6 +620,7 @@ public class WmsPdaServiceImpl implements WmsPdaService {
         item.setWarehouseId(warehouseId);
         item.setQuantity(quantity);
         item.setChangeType(changeType);
+        item.setLocationId(locationId); // V205：显式 0 = 未定位单行（不触发 P-deduct 分配）
         item.setRemark(remark);
         reqDTO.setItems(Collections.singletonList(item));
         inventoryService.changeInventory(reqDTO);

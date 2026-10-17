@@ -47,6 +47,11 @@ public class WmsPickTaskDTO {
      */
     private Long locationId;
     /**
+     * 库存行编号（V205 拣货真值化：主行选择的库存行 id；用于伪坐标 seed 与行级溯源，
+     * 不落库 wms_pick_task——locationId 为真库位或 null 未定位，ADR 259 D7）
+     */
+    private Long inventoryId;
+    /**
      * 拣货顺序
      */
     private Integer pickSequence;

@@ -22,9 +22,15 @@ public class InventoryApiImpl implements InventoryApi {
 
     @Override
     public BigDecimal getAvailableQuantity(Long skuId, Long warehouseId) {
-        WmsInventoryDO inventory = inventoryMapper.selectBySkuIdAndWarehouseId(skuId, warehouseId);
-        return inventory == null || inventory.getAvailableQuantity() == null
-                ? BigDecimal.ZERO : inventory.getAvailableQuantity();
+        // V205 库位维度接入（ADR 259 D8）：同一 (sku, warehouse) 现可对应多行（分位行），
+        // 可用量语义 = 全部行 available 合计；未定位单行场景与基线口径等价
+        BigDecimal available = BigDecimal.ZERO;
+        for (WmsInventoryDO inventory : inventoryMapper.selectListBySkuIdAndWarehouseId(skuId, warehouseId)) {
+            if (inventory.getAvailableQuantity() != null) {
+                available = available.add(inventory.getAvailableQuantity());
+            }
+        }
+        return available;
     }
 
     @Override

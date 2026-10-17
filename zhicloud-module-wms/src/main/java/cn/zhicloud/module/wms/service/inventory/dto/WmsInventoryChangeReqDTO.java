@@ -50,9 +50,23 @@ public class WmsInventoryChangeReqDTO {
          */
         private Long warehouseId;
         /**
+         * 库位编号
+         *
+         * null = 未定位（OUT 触发 P-deduct 跨位分配，ADR 259 D3）；显式 0 = 未定位单行精确
+         *（拣货/上架执行链保持批次扣减与库存行扣减同源，ADR 259 D7）；非 0 = 精确该定位行
+         *（OUT 遇锁定/禁用库位如实拒绝）。
+         */
+        private Long locationId;
+        /**
          * 变更数量（始终为正数，方向由 {@link #changeType} 决定）
          */
         private BigDecimal quantity;
+        /**
+         * 未定位哨兵归一（null → 0；ADR 259 D1/D8）
+         */
+        public long getLocationIdOrZero() {
+            return locationId == null ? 0L : locationId;
+        }
 
         // ========= 单价备注相关字段 =========
 

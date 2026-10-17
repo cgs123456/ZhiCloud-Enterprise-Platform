@@ -16,6 +16,8 @@ import cn.zhicloud.module.wms.service.inventory.dto.WmsInventoryChangeReqDTO;
 import cn.zhicloud.module.wms.service.inventory.dto.WmsInventoryCheckReqDTO;
 import cn.zhicloud.module.wms.service.md.item.WmsItemService;
 import cn.zhicloud.module.wms.service.md.item.WmsItemSkuService;
+import cn.zhicloud.module.wms.service.md.location.WmsLocationServiceImpl;
+import cn.zhicloud.module.wms.service.md.zone.WmsZoneService;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Import;
@@ -41,7 +43,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.when;
 
-@Import({WmsInventoryServiceImpl.class, WmsInventoryHistoryServiceImpl.class})
+// V205（ADR 259 D3/D4）：库存服务新增库位状态依赖，测试装配真实库位实现（H2）
+@Import({WmsInventoryServiceImpl.class, WmsInventoryHistoryServiceImpl.class, WmsLocationServiceImpl.class})
 public class WmsInventoryServiceImplTest extends BaseDbUnitTest {
 
     @Resource
@@ -60,6 +63,8 @@ public class WmsInventoryServiceImplTest extends BaseDbUnitTest {
     private WmsItemSkuService itemSkuService;
     @MockitoBean
     private WmsItemService itemService;
+    @MockitoBean
+    private WmsZoneService zoneService; // V205：WmsLocationServiceImpl 依赖库区服务
 
     @Test
     public void testChangeInventory_createInventory() {
@@ -72,7 +77,7 @@ public class WmsInventoryServiceImplTest extends BaseDbUnitTest {
         inventoryService.changeInventory(reqDTO);
 
         // 断言：库存余额
-        WmsInventoryDO inventory = inventoryMapper.selectBySkuIdAndWarehouseId(sku.getId(), 100L);
+        WmsInventoryDO inventory = selectPrimaryInventoryRow(sku.getId(), 100L);
         assertNotNull(inventory);
         assertEquals(0, new BigDecimal("5.00").compareTo(inventory.getQuantity()));
         // 断言：库存流水
@@ -101,7 +106,7 @@ public class WmsInventoryServiceImplTest extends BaseDbUnitTest {
         inventoryService.changeInventory(reqDTO);
 
         // 断言：库存余额
-        WmsInventoryDO inventory = inventoryMapper.selectBySkuIdAndWarehouseId(sku.getId(), 100L);
+        WmsInventoryDO inventory = selectPrimaryInventoryRow(sku.getId(), 100L);
         assertNotNull(inventory);
         assertEquals(0, new BigDecimal("5.00").compareTo(inventory.getQuantity()));
         // 断言：库存流水
@@ -134,7 +139,7 @@ public class WmsInventoryServiceImplTest extends BaseDbUnitTest {
         inventoryService.changeInventory(reqDTO);
 
         // 断言：库存余额只保留一条，数量逐条累加
-        WmsInventoryDO inventory = inventoryMapper.selectBySkuIdAndWarehouseId(sku.getId(), 100L);
+        WmsInventoryDO inventory = selectPrimaryInventoryRow(sku.getId(), 100L);
         assertNotNull(inventory);
         assertEquals(0, new BigDecimal("12.00").compareTo(inventory.getQuantity()));
         // 断言：库存流水保持用户明细颗粒度
@@ -172,7 +177,7 @@ public class WmsInventoryServiceImplTest extends BaseDbUnitTest {
         inventoryService.changeInventory(reqDTO);
 
         // 断言：库存余额只保留一条，数量逐条累加
-        WmsInventoryDO inventory = inventoryMapper.selectBySkuIdAndWarehouseId(sku.getId(), 100L);
+        WmsInventoryDO inventory = selectPrimaryInventoryRow(sku.getId(), 100L);
         assertNotNull(inventory);
         assertEquals(0, new BigDecimal("9.00").compareTo(inventory.getQuantity()));
         // 断言：库存流水保持用户明细颗粒度
@@ -216,10 +221,10 @@ public class WmsInventoryServiceImplTest extends BaseDbUnitTest {
         inventoryService.changeInventory(reqDTO);
 
         // 断言：不同库存余额分别更新
-        WmsInventoryDO inventory1 = inventoryMapper.selectBySkuIdAndWarehouseId(sku.getId(), 100L);
+        WmsInventoryDO inventory1 = selectPrimaryInventoryRow(sku.getId(), 100L);
         assertNotNull(inventory1);
         assertEquals(0, new BigDecimal("3.00").compareTo(inventory1.getQuantity()));
-        WmsInventoryDO inventory2 = inventoryMapper.selectBySkuIdAndWarehouseId(sku.getId(), 200L);
+        WmsInventoryDO inventory2 = selectPrimaryInventoryRow(sku.getId(), 200L);
         assertNotNull(inventory2);
         assertEquals(0, new BigDecimal("3.00").compareTo(inventory2.getQuantity()));
         // 断言：批量加锁后仍按明细颗粒度记录 before/after
@@ -262,10 +267,10 @@ public class WmsInventoryServiceImplTest extends BaseDbUnitTest {
         inventoryService.changeInventory(reqDTO);
 
         // 断言：多条已存在库存余额分别更新
-        WmsInventoryDO inventory1 = inventoryMapper.selectBySkuIdAndWarehouseId(sku.getId(), 100L);
+        WmsInventoryDO inventory1 = selectPrimaryInventoryRow(sku.getId(), 100L);
         assertNotNull(inventory1);
         assertEquals(0, new BigDecimal("7.00").compareTo(inventory1.getQuantity()));
-        WmsInventoryDO inventory2 = inventoryMapper.selectBySkuIdAndWarehouseId(sku.getId(), 200L);
+        WmsInventoryDO inventory2 = selectPrimaryInventoryRow(sku.getId(), 200L);
         assertNotNull(inventory2);
         assertEquals(0, new BigDecimal("10.00").compareTo(inventory2.getQuantity()));
         // 断言：库存流水保持入参明细顺序
@@ -316,7 +321,7 @@ public class WmsInventoryServiceImplTest extends BaseDbUnitTest {
 
         // 断言：并发补行后仍只有一条库存余额，数量累计正确
         List<WmsInventoryDO> inventories = inventoryMapper.selectListByKeys(Collections.singletonList(
-                new WmsInventoryDO().setSkuId(sku.getId()).setWarehouseId(100L)));
+                new WmsInventoryDO().setSkuId(sku.getId()).setWarehouseId(100L).setLocationId(0L)));
         assertEquals(1, inventories.size());
         assertEquals(0, new BigDecimal("4.00").compareTo(inventories.get(0).getQuantity()));
         assertEquals(threadCount, inventoryHistoryMapper.selectCount());
@@ -334,7 +339,7 @@ public class WmsInventoryServiceImplTest extends BaseDbUnitTest {
         // 调用，并断言
         assertServiceException(() -> inventoryService.changeInventory(reqDTO), INVENTORY_QUANTITY_NOT_ENOUGH,
                 item.getName(), sku.getName(), 100L, new BigDecimal("2.00"), new BigDecimal("-3.00"));
-        WmsInventoryDO inventory = inventoryMapper.selectBySkuIdAndWarehouseId(sku.getId(), 100L);
+        WmsInventoryDO inventory = selectPrimaryInventoryRow(sku.getId(), 100L);
         assertNotNull(inventory);
         assertEquals(0, new BigDecimal("2.00").compareTo(inventory.getQuantity()));
         assertEquals(0L, inventoryHistoryMapper.selectCount());
@@ -375,8 +380,8 @@ public class WmsInventoryServiceImplTest extends BaseDbUnitTest {
         // 调用，并断言：第二条明细库存不足，事务回滚前面补齐的库存行
         assertServiceException(() -> inventoryService.changeInventory(reqDTO), INVENTORY_QUANTITY_NOT_ENOUGH,
                 item.getName(), sku.getName(), 200L, new BigDecimal("0.00"), new BigDecimal("-1.00"));
-        assertNull(inventoryMapper.selectBySkuIdAndWarehouseId(sku.getId(), 100L));
-        assertNull(inventoryMapper.selectBySkuIdAndWarehouseId(sku.getId(), 200L));
+        assertNull(selectPrimaryInventoryRow(sku.getId(), 100L));
+        assertNull(selectPrimaryInventoryRow(sku.getId(), 200L));
         assertEquals(0L, inventoryHistoryMapper.selectCount());
     }
 
@@ -442,7 +447,7 @@ public class WmsInventoryServiceImplTest extends BaseDbUnitTest {
         inventoryService.checkInventory(reqDTO);
 
         // 断言：新增库存直接落为实盘数量
-        WmsInventoryDO inventory = inventoryMapper.selectBySkuIdAndWarehouseId(sku.getId(), 100L);
+        WmsInventoryDO inventory = selectPrimaryInventoryRow(sku.getId(), 100L);
         assertNotNull(inventory);
         assertEquals(0, new BigDecimal("5.00").compareTo(inventory.getQuantity()));
         // 断言：库存流水记录从 0 到实盘数量
@@ -466,7 +471,7 @@ public class WmsInventoryServiceImplTest extends BaseDbUnitTest {
         inventoryService.checkInventory(reqDTO);
 
         // 断言：新增零库存商品也会生成库存余额行
-        WmsInventoryDO inventory = inventoryMapper.selectBySkuIdAndWarehouseId(sku.getId(), 100L);
+        WmsInventoryDO inventory = selectPrimaryInventoryRow(sku.getId(), 100L);
         assertNotNull(inventory);
         assertEquals(0, BigDecimal.ZERO.compareTo(inventory.getQuantity()));
         assertEquals(0L, inventoryHistoryMapper.selectCount());
@@ -483,7 +488,7 @@ public class WmsInventoryServiceImplTest extends BaseDbUnitTest {
 
         // 调用，并断言
         assertServiceException(() -> inventoryService.checkInventory(reqDTO), CHECK_ORDER_INVENTORY_CHANGED);
-        WmsInventoryDO inventory = inventoryMapper.selectBySkuIdAndWarehouseId(sku.getId(), 100L);
+        WmsInventoryDO inventory = selectPrimaryInventoryRow(sku.getId(), 100L);
         assertNotNull(inventory);
         assertEquals(0, new BigDecimal("3.00").compareTo(inventory.getQuantity()));
         assertEquals(0L, inventoryHistoryMapper.selectCount());
@@ -629,6 +634,15 @@ public class WmsInventoryServiceImplTest extends BaseDbUnitTest {
     private void mockItemSkuAndItem(WmsItemDO item, WmsItemSkuDO sku) {
         when(itemSkuService.validateItemSkuExists(sku.getId())).thenReturn(sku);
         when(itemService.validateItemExists(item.getId())).thenReturn(item);
+    }
+
+    /**
+     * V205（ADR 259 D8）：两列键单行查询已删；断言读取统一走主行选择器
+     *（0 行（未定位）有货优先，否则定位行可用量降序）。
+     */
+    private WmsInventoryDO selectPrimaryInventoryRow(Long skuId, Long warehouseId) {
+        return WmsInventoryMapper.pickPrimary(
+                inventoryMapper.selectListBySkuIdAndWarehouseId(skuId, warehouseId), null);
     }
 
     private static WmsInventoryDO createInventory(Long skuId, Long warehouseId, String quantity) {

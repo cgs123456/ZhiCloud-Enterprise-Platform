@@ -55,6 +55,13 @@ public class WmsAsnOrderDetailDO extends BaseDO {
      */
     private BigDecimal receivedQuantity;
     /**
+     * 收货库位编号
+     *
+     * 关联 {@link cn.zhicloud.module.wms.dal.dataobject.md.location.WmsLocationDO#getId()}
+     * 0 = 未指定（V205 收货库位落库，ADR 259 D5）
+     */
+    private Long locationId;
+    /**
      * 单位
      */
     private String unit;

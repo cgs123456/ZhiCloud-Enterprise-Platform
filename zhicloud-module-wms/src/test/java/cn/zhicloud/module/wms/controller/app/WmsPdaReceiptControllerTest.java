@@ -73,14 +73,16 @@ public class WmsPdaReceiptControllerTest extends BaseDbUnitTest {
     @Test
     public void testConfirmReceipt_locationIdNull_passes() {
         assertTrue(controller.confirmReceipt(buildReceiptReqVO(null)).getData());
-        verify(asnOrderDetailService).addReceivedQuantity(1L, new BigDecimal("5.00"));
+        // V205（ADR 259 D5）：库位未指定 → locationId 以 null 透传（旧行为不变）
+        verify(asnOrderDetailService).addReceivedQuantity(1L, new BigDecimal("5.00"), null);
     }
 
     @Test
     public void testConfirmReceipt_successWithIdleLocation() {
         Long idle = insertLocation(WmsLocationStatusEnum.IDLE.getStatus());
         assertTrue(controller.confirmReceipt(buildReceiptReqVO(idle)).getData());
-        verify(asnOrderDetailService).addReceivedQuantity(1L, new BigDecimal("5.00"));
+        // V205（ADR 259 D5）：门禁放行 → 收货库位随明细透传落库
+        verify(asnOrderDetailService).addReceivedQuantity(1L, new BigDecimal("5.00"), idle);
     }
 
     private static WmsPdaConfirmReceiptReqVO buildReceiptReqVO(Long locationId) {

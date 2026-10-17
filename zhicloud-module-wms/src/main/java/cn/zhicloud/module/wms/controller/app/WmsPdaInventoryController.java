@@ -113,17 +113,12 @@ public class WmsPdaInventoryController {
         // 校验来源/目标库位存在且未锁定/禁用（库位状态门禁）
         locationService.validateLocationUsable(reqVO.getFromLocationId());
         locationService.validateLocationUsable(reqVO.getToLocationId());
-        // 简化实现：校验 SKU 存在库存，移库在库存模型无库位维度，记录操作即可
-        WmsInventoryDO inventory = inventoryMapper.selectBySkuIdAndWarehouseId(
-                reqVO.getSkuId(), null);
-        if (inventory == null) {
-            // 不指定仓库时按 SKU 查询任意一条
-            List<WmsInventoryDO> list = inventoryMapper.selectList(
-                    new LambdaQueryWrapperX<WmsInventoryDO>()
-                            .eq(WmsInventoryDO::getSkuId, reqVO.getSkuId()));
-            if (CollUtil.isEmpty(list)) {
-                throw exception(INVENTORY_NOT_EXISTS);
-            }
+        // 简化实现：校验 SKU 存在库存；PDA 移库真实化（库位间转移）属后续项（ADR 259 D10，不扩面）
+        List<WmsInventoryDO> list = inventoryMapper.selectList(
+                new LambdaQueryWrapperX<WmsInventoryDO>()
+                        .eq(WmsInventoryDO::getSkuId, reqVO.getSkuId()));
+        if (CollUtil.isEmpty(list)) {
+            throw exception(INVENTORY_NOT_EXISTS);
         }
         return success(true);
     }

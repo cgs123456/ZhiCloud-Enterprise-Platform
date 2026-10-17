@@ -99,11 +99,13 @@ public class WmsAsnOrderDetailServiceImplUnitTest {
         when(asnOrderDetailMapper.selectById(1L))
                 .thenReturn(WmsAsnOrderDetailDO.builder().id(1L).receivedQuantity(new BigDecimal("3")).build());
 
-        asnOrderDetailService.addReceivedQuantity(1L, new BigDecimal("2"));
+        asnOrderDetailService.addReceivedQuantity(1L, new BigDecimal("2"), null);
 
         ArgumentCaptor<WmsAsnOrderDetailDO> captor = ArgumentCaptor.forClass(WmsAsnOrderDetailDO.class);
         verify(asnOrderDetailMapper).updateById(captor.capture());
         assertEquals(0, new BigDecimal("5").compareTo(captor.getValue().getReceivedQuantity()));
+        // V205（ADR 259 D5）：locationId null = 未指定，不触碰明细已有收货库位
+        assertNull(captor.getValue().getLocationId());
     }
 
     @Test
@@ -111,7 +113,7 @@ public class WmsAsnOrderDetailServiceImplUnitTest {
         when(asnOrderDetailMapper.selectById(1L))
                 .thenReturn(WmsAsnOrderDetailDO.builder().id(1L).receivedQuantity(null).build());
 
-        asnOrderDetailService.addReceivedQuantity(1L, new BigDecimal("2"));
+        asnOrderDetailService.addReceivedQuantity(1L, new BigDecimal("2"), null);
 
         ArgumentCaptor<WmsAsnOrderDetailDO> captor = ArgumentCaptor.forClass(WmsAsnOrderDetailDO.class);
         verify(asnOrderDetailMapper).updateById(captor.capture());
@@ -123,8 +125,21 @@ public class WmsAsnOrderDetailServiceImplUnitTest {
         when(asnOrderDetailMapper.selectById(404L)).thenReturn(null);
 
         ServiceException ex = assertThrows(ServiceException.class,
-                () -> asnOrderDetailService.addReceivedQuantity(404L, BigDecimal.ONE));
+                () -> asnOrderDetailService.addReceivedQuantity(404L, BigDecimal.ONE, null));
         assertEquals(ASN_ORDER_DETAIL_NOT_EXISTS.getCode(), ex.getCode());
+    }
+
+    @Test
+    public void testAddReceivedQuantity_locationIdPersisted() {
+        // V205（ADR 259 D5）：收货库位非空时置位即随明细落库
+        when(asnOrderDetailMapper.selectById(1L))
+                .thenReturn(WmsAsnOrderDetailDO.builder().id(1L).receivedQuantity(BigDecimal.ZERO).build());
+
+        asnOrderDetailService.addReceivedQuantity(1L, new BigDecimal("2"), 77L);
+
+        ArgumentCaptor<WmsAsnOrderDetailDO> captor = ArgumentCaptor.forClass(WmsAsnOrderDetailDO.class);
+        verify(asnOrderDetailMapper).updateById(captor.capture());
+        assertEquals(77L, captor.getValue().getLocationId());
     }
 
 }

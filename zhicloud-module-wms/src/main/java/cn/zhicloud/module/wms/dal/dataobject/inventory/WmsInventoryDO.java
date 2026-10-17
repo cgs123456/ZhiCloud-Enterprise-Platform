@@ -49,6 +49,13 @@ public class WmsInventoryDO extends BaseDO {
      */
     private Long warehouseId;
     /**
+     * 库位编号
+     *
+     * 关联 {@link cn.zhicloud.module.wms.dal.dataobject.md.location.WmsLocationDO#getId()}
+     * 0 = 未定位（V205 库位维度接入哨兵；null 在边界处一律归一为 0）
+     */
+    private Long locationId;
+    /**
      * 库存数量
      *
      * 物理库存总量

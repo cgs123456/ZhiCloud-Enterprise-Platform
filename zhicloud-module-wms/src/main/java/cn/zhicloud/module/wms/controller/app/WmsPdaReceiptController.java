@@ -121,7 +121,9 @@ public class WmsPdaReceiptController {
         if (reqVO.getLocationId() != null) {
             locationService.validateLocationUsable(reqVO.getLocationId());
         }
-        asnOrderDetailService.addReceivedQuantity(reqVO.getDetailId(), reqVO.getReceivedQuantity());
+        // V205（ADR 259 D5）：收货库位随明细落库（门禁已在上方两验完成）
+        asnOrderDetailService.addReceivedQuantity(reqVO.getDetailId(), reqVO.getReceivedQuantity(),
+                reqVO.getLocationId());
         return success(true);
     }
 

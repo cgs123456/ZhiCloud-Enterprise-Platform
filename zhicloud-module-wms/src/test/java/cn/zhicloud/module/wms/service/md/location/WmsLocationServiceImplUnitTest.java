@@ -6,19 +6,24 @@ import cn.zhicloud.module.wms.controller.admin.md.location.vo.WmsLocationPageReq
 import cn.zhicloud.module.wms.controller.admin.md.location.vo.WmsLocationSaveReqVO;
 import cn.zhicloud.module.wms.dal.dataobject.md.location.WmsLocationDO;
 import cn.zhicloud.module.wms.dal.dataobject.md.zone.WmsZoneDO;
+import cn.zhicloud.module.wms.dal.mysql.inventory.WmsInventoryMapper;
 import cn.zhicloud.module.wms.dal.mysql.md.location.WmsLocationMapper;
 import cn.zhicloud.module.wms.enums.md.WmsLocationStatusEnum;
 import cn.zhicloud.module.wms.service.md.zone.WmsZoneService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -39,6 +44,8 @@ public class WmsLocationServiceImplUnitTest {
     private WmsLocationMapper locationMapper;
     @Mock
     private WmsZoneService zoneService;
+    @Mock
+    private WmsInventoryMapper inventoryMapper; // V205（ADR 259 D9）：deleteLocation 存量校验/冲洗
 
     @InjectMocks
     private WmsLocationServiceImpl locationService;
@@ -130,6 +137,8 @@ public class WmsLocationServiceImplUnitTest {
     @Test
     public void testDeleteLocation_success() {
         when(locationMapper.selectById(5L)).thenReturn(WmsLocationDO.builder().id(5L).build());
+        // V205：deleteLocation 先校验库位下库存行（无行空集 → 直接放行逻辑删）
+        when(inventoryMapper.selectListByLocationId(5L)).thenReturn(Collections.emptyList());
 
         locationService.deleteLocation(5L);
 
@@ -161,6 +170,39 @@ public class WmsLocationServiceImplUnitTest {
         assertEquals(1, locationService.getLocationListByWarehouseId(77L).size());
         assertEquals(1, locationService.getLocationList(List.of(1L)).size());
         assertTrue(locationService.getLocationList(Collections.emptyList()).isEmpty());
+    }
+
+    // ==================== V205（§12.259，ADR 259 D3/D4）：冻结集批查与占用派生 ====================
+
+    @Test
+    public void testSelectFrozenLocationIds_onlyLockedAndDisabled() {
+        when(locationMapper.selectByIds(anyCollection())).thenReturn(Arrays.asList(
+                WmsLocationDO.builder().id(1L).status(WmsLocationStatusEnum.IDLE.getStatus()).build(),
+                WmsLocationDO.builder().id(2L).status(WmsLocationStatusEnum.LOCKED.getStatus()).build(),
+                WmsLocationDO.builder().id(3L).status(WmsLocationStatusEnum.DISABLED.getStatus()).build(),
+                WmsLocationDO.builder().id(4L).status(WmsLocationStatusEnum.OCCUPIED.getStatus()).build()));
+
+        Set<Long> frozen = locationService.selectFrozenLocationIds(Arrays.asList(1L, 2L, 3L, 4L));
+
+        assertEquals(new HashSet<>(Arrays.asList(2L, 3L)), frozen);
+    }
+
+    @Test
+    public void testRefreshOccupancyStatus_managesStatesSkippedAndDerives() {
+        // LOCKED 管理态：人工裁决，不派生（0/null 哨兵同样跳过）
+        when(locationMapper.selectById(11L)).thenReturn(WmsLocationDO.builder().id(11L)
+                .status(WmsLocationStatusEnum.LOCKED.getStatus()).build());
+        when(locationMapper.selectById(12L)).thenReturn(WmsLocationDO.builder().id(12L)
+                .status(WmsLocationStatusEnum.IDLE.getStatus()).build());
+        when(inventoryMapper.selectCountByLocationIdAndQuantityPositive(12L)).thenReturn(2L);
+
+        locationService.refreshOccupancyStatus(Arrays.asList(null, 0L, 11L, 12L));
+
+        // 仅有货的 12 号库位派生为 OCCUPIED；11 号（LOCKED）与哨兵零写入
+        ArgumentCaptor<WmsLocationDO> captor = ArgumentCaptor.forClass(WmsLocationDO.class);
+        verify(locationMapper).updateById(captor.capture());
+        assertEquals(12L, captor.getValue().getId());
+        assertEquals(WmsLocationStatusEnum.OCCUPIED.getStatus(), captor.getValue().getStatus());
     }
 
     // ==================== 断点 4 新增：状态值域与可用性门禁 ====================

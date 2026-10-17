@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * WMS 库位 Service 接口
@@ -100,5 +101,21 @@ public interface WmsLocationService {
      * @return 库位列表
      */
     List<WmsLocationDO> getLocationList(Collection<Long> ids);
+
+    /**
+     * 批查「冻结态」（锁定/禁用）库位编号集合（V205 库位维度接入，ADR 259 D3/D8）
+     *
+     * @param locationIds 库位编号集合
+     * @return 处于 LOCKED/DISABLED 状态的库位编号集合
+     */
+    Set<Long> selectFrozenLocationIds(Collection<Long> locationIds);
+
+    /**
+     * 库位占用派生（V205 库位维度接入，ADR 259 D4）：库位下存在 quantity > 0 的库存行 → OCCUPIED，
+     * 否则 → IDLE；仅对本次事务实际动过库存行的定位库位调用；LOCKED/DISABLED 为管理态不派生。
+     *
+     * @param locationIds 定位库位编号集合（0/null 元素会被忽略）
+     */
+    void refreshOccupancyStatus(Collection<Long> locationIds);
 
 }

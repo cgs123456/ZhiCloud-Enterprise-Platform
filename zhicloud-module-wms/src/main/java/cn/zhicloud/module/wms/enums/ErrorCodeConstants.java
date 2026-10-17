@@ -64,6 +64,7 @@ public interface ErrorCodeConstants {
     ErrorCode LOCATION_STATUS_INVALID = new ErrorCode(1_060_107_004, "库位状态不合法");
     ErrorCode LOCATION_LOCKED = new ErrorCode(1_060_107_005, "库位已锁定，禁止货物出入库！");
     ErrorCode LOCATION_DISABLED = new ErrorCode(1_060_107_006, "库位已禁用，禁止货物出入库！");
+    ErrorCode LOCATION_WAREHOUSE_MISMATCH = new ErrorCode(1_060_107_007, "库位不属于该仓库");
 
     // ========== WMS 入库单 1-060-200-000 ==========
     ErrorCode RECEIPT_ORDER_NOT_EXISTS = new ErrorCode(1_060_200_000, "入库单不存在");

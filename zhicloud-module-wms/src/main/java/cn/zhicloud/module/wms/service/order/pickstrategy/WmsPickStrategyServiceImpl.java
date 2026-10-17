@@ -15,6 +15,7 @@ import cn.zhicloud.module.wms.dal.mysql.order.shipment.WmsShipmentOrderMapper;
 import cn.zhicloud.module.wms.enums.order.WmsOrderStatusEnum;
 import cn.zhicloud.module.wms.service.md.item.WmsItemService;
 import cn.zhicloud.module.wms.service.md.item.WmsItemSkuService;
+import cn.zhicloud.module.wms.service.md.location.WmsLocationService;
 import cn.zhicloud.module.wms.service.order.pickstrategy.dto.WmsPickTaskDTO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -81,6 +82,8 @@ public class WmsPickStrategyServiceImpl implements WmsPickStrategyService {
     private WmsShipmentOrderDetailMapper shipmentOrderDetailMapper;
     @Resource
     private WmsInventoryMapper inventoryMapper;
+    @Resource
+    private WmsLocationService locationService; // V205：冻结库位批查（ADR 259 D7/D8）
     @Resource
     private WmsPickTaskMapper pickTaskMapper;
     @Resource
@@ -193,11 +196,18 @@ public class WmsPickStrategyServiceImpl implements WmsPickStrategyService {
      */
     private PickStrategy chooseStrategy(List<WmsShipmentOrderDetailDO> details, Long warehouseId) {
         int skuCount = details.size();
-        // 统计库位分布（基于库存行）
+        // 统计库位分布（基于库存行）——V205 主行选择器（ADR 259 D7/D8）：
+        // 0 行（未定位）有货优先、否则定位行可用量降序；锁定/禁用库位的行不参与统计；
+        // 分布节点沿用库存行 id 口径（策略阈值语义保持基线不变）
         Set<Long> locationKeys = new HashSet<>();
         for (WmsShipmentOrderDetailDO detail : details) {
-            WmsInventoryDO inventory = inventoryMapper.selectBySkuIdAndWarehouseId(
+            List<WmsInventoryDO> inventoryRows = inventoryMapper.selectListBySkuIdAndWarehouseId(
                     detail.getSkuId(), warehouseId);
+            WmsInventoryDO inventory = WmsInventoryMapper.pickPrimary(inventoryRows,
+                    locationService.selectFrozenLocationIds(inventoryRows.stream()
+                            .map(WmsInventoryDO::getLocationId)
+                            .filter(rowLocation -> rowLocation != null && rowLocation != 0L)
+                            .collect(Collectors.toSet())));
             if (inventory != null) {
                 locationKeys.add(inventory.getId());
             }
@@ -243,12 +253,21 @@ public class WmsPickStrategyServiceImpl implements WmsPickStrategyService {
                 WmsItemDO item = itemMap.get(sku.getItemId());
                 dto.setProductName(item != null ? item.getName() : sku.getName());
             }
-            // 查询库存确定库位（库存模型无独立库位字段，使用库存行作为拣货节点）
-            WmsInventoryDO inventory = inventoryMapper.selectBySkuIdAndWarehouseId(
+            // 查询库存确定拣货节点——V205 拣货真值化（ADR 259 D7/D8）：主行选择器选定行；
+            // 定位行 → locationId = 真库位（撤销 inventory.id 伪值）；未定位行 → locationId = null；
+            // inventoryId 携带库存行编号（伪坐标 seed 与行级溯源沿用）
+            List<WmsInventoryDO> inventoryRows = inventoryMapper.selectListBySkuIdAndWarehouseId(
                     detail.getSkuId(), order.getWarehouseId());
+            WmsInventoryDO inventory = WmsInventoryMapper.pickPrimary(inventoryRows,
+                    locationService.selectFrozenLocationIds(inventoryRows.stream()
+                            .map(WmsInventoryDO::getLocationId)
+                            .filter(rowLocation -> rowLocation != null && rowLocation != 0L)
+                            .collect(Collectors.toSet())));
             if (inventory != null) {
-                // 库位编号暂用库存编号作为占位（实际接入库位表后替换）
-                dto.setLocationId(inventory.getId());
+                dto.setInventoryId(inventory.getId());
+                if (inventory.getLocationId() != null && inventory.getLocationId() != 0L) {
+                    dto.setLocationId(inventory.getLocationId());
+                }
             }
             taskDTOs.add(dto);
         }
@@ -256,7 +275,10 @@ public class WmsPickStrategyServiceImpl implements WmsPickStrategyService {
     }
 
     private void fillCoord(WmsPickTaskDTO task) {
-        long key = task.getLocationId() == null ? 0L : task.getLocationId();
+        // V205（ADR 259 D7）：真库位优先作 seed；未定位任务回退库存行 id（基线伪坐标口径不变）
+        long key = task.getLocationId() != null
+                ? task.getLocationId()
+                : task.getInventoryId() == null ? 0L : task.getInventoryId();
         task.setCoordX((int) (key % COORD_GRID));
         task.setCoordY((int) ((key / COORD_GRID) % COORD_GRID));
     }

@@ -6,6 +6,7 @@ import cn.zhicloud.framework.security.core.util.SecurityFrameworkUtils;
 import cn.zhicloud.module.wms.controller.admin.order.pickstrategy.vo.WmsPickTaskPageReqVO;
 import cn.zhicloud.module.wms.dal.dataobject.order.pickstrategy.WmsPickTaskDO;
 import cn.zhicloud.module.wms.dal.mysql.order.pickstrategy.WmsPickTaskMapper;
+import cn.zhicloud.module.wms.service.md.location.WmsLocationService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +43,9 @@ public class WmsPickTaskServiceImpl implements WmsPickTaskService {
 
     @Resource
     private WmsPickTaskMapper pickTaskMapper;
+    @Resource
+    private WmsLocationService locationService; // V205：确认拣货库位门禁（ADR 259 D7）
+
 
     @Override
     public WmsPickTaskDO getPickTask(Long id) {
@@ -70,6 +74,11 @@ public class WmsPickTaskServiceImpl implements WmsPickTaskService {
         if (ObjectUtil.notEqual(task.getStatus(), STATUS_PENDING)
                 && ObjectUtil.notEqual(task.getStatus(), STATUS_PICKED)) {
             throw exception(PICK_TASK_STATUS_NOT_PICKABLE);
+        }
+        // 3.5 V205 库位门禁（ADR 259 D7 拣货真值化）：任务绑定真库位时，确认前校验可用——
+        //     锁定/禁用库位的任务拒绝确认（与入库/上架同一冻结语义）
+        if (task.getLocationId() != null) {
+            locationService.validateLocationUsable(task.getLocationId());
         }
         // 4. 数量非负 + 不超上限（防止数量污染）
         if (pickedQuantity == null || pickedQuantity.compareTo(BigDecimal.ZERO) < 0) {

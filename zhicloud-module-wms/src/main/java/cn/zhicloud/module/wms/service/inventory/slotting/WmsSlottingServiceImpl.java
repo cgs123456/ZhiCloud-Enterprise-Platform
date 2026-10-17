@@ -7,6 +7,7 @@ import cn.zhicloud.module.wms.dal.mysql.inventory.WmsInventoryBatchMapper;
 import cn.zhicloud.module.wms.dal.mysql.inventory.WmsInventoryMapper;
 import cn.zhicloud.module.wms.dal.mysql.md.warehouse.WmsWarehouseMapper;
 import cn.zhicloud.module.wms.enums.inventory.WmsInventoryBatchStatusEnum;
+import cn.zhicloud.module.wms.service.md.location.WmsLocationService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,7 +16,9 @@ import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.INVENTORY_BATCH_NOT_EXISTS;
@@ -39,6 +42,9 @@ public class WmsSlottingServiceImpl implements WmsSlottingService {
     private WmsInventoryBatchMapper inventoryBatchMapper;
     @Resource
     private WmsWarehouseMapper warehouseMapper;
+    @Resource
+    private WmsLocationService locationService; // V205：推荐目标排除锁定/禁用库位（ADR 259 D7/D8）
+
 
     @Override
     public WmsSlottingRecommendationRespVO recommendPutaway(Long warehouseId, Long skuId, String batchNo,
@@ -55,8 +61,14 @@ public class WmsSlottingServiceImpl implements WmsSlottingService {
         resp.setRecommendedWarehouseCode(warehouse.getCode());
         resp.setRecommendedWarehouseName(warehouse.getName());
 
-        // 2. 查找指定仓库下该 SKU 的库存行（合并到已有库存）
-        WmsInventoryDO existingInventory = inventoryMapper.selectBySkuIdAndWarehouseId(skuId, warehouseId);
+        // 2. 查找指定仓库下该 SKU 的库存行——V205 主行选择器（ADR 259 D7/D8）：
+        //    0 行（未定位）有货优先 → 定位行可用量降序；锁定/禁用库位的行不作为合并目标
+        List<WmsInventoryDO> inventoryRows = inventoryMapper.selectListBySkuIdAndWarehouseId(skuId, warehouseId);
+        WmsInventoryDO existingInventory = WmsInventoryMapper.pickPrimary(inventoryRows,
+                locationService.selectFrozenLocationIds(inventoryRows.stream()
+                        .map(WmsInventoryDO::getLocationId)
+                        .filter(rowLocation -> rowLocation != null && rowLocation != 0L)
+                        .collect(Collectors.toSet())));
         if (existingInventory == null) {
             // 2.1 无库存行 → 新建库存行 + 新建批次
             resp.setReason(WmsSlottingRecommendationRespVO.REASON_NEW_INVENTORY);

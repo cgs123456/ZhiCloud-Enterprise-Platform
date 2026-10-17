@@ -82,9 +82,11 @@ public class WmsInventoryAlertJob implements JobHandler {
         List<WmsInventoryAlertDO> alerts = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
         for (WmsSafetyStockConfigDO config : configs) {
-            WmsInventoryDO inventory = inventoryMapper.selectBySkuIdAndWarehouseId(
+            // V205 库位维度接入（ADR 259 D8/D9）：同一 (productId, warehouseId) 现可对应多行（分位行），
+            // 预警口径 = 该 (productId, warehouseId) 全部行 quantity 合计（库存行粒度解耦）
+            List<WmsInventoryDO> inventoryRows = inventoryMapper.selectListBySkuIdAndWarehouseId(
                     config.getProductId(), config.getWarehouseId());
-            if (inventory == null) {
+            if (CollUtil.isEmpty(inventoryRows)) {
                 // 库存记录不存在，视为 0 库存，若安全库存 > 0 则触发低库存预警
                 if (config.getSafetyStock() != null
                         && config.getSafetyStock().compareTo(BigDecimal.ZERO) > 0) {
@@ -94,7 +96,12 @@ public class WmsInventoryAlertJob implements JobHandler {
                 }
                 continue;
             }
-            BigDecimal quantity = inventory.getQuantity() == null ? BigDecimal.ZERO : inventory.getQuantity();
+            BigDecimal quantity = BigDecimal.ZERO;
+            for (WmsInventoryDO row : inventoryRows) {
+                if (row.getQuantity() != null) {
+                    quantity = quantity.add(row.getQuantity());
+                }
+            }
             // 1.1 低库存预警
             if (config.getSafetyStock() != null
                     && quantity.compareTo(config.getSafetyStock()) < 0) {

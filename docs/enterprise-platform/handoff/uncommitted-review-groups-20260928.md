@@ -11729,3 +11729,108 @@ From 端逐口复核。届时按中大型课题独立立项（C 组量级），�
 
 本节文档同步：next-steps 后记五追加 §12.258 记录与「B 组余项三中项全部收口」声明；
 HANDOFF 无对应追踪行。
+
+## 12.259 WMS 库存库位维度接入——三元键 + P-deduct 分配 + 冻结门禁 + 冲洗（C 组第 1 项）
+
+接 §12.242.5-1/3/4/7 + §12.242 D4①② + §12.258.2 前置链。重建矩阵定案后 C 组
+第 1 项（C2-C6 排队待推）。设计锁全部锚在 `Temp/zc_adr_259.md`（D1–D12），
+实施经由三阶段字节级脚本（prod / prod_b / prod_c；Temp/zc_edit_259_prod*.py）
+逐项落盘，阶段校验（Temp/zc_verify_259_stage.py）作为门禁。
+
+### 12.259.1 设计锁（ADR 259 D1–D12 摘引）
+
+- **D1 哨兵**：`location_id BIGINT NOT NULL DEFAULT 0`，0 = 未定位；null 边界统一归一 0。
+- **D2 键与索引**：唯一键 `uk_sku_warehouse_location (sku_id, warehouse_id, location_id)` 三元；
+  `idx_location_id`（deleteLocation 冲洗 + 占用派生计数）；`wms_asn_order_detail` 同加列（收货库位）。
+  迁移 **V205**，information_schema 护栏幂等（列/键/索引/明细列四段）。
+- **D3 分配语义**：OUT 且 item.locationId==null → P-deduct 跨位分配（0 行有货优先 →
+  location_id 升序贪心；锁定/禁用库位行跳过；供需双口径 quantity 与 available all-or-nothing 预检）；
+  显式 0 = 单行精确；PLAIN 不分配；显式定位行 OUT 取库位状态如实拒绝（LOCATION_DISABLED / LOCATION_LOCKED）。
+- **D4 占用派生**：`refreshOccupancyStatus`（有货 OCCUPIED / 空 IDLE）；管理态 LOCKED/DISABLED 人工裁决不派生。
+- **D5 收货落位**：confirm-receipt 库位落 ASN 明细；null = 未指定（不触碰既有值）。
+- **D6 上架两验**：`validateLocationUsable` + 归仓校验（LOCATION_WAREHOUSE_MISMATCH=1_060_107_007 新码）。
+- **D7 拣货真值**：拣货主行显式携带行库位（真库位或 0），不触发分配，批次扣减与行扣减同源；
+  路径页伪坐标 seed = 真库位优先、未定位回退库存行 id（接口面未变）。
+- **D8 主行选择器**：`WmsInventoryMapper.pickPrimary`（static：0 行有货优先 → 定位行 available 降序 →
+  0 行兜底）；删除两列键单行查询 `selectBySkuIdAndWarehouseId`，编译期强制十三调用点重定向；
+  `selectListByKeys` 行构造器键内 locationId 不得 null（0 归一）。
+- **D9 删除门禁与冲洗**：deleteLocation 有货 / 持锁冻占用行拒删（LOCATION_HAS_INVENTORY 激活）；
+  纯零行放行并以 `@Delete` 原生 SQL 物理冲洗库存行（绕 @TableLogic，防 tombstone 撞三元键）。
+- **D12 验证链**：阶段校验 → errcode 扫描 → 模块编译/回归 → reactor 打包/停服重打/重启 → 真机 E2E（P1–P8）。
+
+### 12.259.2 实施面（28 改 + 3 新增，全在工作区未提交状态）
+
+- 新增：`V205__wms_inventory_location_dimension.sql`（LF）+ `V205_verify.sql`（LF）+
+  `WmsInventoryLocationDimensionTest.java`（H2 集成 ×5 用例）。
+- 库存核心：`WmsInventoryServiceImpl`（distributeOut/isDistributedOut/getOrCreate 三元 + P-deduct
+  全块、isSameInventory 三元化、checkInventory touchedLocationIds 三处 + createCheckInventory setLocationId(0L)）、
+  `WmsInventoryMapper`（新方法族 + `@Delete` 物理冲洗 pickPrimary 删两列键）、DO/DTO（locationIdOrZero）、
+  两 VO（Resp/PageReq + locationId、eqIfPresent 选择器）。
+- 库位侧：`WmsLocationService(+Impl)`（deleteLocation 重写 + selectFrozenLocationIds/refreshOccupancyStatus）。
+- 链路侧：`WmsPdaServiceImpl`（putaway 两验 + typed 显式传位 + pick 主行选择器）、
+  `WmsPickStrategyServiceImpl`（chooseStrategy 真库位 / fillCoord seed 真值化）、`WmsPickTaskDTO`（inventoryId
+  仅内存）、`WmsPickTaskServiceImpl`（confirmPick 门禁）、`WmsPickPathServiceImpl`（两循环 pickPrimary）、
+  `WmsSlottingServiceImpl`（recommend pickPrimary）、`WmsInventoryAlertJob`、`InventoryApiImpl`、
+  `WmsPdaReceiptController`（三参收货）、`WmsPdaInventoryController`（confirm-move 门禁简化段收口）、
+  `WmsAsnOrderDetailService(+Impl)`（addReceivedQuantity 三参）、`WmsPickTaskServiceImpl` 门禁、
+  `ErrorCodeConstants`（+007 仓库错配）、管理侧两 VO。
+- H2 `create_tables.sql`（纯 CRLF，511 行保形）：加列 + uk 换名。
+- manifest：V205 登记 tracked=115（sha256 复核值 `95299955d90b16d8…`）。
+
+### 12.259.3 验证链（全绿收口）
+
+- 阶段校验 **ALL PASS**：23 Java LF-only、create_tables.sql 纯 CRLF 且 511 行（509 +2 保形）、
+  manifest 无 CR + tracked=115 + last=205 + sha256 复核、V205 双文件 LF+尾换行、
+  关键符号（distributeOut/selectFrozenLocationIds/refreshOccupancyStatus/typed setLocationId/pick 主行选择器）全在。
+- errcode 扫描：**1954 / 0**（基线 1953 + 新增 _007）。
+- 编译：`mvn -pl zhicloud-module-wms -am compile` 零错误。
+- 模块回归：**281/281 全绿**（含新增维度集成 5 用例；首挂 21 个失败经 fix2 收口后全绿）。
+- Reactor 打包：`-pl zhicloud-server -am package` SUCCESS（43 模块，jar 重打包替换）。
+- Flyway：V205 success=1（修复首跑后重放成功）。
+- **真机 E2E 33/33 全 PASS**（Temp/zc_wms259_e2e.py）：
+  - P1 API 建位 ×3（L01/L02/L03）；
+  - P2 带位上架：三元定位行落库 + 库位占用派生 IDLE→OCCUPIED(20)；
+  - P3 定位行 available==quantity 读回；
+  - P4 锁定门禁：LOCKED 库位上架拒绝 LOCATION_LOCKED(1_060_107_005)+管理态零写入+解锁放行（row=10.0000）；
+  - P5 PDA 拣货 executePick 真机：结构性造出库单(status=0) → 放行 → 总量守恒 -5（OUT 真扣）→
+    CAS PREPARE(0)→PICKING(10) → 定位行 L1 未被错扣（0 行有货优先语义正确）；
+  - P6 deleteLocation 三态：有货行拒删 LOCATION_HAS_INVENTORY(1_060_107_003)+库位留存、
+    纯零行（结构性 SQL 归零，如实登记）删除放行 + 库存行物理冲洗（重读 0 行）+ 库位逻辑删；
+  - P7 带位收货落明细 location_id=库位、无位收货落 0 哨兵；
+  - P8 无位 putaway 落 0 行 +4.0 + null 零遗留×2 + 三元唯一键/索引 + Flyway success=1。
+
+### 12.259.4 首跑失败与方法实证登记（诚实链）
+
+1. **V205 首跑失败（Flyway success=0，DB 零副作用）**：L5 注释 `--（`（中文括号紧贴 `--` 无空格）
+   MySQL 不识别为注释，整段语句解析失败；DDL 全部未执行（护栏查询证实：列/键/明细列均缺位，
+   旧 uk_sku_warehouse 原样）。fix3（Temp/zc_edit_259_fix3.py）统一修正 `-- ` 后重放 success=1；
+   Flyway 失败行（installed_rank=211）按护栏幂等删除后重放。
+2. **模块回归首挂 21 个失败 → fix2 收口全绿**：
+   - 20 ERROR：`WmsInventoryServiceImplTest` Spring 装配失败——Impl 新增 locationService 注入而测试
+     @Import 未装配 WmsLocationServiceImpl（fix2 补 @Import + WmsZoneService mock）；
+   - 1 NPE：pdeduct 用例缺 SKU/物料 stub——缺货拒绝路径 buildInventoryQuantityNotEnoughException
+     依赖 validateItemSkuExists/validateItemExists（fix2 补 stub，与既有用例同款）。
+3. **接口签名变更适配漏扫教训**：`addReceivedQuantity` 二→三参，首扫只覆盖 src/main；
+   surefire 报出 5 处测试编译错（PDA 收货控制器 verify×2 + ASN 明细单测 ×3）
+   后经 prod_e 补齐（含 locationId 透传断言与落库新用例）。**登记纪律：接口签名变更必扫全仓含 test。**
+4. **批次表存量限制（非 C1 回归）**：`wms_inventory_batch.batch_no NOT NULL 无默认`——
+   putaway 不带 batchNo 时 mergeOrCreateBatch 撞 `Field 'batch_no' doesn't have a default value`，
+   事务回滚整单拒绝。真实 PDA 必带批次号，存量基线限制；E2E 补 batchNo（B02/B03/B04）后全案通过。
+5. **mock token 口径修正**：运行实例 mockSecret 为 application-local.yaml 缺省 `test-only-for-local`
+   （环境变量 MOCK_SECRET 未设置），Bearer {secret}{userId} 组合 = `Bearer test-only-for-local900100`；
+   此前记忆中的 `zc-live-mock-900100` 口径与实际实例不符，以启动参数为准。
+
+### 12.259.5 不扩面披露（与 ADR 一致，未在 C1 实施范围）
+
+- **PDA 移库真实化（D10）**：confirm-move 维持两验门禁 + SKU 存在校验的简化实现（库位间转移不做），
+  E2E 亦证其基线即如此返回 code=0 且不落行——维持原貌不改。
+- **拣货路径页伪坐标真值化**：维持 seed 口径（真库位优先、未定位回退库存行 id），接口面未变；模块层已验。
+- **行级细粒度流水**：不在 C1 锁面。
+- **批次孤儿**：deleteLocation 物理冲洗仅冲洗库存行（D9 锁面）；
+  挂库位删除后 `wms_inventory_batch` 孤儿行不在冲洗范围，属后续项（未登记任务号， remon）。
+
+### 12.259.6 C 组矩阵基线（启动声明）
+
+C2=CRM 回款链接线；C3=CRM submit 接 BPM 审批；C4=MRP 转采购/生产建议；C5=APS 空隙建模；
+C6=FMS/HRM 接线与旧 /hr 退役（尾置）。重建依据与原会话登记原文可能存在偏差，
+以 HANDOFF 各 §12.2xx 原文为准（重建披露在 next-steps 后记六同步）。

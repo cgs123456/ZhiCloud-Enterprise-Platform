@@ -29,6 +29,9 @@ public class WmsPdaPutawayReqVO {
     @NotNull(message = "上架数量不能为空")
     private BigDecimal quantity;
 
+    @Schema(description = "上架库位编号（可选；V205 库位维度接入，不传 = 落未定位 0 哨兵行）", example = "12288")
+    private Long locationId;
+
     @Schema(description = "批次号", example = "BATCH202605110001")
     @Size(max = 64, message = "批次号长度不能超过 64 个字符")
     private String batchNo;

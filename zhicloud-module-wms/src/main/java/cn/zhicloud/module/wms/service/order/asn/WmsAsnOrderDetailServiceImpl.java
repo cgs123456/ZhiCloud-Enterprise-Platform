@@ -63,7 +63,7 @@ public class WmsAsnOrderDetailServiceImpl implements WmsAsnOrderDetailService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void addReceivedQuantity(Long detailId, BigDecimal receivedQuantity) {
+    public void addReceivedQuantity(Long detailId, BigDecimal receivedQuantity, Long locationId) {
         WmsAsnOrderDetailDO detail = asnOrderDetailMapper.selectById(detailId);
         if (detail == null) {
             throw exception(ASN_ORDER_DETAIL_NOT_EXISTS);
@@ -72,6 +72,10 @@ public class WmsAsnOrderDetailServiceImpl implements WmsAsnOrderDetailService {
         WmsAsnOrderDetailDO updateObj = new WmsAsnOrderDetailDO();
         updateObj.setId(detailId);
         updateObj.setReceivedQuantity(current.add(receivedQuantity));
+        // 收货库位落库（V205，ADR 259 D5）：门禁已在控制器完成，非空置位即落库；null/0 = 未指定（旧行为不变）
+        if (locationId != null && locationId != 0L) {
+            updateObj.setLocationId(locationId);
+        }
         asnOrderDetailMapper.updateById(updateObj);
     }
 
