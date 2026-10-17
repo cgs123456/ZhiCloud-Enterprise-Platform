@@ -11288,3 +11288,70 @@ E2E 具体断言（API + DB 双验）：建单传 `status=30` → 落库 10；PU
    「探针不自清理」此前针对的是 CRM 并发探针（still 待办），本项不新增同类负担。
 
 本节文档同步：next-steps 后记三追加 §12.251 记录一行；HANDOFF 无对应追踪行。
+
+## 12.252 检验记录父单状态重算收口——检验单终态冻结 + 明细防孤儿 + 空明细拒判
+
+**缺陷面再核定（先证后修，ADR `Temp/zc_adr_252.md`）**：next-steps §6 登记的
+`createInspectionRecord`「result 直写且不重算父检验单状态」经开工前代码实证，主体已被
+§12.238 收口（终态父单明细冻窗 1_044_000_047）；「result 直写」是检验员逐项判读的合法域语义
+（SaveReqVO 已 @NotNull + @InEnum）；FQC 建单入口无同族洞（FqcInspectionOrderCreateReqVO
+无 status 字段，BeanUtils 不映射，§12.235.6 覆盖完整）；INSPECTING(20) 为死状态（全仓零生产者，
+保留并在枚举 javadoc 登记，不为此造「开始检验」端点）。真正同族残余三处：
+
+- R1 `update/delete` 无终态护栏：已判定单可改 `bizId` 等判定依据字段——等于把 A 单的 PASSED
+  判定挪给 B 单（`isQualified(bizType, bizId)` 按键放行 WMS 收货）；可删终态单 = 抹掉 WMS
+  卡点历史判据与判定证据链。
+- R2 `delete` 与明细无一致性：PENDING/INSPECTING 单带明细删除 → 孤儿明细（记录侧护栏防「孤儿创建」，
+  防不了「删父单留下孤儿」）。
+- R3 `submitInspection([])` fail-open：原实现空明细默认判 PASSED（零证据放行），且先删旧明细
+  再判通过——「建单→录明细→submit([])」即明细被清 + 判通过。该行为被原测试
+  `test_submitInspection_emptyRecords` 显式锁定，本项判其为缺陷：判定链其余入口全部
+  fail-closed（isQualified 无单即 false、AQL 未配置即拒收、CRITICAL 一票否决），这是唯一 fail-open 点。
+
+**实改**：
+
+1. `1_044_000_048 INSPECTION_ORDER_JUDGED`：update/delete 对已判定（PASSED 30/FAILED 40）单拒绝；
+   helper `validateOrderNotJudged`，与记录侧 §12.238「终态明细冻结」构成同一原则两半。
+2. `1_044_000_049 INSPECTION_ORDER_HAS_RECORDS`：delete 对有明细单拒绝（循模块内
+   INSTRUMENT_HAS_CALIBRATIONS「有子记录拒删」先例，不做级联清理，宁拒不蚀）；判序上终态先于有明细。
+3. `1_044_000_052 INSPECTION_ORDER_NO_RECORDS`：submit 空明细拒判（050/051 已属电子签名，
+   循文件内「改用未占用段位」注释先例）；拒判点置于状态校验之后、删旧明细之前——拒绝路径零副作用。
+4. 前端 `order/index.vue`：提交检验/修改/删除三按钮统一 `v-if`（status ∈ 待检验/检验中），终态行隐藏入口（后端为准）。
+
+**行为变更（有意收紧，对外契约）**：submit([]) 由「默认检验通过」变拒绝；已判定单 update/delete
+由成功变拒绝。全仓 grep 实证 `submitInspection` 唯一调用方为 admin controller（无其他模块/内部
+API 调用）；update/delete 同理仅 controller。无明细待检验单的删除路径保留（草稿清理）。
+
+### 12.252.4 改动与验证清单
+
+| 文件 | 内容 |
+|---|---|
+| `enums/ErrorCodeConstants.java` | +3 码（048/049/052，带 §12.252 注释与段位说明） |
+| `enums/qms/InspectionOrderStatusEnum.java` | javadoc 登记 INSPECTING(20) 当前无生产者 |
+| `service/inspectionorder/InspectionOrderServiceImpl.java` | update/delete/submit 三护栏 + `validateOrderNotJudged`；submit 空明细拒判节注释含 fail-open 脉络与「先拒后动」依据 |
+| `test/…/InspectionOrderServiceImplTest.java` | 空明细用例重写为锁拒判（改名 `_refused`：状态不变 + 明细存活）+ 新增 5 案（终态删×2、有明细拒删、无明细删成功、终态改拒） |
+| `zhicloud-ui/…/qms/inspection/order/index.vue` | 三按钮同条件 v-if |
+| `Temp/zc_edit_252.py`、`Temp/zc_fix_252_tail.py`、`Temp/zc_qms252_e2e.py`（仓库外） | 编辑脚本（幂等 done_marker）+ 尾部修复 + E2E 31 案 |
+
+- 模块回归：QMS **133/133**（基线 128，+5 净增案；InspectionOrderServiceImplTest 18/18）
+- errcode 全仓扫描 **1950/0**（+3 码，仓库根 cwd 脚本）
+- reactor 重打包 SUCCESS（43 模块，9m36s）；admin 上线 jar **642732786 B** @ 15:14
+- 真机 E2E **31/31**（zc_qms252_e2e.py：无明细删草稿成功；有明细删单拒 049 且父单明细均存活；
+  清明细后删成功；submit([]) 拒 052 且状态未判、明细未被清（零副作用）；判定链回归 PASSED(30)/
+  CRITICAL 否决 FAILED(40)；终态改/删双拒 048；终态建明细拒 047（§12.238 回归）；单号未被改
+  （修改整体被拒）；对照组：PENDING 单 update 成功；清理零遗留）
+- 前端 `ts:check` / `build:prod` exit=0
+
+**诚实登记**：
+
+- mvn 首跑编译失败一台账：编辑脚本 helper 注入段漏写方法收尾 brace（`reached end of file while
+  parsing [239,2]`），`Temp/zc_fix_252_tail.py` 字节级补 `}` 后修复；脚本 (e) 段同步订正存档。
+- 本轮启动等待异常：首轮 waiter 843s TIMEOUT + 二轮 51s READY（总约 15 分钟，此前轮 426s）——
+  main 线程日志显示 Modulith 结构校验阶段自 15:19 拖至 15:26（约 7 分钟）为冷启动耗时主因，无致命错误。
+- 服务日志出现 Redisson stream 消费者 `EmptyMap→List` ClassCastException 周期性 ERROR（xReadGroup
+  背景噪音，与 §12.252 QMS 改动无涉，admin API 正常）——此前会话「日志无 ERROR」口径在本轮不成立，如实登记。
+- E2E 31 案首跑即全绿（无布景失误）。
+
+始末文档同步：next-steps 后记四已追加本条记录；§6 该登记行的口径订正落在后记四（循本文件
+「前面各节保持原样，订正以下面为准」惯例）。
+

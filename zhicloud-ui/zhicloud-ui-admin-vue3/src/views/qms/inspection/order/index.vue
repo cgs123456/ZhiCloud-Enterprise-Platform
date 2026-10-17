@@ -80,6 +80,10 @@
             提交检验
           </el-button>
           <el-button
+            v-if="
+              scope.row.status === InspectOrderStatus.PENDING ||
+              scope.row.status === InspectOrderStatus.INSPECTING
+            "
             v-hasPermi="['qms:inspection-order:update']"
             link
             type="primary"
@@ -88,6 +92,10 @@
             修改
           </el-button>
           <el-button
+            v-if="
+              scope.row.status === InspectOrderStatus.PENDING ||
+              scope.row.status === InspectOrderStatus.INSPECTING
+            "
             v-hasPermi="['qms:inspection-order:delete']"
             link
             type="danger"

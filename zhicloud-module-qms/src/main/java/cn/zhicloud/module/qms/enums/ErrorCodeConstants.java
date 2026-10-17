@@ -19,6 +19,12 @@ public interface ErrorCodeConstants {
     ErrorCode INSPECTION_ORDER_NO_EXISTS = new ErrorCode(1_044_000_013, "生成检验单号失败，请重新提交");
     // 1_044_000_014 已属检验记录（INSPECTION_RECORD_NOT_EXISTS），检验单侧改用未占用的 046
     ErrorCode INSPECTION_ORDER_OPTIMISTIC_LOCK_FAIL = new ErrorCode(1_044_000_046, "检验单已被其他操作修改，请刷新后重试");
+    // §12.252：终态冻结——已判定单是 WMS 入库卡点（isQualified）的历史判据，update/delete 一律拒绝
+    ErrorCode INSPECTION_ORDER_JUDGED = new ErrorCode(1_044_000_048, "检验单已判定（已通过/已不通过），不可变更或删除");
+    // §12.252：防孤儿——存在明细的检验单不可删除（循 INSTRUMENT_HAS_CALIBRATIONS 先例，不级联清理）
+    ErrorCode INSPECTION_ORDER_HAS_RECORDS = new ErrorCode(1_044_000_049, "检验单存在检验明细，不可删除");
+    // §12.252：空明细拒判（fail-closed）——1_044_000_050/051 已属电子签名，检验单侧改用未占用的 052
+    ErrorCode INSPECTION_ORDER_NO_RECORDS = new ErrorCode(1_044_000_052, "无可判定的检验明细，请先提交检验记录");
 
     // ========== QMS 检验记录（1-040-102-000） ==========
     ErrorCode INSPECTION_RECORD_NOT_EXISTS = new ErrorCode(1_044_000_014, "检验记录不存在");

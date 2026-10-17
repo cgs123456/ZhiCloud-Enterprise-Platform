@@ -18,8 +18,12 @@ import jakarta.annotation.Resource;
 
 import java.util.List;
 
+import static cn.zhicloud.framework.test.core.util.AssertUtils.assertServiceException;
 import static cn.zhicloud.framework.test.core.util.RandomUtils.randomLongId;
 import static cn.zhicloud.framework.test.core.util.RandomUtils.randomPojo;
+import static cn.zhicloud.module.qms.enums.ErrorCodeConstants.INSPECTION_ORDER_HAS_RECORDS;
+import static cn.zhicloud.module.qms.enums.ErrorCodeConstants.INSPECTION_ORDER_JUDGED;
+import static cn.zhicloud.module.qms.enums.ErrorCodeConstants.INSPECTION_ORDER_NO_RECORDS;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -171,19 +175,28 @@ public class InspectionOrderServiceImplTest extends BaseDbUnitTest {
     }
 
     @Test
-    public void test_submitInspection_emptyRecords() {
-        // 准备数据：插入一条待检验状态的检验单
+    public void test_submitInspection_emptyRecords_refused() {
+        // §12.252：空明细提交必须拒判。原行为「无记录默认检验通过」是判定链里唯一的
+        // fail-open（零证据放行），本用例从锁定旧行为改为锁定拒判。
+        //
+        // 准备数据：待检验单 + 一条已录明细（验证拒判前不得清明细）
         InspectionOrderDO order = randomPojo(InspectionOrderDO.class, o -> {
             o.setStatus(InspectionOrderStatusEnum.PENDING.getStatus());
         });
         inspectionOrderMapper.insert(order);
+        InspectionRecordDO oldRecord = randomPojo(InspectionRecordDO.class, o -> {
+            o.setOrderId(order.getId());
+        });
+        inspectionRecordMapper.insert(oldRecord);
 
         // 调用：提交空检验记录
-        inspectionOrderService.submitInspection(order.getId(), List.of());
+        assertServiceException(() -> inspectionOrderService.submitInspection(order.getId(), List.of()),
+                INSPECTION_ORDER_NO_RECORDS);
 
-        // 断言：无检验记录时，默认为"检验通过"
+        // 断言：状态未被判定为终态，原有明细未被清除（拒绝路径零副作用）
         InspectionOrderDO updatedOrder = inspectionOrderMapper.selectById(order.getId());
-        assertEquals(InspectionOrderStatusEnum.PASSED.getStatus(), updatedOrder.getStatus());
+        assertEquals(InspectionOrderStatusEnum.PENDING.getStatus(), updatedOrder.getStatus());
+        assertEquals(1, inspectionRecordMapper.selectListByOrderId(order.getId()).size());
     }
 
     @Test
@@ -328,4 +341,70 @@ public class InspectionOrderServiceImplTest extends BaseDbUnitTest {
         assertThrows(Exception.class, () -> inspectionOrderService.deleteInspectionOrder(randomLongId()));
     }
 
+    // ------------------------------------------------------------------
+    // §12.252：终态冻结 + 防孤儿 + （空明细拒判见 test_submitInspection_emptyRecords_refused）
+    //
+    // update/delete 此前不看父单状态：已判定单可改 bizId（等于把 PASSED 判定挪给另一张
+    // 业务单放行收货）、可整单删除（抹掉 WMS 卡点历史判据 + 留下孤儿明细）。以下钉住收紧后的契约。
+    // ------------------------------------------------------------------
+
+    @Test
+    public void test_deleteInspectionOrder_rejectedOnPassedOrder() {
+        InspectionOrderDO order = insertOrderAt(InspectionOrderStatusEnum.PASSED.getStatus());
+
+        assertServiceException(() -> inspectionOrderService.deleteInspectionOrder(order.getId()),
+                INSPECTION_ORDER_JUDGED);
+        assertNotNull(inspectionOrderMapper.selectById(order.getId()));
+    }
+
+    @Test
+    public void test_deleteInspectionOrder_rejectedOnFailedOrder() {
+        InspectionOrderDO order = insertOrderAt(InspectionOrderStatusEnum.FAILED.getStatus());
+
+        assertServiceException(() -> inspectionOrderService.deleteInspectionOrder(order.getId()),
+                INSPECTION_ORDER_JUDGED);
+        assertNotNull(inspectionOrderMapper.selectById(order.getId()));
+    }
+
+    @Test
+    public void test_deleteInspectionOrder_rejectedWithRecords() {
+        InspectionOrderDO order = insertOrderAt(InspectionOrderStatusEnum.PENDING.getStatus());
+        InspectionRecordDO record = randomPojo(InspectionRecordDO.class, o -> o.setOrderId(order.getId()));
+        inspectionRecordMapper.insert(record);
+
+        // 有明细拒删：明细是质量证据，宁拒不级联静默清理
+        assertServiceException(() -> inspectionOrderService.deleteInspectionOrder(order.getId()),
+                INSPECTION_ORDER_HAS_RECORDS);
+        // 父单与明细均存活
+        assertNotNull(inspectionRecordMapper.selectById(record.getId()));
+        assertNotNull(inspectionOrderMapper.selectById(order.getId()));
+    }
+
+    @Test
+    public void test_deleteInspectionOrder_emptyPending_ok() {
+        InspectionOrderDO order = insertOrderAt(InspectionOrderStatusEnum.PENDING.getStatus());
+
+        inspectionOrderService.deleteInspectionOrder(order.getId());
+
+        // 无明细的待检验单删除行为不变（草稿清理路径保留）
+        assertNull(inspectionOrderMapper.selectById(order.getId()));
+    }
+
+    @Test
+    public void test_updateInspectionOrder_rejectedOnJudgedOrder() {
+        InspectionOrderDO order = insertOrderAt(InspectionOrderStatusEnum.PASSED.getStatus());
+        InspectionOrderSaveReqVO updateReqVO = new InspectionOrderSaveReqVO();
+        updateReqVO.setId(order.getId());
+        updateReqVO.setOrderNo(order.getOrderNo());
+        updateReqVO.setType(order.getType());
+
+        assertServiceException(() -> inspectionOrderService.updateInspectionOrder(updateReqVO),
+                INSPECTION_ORDER_JUDGED);
+    }
+
+    private InspectionOrderDO insertOrderAt(Integer status) {
+        InspectionOrderDO order = randomPojo(InspectionOrderDO.class, o -> o.setStatus(status));
+        inspectionOrderMapper.insert(order);
+        return order;
+    }
 }

@@ -28,6 +28,9 @@ import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.e
 import static cn.zhicloud.module.qms.enums.ErrorCodeConstants.INSPECTION_ORDER_NOT_EXISTS;
 import static cn.zhicloud.module.qms.enums.ErrorCodeConstants.INSPECTION_ORDER_NOT_SUBMIT;
 import static cn.zhicloud.module.qms.enums.ErrorCodeConstants.INSPECTION_ORDER_OPTIMISTIC_LOCK_FAIL;
+import static cn.zhicloud.module.qms.enums.ErrorCodeConstants.INSPECTION_ORDER_JUDGED;
+import static cn.zhicloud.module.qms.enums.ErrorCodeConstants.INSPECTION_ORDER_HAS_RECORDS;
+import static cn.zhicloud.module.qms.enums.ErrorCodeConstants.INSPECTION_ORDER_NO_RECORDS;
 
 /**
  * QMS 检验单 Service 实现类
@@ -97,6 +100,11 @@ public class InspectionOrderServiceImpl implements InspectionOrderService {
     public void updateInspectionOrder(InspectionOrderSaveReqVO updateReqVO) {
         // 校验存在
         InspectionOrderDO oldOrder = validateInspectionOrderExists(updateReqVO.getId());
+        // §12.252：终态冻结——已判定（PASSED/FAILED）的检验单不可再变更。status 由下方
+        // setStatus(null) 挡住，但 bizId 等判定依据字段若可改，等于把 A 单的判定挪给
+        // B 单（isQualified(bizType, bizId) 按键放行），必须拦截。与记录侧 §12.238
+        // 「终态明细冻结」构成同一原则的两半。
+        validateOrderNotJudged(oldOrder);
         // 更新
         InspectionOrderDO updateObj = BeanUtils.toBean(updateReqVO, InspectionOrderDO.class);
         // 禁止通过通用更新修改状态，状态变更必须走 submitInspection 等状态流转方法
@@ -112,7 +120,15 @@ public class InspectionOrderServiceImpl implements InspectionOrderService {
     @Override
     public void deleteInspectionOrder(Long id) {
         // 校验存在
-        validateInspectionOrderExists(id);
+        InspectionOrderDO order = validateInspectionOrderExists(id);
+        // §12.252：终态冻结——终态单是 WMS 入库卡点的历史判据与判定证据链，删单即毁据，拒绝。
+        validateOrderNotJudged(order);
+        // §12.252：防孤儿——明细只能挂在可写窗口单上（§12.238 记录侧护栏只防「孤儿创建」，
+        // 防不了「删父单留下孤儿」）。循计量器具 INSTRUMENT_HAS_CALIBRATIONS 先例：
+        // 有明细拒删，不做级联清理（宁拒不蚀，避免静默丢弃质量证据）。
+        if (CollUtil.isNotEmpty(inspectionRecordMapper.selectListByOrderId(id))) {
+            throw exception(INSPECTION_ORDER_HAS_RECORDS);
+        }
         // 删除
         inspectionOrderMapper.deleteById(id);
     }
@@ -136,6 +152,15 @@ public class InspectionOrderServiceImpl implements InspectionOrderService {
         if (!InspectionOrderStatusEnum.PENDING.getStatus().equals(order.getStatus())
                 && !InspectionOrderStatusEnum.INSPECTING.getStatus().equals(order.getStatus())) {
             throw exception(INSPECTION_ORDER_NOT_SUBMIT);
+        }
+        // 2.5 §12.252：空明细拒判（fail-closed）。原实现 records 为空时默认判「检验通过」，
+        //     等价于「零证据放行」；且下方第 3 步会先删旧明细——「建单→录明细→submit([])」
+        //     即明细被清 + 判通过。判定链其余入口全部 fail-closed（isQualified 无单即 false、
+        //     AQL 未配置即拒收、CRITICAL 一票否决），这是唯一的 fail-open 点，不得保留。
+        //     拒判点必须在旧明细删除之前：拒绝路径不得产生任何副作用。
+        //     §12.252 行为变更（对外契约收紧）：submit([]) 由「通过」改为拒绝。
+        if (CollUtil.isEmpty(records)) {
+            throw exception(INSPECTION_ORDER_NO_RECORDS);
         }
         // 3. 删除该检验单的原有检验记录
         List<InspectionRecordDO> oldRecords = inspectionRecordMapper.selectListByOrderId(orderId);
@@ -199,6 +224,18 @@ public class InspectionOrderServiceImpl implements InspectionOrderService {
             throw exception(INSPECTION_ORDER_NOT_EXISTS);
         }
         return order;
+    }
+
+    /**
+     * §12.252：终态冻结判据——PASSED(30)/FAILED(40) 为「已判定」，不可变更或删除。
+     *
+     * @param order 已校验存在的检验单
+     */
+    private void validateOrderNotJudged(InspectionOrderDO order) {
+        if (InspectionOrderStatusEnum.PASSED.getStatus().equals(order.getStatus())
+                || InspectionOrderStatusEnum.FAILED.getStatus().equals(order.getStatus())) {
+            throw exception(INSPECTION_ORDER_JUDGED);
+        }
     }
 
 }
