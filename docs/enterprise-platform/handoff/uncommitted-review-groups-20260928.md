@@ -11554,3 +11554,72 @@ MsaStudyForm studyType 等）为同类病的其余域，**不在本项**（§12.
 落盘后立即自察删除/订正，未执行到仓库文件即消除。
 
 始末文档同步：next-steps 后记四已追加本条记录。
+## 12.256 器具校准日期写窗口收口——「严格派生」定案（B 组余项·器具日期）
+
+本节处理 §12.238.5.1 登记（「待所有者定夺」）与 next-steps「B 组余项：器具日期手工另录与否」：
+按用户「继续做b组余项」令，循 §12.255 severity 先例（待拍板项经执行视为按登记建议定案）
+定「严格派生」方向。设计锁 `Temp/zc_adr_256.md`，实施 `Temp/zc_edit_256.py`
+（字节级，幂等 done_marker，Java LF-only / Vue 现状 EOL 保持），一个提交成束。
+
+### 12.256.1 缺陷面（承接 §12.238.5.1 原文）
+
+- `QmsInstrumentSaveReqVO` 两日期字段在 save 路径构成第三个写入窗口：
+  create 会播种、update 直写（status 有 §12.236.7 null-skip 护栏、日期没有）；
+  前端器具表单两个 `el-date-picker` 仍可编辑。
+- 后果与 §12.238.5.1 自述一致：手动写入值会被下一次任意记录写操作（含删除）按
+  记录集重算覆盖——控件存在「填了不生效」的静默欺骗；读侧（§12.238 D2 派生）
+  与写侧（直写）语义冲突。
+
+### 12.256.2 设计决策（ADR 式）
+
+- **D1 方向裁定 = 严格派生**。理由：①自洽——读侧已是派生语义，save 窗口写入值注定
+  被下一次记录操作覆盖，收口不是新增限制而是关掉存量假入口；②同会话方向一致性——
+  §12.249/251/253/254/255 各轮待拍板裁定均循「与已声明契约对齐」，手工维护支需把
+  §12.238 刚修完的「记录集→日期」改回「本地覆盖可胜出」，重开盲写改旧/删除滞留缺陷面；
+  ③登记原文只在严格派生支给出具体配方，登记者倾向可读。被否：混合方案（override 标志，
+  引入第三真相源，无第二个真实用例）；删 SaveReqVO 字段（API 破坏性变更）。
+- **D2 后端实施（仿 §12.236.7 status B 方案）**：create 在 toBean 后两日期置 NULL
+  （建单播种不生效）；update 沿 status 先例置 null → updateById null-skip，列不进 UPDATE。
+  测试断言「原值保持不变」方向，循 QmsInstrumentUpdateStatusGuardTest 踩坑注释，
+  不写 assertNull。
+- **D3 VO 兼容**：SaveReqVO 保留两日期字段（旧客户端传值不报错、不生效），@Schema
+  注只读派生语义；RespVO 不动（§12.245 A2 已 @JsonFormat）。
+- **D4 前端表单（仿 status 模板）**：两 date-picker 移除；update 显当前值文本
+  （`?? '暂无校准记录'`），create 显灰字「由校准记录自动计算」；提交体保持 get 回显
+  字段（后端不收，零影响）。
+- **D5 不动派生链**：refreshInstrumentCalibrationDates 零变化
+  （QmsInstrumentCalibrationRefreshTest 7 例继续守护其语义）。
+
+### 12.256.3 变更清单（4 内容文件）
+
+| 文件 | 变更 |
+| --- | --- |
+| `service/instrument/QmsInstrumentServiceImpl.java` | create 置 NULL / update null-skip 两处 + 注释 |
+| `controller/admin/instrument/vo/QmsInstrumentSaveReqVO.java` | 两日期 @Schema 注只读派生语义 |
+| `views/qms/instrument/list/QmsInstrumentForm.vue` | 两 date-picker 移除，改只读回显文本 |
+| `test/…/instrument/QmsInstrumentDateDerivationTest.java` | 新：3 案（create 播种拒 / update 改值拒+他字段照常 / update 不传值不改写） |
+
+### 12.256.4 验证读数
+
+- 模块回归：QMS **147/147**（§12.254 后基线 144，+3 新案）；
+- errcode 全仓扫描 **1952/0**（零新码，仓库根 cwd）；
+- 前端 `ts:check` EXIT=0、`build:prod` EXIT=0（build 1m42s）；
+- reactor 打包 `-pl zhicloud-server -am` **SUCCESS**（43/43，jar 642735299B @ 17:31）；
+- 重启 READY **847s**（PID 40708，日志 zc_server_256.log，无新增 ERROR 排查异常）；
+- 真机 E2E **23/23**（自检案 Z00 占位 + 业务断言 A01~Z02）：create 带日期→get
+  两日期 NULL；SQL 种 last/next 后 API update 带值→SQL 种值不变（写窗真机证）
+  且其余字段照常更新；校准记录建（不传 next，cycleDays=365）→派生 last='2026-10-01'、
+  next='2027-10-01'；派生态 update 带值仍不动；删记录→refresh 无有效记录显式 NULL；
+  记录已删后器具可删；两侧表零遗留。
+
+### 12.256.5 诚实登记与连带观察
+
+- **编辑脚本首跑 SyntaxError**：三处 `edit()` 收尾多写一个右括号——脚本未落盘任何
+  仓库文件（解析期失败），修正后一次过；
+- **E2E 首跑 C01 段 404**：校准记录建单端点寻址失误（`/create` 实为 **`/record`**），
+  A/B 段 12 案先 PASS（A 段已证写窗口），修正后二跑 23/23 全绿；
+- **遗留器具不可播种**：无可录证书号/无校准记录的器具日期将永远 NULL、到期预警不触发
+  ——产品口径（放宽记录校验/历史数据播种）不在本项工作面，登记为后续待定项；
+- **UI 点击冒烟**：循 §12.239 先例登记为验证缺口，前端回归由 `ts:check`/`build:prod` 承载。
+
+本节文档同步：next-steps 后记五追加 §12.256 记录；HANDOFF 无对应追踪行。

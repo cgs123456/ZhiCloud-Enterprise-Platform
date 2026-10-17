@@ -49,11 +49,15 @@
       <el-form-item label="校准周期天数" prop="calibrationCycleDays">
         <el-input-number v-model="formData.calibrationCycleDays" class="!w-1/1" :min="0" :controls="false" placeholder="请输入校准周期天数" />
       </el-form-item>
+      <!-- 校准日期只读：last/next 是校准记录集的派生值（§12.238 D2），save 写窗口已收口（§12.256）。
+           仿 status 模板：编辑显当前值 / 新建显派生提示，避免「填了不生效」的静默欺骗。 -->
       <el-form-item label="上次校准日期" prop="lastCalibrationDate">
-        <el-date-picker v-model="formData.lastCalibrationDate" class="!w-1/1" value-format="YYYY-MM-DD" type="date" placeholder="请选择上次校准日期" />
+        <span v-if="formType === 'update'">{{ formData.lastCalibrationDate ?? '暂无校准记录' }}</span>
+        <span v-else class="text-gray-400">由校准记录自动计算</span>
       </el-form-item>
       <el-form-item label="下次校准日期" prop="nextCalibrationDate">
-        <el-date-picker v-model="formData.nextCalibrationDate" class="!w-1/1" value-format="YYYY-MM-DD" type="date" placeholder="请选择下次校准日期" />
+        <span v-if="formType === 'update'">{{ formData.nextCalibrationDate ?? '暂无校准记录' }}</span>
+        <span v-else class="text-gray-400">由校准记录自动计算</span>
       </el-form-item>
       <el-form-item label="备注" prop="remark">
         <el-input v-model="formData.remark" class="!w-1/1" type="textarea" :rows="2" placeholder="请输入备注" />

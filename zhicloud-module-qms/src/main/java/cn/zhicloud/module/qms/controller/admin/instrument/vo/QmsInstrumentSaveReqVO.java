@@ -67,12 +67,12 @@ public class QmsInstrumentSaveReqVO {
     @Positive(message = "校准周期天数必须为正数")
     private Integer calibrationCycleDays;
 
-    @Schema(description = "上次校准日期", example = "2024-01-01")
+    @Schema(description = "上次校准日期（只读回显：由校准记录派生，传入不生效。§12.256）", example = "2024-01-01")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY)
     @JsonFormat(pattern = FORMAT_YEAR_MONTH_DAY)
     private LocalDate lastCalibrationDate;
 
-    @Schema(description = "下次校准日期", example = "2025-01-01")
+    @Schema(description = "下次校准日期（只读回显：由校准记录派生，传入不生效。§12.256）", example = "2025-01-01")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY)
     @JsonFormat(pattern = FORMAT_YEAR_MONTH_DAY)
     private LocalDate nextCalibrationDate;

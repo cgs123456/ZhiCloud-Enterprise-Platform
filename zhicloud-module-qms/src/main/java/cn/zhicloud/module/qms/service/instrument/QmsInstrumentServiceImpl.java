@@ -50,6 +50,12 @@ public class QmsInstrumentServiceImpl implements QmsInstrumentService {
         // 跳过整个流转（该类可能连流转方法都没有），产生「未审即批/未做即完成」的记录。
         // 状态只能由本模块的流转方法产生。
         instrument.setStatus(QmsInstrumentStatusEnum.IN_USE.getStatus());
+        // 校准日期不采纳外部写入：last/next 是「校准记录集」的派生值（§12.238 D2），
+        // create 播种会被下一次任意记录写操作重算覆盖，对「手动维护」意图不友好（§12.238.5.1）。
+        // 按登记配方「严格派生」收口（§12.256）：create 落库即 NULL，写值唯一入口是
+        // refreshInstrumentCalibrationDates。
+        instrument.setLastCalibrationDate(null);
+        instrument.setNextCalibrationDate(null);
         instrumentMapper.insert(instrument);
         // 返回
         return instrument.getId();
@@ -70,6 +76,10 @@ public class QmsInstrumentServiceImpl implements QmsInstrumentService {
         // MyBatis-Plus 的 updateById 跳过 null 字段，故置 null 的效果是
         // 该列不进 UPDATE 语句 —— 调用方的 status 无法生效。
         updateObj.setStatus(null);
+        // 校准日期同理不接受外部写入（§12.256）：updateById 跳过 null 字段，该列不进 UPDATE，
+        // 调用方传入的值无法生效；与 status 同门禁制式，清空只能由 refresh 显式置 NULL 完成。
+        updateObj.setLastCalibrationDate(null);
+        updateObj.setNextCalibrationDate(null);
         instrumentMapper.updateById(updateObj);
     }
 

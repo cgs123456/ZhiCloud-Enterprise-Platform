@@ -266,5 +266,14 @@
 - **B 组推进收口（用户令「逐项完成#2 3 4」）**：#2 §12.253、#3 §12.254、#4 §12.255
   三项全部完成并独立提交（e77dac9ab / 3407dc5d8 / 本轮）。severity 控件形态经本轮执行
   视为已按登记建议定案（下拉三选）。
-- 其余待办不变：B 组余项（器具日期手工另录与否、1_040_509_003 拆码、
-  WMS LOCKED 单向语义）、C/D/E 组（中大型课题与卫生杂项）继续待拍板/逐项推进。
+- **§12.256（B 组余项·器具日期）器具校准日期写窗口收口**：定「严格派生」——
+  save 三窗收其二（create 落 NULL / update null-skip，仿 §12.236.7 status B 方案），
+  表单两 date-picker 改只读回显（update 显当前值 / 新建显派生提示）；SaveReqVO 两字段
+  保留（传值不生效不报错）。新增 QmsInstrumentDateDerivationTest 3 案。
+  证据：QMS 回归 147/147（+3 案）、errcode 1952/0（零新码）、reactor 打包
+  -pl zhicloud-server -am SUCCESS（43 模块）、`ts:check`/`build:prod` exit=0、
+  真机 E2E 23/23（create 播种拒 + SQL 种值 update 拒 + 记录派生 last/next +
+  删记录显式 NULL + 清理零遗留）。UI 点击冒烟循 §12.239 先例登记；
+  遗留器具不可播种属产品待定项（已登记）。
+- 其余待办不变：B 组余项（1_040_509_003 拆码、WMS LOCKED 单向语义）、
+  C/D/E 组（中大型课题与卫生杂项）继续待拍板/逐项推进。
