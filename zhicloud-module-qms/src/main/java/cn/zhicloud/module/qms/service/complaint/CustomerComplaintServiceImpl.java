@@ -7,6 +7,7 @@ import cn.zhicloud.module.qms.controller.admin.complaint.vo.CustomerComplaintSav
 import cn.zhicloud.module.qms.dal.dataobject.complaint.CustomerComplaintDO;
 import cn.zhicloud.module.qms.dal.mysql.complaint.CustomerComplaintMapper;
 import cn.zhicloud.module.qms.enums.qms.ComplaintStatusEnum;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import org.springframework.validation.annotation.Validated;
 import java.time.LocalDateTime;
 
 import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static cn.zhicloud.module.qms.enums.ErrorCodeConstants.CUSTOMER_COMPLAINT_NOT_CLOSEABLE;
 import static cn.zhicloud.module.qms.enums.ErrorCodeConstants.CUSTOMER_COMPLAINT_NOT_EXISTS;
 import static cn.zhicloud.module.qms.enums.ErrorCodeConstants.CUSTOMER_COMPLAINT_STATUS_INVALID;
 
@@ -101,11 +103,21 @@ public class CustomerComplaintServiceImpl implements CustomerComplaintService {
         if (complaint == null) {
             throw exception(CUSTOMER_COMPLAINT_NOT_EXISTS);
         }
-        CustomerComplaintDO updateObj = new CustomerComplaintDO();
-        updateObj.setId(id);
-        updateObj.setStatus(ComplaintStatusEnum.CLOSED.getStatus());
-        updateObj.setCloseTime(LocalDateTime.now());
-        customerComplaintMapper.updateById(updateObj);
+        // §12.253 前置态校验：只有处理中（HANDLING）可关闭。
+        // 登记即关 = 跳过调查/处理流程；调查未出结论即关 = 流程跳转；
+        // 已关闭重复关 = closeTime 被重写。三者共用同一拒绝理由（循 NCR/CAPA 专用关闭码先例）。
+        if (!ComplaintStatusEnum.HANDLING.getStatus().equals(complaint.getStatus())) {
+            throw exception(CUSTOMER_COMPLAINT_NOT_CLOSEABLE);
+        }
+        // §12.253 CAS 条件更新：读-判-写之间状态可能被 advanceStatus/并发 close 流转，
+        // 只在仍处于读到的处理中时落已关闭 + 关闭时间；0 行即竞态失败，拒绝而非覆盖。
+        if (customerComplaintMapper.update(null, new LambdaUpdateWrapper<CustomerComplaintDO>()
+                .set(CustomerComplaintDO::getStatus, ComplaintStatusEnum.CLOSED.getStatus())
+                .set(CustomerComplaintDO::getCloseTime, LocalDateTime.now())
+                .eq(CustomerComplaintDO::getId, id)
+                .eq(CustomerComplaintDO::getStatus, ComplaintStatusEnum.HANDLING.getStatus())) == 0) {
+            throw exception(CUSTOMER_COMPLAINT_NOT_CLOSEABLE);
+        }
     }
 
     /**

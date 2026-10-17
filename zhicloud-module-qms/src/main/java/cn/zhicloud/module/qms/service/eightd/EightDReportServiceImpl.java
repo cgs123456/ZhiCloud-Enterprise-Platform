@@ -7,6 +7,7 @@ import cn.zhicloud.module.qms.controller.admin.eightd.vo.EightDReportSaveReqVO;
 import cn.zhicloud.module.qms.dal.dataobject.eightd.EightDReportDO;
 import cn.zhicloud.module.qms.dal.mysql.eightd.EightDReportMapper;
 import cn.zhicloud.module.qms.enums.qms.EightDStatusEnum;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import org.springframework.validation.annotation.Validated;
 import java.time.LocalDateTime;
 
 import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static cn.zhicloud.module.qms.enums.ErrorCodeConstants.EIGHT_D_REPORT_NOT_CLOSEABLE;
 import static cn.zhicloud.module.qms.enums.ErrorCodeConstants.EIGHT_D_REPORT_NOT_EXISTS;
 import static cn.zhicloud.module.qms.enums.ErrorCodeConstants.EIGHT_D_REPORT_STAGE_INVALID;
 
@@ -112,12 +114,22 @@ public class EightDReportServiceImpl implements EightDReportService {
         if (report == null) {
             throw exception(EIGHT_D_REPORT_NOT_EXISTS);
         }
-        // 2. 流转到 D8 关闭，并记录关闭时间
-        EightDReportDO updateObj = new EightDReportDO();
-        updateObj.setId(id);
-        updateObj.setStatus(EightDStatusEnum.D8_CLOSED.getStatus());
-        updateObj.setCloseTime(LocalDateTime.now());
-        eightDReportMapper.updateById(updateObj);
+        // 2. §12.253 前置态校验：只有 D7（预防）阶段可关闭。
+        // 更早阶段关闭 = 跳过未完成阶段的流转（D1~D7 内容不全即终结）；
+        // 已关闭重复关 = closeTime 被重写（关闭证据链被变更）。
+        // 「只有 D7 可关」对 D8 同样成立：提前关与重复关共用同一拒绝理由（循 CAPA 单码先例）。
+        if (!EightDStatusEnum.D7_PREVENT.getStatus().equals(report.getStatus())) {
+            throw exception(EIGHT_D_REPORT_NOT_CLOSEABLE);
+        }
+        // 3. §12.253 CAS 条件更新：读-判-写之间状态可能被并发流转，
+        // 只在仍处于读到的 D7 时落 D8 + 关闭时间；0 行即竞态失败，拒绝而非覆盖。
+        if (eightDReportMapper.update(null, new LambdaUpdateWrapper<EightDReportDO>()
+                .set(EightDReportDO::getStatus, EightDStatusEnum.D8_CLOSED.getStatus())
+                .set(EightDReportDO::getCloseTime, LocalDateTime.now())
+                .eq(EightDReportDO::getId, id)
+                .eq(EightDReportDO::getStatus, EightDStatusEnum.D7_PREVENT.getStatus())) == 0) {
+            throw exception(EIGHT_D_REPORT_NOT_CLOSEABLE);
+        }
     }
 
     /**

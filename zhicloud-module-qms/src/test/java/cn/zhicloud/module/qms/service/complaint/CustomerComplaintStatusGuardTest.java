@@ -10,6 +10,8 @@ import org.springframework.context.annotation.Import;
 
 import jakarta.annotation.Resource;
 
+import static cn.zhicloud.framework.test.core.util.AssertUtils.assertServiceException;
+import static cn.zhicloud.module.qms.enums.ErrorCodeConstants.CUSTOMER_COMPLAINT_NOT_CLOSEABLE;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -55,5 +57,68 @@ public class CustomerComplaintStatusGuardTest extends BaseDbUnitTest {
 
         CustomerComplaintDO saved = complaintMapper.selectById(id);
         assertEquals(ComplaintStatusEnum.REGISTERED.getStatus(), saved.getStatus());
+    }
+
+    // ------------------------------------------------------------------
+    // §12.253：关闭类幂等——只有处理中（HANDLING(30)）可关闭。
+    //
+    // 旧 closeComplaint 无状态校验：登记即关（调查/处理全跳过）、已关闭重复关
+    // （closeTime 二次重写）都是放行形态。以下钉住收紧后的契约。
+    // ------------------------------------------------------------------
+
+    @Test
+    public void test_closeCustomerComplaint_registeredRejected() {
+        // 登记即关：调查结论与处理措施全无，拒绝（§12.253）
+        CustomerComplaintSaveReqVO req = new CustomerComplaintSaveReqVO();
+        req.setComplaintNo("CP-CLOSE-REG-001");
+        req.setComplaintContent("外观不良");
+        Long id = complaintService.createCustomerComplaint(req);
+
+        assertServiceException(() -> complaintService.closeComplaint(id),
+                CUSTOMER_COMPLAINT_NOT_CLOSEABLE);
+
+        CustomerComplaintDO after = complaintMapper.selectById(id);
+        assertEquals(ComplaintStatusEnum.REGISTERED.getStatus(), after.getStatus());
+        assertNull(after.getCloseTime());
+    }
+
+    @Test
+    public void test_closeCustomerComplaint_investigatingRejected() {
+        // 调查未出结论不可关闭（§12.253）
+        CustomerComplaintSaveReqVO req = new CustomerComplaintSaveReqVO();
+        req.setComplaintNo("CP-CLOSE-INV-001");
+        req.setComplaintContent("尺寸超差");
+        Long id = complaintService.createCustomerComplaint(req);
+        complaintService.advanceStatus(id);
+
+        assertServiceException(() -> complaintService.closeComplaint(id),
+                CUSTOMER_COMPLAINT_NOT_CLOSEABLE);
+
+        CustomerComplaintDO after = complaintMapper.selectById(id);
+        assertEquals(ComplaintStatusEnum.INVESTIGATING.getStatus(), after.getStatus());
+        assertNull(after.getCloseTime());
+    }
+
+    @Test
+    public void test_closeCustomerComplaint_successFromHandling_thenRepeatRejected() {
+        // 只有处理中可关闭；重复关拒绝且 closeTime 保持首次关闭时刻（幂等防重写）（§12.253）
+        CustomerComplaintSaveReqVO req = new CustomerComplaintSaveReqVO();
+        req.setComplaintNo("CP-CLOSE-OK-001");
+        req.setComplaintContent("包装破损");
+        Long id = complaintService.createCustomerComplaint(req);
+        complaintService.advanceStatus(id);
+        complaintService.advanceStatus(id);
+
+        complaintService.closeComplaint(id);
+
+        CustomerComplaintDO first = complaintMapper.selectById(id);
+        assertEquals(ComplaintStatusEnum.CLOSED.getStatus(), first.getStatus());
+        assertNotNull(first.getCloseTime());
+
+        assertServiceException(() -> complaintService.closeComplaint(id),
+                CUSTOMER_COMPLAINT_NOT_CLOSEABLE);
+        CustomerComplaintDO second = complaintMapper.selectById(id);
+        assertEquals(ComplaintStatusEnum.CLOSED.getStatus(), second.getStatus());
+        assertEquals(first.getCloseTime(), second.getCloseTime());
     }
 }

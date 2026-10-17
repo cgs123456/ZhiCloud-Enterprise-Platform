@@ -118,6 +118,8 @@ public interface ErrorCodeConstants {
     // ========== QMS 8D 报告（1-040-800-000） ==========
     ErrorCode EIGHT_D_REPORT_NOT_EXISTS = new ErrorCode(1_044_000_000, "8D 报告不存在");
     ErrorCode EIGHT_D_REPORT_STAGE_INVALID = new ErrorCode(1_044_000_001, "8D 报告已关闭，无法推进阶段");
+    // §12.253：关闭类幂等——只有 D7（预防）阶段可关闭：更早阶段关闭=跳过未完成阶段流转；已关闭重复关=closeTime 被重写（证据链变更）
+    ErrorCode EIGHT_D_REPORT_NOT_CLOSEABLE = new ErrorCode(1_044_000_053, "8D 报告只有 D7（预防）阶段可关闭");
 
     // ========== QMS 培训计划（1-040-810-000） ==========
     ErrorCode TRAINING_PLAN_NOT_EXISTS = new ErrorCode(1_044_000_008, "培训计划不存在");
@@ -129,6 +131,8 @@ public interface ErrorCodeConstants {
     // ========== QMS 客户投诉（1-040-820-000） ==========
     ErrorCode CUSTOMER_COMPLAINT_NOT_EXISTS = new ErrorCode(1_040_820_000, "客户投诉不存在");
     ErrorCode CUSTOMER_COMPLAINT_STATUS_INVALID = new ErrorCode(1_040_820_001, "客户投诉状态非法，不允许当前操作");
+    // §12.253：只有处理中可关闭：登记/调查未完成即关=流程跳转；已关闭重复关=closeTime 被重写
+    ErrorCode CUSTOMER_COMPLAINT_NOT_CLOSEABLE = new ErrorCode(1_040_820_002, "客户投诉只有处理中状态可关闭");
 
     // ========== QMS 供应商评级（1-040-830-000） ==========
     ErrorCode SUPPLIER_RATING_NOT_EXISTS = new ErrorCode(1_040_830_000, "供应商评级不存在");

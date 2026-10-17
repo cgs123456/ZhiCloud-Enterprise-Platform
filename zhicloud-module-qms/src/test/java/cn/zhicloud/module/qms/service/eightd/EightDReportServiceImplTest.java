@@ -9,8 +9,12 @@ import org.springframework.context.annotation.Import;
 
 import jakarta.annotation.Resource;
 
+import java.time.LocalDateTime;
+
+import static cn.zhicloud.framework.test.core.util.AssertUtils.assertServiceException;
 import static cn.zhicloud.framework.test.core.util.RandomUtils.randomLongId;
 import static cn.zhicloud.framework.test.core.util.RandomUtils.randomPojo;
+import static cn.zhicloud.module.qms.enums.ErrorCodeConstants.EIGHT_D_REPORT_NOT_CLOSEABLE;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -196,4 +200,63 @@ public class EightDReportServiceImplTest extends BaseDbUnitTest {
         assertThrows(Exception.class, () -> eightDReportService.advanceStage(randomLongId()));
     }
 
+    // ------------------------------------------------------------------
+    // §12.253：关闭类幂等——只有 D7（预防）阶段可关闭。
+    //
+    // 旧实现无前置态校验：DRAFT/D1~D6 可直关 D8（阶段内容全空却终结，D1-D7 证据被跳过），
+    // 已关闭重复关会把 closeTime 二次重写（关闭证据链被变更）。以下钉住收紧后的契约。
+    // CAS 分支（读-判-写竞态后 0 行拒绝）需真并发才可触发，单测不可确定性覆盖，在 E2E/ADR 登记。
+    // ------------------------------------------------------------------
+
+    @Test
+    public void test_closeEightDReport_draftRejected() {
+        // DRAFT 不满足前置态：拒绝关闭且状态/关闭时间均未被触碰（拒绝路径零副作用）
+        EightDReportDO report = randomPojo(EightDReportDO.class, o -> {
+            o.setStatus(EightDStatusEnum.DRAFT.getStatus());
+            o.setCloseTime(null);
+        });
+        eightDReportMapper.insert(report);
+
+        assertServiceException(() -> eightDReportService.closeEightDReport(report.getId()),
+                EIGHT_D_REPORT_NOT_CLOSEABLE);
+
+        EightDReportDO after = eightDReportMapper.selectById(report.getId());
+        assertEquals(EightDStatusEnum.DRAFT.getStatus(), after.getStatus());
+        assertNull(after.getCloseTime());
+    }
+
+    @Test
+    public void test_closeEightDReport_midStageRejected() {
+        // D1~D6 任一中间阶段关闭 = 跳过未完成阶段流转，与 DRAFT 同拒（§12.253）
+        EightDReportDO report = randomPojo(EightDReportDO.class, o -> {
+            o.setStatus(EightDStatusEnum.D4_ROOT_CAUSE.getStatus());
+            o.setCloseTime(null);
+        });
+        eightDReportMapper.insert(report);
+
+        assertServiceException(() -> eightDReportService.closeEightDReport(report.getId()),
+                EIGHT_D_REPORT_NOT_CLOSEABLE);
+
+        EightDReportDO after = eightDReportMapper.selectById(report.getId());
+        assertEquals(EightDStatusEnum.D4_ROOT_CAUSE.getStatus(), after.getStatus());
+        assertNull(after.getCloseTime());
+    }
+
+    @Test
+    public void test_closeEightDReport_alreadyClosedRejected() {
+        // 已关闭重复关：closeTime 必须保持首次关闭时刻，不被二次重写（§12.253）
+        LocalDateTime firstCloseTime = LocalDateTime.of(2024, 11, 20, 15, 30);
+        EightDReportDO report = randomPojo(EightDReportDO.class, o -> {
+            o.setStatus(EightDStatusEnum.D8_CLOSED.getStatus());
+            o.setCloseTime(firstCloseTime);
+        });
+        eightDReportMapper.insert(report);
+
+        assertServiceException(() -> eightDReportService.closeEightDReport(report.getId()),
+                EIGHT_D_REPORT_NOT_CLOSEABLE);
+
+        EightDReportDO after = eightDReportMapper.selectById(report.getId());
+        assertEquals(EightDStatusEnum.D8_CLOSED.getStatus(), after.getStatus());
+        assertEquals(firstCloseTime, after.getCloseTime());
+    }
 }

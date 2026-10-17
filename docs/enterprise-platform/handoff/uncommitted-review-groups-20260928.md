@@ -11355,3 +11355,70 @@ API 调用）；update/delete 同理仅 controller。无明细待检验单的删
 始末文档同步：next-steps 后记四已追加本条记录；§6 该登记行的口径订正落在后记四（循本文件
 「前面各节保持原样，订正以下面为准」惯例）。
 
+## 12.253 QMS 关闭类幂等收口——8D close 前置态 + 投诉 close 防重复 + CAS 落库（B 组 #2）
+
+**缺陷面（代码实证，ADR `Temp/zc_adr_253.md`）**：
+
+- `EightDReportServiceImpl.closeEightDReport` 无前置态校验：DRAFT/D1~D6 可直关
+  D8_CLOSED（8D 阶段号是推进证据，内容全空即终结）；已关闭重复关重写 closeTime；
+  `updateById` 无 CAS——「未审即批/未做即完成」终焉后「终态证据可改写」的关闭类缺口。
+- `CustomerComplaintServiceImpl.closeComplaint` 同型：登记即关（调查/处理全跳过）、
+  调查未出结论即关、已关闭重复关重写 closeTime；无 CAS。
+- 域内对照：NCR（NOT_DISPOSITIONED 022）/CAPA（NOT_CLOSE 016）均有前置态强校验——
+  8D 与客户投诉是同域仅剩的两个关闭类 fail-open。
+
+**实改**：
+
+1. `1_044_000_053 EIGHT_D_REPORT_NOT_CLOSEABLE`「8D 报告只有 D7（预防）阶段可关闭」：
+   `closeEightDReport` 仅 D7_PREVENT(70) 可关；提前关与重复关（不在 D7）共用同码
+   （循 CAPA_DOCUMENT_NOT_CLOSE 单码先例）。段位说明：QMS 通用段（块头 1-040-800
+   注释与实际码位的既有分裂保持格局——`1_040_800_002` 已被 IM 模块占用，全局码必须唯一）。
+2. `1_040_820_002 CUSTOMER_COMPLAINT_NOT_CLOSEABLE`「客户投诉只有处理中状态可关闭」：
+   `closeComplaint` 仅 HANDLING(30) 可关（循 NCR/CAPA/SCAR 专用关闭码先例，
+   不复用 advanceStatus 的通配 STATUS_INVALID）。
+3. 两处 close 落库改 **CAS 条件更新**（`mapper.update(null, LambdaUpdateWrapper…)
+   eq(id)+eq(status, 前置态)`，循器具模块 wrapper 先例）：读-判-写之间状态被并发流转时
+   0 行即拒绝而非覆盖；「重复关防重写」归并进原子防线。CAS 分支需真并发才可触发，
+   单测不可确定性覆盖（ADR/E2E 登记声明）。
+
+**行为变更（有意收紧）**：8D DRAFT/D1~D6/D8 拒 close；投诉 REGISTERED(INVESTIGATING 未
+出结论)/CLOSED 拒 close；合法路径（8D D7→close、投诉 30→close）不变。生产调用方仅
+admin controller 端点（grep 实证）；`/qms/eight-d/close` 端点带既有 `@ElectronicSignature`
+门禁（§12.253 未触碰该注解）。
+
+### 12.253.4 改动与验证清单
+
+| 文件 | 内容 |
+|---|---|
+| `enums/ErrorCodeConstants.java` | +2 码（053 / 820-002，带 §12.253 注释与段位说明） |
+| `service/eightd/EightDReportServiceImpl.java` | close 前置态校验 + CAS 条件更新（新导入 LambdaUpdateWrapper） |
+| `service/complaint/CustomerComplaintServiceImpl.java` | close 前置态校验 + CAS 条件更新（同上） |
+| `test/…/EightDReportServiceImplTest.java` | +3 案（DRAFT/D4 拒关零副作用、D8 重复关 closeTime 保原值） |
+| `test/…/CustomerComplaintStatusGuardTest.java` | +3 案（登记/调查拒关、处理中关成功、重复关防重写） |
+| `Temp/zc_edit_253.py`、`Temp/zc_qms253_e2e.py`（仓库外） | 编辑脚本（幂等 done_marker + EOL 保持）+ E2E 脚本 v2 |
+
+- 模块回归：QMS **139/139**（基线 133，+6 净增案），EOL 全 LF 保持
+- errcode 全仓扫描 **1952/0**（+2 码）
+- reactor 打包 **admin 面 45 模块 SUCCESS**（平台面：dependencies→framework→全部业务模块→
+  `zhicloud-server`），server jar **642734795 B** @ 16:04；`zhicloud-module-iot-gateway`
+  **FAILURE**（离线缓存缺 `californium-legal:3.14.0`——历史打包面为 `-pl zhicloud-server -am`
+  不含该模块，属打包面差异 + 环境噪声，与改动无涉；如实登记）
+- 真机 E2E **23/23**（二次跑达成；v1 首跑 5 FAIL 布景失误见诚实登记）：
+  - 8D **M 系列 11 案**：`/qms/eight-d/close` 端点带既有 `@ElectronicSignature`（requireReason）——
+    mock 身份过不了签名（`1_044_000_031` fail-closed）→ **close 业务段真机不可达**
+    （循 §12.245 D5「签名不可达」同款边界，8D 业务级幂等由单测 6 案承载）。
+    真机证得：门禁 fail-closed 端在改动后未破坏（DRAFT/D1/D7/不存在单 close 全被 031 拒、
+    状态与 closeTime 零副作用）；`advance-stage` 无门禁照常（0→D7 十段推进）。
+  - 投诉 **B 系列 10 案**全链实证：登记即关/调查中拒 1_040_820_002（零副作用）、
+    处理中关闭成功（CLOSED(40)+closeTime 落库）、重复关拒且 closeTime 防重写、清理零遗留。
+
+**诚实登记**：
+
+- **v1 E2E 布景失误（首跑 5 FAIL）**：未先核查签名门禁——把 8D close 当可达端点直发，
+  E03/E06/E09/E11 被门禁 031 遮蔽红、E12 因 closeTime 从未写入而假阳性「未变」红。
+  脚本改写为 M 系列（门禁证真 + 零副作用）后半定形，二跑全绿。
+- 服务重启 READY 809s（冷启动偏长，同 §12.252 观察 7 分钟 Modulith 冷启动量级）。
+- 同族残余仅登记不扩项：8D/投诉通用 update 终态可改字段、终态可 API 删、
+  advanceStage/advanceStatus 无 CAS（§12.251 家族观察已记）。
+
+始末文档同步：next-steps 后记四已追加本条记录。
