@@ -18,10 +18,14 @@
         <el-input v-model="formData.measuredValue" class="!w-1/1" placeholder="请输入实测值" />
       </el-form-item>
       <el-form-item label="检验结果" prop="result">
-        <el-input-number v-model="formData.result" class="!w-1/1" :min="0" :controls="false" placeholder="请输入检验结果" />
+        <el-select v-model="formData.result" class="!w-1/1" placeholder="请选择检验结果">
+          <el-option v-for="item in InspectionResultOptions" :key="item.value" :label="item.label" :value="item.value" />
+        </el-select>
       </el-form-item>
       <el-form-item label="缺陷严重度" prop="severity">
-        <el-input-number v-model="formData.severity" class="!w-1/1" :min="0" :controls="false" placeholder="请输入缺陷严重度" />
+        <el-select v-model="formData.severity" class="!w-1/1" placeholder="请选择缺陷严重度">
+          <el-option v-for="item in InspectionSeverityOptions" :key="item.value" :label="item.label" :value="item.value" />
+        </el-select>
       </el-form-item>
       <el-form-item label="检验员" prop="inspector">
         <el-input v-model="formData.inspector" class="!w-1/1" placeholder="请输入检验员" />
@@ -40,7 +44,7 @@
   </Dialog>
 </template>
 <script lang="ts" setup>
-import { InspectionRecordApi } from '@/api/qms/inspection/record'
+import { InspectionRecordApi, InspectionResultOptions, InspectionSeverityOptions } from '@/api/qms/inspection/record'
 
 defineOptions({ name: 'InspectionRecordForm' })
 

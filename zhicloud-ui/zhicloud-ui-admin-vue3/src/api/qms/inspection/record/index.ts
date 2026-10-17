@@ -7,6 +7,7 @@ export interface InspectionRecordVO {
   itemId?: number
   measuredValue?: string
   result?: number
+  severity?: number
   inspector?: string
   inspectTime?: Date
   remark?: string
@@ -39,3 +40,18 @@ export const InspectionRecordApi = {
     return await request.delete({ url: '/qms/inspection-record/delete?id=' + id })
   },
 }
+
+/** 检验结果（与后端 InspectionResultEnum 对齐：10 合格 / 20 不合格 / 30 不适用） */
+export const InspectionResultOptions = [
+  { value: 10, label: '合格' },
+  { value: 20, label: '不合格' },
+  { value: 30, label: '不适用' }
+]
+
+/** 缺陷严重度（与后端 InspectionSeverityEnum 对齐：10 致命 / 20 严重 / 30 轻微）；
+ * §12.255：severity 属有值域契约（@InEnum），不再以自由数字输入。 */
+export const InspectionSeverityOptions = [
+  { value: 10, label: '致命' },
+  { value: 20, label: '严重' },
+  { value: 30, label: '轻微' }
+]

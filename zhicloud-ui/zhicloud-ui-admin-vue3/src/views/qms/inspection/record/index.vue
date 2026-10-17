@@ -16,7 +16,9 @@
         <el-input-number v-model="queryParams.itemId" class="!w-240px" :controls="false" clearable placeholder="请输入检验项目 ID" />
       </el-form-item>
       <el-form-item label="检验结果" prop="result">
-        <el-input-number v-model="queryParams.result" class="!w-240px" :controls="false" clearable placeholder="请输入检验结果" />
+        <el-select v-model="queryParams.result" class="!w-240px" clearable placeholder="请选择检验结果">
+          <el-option v-for="item in InspectionResultOptions" :key="item.value" :label="item.label" :value="item.value" />
+        </el-select>
       </el-form-item>
       <el-form-item label="检验员" prop="inspector">
         <el-input v-model="queryParams.inspector" class="!w-240px" clearable placeholder="请输入检验员" @keyup.enter="handleQuery" />
@@ -53,7 +55,6 @@
       <el-table-column align="center" label="检验员" prop="inspector" min-width="110" />
       <el-table-column align="center" label="检验时间" prop="inspectTime" width="170" />
       <el-table-column align="center" label="备注" prop="remark" min-width="120" />
-      <el-table-column align="center" label="创建时间" prop="createTime" width="170" />
       <el-table-column align="center" :formatter="dateFormatter" label="创建时间" prop="createTime" width="170" />
       <el-table-column align="center" fixed="right" label="操作" width="140">
         <template #default="scope">
@@ -90,7 +91,7 @@
 
 <script lang="ts" setup>
 import { dateFormatter } from '@/utils/formatTime'
-import { InspectionRecordApi } from '@/api/qms/inspection/record'
+import { InspectionRecordApi, InspectionResultOptions } from '@/api/qms/inspection/record'
 import InspectionRecordForm from './InspectionRecordForm.vue'
 
 defineOptions({ name: 'InspectionRecord' })

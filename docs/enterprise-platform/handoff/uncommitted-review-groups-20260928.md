@@ -11499,3 +11499,58 @@ approve/reject 端点带既有电子签名门禁（非本项触碰面）。
   None abort 防御，二跑 18/18 全绿。同型边界先例：§12.245 approverId、§12.253 8D close。
 
 始末文档同步：next-steps 后记四已追加本条记录。
+## 12.255 severity/result 控件对齐契约——下拉三选 + 常量单点化（B 组 #4）
+
+**缺陷面（§12.249 系列登记的 UI 同族残余；代码逐处核定，ADR `Temp/zc_adr_255.md`）**：
+
+检验记录 SaveReqVO 契约 `@InEnum(InspectionResultEnum)` 值域 {10 合格, 20 不合格,
+30 不适用}、`@InEnum(InspectionSeverityEnum)` {10 致命, 20 严重, 30 轻微}——后端校验
+有效，前端却是自由数字输入，UI 上可提交「后端必拒值」：
+
+1. `InspectionRecordForm.vue`：result/severity 两控件 `el-input-number :min="0"`
+   （可输 0/5/99 等必拒值提交，400 参数校验才拦）。
+2. `record/index.vue` 搜索栏：result 查询控件同型（查询参数后端同为 @InEnum 必拒）。
+3. 对比参照：order 页提交检验 dialog 的 result/severity 已是 `el-select` +
+   本地常量（§12.239 时代对齐后端枚举）——同页面族内两套形态并存。
+
+**附带发现（同文件一并修正，单独登记）**：`record/index.vue` **重复「创建时间」列
+×2**（一行无 formatter、一行有）——历史补 formatter 时未删旧行，列表双列显示。
+
+**实改（纯前端，零后端、零迁移、零新码）**：
+
+1. 选项常量单点化：`RESULT_OPTIONS/SEVERITY_OPTIONS` 从 order/index.vue 本地常量
+   提升至 `src/api/qms/inspection/record/index.ts` 导出
+   `InspectionResultOptions/InspectionSeverityOptions`（第二个真实用例已出现，
+   抽象时机成立；防未来枚举扩值多页面漂移）；order/index.vue 改 alias import
+   （模板零改动），并注释标注常量来源。
+2. `InspectionRecordForm.vue`：result/severity 两 `el-input-number` → `el-select`
+   下拉三选（选项与后端枚举一一对应），placeholder 同步改「请选择…」。
+3. `record/index.vue`：搜索栏 result `el-input-number` → `el-select`（clearable）；
+   删除重复「创建时间」旧列（保留 formatter 版）。
+4. `api/qms/inspection/record/index.ts`：VO interface 补 `severity?: number`
+   （表单提交字段对齐 SaveReqVO 契约）。
+
+**边界（不动，登记）**：`orderId`/`itemId` 裸 ID 输入（域内既有形态，独立 UX 课题）；
+QMS 目录其余「el-input-number 绑定枚举语义字段」散布面（FMEA S/O/D、audit NC severity、
+MsaStudyForm studyType 等）为同类病的其余域，**不在本项**（§12.249 后续独立小项逐域收口）。
+
+### 12.255.4 改动与验证清单
+
+| 文件 | 内容 |
+|---|---|
+| `api/qms/inspection/record/index.ts` | +2 常量导出 + VO interface 补 severity |
+| `inspection/record/InspectionRecordForm.vue` | result/severity 两控件 → el-select 三选 |
+| `inspection/record/index.vue` | 查询 result → el-select；修复重复「创建时间」列 |
+| `inspection/order/index.vue` | 本地常量提升至 api 模块（alias import，模板零改动） |
+| `Temp/zc_edit_255.py`（仓库外） | 编辑脚本（幂等 done_marker + EOL 保持） |
+
+- 前端 `ts:check` EXIT=0、`build:prod` EXIT=0
+- 编辑脚本一次过（4 文件 11 处替换，锚点 count==1 全部命中；EOL 全 LF 保持）
+- 无后端改动：QMS 回归/errcode/reactor 打包/重启不涉本项（同 §12.249 前端小项先例）；
+  UI 点击冒烟不做，循 §12.239/§12.245 先例登记为验证缺口（提交必拒路径在 UI 上消失
+  属形态性收口，后端校验纵深不变）
+
+**诚实登记**：编辑脚本编写阶段两处笔误（一处无义赋值行、一处校验占位）在脚本
+落盘后立即自察删除/订正，未执行到仓库文件即消除。
+
+始末文档同步：next-steps 后记四已追加本条记录。

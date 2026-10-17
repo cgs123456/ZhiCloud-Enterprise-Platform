@@ -176,7 +176,11 @@
 <script lang="ts" setup>
 import { dateFormatter } from '@/utils/formatTime'
 import { InspectionOrderApi } from '@/api/qms/inspection/order'
-import { InspectionRecordApi } from '@/api/qms/inspection/record'
+import {
+  InspectionRecordApi,
+  InspectionResultOptions as RESULT_OPTIONS,
+  InspectionSeverityOptions as SEVERITY_OPTIONS
+} from '@/api/qms/inspection/record'
 import { InspectionItemApi } from '@/api/qms/inspection/item'
 import { DICT_TYPE } from '@/utils/dict'
 import InspectionOrderForm from './InspectionOrderForm.vue'
@@ -193,20 +197,8 @@ const InspectOrderStatus = {
   FAILED: 40
 } as const
 
-/** 检验结果（与后端 InspectionResultEnum 对齐） */
-const RESULT_OPTIONS = [
-  { value: 10, label: '合格' },
-  { value: 20, label: '不合格' },
-  { value: 30, label: '不适用' }
-]
-
-/** 严重度（与后端 InspectionSeverityEnum 对齐） */
-const SEVERITY_OPTIONS = [
-  { value: 10, label: '致命' },
-  { value: 20, label: '严重' },
-  { value: 30, label: '轻微' }
-]
-
+// §12.255：检验结果/严重度选项常量已提升至 '@/api/qms/inspection/record'
+// （InspectionResultOptions / InspectionSeverityOptions，与后端枚举单点对齐）。
 const loading = ref(true)
 const list = ref<any[]>([])
 const total = ref(0)
