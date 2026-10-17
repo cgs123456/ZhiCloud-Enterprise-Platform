@@ -35,6 +35,7 @@ import com.mzt.logapi.starter.annotation.LogRecord;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,6 +63,19 @@ public class CrmReceivableServiceImpl implements CrmReceivableService {
      * BPM 合同审批流程标识
      */
     public static final String BPM_PROCESS_DEFINITION_KEY = "crm-receivable-audit";
+
+    /**
+     * 唯一键冲突/死锁回滚后等赢家提交的上界（毫秒）。仅用于 catch 分支的自旋回查。
+     *
+     * <p>非 static final：单测需要把步长压到 0 来瞬跑退避路径（与 ERP 侧同做法）。
+     * 生产值取 ERP 侧实测上界（赢家在 100ms 内必然提交，从未触到上界）。</p>
+     */
+    private long idempotentWaitMaxMs = 2000L;
+
+    /**
+     * 自旋起步步长（毫秒）。退避 ×2 封顶 500ms。
+     */
+    private long idempotentWaitStepMs = 100L;
 
     @Resource
     private CrmReceivableMapper receivableMapper;
@@ -122,12 +136,15 @@ public class CrmReceivableServiceImpl implements CrmReceivableService {
         // INSERT vs INSERT 的 insert intention 环，锁读也排在没有竞争者的队里
         // （lockreads == inserts-1，每个输家第一次锁读就拿到行，退避一次都没触发）。
         //
-        // **这意味着本 catch 比 ERP 版本"简陋"是安全的，但安全性依赖那个没写在前面的前提**：
-        //   - catch 只接 DuplicateKeyException，不接 DeadlockLoserDataAccessException；
-        //   - 锁读只做一次，拿不到就抛 → 用户看到 500。
-        // 二者当前不会触发。但若将来有人在 INSERT 之前加入任何**不串行化**的写路径
-        // （绕过合同行锁），串行化前提立刻失效，必须改成像 ERP 的 `awaitWinner`
-        // 那样退避重试。ERP 侧修法见 `ErpFinancePaymentServiceImpl#awaitWinner`。
+        // §12.233.12 当时登记的两条弱点（catch 漏 DeadlockLoser、锁读只做一次）已于
+        // §12.247 收口：catch 扩为 `DuplicateKeyException | DeadlockLoserDataAccessException`，
+        // 回查改为 `awaitWinner` 有界退避自旋（并吞掉回查期间自身的死锁），
+        // 形制与 ERP `ErpFinancePaymentServiceImpl#awaitWinner` 一致。
+        //
+        // 为什么今天仍走不到新分支：上面 2.1 的合同行 X 锁把并发串行化成单线程流水，
+        // INSERT 之间从不重叠 → 只会撞唯一键、不会成环；锁读也排在没有竞争者的队里，
+        // 第一次就能拿到赢家。因此这次是**防御性加固**：若将来有人在 INSERT 之前加入
+        // 任何不串行化的写路径（绕过合同行锁），串行化前提失效时仍有兜底。
         //
         // 不要因为这个 catch 简单就照抄到 ERP 去，反之亦然 —— 两处的锁序不同：
         // ERP 建单前没有任何锁（会死锁，实测 348 次），CRM 有合同行锁（不会）。
@@ -136,12 +153,11 @@ public class CrmReceivableServiceImpl implements CrmReceivableService {
                 .setIdempotencyKey(idempotencyKey).setPayloadHash(payloadHash).setVersion(0);
         try {
             receivableMapper.insert(receivable);
-        } catch (DuplicateKeyException e) {
-            // 唯一键并发兜底：只按幂等键回查，禁止按 contractId 猜测并返回其他业务单据。
-            existing = receivableMapper.selectByIdempotencyKeyForUpdate(idempotencyKey);
-            if (existing == null) {
-                throw e;
-            }
+        } catch (DuplicateKeyException | DeadlockLoserDataAccessException e) {
+            // 唯一键/死锁并发兜底：只按幂等键回查，禁止按 contractId 猜测并返回其他业务单据。
+            // DeadlockLoser（§12.247）：插入被选为牺牲品时，唯一键赢家仍会提交，
+            // 与「撞唯一键」同解——退避后等赢家可见，而不是立刻 500。
+            existing = awaitWinner(idempotencyKey, e);
             log.info("[createReceivable][幂等键={} 并发重复提交，返回已有 id={}]",
                     idempotencyKey, existing.getId());
             return resolveIdempotentReceivable(existing, payloadHash);
@@ -172,6 +188,50 @@ public class CrmReceivableServiceImpl implements CrmReceivableService {
             throw exception(RECEIVABLE_IDEMPOTENCY_KEY_INVALID);
         }
         return normalized;
+    }
+
+    /**
+     * 等赢家那一行变得可见，上界内做不到就把始异常抛出去（§12.247）。
+     *
+     * <p>为什么必须自己吞掉回查期间的死锁：锁读同样走 {@code FOR UPDATE}，
+     * 多输家排在同一行的 X 锁后面时可能被选为牺牲品。锁读被回滚不改变任何事实——
+     * 赢家那一行照样在那里，退避后重试即可；真正需要如实抛出的是超过上界仍等不到，
+     * 那说明不是并发竞争而是系统级故障。</p>
+     *
+     * <p>形制与 {@code ErpFinancePaymentServiceImpl#awaitWinner} 一致：退避 ×2 封顶 500ms，
+     * 抛最初那个异常（调用方关心的是最初为什么失败）。</p>
+     *
+     * @param idempotencyKey 幂等键（只按它回查，不按业务字段猜测）
+     * @param fallback 上界内仍等不到时抛出的原始异常
+     * @return 赢家那一行（载荷一致性由调用方裁决）
+     */
+    private CrmReceivableDO awaitWinner(String idempotencyKey, RuntimeException fallback) {
+        long deadline = System.currentTimeMillis() + idempotentWaitMaxMs;
+        // 退避从一步开始；竞争越激烈（回查死锁越多），退避拉得越长
+        long backoff = idempotentWaitStepMs;
+        RuntimeException lastDeadlock = null;
+        while (true) {
+            try {
+                CrmReceivableDO existing = receivableMapper.selectByIdempotencyKeyForUpdate(idempotencyKey);
+                if (existing != null) {
+                    return existing;
+                }
+            } catch (DeadlockLoserDataAccessException de) {
+                // 回查自己被选为牺牲品：与「赢家已提交」这一事实无关，重试即可
+                lastDeadlock = de;
+            }
+            if (System.currentTimeMillis() >= deadline) {
+                // 等不到就抛最原始的那个异常：调用方关心的是最初为什么失败
+                throw lastDeadlock != null ? lastDeadlock : fallback;
+            }
+            try {
+                Thread.sleep(backoff);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                throw fallback;
+            }
+            backoff = Math.min(backoff * 2, 500L);
+        }
     }
 
     private Long resolveIdempotentReceivable(CrmReceivableDO existing, String payloadHash) {

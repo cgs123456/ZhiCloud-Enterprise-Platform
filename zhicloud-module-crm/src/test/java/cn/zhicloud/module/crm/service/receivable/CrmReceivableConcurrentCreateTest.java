@@ -105,6 +105,11 @@ public class CrmReceivableConcurrentCreateTest {
         CrmNoRedisDAO noRedisDAO = mock(CrmNoRedisDAO.class);
         ReflectionTestUtils.setField(service, "noRedisDAO", noRedisDAO);
         lenient().when(noRedisDAO.generate(anyString())).thenReturn("HK20261016000001");
+
+        // §12.247：退避参数压小（生产值 100ms/2000ms）。本类用例关心的是
+        // 「读几次之后仍能裁决 / 超界抛原异常」，不需要真实等待。
+        ReflectionTestUtils.setField(service, "idempotentWaitStepMs", 10L);
+        ReflectionTestUtils.setField(service, "idempotentWaitMaxMs", 100L);
     }
 
     /**
@@ -175,30 +180,32 @@ public class CrmReceivableConcurrentCreateTest {
     }
 
     /**
-     * 锁读只做<b>一次</b>，拿不到就抛。
+     * 锁读<b>有界重试</b>直到赢家可见（§12.247）。
      *
-     * <p>这条是 §12.233.12 实测结论的<b>反面登记</b>：CRM 靠合同行锁把 16 个线程
-     * 串行化（赢家之后每个输家的 INSERT 间隔 74~242ms 且从不重叠），
-     * 所以每个输家第一次锁读就拿到行、<b>退避循环一次都没触发</b>。
-     * 本测试因此确认「只锁读一次」的现状，并把它与 ERP 需要退避重试的形态对照
-     * （ERP 建单前没有任何锁，见 {@code ErpFinancePaymentServiceImpl#awaitWinner}）。</p>
+     * <p>本条的前身是 §12.233.12 的「反面登记」：当时锁读只做一次、拿不到就抛，
+     * 并在注释里声明「若将来有人在 INSERT 之前加入不串行化的写路径，这条会失败，
+     * 提示必须补 ERP 那样的退避重试」。§12.247 正是那个时刻——已按 ERP 同形补上
+     * {@code awaitWinner} 退避自旋，因此本条按其自述契约改写：
+     * 赢家在第 3 次回查才可见时，必须仍返回赢家 id，而不是抛 500。</p>
      *
-     * <p><b>注意本条的定位</b>：它不是「兜底够用」的证明，而是<b>把前提钉住</b>——
-     * 若将来有人在 INSERT 之前加入不串行化的写路径，这条会失败，
-     * 提示必须补 ERP 那样的退避重试。</p>
+     * <p>为什么值得单列：真机上今天走不到多轮（合同行锁把并发串行化，第一次就拿到行，
+     * 见 §12.233.12 的 lockreads == inserts-1 计数），这条是那条 trace 结论的
+     * <b>行为级备份</b>——前提一旦被未来的改动破坏，这里仍要求退避生效。</p>
      */
     @Test
-    void lockReadIsSingleShot() {
+    void lockReadRetriesUntilWinnerVisible() {
         stubForCreate();
         when(receivableMapper.selectByIdempotencyKey(IDEMPOTENCY_KEY)).thenReturn(null);
         when(receivableMapper.insert(any(CrmReceivableDO.class)))
                 .thenThrow(new DuplicateKeyException("dup"));
-        // 第一次锁读就返回 null：没有第二次
+        // 前两次回查赢家尚未提交，第三次可见
         when(receivableMapper.selectByIdempotencyKeyForUpdate(IDEMPOTENCY_KEY))
-                .thenReturn(null);
+                .thenReturn(null, null, winner(payloadHashOf(req())));
 
-        assertThrows(DuplicateKeyException.class, () -> service.createReceivable(req()));
-        verify(receivableMapper, times(1)).selectByIdempotencyKeyForUpdate(eq(IDEMPOTENCY_KEY));
+        Long id = service.createReceivable(req());
+
+        assertEquals(WINNER_ID, id, "退避重试后必须幂等返回赢家 id，而不是 500");
+        verify(receivableMapper, times(3)).selectByIdempotencyKeyForUpdate(eq(IDEMPOTENCY_KEY));
     }
 
     // ---------------------------------------------------------------- helpers

@@ -10944,3 +10944,70 @@ E2E 具体断言（API + DB 双验）：建单传 `status=30` → 落库 10；PU
    本项未新增；建议后续批量治理一轮。
 
 本节文档同步：next-steps 后记三追加 A 组第 3 项完成；HANDOFF 无对应追踪行。
+
+## 12.247 2026-10-17 CRM 回款幂等兜底加固：catch 补 DeadlockLoser + 锁读退避自旋（A 组第 4 项；ADR 先行）
+
+本节属性：台账 §12.233.12 登记的两条 CRM 回款弱点的收口（A 组小项第 4 项）。
+单服务方法内的并发兜底加固；零迁移、零新错误码、零权限、零前端。设计决策动手前定稿（§12.247.2）。
+
+### 12.247.1 复核结论
+
+- **两条弱点仍属实**：`catch` 只接 `DuplicateKeyException`（漏 `DeadlockLoserDataAccessException`）；
+  锁读只做一次、拿不到就 `throw e` → 500。§12.233.12 当时只在 catch 处补了说明性注释
+  （「合同行锁前置」这一串行化前提），**没有任何代码级兜底**；
+- **今天走不到新分支**（§12.233.12 真机 trace）：16 线程 × 20 轮里 INSERT 从不重叠
+  （赢家之后每个输家间隔 74~242ms）、`lockreads == inserts-1`，退避一次都没被触发。
+  因此本项属**防御性加固**，动因是「一旦有人在 INSERT 之前加入不串行化的写路径，
+  串行化前提立刻失效」这一未来风险，而不是现存故障。
+
+### 12.247.2 设计决策（ADR 式，动手前定案）
+
+- **D1 catch 扩为双异常**：`catch (DuplicateKeyException | DeadlockLoserDataAccessException e)`
+  （与 `ErpFinancePaymentServiceImpl#createFinancePayment` 第 147 行同形）。回查口径不变：
+  **只按幂等键回查**，禁止按 contractId 猜测；仍走 `resolveIdempotentReceivable` 做载荷指纹裁决。
+- **D2 抽 `awaitWinner`（ERP 同名同形）**：有界退避自旋，上界 2000ms、起步 100ms、
+  退避 ×2 封顶 500ms；**吞掉回查期间自身的死锁**并重试（锁读被回滚不改变「赢家已提交」这一事实）；
+  超上界仍等不到 → 抛**最初那个异常**（保留失败上下文；期间发生过回查死锁则优先抛最后一次死锁，
+  与 ERP 同规则）。两个退避字段为**实例字段**，单测可压到 0 瞬跑（沿用 ERP 的可测性做法）。
+- **D3 范围**：不动 ERP（已按同一范式加固）、不动 WMS/TMS 同族；不改锁序、不改合同行
+  `FOR UPDATE` 前置、不改校验与额度占用口径；不引入 awaitWinner 之外的新机制。
+- **D4 catch 处注释改写**：保留 §12.233.12 的 trace 读数（为什么今天走不到），补上加固内容与
+  触发条件（什么情况下才会走到），避免后人误以为可以删。
+
+### 12.247.3 变更清单（5 文件：1 后端 + 2 测试 + 2 文档）
+
+- `service/receivable/CrmReceivableServiceImpl.java`：`+DeadlockLoserDataAccessException` import；
+  `+idempotentWaitMaxMs/idempotentWaitStepMs`；catch 扩双异常并改走 `awaitWinner`；
+  `+awaitWinner` 方法（含 javadoc 说明为何必须吞掉回查期死锁）；catch 处注释改写；
+- 新测试 `CrmReceivableIdempotentWaitTest`（4 案）：死锁→赢家延迟 3 次可见仍返回赢家 id；
+  死锁→永不可见抛最初异常；回查自身死锁被吞后恢复；赢家载荷不一致抛 `1_020_004_011`；
+- 既有 `CrmReceivableConcurrentCreateTest.lockReadIsSingleShot` **按其自述契约改写**为
+  `lockReadRetriesUntilWinnerVisible`（该测试原本声明「若将来有人加入不串行化写路径，这条会失败，
+  提示必须补 ERP 那样的退避重试」——§12.247 正是那个时刻），并在 inject 里把退避参数压到
+  10ms/100ms 避免「永不可见」用例空转 2s；
+- 2 个文档（台账本节 + next-steps 后记三）。
+
+### 12.247.4 验证读数
+
+- 新单测 `CrmReceivableIdempotentWaitTest` **4/4**；`CrmReceivableServiceImplTest` **9/9**；
+  CRM 模块全量回归 **74/74**（70 + 4，Skipped=5 为无 MySQL 容器的集成用例，与基线同）；
+- errcode 全仓扫描 **1947 条 / 0 碰撞**（零新码）；
+- reactor 重打包（`-pl zhicloud-server -am`）**BUILD SUCCESS**，新 jar（642739969B，12:59）真机运行；
+- 真机并发探针重跑（`Temp\zc_crm_receivable_concurrency_probe.py`，16 线程 × 20 轮同幂等键）：
+  **code=0 320/320、逐轮 r02–r20 每键恰好 1 行**；服务日志
+  `DeadlockLoser / CannotAcquireLock / Lock wait timeout` 计数 **0** —— 与 §12.233.12 基线一致，
+  证明加固未引入回归；
+- 探针残留清理：库内 probe 行 21 条（本次 20 轮 + §12.233.12 历史遗留 1 条，该探针不自清理）
+  连同配套 `crm_permission` 21 行一并删除，**清理后 0**；
+- 无前端改动 → 不跑 `ts:check`/`build:prod`；行尾保真：2 个 Java 文件 LF-only。
+
+### 12.247.5 连带观察（登记，不动手）
+
+1. **新分支真机不可触发**（§12.247.1）：以单测钉住语义，真机只证无回归；
+   要真机触发需人为制造不串行化写路径，不为此改代码。
+2. **探针脚本不自清理**：本次顺手清掉了历史遗留行；建议后续探针统一在 finally 里清理
+   （工程纪律问题，不属本项范围）。
+3. **沙箱 `crm_permission` 存量孤儿**：清理后仍有 44 条与回款 biz_type 相同、但 `biz_id` 无对应回款行的
+   历史孤儿（非本轮产生）；如需治理另立项。
+
+本节文档同步：next-steps 后记三追加 A 组第 4 项完成；HANDOFF 无对应追踪行。
