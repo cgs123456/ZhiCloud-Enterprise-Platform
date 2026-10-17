@@ -47,6 +47,7 @@ import java.util.stream.Collectors;
 
 import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_APS_PLAN_CANNOT_CANCEL;
+import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_APS_PLAN_RESCHEDULE_TIME_CONFLICT;
 import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_APS_PLAN_CAPACITY_EXCEEDED;
 import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_APS_PLAN_DATE_RANGE_INVALID;
 import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_APS_PLAN_NOT_CONFIRMED;
@@ -287,6 +288,9 @@ public class MesProApsServiceImpl implements MesProApsService {
         }
         // 4. 工单时段冲突检测：新时段 [newStartTime, newEndTime) 与同工位其他计划重叠时拒绝
         //    查询采用「重叠」语义（左跨/右跨/被包含全覆盖），且已取消/已完成的计划不占用工位资源
+        //    上述入参校验与本处冲突拒绝是两条路径两码（§12.257 拆码，勿再共用一个码）：
+        //    - 入参非法（newStart 空或 ≥ 计划结束时间）→ PRO_APS_PLAN_RESCHEDULE_TIME_INVALID
+        //    - 时段冲突（新窗与同工位他人计划重叠）   → PRO_APS_PLAN_RESCHEDULE_TIME_CONFLICT
         long durationHours = ChronoUnit.HOURS.between(plan.getPlannedStartTime(), plan.getPlannedEndTime());
         LocalDateTime newEndTime = newStartTime.plusHours(durationHours);
         List<MesProApsPlanDO> sameWorkstationPlans = apsPlanMapper.selectListOverlappingByWorkstation(
@@ -299,7 +303,7 @@ public class MesProApsServiceImpl implements MesProApsService {
             if (other.getPlannedStartTime() != null && other.getPlannedEndTime() != null
                     && newStartTime.isBefore(other.getPlannedEndTime())
                     && newEndTime.isAfter(other.getPlannedStartTime())) {
-                throw exception(PRO_APS_PLAN_RESCHEDULE_TIME_INVALID);
+                throw exception(PRO_APS_PLAN_RESCHEDULE_TIME_CONFLICT);
             }
         }
         // 5. 更新计划时段（保持时长不变：开始/结束时间同步平移，避免时长漂移与占用窗虚化）

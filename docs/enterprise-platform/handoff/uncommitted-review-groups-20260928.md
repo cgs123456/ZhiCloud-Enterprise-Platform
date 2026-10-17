@@ -11623,3 +11623,70 @@ MsaStudyForm studyType 等）为同类病的其余域，**不在本项**（§12.
 - **UI 点击冒烟**：循 §12.239 先例登记为验证缺口，前端回归由 `ts:check`/`build:prod` 承载。
 
 本节文档同步：next-steps 后记五追加 §12.256 记录；HANDOFF 无对应追踪行。
+## 12.257 APS 重排产冲突错误码拆分——1_040_509_003 双路径分流（B 组余项·拆码）
+
+本节处理 §12.251 处理中新发现与 §12.251.5-1 登记（「待产品口径后改造（拆新码或改文案）」）：
+按用户「继续做b组余项」令定「拆新码」。设计锁 `Temp/zc_adr_257.md`，实施 `Temp/zc_edit_257.py`
+（字节级、幂等 done_marker、Java LF-only），`Temp/zc_aps244_e2e.py` 复用扩展，一个提交成束。
+
+### 12.257.1 缺陷面（承接 §12.251.1 新发现）
+
+`reschedule(planId, newStartTime)` 内两条路径共用 `PRO_APS_PLAN_RESCHEDULE_TIME_INVALID`
+（1_040_509_003，文案「重排产开始时间必须早于计划结束时间」）：
+入参校验路径（newStart 空或 ≥ 计划结束时间）文案与真实原因**一致**；
+冲突拒绝路径（新窗与同工位他人计划重叠）命中时提示语与真实原因**脱节**——操作员按提示
+自检会被误导（§12.250 发现 4 同族：文案与实现不对齐）。
+
+### 12.257.2 设计决策（ADR 式）
+
+- **D1 拆新码（而非改文案）**：入参路径文案本身准确，改中性两路径都模糊；循 §12.253
+  精确码先例；**前端零引用实测**（`1040509003`/「重排产开始时间」在 admin-vue3 src 0 命中，
+  提示由后端 errcode msg 全局吐司承载）→ 拆码零前端改动、无提示契约破坏面；
+  仓库内数字字面量 003 仅 ErrorCodeConstants 一处，爆炸半径最小。
+- **D2 新码 `PRO_APS_PLAN_RESCHEDULE_TIME_CONFLICT = 1_040_509_013`**（509 段 000~012
+  已占用，插于 `CANNOT_CANCEL`(_012) 行后保持码位序），文案「重排产与同工位其他排产计划
+  冲突，请调整时段或先取消冲突计划」。
+- **D3 注释锚点**：冲突检测步骤注释写明「两路径两码勿再共用」+ 各自码名；入参校验
+  throw 不动。
+- **D4 单测分流**：`testReschedule_leftStraddleConflict_rejected` 断言换 CONFLICT；
+  `testReschedule_timeNotBeforeEnd_rejected` 保持 INVALID——两案并存即「同方法两码分流」
+  的单测证据（测试数不变，无新增案）。
+- **D5 真机归属**：MES 问题无 H2 真表基座（§12.251 D5 同款）；复用 zc_aps244_e2e.py，
+  ⑥冲突路径断言码换新、新增 ⑦ 入参路径 3 案，59 → 62 全量重跑。
+
+### 12.257.3 变更清单（3 内容文件）
+
+| 文件 | 变更 |
+| --- | --- |
+| `enums/ErrorCodeConstants.java` | +`PRO_APS_PLAN_RESCHEDULE_TIME_CONFLICT`(1_040_509_013) |
+| `service/pro/aps/MesProApsServiceImpl.java` | +import（字母序）；冲突 throw 换码 + 步骤注释锚点（入参 throw 不动） |
+| `test/…/MesProApsServiceImplTest.java` | +import CONFLICT；冲突案断言换 CONFLICT |
+| `Temp/zc_aps244_e2e.py`（仓库外） | ⑥断言换 1040509013；+⑦ 三案（54/55/56） |
+
+### 12.257.4 验证读数
+
+- 模块回归：MES **846/846**（测试数不变，断言分流）；
+- errcode 全仓扫描 **1953/0**（+1 新码，仓库根 cwd）；
+- reactor 打包 `-pl zhicloud-server -am` **SUCCESS**（43/43，jar 642735388B @ 18:05）；
+- 重启 READY **691s**（PID 28956）；
+- 真机 E2E **62/62** 全量：原 59 案回归无损，
+  ⑥ 冲突被拒改断 1040509013（P6(99) 跨窗 fail-safe 真机保钉），
+  ⑦ newStart==plannedEnd 与 newStart>end 均拒 **1040509003**（入参路径保留码真机证）
+  + 被拒后 P7 原位未动 + 对照组前移空窗可达；清理零遗留 + 工位复原 8/8。
+
+### 12.257.5 事前失误登记（诚实，全部已修正）
+
+1. **段位漏判三轮**：初算 509 段「000~009 已用、_010 空闲」→ 实际已用至 _012
+   （CAPACITY_EXCEEDED=_010 / NOT_DRAFT=_011 / CANNOT_CANCEL=_012）。根因：段位抽取
+   过滤子串 `_00` 只匹配低段位（`Temp/zc_bremain2_grep.py` 的两段过滤），导致 ADR
+   初稿 D2 的 _010 错误、脚本初稿哨兵选择连带失误。教训入 §12.257 ADR：
+   **段位决策必须整段照单（列出全部 `1_040_509_` 行），不再用子串过滤**。
+2. **done_marker 选择失误与此互为因果**：EC edit 以数值 `1_040_509_010` 作已改哨兵，
+   而该数值已被 CAPACITY_EXCEEDED 占用 → 首跑 EC 静默 SKIPPED-ALREADY（新码未写入），
+   svc/test 改到位后 mvn 无法 find symbol；且 errcode 扫描滞留 1952——扫描数字与
+   预期不符反当了二次防线，避免了带病打包。哨兵一律用**新常量名**。
+3. **repack 首跑 cwd 错位一次**：`-pl zhicloud-server` 从父目录解析不到 reactor
+   （「Could not find the selected project」），改回仓库根 cwd 后成功；
+4. **E2E 标签沿革**：zc_aps244_e2e.py 文档首部描述同步更新为分流语义。
+
+本节文档同步：next-steps 后记五追加 §12.257 记录；HANDOFF 无对应追踪行。

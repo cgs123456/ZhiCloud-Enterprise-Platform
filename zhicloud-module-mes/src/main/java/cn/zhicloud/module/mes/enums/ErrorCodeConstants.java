@@ -347,6 +347,7 @@ public interface ErrorCodeConstants {
     ErrorCode PRO_APS_PLAN_CAPACITY_EXCEEDED = new ErrorCode(1_040_509_010, "工位「{}」产能负载超限，排产可能延后");
     ErrorCode PRO_APS_PLAN_NOT_DRAFT = new ErrorCode(1_040_509_011, "只有草稿状态的排产计划才能确认");
     ErrorCode PRO_APS_PLAN_CANNOT_CANCEL = new ErrorCode(1_040_509_012, "排产计划「{}」当前状态不允许取消");
+    ErrorCode PRO_APS_PLAN_RESCHEDULE_TIME_CONFLICT = new ErrorCode(1_040_509_013, "重排产与同工位其他排产计划冲突，请调整时段或先取消冲突计划");
 
     // ========== MES 生产管理-MRP 物料需求计划（1-040-510-000） ==========
     ErrorCode PRO_MRP_PLAN_NOT_EXISTS = new ErrorCode(1_040_510_000, "MRP 计划不存在");

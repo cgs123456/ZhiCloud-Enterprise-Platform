@@ -30,6 +30,7 @@ import java.util.List;
 
 import static cn.zhicloud.framework.test.core.util.AssertUtils.assertServiceException;
 import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_APS_PLAN_CANNOT_CANCEL;
+import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_APS_PLAN_RESCHEDULE_TIME_CONFLICT;
 import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_APS_PLAN_NOT_CONFIRMED;
 import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_APS_PLAN_NOT_DRAFT;
 import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_APS_PLAN_NOT_EXISTS;
@@ -181,7 +182,7 @@ public class MesProApsServiceImplTest extends BaseDbUnitTest {
                 .thenReturn(List.of(other));
 
         assertServiceException(() -> apsService.reschedule(PLAN_ID, START.minusHours(2)),
-                PRO_APS_PLAN_RESCHEDULE_TIME_INVALID);
+                PRO_APS_PLAN_RESCHEDULE_TIME_CONFLICT);
         verify(apsPlanMapper, never()).updateById(any(MesProApsPlanDO.class));
     }
 
