@@ -5,6 +5,7 @@ import cn.zhicloud.framework.mybatis.core.mapper.BaseMapperX;
 import cn.zhicloud.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.zhicloud.module.mes.controller.admin.pro.aps.vo.MesProApsPlanPageReqVO;
 import cn.zhicloud.module.mes.dal.dataobject.pro.aps.MesProApsPlanDO;
+import cn.zhicloud.module.mes.enums.pro.MesProApsPlanStatusEnum;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -46,9 +47,10 @@ public interface MesProApsPlanMapper extends BaseMapperX<MesProApsPlanDO> {
      * 按工位 ID 集合查询与 [startTime, endTime) 时间窗存在重叠的排产计划（generate 占用时间线）
      *
      * 一次 IN 查询替代按工位逐个查询的 N+1；采用「重叠」语义（左跨/右跨/被包含全覆盖），
-     * 且仅 DRAFT/CONFIRMED/EXECUTING 状态的记录占用工位资源（已取消/已完成的计划不占位）。
-     * 旧版「被包含」语义（`le(endTime).ge(startTime)`）会漏计左跨计划，导致排产可用时间被低估
-     *（§12.240.5 登记、§12.244 收口）。
+     * 状态按「排除终态」过滤（{@link MesProApsPlanStatusEnum#TERMINAL_STATUS_VALUES}）：
+     * 仅已取消/已完成不占位，其余状态（含枚举域外的未知值）一律按占位处理——保守方向，
+     * 宁可低估空档，不能高估空档造成超排。旧版「被包含」语义（`le(endTime).ge(startTime)`）
+     * 会漏计左跨计划，导致排产可用时间被低估（§12.240.5 登记、§12.244 收口，状态集收口 §12.251）。
      *
      * @param workstationIds 工位编号集合
      * @param startTime 开始时间
@@ -64,24 +66,22 @@ public interface MesProApsPlanMapper extends BaseMapperX<MesProApsPlanDO> {
                 .isNotNull(MesProApsPlanDO::getPlannedEndTime)
                 .lt(MesProApsPlanDO::getPlannedStartTime, endTime)
                 .gt(MesProApsPlanDO::getPlannedEndTime, startTime)
-                .in(MesProApsPlanDO::getStatus,
-                        cn.zhicloud.module.mes.enums.pro.MesProApsPlanStatusEnum.DRAFT.getStatus(),
-                        cn.zhicloud.module.mes.enums.pro.MesProApsPlanStatusEnum.CONFIRMED.getStatus(),
-                        cn.zhicloud.module.mes.enums.pro.MesProApsPlanStatusEnum.EXECUTING.getStatus())
+                .notIn(MesProApsPlanDO::getStatus, MesProApsPlanStatusEnum.TERMINAL_STATUS_VALUES)
                 .orderByAsc(MesProApsPlanDO::getPlannedStartTime));
     }
 
     /**
      * 按工单 ID 列表查询已存在的排产计划（用于重复排产校验）
      *
-     * 仅查询 DRAFT/CONFIRMED 状态的计划（已取消/已关闭的计划不阻断重排产）
+     * 仅查询 DRAFT/CONFIRMED 状态的计划（已取消/已关闭的计划不阻断重排产）。
+     * 此处是白名单语义（EXECUTING 不阻断重复排产），与占用口径（终态排除，见
+     * {@link MesProApsPlanStatusEnum#TERMINAL_STATUS_VALUES}）不同源，勿合并（§12.251）。
      */
     default List<MesProApsPlanDO> selectListByWorkOrderIds(List<Long> workOrderIds) {
         return selectList(new LambdaQueryWrapperX<MesProApsPlanDO>()
                 .in(MesProApsPlanDO::getWorkOrderId, workOrderIds)
-                .in(MesProApsPlanDO::getStatus,
-                        cn.zhicloud.module.mes.enums.pro.MesProApsPlanStatusEnum.DRAFT.getStatus(),
-                        cn.zhicloud.module.mes.enums.pro.MesProApsPlanStatusEnum.CONFIRMED.getStatus()));
+                .in(MesProApsPlanDO::getStatus, MesProApsPlanStatusEnum.DRAFT.getStatus(),
+                        MesProApsPlanStatusEnum.CONFIRMED.getStatus()));
     }
 
     /**
@@ -102,8 +102,10 @@ public interface MesProApsPlanMapper extends BaseMapperX<MesProApsPlanDO> {
      * 按工位查询与 [startTime, endTime) 时间窗存在重叠的排产计划（用于重排产冲突检测）
      *
      * 与 {@link #selectListByWorkstationAndTimeRange} 的「被包含」语义不同：
-     * 覆盖左跨/右跨/被包含三种相交情形；且仅 DRAFT/CONFIRMED/EXECUTING 状态的记录
-     * 占用工位资源（已取消/已完成的计划不阻断重排产）。
+     * 覆盖左跨/右跨/被包含三种相交情形；状态按「排除终态」过滤
+     * （{@link MesProApsPlanStatusEnum#TERMINAL_STATUS_VALUES}）：仅已取消/已完成
+     * 不阻断重排产，其余状态（含枚举域外的未知值）一律按占位/阻断处理——保守方向，
+     * 与 generate 占用时间线共用同一锚点（§12.244、§12.251）。
      */
     default List<MesProApsPlanDO> selectListOverlappingByWorkstation(Long workstationId,
                                                                      LocalDateTime startTime,
@@ -114,10 +116,7 @@ public interface MesProApsPlanMapper extends BaseMapperX<MesProApsPlanDO> {
                 .isNotNull(MesProApsPlanDO::getPlannedEndTime)
                 .lt(MesProApsPlanDO::getPlannedStartTime, endTime)
                 .gt(MesProApsPlanDO::getPlannedEndTime, startTime)
-                .in(MesProApsPlanDO::getStatus,
-                        cn.zhicloud.module.mes.enums.pro.MesProApsPlanStatusEnum.DRAFT.getStatus(),
-                        cn.zhicloud.module.mes.enums.pro.MesProApsPlanStatusEnum.CONFIRMED.getStatus(),
-                        cn.zhicloud.module.mes.enums.pro.MesProApsPlanStatusEnum.EXECUTING.getStatus())
+                .notIn(MesProApsPlanDO::getStatus, MesProApsPlanStatusEnum.TERMINAL_STATUS_VALUES)
                 .orderByAsc(MesProApsPlanDO::getPlannedStartTime));
     }
 

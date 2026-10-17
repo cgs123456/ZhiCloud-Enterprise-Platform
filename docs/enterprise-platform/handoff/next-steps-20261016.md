@@ -205,3 +205,12 @@
 - **A6 检验记录 severity 回读 + MSA 去重复列已完成**（台账 §12.249）：`InspectionRecordRespVO` 补 `Integer severity`（不加字典注解，模块内 `FmeaItemRespVO` 等同样无注解），submit 弹窗预填改 `r.severity ?? 20` 并订正注释；MSA 研究页删除重复「创建时间」列（保留带 `dateFormatter` 的）。**本项订正一处事实**：`severity` 不是 0-10 数值，而是 `@InEnum(InspectionSeverityEnum)` 的 `[10,20,30]`（致命/严重/轻微）——真机 400「取值必须为: [10, 20, 30]」推翻了读前端控件得出的判断（读码要读到注解那一行）。证据：新单测 3/3、QMS 回归 128/128、errcode 1947/0、重打包 SUCCESS、真机 E2E 13/13（含值域负向）、`ts:check`/`build:prod` exit=0。新登记：CRUD 表单 `el-input-number :min=0` 可提交后端必拒的值（待产品口径）。
 - **A 组 6 项全部完成**：A1 APS generate 占用时间线（§12.244）、A2 器具域日期归一 + approverId 落库（§12.245）、A3 APS/MRP 字典种子 V204（§12.246）、A4 CRM 回款幂等兜底加固（§12.247）、A5 ERP H2 补付款/收款真表（§12.248）、A6 检验记录 severity + MSA 去重列（§12.249）；6 个独立提交，工作区干净、未推送。B 组（待拍板项）与 C/D/E 组维持原状。
 - **A 组推送前 review 已完成**（台账 §12.250）：逐提交读生产代码 diff + 机器不变量复查，**抓到 1 处真缺陷**——A6 的 `InspectionRecordRespVO` `@Schema` 仍写「0-10 数值」，与同提交已订正的「`@InEnum` 值域 `[10,20,30]`」自相矛盾（订正时漏改主体），已修并`git grep` 全仓扫同类表述；其余 3 项机器发现为误报/既有内容（QMS `create_tables.sql` 纯 CRLF 属既有不变量；绝对路径与 `MOCK_SECRET` 只在 §12.95/§12.161/§12.237/§12.238 旧段；真机库口令全仓 0 命中）。复验 QMS 128/128；因修复仅 OpenAPI 文案（零序列化影响）未重打包/未重跑 E2E（已记录）。另登记 3 条观察：A4 catch 分支不可加写（死锁整事务回滚后的事务语义）、A1 mapper 状态集用全限定名内联（可收进枚举常量）、A4 不吞锁等待超时（与 ERP 同规则）。
+- **复核观察三条收口已完成**（台账 §12.251；§12.250.5 三条观察予以落实）：①A1 占位状态集收进枚举锚点
+  `MesProApsPlanStatusEnum.TERMINAL_STATUS_VALUES`，两个占位查询（generate + 重排产冲突检测）由
+  `.in(DRAFT/CONFIRMED/EXECUTING)` 改 `.notIn(终态)`——黑名单口径：新增状态默认按占位处理（宁可低估空档不超排），
+  枚举域外未知值同样占位（有意语义增量，真机钉死）；`selectListByWorkOrderIds` 保持白名单并注明不同源勿合并。
+  ②A4 两条边界落 CRM/ERP 两侧 `awaitWinner` javadoc：catch 分支保持只读（死锁整事务回滚 → 追加写即失败路径独立落库）、
+  只吞死锁不吞锁等待超时（1205 属系统级故障如实抛出，勿把 catch 扩到父类）。证据：MES 846/846、CRM 74/74、ERP 188/188、
+  errcode 1947/0、reactor 重打包 SUCCESS、真机 E2E 59/59（原 41 案回归 + 域外 99 占位与 reschedule 冲突 fail-safe 两场景 +
+  清理零遗留；首跑 3 失败系布景漏 confirm 步骤、非生产缺陷，已登记）。新发现已登记：1_040_509_003 被「时间非法」与
+  「时段冲突」双路径复用，冲突时提示语误导（待口径，不动手）。

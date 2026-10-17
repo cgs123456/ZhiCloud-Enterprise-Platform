@@ -11220,3 +11220,71 @@ E2E 具体断言（API + DB 双验）：建单传 `status=30` → 落库 10；PU
    锁等待超时应如实暴露而非掩盖——保留现状，此处仅备案免得后人当漏洞「修」。
 
 本节文档同步：next-steps 后记三追加 review 记录一行；HANDOFF 无对应追踪行。
+## 12.251 2026-10-17 复核观察三条收口（占位黑名单锚点 + 死锁分支边界备案；ADR 先行）
+
+本节处理 §12.250.5 登记的三条观察：一条实改（观察②状态集收口），两条备案（观察①③落 javadoc 锚点）；
+设计锁见 `Temp/zc_adr_251.md`，实施 Python 字节级脚本（`Temp/zc_edit_251.py`），一个提交成束。
+
+### 12.251.1 缺陷面（承接 §12.250.5）
+
+- 观察①（A4 catch 分支不可追加写）：InnoDB 死锁（1213）把整个事务回滚，随后 catch 分支里的语句实际在一个新事务里——
+  若在 `awaitWinner` 之后追加写操作，写会随方法出口的 commit **单独落库**（失败路径上的非原子提交）。现状 CRM/ERP 两侧分支均只读
+  （锁读 + `resolveIdempotent*` 纯校验，逐行核实），风险在约束只存在于会话记载，诱惑点处无可见锚点。
+- 观察②（A1 状态集全限定名内联）：实测在同一个 mapper 里共 **3 处**内联——generate 占位查询、
+  重排产冲突检测 `selectListOverlappingByWorkstation`（与 generate **同一条占位规则**，第二个真实用例）、
+  重复排产校验 `selectListByWorkOrderIds`（DRAFT/CONFIRMED **白名单**语义，与占位口径不同源）。
+- 观察③（不吞锁等待超时）：catch 精确匹配 `DeadlockLoserDataAccessException`（1213）；
+  1205（`CannotAcquireLockException`）不被吞是有意为之（持锁者停滞 = 系统级故障，如实抛出），仅会话备案，代码无锚点。
+- **处理中新发现（登记）**：`PRO_APS_PLAN_RESCHEDULE_TIME_INVALID`（1_040_509_003）被两条路径共用——
+  「重排产开始时间必须早于计划结束时间」（入参校验）与「新时段与同工位其他计划重叠」（冲突拒绝），
+  后者命中时提示语与真实原因不符（§12.250 发现 4 的同族：文案与实现脱节）。本项不改（涉及前端提示契约），登记待口径。
+
+### 12.251.2 设计决策
+
+- D1 占位状态集收口为**黑名单（排除终态）**而非观察原文设想的 `OCCUPYING_STATUSES` 白名单：
+  (a) 枚举值域内（0..4）与旧三态白名单严格等价（5 状态下两式结果集相同）；
+  (b) 新增状态默认按占位处理——容量规划宁可低估空档，不能高估空档造成超排（§12.244 修复的正是相反方向）；白名单写法下新增状态会静默漏计；
+  (c) **域外未知值（如架构外写入的 99）从『不占位』变『占位』——有意语义增量，方向保守，E2E 钉死**；
+  (d) 「第二个真实用例才抽象」恰恰满足：重排产冲突检测就是同一占位规则的第二个消费点，两处共用同一锚点。
+- D2 `selectListByWorkOrderIds` 保持白名单：EXECUTING 不阻断重复排产，与占位口径不同源，
+  不为其新造常量（单用例）；仅把 FQN 内联改为正常 import 短名，javadoc 写明「不同源勿合并」。
+- D3/D4 观察①③落点选两处 `awaitWinner` javadoc（诱惑点所在）：①catch 分支保持只读（死锁整事务回滚语义）；
+  ②只吞死锁不吞锁等待超时（勿把 catch 扩到父类 `PessimisticLockingFailureException`）。CRM/ERP 双侧同形制。
+- D5 SQL 语义的验证归属真机 E2E：MES 问题无 H2 真表基座，Mockito 只能验证调用形态验证不了 SQL。
+- D6 一个提交成束（同一 ADR；实改与备案互相独立但同源于 review 复盘）。
+
+### 12.251.3 变更清单
+
+| 文件 | 变更 |
+|---|---|
+| `enums/pro/MesProApsPlanStatusEnum.java` | 新增 `TERMINAL_STATUS_VALUES`（List<Integer>，unmodifiable；javadoc 含方向论证与「唯一锚点/禁止重新内联」约束） |
+| `dal/mysql/pro/aps/MesProApsPlanMapper.java` | import 枚举；两个占位方法 `.in(三态 FQN)` → `.notIn(TERMINAL_STATUS_VALUES)`，javadoc 同步；`selectListByWorkOrderIds` 改短名 + 「不同源勿合并」警示 |
+| `service/pro/aps/MesProApsServiceImpl.java` | generate 注释块更新为终态排除口径 |
+| `crm/service/receivable/CrmReceivableServiceImpl.java` | `awaitWinner` javadoc 插入两条边界段（只读 + 不吞 1205），引 §12.250.5/§12.251 |
+| `erp/service/finance/ErpFinancePaymentServiceImpl.java` | 同上（与 CRM 同形制） |
+| `Temp/zc_aps244_e2e.py`（不入库） | 工单 5→7 张；新场景 ⑤域外 99 占位、⑥reschedule 冲突 fail-safe；断言 41→59 |
+
+五处均为锚点级精确替换（每处断言出现次数后替换），Java 行尾 LF 不变量编辑前后自检通过；
+过程留痕：ERP javadoc 曾多出一个无 `*` 前缀空行，即时修正（`Temp/zc_fix_erp_javadoc_251.py`）。
+
+### 12.251.4 验证读数
+
+- 模块回归：MES **846/846**、CRM **74/74**（5 skip 为基线常态）、ERP **188/188**，BUILD SUCCESS ×2；
+- errcode 全仓扫描 **1947/0**（无新错误码，仓库根 cwd）；
+- reactor 重打包 SUCCESS（-am 全 43 模块，2m14s）；jar 642740357 B @ 02:24；重启 READY 426s，
+  服务日志无 ERROR（2 处 WARN 为 generate 跳过短时长工单的既有预期，对应检查 27/28 的断言对象）;
+- 真机 E2E **59/59**：原 41 案回归无损（左跨收口、取消解除占用、右跨 fail-safe）；
+  新 ⑤（P6 状态改写域外值 99 → W8 复排，**P7 起点被推后到 P6.end**——黑名单方向真机铁证，
+  旧白名单下该值不占位、起点将等于 W8 起点）；
+  新 ⑥（confirm P7 → reschedule 对 P6(99) 跨窗**被拒，code=1040509003 冲突路径** → 被拒后原位未动 →
+  对照组前移空窗重排成功——非冲突目标可达性自证）；清理含 status=99 **零遗留** + 工位状态复原（8/8）;
+- **如实登记**：E2E 首跑 57 案中 3 失败，根因是布景建模漏了 confirm 步骤（P7 仍 DRAFT，被 1_040_509_002
+  前置校验挡下），非生产代码缺陷；补正后全绿。MySQL 对 `NOT IN` 语义的实测（含已取消行不占位、域外行占位）在本次读数内。
+
+### 12.251.5 连带观察（不动手）
+
+1. `1_040_509_003` 双路径复用（见 .1 新发现）：冲突拒绝时提示语误导，待产品口径后改造（拆新码或改文案）。
+2. E2E 探针脚本用硬 UPDATE 把计划状态改写为 99——脚本自带清理（check 46 已零遗留断言），无需跨会话处理；
+   「探针不自清理」此前针对的是 CRM 并发探针（still 待办），本项不新增同类负担。
+
+本节文档同步：next-steps 后记三追加 §12.251 记录一行；HANDOFF 无对应追踪行。

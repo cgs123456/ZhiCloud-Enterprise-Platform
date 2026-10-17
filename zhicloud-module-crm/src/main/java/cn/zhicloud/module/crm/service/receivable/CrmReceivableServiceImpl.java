@@ -198,6 +198,13 @@ public class CrmReceivableServiceImpl implements CrmReceivableService {
      * 赢家那一行照样在那里，退避后重试即可；真正需要如实抛出的是超过上界仍等不到，
      * 那说明不是并发竞争而是系统级故障。</p>
      *
+     * <p>两条边界，勿当缺陷「修」（§12.250.5-1/-3 登记，§12.251 备案）：
+     * ① catch 分支保持只读 —— InnoDB 死锁（1213）会把整个事务回滚，之后同一连接里的写
+     *    不会回到原事务的原子单元（会随方法出口的 commit 单独落库），等于在失败路径上写库；
+     * ② 只吞死锁，不吞锁等待超时 —— catch 精确匹配 {@code DeadlockLoserDataAccessException}
+     *    （SQL 1213），1205（锁等待超时，{@code CannotAcquireLockException}）不被吞：
+     *    持锁者停滞属系统级故障，应如实抛出，勿把 catch 扩到父类 PessimisticLockingFailure。</p>
+     *
      * <p>形制与 {@code ErpFinancePaymentServiceImpl#awaitWinner} 一致：退避 ×2 封顶 500ms，
      * 抛最初那个异常（调用方关心的是最初为什么失败）。</p>
      *
