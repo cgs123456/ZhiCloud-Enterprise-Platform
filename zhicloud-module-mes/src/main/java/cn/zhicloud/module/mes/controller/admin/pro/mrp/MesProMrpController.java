@@ -3,6 +3,7 @@ package cn.zhicloud.module.mes.controller.admin.pro.mrp;
 import cn.zhicloud.framework.common.pojo.CommonResult;
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
+import cn.zhicloud.module.mes.controller.admin.pro.mrp.vo.MesProMrpConvertRespVO;
 import cn.zhicloud.module.mes.controller.admin.pro.mrp.vo.MesProMrpPlanCreateReqVO;
 import cn.zhicloud.module.mes.controller.admin.pro.mrp.vo.MesProMrpPlanPageReqVO;
 import cn.zhicloud.module.mes.controller.admin.pro.mrp.vo.MesProMrpPlanRespVO;
@@ -81,6 +82,14 @@ public class MesProMrpController {
     public CommonResult<Boolean> confirmMrpPlan(@RequestParam("id") Long id) {
         mrpService.confirmMrpPlan(id);
         return success(true);
+    }
+
+    @PostMapping("/plan/convert")
+    @Operation(summary = "转采购/生产建议")
+    @Parameter(name = "id", description = "MRP 计划编号", required = true, example = "1024")
+    @PreAuthorize("@ss.hasPermission('mes:pro-mrp:calculate')")
+    public CommonResult<MesProMrpConvertRespVO> convertMrpPlan(@RequestParam("id") Long id) {
+        return success(mrpService.convertMrpPlan(id));
     }
 
 }

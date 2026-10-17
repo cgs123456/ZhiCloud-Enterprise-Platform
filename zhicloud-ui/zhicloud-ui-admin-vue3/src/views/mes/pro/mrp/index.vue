@@ -51,6 +51,16 @@
           >
             确认
           </el-button>
+          <!-- 2 已确认：转采购/生产建议（一次性终态；逐行落地草稿工单） -->
+          <el-button
+            v-if="scope.row.status === MrpPlanStatus.CONFIRMED"
+            v-hasPermi="['mes:pro-mrp:calculate']"
+            link
+            type="primary"
+            @click="handleConvert(scope.row)"
+          >
+            转建议
+          </el-button>
           <el-button v-hasPermi="['mes:pro-mrp:query']" link type="primary" @click="openResult(scope.row)">
             结果
           </el-button>
@@ -90,12 +100,14 @@ defineOptions({ name: 'MesMrp' })
 const MrpPlanStatus = {
   DRAFT: 0,
   CALCULATED: 1,
-  CONFIRMED: 2
+  CONFIRMED: 2,
+  CONVERTED: 3
 }
 const MRP_PLAN_STATUS_LABEL: Record<number, string> = {
   0: '草稿',
   1: '已计算',
-  2: '已确认'
+  2: '已确认',
+  3: '已转建议'
 }
 
 const loading = ref(false)
@@ -146,6 +158,16 @@ const handleConfirm = async (row: any) => {
     await message.confirm(`是否确认 MRP 计划「${row.planNo}」？确认后计划将锁定。`)
     await MrpApi.MrpPlanConfirm(row.id)
     message.success('MRP 计划已确认')
+    await getList()
+  } catch {}
+}
+
+/** 转采购/生产建议（2 已确认 → 3 已转建议；有 BOM→生产型、无 BOM→采购型草稿工单） */
+const handleConvert = async (row: any) => {
+  try {
+    await message.confirm(`是否将 MRP 计划「${row.planNo}」转采购/生产建议？计划将锁定为「已转建议」。`)
+    const data = await MrpApi.MrpPlanConvert(row.id)
+    message.success(`已转建议 ${data?.totalCount ?? 0} 张（生产 ${data?.produceCount ?? 0} / 采购 ${data?.purchaseCount ?? 0}）`)
     await getList()
   } catch {}
 }

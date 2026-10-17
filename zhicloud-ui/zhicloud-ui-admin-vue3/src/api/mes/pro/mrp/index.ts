@@ -26,4 +26,8 @@ export const MrpApi = {
     // 确认 MRP 计划（1 已计算 → 2 已确认）
     return await request.put({ url: `/mes/pro/mrp/plan/confirm?id=` + id })
   },
+  MrpPlanConvert: async (id: any) => {
+    // 转采购/生产建议（2 已确认 → 3 已转建议；逐行落地为草稿工单）
+    return await request.post({ url: `/mes/pro/mrp/plan/convert?id=` + id })
+  },
 }

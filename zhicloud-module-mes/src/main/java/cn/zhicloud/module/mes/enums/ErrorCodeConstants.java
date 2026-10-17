@@ -354,6 +354,8 @@ public interface ErrorCodeConstants {
     ErrorCode PRO_MRP_PLAN_WORK_ORDER_EMPTY = new ErrorCode(1_046_000_015, "MRP 计算的生产工单不能为空");
     ErrorCode PRO_MRP_PLAN_NOT_DRAFT = new ErrorCode(1_046_000_016, "只有草稿状态的 MRP 计划才能执行计算");
     ErrorCode PRO_MRP_PLAN_NOT_CALCULATED = new ErrorCode(1_046_000_017, "只有已计算状态的 MRP 计划才能确认");
+    ErrorCode PRO_MRP_PLAN_NOT_CONFIRMED = new ErrorCode(1_046_000_043, "只有已确认状态的 MRP 计划才能转建议");
+    ErrorCode PRO_MRP_PLAN_NO_SUGGESTION = new ErrorCode(1_046_000_044, "MRP 计划没有可转建议的结果行（计划订单量均不大于 0）");
 
     // ========== MES 生产管理-返工工单（1-040-511-000） ==========
     // 注：原任务建议使用 1-040-700-000 段，但该段已被 WM_WAREHOUSE 占用，故改用 PRO 子域内 1-040-511-000 段以避免冲突

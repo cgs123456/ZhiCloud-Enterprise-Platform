@@ -2,11 +2,14 @@ package cn.zhicloud.module.mes.service.pro.mrp;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.zhicloud.framework.common.pojo.PageParam;
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
+import cn.zhicloud.module.mes.controller.admin.pro.mrp.vo.MesProMrpConvertRespVO;
 import cn.zhicloud.module.mes.controller.admin.pro.mrp.vo.MesProMrpPlanCreateReqVO;
 import cn.zhicloud.module.mes.controller.admin.pro.mrp.vo.MesProMrpPlanPageReqVO;
+import cn.zhicloud.module.mes.controller.admin.pro.workorder.vo.MesProWorkOrderSaveReqVO;
 import cn.zhicloud.module.mes.controller.admin.wm.materialstock.vo.MesWmMaterialStockListReqVO;
 import cn.zhicloud.module.mes.dal.dataobject.md.item.MesMdItemDO;
 import cn.zhicloud.module.mes.dal.dataobject.md.item.MesMdProductBomDO;
@@ -19,7 +22,9 @@ import cn.zhicloud.module.mes.dal.mysql.pro.mrp.MesProMrpResultMapper;
 import cn.zhicloud.module.mes.controller.admin.pro.workorder.vo.MesProWorkOrderPageReqVO;
 import cn.zhicloud.module.mes.enums.md.MesMrpLotSizeRuleEnum;
 import cn.zhicloud.module.mes.enums.pro.MesProMrpPlanStatusEnum;
+import cn.zhicloud.module.mes.enums.pro.MesProWorkOrderSourceTypeEnum;
 import cn.zhicloud.module.mes.enums.pro.MesProWorkOrderStatusEnum;
+import cn.zhicloud.module.mes.enums.pro.MesProWorkOrderTypeEnum;
 import cn.zhicloud.module.mes.service.md.item.MesMdItemService;
 import cn.zhicloud.module.mes.service.md.item.MesMdProductBomService;
 import cn.zhicloud.module.mes.service.pro.workorder.MesProWorkOrderService;
@@ -44,8 +49,10 @@ import java.util.stream.Collectors;
 
 import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_MRP_PLAN_NOT_CALCULATED;
+import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_MRP_PLAN_NOT_CONFIRMED;
 import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_MRP_PLAN_NOT_DRAFT;
 import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_MRP_PLAN_NOT_EXISTS;
+import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_MRP_PLAN_NO_SUGGESTION;
 
 /**
  * MES MRP 物料需求计划 Service 实现类
@@ -55,7 +62,7 @@ import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_MRP_PLAN_NOT_E
  * 2. 递归展开产品 BOM，累加各层级物料需求
  * 3. 查询当前库存（WMS 库存台账）
  * 4. 净需求 = 需求量 - 库存量（小于 0 则为 0）
- * 5. 生成计划采购订单建议
+ * 5. 生成计划订单建议（采购/生产类型在转建议时按 BOM 判定）
  *
  * @author 智云
  */
@@ -251,6 +258,72 @@ public class MesProMrpServiceImpl implements MesProMrpService {
             }
             throw exception(PRO_MRP_PLAN_NOT_CALCULATED);
         }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public MesProMrpConvertRespVO convertMrpPlan(Long id) {
+        // 1. 前置校验：存在 + 已确认（友好错误先给；并发漂移由 CAS 兜底）
+        MesProMrpPlanDO plan = validateMrpPlanExists(id);
+        if (ObjUtil.notEqual(plan.getStatus(), MesProMrpPlanStatusEnum.CONFIRMED.getStatus())) {
+            throw exception(PRO_MRP_PLAN_NOT_CONFIRMED);
+        }
+
+        // 2. 过滤可转结果行（计划订单量 > 0）；无可转行直接拒绝，不消耗一次性转换
+        List<MesProMrpResultDO> convertLines = mrpResultMapper.selectListByPlanId(id).stream()
+                .filter(line -> line.getPlannedOrderQty() != null
+                        && line.getPlannedOrderQty().compareTo(BigDecimal.ZERO) > 0)
+                .collect(Collectors.toList());
+        if (CollUtil.isEmpty(convertLines)) {
+            throw exception(PRO_MRP_PLAN_NO_SUGGESTION);
+        }
+
+        // 3. 物料主数据（工单名称用）
+        Map<Long, MesMdItemDO> itemMap = itemService.getItemMap(convertLines.stream()
+                .map(MesProMrpResultDO::getProductId).collect(Collectors.toSet()));
+
+        // 4. CAS 抢转换：仅「已确认」可转，一次性终态「已转建议」；失败回查一次给精确原因
+        int updated = mrpPlanMapper.updateByIdAndStatus(id,
+                Collections.singletonList(MesProMrpPlanStatusEnum.CONFIRMED.getStatus()),
+                MesProMrpPlanDO.builder().status(MesProMrpPlanStatusEnum.CONVERTED.getStatus()).build());
+        if (updated == 0) {
+            if (mrpPlanMapper.selectById(id) == null) {
+                throw exception(PRO_MRP_PLAN_NOT_EXISTS);
+            }
+            throw exception(PRO_MRP_PLAN_NOT_CONFIRMED);
+        }
+
+        // 5. 逐行落地为草稿工单：有 BOM=生产型（自行生产），无 BOM=采购型（对齐 ERP 孪生判定）
+        MesProMrpConvertRespVO convertResult = new MesProMrpConvertRespVO()
+                .setTotalCount(0).setPurchaseCount(0).setProduceCount(0);
+        int seq = 0;
+        for (MesProMrpResultDO line : convertLines) {
+            boolean produce = CollUtil.isNotEmpty(
+                    productBomService.getProductBomListByItemId(line.getProductId()));
+            MesMdItemDO item = itemMap.get(line.getProductId());
+            MesProWorkOrderSaveReqVO orderReq = new MesProWorkOrderSaveReqVO();
+            orderReq.setCode("MRP-" + id + "-" + (++seq));
+            orderReq.setName(item != null && StrUtil.isNotBlank(item.getName())
+                    ? item.getName() : "物料-" + line.getProductId());
+            orderReq.setType(produce ? MesProWorkOrderTypeEnum.SELF.getType()
+                    : MesProWorkOrderTypeEnum.PURCHASE.getType());
+            orderReq.setOrderSourceType(MesProWorkOrderSourceTypeEnum.MRP.getType());
+            orderReq.setOrderSourceCode(plan.getPlanNo());
+            orderReq.setProductId(line.getProductId());
+            orderReq.setQuantity(line.getPlannedOrderQty());
+            // 计划订单日期为 MRP 恒落值；防御回退：计划日期 → 当前时间
+            orderReq.setRequestDate(line.getPlannedOrderDate() != null ? line.getPlannedOrderDate()
+                    : (plan.getPlanDate() != null ? plan.getPlanDate() : LocalDateTime.now()));
+            orderReq.setRemark("由 MRP 计划「" + plan.getPlanNo() + "」转建议生成");
+            workOrderService.createWorkOrder(orderReq);
+            if (produce) {
+                convertResult.setProduceCount(convertResult.getProduceCount() + 1);
+            } else {
+                convertResult.setPurchaseCount(convertResult.getPurchaseCount() + 1);
+            }
+            convertResult.setTotalCount(convertResult.getTotalCount() + 1);
+        }
+        return convertResult;
     }
 
     // ==================== 校验方法 ====================

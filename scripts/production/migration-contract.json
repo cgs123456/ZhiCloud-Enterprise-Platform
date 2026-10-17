@@ -804,9 +804,23 @@
     {
       "version": 205,
       "file": "V205__wms_inventory_location_dimension.sql",
-      "sha256": "95299955d90b16d8a0c98f09deec791b6a8e061c942a29cba42534fe413ad0ab",
+      "sha256": "687ca59b787377cb2ac6186913b2d8ce647a62141b83d6c9a5f890e0bba81f4a",
       "verification_file": "V205_verify.sql",
       "verification_sha256": "e86dbffd2591833e21080221eb1d2cd231cdc75777a69dbb74f280a3feba5517"
+    },
+    {
+      "version": 206,
+      "file": "V206__crm_sale_order_audit_status.sql",
+      "sha256": "7a7bb546ed1f03bf30c581d3f4e29e2b72c8c4c1ae817bb563967df946e0c972",
+      "verification_file": "V206_verify.sql",
+      "verification_sha256": "c6ed02e20d503de67268a5eed8634de69bf7720efc0afd852b0606837bc0137a"
+    },
+    {
+      "version": 207,
+      "file": "V207__mes_mrp_convert_dict_seed.sql",
+      "sha256": "2593bab06e13e69cd23c85e26f2ee533a88256f9029d54efad2062eb77ca8ce4",
+      "verification_file": "V207_verify.sql",
+      "verification_sha256": "59f2588a8202df6da48e309541521a82b37b948c1d6725d7f1ae174692beb9e0"
     }
   ]
 }

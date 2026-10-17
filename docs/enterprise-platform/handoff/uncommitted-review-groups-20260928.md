@@ -12031,3 +12031,97 @@ C6=FMS/HRM 接线与旧 /hr 退役（尾置）。重建依据与原会话登记�
 
 C4=MRP 转采购/生产建议；C5=APS 空隙建模；C6=FMS/HRM 接线与旧 /hr 退役（尾置）。
 重建依据与原会话登记原文可能存在偏差，以 HANDOFF 各 §12.2xx 原文为准（重建披露在 next-steps 后记六同步）。
+
+## 12.262 MES MRP 转采购/生产建议（C 组第 4 项，§12.243.5-1 单立课题）
+
+### 12.262.1 背景与目标
+
+§12.243 落地 MRP 计划计算/确认（DRAFT→CALCULATED→CONFIRMED）后，「已确认」一直是无出口的终点：
+计划确认后没有任何动作能派生出可执行单据，用户只能手工对照结果行逐条建单（§12.243.5-1 登记为单立课题）。
+本项闭合该断点：CONFIRMED 计划可一次性转出 PREPARE 草稿工单——有 BOM 的物料转生产型（SELF(1)）、
+无 BOM 的转采购型（PURCHASE(3)）；状态 CAS CONFIRMED(2)→CONVERTED(3)「已转建议」与建单同事务，
+失败整体回滚。端点 `POST /mes/pro/mrp/plan/convert?id=`（权限复用 `mes:pro-mrp:calculate`）；
+设计锁 D1-D11 见 ADR `Temp/zc_adr_262.md`。
+
+### 12.262.2 实施内容
+
+- 后端 8 文件：`MesProMrpPlanStatusEnum` +CONVERTED(3 已转建议)、`MesProWorkOrderSourceTypeEnum` +MRP(3 MRP 计划)；
+  `ErrorCodeConstants` +043（非已确认转拒）/044（无可转行）；`MesProMrpService`/`Impl` +`convertMrpPlan`
+  （存在 000 → 非确认 043 → 无可转行 044（先于 CAS，不消耗一次性）→ CAS 抢转 → 逐行建单；
+  code=`MRP-{planId}-{seq}`、orderSourceType=MRP(3)、orderSourceCode=planNo、quantity=plannedOrderQty、
+  requestDate=plannedOrderDate（防御回退 planDate→now）、remark=「由 MRP 计划「{planNo}」转建议生成」）；
+  `MesProMrpController` +`@PostMapping("/plan/convert")`；新 VO `MesProMrpConvertRespVO{totalCount,purchaseCount,produceCount}`。
+  附带修正 2 处 javadoc「生成计划采购订单建议」→「生成计划订单建议（采购/生产类型在转建议时按 BOM 判定）」。
+- 迁移：`V207__mes_mrp_convert_dict_seed.sql`——纯字典 2 行（`mes_pro_mrp_plan_status` 3=已转建议/success、
+  `mes_pro_work_order_source_type` 3=MRP 计划/warning；id 1064112/1064113；(dict_type,value) 预检幂等，
+  重灌不覆盖既有 label/color）；无表结构变更、H2 不动。
+- 门禁修复（C1/C3 遗留两处一并清偿）：契约 V205 sha256 刷新为最终字节哈希 `687ca59b…`；新增
+  `V206_verify.sql`（crm_sale_order.audit_status 列存在且 INT + 全表回填无 NULL）与 `V207_verify.sql`
+  （两值存在 + 类型内无重复 + label 对齐枚举）；契约 tracked 115→117、scanned 213、findings=0。
+- 前端 3 文件：MRP 页状态映射 +CONVERTED(3)/已转建议、操作列 +「转建议」按钮（v-if CONFIRMED +
+  `mes:pro-mrp:calculate`）、`handleConvert`（确认 + 计数提示）；api +`MrpPlanConvert`（POST）；
+  `MesProWorkOrderSourceTypeEnum` +`MRP: 3`（工单来源下拉/列表显示）。
+
+### 12.262.3 验证链与实证
+
+- 阶段校验：57 项字节级断言 **ALL PASS**（LF-only 行尾不变量逐文件核对）。
+- 定向测试：`MesProMrpServiceImplTest` **35/35**（27→35，+8 案：两类型成功 / 计划不存在 / 非已确认 /
+  无可转行三态（qty≤0、null、空结果）/ CAS 失位两态 / 日期与名称回退）。
+- MES 模块回归：**854/0**（含新增 8 案）。
+- errcode 扫描：1962 定义 / 0 冲突（+2 新码）。
+- lint：迁移目录 213 文件 / 16 违规（R5 末尾缺换行为历史存量 16 处，与 210/16 基线同口径，本项零新增）；
+  新增 3 文件定向 0 违规。
+- 契约门禁（`check_migration_contract.py`）：**tracked=117 scanned=213 findings=0 PASSED**——
+  C1 的 V205 哈希漂移与 C3 的 V206 未登记两处遗留门禁本项一并修复。
+- reactor 打包 BUILD SUCCESS（1:33）；冷启动 **438.687 秒**（进程 439.856 秒，日志实证）；启动时 Flyway 落 V207
+  （successfully applied 1 migration，execution 0.022s，库版本升至 v207）。
+- 真机 E2E：**51/51 PASS**（zhicloud_sandbox_v140 / tenant 9001；三跑收敛，首跑/二跑修正见 §12.262.4）——
+  V206_verify/V207_verify 全 PASS + V207 幂等重灌无重复 → 空结果计划 calculate/confirm 后转拒 044
+  （不消耗一次性、无工单产出）→ 播种 BOM（5080000→5080001×2）+ 大额工单（×3000）确认 →
+  计划 DRAFT 转拒 043 / CALCULATED 转拒 043 → 确认后转建议成功（total=2、生产 1 采购 1）→
+  落地工单字段全断言（编号 MRP-{planId}-1/2、类型 SELF/PURCHASE（按 product_id 映射）、orderSourceType=3、
+  orderSourceCode=planNo、数量与需求日期对齐结果行、remark 含计划号；parent_id=0 根工单约定 /
+  vendor_id NULL / priority=2 列默认）→ 重复转拒 043、已转后计算 016 / 确认 017 →
+  清理零遗留 + 沙箱计数复原（WO 14 / WO BOM 24 / BOM 0 / 计划 0 / 结果 0、参考工单 5960001 复原=1）。
+- 前端：`pnpm ts:check` 0、`pnpm build:prod` 0（1m1s，dist-prod）。
+
+### 12.262.4 首跑与执行实证登记（诚实链）
+
+1. **测试编辑脚本尾部拼接空行在首跑前修正（未写盘）**：初稿替换式在锚点尾（`    }` 后）会多留一个
+   空行，运行前改为不追加额外换行，首跑即 27→35 案、零副作用。
+2. **阶段校验脚本两处断言预期值首跑前校准**：`updateByIdAndStatus(id,` 计数实为 2（confirm+convert 各一）、
+   `MrpPlanStatus.CONFIRMED` 引用实为 1 处，读源码校准后运行，57/57 一次通过。
+3. **E2E 检查 36 预期值修正（运行前）**：`mes_pro_work_order.priority` 列有库级默认值 2，
+   MyBatis-Plus 默认插入策略（NOT_NULL）忽略空字段 → 转换工单落库 priority=2 而非 NULL；
+   断言改为「parent_id/vendor_id 为 NULL、priority 落列默认 2（转换不显式设置）」。
+4. **模块回归基线口径**：未按「改动前先实测基线」的要求执行（实施后才跑全量）。间接推算：
+   工作区仅本项 15 文件改动，测试方法增量恰为 +8（27→35），故改动前模块基线=854-8=**846**；
+   与 §12.243 时点记录的 843 之间另有 3 案为中间批次演进（非本项引入）。854/0 为含本项的全量实测。
+5. **lint 口径**：按迁移目录口径 213/16（零新增）；验证目录全量联跑为 330/19——其中验证目录 3 处 R5
+   （V93_verify / V117_verify / V150_verify）为历史存量，不在本项改动集，未动。
+6. **契约 V205 哈希漂移的修复性质**：V205 最终字节与契约登记的早期哈希不一致（C1 收尾时门禁即报
+   `[C1] V205 migration SHA-256 differs`）——本项把契约刷新为最终字节哈希（不改迁移文件本身）；
+   V205 文件不在本项改动集、工作区亦无改动。
+7. **E2E 首跑中断与现场处置（真机，诚实链）**：结果行查询误用列名 `item_id`（实际 `product_id`）→
+   MySQL 报错被 `_mysql` 静默吞掉（只取 stdout）→ 检查 22 失败、34 KeyError 中断，清理段未执行
+   （现场残留：5960001=0、2 计划、3 工单、1 BOM 行）。修复：列名改 `product_id`；`_mysql` 增
+   rc≠0 上抛；34/35 改防御式取值；新增 atexit 应急清理（崩溃也不留污染）。手工复原 5960001=1 后重跑。
+8. **E2E 二跑 50/51**：检查 36 断言 `parent_id IS NULL` 与既有实现约定不符——
+   `MesProWorkOrderServiceImpl` L62-63 对所有根工单显式落 `PARENT_ID_NULL=0`；priority 无代码赋值、
+   落库取列默认 2；vendor_id NULL。修正断言（parent_id=0 / vendor_id NULL / priority=2）后三跑 51/51 全绿。
+9. **序号与物料绑定不做断言**：结果行序实测为子先父后（HashMap→排序后仍取决于桶序），E2E 对
+   编号/类型/物料的对应采用集合 + 按 product_id 映射断言，不依赖 `seq` 与物料的绑定；
+   `MRP-{planId}-{seq}` 仅保证唯一递增编号。
+
+### 12.262.5 不扩面登记（维持）
+
+- ERP 采购单跨域落单：转换只建 MES 采购型草稿工单，不直接创建 ERP 采购订单（跨域集成独立立项）。
+- 逐行/部分转换：一次性全量转，不支持勾选行、跳过行。
+- 反建议/回退：CONVERTED 为一次性终态，不提供撤销端点（如需回退按数据修复处理）。
+- 新权限/菜单：复用 `mes:pro-mrp:calculate`，不新增权限点与菜单。
+- MRP 结果行 → 工单的来源回链表：现仅以 orderSourceCode 关联，无行级外键（登记为后续候选）。
+
+### 12.262.6 C 组矩阵基线（顺延声明）
+
+C5=APS 空隙建模；C6=FMS/HRM 接线与旧 /hr 退役（尾置）。
+重建依据与原会话登记原文可能存在偏差，以 HANDOFF 各 §12.2xx 原文为准（重建披露在 next-steps 后记六同步）。

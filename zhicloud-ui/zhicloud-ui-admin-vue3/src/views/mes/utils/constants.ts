@@ -97,7 +97,8 @@ export const MesProWorkOrderTypeEnum = {
 /** MES 工单来源类型枚举 */
 export const MesProWorkOrderSourceTypeEnum = {
   ORDER: 1, // 客户订单
-  STORE: 2 // 库存备货
+  STORE: 2, // 库存备货
+  MRP: 3 // MRP 计划
 }
 
 /** MES 生产任务状态枚举 */

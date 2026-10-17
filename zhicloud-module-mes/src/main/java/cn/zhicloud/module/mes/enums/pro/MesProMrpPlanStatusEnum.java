@@ -11,7 +11,7 @@ import java.util.Arrays;
  *
  * 状态转换图：
  * <pre>
- * DRAFT ──计算──▶ CALCULATED ──确认──▶ CONFIRMED
+ * DRAFT ──计算──▶ CALCULATED ──确认──▶ CONFIRMED ──转建议──▶ CONVERTED
  * </pre>
  *
  * @author 智云
@@ -31,7 +31,13 @@ public enum MesProMrpPlanStatusEnum implements ArrayValuable<Integer> {
     /**
      * 已确认
      */
-    CONFIRMED(2, "已确认");
+    CONFIRMED(2, "已确认"),
+    /**
+     * 已转建议（终态：已落地为采购/生产工单）
+     *
+     * 对应 MesProMrpService#convertMrpPlan 方法
+     */
+    CONVERTED(3, "已转建议");
 
     public static final Integer[] ARRAYS = Arrays.stream(values()).map(MesProMrpPlanStatusEnum::getStatus).toArray(Integer[]::new);
 
