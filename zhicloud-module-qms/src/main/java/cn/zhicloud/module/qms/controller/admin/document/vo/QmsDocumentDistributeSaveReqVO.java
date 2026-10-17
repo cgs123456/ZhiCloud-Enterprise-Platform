@@ -1,5 +1,6 @@
 package cn.zhicloud.module.qms.controller.admin.document.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -32,6 +33,7 @@ public class QmsDocumentDistributeSaveReqVO {
     @Schema(description = "分发日期", requiredMode = Schema.RequiredMode.REQUIRED, example = "2024-01-01")
     @NotNull(message = "分发日期不能为空")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY)
+    @JsonFormat(pattern = FORMAT_YEAR_MONTH_DAY)
     private LocalDate distributeDate;
 
     @Schema(description = "签收人", example = "张三")
@@ -39,6 +41,7 @@ public class QmsDocumentDistributeSaveReqVO {
 
     @Schema(description = "签收日期", example = "2024-01-02")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY)
+    @JsonFormat(pattern = FORMAT_YEAR_MONTH_DAY)
     private LocalDate receivedDate;
 
     @Schema(description = "备注", example = "随便")

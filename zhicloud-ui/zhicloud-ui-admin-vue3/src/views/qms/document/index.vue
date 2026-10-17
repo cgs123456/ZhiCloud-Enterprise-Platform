@@ -58,10 +58,10 @@
           <dict-tag :type="DICT_TYPE.QMS_DOC_STATUS" :value="scope.row.status" />
         </template>
       </el-table-column>
-      <el-table-column align="center" label="生效日期" prop="effectiveDate" min-width="110" />
-      <el-table-column align="center" label="失效日期" prop="expiryDate" min-width="110" />
+      <el-table-column align="center" :formatter="dateFormatter2" label="生效日期" prop="effectiveDate" min-width="110" />
+      <el-table-column align="center" :formatter="dateFormatter2" label="失效日期" prop="expiryDate" min-width="110" />
       <el-table-column align="center" label="审批人 ID" prop="approverId" min-width="110" />
-      <el-table-column align="center" label="审批日期" prop="approveDate" width="170" />
+      <el-table-column align="center" :formatter="dateFormatter" label="审批日期" prop="approveDate" width="170" />
       <el-table-column align="center" label="归属部门 ID" prop="ownerDeptId" min-width="110" />
       <el-table-column align="center" :formatter="dateFormatter" label="创建时间" prop="createTime" width="170" />
       <el-table-column align="center" fixed="right" label="操作" width="300">
@@ -190,7 +190,7 @@
 </template>
 
 <script lang="ts" setup>
-import { dateFormatter } from '@/utils/formatTime'
+import { dateFormatter, dateFormatter2 } from '@/utils/formatTime'
 import { QmsDocumentApi } from '@/api/qms/document'
 import { DICT_TYPE } from '@/utils/dict'
 import QmsDocumentForm from './QmsDocumentForm.vue'

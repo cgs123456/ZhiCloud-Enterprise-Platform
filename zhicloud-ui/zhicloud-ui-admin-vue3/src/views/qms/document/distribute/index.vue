@@ -46,11 +46,11 @@
       <el-table-column align="center" label="受控文档 ID" prop="documentId" min-width="110" />
       <el-table-column align="center" label="分发对象" prop="distributeTo" min-width="110" />
       <el-table-column align="center" label="分发份数" prop="distributeQty" min-width="110" />
-      <el-table-column align="center" label="分发日期" prop="distributeDate" min-width="110" />
+      <el-table-column align="center" :formatter="dateFormatter2" label="分发日期" prop="distributeDate" min-width="110" />
       <el-table-column align="center" label="签收人" prop="receivedBy" min-width="110" />
-      <el-table-column align="center" label="签收日期" prop="receivedDate" min-width="110" />
+      <el-table-column align="center" :formatter="dateFormatter2" label="签收日期" prop="receivedDate" min-width="110" />
       <el-table-column align="center" label="回收份数" prop="returnedQty" min-width="110" />
-      <el-table-column align="center" label="回收日期" prop="returnedDate" min-width="110" />
+      <el-table-column align="center" :formatter="dateFormatter2" label="回收日期" prop="returnedDate" min-width="110" />
       <el-table-column align="center" label="备注" prop="remark" min-width="120" />
       <el-table-column align="center" label="排序" prop="sort" min-width="110" />
       <el-table-column align="center" :formatter="dateFormatter" label="创建时间" prop="createTime" width="170" />
@@ -116,7 +116,7 @@
 </template>
 
 <script lang="ts" setup>
-import { dateFormatter } from '@/utils/formatTime'
+import { dateFormatter, dateFormatter2 } from '@/utils/formatTime'
 import { QmsDocumentDistributeApi } from '@/api/qms/document/distribute'
 import QmsDocumentDistributeForm from './QmsDocumentDistributeForm.vue'
 

@@ -2,11 +2,14 @@ package cn.zhicloud.module.qms.controller.admin.document.vo;
 
 import cn.idev.excel.annotation.ExcelIgnoreUnannotated;
 import cn.idev.excel.annotation.ExcelProperty;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import static cn.zhicloud.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY;
 
 @Schema(description = "管理后台 - QMS 文档分发记录 Response VO")
 @Data
@@ -31,6 +34,7 @@ public class QmsDocumentDistributeRespVO {
 
     @Schema(description = "分发日期", requiredMode = Schema.RequiredMode.REQUIRED, example = "2024-01-01")
     @ExcelProperty("分发日期")
+    @JsonFormat(pattern = FORMAT_YEAR_MONTH_DAY)
     private LocalDate distributeDate;
 
     @Schema(description = "签收人", example = "张三")
@@ -39,6 +43,7 @@ public class QmsDocumentDistributeRespVO {
 
     @Schema(description = "签收日期", example = "2024-01-02")
     @ExcelProperty("签收日期")
+    @JsonFormat(pattern = FORMAT_YEAR_MONTH_DAY)
     private LocalDate receivedDate;
 
     @Schema(description = "回收份数", example = "3")
@@ -47,6 +52,7 @@ public class QmsDocumentDistributeRespVO {
 
     @Schema(description = "回收日期", example = "2025-01-01")
     @ExcelProperty("回收日期")
+    @JsonFormat(pattern = FORMAT_YEAR_MONTH_DAY)
     private LocalDate returnedDate;
 
     @Schema(description = "备注", example = "随便")

@@ -51,9 +51,9 @@
       <el-table-column align="center" label="变更原因" prop="changeReason" min-width="120" />
       <el-table-column align="center" label="变更内容" prop="changeContent" min-width="120" />
       <el-table-column align="center" label="申请人 ID" prop="applicantId" min-width="110" />
-      <el-table-column align="center" label="申请日期" prop="applyDate" min-width="110" />
+      <el-table-column align="center" :formatter="dateFormatter2" label="申请日期" prop="applyDate" min-width="110" />
       <el-table-column align="center" label="审批人 ID" prop="approverId" min-width="110" />
-      <el-table-column align="center" label="审批日期" prop="approveDate" width="170" />
+      <el-table-column align="center" :formatter="dateFormatter" label="审批日期" prop="approveDate" width="170" />
       <el-table-column align="center" label="状态" min-width="110" prop="status">
         <template #default="scope">
           <dict-tag :type="DICT_TYPE.QMS_CHANGE_REQUEST_STATUS" :value="scope.row.status" />
@@ -157,7 +157,7 @@
 </template>
 
 <script lang="ts" setup>
-import { dateFormatter } from '@/utils/formatTime'
+import { dateFormatter, dateFormatter2 } from '@/utils/formatTime'
 import { QmsDocumentChangeRequestApi } from '@/api/qms/document/change-request'
 import { DICT_TYPE } from '@/utils/dict'
 import QmsDocumentChangeRequestForm from './QmsDocumentChangeRequestForm.vue'

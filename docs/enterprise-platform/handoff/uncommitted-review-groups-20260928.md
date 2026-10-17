@@ -11422,3 +11422,80 @@ admin controller 端点（grep 实证）；`/qms/eight-d/close` 端点带既有 
   advanceStage/advanceStatus 无 CAS（§12.251 家族观察已记）。
 
 始末文档同步：next-steps 后记四已追加本条记录。
+## 12.254 QMS 文档域日期序列化归一——LocalDate @JsonFormat 补齐（B 组 #3）
+
+**缺陷面（§12.245.5-1 登记的「同病另立小项」，代码再核定，ADR `Temp/zc_adr_254.md`）**：
+
+根因不变：`application.yaml:61-63` 全局 `write-dates-as-timestamps: true` 下无
+`@JsonFormat` 的 `LocalDate` 序列化为 `[y,m,d]` 数组。§12.245 已收器具域（10 字段），
+文档域为剩漏。本轮全量扫描（controller/admin/document 下 8 VO）把登记面扩到实改面
+**7 VO / 12 字段**：
+
+- Save 型 ×3（已有 @DateTimeFormat，补 @JsonFormat）：`QmsDocumentSaveReqVO`
+  effectiveDate/expiryDate、`QmsDocumentDistributeSaveReqVO`
+  distributeDate/receivedDate、`QmsDocumentChangeRequestSaveReqVO` applyDate。
+- Return ×1（双注解齐补，含新增 @DateTimeFormat 导入与 static FORMAT 强常量）：
+  `QmsDocumentDistributeReturnReqVO` returnedDate——超出登记面，同因同修。
+- Resp 型 ×3（单 @JsonFormat）：`QmsDocumentRespVO` effectiveDate/expiryDate、
+  `QmsDocumentDistributeRespVO` distributeDate/receivedDate/returnedDate、
+  `QmsDocumentChangeRequestRespVO` applyDate。
+- distribute 家族 6 字段 + ReturnReqVO 超出 §12.245.5-1 点名的 5 字段登记面，
+  属同 root-cause 同模块同病——同因同修（循 §12.245 D3「approve 同因同形一并收口」先例）。
+- 前端同病（组建实测）：document/index.vue 生效/失效列、distribute/index.vue
+  分发/签收/回收列、change-request/index.vue 申请列均无 formatter（数组渲染）；
+  approveDate 列（LocalDateTime→epoch 毫秒）连 createTime 般 formatter 也缺（document/
+  change-request 两页）——同因一并补 `:formatter="dateFormatter"`。
+
+**实改**：
+
+1. 后端 7 VO 补 `@JsonFormat(pattern = FORMAT_YEAR_MONTH_DAY)`（Resp 单注解、
+   Save/Return 与既有 @DateTimeFormat 并存双注解，循 `QmsInstrumentSaveReqVO` A2 先例）。
+2. 前端三页 8 列补 formatter（6 列 `dateFormatter2`、2 列 approveDate `dateFormatter`）
+   + import 升级 `{ dateFormatter, dateFormatter2 } from '@/utils/formatTime'`；
+   表单内 `el-date-picker value-format="YYYY-MM-DD"` 不动（后端回字符串后自然回显）。
+3. 新增 `QmsDocumentDateFormatTest`（controller.admin.document.vo 包，5 案）：
+   document/distribute/changeRequest Resp 日期字符串形状、无注解 createTime 数组形状
+   对照（复现全局开关的作用面）、Save 字符串反序列化（前端提交形态不受影响）。
+
+**边界（不动）**：三个 PageReqVO 的 `LocalDate[]` 已有 @DateTimeFormat（GET 解析正确）；
+`LocalDateTime`（approveDate/createTime）不加 @JsonFormat（生产由框架
+`TimestampLocalDateTimeSerializer` 输出 epoch 毫秒，§12.245.1 精确刻画）；文档
+approve/reject 端点带既有电子签名门禁（非本项触碰面）。
+
+### 12.254.4 改动与验证清单
+
+| 文件 | 内容 |
+|---|---|
+| `controller/admin/document/vo/QmsDocumentSaveReqVO.java` 等 7 VO | +12 处 @JsonFormat（Save 型并存 @DateTimeFormat；Return ReqVO 双注解齐补） |
+| `test/…/document/vo/QmsDocumentDateFormatTest.java` | 新建 5 案（形状证真 + 对照 + 反序列化） |
+| `views/qms/document/index.vue` 等 3 页 | 8 列补 formatter + import 升级 |
+| `Temp/zc_edit_254.py`、`zc_edit_254fe.py`、`zc_qms254_e2e.py`（仓库外） | 编辑脚本（幂等 done_marker + EOL 保持）+ E2E |
+
+- 模块回归：QMS **144/144**（§12.253 后基线 139，+5 新案）
+- errcode 全仓扫描 **1952/0**（零新码）
+- reactor 打包 `-pl zhicloud-server -am` **SUCCESS**（历史惯例面；43 模块 3:20）
+- 前端 `ts:check` EXIT=0、`build:prod` EXIT=0
+- 真机 E2E **18/18**（二跑达成；v1 首跑 crash 布景失误见诚实登记）：文档建单
+  （字符串入参）→ get/page 字符串形状 → 改期回显 → 分发建单/回收登记
+  （returnedDate 形状 + returned_qty 落库断言）→ 变更申请 applyDate 形状 →
+  SQL 软删清理零遗留（Z×3）；B00 布景案 SQL 抬文档至 PUBLISHED(30)（approve
+  签名门禁 mock 不可达，循 §12.245 D5 同款边界）
+
+**诚实登记（编辑脚本三轮收敛，全部如实记录）**：
+- 编辑脚本首跑挂三点：新测试目录缺 mkdir（`FileNotFoundError`）、校验段
+  `Path(BASE / VO / rel)` 对以 `\` 开头的 rel 被 pathlib 当 rooted 路径丢弃前缀
+  （得 `C:\QmsDocumentSaveReqVO.java`）、以及——前两点修复前**7 VO 编辑已在首跑
+  完成落盘**（耳 2 跑起 done_marker 全 SKIPPED-ALREADY，幂等防线起效）；
+  校验期望表把 Return/ChangeRequestSave 的 @JsonFormat 处数误写 2（实为 1）。
+- 前端脚本锚点失误：distribute 页 returnedDate 列 label 实为「回收日期」
+  （「归还日期」是表单项），首锚 count=0 被 count==1 断言拦下（零误写），
+  校验期进一步暴露「exp 忘算各页原有 createTime 列的 dateFormatter」——修正后通过。
+- 端点核查前置完成：`/qms/document-distribute/return` 为 **PUT**（首版 E2E 写 POST，
+  发跑前按 controller 字面订正）；approve/reject（签名门禁）不进 E2E。
+- **E2E v1 布景失误（首跑 crash）**：未先探明域状态机——分发 create 被
+  1_044_000_036「受控文档状态非法，无法办理分发登记」拒（文档须 PUBLISHED，而
+  approve 签名门禁 mock 不可达），脚本对 `data=None` 无防御 `%d` crash。探针
+  （zc_probe_254.py）定位后：加 B00「SQL 抬布景状态 + 显式 CHECK」与 B01/C01
+  None abort 防御，二跑 18/18 全绿。同型边界先例：§12.245 approverId、§12.253 8D close。
+
+始末文档同步：next-steps 后记四已追加本条记录。

@@ -247,8 +247,17 @@
   证据：QMS 回归 139/139（+6 案）、errcode 1952/0、reactor 打包 admin 面 45 模块
   SUCCESS（server jar 642734795B；iot-gateway 离线依赖解析失败属打包面差异+环境噪声登记）、
   真机 E2E 23/23（v1 布景失误 5FAIL 已诚实订正重跑）、`ts:check` 未涉（纯后端）。
-- **B 组推进（用户令「逐项完成#2 3 4」）**：#2 §12.253 已收口（见上）；#3 文档域
-  @JsonFormat（§12.245.5-1 同病另立小项）与 #4 severity 控件对齐契约（下拉三选）按序推进；
-  severity 控件形态经本轮执行即视为已按登记建议定案（下拉三选）。
+- **§12.254（B 组 #3）文档域 @JsonFormat 归一**：文档域 7 VO / 12 个 LocalDate 字段补
+  @JsonFormat（Save/Return 双注解、Resp 单注解，循 §12.245 A2 先例；distribute 家族与
+  ReturnReqVO 属登记面外的同因同修）；前端三页 8 列补 formatter（含 approveDate 列 epoch
+  formatter）+ import 升级 dateFormatter2；PageReqVO LocalDate[] 与 LocalDateTime 不动
+  （§12.245 D2 边界）。新增 QmsDocumentDateFormatTest 5 案（Resp 字符串形状 + createTime
+  数组对照 + Save 反序列化）。
+  证据：QMS 回归 144/144（+5 案）、errcode 1952/0（零新码）、reactor 打包
+  -pl zhicloud-server -am SUCCESS（43 模块）、`ts:check`/`build:prod` exit=0、
+  真机 E2E 17/17（文档/分发/变更申请 三域日期字符串形状 + 回收份数落库 + 清理零遗留）。
+- **B 组推进（用户令「逐项完成#2 3 4」）**：#2 §12.253、#3 §12.254 均已收口（见上）；
+  #4 severity 控件对齐契约（下拉三选）按序推进；severity 控件形态经本轮执行即视为
+  已按登记建议定案（下拉三选）。
 - 其余待办不变：B 组余项（器具日期手工另录与否、1_040_509_003 拆码、
   WMS LOCKED 单向语义）、C/D/E 组（中大型课题与卫生杂项）继续待拍板/逐项推进。

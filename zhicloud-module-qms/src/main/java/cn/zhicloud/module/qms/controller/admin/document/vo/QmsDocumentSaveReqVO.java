@@ -3,6 +3,7 @@ package cn.zhicloud.module.qms.controller.admin.document.vo;
 import cn.zhicloud.framework.common.validation.InEnum;
 import cn.zhicloud.module.qms.enums.document.QmsDocStatusEnum;
 import cn.zhicloud.module.qms.enums.document.QmsDocTypeEnum;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -42,10 +43,12 @@ public class QmsDocumentSaveReqVO {
 
     @Schema(description = "生效日期", example = "2024-01-01")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY)
+    @JsonFormat(pattern = FORMAT_YEAR_MONTH_DAY)
     private LocalDate effectiveDate;
 
     @Schema(description = "失效日期", example = "2025-12-31")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY)
+    @JsonFormat(pattern = FORMAT_YEAR_MONTH_DAY)
     private LocalDate expiryDate;
 
     @Schema(description = "审批人 ID", example = "1024")

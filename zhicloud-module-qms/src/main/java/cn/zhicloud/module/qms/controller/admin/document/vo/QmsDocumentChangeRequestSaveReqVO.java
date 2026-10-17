@@ -2,6 +2,7 @@ package cn.zhicloud.module.qms.controller.admin.document.vo;
 
 import cn.zhicloud.framework.common.validation.InEnum;
 import cn.zhicloud.module.qms.enums.document.QmsDocChangeTypeEnum;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -40,6 +41,7 @@ public class QmsDocumentChangeRequestSaveReqVO {
 
     @Schema(description = "申请日期", example = "2024-01-01")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY)
+    @JsonFormat(pattern = FORMAT_YEAR_MONTH_DAY)
     private LocalDate applyDate;
 
     @Schema(description = "备注", example = "随便")
