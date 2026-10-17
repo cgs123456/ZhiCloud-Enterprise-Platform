@@ -281,11 +281,13 @@ const openSubmit = async (row: any) => {
       id: it.id,
       label: [it.code, it.name].filter(Boolean).join(' ')
     }))
-    // 预填已有记录（记录 RespVO 无 severity 字段，默认「严重」，提交前请确认）
+    // 预填已有记录（§12.249：记录 RespVO 已返回 severity，此处仅对「空值」回退「严重」；
+    // 用 ?? 而非 ||，让 null 之外的任何值都原样带回。severity 取值域由后端
+    // InspectionSeverityEnum 约束为 [10, 20, 30]（致命/严重/轻微））
     submitRecords.value = (records.list ?? []).map((r: any) => ({
       itemId: r.itemId,
       result: r.result,
-      severity: 20,
+      severity: r.severity ?? 20,
       measuredValue: r.measuredValue,
       inspector: r.inspector
     }))

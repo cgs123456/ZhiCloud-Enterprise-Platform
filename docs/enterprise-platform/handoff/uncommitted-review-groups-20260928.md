@@ -11076,3 +11076,83 @@ E2E 具体断言（API + DB 双验）：建单传 `status=30` → 落库 10；PU
    现状仍成立（只是多了付款/收款 4 张），但「无人消费」的说法已过时；未改（避免顺手扩大 diff）。
 
 本节文档同步：next-steps 后记三追加 A 组第 5 项完成；HANDOFF 无对应追踪行。
+
+## 12.249 2026-10-17 检验记录 RespVO 补 severity + MSA 页去重复列（A 组第 6 项；ADR 先行）
+
+本节属性：台账 §12.239.5 第 5 条（检验记录 RespVO 无 `severity`）与第 6 条
+（MSA 页重复「创建时间」列）的收口（A 组小项第 6 项，A 组最后一项）。
+展示层小修：1 个后端 VO 字段 + 1 前端列删除 + 1 处前端预填 + 注释订正；零迁移、零新错误码、零权限。
+
+### 12.249.1 缺陷面与口径复核
+
+- `InspectionRecordRespVO` 无 `severity`，而 `InspectionRecordDO`/`InspectionRecordSaveReqVO` 都有；
+  前端 `inspection/order/index.vue` 的注释「记录 RespVO 无 severity 字段，默认「严重」，提交前请确认」
+  正是该缺口的书面记录；
+- `views/qms/msa/study/index.vue:59-60` 两个同 label 同 prop（`createTime`）的列并排，
+  其一缺 `:formatter`（故一列显示 epoch 毫秒、一列显示格式化时间）。
+
+### 12.249.2 **事实订正**：`severity` 是枚举，不是 0-10 数值
+
+动手前 ADR 初稿据前端 `el-input-number :min="0"` 判断「severity 是 0-10 数值」，
+**该判断是错的**，真机实测推翻：
+
+- `InspectionRecordSaveReqVO#severity` 挂 `@InEnum(InspectionSeverityEnum.class)`，
+  传 0 时后端直接 400「参数不正确: 缺陷严重度, 取值必须为: [10, 20, 30]」；
+- `InspectionSeverityEnum` 值域 `[10, 20, 30]`（前端 submit 对话框的 `el-select` 选项
+  10 致命 / 20 严重 / 30 轻微，注释自称「与后端 InspectionSeverityEnum 对齐」）；
+- **教训与 §12.234.6 同类**：控件长相不等于契约；值域约束写在后端注解里，读码要读到注解那一行
+  （且本项证明「真机 400」比「读前端控件」更可靠）。
+
+因此：
+- RespVO 补 `Integer severity`（**不加** `@DictFormat`/`@ExcelProperty`：该值域不是字典，
+  凭空造字典属扩权；模块内 `FmeaItemRespVO`/`QmsAuditNonconformityRespVO` 的 `severity` 同样无注解，
+  保持一致）；
+- 前端预填用 `r.severity ?? 20`（理由由「0 是合法值」改为「仅 null 才回退」），提交前必填校验不动。
+
+### 12.249.3 设计决策（ADR 式，动手前定案）
+
+- **D1 MSA 重复列**：删除**缺 formatter 的那一列**（第 59 行），保留 `:formatter="dateFormatter"` 的；
+  依据是同页/全仓时间列惯例都用 formatter。
+- **D2 前端预填与注释同步**：预填改 `r.severity ?? 20`，第 284 行注释改为事实陈述
+  （RespVO 已返回 severity，此处仅对空值回退），避免注释继续误导后人。
+- **D3 范围（明示不做）**：不为 severity 造字典（无枚举→字典的既有约定，值域是枚举不是字典）；
+  不改 `el-input-number` 控件形态；不动 MSA 页其它列与检验记录列表页的「缺陷严重度」列；
+  不改 `!r.severity` 必填校验口径。
+- **D4 验证链**：新单测 3 案 → QMS 回归 → 重打包重启 → 真机 E2E（含值域负向）→
+  `ts:check`/`build:prod` → errcode 扫描。
+
+### 12.249.4 变更清单（5 文件：1 后端 + 1 新测试 + 2 前端 + 1 文档对）
+
+- `InspectionRecordRespVO`：`+Integer severity`（含 `@Schema` 说明值域由枚举约束）；
+- 新测试 `QmsInspectionRecordSeverityVOTest`（3 案）：枚举值精确回填、最小合法值 10 不被改写、
+  null 保持 null（后端不编造默认值）；
+- `views/qms/msa/study/index.vue`：删除重复「创建时间」列；
+- `views/qms/inspection/order/index.vue`：预填改 `r.severity ?? 20` + 注释订正；
+- 2 个文档（台账本节 + next-steps 后记三）。
+
+### 12.249.5 验证读数
+
+- 新单测 **3/3**；QMS 模块全量回归 **128/128**（125 + 3，Fail/Err/Skip=0）；
+- errcode 全仓扫描 **1947 条 / 0 碰撞**（零新码）；
+- reactor 重打包（`-pl zhicloud-server -am`）**BUILD SUCCESS**，新 jar（642740162B，13:31）真机运行；
+- 真机 E2E（tenant 9001，`Temp\zc_qms249_e2e.py`）**13/13**：检验单建单 → 检验项目建单 →
+  **值域负向**（`severity=0` → 400「取值必须为: [10, 20, 30]」）→ 两条合法记录（10/30）落库
+  → `page` 回读 severity 精确为 `[10,30]` 且均落在值域内 → `get` 单条回读一致 →
+  清理零遗留（记录/项目/检验单 3 张表均 0）；
+- `pnpm ts:check` **EXIT=0**；`pnpm build:prod` **EXIT=0**；
+- 行尾保真：2 个 Java（RespVO + 新测试）与 2 个 vue 文件均 LF-only。
+
+### 12.249.6 连带观察（登记，不动手）
+
+1. **CRUD 表单的 severity 控件与后端值域不符（新发现）**：
+   `views/qms/inspection/record/InspectionRecordForm.vue:23-24` 用
+   `el-input-number :min="0"`，可提交任意 ≥0 的整数，而后端只接受 `[10,20,30]`
+   ——用户填 0/5/7 会拿到 400 且表单不提示。改法需产品口径（下拉 or 值域提示），
+   本项只登记不修（未在 A 组清单内）。
+2. **FMEA `severity S(1-10)` 是另一套语义**（`FmeaItemDO`/`FmeaItemForm` 的 1-10 评分），
+   与检验记录的枚举值域**同名不同义**；跨域复用字段名时需显式标注，登记备查。
+3. **`/list-by-order` 端点不存在**（仅 mapper 内部 `selectListByOrderId`；前端 submit 用 page）。
+   本项 E2E 曾按端点存在写断言，实测 404 后改为 `/get` —— 属探针写法问题，非产品缺陷。
+4. 浏览器点击冒烟未做（沿用既有验证缺口口径）。
+
+本节文档同步：next-steps 后记三追加 A 组第 6 项完成与 A 组收官；HANDOFF 无对应追踪行。

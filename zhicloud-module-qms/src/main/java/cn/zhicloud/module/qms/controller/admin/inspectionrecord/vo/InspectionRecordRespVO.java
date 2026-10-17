@@ -31,6 +31,10 @@ public class InspectionRecordRespVO {
     @ExcelProperty("实测值")
     private String measuredValue;
 
+    @Schema(description = "缺陷严重度（0-10 数值，非字典；与 InspectionRecordSaveReqVO 同口径）",
+            example = "20")
+    private Integer severity;
+
     @Schema(description = "检验结果", requiredMode = Schema.RequiredMode.REQUIRED, example = "10")
     @ExcelProperty(value = "检验结果", converter = DictConvert.class)
     @DictFormat(DictTypeConstants.INSPECTION_RESULT)
