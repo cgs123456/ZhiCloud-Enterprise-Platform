@@ -20,6 +20,7 @@ import cn.zhicloud.module.crm.dal.dataobject.receivable.CrmReceivableDO;
 import cn.zhicloud.module.crm.dal.dataobject.receivable.CrmReceivablePlanDO;
 import cn.zhicloud.module.crm.dal.mysql.contract.CrmContractMapper;
 import cn.zhicloud.module.crm.dal.mysql.receivable.CrmReceivableMapper;
+import cn.zhicloud.module.crm.dal.mysql.salesorder.CrmSaleOrderMapper;
 import cn.zhicloud.module.crm.dal.redis.no.CrmNoRedisDAO;
 import cn.zhicloud.module.crm.enums.common.CrmAuditStatusEnum;
 import cn.zhicloud.module.crm.enums.common.CrmBizTypeEnum;
@@ -28,6 +29,7 @@ import cn.zhicloud.module.crm.framework.permission.core.annotations.CrmPermissio
 import cn.zhicloud.module.crm.service.contract.CrmContractService;
 import cn.zhicloud.module.crm.service.permission.CrmPermissionService;
 import cn.zhicloud.module.crm.service.permission.bo.CrmPermissionCreateReqBO;
+import cn.zhicloud.module.crm.util.CrmPaymentStatusUtils;
 import cn.zhicloud.module.system.api.user.AdminUserApi;
 import com.mzt.logapi.context.LogRecordContext;
 import com.mzt.logapi.service.impl.DiffParseFunction;
@@ -82,6 +84,9 @@ public class CrmReceivableServiceImpl implements CrmReceivableService {
 
     @Resource
     private CrmContractMapper contractMapper;
+
+    @Resource
+    private CrmSaleOrderMapper saleOrderMapper;
 
     @Resource
     private CrmNoRedisDAO noRedisDAO;
@@ -376,6 +381,7 @@ public class CrmReceivableServiceImpl implements CrmReceivableService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateReceivableAuditStatus(Long id, Integer bpmResult) {
         // 1.1 校验存在
         CrmReceivableDO receivable = validateReceivableExists(id);
@@ -385,6 +391,11 @@ public class CrmReceivableServiceImpl implements CrmReceivableService {
                     receivable.getId(), bpmResult);
             throw exception(RECEIVABLE_UPDATE_AUDIT_STATUS_FAIL_NOT_PROCESS);
         }
+        // 1.3 锁合同行（§12.260 D3 统一锁序：合同行 → 回款行 → 订单行）。
+        // 同合同两笔回款并发审批时，若不先取合同行锁，双方各自 CAS 后再做锁读扫描会互锁对方未提交行
+        // 的索引记录而成环死锁（且发生在 BPM 完成事务内）。非 APPROVE 结果也先锁，避免出现
+        // 「有的审批路径锁合同、有的不锁」的分裂锁序。
+        CrmContractDO contract = contractMapper.selectByIdForUpdate(receivable.getContractId());
 
         // 2. 更新回款审批状态（乐观锁：设置 version，失败抛异常）
         Integer auditStatus = convertBpmResultToAuditStatus(bpmResult);
@@ -394,6 +405,33 @@ public class CrmReceivableServiceImpl implements CrmReceivableService {
         if (updated == 0) {
             throw exception(CRM_OPTIMISTIC_LOCK_FAIL);
         }
+
+        // 3. 审批通过后，驱动该合同下销售订单的付款状态（§12.260 D1/D2a：付款状态 = 合同收款进度投影）
+        if (ObjUtil.equal(auditStatus, CrmAuditStatusEnum.APPROVE.getStatus())) {
+            syncSaleOrderPaymentStatusOnApproved(contract);
+        }
+    }
+
+    /**
+     * 回款审批通过后，重算该合同下全部未取消销售订单的付款状态（§12.260 D2a/D4）
+     *
+     * <p>已审批回款必须锁读（FOR UPDATE）：RR 快照下普通读看不到先提交者的审批结果，与合同行锁配合
+     * 才能拿到「最新已提交」的收款进度（§12.233.12 同款教训）。
+     *
+     * <p>合同行理论上必存在（存在任何回款行的合同不可删除），缺失只可能是数据异常：记日志并跳过投影，
+     * 不让审批本身失败——BPM 已判完成而 CRM 回滚会造「已审批未生效」的更坏不一致（§12.260 D7d）。
+     */
+    private void syncSaleOrderPaymentStatusOnApproved(CrmContractDO contract) {
+        if (contract == null) {
+            log.error("[syncSaleOrderPaymentStatusOnApproved][回款所属合同不存在，跳过订单付款状态投影]");
+            return;
+        }
+        List<CrmReceivableDO> approvedReceivables = receivableMapper.selectListByContractIdAndStatusForUpdate(
+                contract.getId(), List.of(CrmAuditStatusEnum.APPROVE.getStatus()));
+        BigDecimal receivedPrice = CollectionUtils.getSumValue(approvedReceivables, CrmReceivableDO::getPrice,
+                BigDecimal::add, BigDecimal.ZERO);
+        Integer paymentStatus = CrmPaymentStatusUtils.resolve(receivedPrice, contract.getTotalPrice());
+        saleOrderMapper.updatePaymentStatusByContractId(contract.getId(), paymentStatus);
     }
 
     @Override

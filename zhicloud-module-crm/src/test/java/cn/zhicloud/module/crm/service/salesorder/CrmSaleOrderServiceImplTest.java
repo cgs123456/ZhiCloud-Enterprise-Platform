@@ -1,9 +1,15 @@
 package cn.zhicloud.module.crm.service.salesorder;
 
 import cn.zhicloud.framework.test.core.ut.BaseDbUnitTest;
+import cn.zhicloud.module.crm.controller.admin.salesorder.vo.CrmSaleOrderSaveReqVO;
+import cn.zhicloud.module.crm.dal.dataobject.contract.CrmContractDO;
+import cn.zhicloud.module.crm.dal.dataobject.receivable.CrmReceivableDO;
 import cn.zhicloud.module.crm.dal.dataobject.salesorder.CrmSaleOrderDO;
+import cn.zhicloud.module.crm.dal.mysql.contract.CrmContractMapper;
+import cn.zhicloud.module.crm.dal.mysql.receivable.CrmReceivableMapper;
 import cn.zhicloud.module.crm.dal.mysql.salesorder.CrmSaleOrderMapper;
 import cn.zhicloud.module.crm.dal.redis.no.CrmNoRedisDAO;
+import cn.zhicloud.module.crm.enums.common.CrmAuditStatusEnum;
 import cn.zhicloud.module.crm.enums.salesorder.CrmSaleOrderDeliveryStatusEnum;
 import cn.zhicloud.module.crm.enums.salesorder.CrmSaleOrderPaymentStatusEnum;
 import cn.zhicloud.module.crm.enums.salesorder.CrmSaleOrderStatusEnum;
@@ -14,11 +20,17 @@ import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
 import static cn.zhicloud.framework.test.core.util.AssertUtils.assertServiceException;
 import static cn.zhicloud.framework.test.core.util.RandomUtils.randomLongId;
 import static cn.zhicloud.framework.test.core.util.RandomUtils.randomPojo;
 import static cn.zhicloud.module.crm.enums.ErrorCodeConstants.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 /**
  * {@link CrmSaleOrderServiceImpl} 的单元测试：销售订单生命周期状态流转（CAS）
@@ -34,6 +46,12 @@ public class CrmSaleOrderServiceImplTest extends BaseDbUnitTest {
 
     @Resource
     private CrmSaleOrderMapper saleOrderMapper;
+
+    @Resource
+    private CrmContractMapper contractMapper;
+
+    @Resource
+    private CrmReceivableMapper receivableMapper;
 
     @MockitoBean
     private CrmCustomerService customerService;
@@ -187,6 +205,88 @@ public class CrmSaleOrderServiceImplTest extends BaseDbUnitTest {
         });
         saleOrderMapper.insert(order);
         return order;
+    }
+
+    // ===== §12.260：创建时按合同收款进度初始化付款状态（投影） =====
+
+    @Test
+    public void test_createSaleOrder_paymentStatusByContractProgress_partial() {
+        // 合同 1000 已审批回款 600 ⇒ 创建即部分付款
+        CrmContractDO contract = insertApprovedContract("1000.00");
+        insertApprovedReceivable(contract.getId(), "600.00");
+        when(contractService.validateContract(contract.getId())).thenReturn(contract);
+        when(noRedisDAO.generate(anyString())).thenReturn("SALE-ORDER-260-PARTIAL");
+
+        Long orderId = saleOrderService.createSaleOrder(buildCreateReqVO(contract.getCustomerId(), contract.getId()), 1L);
+
+        assertEquals(CrmSaleOrderPaymentStatusEnum.PARTIAL_PAID.getStatus(),
+                saleOrderMapper.selectById(orderId).getPaymentStatus());
+    }
+
+    @Test
+    public void test_createSaleOrder_paymentStatusByContractProgress_paid() {
+        // 合同 1000 已收齐 ⇒ 创建即已付款（先收齐后下单的投影语义）
+        CrmContractDO contract = insertApprovedContract("1000.00");
+        insertApprovedReceivable(contract.getId(), "1000.00");
+        when(contractService.validateContract(contract.getId())).thenReturn(contract);
+        when(noRedisDAO.generate(anyString())).thenReturn("SALE-ORDER-260-PAID");
+
+        Long orderId = saleOrderService.createSaleOrder(buildCreateReqVO(contract.getCustomerId(), contract.getId()), 1L);
+
+        assertEquals(CrmSaleOrderPaymentStatusEnum.PAID.getStatus(),
+                saleOrderMapper.selectById(orderId).getPaymentStatus());
+    }
+
+    @Test
+    public void test_createSaleOrder_paymentStatusByContractProgress_unpaidNoReceipts() {
+        // 合同无可审批回款 ⇒ 未付款（与旧行为一致）
+        CrmContractDO contract = insertApprovedContract("1000.00");
+        when(contractService.validateContract(contract.getId())).thenReturn(contract);
+        when(noRedisDAO.generate(anyString())).thenReturn("SALE-ORDER-260-UNPAID");
+
+        Long orderId = saleOrderService.createSaleOrder(buildCreateReqVO(contract.getCustomerId(), contract.getId()), 1L);
+
+        assertEquals(CrmSaleOrderPaymentStatusEnum.UNPAID.getStatus(),
+                saleOrderMapper.selectById(orderId).getPaymentStatus());
+    }
+
+    @Test
+    public void test_createSaleOrder_paymentStatus_unpaidWithoutContract() {
+        // 无合同订单恒未付款
+        when(noRedisDAO.generate(anyString())).thenReturn("SALE-ORDER-260-NOCONTRACT");
+
+        Long orderId = saleOrderService.createSaleOrder(buildCreateReqVO(randomLongId(), null), 1L);
+
+        assertEquals(CrmSaleOrderPaymentStatusEnum.UNPAID.getStatus(),
+                saleOrderMapper.selectById(orderId).getPaymentStatus());
+    }
+
+    private CrmContractDO insertApprovedContract(String totalPrice) {
+        CrmContractDO contract = randomPojo(CrmContractDO.class, o -> {
+            o.setAuditStatus(CrmAuditStatusEnum.APPROVE.getStatus());
+            o.setTotalPrice(new BigDecimal(totalPrice));
+        });
+        contractMapper.insert(contract);
+        return contract;
+    }
+
+    private void insertApprovedReceivable(Long contractId, String price) {
+        CrmReceivableDO receivable = randomPojo(CrmReceivableDO.class, o -> {
+            o.setContractId(contractId);
+            o.setAuditStatus(CrmAuditStatusEnum.APPROVE.getStatus());
+            o.setPrice(new BigDecimal(price));
+        });
+        receivableMapper.insert(receivable);
+    }
+
+    private CrmSaleOrderSaveReqVO buildCreateReqVO(Long customerId, Long contractId) {
+        return new CrmSaleOrderSaveReqVO()
+                .setCustomerId(customerId)
+                .setContractId(contractId)
+                .setOrderDate(LocalDateTime.now())
+                .setOwnerUserId(1L)
+                .setItems(List.of(new CrmSaleOrderSaveReqVO.Item()
+                        .setProductId(1L).setQuantity(BigDecimal.ONE).setUnitPrice(new BigDecimal("100.00"))));
     }
 
 }

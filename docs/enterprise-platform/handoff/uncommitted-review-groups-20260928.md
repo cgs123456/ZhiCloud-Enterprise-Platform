@@ -11834,3 +11834,95 @@ HANDOFF 无对应追踪行。
 C2=CRM 回款链接线；C3=CRM submit 接 BPM 审批；C4=MRP 转采购/生产建议；C5=APS 空隙建模；
 C6=FMS/HRM 接线与旧 /hr 退役（尾置）。重建依据与原会话登记原文可能存在偏差，
 以 HANDOFF 各 §12.2xx 原文为准（重建披露在 next-steps 后记六同步）。
+
+## 12.260 CRM 回款链接线——订单付款状态 = 合同收款进度投影（C 组第 2 项）
+
+接 §12.241.5-1（「真实回款链须另立域」登记）+ §12.234.2-3（复查源）。原登记口径厘清：
+「无回款单实体」指销售订单侧无驱动源——回款域早已存在（合同维度）；
+真缺口是订单 payment_status 无驱动、PARTIAL_PAID(20)/PAID(30) 不可达。
+设计锁全部锚在 `Temp/zc_adr_260.md`（D1–D7），实施经字节级脚本族
+（Temp/zc_edit_260_{new_util,mapper,saleorder,receivable,test_util,test_receivable,test_saleorder}.py）。
+
+### 12.260.1 设计锁（ADR 260 D1–D7 摘引）
+
+- **D1 投影函数**：`CrmPaymentStatusUtils.resolve(received, totalPrice)`——
+  received=Σ(该合同 audit_status=20 回款 price)；received≥totalPrice 且 totalPrice>0 → PAID(30)；
+  received>0 → PARTIAL_PAID(20)；否则 UNPAID(10)。totalPrice null/≤0 视为「无收齐基准」
+  （仅 20/10 可达，不抛错——无收齐基准是合同侧口径问题）。
+- **D2 驱动时机**：①回款审批通过（`updateReceivableAuditStatus` 收到 BPM APPROVE 2→20）
+  →重算该合同全部未取消订单（含草稿）；②订单创建（contractId 非空）→按当前进度初始化。
+- **D3 锁序**：合同行 FOR UPDATE → 回款行锁读 → 订单写（approve 路径；非 APPROVE 结果也先锁合同，
+  避免「有的审批路径锁合同、有的不锁」的分裂锁序）；订单创建路径锁读 APPROVE 回款（不取合同锁）。
+  理由：防同合同双审批锁读互扫成环死锁（发生在 BPM 完成事务内）；锁读保证 RR 快照不陈旧（§12.233.12 教训）。
+- **D4 写侧**：`CrmSaleOrderMapper.updatePaymentStatusByContractId`——
+  `eq(contract_id) ∧ ne(status, CANCELED 50) ∧ (isNull(payment_status) ∨ ne(payment_status, target))`；
+  不加单调守卫（投影在「回款只可审批通过、合同审批通过后总额不可改」下实务单调，守卫属推测性防御）。
+- **D5 全零**：零端点/零 DDL/零错误码/零权限/零前端（H2 create_tables.sql、Flyway、manifest 均未动）。
+- **D6 明确不做**：部分发货、按订单分配回款、退款反审批、ERP 收款单联动、取消单回写、
+  「已回款金额」显示口径。
+- **D7 边界**：多订单共享进度值；改挂合同不重算；取消单保留最后值；合同缺失 log.error 跳过不阻审批。
+
+### 12.260.2 实施面（3 改 + 4 新增，全在工作区未提交状态）
+
+- 新增：`CrmPaymentStatusUtils.java`（D1 唯一投影函数，回款/订单两个调用点共用）
+  + 测试 3 文件（util 新测 + 回款/订单两测试类增案）。
+- `CrmSaleOrderMapper`：+`updatePaymentStatusByContractId`（D4；`update(entity, wrapper)` 模式，
+  update_time 走 BaseDO INSERT_UPDATE 填充）。
+- `CrmSaleOrderServiceImpl`：`validateRelationDataExists` 返回值 void→CrmContractDO（private，
+  调用点全在同文件）；createSaleOrder 注入 `CrmReceivableMapper`、付款状态恒 UNPAID 改
+  `resolveInitialPaymentStatus(contract)`（D2b，APPROVE 回款锁读）。
+- `CrmReceivableServiceImpl`：`updateReceivableAuditStatus` +`@Transactional(rollbackFor)`、
+  合同行锁前置（D3，`selectByIdForUpdate`）、APPROVE 驱动
+  `syncSaleOrderPaymentStatusOnApproved`（D2a：回款锁读 Σ price → 投影 → 订单批量写；
+  合同缺失 log.error 跳过，不让审批失败——BPM 已判完成而 CRM 回滚会造「已审批未生效」的更坏不一致）。
+- 零 DDL/零 SQL/零 manifest：H2 `create_tables.sql`（511 行 CRLF）未触碰。
+
+### 12.260.3 验证链（全绿收口）
+
+- 定向测试首跑 **39/39**（新增 14：util 4 + 回款 6 + 订单 4），零失败零重跑。
+- 模块回归：**88（83 执行 + 5 跳过）全绿**（基线 74 含 5 跳过；Skipped=5 为无 MySQL 容器的集成用例）。
+  - 回款 `CrmReceivableServiceImplTest` 15/15（新增：部分驱动/收齐驱动/驳回不驱动/无订单 0 行出口/
+    合同缺失跳过/跨合同隔离）；
+  - 订单 `CrmSaleOrderServiceImplTest` 20/20（新增：创建即部分/收齐即已付/无可审批回款=未付/无合同=未付）；
+  - `CrmPaymentStatusUtilsTest` 4/4（未付/部分/已付/无基准四分支）。
+- errcode 扫描：**1954 / 0**（与基线一致，零新码）。
+- 行尾不变量：7 个 Java 文件全 LF-only（字节校验 CR=0）。
+- Reactor 打包：`-pl zhicloud-server -am package` SUCCESS（43/43 模块，jar 重打包替换）。
+- 停服（PID 38632）→重打→重启（PID 13304）→真机 E2E **40/40 全 PASS**（Temp/zc_crm260_e2e.py）：
+  - 合同 1000 创建→BPM 通过（20）；订单 A/B/C 生来 10 未付款，C 取消（50）；
+  - R1(400) 通过 → Σ已审批=400 核对 → A/B=20 部分付款、C 仍 10（取消单跳过）；
+  - R_rej(100) 驳回（30）→ 不驱动，A/B 仍 20；
+  - R2(600) 通过 → Σ=1000 收齐核对 → A/B=30 已付款、C 仍 10；
+  - 收齐后新建订单 D → 生来 30（D2b「先收齐后下单」投影语义）；
+  - 清理零遗留（三表打标行合计 0）+ 沙箱非测试行计数前后不变（15 订单 / 16 回款 / 20 合同）。
+- BPM 实例残留与 §12.207/§12.241 E2E 先例一致（历史库不清理），不计入「零遗留」。
+
+### 12.260.4 首跑与执行实证登记（诚实链）
+
+1. **测试增案脚本锚点假设错误一次（零副作用）**：销售订单测试类导入把 `CrmSaleOrderItemMapper`
+   误设为存在（实际只有 `CrmSaleOrderMapper`），pair 校验失败即退出——写盘在全部替换校验之后，
+   文件未被触碰；改锚点后重跑生效。
+2. **E2E 首跑即全绿（40/40）**，本项零首跑失败、零重跑。
+3. **重启冷启动约 7 分钟**：首轮 240s 轮询未就绪（进程存活、日志持续推进：Quartz/物联网调度/MES
+   采集器等仍在初始化），第二轮就绪；大应用冷启动常态，非缺陷。
+4. **设计执行校准**：订单金额与投影无关——D1 只读「合同总额 + 已审批回款和」，
+   E2E 订单 items 数量（6/4/2/1）仅叙事对称，不作输入、不加断言。
+5. **签名扫描**：本项唯一签名调整是 private 方法返回值（同文件两调用点），public 接口零变更，
+   无跨模块影响；仍按 §12.259.4-3 纪律完成全模块（含 test）编译验证。
+6. **阶段校验脚本两处基线误设（就地修正）**：①把 WMS 的 `create_tables.sql`（511 行）基线误套到 CRM 模块
+   （CRM 实为 587 行，纯 CRLF，git 面零变更——已改为按 CRM 实况校验 + git 零变更双证）；
+   ②把 7 个 Java 统一要求尾换行，而 `CrmReceivableServiceImplTest.java` 与 HEAD 一致本就无尾换行
+   （字节保形，diff 零噪声——已改为仅新增文件要求尾换行）。修正口径后阶段校验 ALL PASS。
+
+### 12.260.5 不扩面披露（与 ADR D6 一致，未实施）
+
+- 部分发货、按订单分配回款、退款/反审批（投影只可升可达）、取消单回写「回款」不引入。
+- ERP 收款单联动：A5/§12.248 已备 ERP 侧 H2 payment/receipt，接线未做（候 D 组或单立）。
+- 「已回款金额」显示口径：占用口径（含 DRAFT+PROCESS）与审批口径（20）不同源，展示勿混（§12.233/247 口径延续）。
+- `crm_sale_order` 无 contract_id 索引（ADR 登记不建）：写路径按合同全量刷新的规模假设为单合同订单量小。
+
+### 12.260.6 C 组矩阵基线（顺延声明）
+
+C3=CRM submit 接 BPM 审批；C4=MRP 转采购/生产建议；C5=APS 空隙建模；
+C6=FMS/HRM 接线与旧 /hr 退役（尾置）。重建依据与原会话登记原文可能存在偏差，
+以 HANDOFF 各 §12.2xx 原文为准（重建披露在 next-steps 后记六同步）。

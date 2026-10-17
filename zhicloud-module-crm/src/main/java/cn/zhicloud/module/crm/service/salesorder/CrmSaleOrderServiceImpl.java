@@ -9,16 +9,21 @@ import cn.zhicloud.framework.common.util.number.MoneyUtils;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
 import cn.zhicloud.module.crm.controller.admin.salesorder.vo.CrmSaleOrderPageReqVO;
 import cn.zhicloud.module.crm.controller.admin.salesorder.vo.CrmSaleOrderSaveReqVO;
+import cn.zhicloud.module.crm.dal.dataobject.contract.CrmContractDO;
+import cn.zhicloud.module.crm.dal.dataobject.receivable.CrmReceivableDO;
 import cn.zhicloud.module.crm.dal.dataobject.salesorder.CrmSaleOrderDO;
 import cn.zhicloud.module.crm.dal.dataobject.salesorder.CrmSaleOrderItemDO;
+import cn.zhicloud.module.crm.dal.mysql.receivable.CrmReceivableMapper;
 import cn.zhicloud.module.crm.dal.mysql.salesorder.CrmSaleOrderItemMapper;
 import cn.zhicloud.module.crm.dal.mysql.salesorder.CrmSaleOrderMapper;
 import cn.zhicloud.module.crm.dal.redis.no.CrmNoRedisDAO;
+import cn.zhicloud.module.crm.enums.common.CrmAuditStatusEnum;
 import cn.zhicloud.module.crm.enums.salesorder.CrmSaleOrderDeliveryStatusEnum;
 import cn.zhicloud.module.crm.enums.salesorder.CrmSaleOrderPaymentStatusEnum;
 import cn.zhicloud.module.crm.enums.salesorder.CrmSaleOrderStatusEnum;
 import cn.zhicloud.module.crm.service.contract.CrmContractService;
 import cn.zhicloud.module.crm.service.customer.CrmCustomerService;
+import cn.zhicloud.module.crm.util.CrmPaymentStatusUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
@@ -53,6 +58,9 @@ public class CrmSaleOrderServiceImpl implements CrmSaleOrderService {
     private CrmSaleOrderItemMapper saleOrderItemMapper;
 
     @Resource
+    private CrmReceivableMapper receivableMapper;
+
+    @Resource
     private CrmNoRedisDAO noRedisDAO;
 
     @Resource
@@ -65,8 +73,8 @@ public class CrmSaleOrderServiceImpl implements CrmSaleOrderService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long createSaleOrder(CrmSaleOrderSaveReqVO createReqVO, Long userId) {
-        // 1.1 校验关联数据
-        validateRelationDataExists(createReqVO);
+        // 1.1 校验关联数据（返回关联合同，供付款状态初始化）
+        CrmContractDO contract = validateRelationDataExists(createReqVO);
         // 1.2 生成序号
         String no = noRedisDAO.generate(CrmNoRedisDAO.SALE_ORDER_NO_PREFIX);
         if (saleOrderMapper.selectByNo(no) != null) {
@@ -79,7 +87,7 @@ public class CrmSaleOrderServiceImpl implements CrmSaleOrderService {
         CrmSaleOrderDO order = BeanUtils.toBean(createReqVO, CrmSaleOrderDO.class).setNo(no);
         calculateOrderAmount(order, items);
         order.setStatus(CrmSaleOrderStatusEnum.DRAFT.getStatus())
-                .setPaymentStatus(CrmSaleOrderPaymentStatusEnum.UNPAID.getStatus())
+                .setPaymentStatus(resolveInitialPaymentStatus(contract))
                 .setDeliveryStatus(CrmSaleOrderDeliveryStatusEnum.UN_SHIPPED.getStatus());
         saleOrderMapper.insert(order);
         // 2.3 插入订单明细
@@ -141,17 +149,39 @@ public class CrmSaleOrderServiceImpl implements CrmSaleOrderService {
     }
 
     /**
-     * 校验关联数据是否存在
+     * 校验关联数据是否存在，并返回关联合同（无合同时返回 null）
+     *
+     * <p>返回值供 {@link #resolveInitialPaymentStatus} 使用；更新路径忽略返回值。
      */
-    private void validateRelationDataExists(CrmSaleOrderSaveReqVO reqVO) {
+    private CrmContractDO validateRelationDataExists(CrmSaleOrderSaveReqVO reqVO) {
         // 1. 校验客户
         if (reqVO.getCustomerId() != null) {
             customerService.validateCustomer(reqVO.getCustomerId());
         }
         // 2. 如果有关联合同，则需要校验存在
         if (reqVO.getContractId() != null) {
-            contractService.validateContract(reqVO.getContractId());
+            return contractService.validateContract(reqVO.getContractId());
         }
+        return null;
+    }
+
+    /**
+     * 订单创建时初始化付款状态：付款状态 = 合同收款进度投影（§12.260 D1/D2b）
+     *
+     * <p>「先收齐后下单」的订单必须按当前进度出生：额度已满后不会再有审批事件来纠正，普通读会留下永久陈旧值。
+     * 已审批回款必须锁读（FOR UPDATE），与回款审批路径的回款行锁互相串行——create 先拿到行锁则审批的订单写扫描
+     * 会包含本新订单；审批先提交则本锁读看到新进度。两方向终态都等于「最新已提交进度」（时序推演见 §12.260 §3，
+     * 禁止降级为普通读）。
+     */
+    private Integer resolveInitialPaymentStatus(CrmContractDO contract) {
+        if (contract == null) {
+            return CrmSaleOrderPaymentStatusEnum.UNPAID.getStatus();
+        }
+        List<CrmReceivableDO> approvedReceivables = receivableMapper.selectListByContractIdAndStatusForUpdate(
+                contract.getId(), List.of(CrmAuditStatusEnum.APPROVE.getStatus()));
+        BigDecimal receivedPrice = getSumValue(approvedReceivables, CrmReceivableDO::getPrice,
+                BigDecimal::add, BigDecimal.ZERO);
+        return CrmPaymentStatusUtils.resolve(receivedPrice, contract.getTotalPrice());
     }
 
     /**
