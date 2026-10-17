@@ -24,6 +24,15 @@ export const CrmSaleOrderDeliveryStatus = {
   SIGNED: 40
 } as const
 
+/** 审批状态：0 未提交 / 10 审批中 / 20 审核通过 / 30 审核不通过 / 40 已取消（对应后端 CrmAuditStatusEnum） */
+export const CrmSaleOrderAuditStatus = {
+  DRAFT: 0,
+  PROCESS: 10,
+  APPROVE: 20,
+  REJECT: 30,
+  CANCELLED: 40
+} as const
+
 // CRM 销售订单明细 VO
 export interface CrmSaleOrderItemVO {
   id?: number
@@ -60,6 +69,7 @@ export interface CrmSaleOrderVO {
   paymentStatus?: number // 付款状态
   deliveryStatus?: number // 发货状态
   status?: number // 状态
+  auditStatus?: number // 审批状态
   remark?: string
   processInstanceId?: string
   creator?: string
@@ -102,7 +112,7 @@ export const CrmSaleOrderApi = {
   confirmCrmSaleOrder: async (id: number) => {
     return await request.put({ url: `/crm/sale-order/confirm?id=${id}` })
   },
-  // 提交审批（仅草稿；暂不接入 BPM，直接更新为已确认）
+  // 提交审批（草稿且未提交；发起 BPM 审批流程，通过后订单转为已确认）
   submitCrmSaleOrder: async (id: number) => {
     return await request.put({ url: `/crm/sale-order/submit?id=${id}` })
   },

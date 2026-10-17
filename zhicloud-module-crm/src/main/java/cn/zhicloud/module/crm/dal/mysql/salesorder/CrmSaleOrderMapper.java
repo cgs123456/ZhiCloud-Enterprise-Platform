@@ -41,6 +41,18 @@ public interface CrmSaleOrderMapper extends BaseMapperX<CrmSaleOrderDO> {
     }
 
     /**
+     * 条件更新（CAS，带审批状态条件）：仅当当前状态在 {@code fromStatuses} 内、且当前审批状态在
+     * {@code fromAuditStatuses} 内时才更新，返回受影响行数（§12.261）
+     */
+    default int updateByIdAndStatusAndAuditStatus(Long id, Collection<Integer> fromStatuses,
+                                                  Collection<Integer> fromAuditStatuses, CrmSaleOrderDO updateObj) {
+        return update(updateObj, new LambdaUpdateWrapper<CrmSaleOrderDO>()
+                .eq(CrmSaleOrderDO::getId, id)
+                .in(CrmSaleOrderDO::getStatus, fromStatuses)
+                .in(CrmSaleOrderDO::getAuditStatus, fromAuditStatuses));
+    }
+
+    /**
      * 按合同批量刷新未取消订单的付款状态（§12.260 D4）：已取消订单与同值订单跳过，
      * 返回受影响行数（0 行 = 无订单/全部相同/全已取消，均为合法出口）
      */

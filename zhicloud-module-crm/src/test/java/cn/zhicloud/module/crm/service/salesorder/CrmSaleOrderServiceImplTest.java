@@ -1,6 +1,9 @@
 package cn.zhicloud.module.crm.service.salesorder;
 
 import cn.zhicloud.framework.test.core.ut.BaseDbUnitTest;
+import cn.zhicloud.module.bpm.api.task.BpmProcessInstanceApi;
+import cn.zhicloud.module.bpm.api.task.dto.BpmProcessInstanceCreateReqDTO;
+import cn.zhicloud.module.bpm.enums.task.BpmTaskStatusEnum;
 import cn.zhicloud.module.crm.controller.admin.salesorder.vo.CrmSaleOrderSaveReqVO;
 import cn.zhicloud.module.crm.dal.dataobject.contract.CrmContractDO;
 import cn.zhicloud.module.crm.dal.dataobject.receivable.CrmReceivableDO;
@@ -17,6 +20,7 @@ import cn.zhicloud.module.crm.service.contract.CrmContractService;
 import cn.zhicloud.module.crm.service.customer.CrmCustomerService;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -29,7 +33,13 @@ import static cn.zhicloud.framework.test.core.util.RandomUtils.randomLongId;
 import static cn.zhicloud.framework.test.core.util.RandomUtils.randomPojo;
 import static cn.zhicloud.module.crm.enums.ErrorCodeConstants.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -37,6 +47,9 @@ import static org.mockito.Mockito.when;
  *
  * 覆盖业务断点 3（§12.241）：confirm/ship/complete/cancel 四类迁移的出口与并发语义
  * （不复活已取消订单、重复动作不重复生效）。
+ *
+ * <p>覆盖 §12.261：submit 接 BPM（claim-first，失败不建实例）、审批回写驱动（approve=确认，
+ * reject/撤回只动审批维度）、审批守卫矩阵（confirm/cancel/update/delete）。
  */
 @Import(CrmSaleOrderServiceImpl.class)
 public class CrmSaleOrderServiceImplTest extends BaseDbUnitTest {
@@ -59,6 +72,8 @@ public class CrmSaleOrderServiceImplTest extends BaseDbUnitTest {
     private CrmContractService contractService;
     @MockitoBean
     private CrmNoRedisDAO noRedisDAO;
+    @MockitoBean
+    private BpmProcessInstanceApi bpmProcessInstanceApi;
 
     @Test
     public void test_confirmSaleOrder_success() {
@@ -197,8 +212,13 @@ public class CrmSaleOrderServiceImplTest extends BaseDbUnitTest {
     }
 
     private CrmSaleOrderDO insertOrder(Integer status) {
+        return insertOrder(status, CrmAuditStatusEnum.DRAFT.getStatus());
+    }
+
+    private CrmSaleOrderDO insertOrder(Integer status, Integer auditStatus) {
         CrmSaleOrderDO order = randomPojo(CrmSaleOrderDO.class, o -> {
             o.setStatus(status);
+            o.setAuditStatus(auditStatus);
             o.setDeliveryStatus(CrmSaleOrderDeliveryStatusEnum.UN_SHIPPED.getStatus());
             o.setPaymentStatus(CrmSaleOrderPaymentStatusEnum.UNPAID.getStatus());
             o.setDeleted(false);
@@ -289,4 +309,192 @@ public class CrmSaleOrderServiceImplTest extends BaseDbUnitTest {
                         .setProductId(1L).setQuantity(BigDecimal.ONE).setUnitPrice(new BigDecimal("100.00"))));
     }
 
+    // ===== §12.261：submit 接 BPM 审批（claim-first）+ 审批回写 + 审批守卫 =====
+
+    @Test
+    public void test_submitSaleOrder_success() {
+        // 草稿 + 未提交 -> 抢占审批中 + 创建流程实例 + 回写流程号
+        CrmSaleOrderDO order = insertOrder(CrmSaleOrderStatusEnum.DRAFT.getStatus());
+        when(bpmProcessInstanceApi.createProcessInstance(anyLong(), any(BpmProcessInstanceCreateReqDTO.class)))
+                .thenReturn("PROC-261");
+        // 调用
+        saleOrderService.submitSaleOrder(order.getId(), 900100L);
+        // 校验：审批中 + 业务状态不动 + 流程号落库 + BPM 入参（定义 KEY 与业务键）
+        CrmSaleOrderDO result = saleOrderMapper.selectById(order.getId());
+        assertEquals(CrmAuditStatusEnum.PROCESS.getStatus(), result.getAuditStatus());
+        assertEquals(CrmSaleOrderStatusEnum.DRAFT.getStatus(), result.getStatus());
+        assertEquals("PROC-261", result.getProcessInstanceId());
+        ArgumentCaptor<BpmProcessInstanceCreateReqDTO> captor = ArgumentCaptor.forClass(BpmProcessInstanceCreateReqDTO.class);
+        verify(bpmProcessInstanceApi).createProcessInstance(eq(900100L), captor.capture());
+        assertEquals("crm-sale-order-audit", captor.getValue().getProcessDefinitionKey());
+        assertEquals(String.valueOf(order.getId()), captor.getValue().getBusinessKey());
+    }
+
+    @Test
+    public void test_submitSaleOrder_notExists() {
+        assertServiceException(() -> saleOrderService.submitSaleOrder(randomLongId(), 1L),
+                SALE_ORDER_NOT_EXISTS);
+        verifyNoInteractions(bpmProcessInstanceApi);
+    }
+
+    @Test
+    public void test_submitSaleOrder_failNotDraft() {
+        // 已确认（未提交过审批）的订单：status 守卫 009，且绝不调 BPM
+        CrmSaleOrderDO order = insertOrder(CrmSaleOrderStatusEnum.CONFIRMED.getStatus());
+        assertServiceException(() -> saleOrderService.submitSaleOrder(order.getId(), 1L),
+                SALE_ORDER_SUBMIT_FAIL_STATUS_NOT_DRAFT);
+        assertEquals(CrmAuditStatusEnum.DRAFT.getStatus(),
+                saleOrderMapper.selectById(order.getId()).getAuditStatus());
+        verifyNoInteractions(bpmProcessInstanceApi);
+    }
+
+    @Test
+    public void test_submitSaleOrder_failAlreadyProcess() {
+        // 审批中重复提交：audit 守卫 004，且不重复建实例
+        CrmSaleOrderDO order = insertOrder(CrmSaleOrderStatusEnum.DRAFT.getStatus(),
+                CrmAuditStatusEnum.PROCESS.getStatus());
+        assertServiceException(() -> saleOrderService.submitSaleOrder(order.getId(), 1L),
+                SALE_ORDER_SUBMIT_FAIL_NOT_DRAFT);
+        verifyNoInteractions(bpmProcessInstanceApi);
+    }
+
+    @Test
+    public void test_submitSaleOrder_failRejected() {
+        // 驳回后不可重新提交（模块级现状，§12.261 D2/D9）
+        CrmSaleOrderDO order = insertOrder(CrmSaleOrderStatusEnum.DRAFT.getStatus(),
+                CrmAuditStatusEnum.REJECT.getStatus());
+        assertServiceException(() -> saleOrderService.submitSaleOrder(order.getId(), 1L),
+                SALE_ORDER_SUBMIT_FAIL_NOT_DRAFT);
+        verifyNoInteractions(bpmProcessInstanceApi);
+    }
+
+    @Test
+    public void test_confirmSaleOrder_failAuditProcess() {
+        // 审批中不可直接确认（由流程定局）
+        CrmSaleOrderDO order = insertOrder(CrmSaleOrderStatusEnum.DRAFT.getStatus(),
+                CrmAuditStatusEnum.PROCESS.getStatus());
+        assertServiceException(() -> saleOrderService.confirmSaleOrder(order.getId()),
+                SALE_ORDER_CONFIRM_FAIL_AUDIT_STATUS);
+        assertEquals(CrmSaleOrderStatusEnum.DRAFT.getStatus(),
+                saleOrderMapper.selectById(order.getId()).getStatus());
+    }
+
+    @Test
+    public void test_confirmSaleOrder_failAuditRejected() {
+        CrmSaleOrderDO order = insertOrder(CrmSaleOrderStatusEnum.DRAFT.getStatus(),
+                CrmAuditStatusEnum.REJECT.getStatus());
+        assertServiceException(() -> saleOrderService.confirmSaleOrder(order.getId()),
+                SALE_ORDER_CONFIRM_FAIL_AUDIT_STATUS);
+    }
+
+    @Test
+    public void test_cancelSaleOrder_failAuditProcess() {
+        // 审批中不可取消（须先撤回流程）
+        CrmSaleOrderDO order = insertOrder(CrmSaleOrderStatusEnum.DRAFT.getStatus(),
+                CrmAuditStatusEnum.PROCESS.getStatus());
+        assertServiceException(() -> saleOrderService.cancelSaleOrder(order.getId()),
+                SALE_ORDER_CANCEL_FAIL_AUDIT_PROCESS);
+        assertEquals(CrmSaleOrderStatusEnum.DRAFT.getStatus(),
+                saleOrderMapper.selectById(order.getId()).getStatus());
+    }
+
+    @Test
+    public void test_deleteSaleOrder_failAuditProcess() {
+        // 审批中不可删除（防悬垂运行实例）
+        CrmSaleOrderDO order = insertOrder(CrmSaleOrderStatusEnum.DRAFT.getStatus(),
+                CrmAuditStatusEnum.PROCESS.getStatus());
+        assertServiceException(() -> saleOrderService.deleteSaleOrder(order.getId()),
+                SALE_ORDER_DELETE_FAIL_AUDIT_PROCESS);
+        assertEquals(CrmAuditStatusEnum.PROCESS.getStatus(),
+                saleOrderMapper.selectById(order.getId()).getAuditStatus());
+    }
+
+    @Test
+    public void test_deleteSaleOrder_okAfterReject() {
+        // 驳回后删除是逃生口（§12.261 D4）
+        CrmSaleOrderDO order = insertOrder(CrmSaleOrderStatusEnum.DRAFT.getStatus(),
+                CrmAuditStatusEnum.REJECT.getStatus());
+        saleOrderService.deleteSaleOrder(order.getId());
+        // 校验
+        assertNull(saleOrderMapper.selectById(order.getId()));
+    }
+
+    @Test
+    public void test_updateSaleOrder_failAuditRejected() {
+        // 驳回/撤回后不可编辑（镜像回款编辑语义）
+        CrmSaleOrderDO order = insertOrder(CrmSaleOrderStatusEnum.DRAFT.getStatus(),
+                CrmAuditStatusEnum.REJECT.getStatus());
+        CrmSaleOrderSaveReqVO reqVO = buildCreateReqVO(randomLongId(), null).setId(order.getId());
+        assertServiceException(() -> saleOrderService.updateSaleOrder(reqVO),
+                SALE_ORDER_UPDATE_FAIL_EDITING_PROHIBITED);
+    }
+
+    @Test
+    public void test_updateSaleOrder_okDuringAuditProcess() {
+        // 审批中允许编辑（镜像回款编辑语义，§12.261 D4/D9）
+        CrmSaleOrderDO order = insertOrder(CrmSaleOrderStatusEnum.DRAFT.getStatus(),
+                CrmAuditStatusEnum.PROCESS.getStatus());
+        CrmSaleOrderSaveReqVO reqVO = buildCreateReqVO(randomLongId(), null).setId(order.getId());
+        // 调用
+        saleOrderService.updateSaleOrder(reqVO);
+        // 校验：审批状态不被编辑影响
+        assertEquals(CrmAuditStatusEnum.PROCESS.getStatus(),
+                saleOrderMapper.selectById(order.getId()).getAuditStatus());
+    }
+
+    @Test
+    public void test_updateSaleOrderAuditStatus_approveDrivesConfirmed() {
+        // 审批通过 = 订单确认（audit 10->20 且 status 10->20，同一条 CAS）
+        CrmSaleOrderDO order = insertOrder(CrmSaleOrderStatusEnum.DRAFT.getStatus(),
+                CrmAuditStatusEnum.PROCESS.getStatus());
+        // 调用
+        saleOrderService.updateSaleOrderAuditStatus(order.getId(), BpmTaskStatusEnum.APPROVE.getStatus());
+        // 校验
+        CrmSaleOrderDO result = saleOrderMapper.selectById(order.getId());
+        assertEquals(CrmAuditStatusEnum.APPROVE.getStatus(), result.getAuditStatus());
+        assertEquals(CrmSaleOrderStatusEnum.CONFIRMED.getStatus(), result.getStatus());
+    }
+
+    @Test
+    public void test_updateSaleOrderAuditStatus_rejectStaysDraft() {
+        // 驳回只动审批维度，业务状态留在草稿
+        CrmSaleOrderDO order = insertOrder(CrmSaleOrderStatusEnum.DRAFT.getStatus(),
+                CrmAuditStatusEnum.PROCESS.getStatus());
+        // 调用
+        saleOrderService.updateSaleOrderAuditStatus(order.getId(), BpmTaskStatusEnum.REJECT.getStatus());
+        // 校验
+        CrmSaleOrderDO result = saleOrderMapper.selectById(order.getId());
+        assertEquals(CrmAuditStatusEnum.REJECT.getStatus(), result.getAuditStatus());
+        assertEquals(CrmSaleOrderStatusEnum.DRAFT.getStatus(), result.getStatus());
+    }
+
+    @Test
+    public void test_updateSaleOrderAuditStatus_cancelMaps40() {
+        // 撤回（BPM CANCEL=4）必须映射为 CRM 已取消 40（§12.261 D6 修复钉）
+        CrmSaleOrderDO order = insertOrder(CrmSaleOrderStatusEnum.DRAFT.getStatus(),
+                CrmAuditStatusEnum.PROCESS.getStatus());
+        // 调用
+        saleOrderService.updateSaleOrderAuditStatus(order.getId(), BpmTaskStatusEnum.CANCEL.getStatus());
+        // 校验
+        assertEquals(CrmAuditStatusEnum.CANCEL.getStatus(),
+                saleOrderMapper.selectById(order.getId()).getAuditStatus());
+    }
+
+    @Test
+    public void test_updateSaleOrderAuditStatus_failNotProcess() {
+        // 非审批中（未提交）不接受回写
+        CrmSaleOrderDO order = insertOrder(CrmSaleOrderStatusEnum.DRAFT.getStatus());
+        assertServiceException(
+                () -> saleOrderService.updateSaleOrderAuditStatus(order.getId(), BpmTaskStatusEnum.APPROVE.getStatus()),
+                SALE_ORDER_UPDATE_AUDIT_STATUS_FAIL_NOT_PROCESS);
+        assertEquals(CrmSaleOrderStatusEnum.DRAFT.getStatus(),
+                saleOrderMapper.selectById(order.getId()).getStatus());
+    }
+
+    @Test
+    public void test_updateSaleOrderAuditStatus_notExists() {
+        assertServiceException(
+                () -> saleOrderService.updateSaleOrderAuditStatus(randomLongId(), BpmTaskStatusEnum.APPROVE.getStatus()),
+                SALE_ORDER_NOT_EXISTS);
+    }
 }

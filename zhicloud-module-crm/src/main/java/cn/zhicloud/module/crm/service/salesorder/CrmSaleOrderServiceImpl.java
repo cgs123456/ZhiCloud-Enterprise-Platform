@@ -7,6 +7,9 @@ import cn.zhicloud.framework.common.exception.ErrorCode;
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.common.util.number.MoneyUtils;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
+import cn.zhicloud.framework.common.util.object.ObjectUtils;
+import cn.zhicloud.module.bpm.api.task.BpmProcessInstanceApi;
+import cn.zhicloud.module.bpm.api.task.dto.BpmProcessInstanceCreateReqDTO;
 import cn.zhicloud.module.crm.controller.admin.salesorder.vo.CrmSaleOrderPageReqVO;
 import cn.zhicloud.module.crm.controller.admin.salesorder.vo.CrmSaleOrderSaveReqVO;
 import cn.zhicloud.module.crm.dal.dataobject.contract.CrmContractDO;
@@ -41,6 +44,7 @@ import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.e
 import static cn.zhicloud.framework.common.util.collection.CollectionUtils.convertList;
 import static cn.zhicloud.framework.common.util.collection.CollectionUtils.getSumValue;
 import static cn.zhicloud.module.crm.enums.ErrorCodeConstants.*;
+import static cn.zhicloud.module.crm.util.CrmAuditStatusUtils.convertBpmResultToAuditStatus;
 
 /**
  * CRM 销售订单 Service 实现类
@@ -52,6 +56,11 @@ import static cn.zhicloud.module.crm.enums.ErrorCodeConstants.*;
 @Slf4j
 public class CrmSaleOrderServiceImpl implements CrmSaleOrderService {
 
+    /**
+     * 销售订单审批流程定义的标识（§12.261，与 contract/receivable/invoice 同范式）
+     */
+    public static final String BPM_PROCESS_DEFINITION_KEY = "crm-sale-order-audit";
+
     @Resource
     private CrmSaleOrderMapper saleOrderMapper;
     @Resource
@@ -62,6 +71,9 @@ public class CrmSaleOrderServiceImpl implements CrmSaleOrderService {
 
     @Resource
     private CrmNoRedisDAO noRedisDAO;
+
+    @Resource
+    private BpmProcessInstanceApi bpmProcessInstanceApi;
 
     @Resource
     @Lazy
@@ -87,6 +99,8 @@ public class CrmSaleOrderServiceImpl implements CrmSaleOrderService {
         CrmSaleOrderDO order = BeanUtils.toBean(createReqVO, CrmSaleOrderDO.class).setNo(no);
         calculateOrderAmount(order, items);
         order.setStatus(CrmSaleOrderStatusEnum.DRAFT.getStatus())
+                // audit_status 列没有库级默认值（对齐 crm_contract 口径）：不在此落 DRAFT 的话，新建订单永远提交不了审批
+                .setAuditStatus(CrmAuditStatusEnum.DRAFT.getStatus())
                 .setPaymentStatus(resolveInitialPaymentStatus(contract))
                 .setDeliveryStatus(CrmSaleOrderDeliveryStatusEnum.UN_SHIPPED.getStatus());
         saleOrderMapper.insert(order);
@@ -108,7 +122,12 @@ public class CrmSaleOrderServiceImpl implements CrmSaleOrderService {
         if (ObjUtil.notEqual(oldOrder.getStatus(), CrmSaleOrderStatusEnum.DRAFT.getStatus())) {
             throw exception(SALE_ORDER_UPDATE_FAIL_NOT_DRAFT);
         }
-        // 1.3 校验关联数据
+        // 1.3 审批维度放行：未提交、审批中可以编辑（镜像回款编辑语义；驳回/撤回后不可编辑）
+        if (!ObjectUtils.equalsAny(oldOrder.getAuditStatus(), CrmAuditStatusEnum.DRAFT.getStatus(),
+                CrmAuditStatusEnum.PROCESS.getStatus())) {
+            throw exception(SALE_ORDER_UPDATE_FAIL_EDITING_PROHIBITED);
+        }
+        // 1.4 校验关联数据
         validateRelationDataExists(updateReqVO);
 
         // 2.1 计算订单明细金额
@@ -133,6 +152,10 @@ public class CrmSaleOrderServiceImpl implements CrmSaleOrderService {
         // 1.2 只有草稿状态，可以删除
         if (ObjUtil.notEqual(order.getStatus(), CrmSaleOrderStatusEnum.DRAFT.getStatus())) {
             throw exception(SALE_ORDER_DELETE_FAIL);
+        }
+        // 1.3 审批中订单不可删除：删除在途订单会遗留运行实例并让回写永久失败（回款链允许删除属既有差异，本链不复制）
+        if (ObjUtil.equal(order.getAuditStatus(), CrmAuditStatusEnum.PROCESS.getStatus())) {
+            throw exception(SALE_ORDER_DELETE_FAIL_AUDIT_PROCESS);
         }
         // 2.1 删除订单
         saleOrderMapper.deleteById(id);
@@ -234,19 +257,31 @@ public class CrmSaleOrderServiceImpl implements CrmSaleOrderService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void confirmSaleOrder(Long id) {
-        // 只有草稿状态，可以确认（CAS 条件更新，防并发覆盖/复活已取消订单）
-        transitionStatus(id, SALE_ORDER_CONFIRM_FAIL_NOT_DRAFT,
+        // 只有「草稿 + 未提交」可以确认（CAS 条件更新，防并发覆盖/复活已取消订单；已提交过审批的订单由流程定局，不能手工确认）
+        transitionStatusWithAudit(id, SALE_ORDER_CONFIRM_FAIL_NOT_DRAFT, SALE_ORDER_CONFIRM_FAIL_AUDIT_STATUS,
                 new CrmSaleOrderDO().setStatus(CrmSaleOrderStatusEnum.CONFIRMED.getStatus()),
-                CrmSaleOrderStatusEnum.DRAFT.getStatus());
+                List.of(CrmSaleOrderStatusEnum.DRAFT.getStatus()), List.of(CrmAuditStatusEnum.DRAFT.getStatus()));
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void submitSaleOrder(Long id, Long userId) {
-        // 暂不接入 BPM，直接更新为已确认（与 confirm 同一迁移，保留独立端点供后续接流程；CAS 同 confirm）
-        transitionStatus(id, SALE_ORDER_SUBMIT_FAIL_NOT_DRAFT,
-                new CrmSaleOrderDO().setStatus(CrmSaleOrderStatusEnum.CONFIRMED.getStatus()),
-                CrmSaleOrderStatusEnum.DRAFT.getStatus());
+        // 1. 先 CAS 抢占「未提交 -> 审批中」；失败时绝不调用 BPM，避免重复流程实例（镜像回款 submit 口径）
+        transitionStatusWithAudit(id, SALE_ORDER_SUBMIT_FAIL_STATUS_NOT_DRAFT, SALE_ORDER_SUBMIT_FAIL_NOT_DRAFT,
+                new CrmSaleOrderDO().setAuditStatus(CrmAuditStatusEnum.PROCESS.getStatus()),
+                List.of(CrmSaleOrderStatusEnum.DRAFT.getStatus()), List.of(CrmAuditStatusEnum.DRAFT.getStatus()));
+
+        // 2. 创建审批流程实例。业务键用于把审批结果还原回本订单，数据库 CAS 只负责本地唯一抢先
+        String processInstanceId = bpmProcessInstanceApi.createProcessInstance(userId, new BpmProcessInstanceCreateReqDTO()
+                .setProcessDefinitionKey(BPM_PROCESS_DEFINITION_KEY).setBusinessKey(String.valueOf(id)));
+
+        // 3. 回写工作流编号；CAS 条件不变（status=10 且 audit=10），失败抛乐观锁并整体回滚（含已抢占的审批状态）
+        int updated = saleOrderMapper.updateByIdAndStatusAndAuditStatus(id,
+                List.of(CrmSaleOrderStatusEnum.DRAFT.getStatus()), List.of(CrmAuditStatusEnum.PROCESS.getStatus()),
+                new CrmSaleOrderDO().setProcessInstanceId(processInstanceId));
+        if (updated == 0) {
+            throw exception(CRM_OPTIMISTIC_LOCK_FAIL);
+        }
     }
 
     @Override
@@ -272,10 +307,12 @@ public class CrmSaleOrderServiceImpl implements CrmSaleOrderService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void cancelSaleOrder(Long id) {
-        // 草稿/已确认 -> 已取消；发货后不允许取消（货已出，退货不在本项）
-        transitionStatus(id, SALE_ORDER_CANCEL_FAIL,
+        // 草稿/已确认 -> 已取消；发货后不允许取消（货已出，退货不在本项）；审批中不可取消（须先撤回流程）
+        transitionStatusWithAudit(id, SALE_ORDER_CANCEL_FAIL, SALE_ORDER_CANCEL_FAIL_AUDIT_PROCESS,
                 new CrmSaleOrderDO().setStatus(CrmSaleOrderStatusEnum.CANCELED.getStatus()),
-                CrmSaleOrderStatusEnum.DRAFT.getStatus(), CrmSaleOrderStatusEnum.CONFIRMED.getStatus());
+                List.of(CrmSaleOrderStatusEnum.DRAFT.getStatus(), CrmSaleOrderStatusEnum.CONFIRMED.getStatus()),
+                List.of(CrmAuditStatusEnum.DRAFT.getStatus(), CrmAuditStatusEnum.APPROVE.getStatus(),
+                        CrmAuditStatusEnum.REJECT.getStatus(), CrmAuditStatusEnum.CANCEL.getStatus()));
     }
 
     /**
@@ -292,6 +329,27 @@ public class CrmSaleOrderServiceImpl implements CrmSaleOrderService {
                 throw exception(SALE_ORDER_NOT_EXISTS);
             }
             throw exception(errorCode);
+        }
+    }
+
+    /**
+     * 状态流转统一实现（带审批状态条件）：以「来源状态集合 + 来源审批状态集合」做条件更新（CAS）
+     *
+     * <p>affected rows = 0 时回查一次给出精确原因（订单不存在 / 业务状态不允许 / 审批状态不允许）。
+     */
+    private void transitionStatusWithAudit(Long id, ErrorCode statusErrorCode, ErrorCode auditErrorCode,
+                                           CrmSaleOrderDO updateObj, List<Integer> fromStatuses,
+                                           List<Integer> fromAuditStatuses) {
+        int updated = saleOrderMapper.updateByIdAndStatusAndAuditStatus(id, fromStatuses, fromAuditStatuses, updateObj);
+        if (updated == 0) {
+            CrmSaleOrderDO order = saleOrderMapper.selectById(id);
+            if (order == null) {
+                throw exception(SALE_ORDER_NOT_EXISTS);
+            }
+            if (!fromStatuses.contains(order.getStatus())) {
+                throw exception(statusErrorCode);
+            }
+            throw exception(auditErrorCode);
         }
     }
 
@@ -315,6 +373,32 @@ public class CrmSaleOrderServiceImpl implements CrmSaleOrderService {
     @Override
     public Map<Long, BigDecimal> getSaleOrderPriceMapByContractId(Collection<Long> contractIds) {
         return saleOrderMapper.selectSaleOrderPriceMapByContractId(contractIds);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateSaleOrderAuditStatus(Long id, Integer bpmResult) {
+        // 1.1 校验订单是否存在
+        CrmSaleOrderDO order = validateSaleOrderExists(id);
+        // 1.2 只有审批中，可以更新审批结果
+        if (ObjUtil.notEqual(order.getAuditStatus(), CrmAuditStatusEnum.PROCESS.getStatus())) {
+            log.error("[updateSaleOrderAuditStatus][order({}) 不处于审批中，无法更新审批结果({})]",
+                    order.getId(), bpmResult);
+            throw exception(SALE_ORDER_UPDATE_AUDIT_STATUS_FAIL_NOT_PROCESS);
+        }
+
+        // 2. 更新审批结果：审批通过同时把订单流转为已确认（审批=确认）；驳回/撤回只更新审批状态
+        Integer auditStatus = convertBpmResultToAuditStatus(bpmResult);
+        CrmSaleOrderDO updateObj = new CrmSaleOrderDO().setAuditStatus(auditStatus);
+        if (ObjUtil.equal(auditStatus, CrmAuditStatusEnum.APPROVE.getStatus())) {
+            updateObj.setStatus(CrmSaleOrderStatusEnum.CONFIRMED.getStatus());
+        }
+        int updated = saleOrderMapper.updateByIdAndStatusAndAuditStatus(id,
+                List.of(CrmSaleOrderStatusEnum.DRAFT.getStatus()), List.of(CrmAuditStatusEnum.PROCESS.getStatus()),
+                updateObj);
+        if (updated == 0) {
+            throw exception(CRM_OPTIMISTIC_LOCK_FAIL);
+        }
     }
 
 }

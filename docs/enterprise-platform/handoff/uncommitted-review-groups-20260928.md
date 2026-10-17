@@ -11927,3 +11927,107 @@ C6=FMS/HRM 接线与旧 /hr 退役（尾置）。重建依据与原会话登记�
 C3=CRM submit 接 BPM 审批；C4=MRP 转采购/生产建议；C5=APS 空隙建模；
 C6=FMS/HRM 接线与旧 /hr 退役（尾置）。重建依据与原会话登记原文可能存在偏差，
 以 HANDOFF 各 §12.2xx 原文为准（重建披露在 next-steps 后记六同步）。
+
+## 12.261 CRM 销售订单链线——submit 接 BPM 审批（C 组第 3 项）
+
+接 §12.241.5-2（「销售订单 submit 未接 BPM」登记）。原登记口径厘清：submitSaleOrder 曾与 confirm
+共用同一迁移（草稿→已确认，注释「暂不接入 BPM，保留独立端点」）——真缺口是「提交审批」不发起流程、
+订单无审批维度（audit_status 列与语义全缺）。
+设计锁全部锚在 `Temp/zc_adr_261.md`（D1–D10，16 条证据清单 + 并发推演 + 回滚），实施经字节级脚本族
+（Temp/zc_edit_261_{crm_main,sql,ui,tests}.py，四脚本幂等+锚点计数+行尾断言）。
+
+### 12.261.1 设计锁（ADR 261 D1–D10 摘引）
+
+- **D1 数据面**：`crm_sale_order` +`audit_status INT DEFAULT NULL`（对齐 crm_contract 列型，无库级默认）；
+  迁移 `V206__crm_sale_order_audit_status.sql`（V205 同款 information_schema 幂等护栏 + 存量回填 0）；
+  `createSaleOrder` 显式落 DRAFT(0)；H2 create_tables 同步加列（CRLF 587→588）；DO/RespVO/前端 VO。
+- **D2 语义**：approve→audit=20 且 status 10→20（同一条 CAS，审批=确认）；reject→audit=30 不动 status；
+  BPM 撤回(CANCEL=4)→audit=40；无重提（submit 仅 audit=0；驳回/撤回后不可重新提交，四条链模块级现状）。
+- **D3 submit claim-first**（镜像回款）：CAS 抢占 audit 0→10（status=10 且 audit=0），失败绝不调 BPM
+  →建实例（key=crm-sale-order-audit，businessKey=id）→回写 processInstanceId（CAS status=10 且 audit=10，
+  0 行抛乐观锁）；诊断：不存在→000 / status≠10→009 / audit≠0→004。
+- **D4 守卫矩阵**：confirm=status10+audit0（003/010）；cancel=status∈{10,20}+audit∈{0,20,30,40}
+  （008/011，审批中不可取消）；update=status10+audit∈{0,10}（012，镜像回款「审批中可编辑」）；
+  delete=status10+audit≠10（013，不复制回款「审批中可删」缺口）；ship/complete 不变；writeback 前置
+  audit=10（014）+CAS（status=10 且 audit=10），0 行→乐观锁。
+- **D5 回写**：`updateSaleOrderAuditStatus` @Transactional；监听器 `CrmSaleOrderStatusListener`
+  （`service/salesorder/listener/`）；processInstanceId 保留（审计轨迹）。
+- **D6 util 缺陷修复（前置）**：`CrmAuditStatusUtils.convertBpmResultToAuditStatus` CANCEL 分支
+  `BpmTaskStatusEnum.CANCEL.getStatus()`(4)→`CrmAuditStatusEnum.CANCEL.getStatus()`(40)；
+  真机 audit=4 存量 0 行，修复无数据影响；新增 `CrmAuditStatusUtilsTest`（4 案）钉死。
+- **D7 种子**：`SEEDABLE_KEYS` +`crm-sale-order-audit`；application.yaml 注释「三条→四条审批链」；
+  E2E 播种不传 name（name=key，对齐现有三条链）。
+- **D8 前端**：列表 +「审批状态」列（dict-tag CRM_AUDIT_STATUS，字典既有 0/10/20/30/40）；
+  操作列三分支：未提交=修改/确认/提交审批/取消/删除；审批中=仅详情；驳回/撤回=详情/取消/删除。
+- **D9 不扩面**：驳回重提、撤回前端入口、审批中编辑观察、待办定制、审批进度跳转、008 语义保持、
+  LogRecord 不新增。
+- **D10 错误码**：1_020_016_009..014 六枚；004 复用于 audit≠0 守卫（消息「没处在未提交状态」吻合）。
+
+### 12.261.2 实施面（13 改 + 3 新增，全在工作区未提交状态）
+
+- 新增：`V206__crm_sale_order_audit_status.sql`（LF）、`CrmSaleOrderStatusListener.java`、
+  `CrmAuditStatusUtilsTest.java`（4 案）。
+- `CrmSaleOrderServiceImpl`：submit 重写（claim-first 两段 CAS）、confirm/cancel 换带审批条件 CAS、
+  update/delete 审批守卫、`updateSaleOrderAuditStatus` 回写、BPM_PROCESS_DEFINITION_KEY 常量。
+- `CrmSaleOrderService`：+`updateSaleOrderAuditStatus` 声明（回写入口）。
+- `CrmSaleOrderMapper`：+`updateByIdAndStatusAndAuditStatus`（双条件 CAS）。
+- `CrmSaleOrderDO`/`CrmSaleOrderRespVO`：+auditStatus。
+- `CrmAuditStatusUtils`：D6 修复（撤回 4→40）。
+- `ErrorCodeConstants`：+6 枚（009..014）。
+- `BpmProcessDefinitionSeedController`：SEEDABLE_KEYS +`crm-sale-order-audit`。
+- `application.yaml`：播种注释三条→四条。
+- H2 `create_tables.sql`：crm_sale_order +audit_status（CRLF 587→588，纯 CRLF 保持）。
+- 前端 `api/crm/saleOrder/index.ts`（+审批状态常量/VO 字段/注释）、
+  `views/crm/saleOrder/index.vue`（+审批状态列/操作列三分支/DICT_TYPE import/文案）。
+- 测试 `CrmSaleOrderServiceImplTest` +17 案（20→37：submit 5 / confirm 2 / cancel 1 / delete 2 /
+  update 2 / 回写 5）。
+
+### 12.261.3 验证链（全绿收口）
+
+- 定向测试首跑 **41/41**（37+4）全绿，零失败零重跑。
+- 模块回归：**109（104 执行 + 5 跳过）全绿**（基线 88；+17 销售订单 +4 util）。
+- errcode 扫描：**1960 / 0**（1954 + 6 新码，零碰撞）。
+- 行尾不变量：15 个 Java/yaml/ts/vue 文件全 LF-only（字节校验 CR=0）；H2 纯 CRLF 588 行。
+- Reactor 打包：`-pl zhicloud-server -am package` SUCCESS（43/43，jar 重打包替换）。
+- 停服（PID 13304）→重打→重启（PID 24568，冷启动 537.568s）→真机 E2E **54/54 全 PASS**
+  （Temp/zc_crm261_e2e.py）：
+  - V206 列已建 + 存量 15 单全回填 0；播种 crm-sale-order-audit（ACT_RE_PROCDEF 落行）；
+  - 订单 A：创建即 audit=0（DB+API 双证）→未提交可编辑→submit（10/10+流程号回写）→
+    守卫矩阵（重复提交 004 / 确认 010 / 审批中编辑放行 / 取消 011 / 删除 013 / 状态面不变）→
+    审批通过→audit=20 且 status=20（审批=确认）+流程号保留；
+  - 订单 B：驳回→30/10→重提 004 / 确认 010 / 编辑 012 / 取消放行（50）；
+  - 订单 C：驳回→删除放行（deleted=1）；
+  - 订单 D：撤回（cancel-by-start-user）→audit=40（D6 修复钉死；全表 audit=4 计数 0）→
+    重提 004 / 编辑 012 / 取消放行；
+  - 订单 E：直确认回归（20/0）→submit 009；
+  - 清理零遗留（打标行 0，含已删行）+ 沙箱非测试行计数前后不变（15 订单 / 16 回款 / 20 合同）。
+- 前端：`pnpm ts:check` 0、`pnpm build:prod` 0（1m19s，dist-prod）。
+- BPM 实例残留与 §12.207/§12.241/§12.260 E2E 先例一致（历史库不清理），不计入「零遗留」。
+
+### 12.261.4 首跑与执行实证登记（诚实链）
+
+1. **H2 幂等标记误设一次（未写盘）**：实施脚本 2 用 `"audit_status" int,` 单列标记判 H2 幂等，
+   而 crm_contract 块本就有该列——首跑误判「已完成」跳过 H2 编辑（V206/yaml 已正确落盘）；
+   改为 crm_sale_order 专属三连列标记后重跑生效（587→588 纯 CRLF 断言过）。零副作用。
+2. **阶段校验脚本一处基线误设**：@Test 预期 36，实际 37——新案逐条清点为 17 条
+   （submit 5 / confirm 2 / cancel 1 / delete 2 / update 2 / 回写 5），就地修正后 ALL PASS。
+3. **定向测试与 E2E 首跑即全绿**：41/41、54/54，本项零首跑失败、零重跑。
+4. **冷启动 537.568 秒（日志实证，process running 539.23）**：比 §12.260 的 450.129s 更长；
+   启动期间 Redis stream listener 有 DefaultStreamMessageListenerContainer 重试 ERROR 数条
+   （既有常态噪声，就绪后不影响业务），非缺陷。
+5. **设计执行校准**：E2E 订单不挂合同（不触碰回款投影链），审批维度断言与 C2 投影链完全解耦；
+   D6 修复在「单测 4 案 + E2E 撤回 40 + 全表 audit=4 计数 0」三处同时钉死。
+6. **真机守卫矩阵六码全覆盖**（004/009/010/011/012/013）；014 为监听器前置守卫，
+   真机路径不可达（回写仅由 BPM 事件触发、事件仅对审批中实例产生），由单测覆盖。
+
+### 12.261.5 不扩面披露（与 ADR D9 一致，未实施）
+
+- 驳回/撤回后重提、撤回前端入口、审批中编辑观察（谁在改、改了什么）、BPM 待办定制、
+  审批进度跳转：均不引入（与另外三条链模块级现状一致）。
+- 撤回只经 BPM 侧（cancel-by-start-user），CRM 前端无撤回入口（审批中态前端显示「仅详情」）。
+- PDA 移库真实化、路径页伪坐标、行级流水、批次孤儿冲洗维持既有不扩面登记（§12.241/§12.245 先例）。
+
+### 12.261.6 C 组矩阵基线（顺延声明）
+
+C4=MRP 转采购/生产建议；C5=APS 空隙建模；C6=FMS/HRM 接线与旧 /hr 退役（尾置）。
+重建依据与原会话登记原文可能存在偏差，以 HANDOFF 各 §12.2xx 原文为准（重建披露在 next-steps 后记六同步）。

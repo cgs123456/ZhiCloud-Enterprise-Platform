@@ -100,6 +100,12 @@ public class CrmSaleOrderDO extends BaseDO {
      */
     private Integer status;
     /**
+     * 审批状态
+     *
+     * 枚举 {@link cn.zhicloud.module.crm.enums.common.CrmAuditStatusEnum}
+     */
+    private Integer auditStatus;
+    /**
      * 负责人的用户编号
      *
      * 关联 AdminUserDO 的 id 字段

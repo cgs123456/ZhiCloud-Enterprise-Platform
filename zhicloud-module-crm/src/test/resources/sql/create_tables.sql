@@ -508,6 +508,7 @@ CREATE TABLE IF NOT EXISTS "crm_sale_order" (
     "payment_status" int,
     "delivery_status" int,
     "status" int,
+    "audit_status" int,
     "owner_user_id" bigint,
     "process_instance_id" varchar(255),
     "remark" varchar(255),

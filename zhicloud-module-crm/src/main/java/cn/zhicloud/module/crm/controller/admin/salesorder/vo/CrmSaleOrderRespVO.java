@@ -81,6 +81,10 @@ public class CrmSaleOrderRespVO {
     @ExcelProperty("订单状态")
     private Integer status;
 
+    @Schema(description = "审批状态", example = "0")
+    @ExcelProperty("审批状态")
+    private Integer auditStatus;
+
     @Schema(description = "负责人的用户编号", example = "25682")
     @ExcelProperty("负责人的用户编号")
     private Long ownerUserId;

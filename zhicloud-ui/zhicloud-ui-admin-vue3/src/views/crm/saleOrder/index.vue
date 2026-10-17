@@ -1,4 +1,4 @@
-<!-- CRM 销售订单（软状态机：草稿→已确认→已发货→已完成；草稿/已确认可取消） -->
+<!-- CRM 销售订单（软状态机：草稿→已确认→已发货→已完成；草稿/已确认可取消；草稿可发起审批，通过后自动确认为已确认） -->
 <template>
   <ContentWrap>
     <doc-alert title="【销售】销售订单管理" url="https://doc.zhicloud.cn/crm/sale-order/" />
@@ -68,12 +68,17 @@
           </el-tag>
         </template>
       </el-table-column>
+      <el-table-column align="center" label="审批状态" prop="auditStatus" min-width="100">
+        <template #default="scope">
+          <dict-tag :type="DICT_TYPE.CRM_AUDIT_STATUS" :value="scope.row.auditStatus" />
+        </template>
+      </el-table-column>
       <el-table-column align="center" label="负责人" prop="ownerUserName" min-width="100" />
       <el-table-column align="center" label="创建时间" prop="createTime" width="170" :formatter="dateFormatter" />
       <el-table-column align="center" fixed="right" label="操作" width="300">
         <template #default="scope">
-          <!-- 草稿：可修改/确认/提交/取消/删除 -->
-          <template v-if="scope.row.status === STATUS.DRAFT">
+          <!-- 草稿（未提交）：可修改/确认/提交/取消/删除 -->
+          <template v-if="scope.row.status === STATUS.DRAFT && scope.row.auditStatus === AUDIT.DRAFT">
             <el-button
               v-hasPermi="['crm:sale-order:update']"
               link
@@ -97,6 +102,44 @@
               @click="handleSubmit(scope.row)"
             >
               提交审批
+            </el-button>
+            <el-button
+              v-hasPermi="['crm:sale-order:update']"
+              link
+              type="danger"
+              @click="handleCancel(scope.row)"
+            >
+              取消
+            </el-button>
+            <el-button
+              v-hasPermi="['crm:sale-order:delete']"
+              link
+              type="danger"
+              @click="handleDelete(scope.row.id)"
+            >
+              删除
+            </el-button>
+          </template>
+          <!-- 草稿（审批中）：仅详情（后端冻结编辑/取消/删除，撤回走 BPM 侧） -->
+          <template v-else-if="scope.row.status === STATUS.DRAFT && scope.row.auditStatus === AUDIT.PROCESS">
+            <el-button
+              v-hasPermi="['crm:sale-order:query']"
+              link
+              type="primary"
+              @click="openForm('detail', scope.row.id)"
+            >
+              详情
+            </el-button>
+          </template>
+          <!-- 草稿（驳回/已撤回）：可取消/删除 -->
+          <template v-else-if="scope.row.status === STATUS.DRAFT">
+            <el-button
+              v-hasPermi="['crm:sale-order:query']"
+              link
+              type="primary"
+              @click="openForm('detail', scope.row.id)"
+            >
+              详情
             </el-button>
             <el-button
               v-hasPermi="['crm:sale-order:update']"
@@ -189,7 +232,8 @@
 
 <script lang="ts" setup>
 import { dateFormatter } from '@/utils/formatTime'
-import { CrmSaleOrderApi, CrmSaleOrderStatus } from '@/api/crm/saleOrder'
+import { CrmSaleOrderApi, CrmSaleOrderStatus, CrmSaleOrderAuditStatus } from '@/api/crm/saleOrder'
+import { DICT_TYPE } from '@/utils/dict'
 import CrmSaleOrderForm from './CrmSaleOrderForm.vue'
 
 defineOptions({ name: 'CrmSaleOrder' })
@@ -197,6 +241,7 @@ defineOptions({ name: 'CrmSaleOrder' })
 const message = useMessage()
 
 const STATUS = CrmSaleOrderStatus
+const AUDIT = CrmSaleOrderAuditStatus
 
 const STATUS_OPTIONS = [
   { value: CrmSaleOrderStatus.DRAFT, label: '草稿' },
@@ -279,7 +324,7 @@ const handleDelete = async (id: number) => {
 }
 
 const handleConfirm = async (row: any) => {
-  await message.confirm(`是否确认订单「${row.no}」？（仅草稿可确认）`)
+  await message.confirm(`是否确认订单「${row.no}」？（仅草稿且未提交过审批的订单可直接确认）`)
   try {
     await CrmSaleOrderApi.confirmCrmSaleOrder(row.id)
     message.success('已确认')
@@ -288,7 +333,7 @@ const handleConfirm = async (row: any) => {
 }
 
 const handleSubmit = async (row: any) => {
-  await message.confirm(`是否提交订单「${row.no}」的审批？（仅草稿可提交）`)
+  await message.confirm(`是否提交订单「${row.no}」的审批？提交后将发起 BPM 审批流程，通过后订单转为已确认。`)
   try {
     await CrmSaleOrderApi.submitCrmSaleOrder(row.id)
     message.success('已提交')
@@ -316,7 +361,7 @@ const handleComplete = async (row: any) => {
 
 const handleCancel = async (row: any) => {
   try {
-    await message.confirm(`是否取消订单「${row.no}」？（仅草稿/已确认可取消）`)
+    await message.confirm(`是否取消订单「${row.no}」？（仅草稿/已确认可取消；审批中须先撤回审批流程）`)
     await CrmSaleOrderApi.cancelCrmSaleOrder(row.id)
     message.success('已取消')
     await getList()

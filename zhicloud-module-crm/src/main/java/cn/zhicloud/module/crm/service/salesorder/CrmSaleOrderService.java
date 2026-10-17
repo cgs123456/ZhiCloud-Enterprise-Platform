@@ -74,7 +74,7 @@ public interface CrmSaleOrderService {
     void confirmSaleOrder(Long id);
 
     /**
-     * 提交销售订单审批
+     * 提交销售订单审批：发起 BPM 审批流程（§12.261），审批通过后订单流转为已确认
      *
      * @param id     编号
      * @param userId 用户编号
@@ -133,5 +133,13 @@ public interface CrmSaleOrderService {
      * @return Map<合同编号, 已下单金额>
      */
     Map<Long, BigDecimal> getSaleOrderPriceMapByContractId(Collection<Long> contractIds);
+
+    /**
+     * 更新销售订单审批结果（供 BPM 审批结果监听器回调；审批通过同时流转订单为已确认，§12.261）
+     *
+     * @param id        编号
+     * @param bpmResult BPM 审批结果（2 通过 / 3 不通过 / 4 取消）
+     */
+    void updateSaleOrderAuditStatus(Long id, Integer bpmResult);
 
 }
