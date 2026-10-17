@@ -11156,3 +11156,67 @@ E2E 具体断言（API + DB 双验）：建单传 `status=30` → 落库 10；PU
 4. 浏览器点击冒烟未做（沿用既有验证缺口口径）。
 
 本节文档同步：next-steps 后记三追加 A 组第 6 项完成与 A 组收官；HANDOFF 无对应追踪行。
+
+## 12.250 2026-10-17 A 组 6 提交推送前 review（§12.244~§12.249 逐提交自查）
+
+本节不是新功能项，是**推送前的一次独立复查记录**：把 A 组 6 个提交（`8656f3358` ~ `12729b70e`）
+重新当作陌生改动看一遍——不依赖「当初写的时候检查过」的自我印象。
+
+### 12.250.1 review 范围与手段
+
+- 手段一：机器不变量（`Temp/zc_review_a_group.py`，只读）——台账行尾/结构、6 个章节标题与
+  小节编号唯一且升序、next-steps 的 A1~A6 条目各一次、28 个改动文件的行尾、30 个改动文件的
+  密钥/绝对路径扫描、`git diff --check`；
+- 手段二：逐提交读**生产代码与 SQL 的 diff**（A1 mapper+service、A2 5 VO+2 service+1 vue、
+  A3 契约+2 SQL、A4 service、A5 H2 DDL、A6 VO+2 vue）；
+- 手段三：契约脚本复跑（`check_migration_contract.py` → `tracked=114 scanned=210 findings=0`）。
+
+### 12.250.2 发现与处置（3 项机器发现 + 1 项人工发现）
+
+| # | 发现 | 判定 | 处置 |
+|---|---|---|---|
+| 1 | QMS `create_tables.sql` crlf=510 | **误报**：bareLF=0 纯 CRLF，正合既有不变量（我脚本预期写错） | 改脚本预期，不动文件 |
+| 2 | 台账含绝对 Windows 路径 | **既有**：仅 §12.161，A 组新段零命中 | 不动 |
+| 3 | 台账含 `MOCK_SECRET` / `zc-live-mock-` | **既有**：仅 §12.95/§12.237/§12.238；且真机库口令 `lGui9yb…`、redis 口令**全仓 0 命中** | 不动 |
+| 4 | **`InspectionRecordRespVO` 的 `@Schema` 仍写「缺陷严重度（0-10 数值…）」** | **真缺陷**：A6 已订正「severity 是 `@InEnum` 的 `[10,20,30]`」这一事实，注释/测试/台账都改了，**唯独 VO 注解漏改**，导致同一次提交内部自相矛盾 | **已修**：`@Schema` 改为「取值域由 `InspectionRecordSaveReqVO` 的 `@InEnum(InspectionSeverityEnum)` 约束为 10 致命 / 20 严重 / 30 轻微；非字典」 |
+
+发现 4 的性质值得单列：这正是台账反复警告的「注释/文档与实现脱节」类错误（§12.234.6 同族），
+而且**是我自己在同一轮里犯的**——订正一个读法时，只改了 4 处能想到的地方，漏了改动的**主体**
+（那个 VO 就是本项的产物）。教训：订正事实时用检索兜底（`git grep "0-10"` 全仓扫同类表述），
+不要凭记忆列清单。
+
+### 12.250.3 复验读数（针对修复）
+
+- `git grep "0-10"` 全仓扫描：唯一相关残留已清（其余命中为 `P0-10` 行动优先级、`decimal(10,4)` 等无关项）；
+- QMS 模块全量回归 **128/128**；
+- **未重打包/未重跑真机 E2E**——修复只改 OpenAPI 描述文案（`@Schema(description=...)`），
+  对 Jackson 序列化与业务分支零影响，QMS 编译+回归即覆盖；A6 的真机 E2E 13/13 读数继续有效。
+  比例判断记录在案，不假装「全链都重跑过」。
+
+### 12.250.4 复查中确认无问题者（逐条）
+
+- A1：mapper 方法**改名 + 改语义**（真重叠 `plannedStartTime < endTime AND plannedEndTime > startTime`
+  + 三态占位 + 起止非空），旧方法已删且全仓无残留引用；service 侧可用时间模型未动；
+- A2：10 个 `LocalDate` 的 `@JsonFormat` 用常量 `FORMAT_YEAR_MONTH_DAY`（未硬编码字面量）；
+  两处 `setApproverId(SecurityFrameworkUtils.getLoginUserId())` 的注释都写明了「无会话为 null，
+  由 `updateById` 忽略」；H2 建表对齐 V112；
+- A3：契约条目 JSON 合法且 sha256 与文件实际内容一致（契约脚本 findings=0 即证明）；
+  迁移两段均为 `INSERT … WHERE NOT EXISTS`，无 DDL、无破坏性语句；id 段不与既有段冲突；
+- A4：`awaitWinner` 至少执行一次回查（deadline 在读之后判定），退避封顶 500ms、上界 2000ms 有界，
+  中断路径恢复 interrupt 标志并抛原始异常；载荷指纹裁决路径未动（不误返回其他单据）；
+- A5：DDL 与 `information_schema` 逐表列数一致（20/18/21/19），含生产侧唯一键；
+  `clean.sql` 按「子表先于主表」；
+- A6：MSA 页删的是**缺 formatter 的那一列**，保留的是格式化版本（列序与其它页惯例一致）。
+
+### 12.250.5 复查中新登记的观察（不动手）
+
+1. **A4 的 catch 分支里不能加写操作**：InnoDB 死锁（1213）会把**整个事务**回滚，
+   随后 catch 分支里的读实际已在一个新事务里；今天该分支只读不写所以安全，
+   但若有人日后在 `awaitWinner` 之后追加写操作，就会产生「非原子提交」。ERP 侧同形，风险同源。
+2. **A1 的 mapper 里状态集用全限定名内联**（`cn.zhicloud...Enum.DRAFT.getStatus()` ×3）：
+   可读性尚可，但把「哪些状态占位」的知识散在 SQL 构造处；若将来新增一个占位状态，
+   不会有任何编译期提示。可考虑收进枚举的 `OCCUPYING_STATUSES`，属独立小项。
+3. **A4 回查只吞死锁，不吞锁等待超时**（`CannotAcquireLockException`）：与 ERP 同规则，
+   锁等待超时应如实暴露而非掩盖——保留现状，此处仅备案免得后人当漏洞「修」。
+
+本节文档同步：next-steps 后记三追加 review 记录一行；HANDOFF 无对应追踪行。

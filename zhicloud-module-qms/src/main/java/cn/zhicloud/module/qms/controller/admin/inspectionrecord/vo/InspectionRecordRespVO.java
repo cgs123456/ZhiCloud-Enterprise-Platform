@@ -31,7 +31,8 @@ public class InspectionRecordRespVO {
     @ExcelProperty("实测值")
     private String measuredValue;
 
-    @Schema(description = "缺陷严重度（0-10 数值，非字典；与 InspectionRecordSaveReqVO 同口径）",
+    @Schema(description = "缺陷严重度（取值域由 InspectionRecordSaveReqVO 的 "
+            + "@InEnum(InspectionSeverityEnum) 约束为 10 致命 / 20 严重 / 30 轻微；非字典）",
             example = "20")
     private Integer severity;
 
