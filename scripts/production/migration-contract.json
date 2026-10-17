@@ -793,6 +793,13 @@
       "sha256": "877393d1c2cecf2341c30950d375d59eac8fa3d4f11f306e3d747315992248ac",
       "verification_file": "V203_verify.sql",
       "verification_sha256": "ec48a7681162fad77119c383f7884457b7aff619d71cfb2a36d9e7f87cbadc48"
+    },
+    {
+      "version": 204,
+      "file": "V204__mes_aps_mrp_dict_seed.sql",
+      "sha256": "790ac154c90861f37d4247a8a387db056d8762996d91ea9b7b0220de46d5119c",
+      "verification_file": "V204_verify.sql",
+      "verification_sha256": "7c9a8489e6b2bc2d5974daba802dba146389a5859e3ef5a40717d4edf2b06745"
     }
   ]
 }

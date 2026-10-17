@@ -10881,3 +10881,66 @@ E2E 具体断言（API + DB 双验）：建单传 `status=30` → 落库 10；PU
 3. **approverId 真机落库仍是缺口**（D5）：待有签名能力的身份再补真机证明。
 
 本节文档同步：next-steps 后记三追加 A 组第 2 项完成；HANDOFF 无对应追踪行。
+
+## 12.246 2026-10-17 MES APS/MRP 字典种子（V204：3 类型 + 11 项）（A 组第 3 项；ADR 先行）
+
+本节属性：台账 §12.240.5 第 3 条与 §12.243.5 第 5 条（APS/MRP 三类字典无种子）的收口
+（A 组小项第 3 项）。纯数据播种：1 个迁移 + 1 个验证脚本 + 契约登记；
+零后端代码、零前端代码、零错误码、零权限、零菜单。设计决策动手前定稿（§12.246.2）。
+
+### 12.246.1 缺陷面与口径复核
+
+- 沙箱实测：`mes_%` 字典类型 **72 个**、`mes_pro_%` **11 个**（work_order_status/type/
+  source_type、link/task/andon/feedback/record），**APS 与 MRP 三类确无**；
+- 前端 APS 排产页与 MRP 计划页的状态/优先级均为**页内映射**（§12.240 / §12.243 D4 已定，
+  原因即字典无种子）；
+- 枚举真值（逐条读源码）：`MesProApsPlanStatusEnum` 0-4 共 5 项、
+  `MesProApsPlanPriorityEnum` 1-3 共 3 项、`MesProMrpPlanStatusEnum` 0-2 共 3 项。
+
+### 12.246.2 设计决策（ADR 式，动手前定案）
+
+- **D1 取值生成纪律（沿用 V202）**：不手抄——生成脚本 `Temp\zc_gen_v204_dict_sql.py`
+  解析三个枚举源文件的 `(值, "标签")` 逐条生成 SQL 行，并断言条数 5/3/3
+  （§12.234.6 同类教训：注释/字典与实现脱节）。
+- **D2 id 号段与幂等**：type=1064001–1064003、data=1064101–1064111（库内现最大
+  type=1063019、data=1063179，V202 已占 1063001/1063101 段）；预检按 `type` /
+  `(dict_type,value)`，只认 `deleted=b'0'`，**已存在整条跳过、不覆盖既有 label/color**。
+- **D3 范围**：只播种——不改前端页内映射（改 dict-tag 牵动列表筛选与表单回显，属独立项）、
+  不动后端枚举、不动菜单/权限、不清理任何既有字典行。
+- **D4 验证链**：lint 零新增 → 契约登记 → 重打包重启（Flyway 应用）→ `V204_verify` 4/4
+  → 幂等重跑（直灌迁移 SQL，行数不变、仍 4/4）→ 字典 API `simple-list` 读回标签集。
+
+### 12.246.3 变更清单（5 文件：1 迁移 + 1 验证 + 1 契约 + 2 文档）
+
+- `db/migration/V204__mes_aps_mrp_dict_seed.sql`（新增）：3 个类型
+  （`mes_pro_aps_plan_status`/`mes_pro_aps_plan_priority`/`mes_pro_mrp_plan_status`）
+  + 11 项数据，两段 `INSERT…SELECT…WHERE NOT EXISTS`；
+- `db/verification/V204_verify.sql`（新增）：类型数 3 / 数据数 11 / 取值逐条对齐枚举 /
+  `(dict_type,value)` 无重复；
+- `scripts/production/migration-contract.json`：登记 version 204（含两文件 sha256）。
+
+### 12.246.4 验证读数
+
+- 生成脚本断言：枚举解析 5/3/3，产出 type=3、data=11 行；
+- `sql_migration_lint.py`：全目录 **210 文件 / 16 违规**（与基线 209/16 相同，V204 零命中）；
+- `check_migration_contract.py`：**tracked=114 / scanned=210 / findings=0**；
+- reactor 重打包（`-pl zhicloud-server -am`）**BUILD SUCCESS**，新 jar（642739445B，12:37）真机运行；
+- 启动时 Flyway：`Migrating schema … to version "204 - mes aps mrp dict seed"` +
+  `Successfully applied 1 migration … now at version v204`；
+- 落地验证（`Temp\zc_v204_verify_e2e.py`，tenant 9001）**13/13**：flyway_schema_history
+  success=1；`V204_verify` **4/4**；数据 11 行；**幂等重跑**（直灌迁移 SQL）后 verify 仍 4/4
+  且行数不变；`GET /system/dict-data/simple-list` 读回三类标签集与枚举逐项一致
+  （草稿/已确认/执行中/已完成/已取消、高/中/低、草稿/已计算/已确认）；
+- errcode 全仓扫描 **1947 条 / 0 碰撞**（本项零新码）；
+- 行尾保真：迁移/验证/契约三文件 LF-only（与 V202/V203 一致）。
+
+### 12.246.5 连带观察（登记，不动手）
+
+1. **前端仍用页内映射**：三类字典虽已就绪，APS/MRP 两页未改 dict-tag（§12.243 D4 既定决策）；
+   若要切换，需另立项（列表筛选、表单回显、空值兜底一并评估）。
+2. **MES 其余状态类字典抽样**：本次仅补 APS/MRP 两域；`mes_pro_*` 另有 8 类已存在，
+   但如 work_order 等域的**值域是否与当前枚举一致**未逐项核对（不在本项范围）。
+3. **契约与迁移目录的 lint 基线**：全目录 16 处 R5（文件末尾缺换行）为历史存量，
+   本项未新增；建议后续批量治理一轮。
+
+本节文档同步：next-steps 后记三追加 A 组第 3 项完成；HANDOFF 无对应追踪行。
