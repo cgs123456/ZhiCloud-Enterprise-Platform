@@ -12,6 +12,8 @@ export interface InventoryHistoryVO {
   skuName?: string
   warehouseId?: number
   warehouseName?: string
+  locationId?: number
+  locationCode?: string
   quantity?: number
   beforeQuantity?: number
   afterQuantity?: number

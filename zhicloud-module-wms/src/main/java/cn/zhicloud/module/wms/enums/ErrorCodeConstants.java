@@ -65,6 +65,8 @@ public interface ErrorCodeConstants {
     ErrorCode LOCATION_LOCKED = new ErrorCode(1_060_107_005, "库位已锁定，禁止货物出入库！");
     ErrorCode LOCATION_DISABLED = new ErrorCode(1_060_107_006, "库位已禁用，禁止货物出入库！");
     ErrorCode LOCATION_WAREHOUSE_MISMATCH = new ErrorCode(1_060_107_007, "库位不属于该仓库");
+    ErrorCode LOCATION_MOVE_SAME = new ErrorCode(1_060_107_008, "移库来源库位与目标库位不能相同");
+    ErrorCode LOCATION_MOVE_CROSS_WAREHOUSE = new ErrorCode(1_060_107_009, "移库不支持跨仓库，请使用移库单");
 
     // ========== WMS 入库单 1-060-200-000 ==========
     ErrorCode RECEIPT_ORDER_NOT_EXISTS = new ErrorCode(1_060_200_000, "入库单不存在");

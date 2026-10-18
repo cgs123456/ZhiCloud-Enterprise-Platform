@@ -15,8 +15,8 @@ import cn.zhicloud.module.wms.dal.dataobject.md.warehouse.WmsWarehouseDO;
 import cn.zhicloud.module.wms.dal.mysql.inventory.WmsInventoryMapper;
 import cn.zhicloud.module.wms.dal.mysql.md.item.WmsItemSkuMapper;
 import cn.zhicloud.module.wms.dal.mysql.md.location.WmsLocationMapper;
+import cn.zhicloud.module.wms.service.inventory.transfer.WmsInventoryTransferService;
 import cn.zhicloud.module.wms.service.md.item.WmsItemService;
-import cn.zhicloud.module.wms.service.md.location.WmsLocationService;
 import cn.zhicloud.module.wms.service.md.warehouse.WmsWarehouseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -32,7 +32,6 @@ import java.util.List;
 
 import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.zhicloud.framework.common.pojo.CommonResult.success;
-import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.INVENTORY_NOT_EXISTS;
 import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.ITEM_SKU_NOT_EXISTS;
 import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.LOCATION_NOT_EXISTS;
 
@@ -58,7 +57,7 @@ public class WmsPdaInventoryController {
     @Resource
     private WmsItemService itemService;
     @Resource
-    private WmsLocationService locationService;
+    private WmsInventoryTransferService inventoryTransferService;
 
     @PostMapping("/scan-location")
     @Operation(summary = "扫描库位，返回库存信息")
@@ -110,16 +109,10 @@ public class WmsPdaInventoryController {
     @Operation(summary = "确认移库")
     @PreAuthorize("@ss.hasPermission('wms:pda:move')")
     public CommonResult<Boolean> confirmMove(@Valid @RequestBody WmsPdaConfirmMoveReqVO reqVO) {
-        // 校验来源/目标库位存在且未锁定/禁用（库位状态门禁）
-        locationService.validateLocationUsable(reqVO.getFromLocationId());
-        locationService.validateLocationUsable(reqVO.getToLocationId());
-        // 简化实现：校验 SKU 存在库存；PDA 移库真实化（库位间转移）属后续项（ADR 259 D10，不扩面）
-        List<WmsInventoryDO> list = inventoryMapper.selectList(
-                new LambdaQueryWrapperX<WmsInventoryDO>()
-                        .eq(WmsInventoryDO::getSkuId, reqVO.getSkuId()));
-        if (CollUtil.isEmpty(list)) {
-            throw exception(INVENTORY_NOT_EXISTS);
-        }
+        // V211（ADR 269 D1/D2）：真实化——库内同仓跨位真转移全链下沉 WmsInventoryTransferService
+        //（两验门禁 + 同/跨仓拒绝 + 源行校验 + 批次随行 FEFO + OUT/IN 单事务转移）
+        inventoryTransferService.transfer(reqVO.getFromLocationId(), reqVO.getToLocationId(),
+                reqVO.getSkuId(), reqVO.getQuantity());
         return success(true);
     }
 

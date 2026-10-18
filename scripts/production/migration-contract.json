@@ -842,6 +842,13 @@
       "sha256": "de5cac87c5c380a47a7870d7b37c542c61f10879f5f6b9cfe8d6dbf33995a0e2",
       "verification_file": "V210_verify.sql",
       "verification_sha256": "25b4e0e2ad078748863b560db54a0f89603e0796b5ce2bab1db5223ad84734a4"
+    },
+    {
+      "version": 211,
+      "file": "V211__wms_inventory_history_location_id.sql",
+      "sha256": "9bfb081eddbce67db3996759cd9966fcce51d930b3de44ca3bd1be437c4b0420",
+      "verification_file": "V211_verify.sql",
+      "verification_sha256": "bd00fd1486477e94c03a11bbf817632340f41d201f2f800e750dc38854aec92c"
     }
   ]
 }

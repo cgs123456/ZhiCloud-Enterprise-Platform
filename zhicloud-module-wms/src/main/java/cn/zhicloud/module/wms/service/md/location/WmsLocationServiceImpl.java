@@ -9,6 +9,7 @@ import cn.zhicloud.module.wms.controller.admin.md.location.vo.WmsLocationSaveReq
 import cn.zhicloud.module.wms.dal.dataobject.inventory.WmsInventoryDO;
 import cn.zhicloud.module.wms.dal.dataobject.md.location.WmsLocationDO;
 import cn.zhicloud.module.wms.dal.dataobject.md.zone.WmsZoneDO;
+import cn.zhicloud.module.wms.dal.mysql.inventory.WmsInventoryBatchMapper;
 import cn.zhicloud.module.wms.dal.mysql.inventory.WmsInventoryMapper;
 import cn.zhicloud.module.wms.dal.mysql.md.location.WmsLocationMapper;
 import cn.zhicloud.module.wms.enums.md.WmsLocationStatusEnum;
@@ -16,6 +17,7 @@ import cn.zhicloud.module.wms.service.md.zone.WmsZoneService;
 import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
@@ -43,6 +45,9 @@ public class WmsLocationServiceImpl implements WmsLocationService {
 
     @Resource
     private WmsInventoryMapper inventoryMapper; // V205：库存行计数/冲洗直查（ADR 259 D9，免 service 循环依赖）
+
+    @Resource
+    private WmsInventoryBatchMapper inventoryBatchMapper; // V211：批次随行物理冲洗（ADR 269 D9）
 
     @Resource
     @Lazy // 延迟加载，避免循环依赖
@@ -113,6 +118,7 @@ public class WmsLocationServiceImpl implements WmsLocationService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class) // V211：库存行 + 批次行双物理冲洗原子化（ADR 269 D9）
     public void deleteLocation(Long id) {
         // 校验存在
         validateLocationExists(id);
@@ -138,6 +144,9 @@ public class WmsLocationServiceImpl implements WmsLocationService {
                 washingIds.add(row.getId());
             }
             inventoryMapper.deleteByIdListPhysical(washingIds);
+            // V211 批次随行冲洗（ADR 269 D9）：纯零库存行物理删后，其批次行若仅逻辑删将成为孤儿
+            //（叠 uk(inventory_id, batch_no) tombstone 阻塞同批次重建），随同一 washingIds 物理冲洗
+            inventoryBatchMapper.deleteByInventoryIdListPhysical(washingIds);
         }
 
         // 删除

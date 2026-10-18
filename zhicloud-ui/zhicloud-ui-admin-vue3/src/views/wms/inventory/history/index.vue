@@ -136,6 +136,11 @@
           {{ scope.row.warehouseName || '-' }}
         </template>
       </el-table-column>
+      <el-table-column label="库位" min-width="140">
+        <template #default="scope">
+          {{ scope.row.locationCode || '-' }}
+        </template>
+      </el-table-column>
       <el-table-column align="right" label="操作前" min-width="110">
         <template #default="scope">
           {{ formatQuantity(scope.row.beforeQuantity) || '-' }}

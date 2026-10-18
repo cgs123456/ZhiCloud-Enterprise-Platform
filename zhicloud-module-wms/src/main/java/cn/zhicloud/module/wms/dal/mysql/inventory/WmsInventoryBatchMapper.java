@@ -5,6 +5,7 @@ import cn.zhicloud.framework.mybatis.core.mapper.BaseMapperX;
 import cn.zhicloud.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.zhicloud.module.wms.controller.admin.inventory.batch.vo.WmsInventoryBatchPageReqVO;
 import cn.zhicloud.module.wms.dal.dataobject.inventory.WmsInventoryBatchDO;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Update;
@@ -123,5 +124,18 @@ public interface WmsInventoryBatchMapper extends BaseMapperX<WmsInventoryBatchDO
     @Update("UPDATE wms_inventory_batch SET quantity = quantity + #{qty}, update_time = NOW() "
             + "WHERE id = #{id} AND deleted = 0")
     int increaseQuantity(@Param("id") Long id, @Param("qty") BigDecimal qty);
+
+    /**
+     * 物理删除指定库存行下的全部批次（绕过 {@code @TableLogic}）
+     *
+     * V211（ADR 269 D9）：deleteLocation 纯零行冲洗的批次随行——库存行物理删后，其批次行若
+     * 仅为逻辑删将成为孤儿，叠 uk(inventory_id, batch_no) tombstone 会阻塞同批次重建，
+     * 故随同一 washingIds 一并物理冲洗。
+     */
+    @Delete("<script>"
+            + "DELETE FROM wms_inventory_batch WHERE inventory_id IN "
+            + "<foreach collection='inventoryIds' item='inventoryId' open='(' separator=',' close=')'>#{inventoryId}</foreach>"
+            + "</script>")
+    int deleteByInventoryIdListPhysical(@Param("inventoryIds") List<Long> inventoryIds);
 
 }

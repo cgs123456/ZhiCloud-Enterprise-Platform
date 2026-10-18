@@ -12800,3 +12800,111 @@ E1–E7 照旧、尚未重建确认；重建依据以本重建口径与 `Temp/zc
   exit=1 但汇总行被输出管道 `Select-Object -Last 30` 截断未捕获；复跑全文留档后取数——同套件同工作树。）
 - 服务现状：pid 40532（jar 642,868,434B @2026-10-18T19:15:09，Flyway 209/210 success=1），沙箱
   `zhicloud_sandbox_v140` / tenant 9001；E2E 夹具已还原（科目/期初/凭证夹具全零、表计数 0/7/0/0/0）。
+
+## 12.269 D 组第 3 项（D3）——WMS 移库真实化＋行级流水库位＋拣货路径 seed 真值化＋批次孤儿冲洗 重建
+
+### 12.269.1 背景与目标
+
+D 组第 3 项（用户令「继续处理 D2–D6」）。**D 组六项明细系重建产物**（原会话明细未落盘，同 §12.267
+披露）；D3 明细经搜证重建并锁定于 `Temp/zc_adr_269.md`（§0 搜证 12 条；来源登记：§12.259.5 不扩面披露
+4 条全数转正 + ADR 259 D10 第 2/3/7/8 条 + §12.242.5-1/4）。
+
+缺陷面（先证后修）：
+1. **confirm-move＝占位假动作**：仅 from/to 两验后即返回成功，零库存落行（「点一下就当移过了」）；
+2. **库内移库无写路径**：V205 三元键（SKU×仓库×库位）已可表达，但无服务承载；movement 单据只承跨仓；
+3. **拣货路径页伪坐标**：`buildLocation` seed＝库存行 id（任务侧 fillCoord 已真值化，两处口径裂开）；
+4. **行级流水缺失**：订单级跨多行扣减的 distributed OUT 聚合为单条流水；`wms_inventory_history`
+   无库位列（单据级流水无位置语义）；
+5. **批次孤儿**：deleteLocation 纯零行冲洗仅库存表 → 批次行成逻辑孤儿（＋tombstone 挡同键重建）。
+
+### 12.269.2 实施内容（prod_a＋prod_b 两批）
+
+**prod_a（静态前置面）**：
+- **V211** `V211__wms_inventory_history_location_id.sql`（information_schema 守卫式样对齐 V205）＋
+  `V211_verify.sql`（列存在 / NOT NULL / DEFAULT 0 / 存量回零 四断言，PASS/FAIL 式样）；
+- 契约 +V211 双文件 sha256（tracked 120→121）；错误码 +`LOCATION_MOVE_SAME(008)` /
+  `LOCATION_MOVE_CROSS_WAREHOUSE(009)`（1969→1971）；H2 `create_tables.sql` 同步 history 新列。
+
+**prod_b（服务与接口面）**：
+- **移库语义**：库内同仓跨位**真转移**——`WmsInventoryTransferService/Impl#transfer(from,to,sku,qty)`
+  单事务（门禁 005/006 → 同库位 008 / 跨仓 009 → 源行三元键查无 `INVENTORY_NOT_EXISTS` → 批次
+  随行 → 变更 → 目标行批次随行 → 日志）；变更走既有 `changeInventory`（OUT from＋IN to 同批，
+  `orderType=MOVEMENT(3)`、`orderNo=PDA-MOVE`、`orderId=null` 不伪造载体）；占用派生零新码
+  （既有触达机制）；控制器 confirm-move 薄化委派（端点/请求体不变）。
+- **批次随行（FEFO 强口径）**：源行有批次行 → `applyFefoStrategy` 先检查（不足整体拒绝＝
+  `INVENTORY_BATCH_FEFO_INSUFFICIENT(1060301005)`，与拣货同码同参）、逐分配原子扣减；
+  目标行逐分配 `mergeOrCreateBatch` 同径（与上架同源）；无批次行跳过（兼容分支）。
+- **路径 seed 真值化**：`buildLocation` 改「真库位优先（locationId 派生坐标 coordX=id%100 /
+  coordY=(id/100)%100）、未定位回退库存行 id」，与任务侧 fillCoord 同式；接口面不变。
+- **行级流水**：DO/VO +`locationId`/`locationCode`（控制器 locationMap 批量回填）；distributed OUT
+  逐参与行一条流水（quantity 逐行化）；前端流水页 +「库位」列（仅一列，无筛选/无菜单变更）。
+- **抽件（结构红线）**：包内三新类 `WmsInventoryRowChange`(38) / `WmsInventoryDistributionSupport`(148)
+  / `WmsInventoryHistorySupport`(66)；`WmsInventoryServiceImpl` **585→452 行**（<500 达标）；
+  `WmsPdaServiceImpl`(630 行) 历史存量不动（登记维持）。
+- **批次孤儿冲洗**：`WmsInventoryBatchMapper.deleteByInventoryIdListPhysical`（@Delete script 物理删，
+  V205 式样）＋`deleteLocation` 冲洗段同批冲洗批次行、方法补 `@Transactional`（防半途态）。
+
+### 12.269.3 验证链（逐项实测）
+
+| 环节 | 结果 |
+|------|------|
+| 基线 | WMS 模块 **281/0/0/0**（实施前实测，ADR §0 记录 2026-10-18 19:43） |
+| 测试重定式 | 5 文件：控制器重写（8→10 例，含补钉）+ ImplTest/DimensionTest 流水行级化 + LocationUnit 补批次冲洗 + 新建 PickPathServiceImplTest(2 例) |
+| 定向单测（初跑） | **53/0/0/0**（8 控制器＋5 Dimension＋20 Impl＋18 LocationUnit＋2 PickPath） |
+| 模块回归（初跑） | **287/0/0/0** |
+| 门禁 | errcode **1971** ✓；preauthorize **531**（`--include-app`）✓；scan_tx **0** ✓；bare_throws **81 豁免·零违反**（6204 文件）✓；duplicate_ddl **findings=0** ✓；契约 **tracked=121·scanned=217·findings=0** ✓ |
+| SQL lint | **217 文件 / 16 条 R5** 全既有（V211 零新增；RC=1 既有红） |
+| 前端 | `ts:check` exit=0；`build:prod` 成功；UI 2 文件（vue 库位列 +5 / ts VO`locationId`，CRLF 33→35 保持） |
+| 停服重打 | **642,879,893B**（Δ+11,459 对 D2 基线 642,868,434B） |
+| 冷启 | **440s**；Flyway 210/211 success=1 |
+| 真机 E2E | **37/37（二跑收敛：首跑 36/37，P4.d 预期口径见 §12.269.4 第 4 条；修正＋补钉后 37/37 全过）** |
+| 补钉复跑 | 控制器 10/0/0/0；定向 **55/0/0/0**；模块回归 **289/0/0/0**（E2E 驱动双口径钉住） |
+
+E2E 链路（`Temp/zc_wms269_e2e.py`，P0–P8 共 37 断言；沙箱 / tenant 9001）：P0 前缀清理 →
+P1 API 建位 L01/L02/L03＋结构性跨仓位 X01（SQL 直入登记）→ P2 上架批次基线（8 含批次 B01）→
+P3 **真转移**（OUT 8→3 / IN 建行 0→5 / 行级流水 2 条 OUT+IN 全字段含 locationId、MOVEMENT/PDA-MOVE/
+orderId=null / 批次随行 3·5 守恒 / 占用 OCCUPIED(20)）→ P4 六拒路径（008/009/INV_NOT_EXISTS/
+FEFO 不足（含源行·批次零副作用）/005/006 锁解锁，零流水增量）→ P5 流水页 locationId/locationCode
+回填（L01/L02 各一）→ P6 路径页 seed 真值（seed=库位 L02，坐标=库位 id 派生 (68,80)）→
+P7 deleteLocation 批次物理冲洗（tombstone 清零、库位逻辑删、同键可重建）→ P8 零遗留
+（location_id null=0 / PDA-MOVE 全带库位 / Flyway V211 / 批次守恒 3+5=8 / 无位 putaway 回归 +4）。
+
+### 12.269.4 失败与缺陷登记（诚实链）
+
+1. **产品面（1 处，冷启暴露）**：`WmsInventoryTransferServiceImpl` 的 `WmsInventoryService` 注入
+   误用 `@Resource`（按名）、撞框架 `InventoryAutoConfiguration#inventoryService` bean →
+   `BeanNotOfRequiredTypeException` 冷启失败；单测上下文无该 bean（@Resource 回退 byType）故测试
+   全绿——典型**测试遮蔽**。修复：改 `@Autowired`（byType；对齐既有 WMS 类惯例，附缘由注释留痕）；
+   单点修复零返工。**既有注入撞名排查**：全变更面逐字段复核，其余全部有既有可启动先例。
+2. **流程（1 处）**：首轮重打在服务运行中执行 → spring-boot repackage 改名被占失败（`jar:jar` 已把
+   fat jar 覆盖为 thin）→ **停服后重打**恢复（定式重申：重打必须在停服后执行）。
+3. **脚本（1 处）**：269 冷启脚本 Redis 密码笔误 → WRONGPASS 进程早崩（该次启动 Flyway 已先行
+   成功应用 V211）；修正后重启。
+4. **E2E 预期口径（1 处）**：P4.d 首跑期望行级码，真值 **FEFO 码**（带批次行先 FEFO 检查、
+   与拣货同码同参属设计锁定；无批次行才走行级码）；E2E 修正 + 控制器测试补 2 例（FEFO 不足分支／
+   无批次行口径）双口径钉住 → 二跑 **37/37**。
+5. **既有红不重复登记**：`sql_migration_lint` 16 条 R5；`check_evidence_citations` 1 条；台账
+   §12.201 重复段 / §12.202–213 无节体 / §12.234.10 悬空引用；沙箱 `event_outbox` 6 条旧 DEAD；
+   python 生产套件 5F+4E+3S（构成见 §12.267.7）。本项零新增红。
+
+### 12.269.5 不扩面与已知限制登记（维持）
+
+1. 存量流水 `location_id=0`（未定位语义）**不回填**（历史无法可靠回溯）。
+2. FEFO 不足错误消息的 SKU/仓库槽位实际传 inventoryId（拣货链既有同参**原样镜像**；如需修，
+   拣货/移库双链同步，属后续项）。
+3. distributed OUT 流水由「单条聚合」改「逐行多条」、`quantity` 逐行化（行为变化；消费面仅管理页
+   + 测试，已核对）。
+4. 路径页真值化闭包：同库位多 SKU 同坐标（最近邻自然相邻，设计使然）；未定位行保持库存行 id
+   伪坐标回退口径。
+5. 无批次行源行跳过 FEFO（兼容无批次管理，纯行转移不造批次）。
+6. 跨仓移库维持 009 拒绝（由移库单承接）；移库单据/单号体系不建（orderId=null 不伪造）。
+7. transfer 的 FEFO 扣减循环与 `WmsPdaServiceImpl` 同构并列（第三个消费方出现时再抽公共件）。
+8. 结构红线：主类 452 行（<500 达标）；`WmsPdaServiceImpl` 630 行维持不动（无落点）。
+9. 无新菜单/role_menu；无端点字段扩展（路径页接口面不变）；零迁移以外 schema 面零扩。
+
+### 12.269.6 D 组矩阵基线
+
+D1 已收官（§12.267）、D2 已收官（§12.268）、**D3 收官（本项）**。D4（MES 产能后继）/D5（CRM
+电子签）/D6（TMS↔WMS 签收全链）与 E1–E7 照旧、尚未重建确认；重建依据以本重建口径与
+`Temp/zc_adr_269.md` / `zc_adr_268.md` / `zc_adr_267.md` 为准。待兑现登记项沿用（`zc_e2e_preclean.py`
+硬删收窄到释放 id 集合；`test_plan_commit_groups` 真树「非空」钉法移合成输入）。

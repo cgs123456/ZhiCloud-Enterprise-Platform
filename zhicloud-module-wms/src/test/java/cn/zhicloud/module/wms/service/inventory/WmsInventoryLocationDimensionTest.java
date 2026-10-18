@@ -1,10 +1,14 @@
 package cn.zhicloud.module.wms.service.inventory;
 
 import cn.zhicloud.framework.test.core.ut.BaseDbUnitTest;
+import cn.zhicloud.module.wms.dal.dataobject.inventory.WmsInventoryBatchDO;
 import cn.zhicloud.module.wms.dal.dataobject.inventory.WmsInventoryDO;
+import cn.zhicloud.module.wms.dal.dataobject.inventory.WmsInventoryHistoryDO;
 import cn.zhicloud.module.wms.dal.dataobject.md.item.WmsItemDO;
 import cn.zhicloud.module.wms.dal.dataobject.md.item.WmsItemSkuDO;
 import cn.zhicloud.module.wms.dal.dataobject.md.location.WmsLocationDO;
+import cn.zhicloud.module.wms.dal.mysql.inventory.WmsInventoryBatchMapper;
+import cn.zhicloud.module.wms.dal.mysql.inventory.WmsInventoryHistoryMapper;
 import cn.zhicloud.module.wms.dal.mysql.inventory.WmsInventoryMapper;
 import cn.zhicloud.module.wms.dal.mysql.md.item.WmsItemMapper;
 import cn.zhicloud.module.wms.dal.mysql.md.item.WmsItemSkuMapper;
@@ -24,8 +28,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -55,6 +61,10 @@ public class WmsInventoryLocationDimensionTest extends BaseDbUnitTest {
 
     @Resource
     private WmsInventoryMapper inventoryMapper;
+    @Resource
+    private WmsInventoryBatchMapper inventoryBatchMapper;
+    @Resource
+    private WmsInventoryHistoryMapper inventoryHistoryMapper;
     @Resource
     private WmsLocationMapper locationMapper;
     @Resource
@@ -114,6 +124,10 @@ public class WmsInventoryLocationDimensionTest extends BaseDbUnitTest {
         assertEquals(0, new BigDecimal("6.00").compareTo(row.getAvailableQuantity()));
         assertEquals(WmsLocationStatusEnum.OCCUPIED.getStatus(),
                 locationMapper.selectById(location.getId()).getStatus());
+        // V211（ADR 269 D7）：定位行流水随行库位（真库位口径）
+        List<WmsInventoryHistoryDO> locatedHistories = inventoryHistoryMapper.selectList();
+        assertEquals(1, locatedHistories.size());
+        assertEquals(location.getId(), locatedHistories.get(0).getLocationId());
 
         // 2. OUT 显式定位（拣货链同源语义，ADR 259 D3/D7）全量清空 → 行归零 + 库位回退空闲
         inventoryService.changeInventory(changeReq(2L, "CK202601010001", sku.getId(), "6.00",
@@ -154,6 +168,22 @@ public class WmsInventoryLocationDimensionTest extends BaseDbUnitTest {
         // 2. 库位占用派生：清空行回退 IDLE，有货行保持 OCCUPIED
         assertEquals(WmsLocationStatusEnum.IDLE.getStatus(), locationMapper.selectById(locA.getId()).getStatus());
         assertEquals(WmsLocationStatusEnum.OCCUPIED.getStatus(), locationMapper.selectById(locB.getId()).getStatus());
+        // 2.1 V211（ADR 269 D7）：行级流水——分配参与行逐行一条（0 行 take 2、A 行 take 3、B 行 take 1）
+        List<WmsInventoryHistoryDO> pdeductHistories = inventoryHistoryMapper.selectList();
+        pdeductHistories.sort(Comparator.comparing(WmsInventoryHistoryDO::getId));
+        assertEquals(3, pdeductHistories.size());
+        assertEquals(0L, pdeductHistories.get(0).getLocationId());
+        assertEquals(0, new BigDecimal("2.00").compareTo(pdeductHistories.get(0).getQuantity()));
+        assertEquals(0, new BigDecimal("2.00").compareTo(pdeductHistories.get(0).getBeforeQuantity()));
+        assertEquals(0, BigDecimal.ZERO.compareTo(pdeductHistories.get(0).getAfterQuantity()));
+        assertEquals(locA.getId(), pdeductHistories.get(1).getLocationId());
+        assertEquals(0, new BigDecimal("3.00").compareTo(pdeductHistories.get(1).getQuantity()));
+        assertEquals(0, new BigDecimal("3.00").compareTo(pdeductHistories.get(1).getBeforeQuantity()));
+        assertEquals(0, BigDecimal.ZERO.compareTo(pdeductHistories.get(1).getAfterQuantity()));
+        assertEquals(locB.getId(), pdeductHistories.get(2).getLocationId());
+        assertEquals(0, new BigDecimal("1.00").compareTo(pdeductHistories.get(2).getQuantity()));
+        assertEquals(0, new BigDecimal("4.00").compareTo(pdeductHistories.get(2).getBeforeQuantity()));
+        assertEquals(0, new BigDecimal("3.00").compareTo(pdeductHistories.get(2).getAfterQuantity()));
 
         // 3. B 锁定后 demand 4.00 → 锁定行跳过分配，合计可用 0.00 < 4.00 → 整单拒绝（零副作用）
         locationMapper.updateById(new WmsLocationDO().setId(locB.getId())
@@ -165,6 +195,7 @@ public class WmsInventoryLocationDimensionTest extends BaseDbUnitTest {
         assertEquals(0, new BigDecimal("3.00").compareTo(inventoryMapper
                 .selectBySkuIdAndWarehouseIdAndLocationId(sku.getId(), 100L, locB.getId()).getQuantity()));
         assertEquals(WmsLocationStatusEnum.LOCKED.getStatus(), locationMapper.selectById(locB.getId()).getStatus());
+        assertEquals(3L, inventoryHistoryMapper.selectCount()); // 拒绝路径零流水
 
         // 4. 人工解锁（IDLE）后恢复分配：B 剩余 3.00 全额出清并回退空闲
         locationMapper.updateById(new WmsLocationDO().setId(locB.getId())
@@ -174,6 +205,7 @@ public class WmsInventoryLocationDimensionTest extends BaseDbUnitTest {
         assertEquals(0, BigDecimal.ZERO.compareTo(inventoryMapper
                 .selectBySkuIdAndWarehouseIdAndLocationId(sku.getId(), 100L, locB.getId()).getQuantity()));
         assertEquals(WmsLocationStatusEnum.IDLE.getStatus(), locationMapper.selectById(locB.getId()).getStatus());
+        assertEquals(4L, inventoryHistoryMapper.selectCount()); // B 行 take 3.00 追加一条行级流水
     }
 
     @Test
@@ -218,16 +250,28 @@ public class WmsInventoryLocationDimensionTest extends BaseDbUnitTest {
                 .lockedQuantity(new BigDecimal("2.00")).build());
         assertServiceException(() -> locationService.deleteLocation(lockedHold.getId()), LOCATION_HAS_INVENTORY);
 
-        // 3. 纯零行 → 物理冲洗 + 库位逻辑删
+        // 3. 纯零行 → 物理冲洗 + 库位逻辑删（V211：批次行随行冲洗）
         WmsLocationDO washable = createLocation("A-03-03", WmsLocationStatusEnum.IDLE.getStatus());
-        inventoryMapper.insert(WmsInventoryDO.builder().skuId(sku.getId()).warehouseId(100L).locationId(washable.getId())
-                .quantity(BigDecimal.ZERO).availableQuantity(BigDecimal.ZERO).build());
+        WmsInventoryDO washRow = WmsInventoryDO.builder().skuId(sku.getId()).warehouseId(100L)
+                .locationId(washable.getId())
+                .quantity(BigDecimal.ZERO).availableQuantity(BigDecimal.ZERO).build();
+        inventoryMapper.insert(washRow);
+        inventoryBatchMapper.insert(WmsInventoryBatchDO.builder()
+                .inventoryId(washRow.getId()).batchNo("BATCH-WASH-001")
+                .quantity(BigDecimal.ZERO).productionDate(LocalDate.of(2026, 1, 1))
+                .expiryDate(LocalDate.of(2027, 1, 1)).build());
         locationService.deleteLocation(washable.getId());
         assertNull(locationMapper.selectById(washable.getId()));
         assertTrue(inventoryMapper.selectListByLocationId(washable.getId()).isEmpty());
+        assertTrue(inventoryBatchMapper.selectListByInventoryId(washRow.getId()).isEmpty());
         // 物理冲洗实证：同 (sku, warehouse, location) 三元再插不撞唯一键（逻辑删 tombstone 已被物理清除）
         inventoryMapper.insert(WmsInventoryDO.builder().skuId(sku.getId()).warehouseId(100L).locationId(washable.getId())
                 .quantity(BigDecimal.ZERO).availableQuantity(BigDecimal.ZERO).build());
+        // 物理冲洗实证（批次）：同 (inventory_id, batch_no) 再插不撞唯一键（uk 不含 deleted，tombstone 必须已物理清除）
+        inventoryBatchMapper.insert(WmsInventoryBatchDO.builder()
+                .inventoryId(washRow.getId()).batchNo("BATCH-WASH-001")
+                .quantity(BigDecimal.ZERO).productionDate(LocalDate.of(2026, 1, 1))
+                .expiryDate(LocalDate.of(2027, 1, 1)).build());
     }
 
     private WmsItemDO createItem(String code, String name) {

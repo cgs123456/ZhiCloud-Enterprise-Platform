@@ -2,11 +2,9 @@ package cn.zhicloud.module.wms.service.inventory;
 
 import cn.zhicloud.framework.common.exception.enums.GlobalErrorCodeConstants;
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.lang.Tuple;
 import cn.hutool.core.util.ObjectUtil;
 import cn.zhicloud.framework.common.exception.ServiceException;
 import cn.zhicloud.framework.common.pojo.PageResult;
-import cn.zhicloud.framework.common.util.number.MoneyUtils;
 import cn.zhicloud.module.wms.controller.admin.inventory.vo.WmsInventoryListReqVO;
 import cn.zhicloud.module.wms.controller.admin.inventory.vo.WmsInventoryPageReqVO;
 import cn.zhicloud.module.wms.dal.dataobject.inventory.WmsInventoryDO;
@@ -42,6 +40,8 @@ import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.e
 import static cn.zhicloud.framework.common.util.collection.CollectionUtils.convertList;
 import static cn.zhicloud.framework.common.util.collection.CollectionUtils.convertSet;
 import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.*;
+import static cn.zhicloud.module.wms.service.inventory.WmsInventoryDistributionSupport.addNonNull;
+import static cn.zhicloud.module.wms.service.inventory.WmsInventoryDistributionSupport.subtractNonNull;
 
 /**
  * WMS 库存 Service 实现类
@@ -118,7 +118,8 @@ public class WmsInventoryServiceImpl implements WmsInventoryService {
             if (inventory.getLocationId() != null && inventory.getLocationId() != 0L) {
                 touchedLocationIds.add(inventory.getLocationId());
             }
-            histories.add(buildInventoryHistory(reqDTO, item, beforeQuantity, afterQuantity));
+            histories.add(WmsInventoryHistorySupport.buildCheckHistory(reqDTO, item, beforeQuantity,
+                    afterQuantity, inventory.getLocationId()));
         }
 
         // 2.1 批量更新库存余额
@@ -140,14 +141,13 @@ public class WmsInventoryServiceImpl implements WmsInventoryService {
             return;
         }
 
-        // 1. 补齐并锁定本次涉及的库存余额行，再计算库存变更
-        Map<WmsInventoryChangeReqDTO.Item, Tuple> resultMap = changeInventoryList(reqDTO.getItems());
+        // 1. 补齐并锁定本次涉及的库存余额行，再计算库存变更（V211：返回值升级为行级记录，ADR 269 D7）
+        Map<WmsInventoryChangeReqDTO.Item, List<WmsInventoryRowChange>> rowChangesMap =
+                changeInventoryList(reqDTO.getItems());
 
-        // 2. 批量写入库存流水
-        List<WmsInventoryHistoryDO> histories = new ArrayList<>(reqDTO.getItems().size());
-        for (WmsInventoryChangeReqDTO.Item item : reqDTO.getItems()) {
-            histories.add(buildInventoryHistory(reqDTO, item, resultMap.get(item)));
-        }
+        // 2. 批量写入库存流水（V211 行级口径：P-deduct 参与行逐行一条，各带行库位）
+        List<WmsInventoryHistoryDO> histories = WmsInventoryHistorySupport.buildChangeHistories(
+                reqDTO, reqDTO.getItems(), rowChangesMap);
         inventoryHistoryService.createInventoryHistoryList(histories);
     }
 
@@ -163,15 +163,16 @@ public class WmsInventoryServiceImpl implements WmsInventoryService {
      * V205 库位维度接入（ADR 259 D1/D3）：
      *  - item.locationId 非空（含显式 0）→ 精确该行（三元键）；OUT 落在锁定/禁用库位的行上时，
      *    如实抛出 LOCATION_LOCKED / LOCATION_DISABLED（锁定位货不动，门禁语义对齐入库面）；
-     *  - item.locationId 为 null 的 OUT → P-deduct 跨位分配（{@link #distributeOut}）：
+     *  - item.locationId 为 null 的 OUT → P-deduct 跨位分配（{@link WmsInventoryDistributionSupport#distributeOut}）：
      *    (sku, warehouse) 全部行按「0 行优先、其余 location_id 升序」贪心扣减，跳过锁定/禁用
      *    库位的行，供需双口径（quantity 与 available）合计不足即整体拒绝（拒绝路径零副作用）；
      *  - 其余类型（IN/LOCK/UNLOCK/FREEZE/UNFREEZE/PLAIN）保持未定位行为（基线语义不变）。
      *
      * @param items 库存变更明细列表
-     * @return 每条变更明细对应的变更前数量、变更后数量
+     * @return 每条变更明细对应的行级变更记录列表（V211，ADR 269 D7）
      */
-    private Map<WmsInventoryChangeReqDTO.Item, Tuple> changeInventoryList(List<WmsInventoryChangeReqDTO.Item> items) {
+    private Map<WmsInventoryChangeReqDTO.Item, List<WmsInventoryRowChange>> changeInventoryList(
+            List<WmsInventoryChangeReqDTO.Item> items) {
         // 1.1 创建或锁定库存行（V205：P-deduct 需求的 (sku, warehouse) 全部行并入行集）
         List<WmsInventoryDO> inventories = getOrCreateInventoryList(items);
         // 1.2 锁定库存：避免 quantity 变更时的并发问题，导致 quantity 前后计算不对
@@ -181,11 +182,13 @@ public class WmsInventoryServiceImpl implements WmsInventoryService {
                 convertSet(inventories, WmsInventoryDO::getLocationId));
 
         // 2.1 校验库存充足 + 计算三维字段
-        Map<WmsInventoryChangeReqDTO.Item, Tuple> resultMap = new IdentityHashMap<>(items.size());
+        Map<WmsInventoryChangeReqDTO.Item, List<WmsInventoryRowChange>> rowChangesMap =
+                new IdentityHashMap<>(items.size());
         Set<Long> touchedLocationIds = new HashSet<>(); // V205：占用派生素材定位库位集（ADR 259 D4）
         for (WmsInventoryChangeReqDTO.Item item : items) {
-            if (isDistributedOut(item)) {
-                resultMap.put(item, distributeOut(item, inventories, frozenLocationIds, touchedLocationIds));
+            if (WmsInventoryDistributionSupport.isDistributedOut(item)) {
+                rowChangesMap.put(item, WmsInventoryDistributionSupport.distributeOut(item, inventories,
+                        frozenLocationIds, touchedLocationIds, this::buildInventoryQuantityNotEnoughException));
                 continue;
             }
             WmsInventoryDO inventory = findInventory(inventories, item);
@@ -285,7 +288,8 @@ public class WmsInventoryServiceImpl implements WmsInventoryService {
                     break;
                 }
             }
-            resultMap.put(item, new Tuple(beforeQuantity, afterQuantity));
+            rowChangesMap.put(item, List.of(new WmsInventoryRowChange(item.getLocationIdOrZero(),
+                    beforeQuantity, afterQuantity, qty)));
             // V205：由变更过的定位行收集占用派生素材（refreshOccupancyStatus 自行忽略 0/管理态/null）
             if (inventory.getLocationId() != null && inventory.getLocationId() != 0L) {
                 touchedLocationIds.add(inventory.getLocationId());
@@ -297,122 +301,7 @@ public class WmsInventoryServiceImpl implements WmsInventoryService {
             // V205：变更定位行落库后派生库位占用/释放（ADR 259 D4）
             locationService.refreshOccupancyStatus(touchedLocationIds);
         }
-        return resultMap;
-    }
-
-    /**
-     * V205（ADR 259 D3）：P-deduct 跨位分配仅由「OUT 且 item.locationId == null」触发；
-     * 显式 0 库位（含拣货执行链按行取出的未定位行）与 PLAIN 不参与分配——分配与否决定
-     * 批次扣减（applyFefoAndDeductBatches）与库存行扣减是否同源，不可混淆。
-     */
-    private static boolean isDistributedOut(WmsInventoryChangeReqDTO.Item item) {
-        return WmsInventoryChangeTypeEnum.OUT.equals(item.getChangeType())
-                && item.getLocationId() == null;
-    }
-
-    /**
-     * V205 P-deduct 跨位分配（ADR 259 D3）：未定位 OUT 在 (sku, warehouse) 的全部行上贪心扣减。
-     *
-     * <p>分配序：0 行（未定位）优先、其余行 location_id 升序、同位行 id 升序稳序；
-     * 锁定/禁用库位的行直接跳过（锁定位货不动）。
-     * 供需校验（quantity 与 available 双口径 all-or-nothing 预检）在逐行落地前完成，
-     * 不足即整体拒绝（复用既有 {@code INVENTORY_QUANTITY_NOT_ENOUGH} 语义，拒绝路径零副作用）。
-     *
-     * <p>流水口径：该明细的 before/after = 参与行合计原量与差额
-     *（{@code after = Σbefore - demand}；行级细粒度流水属后续项，不以牺牲一致性为代价）。
-     *
-     * @param touchedLocationIds 参与分配的定位行所属库位集合（占用派生素材，直接复用调用方集合）
-     */
-    private Tuple distributeOut(WmsInventoryChangeReqDTO.Item item,
-                                List<WmsInventoryDO> inventories,
-                                Set<Long> frozenLocationIds,
-                                Set<Long> touchedLocationIds) {
-        // 1. 圈定同 (sku, warehouse) 的候选行并合计供需
-        BigDecimal demandQuantity = item.getQuantity();
-        List<WmsInventoryDO> targets = new ArrayList<>();
-        BigDecimal totalQuantity = BigDecimal.ZERO;
-        BigDecimal totalAvailable = BigDecimal.ZERO;
-        for (WmsInventoryDO row : inventories) {
-            if (!ObjectUtil.equal(row.getSkuId(), item.getSkuId())
-                    || !ObjectUtil.equal(row.getWarehouseId(), item.getWarehouseId())) {
-                continue;
-            }
-            Long rowLocation = row.getLocationId() == null ? 0L : row.getLocationId();
-            if (rowLocation != 0L && frozenLocationIds.contains(rowLocation)) {
-                // 锁定/禁用库位的行不参与分配（锁定位货不动）
-                continue;
-            }
-            targets.add(row);
-            totalQuantity = addNonNull(totalQuantity, row.getQuantity());
-            totalAvailable = addNonNull(totalAvailable, row.getAvailableQuantity());
-        }
-        // 2. 供需双口径合计校验（all-or-nothing，拒绝路径零副作用）
-        if (totalQuantity.compareTo(demandQuantity) < 0) {
-            throw buildInventoryQuantityNotEnoughException(item, totalQuantity);
-        }
-        if (totalAvailable.compareTo(demandQuantity) < 0) {
-            throw buildInventoryQuantityNotEnoughException(item, totalAvailable);
-        }
-        // 3. 分配序：0 行（未定位）天然最小、其余 location_id 升序、id 升序稳序
-        targets.sort((a, b) -> {
-            long locationA = a.getLocationId() == null ? 0L : a.getLocationId();
-            long locationB = b.getLocationId() == null ? 0L : b.getLocationId();
-            int result = Long.compare(locationA, locationB);
-            if (result != 0) {
-                return result;
-            }
-            if (a.getId() != null && b.getId() != null) {
-                return Long.compare(a.getId(), b.getId());
-            }
-            return 0;
-        });
-        // 4. 贪心逐行扣减（quantity 与 available 同步改写，三维口径与单行路径一致）
-        BigDecimal remainingQuantity = demandQuantity;
-        BigDecimal beforeSum = BigDecimal.ZERO;
-        for (WmsInventoryDO row : targets) {
-            if (remainingQuantity.compareTo(BigDecimal.ZERO) <= 0) {
-                break;
-            }
-            BigDecimal rowQuantity = row.getQuantity() == null ? BigDecimal.ZERO : row.getQuantity();
-            BigDecimal rowAvailable = row.getAvailableQuantity() == null ? BigDecimal.ZERO : row.getAvailableQuantity();
-            BigDecimal take = rowAvailable.min(remainingQuantity);
-            if (take.compareTo(BigDecimal.ZERO) <= 0) {
-                continue;
-            }
-            row.setQuantity(rowQuantity.subtract(take));
-            row.setAvailableQuantity(rowAvailable.subtract(take));
-            beforeSum = addNonNull(beforeSum, rowQuantity);
-            remainingQuantity = remainingQuantity.subtract(take);
-            if (row.getLocationId() != null && row.getLocationId() != 0L) {
-                touchedLocationIds.add(row.getLocationId());
-            }
-        }
-        if (remainingQuantity.compareTo(BigDecimal.ZERO) > 0) {
-            // 理论不可达：步骤 2 合计校验已保证 Σmin(available, remaining) ≥ demand；
-            // 防御性兜底如实抛出（与既有缺货语义一致）
-            throw buildInventoryQuantityNotEnoughException(item, totalAvailable);
-        }
-        return new Tuple(beforeSum, beforeSum.subtract(demandQuantity));
-    }
-
-    private static BigDecimal addNonNull(BigDecimal a, BigDecimal b) {
-        if (a == null) {
-            a = BigDecimal.ZERO;
-        }
-        if (b == null) {
-            b = BigDecimal.ZERO;
-        }
-        return a.add(b);
-    }
-
-    private static BigDecimal subtractNonNull(BigDecimal a, BigDecimal b) {
-        if (a == null) {
-            a = BigDecimal.ZERO;
-        }
-        if (b == null) {
-            b = BigDecimal.ZERO;
-        }
-        return a.subtract(b);
+        return rowChangesMap;
     }
 
     private List<WmsInventoryDO> getOrCreateInventoryList(List<WmsInventoryChangeReqDTO.Item> items) {
@@ -435,7 +324,7 @@ public class WmsInventoryServiceImpl implements WmsInventoryService {
         //     保证分配器能看到同仓全量行（一次批查，避免逐 key 重复 SQL）
         Set<String> processedOutPairs = new HashSet<>();
         for (WmsInventoryChangeReqDTO.Item item : items) {
-            if (!isDistributedOut(item)) {
+            if (!WmsInventoryDistributionSupport.isDistributedOut(item)) {
                 continue;
             }
             String pair = item.getSkuId() + "|" + item.getWarehouseId();
@@ -490,28 +379,6 @@ public class WmsInventoryServiceImpl implements WmsInventoryService {
             createdInventories.add(inventory);
         }
         return createdInventories;
-    }
-
-    private WmsInventoryHistoryDO buildInventoryHistory(WmsInventoryChangeReqDTO reqDTO,
-                                                       WmsInventoryChangeReqDTO.Item item,
-                                                       Tuple result) {
-        return new WmsInventoryHistoryDO()
-                .setWarehouseId(item.getWarehouseId()).setSkuId(item.getSkuId())
-                .setQuantity(item.getQuantity()).setBeforeQuantity(result.get(0)).setAfterQuantity(result.get(1))
-                .setPrice(item.getPrice()).setTotalPrice(item.getTotalPrice()).setRemark(item.getRemark())
-                .setOrderId(reqDTO.getOrderId()).setOrderNo(reqDTO.getOrderNo()).setOrderType(reqDTO.getOrderType());
-    }
-
-    private WmsInventoryHistoryDO buildInventoryHistory(WmsInventoryCheckReqDTO reqDTO,
-                                                       WmsInventoryCheckReqDTO.Item item,
-                                                       BigDecimal beforeQuantity,
-                                                       BigDecimal afterQuantity) {
-        BigDecimal quantity = afterQuantity.subtract(beforeQuantity);
-        return new WmsInventoryHistoryDO().setWarehouseId(item.getWarehouseId()).setSkuId(item.getSkuId())
-                .setQuantity(quantity).setBeforeQuantity(beforeQuantity).setAfterQuantity(afterQuantity)
-                .setPrice(item.getPrice()).setTotalPrice(MoneyUtils.priceMultiply(item.getPrice(), quantity))
-                .setOrderId(reqDTO.getOrderId()).setOrderNo(reqDTO.getOrderNo()).setOrderType(reqDTO.getOrderType())
-                .setRemark(item.getRemark());
     }
 
     private WmsInventoryDO getOrCreateCheckInventory(WmsInventoryCheckReqDTO.Item item) {

@@ -192,10 +192,13 @@ public class WmsPickPathServiceImpl implements WmsPickPathService {
         location.setSkuId(inventory.getSkuId());
         location.setPickQuantity(pickQuantity);
         location.setAvailableQuantity(inventory.getAvailableQuantity());
-        // 基于库存 ID 生成伪坐标，模拟通道/货架位置
-        long invId = inventory.getId() == null ? 0L : inventory.getId();
-        location.setCoordX((int) (invId % COORD_GRID));
-        location.setCoordY((int) ((invId / COORD_GRID) % COORD_GRID));
+        // V211（ADR 269 D6）：真库位优先作 seed；未定位行回退库存行 id（伪坐标基线口径不变），
+        // 与任务侧 fillCoord 同式（WmsPickStrategyServiceImpl#fillCoord）
+        long key = inventory.getLocationId() != null && inventory.getLocationId() != 0L
+                ? inventory.getLocationId()
+                : inventory.getId() == null ? 0L : inventory.getId();
+        location.setCoordX((int) (key % COORD_GRID));
+        location.setCoordY((int) ((key / COORD_GRID) % COORD_GRID));
         return location;
     }
 

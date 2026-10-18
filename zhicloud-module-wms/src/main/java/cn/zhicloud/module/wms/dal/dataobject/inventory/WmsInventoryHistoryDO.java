@@ -2,6 +2,7 @@ package cn.zhicloud.module.wms.dal.dataobject.inventory;
 
 import cn.zhicloud.framework.mybatis.core.dataobject.BaseDO;
 import cn.zhicloud.module.wms.dal.dataobject.md.item.WmsItemSkuDO;
+import cn.zhicloud.module.wms.dal.dataobject.md.location.WmsLocationDO;
 import cn.zhicloud.module.wms.dal.dataobject.md.warehouse.WmsWarehouseDO;
 import cn.zhicloud.module.wms.enums.order.WmsOrderTypeEnum;
 import com.baomidou.mybatisplus.annotation.KeySequence;
@@ -40,6 +41,12 @@ public class WmsInventoryHistoryDO extends BaseDO {
      * 关联 {@link WmsWarehouseDO#getId()}
      */
     private Long warehouseId;
+    /**
+     * 库位编号
+     *
+     * 关联 {@link WmsLocationDO#getId()}；0 = 未定位（V211 行级流水库位维度，ADR 269 D7）
+     */
+    private Long locationId;
     /**
      * 商品 SKU 编号
      *

@@ -34,6 +34,11 @@ public class WmsInventoryHistoryRespVO {
     @Schema(description = "仓库名称", example = "成品仓")
     private String warehouseName;
 
+    @Schema(description = "库位编号", example = "1024")
+    private Long locationId;
+    @Schema(description = "库位编码", example = "A-01-02")
+    private String locationCode;
+
     @Schema(description = "库存变化数量", requiredMode = Schema.RequiredMode.REQUIRED, example = "10.00")
     private BigDecimal quantity;
     @Schema(description = "变化前库存数量", example = "90.00")

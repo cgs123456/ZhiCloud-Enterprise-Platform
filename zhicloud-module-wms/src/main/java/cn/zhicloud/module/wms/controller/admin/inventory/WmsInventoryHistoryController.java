@@ -10,10 +10,12 @@ import cn.zhicloud.module.wms.controller.admin.inventory.vo.history.WmsInventory
 import cn.zhicloud.module.wms.dal.dataobject.inventory.WmsInventoryHistoryDO;
 import cn.zhicloud.module.wms.dal.dataobject.md.item.WmsItemDO;
 import cn.zhicloud.module.wms.dal.dataobject.md.item.WmsItemSkuDO;
+import cn.zhicloud.module.wms.dal.dataobject.md.location.WmsLocationDO;
 import cn.zhicloud.module.wms.dal.dataobject.md.warehouse.WmsWarehouseDO;
 import cn.zhicloud.module.wms.service.inventory.WmsInventoryHistoryService;
 import cn.zhicloud.module.wms.service.md.item.WmsItemService;
 import cn.zhicloud.module.wms.service.md.item.WmsItemSkuService;
+import cn.zhicloud.module.wms.service.md.location.WmsLocationService;
 import cn.zhicloud.module.wms.service.md.warehouse.WmsWarehouseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 import static cn.zhicloud.framework.common.pojo.CommonResult.success;
+import static cn.zhicloud.framework.common.util.collection.CollectionUtils.convertMap;
 import static cn.zhicloud.framework.common.util.collection.CollectionUtils.convertSet;
 
 @Tag(name = "管理后台 - WMS 库存流水")
@@ -46,6 +49,8 @@ public class WmsInventoryHistoryController {
     private WmsItemSkuService itemSkuService;
     @Resource
     private WmsWarehouseService warehouseService;
+    @Resource
+    private WmsLocationService locationService;
 
     @GetMapping("/page")
     @Operation(summary = "获得库存流水分页")
@@ -66,6 +71,9 @@ public class WmsInventoryHistoryController {
         Map<Long, WmsItemDO> itemMap = itemService.getItemMap(convertSet(skuMap.values(), WmsItemSkuDO::getItemId));
         Map<Long, WmsWarehouseDO> warehouseMap = warehouseService.getWarehouseMap(
                 convertSet(list, WmsInventoryHistoryDO::getWarehouseId));
+        Map<Long, WmsLocationDO> locationMap = convertMap(
+                locationService.getLocationList(convertSet(list, WmsInventoryHistoryDO::getLocationId)),
+                WmsLocationDO::getId);
         return BeanUtils.toBean(list, WmsInventoryHistoryRespVO.class, vo -> {
             MapUtils.findAndThen(skuMap, vo.getSkuId(), sku -> {
                 vo.setSkuCode(sku.getCode()).setSkuName(sku.getName()).setItemId(sku.getItemId());
@@ -73,6 +81,7 @@ public class WmsInventoryHistoryController {
                         .setItemName(item.getName()).setUnit(item.getUnit()));
             });
             MapUtils.findAndThen(warehouseMap, vo.getWarehouseId(), warehouse -> vo.setWarehouseName(warehouse.getName()));
+            MapUtils.findAndThen(locationMap, vo.getLocationId(), location -> vo.setLocationCode(location.getCode()));
         });
     }
 

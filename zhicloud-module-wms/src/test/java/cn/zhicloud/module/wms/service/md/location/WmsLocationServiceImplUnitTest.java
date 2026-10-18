@@ -4,8 +4,10 @@ import cn.zhicloud.framework.common.exception.ServiceException;
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.module.wms.controller.admin.md.location.vo.WmsLocationPageReqVO;
 import cn.zhicloud.module.wms.controller.admin.md.location.vo.WmsLocationSaveReqVO;
+import cn.zhicloud.module.wms.dal.dataobject.inventory.WmsInventoryDO;
 import cn.zhicloud.module.wms.dal.dataobject.md.location.WmsLocationDO;
 import cn.zhicloud.module.wms.dal.dataobject.md.zone.WmsZoneDO;
+import cn.zhicloud.module.wms.dal.mysql.inventory.WmsInventoryBatchMapper;
 import cn.zhicloud.module.wms.dal.mysql.inventory.WmsInventoryMapper;
 import cn.zhicloud.module.wms.dal.mysql.md.location.WmsLocationMapper;
 import cn.zhicloud.module.wms.enums.md.WmsLocationStatusEnum;
@@ -19,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -46,6 +49,8 @@ public class WmsLocationServiceImplUnitTest {
     private WmsZoneService zoneService;
     @Mock
     private WmsInventoryMapper inventoryMapper; // V205（ADR 259 D9）：deleteLocation 存量校验/冲洗
+    @Mock
+    private WmsInventoryBatchMapper inventoryBatchMapper; // V211（ADR 269 D9）：deleteLocation 批次随行物理冲洗
 
     @InjectMocks
     private WmsLocationServiceImpl locationService;
@@ -143,6 +148,23 @@ public class WmsLocationServiceImplUnitTest {
         locationService.deleteLocation(5L);
 
         verify(locationMapper).deleteById(5L);
+    }
+
+    @Test
+    public void testDeleteLocation_zeroRowsWashedWithBatches() {
+        when(locationMapper.selectById(7L)).thenReturn(WmsLocationDO.builder().id(7L).build());
+        // V211（ADR 269 D9）：纯零库存行连同其批次行同批物理冲洗（uk(inventory_id, batch_no) 不含 deleted）
+        when(inventoryMapper.selectListByLocationId(7L)).thenReturn(List.of(
+                WmsInventoryDO.builder().id(31L).quantity(BigDecimal.ZERO)
+                        .availableQuantity(BigDecimal.ZERO).build(),
+                WmsInventoryDO.builder().id(32L).quantity(BigDecimal.ZERO)
+                        .availableQuantity(BigDecimal.ZERO).build()));
+
+        locationService.deleteLocation(7L);
+
+        verify(inventoryMapper).deleteByIdListPhysical(List.of(31L, 32L));
+        verify(inventoryBatchMapper).deleteByInventoryIdListPhysical(List.of(31L, 32L));
+        verify(locationMapper).deleteById(7L);
     }
 
     @Test

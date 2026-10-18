@@ -89,6 +89,7 @@ public class WmsInventoryServiceImplTest extends BaseDbUnitTest {
         assertEquals(0, BigDecimal.ZERO.compareTo(history.getBeforeQuantity()));
         assertEquals(0, new BigDecimal("5.00").compareTo(history.getAfterQuantity()));
         assertEquals(0, new BigDecimal("500.00").compareTo(history.getTotalPrice()));
+        assertEquals(0L, history.getLocationId()); // V211（ADR 269 D7）：未定位行流水库位归一 0
         assertEquals(reqDTO.getOrderId(), history.getOrderId());
         assertEquals(reqDTO.getOrderNo(), history.getOrderNo());
         assertEquals(reqDTO.getOrderType(), history.getOrderType());
@@ -412,6 +413,7 @@ public class WmsInventoryServiceImplTest extends BaseDbUnitTest {
         assertEquals(0, new BigDecimal("7.00").compareTo(history.getAfterQuantity()));
         assertEquals(0, new BigDecimal("-3.00").compareTo(history.getQuantity()));
         assertEquals(0, new BigDecimal("-300.00").compareTo(history.getTotalPrice()));
+        assertEquals(0L, history.getLocationId()); // V211（ADR 269 D7）：未定位行流水库位归一 0（盘点）
         assertEquals(reqDTO.getOrderId(), history.getOrderId());
         assertEquals(reqDTO.getOrderNo(), history.getOrderNo());
         assertEquals(reqDTO.getOrderType(), history.getOrderType());
