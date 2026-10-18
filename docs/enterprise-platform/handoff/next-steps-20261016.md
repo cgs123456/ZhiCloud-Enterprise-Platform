@@ -427,3 +427,25 @@
   CLI exit=0、violations=[]；`V210_verify.sql` 实跑 7/7 PASS；python 全量复跑 665 tests，445.706s，FAILED (failures=5, errors=4, skipped=3)，红项构成与
   §12.264.4 第 6 条 / §12.265.4 逐项一致，本项零新增红；服务 pid 35564 运行中（Flyway V210 success=1），
   E2E 夹具已清理复原。
+
+## 后记十四：D 组第 1 项（D1）——§12.267 CRM 回款审批→ERP 收款单联动重建（事件驱动）
+
+- **已完成**：D 组第 1 项重建（D 组六项明细系重建产物，原会话明细未落盘）——CRM 回款审批通过 →
+  同事务 append outbox `crm.receivable.approved.v1` → ERP 消费者 `erp-finance-receipt-creator` 建
+  「待审核」收款单（不搞同步跨库写，复用 V100 可靠集成数据面）。契约（`IntegrationEventTypes` +
+  `CrmReceivableApprovedEvent`）/ CRM append（`CrmReceivableApprovalSupport`）/ ERP 消费
+  （`CrmReceivableApprovedConsumer` + `createFinanceReceiptFromCrm` 共享落单内核 + `CRM_RECEIVABLE(23)`
+  明细 + MDM fail-closed + 幂等四层）/ 前端一列标签 / 结构红线抽三件静态协作者（ERP Impl 567→470、
+  CRM Impl 619→476）。账户口径修订 R1：服务侧解析「租户默认账户」，无则 `1_030_602_008`
+  fail-closed。证据：编译 0 → 定向 2+7+6+17 全绿 → 回归 starter / ERP 235 / CRM 111 全绿 →
+  六门禁 RC=0 → ts:check 0 + build:prod 0 → 重打 642,867,652B → 冷启 436s → 真机 E2E **32/32
+  首跑全过**（零遗留复原）。
+- **口径提醒**：事件驱动、不同步跨库写；事件 id 与收款单幂等键均按回款主键推导；MDM 映射缺失
+  fail-closed 进死信；`accountId` 不进载荷指纹；审核/过账不依赖 `financeUserId`（实测）。
+- **失败登记**：见 HANDOFF §12.267.4——账户留空与 NOT NULL 冲突（单测暴露，修订 R1）、CRM Impl
+  553/619 行超红线、CRM 新依赖致 4 个既有测试上下文装配缺失（apply9/9b）、脚本面 4 处
+  （apply3/6/8/10）、重打前发现 266 服务已自行退出（环境观察，非本项所致）；产品遗留零（R1 为
+  口径修正）。
+- **不扩面登记**：付款单不接 / CRM 不回显 / 删单反审核不回流 / 不做部分回款 / 无默认账户 fail-closed /
+  HTTP 人工入口 23 类明细不设防 / `FinanceReceiptForm.vue` 错标仅登记 / 零迁移零新表。
+- **下一项**：D2–D6 逐项重建确认；E1–E7 照旧。

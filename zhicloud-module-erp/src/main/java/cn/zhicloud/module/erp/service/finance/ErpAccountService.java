@@ -66,6 +66,17 @@ public interface ErpAccountService {
     ErpAccountDO validateAccount(Long id);
 
     /**
+     * 获得默认结算账户
+     *
+     * <p>用于无人工上下文的自动建单（如「CRM 回款 → ERP 收款单」集成建单）补齐账户：
+     * 与前端表单默认选中「默认账户」同口径（§12.267 D1 修订）。默认账户唯一性由
+     * {@link #updateAccountDefaultStatus(Long, Boolean)} 维护。
+     *
+     * @return 默认账户；未配置时返回 {@code null}
+     */
+    ErpAccountDO getDefaultAccount();
+
+    /**
      * 获得指定状态的结算账户列表
      *
      * @param status 状态

@@ -10,7 +10,7 @@
   >
     <el-table :data="formData" show-summary :summary-method="getSummaries" class="-mt-10px">
       <el-table-column label="序号" type="index" align="center" width="60" />
-      <el-table-column label="销售单据编号" min-width="200">
+      <el-table-column label="来源单据编号" min-width="200">
         <template #default="{ row }">
           <el-form-item class="mb-0px!">
             <el-input disabled v-model="row.bizNo" />

@@ -5,6 +5,7 @@ import cn.zhicloud.module.erp.controller.admin.finance.vo.receipt.ErpFinanceRece
 import cn.zhicloud.module.erp.controller.admin.finance.vo.receipt.ErpFinanceReceiptSaveReqVO;
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpFinanceReceiptDO;
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpFinanceReceiptItemDO;
+import cn.zhicloud.module.erp.service.finance.bo.ErpFinanceReceiptCrmCreateReqBO;
 import jakarta.validation.Valid;
 
 import java.util.Collection;
@@ -24,6 +25,18 @@ public interface ErpFinanceReceiptService {
      * @return 编号
      */
     Long createFinanceReceipt(@Valid ErpFinanceReceiptSaveReqVO createReqVO);
+
+    /**
+     * 创建「CRM 回款联动」收款单（跨域集成入口，§12.267 D1）
+     *
+     * <p>与 {@link #createFinanceReceipt} 的区别：入参是集成契约 BO 而非 HTTP VO——
+     * HTTP VO 的账户/财务人员为必填（Bean Validation 对内部调用同样生效），
+     * 而 CRM 域没有这两个维度：账户留空由财务审核过账前补选。
+     *
+     * @param createReqBO 集成建单信息（幂等键由调用方按回款主键推导）
+     * @return 编号
+     */
+    Long createFinanceReceiptFromCrm(ErpFinanceReceiptCrmCreateReqBO createReqBO);
 
     /**
      * 更新收款单

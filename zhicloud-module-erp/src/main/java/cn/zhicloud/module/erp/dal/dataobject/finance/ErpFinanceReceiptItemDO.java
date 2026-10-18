@@ -39,7 +39,7 @@ public class ErpFinanceReceiptItemDO extends BaseDO {
     /**
      * 业务类型
      *
-     * 枚举 {@link cn.zhicloud.module.erp.enums.common.ErpBizTypeEnum} 的销售出库、退货
+     * 枚举 {@link cn.zhicloud.module.erp.enums.common.ErpBizTypeEnum} 的销售出库、退货、CRM 回款（§12.267 D1）
      */
     private Integer bizType;
     /**
@@ -51,7 +51,7 @@ public class ErpFinanceReceiptItemDO extends BaseDO {
     /**
      * 业务单号
      *
-     * 例如说：{@link ErpSaleOutDO#getNo()}
+     * 例如说：{@link ErpSaleOutDO#getNo()}；CRM 回款明细为 CRM 回款编号（§12.267 D1）
      */
     private String bizNo;
 

@@ -2,6 +2,7 @@ package cn.zhicloud.module.crm.service.receivable;
 
 import cn.hutool.extra.spring.SpringUtil;
 import cn.zhicloud.framework.datasource.config.ZhiCloudDataSourceAutoConfiguration;
+import cn.zhicloud.framework.integration.service.EventOutboxService;
 import cn.zhicloud.framework.mybatis.config.ZhiCloudMybatisAutoConfiguration;
 import cn.zhicloud.module.bpm.api.task.BpmProcessInstanceApi;
 import cn.zhicloud.module.bpm.api.task.dto.BpmProcessInstanceCreateReqDTO;
@@ -87,6 +88,8 @@ class CrmReceivableBpmTransactionIntegrationTest {
     private AdminUserApi adminUserApi;
     @MockitoBean
     private CrmNoRedisDAO noRedisDAO;
+    @MockitoBean
+    private EventOutboxService eventOutboxService;
 
     private String deploymentId;
 

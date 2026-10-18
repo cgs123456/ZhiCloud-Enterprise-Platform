@@ -23,4 +23,9 @@ public final class IntegrationEventTypes {
      */
     public static final String ERP_SALE_OUT_APPROVED = "erp.sale-out.approved.v1";
 
+    /**
+     * CRM 回款审批通过（D1 链路，§12.267）：CRM 回款 → ERP 收款单
+     */
+    public static final String CRM_RECEIVABLE_APPROVED = "crm.receivable.approved.v1";
+
 }

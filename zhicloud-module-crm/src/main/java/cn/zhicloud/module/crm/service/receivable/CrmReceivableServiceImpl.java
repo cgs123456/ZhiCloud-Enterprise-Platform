@@ -4,13 +4,13 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjUtil;
-import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.common.util.collection.CollectionUtils;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
 import cn.zhicloud.framework.common.util.object.ObjectUtils;
+import cn.zhicloud.framework.integration.service.EventOutboxService;
 import cn.zhicloud.module.bpm.api.task.BpmProcessInstanceApi;
 import cn.zhicloud.module.bpm.api.task.dto.BpmProcessInstanceCreateReqDTO;
 import cn.zhicloud.module.crm.controller.admin.receivable.vo.receivable.CrmReceivablePageReqVO;
@@ -29,7 +29,6 @@ import cn.zhicloud.module.crm.framework.permission.core.annotations.CrmPermissio
 import cn.zhicloud.module.crm.service.contract.CrmContractService;
 import cn.zhicloud.module.crm.service.permission.CrmPermissionService;
 import cn.zhicloud.module.crm.service.permission.bo.CrmPermissionCreateReqBO;
-import cn.zhicloud.module.crm.util.CrmPaymentStatusUtils;
 import cn.zhicloud.module.system.api.user.AdminUserApi;
 import com.mzt.logapi.context.LogRecordContext;
 import com.mzt.logapi.service.impl.DiffParseFunction;
@@ -47,6 +46,8 @@ import java.math.BigDecimal;
 import java.util.*;
 
 import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static cn.zhicloud.framework.integration.enums.ErrorCodeConstants.EVENT_TENANT_MISMATCH;
+import static cn.zhicloud.framework.integration.enums.ErrorCodeConstants.EVENT_TENANT_REQUIRED;
 import static cn.zhicloud.module.crm.enums.ErrorCodeConstants.*;
 import static cn.zhicloud.module.crm.enums.LogRecordConstants.*;
 import static cn.zhicloud.module.crm.util.CrmAuditStatusUtils.convertBpmResultToAuditStatus;
@@ -103,6 +104,8 @@ public class CrmReceivableServiceImpl implements CrmReceivableService {
     private AdminUserApi adminUserApi;
     @Resource
     private BpmProcessInstanceApi bpmProcessInstanceApi;
+    @Resource
+    private EventOutboxService eventOutboxService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -110,11 +113,12 @@ public class CrmReceivableServiceImpl implements CrmReceivableService {
             success = CRM_RECEIVABLE_CREATE_SUCCESS)
     public Long createReceivable(CrmReceivableSaveReqVO createReqVO) {
         // 1. 幂等键与载荷指纹必须先于任何业务副作用计算和校验
-        String idempotencyKey = validateAndNormalizeIdempotencyKey(createReqVO.getIdempotencyKey());
+        String idempotencyKey = CrmReceivableIdempotencySupport
+                .validateAndNormalizeIdempotencyKey(createReqVO.getIdempotencyKey());
         String payloadHash = buildReceivablePayloadHash(createReqVO);
         CrmReceivableDO existing = receivableMapper.selectByIdempotencyKey(idempotencyKey);
         if (existing != null) {
-            return resolveIdempotentReceivable(existing, payloadHash);
+            return CrmReceivableIdempotencySupport.resolveIdempotentReceivable(existing, payloadHash);
         }
 
         // 2.1 校验可回款金额超过上限（同时锁定合同行）
@@ -124,7 +128,7 @@ public class CrmReceivableServiceImpl implements CrmReceivableService {
         // 2.3 获得合同行锁后再次检查幂等键，覆盖同一合同并发重试窗口
         existing = receivableMapper.selectByIdempotencyKey(idempotencyKey);
         if (existing != null) {
-            return resolveIdempotentReceivable(existing, payloadHash);
+            return CrmReceivableIdempotencySupport.resolveIdempotentReceivable(existing, payloadHash);
         }
         // 2.4 生成回款编号
         String no = noRedisDAO.generate(CrmNoRedisDAO.RECEIVABLE_PREFIX);
@@ -162,10 +166,11 @@ public class CrmReceivableServiceImpl implements CrmReceivableService {
             // 唯一键/死锁并发兜底：只按幂等键回查，禁止按 contractId 猜测并返回其他业务单据。
             // DeadlockLoser（§12.247）：插入被选为牺牲品时，唯一键赢家仍会提交，
             // 与「撞唯一键」同解——退避后等赢家可见，而不是立刻 500。
-            existing = awaitWinner(idempotencyKey, e);
+            existing = CrmReceivableIdempotencySupport.awaitWinner(
+                    receivableMapper, idempotencyKey, e, idempotentWaitMaxMs, idempotentWaitStepMs);
             log.info("[createReceivable][幂等键={} 并发重复提交，返回已有 id={}]",
                     idempotencyKey, existing.getId());
-            return resolveIdempotentReceivable(existing, payloadHash);
+            return CrmReceivableIdempotencySupport.resolveIdempotentReceivable(existing, payloadHash);
         }
 
         // 4. 创建数据权限
@@ -182,75 +187,6 @@ public class CrmReceivableServiceImpl implements CrmReceivableService {
         LogRecordContext.putVariable("receivable", receivable);
         LogRecordContext.putVariable("period", getReceivablePeriod(receivable.getPlanId()));
         return receivable.getId();
-    }
-
-    private String validateAndNormalizeIdempotencyKey(String idempotencyKey) {
-        String normalized = StrUtil.trimToNull(idempotencyKey);
-        if (normalized == null) {
-            throw exception(RECEIVABLE_IDEMPOTENCY_KEY_REQUIRED);
-        }
-        if (normalized.length() > 128) {
-            throw exception(RECEIVABLE_IDEMPOTENCY_KEY_INVALID);
-        }
-        return normalized;
-    }
-
-    /**
-     * 等赢家那一行变得可见，上界内做不到就把始异常抛出去（§12.247）。
-     *
-     * <p>为什么必须自己吞掉回查期间的死锁：锁读同样走 {@code FOR UPDATE}，
-     * 多输家排在同一行的 X 锁后面时可能被选为牺牲品。锁读被回滚不改变任何事实——
-     * 赢家那一行照样在那里，退避后重试即可；真正需要如实抛出的是超过上界仍等不到，
-     * 那说明不是并发竞争而是系统级故障。</p>
-     *
-     * <p>两条边界，勿当缺陷「修」（§12.250.5-1/-3 登记，§12.251 备案）：
-     * ① catch 分支保持只读 —— InnoDB 死锁（1213）会把整个事务回滚，之后同一连接里的写
-     *    不会回到原事务的原子单元（会随方法出口的 commit 单独落库），等于在失败路径上写库；
-     * ② 只吞死锁，不吞锁等待超时 —— catch 精确匹配 {@code DeadlockLoserDataAccessException}
-     *    （SQL 1213），1205（锁等待超时，{@code CannotAcquireLockException}）不被吞：
-     *    持锁者停滞属系统级故障，应如实抛出，勿把 catch 扩到父类 PessimisticLockingFailure。</p>
-     *
-     * <p>形制与 {@code ErpFinancePaymentServiceImpl#awaitWinner} 一致：退避 ×2 封顶 500ms，
-     * 抛最初那个异常（调用方关心的是最初为什么失败）。</p>
-     *
-     * @param idempotencyKey 幂等键（只按它回查，不按业务字段猜测）
-     * @param fallback 上界内仍等不到时抛出的原始异常
-     * @return 赢家那一行（载荷一致性由调用方裁决）
-     */
-    private CrmReceivableDO awaitWinner(String idempotencyKey, RuntimeException fallback) {
-        long deadline = System.currentTimeMillis() + idempotentWaitMaxMs;
-        // 退避从一步开始；竞争越激烈（回查死锁越多），退避拉得越长
-        long backoff = idempotentWaitStepMs;
-        RuntimeException lastDeadlock = null;
-        while (true) {
-            try {
-                CrmReceivableDO existing = receivableMapper.selectByIdempotencyKeyForUpdate(idempotencyKey);
-                if (existing != null) {
-                    return existing;
-                }
-            } catch (DeadlockLoserDataAccessException de) {
-                // 回查自己被选为牺牲品：与「赢家已提交」这一事实无关，重试即可
-                lastDeadlock = de;
-            }
-            if (System.currentTimeMillis() >= deadline) {
-                // 等不到就抛最原始的那个异常：调用方关心的是最初为什么失败
-                throw lastDeadlock != null ? lastDeadlock : fallback;
-            }
-            try {
-                Thread.sleep(backoff);
-            } catch (InterruptedException ie) {
-                Thread.currentThread().interrupt();
-                throw fallback;
-            }
-            backoff = Math.min(backoff * 2, 500L);
-        }
-    }
-
-    private Long resolveIdempotentReceivable(CrmReceivableDO existing, String payloadHash) {
-        if (!Objects.equals(existing.getPayloadHash(), payloadHash)) {
-            throw exception(RECEIVABLE_IDEMPOTENCY_KEY_CONFLICT);
-        }
-        return existing.getId();
     }
 
     private String buildReceivablePayloadHash(CrmReceivableSaveReqVO reqVO) {
@@ -408,30 +344,17 @@ public class CrmReceivableServiceImpl implements CrmReceivableService {
 
         // 3. 审批通过后，驱动该合同下销售订单的付款状态（§12.260 D1/D2a：付款状态 = 合同收款进度投影）
         if (ObjUtil.equal(auditStatus, CrmAuditStatusEnum.APPROVE.getStatus())) {
-            syncSaleOrderPaymentStatusOnApproved(contract);
+            CrmReceivableApprovalSupport.syncSaleOrderPaymentStatusOnApproved(
+                    receivableMapper, saleOrderMapper, contract);
+            // 4. 登记「CRM 回款审批通过」跨域事件（§12.267 D1）：与审批状态、订单投影同事务。
+            //    只登记不投递：投递由可靠集成数据面（V100）的中继任务异步完成，失败重试并最终进死信。
+            //    为什么放在事务内：提交后登记会留下「业务成功但事件没登记」的窗口；同事务登记则随业务回滚
+            //    一起消失，宁可少发也不要发出未发生的业务事实（同 ERP 出库事件先例）。
+            Long tenantId = CrmReceivableApprovalSupport.requireCurrentTenantId();
+            CrmReceivableApprovalSupport.validateReceivableTenant(receivable, tenantId);
+            eventOutboxService.append(
+                    CrmReceivableApprovalSupport.buildReceivableApprovedEventAppendReq(receivable, tenantId));
         }
-    }
-
-    /**
-     * 回款审批通过后，重算该合同下全部未取消销售订单的付款状态（§12.260 D2a/D4）
-     *
-     * <p>已审批回款必须锁读（FOR UPDATE）：RR 快照下普通读看不到先提交者的审批结果，与合同行锁配合
-     * 才能拿到「最新已提交」的收款进度（§12.233.12 同款教训）。
-     *
-     * <p>合同行理论上必存在（存在任何回款行的合同不可删除），缺失只可能是数据异常：记日志并跳过投影，
-     * 不让审批本身失败——BPM 已判完成而 CRM 回滚会造「已审批未生效」的更坏不一致（§12.260 D7d）。
-     */
-    private void syncSaleOrderPaymentStatusOnApproved(CrmContractDO contract) {
-        if (contract == null) {
-            log.error("[syncSaleOrderPaymentStatusOnApproved][回款所属合同不存在，跳过订单付款状态投影]");
-            return;
-        }
-        List<CrmReceivableDO> approvedReceivables = receivableMapper.selectListByContractIdAndStatusForUpdate(
-                contract.getId(), List.of(CrmAuditStatusEnum.APPROVE.getStatus()));
-        BigDecimal receivedPrice = CollectionUtils.getSumValue(approvedReceivables, CrmReceivableDO::getPrice,
-                BigDecimal::add, BigDecimal.ZERO);
-        Integer paymentStatus = CrmPaymentStatusUtils.resolve(receivedPrice, contract.getTotalPrice());
-        saleOrderMapper.updatePaymentStatusByContractId(contract.getId(), paymentStatus);
     }
 
     @Override

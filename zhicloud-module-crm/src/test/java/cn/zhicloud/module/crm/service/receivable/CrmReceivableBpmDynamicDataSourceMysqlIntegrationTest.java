@@ -2,6 +2,7 @@ package cn.zhicloud.module.crm.service.receivable;
 
 import cn.hutool.extra.spring.SpringUtil;
 import cn.zhicloud.framework.datasource.config.ZhiCloudDataSourceAutoConfiguration;
+import cn.zhicloud.framework.integration.service.EventOutboxService;
 import cn.zhicloud.framework.mybatis.config.ZhiCloudMybatisAutoConfiguration;
 import cn.zhicloud.framework.tenant.core.context.TenantContextHolder;
 import cn.zhicloud.module.bpm.api.task.BpmProcessInstanceApi;
@@ -203,6 +204,8 @@ class CrmReceivableBpmDynamicDataSourceMysqlIntegrationTest {
     private BpmTaskCandidateInvoker taskCandidateInvoker;
     @MockitoBean
     private BpmProcessIdRedisDAO processIdRedisDAO;
+    @MockitoBean
+    private EventOutboxService eventOutboxService;
 
     private final AtomicBoolean failAfterRealBpmCall = new AtomicBoolean(false);
     private final AtomicReference<String> startedProcessInstanceId = new AtomicReference<>();

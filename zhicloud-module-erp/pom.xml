@@ -35,6 +35,11 @@
             <groupId>cn.zhicloud</groupId>
             <artifactId>zhicloud-spring-boot-starter-biz-integration</artifactId>
         </dependency>
+        <!-- 主数据对照 Starter（D1/§12.267）：收款单消费者按 CRM.CUSTOMER -> ERP.CUSTOMER 解析客户 -->
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-spring-boot-starter-biz-mdm</artifactId>
+        </dependency>
 
         <!-- 业务组件 -->
 

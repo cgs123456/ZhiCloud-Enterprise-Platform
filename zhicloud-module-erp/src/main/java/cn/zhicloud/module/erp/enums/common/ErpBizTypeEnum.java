@@ -22,6 +22,10 @@ public enum ErpBizTypeEnum implements ArrayValuable<Integer> {
     SALE_ORDER(20, "销售订单"),
     SALE_OUT(21, "销售出库"),
     SALE_RETURN(22, "销售退货"),
+    /**
+     * CRM 回款（跨域：ERP 收款单由 CRM 回款审批联动生成，§12.267 D1）
+     */
+    CRM_RECEIVABLE(23, "CRM 回款"),
     ;
 
     public static final Integer[] ARRAYS = Arrays.stream(values()).map(ErpBizTypeEnum::getType).toArray(Integer[]::new);

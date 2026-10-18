@@ -12575,3 +12575,111 @@ D1-D6、E1-E7 照旧。重建依据与原会话登记原文可能存在偏差，
 - 服务现状：pid 35564（jar 642,851,352B @2026-10-18T16:23:23，Flyway V210 success=1），沙箱
   `zhicloud_sandbox_v140` / tenant 9001；E2E 夹具已清理复原（`WF-LG-` 账套与账簿、`WFLG` 科目、
   9082xx 凭证与分录、`WF-LG` 期初行全部归零，原有 6 张凭证与 6 条无账簿凭证未受影响）。
+
+## 12.267 D 组第 1 项（D1）——CRM 回款审批 → ERP 收款单联动重建（事件驱动）
+
+### 12.267.1 背景与目标
+
+D 组第 1 项（用户令「先做 D 组（D1–D6）」按重建版口径执行）。**D 组六项明细系重建产物**——原会话
+登记明细从未落盘，本项明细经搜证重建并锁定于 `Temp/zc_adr_267.md`（含修订 R1 与实施期登记段）；
+D2–D6 明细同样待逐项重建确认。形态裁定（ADR 267）：**事件驱动**——CRM 回款审批通过 → 同事务 append
+outbox `crm.receivable.approved.v1` → ERP 消费者建「待审核收款单」（不做同步跨库写，复用 V100 可靠
+集成数据面 outbox→relay→inbox→消费者）。范围只做收款侧：付款单不接、CRM 不回显、不做部分回款
+（见 §12.267.5）。
+
+### 12.267.2 实施内容
+
+- **契约（starter）**：`IntegrationEventTypes.CRM_RECEIVABLE_APPROVED = "crm.receivable.approved.v1"`；
+  `CrmReceivableApprovedEvent`（`eventIdOf` + `AGGREGATE_TYPE=crm_receivable`；LF 无末尾换行沿
+  `ErpSaleOut*` 家族）；载荷只含下游建单必需字段（回款 id/编号/金额/客户/回款时间），账户与财务
+  人员维度不下传。
+- **CRM 侧**：审批回调 `updateReceivableAuditStatus`（BPM 完成事件驱动）在业务事务内经
+  `CrmReceivableApprovalSupport.buildReceivableApprovedEventAppendReq` append outbox；事件 id 按
+  回款主键推导 `crm-receivable-{id}-approved`。
+- **ERP 侧**：`CrmReceivableApprovedConsumer`（`event_inbox` 去重名 `erp-finance-receipt-creator`；
+  三段式=幂等查重 → MDM 客户映射 fail-closed → 建单）；`createFinanceReceiptFromCrm(ErpFinanceReceiptCrmCreateReqBO)`
+  与 HTTP 建单共享落单内核 `persistFinanceReceipt`；`ErpBizTypeEnum.CRM_RECEIVABLE(23, "CRM 回款")`；
+  明细单价=金额、bizNo=回款编号、备注=「来源：CRM 回款 {no}（集成链路自动生成）」；幂等四层（键
+  `crm-receivable-{id}`，HTTP 与集成建单共用 `ErpFinanceReceiptIdempotencySupport`）。
+- **账户口径修订 R1**（起因见 §12.267.4 第 1 条）：新增 `ErpAccountService.getDefaultAccount()`
+  （复用 `ErpAccountMapper.selectByDefaultStatus`）+ 错误码 `FINANCE_RECEIPT_DEFAULT_ACCOUNT_MISSING
+  (1_030_602_008)`；集成建单在服务侧解析「租户默认账户」并 `validateAccount` 兜停用/删除竞态后
+  `setAccountId`。
+- **VO/DO**：`ErpFinanceReceiptSaveReqVO` 明细新增 `bizNo`（销售出库/退货仍由服务端回填）；
+  `ErpFinanceReceiptItemDO` 的 `bizNo` javadoc 同步（CRM 回款明细为回款编号）。
+- **结构红线抽离**（apply5–7）：包内静态协作者 `ErpFinanceReceiptIdempotencySupport`（145 行）、
+  `CrmReceivableIdempotencySupport`（101 行）、`CrmReceivableApprovalSupport`（113 行）——刻意不用
+  Spring Bean（只做只读回查与纯计算，避免既有测试上下文连带改动）；ERP Impl 567→470、CRM Impl 619→476。
+- **前端**：仅一列标签「销售单据编号」→「来源单据编号」（`FinanceReceiptItemForm.vue`）。
+- **装配修复**：CRM Impl 新依赖 `EventOutboxService` → 4 个既有测试上下文补 `@MockitoBean`
+  （§12.267.4 第 3 条）。
+
+### 12.267.3 验证链（逐项实测）
+
+| 环节 | 结果 |
+|------|------|
+| 编译 | 三模块 `test-compile` BUILD SUCCESS（starter / crm / erp） |
+| 定向单测 | starter `CrmReceivableApprovedEventTest` **2/0/0**；ERP `CrmReceivableApprovedConsumerTest` **7/0/0**、`ErpFinanceReceiptCrmCreateTest` **6/0/0**（5 原例 + 缺默认账户拒绝例）；CRM `CrmReceivableServiceImplTest` **17/0/0** |
+| 模块回归（最终树） | starter ✓；ERP **235/0/0**；CRM **111/0/0/5 skipped**（首跑 5 红=装配回归，修后复跑绿；见 §12.267.4 第 3 条） |
+| 门禁 | errcode RC=0（1969 常量）、preauthorize RC=0（531 Controller）、scan_tx RC=0（0 违规）、bare_throws RC=0（6199 源文件，81 处既有标注豁免）、duplicate_ddl RC=0（findings=0）、契约 RC=0（tracked=120 scanned=216） |
+| SQL lint | 本项零迁移（无输入）；全库 216 文件 / 16 条 R5 与既有基线（213/16）同 16 条、零新增（§12.267.4 第 5 条） |
+| 前端 | `ts:check` RC=0、`build:prod` RC=0（8479 模块，1m10s） |
+| 停服重打 | 重打前服务已不在（§12.267.4 第 6 条）→ `mvn -o -B -DskipTests -pl zhicloud-server -am package` 一打 642,867,653B @18:11:19 → apply10 注释修订落窗口内 → 增量二打 642,867,652B @18:13:57（冷启与 E2E 依据） |
+| 冷启 | 436s，pid 43452；Flyway 209/210 均 success=1（零迁移确认） |
+| 真机 E2E | **32/32 首跑全过**（零遗留复原） |
+
+E2E 链路（`Temp/zc_d1_e2e.py`；沙箱 `zhicloud_sandbox_v140` / tenant 9001 / 合同 6500050 / 客户
+922000→ERP 913000）：种子 2（临时置默认账户 `erp_account 5000000`、MDM 映射 CRM.CUSTOMER 922000→
+ERP.CUSTOMER 913000）→ `POST /crm/receivable/create`（1000.00，幂等键）→ DRAFT(0) →
+`PUT /crm/receivable/submit` → BPM `crm-receivable-audit` 审批通过 → APPROVE(20) → outbox
+（`crm_receivable` / `crm.receivable.approved.v1`，PUBLISHED、last_error 空）→ inbox
+（`erp-finance-receipt-creator`，PROCESSED）→ ERP 收款单（SKD 前缀、PROCESS(10)、**account_id=5000000
+免补账户**、客户 913000、金额 1000.0000、备注、幂等键 `crm-receivable-{id}`）→ 明细单行（biz_type=23 /
+biz_id / biz_no=回款编号 HK20261018000001 / 金额 1000.0000）→ `PUT /erp/finance-receipt/update-status`
+（status=20）→ APPROVE(20) → 会计事件 `RECEIPT_POSTED` 入账 → 清理 8 项回基线（receivable=16 /
+receipt=10 / accounting_event=22 / outbox=10 / inbox=10 / 默认账户还原 NULL / MDM 种子移除 /
+侧效应边界=合同 6500050 无销售订单投影不变）。
+
+### 12.267.4 失败与缺陷登记（诚实链）
+
+1. **产品口径缺陷（定向单测暴露并修正）**：ADR 原定「账户留空、由财务审核前补选」与真表契约冲突——
+   `erp_finance_receipt.account_id` 真库与 H2 `create_tables.sql:125` 均 NOT NULL，
+   `ErpFinanceReceiptCrmCreateTest` 首跑 5/5 ERROR。修订 R1：不伪造账户、不做 DDL 迁移，改为服务侧
+   解析「租户默认账户」（与前端人工建单默认选中默认账户同口径），无默认账户抛 `1_030_602_008` →
+   事件重试/死信 fail-closed；`accountId` 不参与 CRM 载荷指纹（换默认账户不误判载荷冲突）；契约与
+   BO 面不变（仅 +1 错误码）。
+2. **结构红线**：CRM Impl 基线已 553 行超线（历史存量）、D1 加事件登记后 619；ERP Impl 567。抽三件
+   包内静态协作者（§12.267.2），两 Impl 落回 476/470。
+3. **装配回归（模块回归暴露并修正）**：CRM Impl 新增 `EventOutboxService` 依赖未被 4 个既有测试
+   上下文提供 → `CrmReceivableIdempotentWaitTest` 4 错 + `CrmReceivableBpmTransactionIntegrationTest`
+   1 错；apply9 补 `@MockitoBean EventOutboxService`（另两处 MySQL 门控测试一并补，其一全 CRLF——
+   apply9b 按 CRLF 插入）；修后复跑 111/0/0/5 skipped。
+4. **脚本面**：apply3 首跑失败（`bo/` 目录不存在 → mkdir 后重跑）；apply6 两处缺陷（`awaitWinner`
+   一处调用点漏改、支撑类 `EVENT_TENANT_*` 导入来源写错，实为 `framework.integration.enums.ErrorCodeConstants`）
+   → apply7 修正；apply8 首跑在注释块断言中止（`// 2.` 小节标题卷入替换串；步骤 1–3 已落盘）→
+   apply8b 续跑完 4–6；apply10 两处注释与 R1 口径对齐（BO 与审批支撑头注仍写「账户由财务审核过账前
+   补选」——注释与实现漂移按缺陷修）。
+5. **既有红不重复登记**：`sql_migration_lint` 全库 16 条 R5 为既有基线（§12.266.4 第 7 条）；
+   `check_evidence_citations` 1 条、台账 §12.201 重复段 / §12.202–213 无节体 / §12.234.10 悬空
+   引用、沙箱 `event_outbox` 6 条旧 DEAD 事件均维持。
+6. **环境观察**：D1 重打阶段探活发现 §12.266.7 登记的 pid 35564 已退出（48080 无监听、
+   `zc_server_266.log` 末条 16:50:30 且无停机日志，退出原因未查明；非本项操作所致——本项未执行
+   停服动作）。不影响验证链：重打 + 冷启（pid 43452）+ E2E 全按新 jar 走完。
+
+### 12.267.5 不扩面与已知限制登记
+
+1. 付款单不接（只做收款侧）；CRM 不回显收款单号/状态；ERP 删单/反审核不回流（反向不撤回事件）。
+2. 不做部分回款：以回款单 price 全额建一张收款单。
+3. 无默认账户 → fail-closed（事件重试→死信）；不自动建账户、不伪造账户。运维前提：租户须配置
+   默认账户。
+4. `financeUserId` 留空（CRM 域无该维度）；审核/过账路径实测不依赖（`buildReceiptPostedEvent` 只用
+   单号/时间/金额）。
+5. HTTP 人工入口可传 bizType=23 明细（服务端不校验来源）——集成侧有键前缀隔离，人工面登记不设防。
+6. `FinanceReceiptForm.vue` 页签错标仅登记（前项后续，未动）。
+7. E2E 依赖临时置默认账户与 MDM 种子（跑后已还原）；沙箱既有数据无扰动。
+8. demo 工具链冻结（R-033 阻塞全量重生）；本项不新增 DB 表/迁移（除 R1 的 1 个错误码）。
+
+### 12.267.6 D 组矩阵基线
+
+D1 收官（**本项**）。D 组六项明细系重建产物（原会话明细未落盘）：D2–D6 与 E1–E7 照旧、尚未重建
+确认；重建依据与原会话登记原文可能存在偏差，以本重建口径与 `Temp/zc_adr_267.md` 为准。

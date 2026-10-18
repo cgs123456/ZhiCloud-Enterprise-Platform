@@ -197,6 +197,7 @@ ErrorCode PURCHASE_ORDER_ITEM_RETURN_FAIL_IN_EXCEED = new ErrorCode(1_030_101_00
     ErrorCode FINANCE_RECEIPT_UPDATE_FAIL_APPROVE = new ErrorCode(1_030_602_005, "收款单({})已审核，无法修改");
     ErrorCode FINANCE_RECEIPT_IDEMPOTENCY_KEY_REQUIRED = new ErrorCode(1_030_602_006, "创建收款单失败，原因：客户端幂等键不能为空");
     ErrorCode FINANCE_RECEIPT_IDEMPOTENCY_KEY_CONFLICT = new ErrorCode(1_030_602_007, "创建收款单失败，原因：幂等键已被不同请求载荷使用");
+    ErrorCode FINANCE_RECEIPT_DEFAULT_ACCOUNT_MISSING = new ErrorCode(1_030_602_008, "CRM 回款联动建单失败，原因：租户未配置默认收款账户");
 
     // ========== ERP 会计期间 1-030-700-000 (P0-6) ==========
     ErrorCode PERIOD_NOT_EXISTS = new ErrorCode(1_030_700_000, "会计期间不存在");

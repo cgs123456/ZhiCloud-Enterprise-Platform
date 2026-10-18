@@ -83,6 +83,12 @@ public class ErpAccountServiceImpl implements ErpAccountService {
     }
 
     @Override
+    public ErpAccountDO getDefaultAccount() {
+        // 默认账户唯一性由 updateAccountDefaultStatus 维护（开启新默认时先清旧默认），selectOne 不会多行
+        return accountMapper.selectByDefaultStatus();
+    }
+
+    @Override
     public ErpAccountDO validateAccount(Long id) {
         ErpAccountDO account = accountMapper.selectById(id);
         if (account == null) {

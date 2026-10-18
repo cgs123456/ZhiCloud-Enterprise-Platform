@@ -1,6 +1,10 @@
 package cn.zhicloud.module.crm.service.receivable;
 
 import cn.zhicloud.framework.common.exception.ServiceException;
+import cn.zhicloud.framework.integration.api.EventAppendReq;
+import cn.zhicloud.framework.integration.contract.CrmReceivableApprovedEvent;
+import cn.zhicloud.framework.integration.service.EventOutboxService;
+import cn.zhicloud.framework.tenant.core.context.TenantContextHolder;
 import cn.zhicloud.framework.test.core.ut.BaseDbUnitTest;
 import cn.zhicloud.module.bpm.api.task.BpmProcessInstanceApi;
 import cn.zhicloud.module.bpm.enums.task.BpmTaskStatusEnum;
@@ -20,7 +24,10 @@ import cn.zhicloud.module.crm.service.contract.CrmContractService;
 import cn.zhicloud.module.crm.service.permission.CrmPermissionService;
 import cn.zhicloud.module.system.api.user.AdminUserApi;
 import jakarta.annotation.Resource;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -30,7 +37,10 @@ import java.time.LocalDateTime;
 import static cn.zhicloud.framework.test.core.util.RandomUtils.randomPojo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -68,6 +78,24 @@ public class CrmReceivableServiceImplTest extends BaseDbUnitTest {
 
     @MockitoBean
     private CrmNoRedisDAO noRedisDAO;
+
+    @MockitoBean
+    private EventOutboxService eventOutboxService;
+
+    /**
+     * §12.267 D7：审批通过要登记跨域事件，租户上下文与写入行的 tenant_id 必须一致。
+     */
+    private static final Long TENANT_ID = 7L;
+
+    @BeforeEach
+    public void setUpTenant() {
+        TenantContextHolder.setTenantId(TENANT_ID);
+    }
+
+    @AfterEach
+    public void tearDownTenant() {
+        TenantContextHolder.clear();
+    }
 
     @Test
     public void test_createReceivable_draftOccupiesContractAmount() {
@@ -396,6 +424,51 @@ public class CrmReceivableServiceImplTest extends BaseDbUnitTest {
                 saleOrderMapper.selectById(order1.getId()).getPaymentStatus());
     }
 
+    // ===== §12.267 D1：回款审批通过登记跨域事件（CRM 回款 → ERP 收款单） =====
+
+    @Test
+    public void test_updateReceivableAuditStatus_approveAppendsCrmReceivableApprovedEvent() {
+        CrmContractDO contract = randomPojo(CrmContractDO.class, o -> {
+            o.setAuditStatus(CrmAuditStatusEnum.APPROVE.getStatus());
+            o.setTotalPrice(new BigDecimal("1000.00"));
+        });
+        contractMapper.insert(contract);
+        CrmReceivableDO receivable = insertProcessingReceivable(contract.getId(), "400.00");
+
+        receivableService.updateReceivableAuditStatus(receivable.getId(), BpmTaskStatusEnum.APPROVE.getStatus());
+
+        ArgumentCaptor<EventAppendReq> captor = ArgumentCaptor.forClass(EventAppendReq.class);
+        verify(eventOutboxService).append(captor.capture());
+        EventAppendReq req = captor.getValue();
+        assertEquals("crm-receivable-" + receivable.getId() + "-approved", req.getEventId());
+        assertEquals("crm.receivable.approved.v1", req.getEventType());
+        assertEquals("crm_receivable", req.getAggregateType());
+        assertEquals(String.valueOf(receivable.getId()), req.getAggregateId());
+        assertEquals(TENANT_ID, req.getTenantId());
+        assertEquals("v1", req.getSchemaVersion());
+        CrmReceivableApprovedEvent payload = CrmReceivableApprovedEvent.fromJson(req.getPayload());
+        assertEquals(receivable.getNo(), payload.getNo());
+        assertEquals(receivable.getId(), payload.getReceivableId());
+        assertEquals(receivable.getCustomerId(), payload.getCustomerId());
+        assertEquals(receivable.getReturnTime(), payload.getReturnTime());
+        assertEquals(new BigDecimal("400.00"), payload.getPrice());
+    }
+
+    @Test
+    public void test_updateReceivableAuditStatus_rejectDoesNotAppendEvent() {
+        CrmContractDO contract = randomPojo(CrmContractDO.class, o -> {
+            o.setAuditStatus(CrmAuditStatusEnum.APPROVE.getStatus());
+            o.setTotalPrice(new BigDecimal("1000.00"));
+        });
+        contractMapper.insert(contract);
+        CrmReceivableDO receivable = insertProcessingReceivable(contract.getId(), "400.00");
+
+        receivableService.updateReceivableAuditStatus(receivable.getId(), BpmTaskStatusEnum.REJECT.getStatus());
+
+        // 驳回不产生资金事实，不得登记跨域事件
+        verify(eventOutboxService, never()).append(any());
+    }
+
     private CrmSaleOrderDO insertSaleOrder(Long contractId, String finalAmount, Integer status) {
         CrmSaleOrderDO order = randomPojo(CrmSaleOrderDO.class, o -> {
             o.setContractId(contractId);
@@ -412,6 +485,7 @@ public class CrmReceivableServiceImplTest extends BaseDbUnitTest {
             o.setContractId(contractId);
             o.setAuditStatus(auditStatus);
             o.setPrice(new BigDecimal(price));
+            o.setTenantId(TENANT_ID);
         });
         receivableMapper.insert(receivable);
         return receivable;

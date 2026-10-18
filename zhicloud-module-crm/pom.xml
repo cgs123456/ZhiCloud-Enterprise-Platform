@@ -43,6 +43,11 @@
             <groupId>cn.zhicloud</groupId>
             <artifactId>zhicloud-spring-boot-starter-biz-tenant</artifactId>
         </dependency>
+        <!-- D1/§12.267 CRM 回款事件：CRM 作为事件生产者登记 crm.receivable.approved.v1（与业务同事务） -->
+        <dependency>
+            <groupId>cn.zhicloud</groupId>
+            <artifactId>zhicloud-spring-boot-starter-biz-integration</artifactId>
+        </dependency>
 
         <!-- Web 相关 -->
         <dependency>

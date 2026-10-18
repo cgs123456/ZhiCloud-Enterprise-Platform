@@ -3,13 +3,12 @@ package cn.zhicloud.module.erp.service.finance;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
-import cn.hutool.crypto.digest.DigestUtil;
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.common.util.collection.CollectionUtils;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
 import cn.zhicloud.module.erp.controller.admin.finance.vo.receipt.ErpFinanceReceiptPageReqVO;
 import cn.zhicloud.module.erp.controller.admin.finance.vo.receipt.ErpFinanceReceiptSaveReqVO;
+import cn.zhicloud.module.erp.dal.dataobject.finance.ErpAccountDO;
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpFinanceReceiptDO;
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpFinanceReceiptItemDO;
 import cn.zhicloud.module.erp.dal.dataobject.sale.ErpSaleOutDO;
@@ -22,6 +21,7 @@ import cn.zhicloud.module.erp.enums.common.ErpBizTypeEnum;
 import cn.zhicloud.module.erp.service.accounting.ErpAccountingEventService;
 import cn.zhicloud.module.erp.service.accounting.bo.ErpAccountingEventCreateReqBO;
 import cn.zhicloud.module.erp.service.accounting.bo.ErpAccountingEventReverseReqBO;
+import cn.zhicloud.module.erp.service.finance.bo.ErpFinanceReceiptCrmCreateReqBO;
 import cn.zhicloud.module.erp.service.sale.ErpCustomerService;
 import cn.zhicloud.module.erp.service.sale.ErpSaleOutService;
 import cn.zhicloud.module.erp.service.sale.ErpSaleReturnService;
@@ -41,7 +41,6 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 import static cn.zhicloud.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.zhicloud.framework.common.util.collection.CollectionUtils.*;
@@ -100,14 +99,15 @@ public class ErpFinanceReceiptServiceImpl implements ErpFinanceReceiptService {
         // 1.1 幂等键与载荷指纹必须先于任何业务副作用计算和校验（同 CRM 回款范式）。
         // 收款单的业务副作用（updateSalePrice、过账事件）不可重入，
         // 若放在校验之后，重试请求会先把副作用做一遍才命中幂等短路。
-        String idempotencyKey = validateAndNormalizeIdempotencyKey(createReqVO.getIdempotencyKey());
-        String payloadHash = buildReceiptPayloadHash(createReqVO);
+        String idempotencyKey = ErpFinanceReceiptIdempotencySupport
+                .validateAndNormalizeIdempotencyKey(createReqVO.getIdempotencyKey());
+        String payloadHash = ErpFinanceReceiptIdempotencySupport.buildReceiptPayloadHash(createReqVO);
         // 1.1 幂等预检：普通读。刻意不加锁——RR 下唯一索引上「查不到行」的 FOR UPDATE
         // 只加间隙锁，而同 gap 的间隙锁互相兼容（§12.233.4 实测：A 持锁期间 B 0.27s 即返回），
         // 占位锁根本挡不住并发。这里只是快速失败：真正拦住重复提交的是后面的唯一键。
         ErpFinanceReceiptDO existing = financeReceiptMapper.selectByIdempotencyKey(idempotencyKey);
         if (existing != null) {
-            return resolveIdempotentReceipt(existing, payloadHash);
+            return ErpFinanceReceiptIdempotencySupport.resolveIdempotentReceipt(existing, payloadHash);
         }
 
         // 1.2 校验订单项的有效性
@@ -129,7 +129,7 @@ public class ErpFinanceReceiptServiceImpl implements ErpFinanceReceiptService {
         // 成本是一次索引点查，相对整个建单事务可忽略。
         existing = financeReceiptMapper.selectByIdempotencyKey(idempotencyKey);
         if (existing != null) {
-            return resolveIdempotentReceipt(existing, payloadHash);
+            return ErpFinanceReceiptIdempotencySupport.resolveIdempotentReceipt(existing, payloadHash);
         }
         // 1.7 生成收款单号，并校验唯一性
         String no = noRedisDAO.generate(ErpNoRedisDAO.FINANCE_RECEIPT_NO_PREFIX);
@@ -137,10 +137,20 @@ public class ErpFinanceReceiptServiceImpl implements ErpFinanceReceiptService {
             throw exception(FINANCE_RECEIPT_NO_EXISTS);
         }
 
-        // 2.1 插入收款单
+        // 2. 构建收款单并落单（幂等唯一键 + 明细 + 源单回写，共享内核见 persistFinanceReceipt）
         ErpFinanceReceiptDO receipt = BeanUtils.toBean(createReqVO, ErpFinanceReceiptDO.class, in -> in
                 .setNo(no).setStatus(ErpAuditStatus.PROCESS.getStatus())
                 .setIdempotencyKey(idempotencyKey).setPayloadHash(payloadHash));
+        return persistFinanceReceipt(receipt, receiptItems, idempotencyKey, payloadHash);
+    }
+
+    /**
+     * 落收款单与明细（建单共享内核：HTTP 建单与 CRM 联动建单共用）。
+     *
+     * <p>调用方负责幂等预检与载荷指纹；本方法负责唯一键幂等回查、明细落库与源单回写。
+     */
+    private Long persistFinanceReceipt(ErpFinanceReceiptDO receipt, List<ErpFinanceReceiptItemDO> receiptItems,
+                                       String idempotencyKey, String payloadHash) {
         calculateTotalPrice(receipt, receiptItems);
         try {
             financeReceiptMapper.insert(receipt);
@@ -152,112 +162,68 @@ public class ErpFinanceReceiptServiceImpl implements ErpFinanceReceiptService {
             // 回查必须锁读而不能普通读 + 自旋：RR 下本事务的一致性读视图在第一次普通读
             // （1.1）时就固定了，早于赢家提交，自旋再久也读不到那一行。
             // 锁读本身也会死锁，退避重试的逻辑见 awaitWinner。
-            ErpFinanceReceiptDO existing2 = awaitWinner(idempotencyKey, e);
-            log.info("[createFinanceReceipt][幂等={} 并发重复提交，返回已有 id={}]",
-                    idempotencyKey, existing2.getId());
-            return resolveIdempotentReceipt(existing2, payloadHash);
+            ErpFinanceReceiptDO existing = ErpFinanceReceiptIdempotencySupport.awaitWinner(
+                    financeReceiptMapper, idempotencyKey, e, idempotentWaitMaxMs, idempotentWaitStepMs);
+            log.info("[persistFinanceReceipt][幂等={} 并发重复提交，返回已有 id={}]",
+                    idempotencyKey, existing.getId());
+            return ErpFinanceReceiptIdempotencySupport.resolveIdempotentReceipt(existing, payloadHash);
         }
-        // 2.2 插入收款单项
+        // 插入收款单项
         receiptItems.forEach(o -> o.setReceiptId(receipt.getId()));
         financeReceiptItemMapper.insertBatch(receiptItems);
 
-        // 3. 更新销售出库、退货的收款金额情况
+        // 更新销售出库、退货的收款金额情况（CRM 回款明细无回写目标，由 updateSalePrice 内部跳过）
         updateSalePrice(receiptItems);
         return receipt.getId();
     }
 
-
-    /**
-     * 等赢家那一行变得可见，上界内做不到就把始异常抛出去。
-     *
-     * <p>必须吞掉回查期间的死锁并重试：16 线程同键并发时输家们排在同一行 X 锁后面，
-     * InnoDB 判定成环后挑牺牲品回滚，抛出的 DeadlockLoserDataAccessException 若直接冒出去
-     * 就是 500（实测 348 次）。而回查被回滚不改变「赢家那一行已存在」这个事实，
-     * 退避后重试即可。真正该如实抛出的是超过上界仍等不到。</p>
-     */
-    private ErpFinanceReceiptDO awaitWinner(String idempotencyKey, RuntimeException fallback) {
-        long deadline = System.currentTimeMillis() + idempotentWaitMaxMs;
-        long backoff = idempotentWaitStepMs;
-        RuntimeException lastDeadlock = null;
-        while (true) {
-            try {
-                ErpFinanceReceiptDO existing = financeReceiptMapper.selectByIdempotencyKeyForUpdate(idempotencyKey);
-                if (existing != null) {
-                    return existing;
-                }
-            } catch (DeadlockLoserDataAccessException de) {
-                lastDeadlock = de;
-            }
-            if (System.currentTimeMillis() >= deadline) {
-                throw lastDeadlock != null ? lastDeadlock : fallback;
-            }
-            try {
-                Thread.sleep(backoff);
-            } catch (InterruptedException ie) {
-                Thread.currentThread().interrupt();
-                throw fallback;
-            }
-            backoff = Math.min(backoff * 2, 500L);
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Long createFinanceReceiptFromCrm(ErpFinanceReceiptCrmCreateReqBO createReqBO) {
+        // 1.1 幂等键与载荷指纹先于任何校验与副作用（与 createFinanceReceipt 同序，§12.267 D5）
+        String idempotencyKey = ErpFinanceReceiptIdempotencySupport
+                .validateAndNormalizeIdempotencyKey(createReqBO.getIdempotencyKey());
+        String payloadHash = ErpFinanceReceiptIdempotencySupport.buildCrmReceiptPayloadHash(createReqBO);
+        ErpFinanceReceiptDO existing = financeReceiptMapper.selectByIdempotencyKey(idempotencyKey);
+        if (existing != null) {
+            return ErpFinanceReceiptIdempotencySupport.resolveIdempotentReceipt(existing, payloadHash);
         }
-    }
 
-    /**
-     * 校验并规范化客户端幂等键：必填、长度上限 128（与列 varchar(128) 一致）。
-     */
-    private String validateAndNormalizeIdempotencyKey(String idempotencyKey) {
-        String normalized = StrUtil.trimToNull(idempotencyKey);
-        if (normalized == null) {
-            throw exception(FINANCE_RECEIPT_IDEMPOTENCY_KEY_REQUIRED);
+        // 1.2 缺省收款账户：与前端建单口径一致（表单默认选中「默认账户」）。
+        //     无默认账户 fail-closed：宁可让事件重试/进死信，也不静默换账户、更不落一张没有账户的财务单据。
+        ErpAccountDO defaultAccount = accountService.getDefaultAccount();
+        if (defaultAccount == null) {
+            throw exception(FINANCE_RECEIPT_DEFAULT_ACCOUNT_MISSING);
         }
-        if (normalized.length() > 128) {
-            throw exception(FINANCE_RECEIPT_IDEMPOTENCY_KEY_REQUIRED);
+        accountService.validateAccount(defaultAccount.getId()); // 兜住「默认账户被停用/删除」的竞态
+
+        // 1.3 校验客户：CRM 客户编号已由消费者经 MDM 映射为 ERP 客户编号
+        customerService.validateCustomer(createReqBO.getCustomerId());
+        // 1.4 生成收款单号并校验唯一性
+        String no = noRedisDAO.generate(ErpNoRedisDAO.FINANCE_RECEIPT_NO_PREFIX);
+        if (financeReceiptMapper.selectByNo(no) != null) {
+            throw exception(FINANCE_RECEIPT_NO_EXISTS);
         }
-        return normalized;
-    }
 
-    /**
-     * 命中已有收款单时的裁决：载荷一致才返回原单，不一致必须拒绝。
-     *
-     * <p>不能无条件返回已有单据：客户端若复用了幂等键但换了金额/客户，
-     * 静默返回原单会让调用方以为自己提交的那笔已经生效。</p>
-     */
-    private Long resolveIdempotentReceipt(ErpFinanceReceiptDO existing, String payloadHash) {
-        if (!Objects.equals(existing.getPayloadHash(), payloadHash)) {
-            throw exception(FINANCE_RECEIPT_IDEMPOTENCY_KEY_CONFLICT);
-        }
-        return existing.getId();
-    }
-
-    /**
-     * 创建请求载荷的 SHA-256。
-     *
-     * <p>金额经 {@link #normalizeAmount} 去掉尾部零：BigDecimal 的 100 与 100.00
-     * 表示同一金额，不归一化会把同一次提交误判成不同载荷。明细行按传入顺序参与哈希。</p>
-     */
-    private String buildReceiptPayloadHash(ErpFinanceReceiptSaveReqVO reqVO) {
-        StringBuilder payload = new StringBuilder();
-        payload.append(hashValue(reqVO.getCustomerId()))
-                .append('|').append(hashValue(reqVO.getAccountId()))
-                .append('|').append(hashValue(reqVO.getFinanceUserId()))
-                .append('|').append(hashValue(reqVO.getReceiptTime()))
-                .append('|').append(hashValue(normalizeAmount(reqVO.getDiscountPrice())))
-                .append('|').append(hashValue(reqVO.getRemark()));
-        if (CollUtil.isNotEmpty(reqVO.getItems())) {
-            // 明细顺序敏感：交换两行的提交被视为不同载荷
-            reqVO.getItems().forEach(item -> payload.append('|')
-                    .append(hashValue(item.getBizType()))
-                    .append('|').append(hashValue(item.getBizId()))
-                    .append('|').append(hashValue(normalizeAmount(item.getReceiptPrice()))));
-        }
-        return DigestUtil.sha256Hex(payload.toString());
-    }
-
-    private String hashValue(Object value) {
-        return value == null ? "<null>" : value.toString();
-    }
-
-    private String normalizeAmount(BigDecimal amount) {
-        return amount == null ? null : amount.stripTrailingZeros().toPlainString();
+        // 2. 构建收款单与「CRM 回款」明细（§12.267 D1）。
+        // 账户取上一步解析的「租户默认账户」（§12.267 D1 修订：真表 account_id NOT NULL，且前端人工建单
+        // 本就默认选中默认账户——集成建单与人工建单同口径）；财务人员 CRM 侧没有该维度，留空，
+        // 由财务在审核过账前补选（§12.267 D8）。
+        BigDecimal price = createReqBO.getPrice();
+        ErpFinanceReceiptDO receipt = new ErpFinanceReceiptDO()
+                .setNo(no).setStatus(ErpAuditStatus.PROCESS.getStatus())
+                .setAccountId(defaultAccount.getId())
+                .setReceiptTime(createReqBO.getReceiptTime())
+                .setCustomerId(createReqBO.getCustomerId())
+                .setDiscountPrice(BigDecimal.ZERO)
+                .setRemark("来源：CRM 回款 " + createReqBO.getReceivableNo() + "（集成链路自动生成）")
+                .setIdempotencyKey(idempotencyKey).setPayloadHash(payloadHash);
+        ErpFinanceReceiptItemDO receiptItem = new ErpFinanceReceiptItemDO()
+                .setBizType(ErpBizTypeEnum.CRM_RECEIVABLE.getType())
+                .setBizId(createReqBO.getReceivableId())
+                .setBizNo(createReqBO.getReceivableNo())
+                .setTotalPrice(price).setReceiptedPrice(price).setReceiptPrice(price);
+        return persistFinanceReceipt(receipt, Collections.singletonList(receiptItem), idempotencyKey, payloadHash);
     }
 
     @Override
@@ -389,6 +355,11 @@ public class ErpFinanceReceiptServiceImpl implements ErpFinanceReceiptService {
                 ErpSaleReturnDO saleReturn = saleReturnService.validateSaleReturn(item.getBizId());
                 Assert.equals(saleReturn.getCustomerId(), customerId, "客户必须相同");
                 item.setTotalPrice(saleReturn.getTotalPrice().negate()).setBizNo(saleReturn.getNo());
+            } else if (ObjectUtil.equal(item.getBizType(), ErpBizTypeEnum.CRM_RECEIVABLE.getType())) {
+                // CRM 回款明细（§12.267 D1）：源单在 CRM 域，ERP 读不到，不查源单；
+                // 金额口径=回款单本身就是一次收款事件，应付=本次收款；bizNo 由集成路径携带，用于跨域追溯。
+                Assert.notBlank(item.getBizNo(), "CRM 回款明细必须携带回款编号");
+                item.setTotalPrice(item.getReceiptPrice());
             } else {
                 throw new IllegalArgumentException("业务类型不正确：" + item.getBizType());
             }
@@ -419,6 +390,11 @@ public class ErpFinanceReceiptServiceImpl implements ErpFinanceReceiptService {
 
     private void updateSalePrice(List<ErpFinanceReceiptItemDO> receiptItems) {
         receiptItems.forEach(receiptItem -> {
+            // CRM 回款明细（§12.267 D1）在 ERP 侧没有可回写的源单：整行跳过，
+            // 也不做没有消费方的收款金额汇总查询。建单/改单/删单三路径共用本方法，一处跳过三处生效。
+            if (ErpBizTypeEnum.CRM_RECEIVABLE.getType().equals(receiptItem.getBizType())) {
+                return;
+            }
             BigDecimal totalReceiptPrice = financeReceiptItemMapper.selectReceiptPriceSumByBizIdAndBizType(
                     receiptItem.getBizId(), receiptItem.getBizType());
             if (ErpBizTypeEnum.SALE_OUT.getType().equals(receiptItem.getBizType())) {

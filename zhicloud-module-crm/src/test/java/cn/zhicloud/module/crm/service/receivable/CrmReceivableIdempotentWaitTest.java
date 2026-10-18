@@ -1,5 +1,6 @@
 package cn.zhicloud.module.crm.service.receivable;
 
+import cn.zhicloud.framework.integration.service.EventOutboxService;
 import cn.zhicloud.framework.common.exception.ServiceException;
 import cn.zhicloud.framework.test.core.ut.BaseDbUnitTest;
 import cn.zhicloud.module.bpm.api.task.BpmProcessInstanceApi;
@@ -65,6 +66,8 @@ public class CrmReceivableIdempotentWaitTest extends BaseDbUnitTest {
     private AdminUserApi adminUserApi;
     @MockitoBean
     private BpmProcessInstanceApi bpmProcessInstanceApi;
+    @MockitoBean
+    private EventOutboxService eventOutboxService;
 
     private CrmReceivableDO winner;
 
