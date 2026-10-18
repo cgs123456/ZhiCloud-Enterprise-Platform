@@ -12787,3 +12787,16 @@ code=401（框架统一风格 HTTP 200）；清理复原（9+5+4 夹具归零、
 
 D1 已收官（§12.267）；D2 收官（**本项**）。D 组六项明细系重建产物（原会话明细未落盘）：D3–D6 与
 E1–E7 照旧、尚未重建确认；重建依据以本重建口径与 `Temp/zc_adr_268.md` / `Temp/zc_adr_267.md` 为准。
+
+### 12.268.7 提交后实证（063b1161f 推送后补记）
+
+- 提交：`063b1161f`（4 文件，+393/−0）；**直连推送成功**（`250886101..063b1161f`，未挂代理）；
+  远端 master = `063b1161f683079db43ee3ce7e991feaa5cff283` = 本地 HEAD。
+- 工作区全净（`git status --porcelain` 空）。
+- plan 门禁：`plan_commit_groups.py --json` exit=0，`violations=[]`（worktree 各计数全 0）。
+- python 生产套件全量复跑：**665 tests，318.597s，FAILED (failures=5, errors=4, skipped=3)**——红项
+  构成与 §12.267.7 / §12.265.4 / §12.266.4 逐项一致（4E=PowerShell 移植性 ×4；5F=coverage-shrink 守卫 /
+  原生 MySQL 沙箱 / plan 真树「非空」钉法 / PowerShell CLI ×2），**本项零新增红**。（复跑说明：首跑
+  exit=1 但汇总行被输出管道 `Select-Object -Last 30` 截断未捕获；复跑全文留档后取数——同套件同工作树。）
+- 服务现状：pid 40532（jar 642,868,434B @2026-10-18T19:15:09，Flyway 209/210 success=1），沙箱
+  `zhicloud_sandbox_v140` / tenant 9001；E2E 夹具已还原（科目/期初/凭证夹具全零、表计数 0/7/0/0/0）。
