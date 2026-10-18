@@ -7,10 +7,12 @@ import cn.zhicloud.module.erp.controller.admin.finance.vo.financialstatement.Erp
 import cn.zhicloud.module.erp.controller.admin.finance.vo.financialstatement.ErpIncomeStatementRespVO;
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpCashFlowDO;
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpGlAccountDO;
+import cn.zhicloud.module.erp.dal.dataobject.finance.ErpGlInitialBalanceDO;
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpGlVoucherDO;
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpGlVoucherEntryDO;
 import cn.zhicloud.module.erp.dal.mysql.finance.ErpCashFlowMapper;
 import cn.zhicloud.module.erp.dal.mysql.finance.ErpGlAccountMapper;
+import cn.zhicloud.module.erp.dal.mysql.finance.ErpGlInitialBalanceMapper;
 import cn.zhicloud.module.erp.dal.mysql.finance.ErpGlVoucherEntryMapper;
 import cn.zhicloud.module.erp.dal.mysql.finance.ErpGlVoucherMapper;
 import cn.zhicloud.module.erp.dal.mysql.finance.ErpAccountBookMapper;
@@ -18,6 +20,7 @@ import cn.zhicloud.module.erp.dal.mysql.finance.ErpBankAccountMapper;
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpAccountBookDO;
 import cn.zhicloud.module.erp.dal.dataobject.finance.ErpBankAccountDO;
 import cn.zhicloud.module.erp.enums.finance.ErpCashFlowBizTypeEnum;
+import cn.zhicloud.module.erp.enums.finance.ErpGlAccountBalanceDirectionEnum;
 import cn.zhicloud.module.erp.enums.finance.ErpGlAccountTypeEnum;
 import cn.zhicloud.module.erp.enums.finance.ErpGlVoucherStatusEnum;
 import jakarta.annotation.Resource;
@@ -45,6 +48,10 @@ import java.util.stream.Collectors;
  * <p>账套视角（FMS/ERP 融合，见 {@link ErpFinancialStatementService}）：accountSetId 非空时
  * 按「账套 → 账簿 → 凭证」链路过滤（V193 同口径，凭证不落冗余列）。
  *
+ * <p>期初接线（D2 / ADR 268）：资产负债表按作用域消费两轨期初——账套口径读
+ * {@code erp_gl_initial_balance}（自然方向经方向系数折算）、租户口径读
+ * {@code erp_gl_account.opening_*}；利润表/现金流量表为期间发生额口径，不消费期初。
+ *
  * @author 智云
  */
 @Service
@@ -57,6 +64,9 @@ public class ErpFinancialStatementServiceImpl implements ErpFinancialStatementSe
     private ErpGlVoucherEntryMapper voucherEntryMapper;
     @Resource
     private ErpGlAccountMapper accountMapper;
+    /** D2 / ADR 268：账套口径期初（C6③ / V209），期初接线按作用域二轨消费 */
+    @Resource
+    private ErpGlInitialBalanceMapper initialBalanceMapper;
     @Resource
     private ErpCashFlowMapper cashFlowMapper;
     @Resource
@@ -73,6 +83,8 @@ public class ErpFinancialStatementServiceImpl implements ErpFinancialStatementSe
         Map<Long, AccountSummary> accountSummaries = aggregateEntriesByAccount(voucherIds);
         // 3. 加载科目类型映射
         Map<Long, ErpGlAccountDO> accountMap = loadAccountMap();
+        // 4. 期初接线（D2 / ADR 268）：按作用域消费期初，播种进科目汇总
+        seedOpeningBalances(accountSetId, accountMap, accountSummaries);
 
         ErpBalanceSheetRespVO respVO = new ErpBalanceSheetRespVO();
         respVO.setAsOfDate(asOfDate);
@@ -369,6 +381,65 @@ public class ErpFinancialStatementServiceImpl implements ErpFinancialStatementSe
     private Map<Long, ErpGlAccountDO> loadAccountMap() {
         List<ErpGlAccountDO> accounts = accountMapper.selectList(null);
         return accounts.stream().collect(Collectors.toMap(ErpGlAccountDO::getId, a -> a, (a, b) -> a));
+    }
+
+    /**
+     * 期初接线（D2 / ADR 268）：按作用域把期初折算为「借正贷负」的借贷两列播种进科目汇总。
+     *
+     * <p>二轨按作用域消费、不合并、不互写：
+     * <ul>
+     *   <li>账套口径（accountSetId 非空）：{@code erp_gl_initial_balance} 该账套行——
+     *       {@code opening_amount} 按科目自然方向录入，以账表同式方向系数折算
+     *       （贷向 20 → −1；借向 10 / 双向 30 / 缺省 → +1，ADR 266 裁定 3）；</li>
+     *   <li>租户口径（null）：{@code erp_gl_account.opening_debit/opening_credit}（已是借贷两列，免折算）。</li>
+     * </ul>
+     * 播种后类型判定与「本年利润（未分配）」并入权益逻辑零改动：P&L 科目期初随播种
+     * 自动进入恒等式补平（年中启用场景与纯凭证路径同式）。
+     */
+    private void seedOpeningBalances(Long accountSetId, Map<Long, ErpGlAccountDO> accountMap,
+                                     Map<Long, AccountSummary> accountSummaries) {
+        if (accountSetId == null) {
+            // 租户口径：科目表期初两列（已是借贷分列，无需方向折算）
+            for (ErpGlAccountDO account : accountMap.values()) {
+                BigDecimal debit = account.getOpeningDebit() == null ? BigDecimal.ZERO : account.getOpeningDebit();
+                BigDecimal credit = account.getOpeningCredit() == null ? BigDecimal.ZERO : account.getOpeningCredit();
+                if (debit.signum() == 0 && credit.signum() == 0) {
+                    continue;
+                }
+                AccountSummary s = accountSummaries.computeIfAbsent(account.getId(), k -> new AccountSummary());
+                s.debit = s.debit.add(debit);
+                s.credit = s.credit.add(credit);
+            }
+            return;
+        }
+        // 账套口径：期初余额表（opening_amount 按科目自然方向，折算为借正贷负净额后拆两列）
+        for (ErpGlInitialBalanceDO row : initialBalanceMapper.selectListByAccountSetId(accountSetId)) {
+            BigDecimal opening = row.getOpeningAmount() == null ? BigDecimal.ZERO : row.getOpeningAmount();
+            if (opening.signum() == 0) {
+                continue;
+            }
+            ErpGlAccountDO account = accountMap.get(row.getAccountId());
+            if (account == null) {
+                // 科目不可见（跨租户/已删）时方向不可定，跳过
+                continue;
+            }
+            BigDecimal net = directionMultiplier(account).multiply(opening);
+            AccountSummary s = accountSummaries.computeIfAbsent(row.getAccountId(), k -> new AccountSummary());
+            if (net.signum() >= 0) {
+                s.debit = s.debit.add(net);
+            } else {
+                s.credit = s.credit.add(net.negate());
+            }
+        }
+    }
+
+    /**
+     * 科目方向系数（借正贷负净额空间）：贷向(20) → −1；借向(10)/双向(30)/缺省 → +1。
+     * 与账表 {@code ErpGlLedgerQueryContext.multiplier} 同式（ADR 266 裁定 3）。
+     */
+    private BigDecimal directionMultiplier(ErpGlAccountDO account) {
+        return ErpGlAccountBalanceDirectionEnum.CREDIT.getDirection().equals(account.getBalanceDirection())
+                ? BigDecimal.ONE.negate() : BigDecimal.ONE;
     }
 
     /**
