@@ -12215,3 +12215,99 @@ C5=APS 空隙建模；C6=FMS/HRM 接线与旧 /hr 退役（尾置）。
 
 C6=FMS/HRM 接线与旧 /hr 退役（尾置）；D1-D6、E1-E7 照旧。
 重建依据与原会话登记原文可能存在偏差，以 HANDOFF 各 §12.2xx 原文为准（重建披露在 next-steps 后记六同步）。
+
+## 12.264 HRM 尾置收尾①——旧镜像列与旧 /hr 孤儿表退役（C 组第 6 项，数据层句号）
+
+### 12.264.1 背景与目标
+
+§12.185 待办（旧列退役迁移）与 V161 头注（旧列清理退役=后继迁移）双重授权已到期：前置条件
+「/hrm 员工链验证通过 + 旧 /hr 页面/接口下线」分别由 §12.184–199（HRM 接线）与 §12.201
+（旧 /hr 退役：菜单软删 V185、Java 死簇清除、H2 已移除）满足。本项为旧 /hr 链的数据层句号：
+hr_employee 6 旧镜像列 DROP + 旧 /hr 孤儿表 9 张 DROP + 退役域字典 6 型清理；
+Java/H2/门禁/文档同刀对齐。设计锁与偏差登记见 ADR `Temp/zc_adr_264.md`（demo 工具链冻结、
+sql/mysql 安装脚本与旧 verify 不动等裁定在内）。
+
+### 12.264.2 实施内容
+
+- 迁移 `V208__hr_legacy_retirement.sql`（+`V208_verify.sql`，13 项独立复核）：
+  - hr_employee 6 旧镜像列 DROP：`gender/birth_date/hire_date/leave_date/status/employment_type`
+    （语义已由 V161 回填新列 sex/birthday/entry_time/leave_time/entry_status/employee_status/type；
+    单列索引 idx_status 随 DROP COLUMN 自动消失）。
+  - 旧 /hr 孤儿表 9 张 DROP：hr_attendance/hr_contract/hr_interview/hr_job_posting/
+    hr_leave_balance/hr_performance/hr_resume/hr_salary/hr_social_insurance_base
+    （依据：全仓 Java 零引用、H2 已移除、写入方服务已删除、V171/174/176/178 头注明示待清理；
+    hr_contract 域已由 hr_employee_contract（V162）替代）。
+  - 退役域字典 6 型清理（hr_gender/hr_employee_status/hr_employment_type/hr_attendance_status/
+    hr_salary_status/hr_performance_grade 的数据行+类型行）；hr_position_level 保留（/hrm/position 在用）。
+  - 数据损失声明（执行前实测 2026-10-18）：随表删除 hr_contract 40 行 / hr_attendance 800 /
+    hr_salary 120 / hr_performance 80 / hr_leave_balance 161（余 4 表 0 行）；hr_employee 253 行仅
+    删列不动行；沙箱全库无生产数据（tenant 1/9001 demo+test）。
+- Java 退役：`HrEmployeeDO`（6 字段+4 import）、`HrmEmployeeServiceImpl`（syncLegacyColumns/
+  legacyEmploymentType 删除 + 14 处旧列写点/调用点清空）、`HrEmployeeMapper`（死 selectPage）、
+  `DictTypeConstants`（6 死常量）；删 4 孤儿文件（`HrEmployeePageReqVO` + 3 个 employee 枚举）。
+- H2 `create_tables.sql` 同步删 6 列；单元测试 6 处旧列断言退役（含方法改名）。
+- 门禁：`destructive_ddl_allowlist.json` +V208（9 表逐表登记，双向 fail-closed）；
+  `migration-contract.json` +V208（哈希实算）。
+- 保留面全不动：hr_employee/hr_position/hr_department（V161 存档口径）/hr_leave_request
+  （V126/V130 视图钉住）/hr_leave_type（V131/V167 钉住）及字典 hr_position_level。
+
+### 12.264.3 验证链与实证
+
+- 改动前基线（先测）：module-hr 回归 **48/48**（`Temp/zc_c6a_baseline_hrtest.log`）。
+- 应用脚本（`Temp/zc_impl264_apply.py`）：全部唯一命中断言通过；V208 落盘
+  sha256=f49f1f06…（6943B）、V208_verify sha256=70915628…（5170B）。
+- 阶段校验：53 项字节级断言 **ALL PASS**（`Temp/zc_c6a_stage.log`：迁移/验证行尾与 lint、
+  allowlist CRLF 纯化与表集合、契约哈希实算、H2 建表块、全仓 java 删除符号零残留、门禁运行）。
+- 定向测试：`HrmEmployeeServiceImplTest` **7/7**。
+- module-hr 回归（终稿源码）：**48/48**（与基线一致）。
+- errcode 扫描 1962 定义/0 冲突；scan_tx 0 缺失；bare throws OK；preauthorize 520 文件 OK。
+- lint：V208/V208_verify 零 findings；契约门禁 **tracked=118 scanned=214 findings=0 PASSED**；
+  duplicate_ddl tables=667 findings=0。
+- reactor 打包 BUILD SUCCESS（43/43，`Temp/zc_build_264.log`）。
+- 真机应用（冷启，`Temp/zc_server_264.log`）：Flyway「Migrating … 208 - hr legacy retirement」→
+  「Successfully applied 1 migration」；迁移内联自检 **8/8 PASS**（含 HR_EMPLOYEE_INTACT 251）。
+- 真机 E2E（tenant 9001 / zhicloud_sandbox_v140）：
+  - 退役专项 `zc_c6a_e2e.py` **25/25 PASS**（二跑；schema/字典/数据面 15 项 + V208_verify 13 行
+    ALL PASS 复核 2 项 + 写路径冒烟 8 项）——首跑 24/25 见 §12.264.4。
+  - HRM 全链 `zc_hrm_e2e.py` **47/47 PASS**（旧列三断言退役后 50→47；编号 18–20 为退役空位）。
+  - 终态读数：hr_employee 253 行（存活 251）/ 6 旧列与 idx_status=0 / 9 孤儿表=0 / 6 退役字典=0 /
+    hr_position_level 数据 5 行保留 / flyway 208 success=1；E2E 孤儿行清理后存活=251 与迁移前一致。
+- 前端：本项零改动 → 按定型规则（前端 diff 非零才跑）跳过 `ts:check`/`build:prod`，登记于此。
+
+### 12.264.4 首跑与执行实证登记（诚实链）
+
+1. **应用脚本后置断言过宽（脚本缺陷，已修）**：H2 断言用 "'status'" 判残留，命中 module-hr
+   其他表的同名列（非 hr_employee 块），AssertionError 中断于收尾区；此时全部编辑已唯一命中
+   落盘。阶段校验改为 hr_employee 建表块内断言后 ALL PASS。
+2. **阶段脚本 lint 假阳性（脚本缺陷，已修）**：lint 以别名 "V208" 传参，allowlist 按真实文件名
+   匹配 → 9 条 R4 误报；按真实文件名重跑零 findings（契约门禁同口径亦为 0）。
+3. **c6a 首跑 24/25**：检查 11「总行数 ≥253」落空（实测 252）。根因 = 既有工具
+   `zc_e2e_preclean.py` 的「释放工号槽位」硬删为**表级**（`emp_no IS NULL AND deleted=1`
+   无 inlist 作用域），硬删了 1 行历史软删残留（沙箱 demo 域，产品零影响）；V208 无删行行为
+   （存活 251 全程不变）。断言改为 V208 有效下界（存活行）后二跑 25/25。**工具行为登记**：
+   该硬删会顺带清理历史软删残留并扰动跨会话行数基线，后续会话宜将硬删限定到本次释放的 id 集合
+   （列入 next-steps 后记十一口径提醒）。
+4. **HRM 全链首跑中断（工具编码缺陷，已修）**：`zc_hrm_e2e.py` 的 sql() 用默认 GBK 解码，
+   中文行（post_name=融合验证工程师）触发 UnicodeDecodeError；崩溃点前已创建员工行 → 产生
+   1 行存活孤儿（id 925444，emp_no 被二跑 preclean 置 NULL）；补 encoding="utf-8" 后二跑
+   47/47；孤儿行已按子表清单一并清理（存活数复原 251）。
+5. **等待脚本 token 硬编码（工具缺陷，已修）**：`zc_wait_264.py` 用旧 token
+   `zc-live-mock-900100` 探测就绪（该 token 现返回 401，有效 token 为
+   `test-only-for-local900100`），导致就绪探测 15 分钟误报超时；两个 E2E 脚本已实现双 token
+   回退（实测择优），此为本机 mock 配置的既有事实，登记备查。
+
+### 12.264.5 不扩面登记（维持）
+
+- demo 工具链（`demo-data/cleanup_demo.sql` 对将删表的引用、冻结快照 474 表早于 V161/V140 且
+  不可复现、`schema_snapshot.py` 无 DROP TABLE 支持、全量重生受 R-033 阻塞）：**冻结不动**，
+  缺口登记为独立专项（ADR §2.1；V208 后 demo 产物对 10 张表由「陈旧」升级为「不可执行」）。
+- sql/mysql 安装脚本不动（V140 先例）；旧 verify（V113/V92/V128）不改（V140 未动 V138_verify
+  先例，历史点审计不重跑）。
+- 行为面零变化：保留表/字典读写口径与本项无关；hr_position_level 消费方（/hrm/position
+  @DictFormat）不动。
+- C6③（FMS 期初余额）与 C6②（FMS 账表）：后继会话（先 ADR 定账套口径）；D/E 组照旧。
+
+### 12.264.6 C 组矩阵基线（顺延声明）
+
+C6 三块分次会话：①=本项（done，§12.264）；③=FMS 期初余额、②=FMS 账表（顺延，先 ADR 定口径）。
+D1-D6、E1-E7 照旧。重建依据与原会话登记原文可能存在偏差，以 HANDOFF 各 §12.2xx 原文为准。

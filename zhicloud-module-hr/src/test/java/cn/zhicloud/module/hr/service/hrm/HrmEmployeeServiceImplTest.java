@@ -65,17 +65,13 @@ public class HrmEmployeeServiceImplTest extends BaseDbUnitTest {
         // 调用
         Long id = employeeService.createEmployee(reqVO);
 
-        // 校验：新轴落库 + 旧列同步
+        // 校验：新轴落库（旧镜像列已于 V208 退役，不再断言）
         HrEmployeeDO employee = employeeMapper.selectById(id);
         assertNotNull(employee);
         assertEquals("EMP001", employee.getEmpNo());
         assertEquals(Integer.valueOf(1), employee.getEntryStatus());
         assertEquals(Integer.valueOf(1), employee.getEmployeeStatus());
         assertEquals(Integer.valueOf(1), employee.getType());
-        // 旧列同步：sex 1→gender 10；entry_status 1→status 10；entry_time→hire_date
-        assertEquals(Integer.valueOf(10), employee.getGender());
-        assertEquals(Integer.valueOf(10), employee.getStatus());
-        assertNotNull(employee.getHireDate());
         // 正式员工转正时间兜底 = 入职时间；司龄起点 = 入职时间
         assertEquals(employee.getEntryTime(), employee.getRegularTime());
         assertEquals(employee.getEntryTime(), employee.getCompanyAgeStartTime());
@@ -105,7 +101,7 @@ public class HrmEmployeeServiceImplTest extends BaseDbUnitTest {
     }
 
     @Test
-    public void test_quitEmployee_writesQuitInfoAndLegacy() {
+    public void test_quitEmployee_writesQuitInfo() {
         // 准备：在职员工
         HrmEmployeeSaveReqVO createVO = new HrmEmployeeSaveReqVO();
         createVO.setName("赵六");
@@ -124,12 +120,10 @@ public class HrmEmployeeServiceImplTest extends BaseDbUnitTest {
         quitVO.setReason(2);
         employeeService.quitEmployee(quitVO);
 
-        // 校验：主表新轴 + 旧列
+        // 校验：主表新轴
         HrEmployeeDO employee = employeeMapper.selectById(id);
         assertEquals(Integer.valueOf(4), employee.getEntryStatus());
         assertNotNull(employee.getLeaveTime());
-        assertEquals(Integer.valueOf(20), employee.getStatus());
-        assertNotNull(employee.getLeaveDate());
         // 校验：离职信息表落行
         HrmEmployeeQuitInfoDO quitInfo = quitInfoMapper.selectByEmployeeId(id);
         assertNotNull(quitInfo);
@@ -143,7 +137,6 @@ public class HrmEmployeeServiceImplTest extends BaseDbUnitTest {
         // 准备：离职员工
         HrEmployeeDO left = randomPojo(HrEmployeeDO.class, o -> {
             o.setEntryStatus(4);
-            o.setStatus(20);
             o.setLeaveTime(LocalDateTime.of(2026, 1, 1, 0, 0));
         });
         employeeMapper.insert(left);
@@ -158,8 +151,6 @@ public class HrmEmployeeServiceImplTest extends BaseDbUnitTest {
         HrEmployeeDO employee = employeeMapper.selectById(left.getId());
         assertEquals(Integer.valueOf(1), employee.getEntryStatus());
         assertNull(employee.getLeaveTime());
-        assertNull(employee.getLeaveDate());
-        assertEquals(Integer.valueOf(10), employee.getStatus());
     }
 
     @Test
@@ -201,7 +192,6 @@ public class HrmEmployeeServiceImplTest extends BaseDbUnitTest {
         HrEmployeeDO left = randomPojo(HrEmployeeDO.class, o -> {
             o.setEmpNo("EMP-DEL-001");
             o.setEntryStatus(4);
-            o.setStatus(20);
         });
         employeeMapper.insert(left);
 

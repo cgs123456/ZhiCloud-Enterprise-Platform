@@ -37,8 +37,8 @@ import static cn.zhicloud.module.hr.enums.ErrorCodeConstants.*;
  * HRM 员工档案 Service 实现类（/hrm/employee 融合链路）
  *
  * 融合纪律（台账 §12.184）：
- * * 单一真相 = hr_employee 超集列（V161）；旧列（gender/birth_date/hire_date/leave_date/status/employment_type）
- *   在每次写路径同步回写，保证旧 /hr 页面退役前语义一致。
+ * * 单一真相 = hr_employee 超集列（V161）；旧镜像列（gender/birth_date/hire_date/leave_date/status/employment_type）
+ *   已于 V208 整体退役（§12.264），全链路只读写新列。
  * * jobNumber/mobile/idNumber 是 DO 别名 getter（映射 emp_no/phone/id_card），VO→DO 显式转换。
  * * 生命周期动作（转正/调岗/晋升/降级/转全职/再入职）落 hr_employee_change_record；
  *   离职落 hr_employee_quit_info。
@@ -126,8 +126,7 @@ public class HrmEmployeeServiceImpl implements HrmEmployeeService {
         validateLeaderEmployeeId(employee.getLeaderEmployeeId());
         // 6. 正式员工转正时间兜底 + 司龄起点
         applyRegularAndCompanyAge(employee);
-        // 7. 同步旧列 + 插入
-        syncLegacyColumns(employee);
+        // 7. 插入
         employeeMapper.insert(employee);
         return employee.getId();
     }
@@ -157,9 +156,8 @@ public class HrmEmployeeServiceImpl implements HrmEmployeeService {
             throw exception(HRM_EMPLOYEE_USER_BOUND);
         }
         validateLeaderEmployeeId(updateObj.getLeaderEmployeeId());
-        // 4. 正式员工转正时间兜底 + 司龄起点 + 同步旧列
+        // 4. 正式员工转正时间兜底 + 司龄起点
         applyRegularAndCompanyAge(updateObj);
-        syncLegacyColumns(updateObj);
         employeeMapper.updateById(updateObj);
     }
 
@@ -215,9 +213,7 @@ public class HrmEmployeeServiceImpl implements HrmEmployeeService {
                 .eq(HrEmployeeDO::getId, employee.getId())
                 .set(HrEmployeeDO::getEntryStatus, 1)
                 .set(HrEmployeeDO::getEntryTime, entryTime)
-                .set(HrEmployeeDO::getCompanyAgeStartTime, entryTime)
-                .set(HrEmployeeDO::getHireDate, entryTime.toLocalDate())
-                .set(HrEmployeeDO::getStatus, 10);
+                .set(HrEmployeeDO::getCompanyAgeStartTime, entryTime);
         // 正式员工补转正时间
         Integer type = reqVO.getType() != null ? reqVO.getType() : employee.getType();
         if (Integer.valueOf(1).equals(type) && Integer.valueOf(1).equals(
@@ -251,12 +247,10 @@ public class HrmEmployeeServiceImpl implements HrmEmployeeService {
         }
         updateObj.setCompanyAgeStartTime(updateObj.getEntryTime());
         applyRegularAndCompanyAge(updateObj);
-        syncLegacyColumns(updateObj);
         employeeMapper.updateById(updateObj);
         LambdaUpdateWrapper<HrEmployeeDO> clearLeave = new LambdaUpdateWrapper<HrEmployeeDO>()
                 .eq(HrEmployeeDO::getId, employee.getId())
-                .set(HrEmployeeDO::getLeaveTime, null)
-                .set(HrEmployeeDO::getLeaveDate, null);
+                .set(HrEmployeeDO::getLeaveTime, null);
         employeeMapper.update(null, clearLeave);
         // 3. 异动记录（生效时间 = 再入职时间）
         record.setEffectTime(updateObj.getEntryTime());
@@ -319,8 +313,7 @@ public class HrmEmployeeServiceImpl implements HrmEmployeeService {
         HrmEmployeeChangeRecordDO record = applyChange(employee, HrmEmployeeChangeRecordDO.TYPE_CONVERT_FULL_TIME, reqVO);
         record.setProbation(reqVO.getProbation());
         LambdaUpdateWrapper<HrEmployeeDO> update = baseChangeUpdate(employee, reqVO)
-                .set(HrEmployeeDO::getType, 1)
-                .set(HrEmployeeDO::getEmploymentType, 10); // 全职对应旧口径 10 全职
+                .set(HrEmployeeDO::getType, 1);
         if (reqVO.getProbation() != null) {
             update.set(HrEmployeeDO::getEmployeeStatus, 2)
                     .set(HrEmployeeDO::getProbation, reqVO.getProbation());
@@ -339,13 +332,11 @@ public class HrmEmployeeServiceImpl implements HrmEmployeeService {
             throw exception(HRM_EMPLOYEE_ALREADY_LEFT);
         }
         LocalDateTime leaveTime = reqVO.getPlanQuitTime() != null ? reqVO.getPlanQuitTime() : LocalDateTime.now();
-        // 1. 员工主表：离职态 + 同步旧列
+        // 1. 员工主表：离职态
         LambdaUpdateWrapper<HrEmployeeDO> update = new LambdaUpdateWrapper<HrEmployeeDO>()
                 .eq(HrEmployeeDO::getId, employee.getId())
                 .set(HrEmployeeDO::getEntryStatus, 4)
-                .set(HrEmployeeDO::getLeaveTime, leaveTime)
-                .set(HrEmployeeDO::getLeaveDate, leaveTime.toLocalDate())
-                .set(HrEmployeeDO::getStatus, 20);
+                .set(HrEmployeeDO::getLeaveTime, leaveTime);
         employeeMapper.update(null, update);
         // 2. 离职信息表（一员工一条：先删旧，保最新）
         HrmEmployeeQuitInfoDO quitInfo = quitInfoMapper.selectByEmployeeId(employee.getId());
@@ -377,9 +368,7 @@ public class HrmEmployeeServiceImpl implements HrmEmployeeService {
         LambdaUpdateWrapper<HrEmployeeDO> update = new LambdaUpdateWrapper<HrEmployeeDO>()
                 .eq(HrEmployeeDO::getId, employee.getId())
                 .set(HrEmployeeDO::getEntryStatus, 1)
-                .set(HrEmployeeDO::getLeaveTime, null)
-                .set(HrEmployeeDO::getLeaveDate, null)
-                .set(HrEmployeeDO::getStatus, 10);
+                .set(HrEmployeeDO::getLeaveTime, null);
         employeeMapper.update(null, update);
     }
 
@@ -487,9 +476,6 @@ public class HrmEmployeeServiceImpl implements HrmEmployeeService {
             employee.setWorkCity(req.getWorkCity());
             employee.setWorkAddress(req.getWorkAddress());
             employee.setRemark(req.getRemark());
-            employee.setEmploymentType(legacyEmploymentType(req.getType(), employee.getEmployeeStatus()));
-            employee.setStatus(10);
-            employee.setHireDate(req.getEntryTime() != null ? req.getEntryTime().toLocalDate() : null);
             employeeMapper.insert(employee);
             boundUserIds.add(req.getUserId());
             result.add(employee.getId());
@@ -554,7 +540,6 @@ public class HrmEmployeeServiceImpl implements HrmEmployeeService {
                 HrEmployeeDO updateObj = new HrEmployeeDO();
                 updateObj.setId(exist.getId());
                 applyImportRow(updateObj, row);
-                syncLegacyColumns(updateObj);
                 employeeMapper.updateById(updateObj);
                 resp.getUpdateJobNumbers().add(jobNumber);
                 continue;
@@ -573,7 +558,6 @@ public class HrmEmployeeServiceImpl implements HrmEmployeeService {
                 continue;
             }
             applyRegularAndCompanyAge(employee);
-            syncLegacyColumns(employee);
             employeeMapper.insert(employee);
             resp.getCreateJobNumbers().add(employee.getEmpNo());
         }
@@ -600,7 +584,7 @@ public class HrmEmployeeServiceImpl implements HrmEmployeeService {
 
     /**
      * VO → DO（别名字段显式映射：jobNumber→emp_no、mobile→phone、idNumber→id_card；
-     * status 轴迁移：VO 的 status 是员工状态轴（employee_status），须防同名旧列误拷）
+     * status 轴：VO 的 status 是员工状态轴 → employee_status；旧列已退役（V208），无同名误拷）
      */
     private HrEmployeeDO convertToDO(HrmEmployeeSaveReqVO reqVO) {
         HrEmployeeDO employee = BeanUtils.toBean(reqVO, HrEmployeeDO.class);
@@ -609,7 +593,6 @@ public class HrmEmployeeServiceImpl implements HrmEmployeeService {
         employee.setIdCard(reqVO.getIdNumber());
         if (reqVO.getStatus() != null) {
             employee.setEmployeeStatus(reqVO.getStatus());
-            employee.setStatus(null); // 旧列由 syncLegacyColumns 统一回写
         }
         return employee;
     }
@@ -663,51 +646,6 @@ public class HrmEmployeeServiceImpl implements HrmEmployeeService {
                 && employee.getRegularTime() == null) {
             employee.setRegularTime(employee.getEntryTime());
         }
-    }
-
-    /**
-     * 新列 → 旧列同步（updateById 非 null 才更新，旧页面语义保持）
-     */
-    private void syncLegacyColumns(HrEmployeeDO employee) {
-        if (employee.getSex() != null) {
-            employee.setGender(employee.getSex() == 1 ? 10 : 20);
-        }
-        if (employee.getBirthday() != null) {
-            employee.setBirthDate(employee.getBirthday().toLocalDate());
-        }
-        if (employee.getEntryTime() != null) {
-            employee.setHireDate(employee.getEntryTime().toLocalDate());
-        }
-        if (employee.getLeaveTime() != null) {
-            employee.setLeaveDate(employee.getLeaveTime().toLocalDate());
-        }
-        if (employee.getType() != null) {
-            employee.setEmploymentType(legacyEmploymentType(employee.getType(), employee.getEmployeeStatus()));
-        }
-        if (employee.getEntryStatus() != null) {
-            employee.setStatus(employee.getEntryStatus() == 4 ? 20 : 10);
-        }
-    }
-
-    /**
-     * 新员工状态轴 → 旧 employment_type：1正式/2试用/6顾问/7返聘→10全职；4兼职/5劳务→20兼职；3实习→30实习；8外包→40外包
-     */
-    private Integer legacyEmploymentType(Integer type, Integer employeeStatus) {
-        if (type == null || !Integer.valueOf(1).equals(type)) {
-            // 非正式：按员工状态折叠
-            if (employeeStatus == null) {
-                return 20;
-            }
-            switch (employeeStatus) {
-                case 3:
-                    return 30;
-                case 8:
-                    return 40;
-                default:
-                    return 20;
-            }
-        }
-        return 10;
     }
 
     /**
@@ -844,7 +782,7 @@ public class HrmEmployeeServiceImpl implements HrmEmployeeService {
         for (int i = 0; i < list.size(); i++) {
             HrEmployeeDO employee = list.get(i);
             HrmEmployeeRespVO vo = voList.get(i);
-            // status 轴迁移：RespVO 的 status 是员工状态轴（employee_status），防同名旧列误拷
+            // status 轴：RespVO 的 status 是员工状态轴（employee_status），显式赋值（旧列已退役 V208）
             vo.setStatus(employee.getEmployeeStatus());
             // 别名字段显式映射（hutool 按 getter 拷贝不可靠，单一物理列三别名逐一赋值）
             vo.setJobNumber(employee.getEmpNo());

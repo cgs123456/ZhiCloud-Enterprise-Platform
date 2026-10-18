@@ -88,6 +88,21 @@
       "tables": [
         "fms_currency"
       ]
+    },
+    {
+      "file": "V208__hr_legacy_retirement.sql",
+      "reason": "2026-10-18 所有者裁定 C6①：hr_employee 旧镜像列（V161 已回填新列）与旧 /hr 孤儿表 9 张退役；Java 零引用、H2 已移除、写入方服务已删除（§12.201），沙箱数据全部 demo/test（§12.264）",
+      "tables": [
+        "hr_attendance",
+        "hr_contract",
+        "hr_interview",
+        "hr_job_posting",
+        "hr_leave_balance",
+        "hr_performance",
+        "hr_resume",
+        "hr_salary",
+        "hr_social_insurance_base"
+      ]
     }
   ]
 }

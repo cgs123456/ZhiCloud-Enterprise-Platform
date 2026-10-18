@@ -3,7 +3,6 @@ package cn.zhicloud.module.hr.dal.mysql.employee;
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.mybatis.core.mapper.BaseMapperX;
 import cn.zhicloud.framework.mybatis.core.query.LambdaQueryWrapperX;
-import cn.zhicloud.module.hr.controller.admin.employee.vo.HrEmployeePageReqVO;
 import cn.zhicloud.module.hr.controller.admin.hrm.vo.HrmEmployeePageReqVO;
 import cn.zhicloud.module.hr.dal.dataobject.employee.HrEmployeeDO;
 import org.apache.ibatis.annotations.Mapper;
@@ -19,18 +18,6 @@ import java.util.List;
  */
 @Mapper
 public interface HrEmployeeMapper extends BaseMapperX<HrEmployeeDO> {
-
-    default PageResult<HrEmployeeDO> selectPage(HrEmployeePageReqVO reqVO) {
-        return selectPage(reqVO, new LambdaQueryWrapperX<HrEmployeeDO>()
-                .likeIfPresent(HrEmployeeDO::getEmpNo, reqVO.getEmpNo())
-                .likeIfPresent(HrEmployeeDO::getName, reqVO.getName())
-                .eqIfPresent(HrEmployeeDO::getGender, reqVO.getGender())
-                .eqIfPresent(HrEmployeeDO::getDeptId, reqVO.getDeptId())
-                .eqIfPresent(HrEmployeeDO::getPositionId, reqVO.getPositionId())
-                .eqIfPresent(HrEmployeeDO::getStatus, reqVO.getStatus())
-                .eqIfPresent(HrEmployeeDO::getEmploymentType, reqVO.getEmploymentType())
-                .orderByDesc(HrEmployeeDO::getId));
-    }
 
     default HrEmployeeDO selectByEmpNo(String empNo) {
         return selectOne(HrEmployeeDO::getEmpNo, empNo);
@@ -48,7 +35,7 @@ public interface HrEmployeeMapper extends BaseMapperX<HrEmployeeDO> {
         return selectList(HrEmployeeDO::getDeptId, deptIds);
     }
 
-    // ========== HRM 融合（V161 超集列；查询走新轴，旧列只做同步回写） ==========
+    // ========== HRM 融合（V161 超集列；查询走新轴，旧镜像列已退役 V208） ==========
 
     /**
      * 构建 HRM 列表通用过滤条件（不含状态页签；状态页签由调用方按 tab 语义叠加）

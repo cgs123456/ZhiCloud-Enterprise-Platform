@@ -821,6 +821,13 @@
       "sha256": "2593bab06e13e69cd23c85e26f2ee533a88256f9029d54efad2062eb77ca8ce4",
       "verification_file": "V207_verify.sql",
       "verification_sha256": "59f2588a8202df6da48e309541521a82b37b948c1d6725d7f1ae174692beb9e0"
+    },
+    {
+      "version": 208,
+      "file": "V208__hr_legacy_retirement.sql",
+      "sha256": "f49f1f060886dc920c66ec761163140ed5585bce108e3c8a7c613cb155d94c89",
+      "verification_file": "V208_verify.sql",
+      "verification_sha256": "70915628a7f479e038c888bd8da042bd0b0059d029dc8e4957578d54c7154d49"
     }
   ]
 }

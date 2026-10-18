@@ -1,15 +1,11 @@
 package cn.zhicloud.module.hr.dal.dataobject.employee;
 
 import cn.zhicloud.framework.tenant.core.db.TenantBaseDO;
-import cn.zhicloud.module.hr.enums.employee.HrEmployeeStatusEnum;
-import cn.zhicloud.module.hr.enums.employee.HrEmploymentTypeEnum;
-import cn.zhicloud.module.hr.enums.employee.HrGenderEnum;
 import com.baomidou.mybatisplus.annotation.KeySequence;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -41,16 +37,6 @@ public class HrEmployeeDO extends TenantBaseDO {
      */
     private String name;
     /**
-     * 性别
-     *
-     * 枚举 {@link HrGenderEnum}
-     */
-    private Integer gender;
-    /**
-     * 出生日期
-     */
-    private LocalDate birthDate;
-    /**
      * 身份证号
      */
     private String idCard;
@@ -71,26 +57,6 @@ public class HrEmployeeDO extends TenantBaseDO {
      */
     private Long positionId;
     /**
-     * 入职日期
-     */
-    private LocalDate hireDate;
-    /**
-     * 离职日期
-     */
-    private LocalDate leaveDate;
-    /**
-     * 状态
-     *
-     * 枚举 {@link HrEmployeeStatusEnum}
-     */
-    private Integer status;
-    /**
-     * 用工类型
-     *
-     * 枚举 {@link HrEmploymentTypeEnum}
-     */
-    private Integer employmentType;
-    /**
      * 备注
      */
     private String remark;
@@ -99,7 +65,7 @@ public class HrEmployeeDO extends TenantBaseDO {
      */
     private Integer sort;
 
-    // ========== HRM 融合：超集列（V161）。镜像字段不建列——用 @TableField 映射单一物理列 ==========
+    // ========== HRM 融合：超集列（V161，单一真相）。旧镜像列已于 V208 退役（§12.264）；别名字段不建列 ==========
 
     /**
      * 性别（新口径）：1男 2女（对齐 system_user_sex）
