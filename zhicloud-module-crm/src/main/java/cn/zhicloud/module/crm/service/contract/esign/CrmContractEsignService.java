@@ -6,7 +6,8 @@ import cn.zhicloud.module.crm.controller.admin.contract.vo.esign.CrmEsignCallbac
 /**
  * CRM 合同电子签 Service 接口
  *
- * 对接法大大/e签宝等第三方电子签平台（当前为 stub 模式）
+ * 合同电子签服务：任务真状态机（10 待签署 / 20 已签署 / 30 已拒签；ADR 271 D3）。
+ * 第三方平台 SDK 调用与回调验签/公网网关属运维接线面（ADR 271 D5，不扩面）。
  *
  * @author dhb52
  */

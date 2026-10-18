@@ -13059,3 +13059,136 @@ D1 已收官（§12.267）、D2 已收官（§12.268）、D3 已收官（§12.26
 - 服务现状：pid 40780（jar 642,902,784B，Flyway 210/211/212 success=1），沙箱
   `zhicloud_sandbox_v140` / tenant 9001；E2E270 夹具收尾清理（前缀面 路线/产能/工单/排产/MRP/回链
   全 0，DEMO-WO-00002 状态复位）。
+
+## 12.271 D 组第 5 项（D5）——CRM 合同电子签真实化（Stub → 真实集成）重建
+
+### 12.271.1 背景与目标
+
+D 组第 5 项（用户令「继续处理 D2–D6」）。**D 组六项明细系重建产物**（原会话明细未落盘，同
+§12.267/§12.268/§12.269/§12.270 披露）；D5 明细经搜证重建并锁定于 `Temp/zc_adr_271.md`（§0 搜证
+8 条；来源登记：§12.221.1「CRM 合同电子签入口（挂合同详情页）」（提交 936ba7103 期）原文
+「实现性质：后端是 Stub（不调法大大），init 生成 ESIGN+时间戳回写合同、status 恒返回已签署、
+callback 在 status=20 时把 auditStatus 置为 APPROVE(20)」——本项即把该 Stub 重建为**平台无关的
+领域真实化**：任务持久化＋状态机＋回调一致性＋幂等；第三方平台 SDK/验签/公网网关属运维接线面；
+矩阵锚定见 `Temp/zc_adr_267.md` §0 D5）。
+
+缺陷面（先证后修，六条）：
+1. **假任务号**：init 只生成 `ESIGN+时间戳` 字符串回写 contract，无任务载体 → status/download/
+   callback 三端全部无真数据源。
+2. **status 恒已签署**：`getEsignStatus` 不查任务、不查合同——任意非空字符串都返回「已签署」；
+   `CONTRACT_ESIGN_TASK_NOT_EXISTS` 形同虚设。
+3. **download 假签署文件**：未签署也返回原件 `fileUrls` 且标 `status=20 已签署`（把非签署件当交付件）。
+4. **callback 无一致性**：不校验任务存在/归属（任意 taskId+contractId 组合可写）；`esignTaskId`
+   用回调入参覆盖合同指针（回调可篡改指针）；无状态机、无幂等约定、非 20 状态静默丢弃。
+5. **无终态语义**：已拒签不可重发起（ALREADY_SIGNED 一票否决）；「进行中重复发起」「拒签后重发起」
+   两条常规路径无承载。
+6. **测试零覆盖**：全链路无单测（改错无网）。
+
+### 12.271.2 实施内容（14 文件＝6 新 / 8 改）
+
+**数据面**：
+- **V213** `V213__crm_contract_esign_task.sql`（`CREATE TABLE IF NOT EXISTS`，纯增一表、零存量；
+  含自检 SELECT）＋`V213_verify.sql`（5 断言：表／关键列非空／uk／idx／status 默认 10）；契约
+  +V213 双文件 sha256（tracked 122→123）；H2 `create_tables.sql` 同步镜像（该文件为**纯 CRLF**，
+  追加段随邻 CRLF，CRLF 588→610）。
+- 新表 `crm_contract_esign_task`：`contract_id` / `task_no`（`ESIGN`+yyyyMMddHHmmssSSS+3 随机位
+  ＝25 字符）/ `status` tinyint NOT NULL DEFAULT 10（**10 待签署 / 20 已签署 / 30 已拒签**）/
+  `sign_time` / `signed_file_urls` varchar(2048)（StringListTypeHandler JSON）/ `remark`；
+  uk `uk_crm_contract_esign_task_task_no`(tenant_id, task_no)（并发兜底）＋
+  idx `idx_crm_contract_esign_task_contract`(tenant_id, contract_id)。
+
+**后端面**：
+- `CrmContractEsignStatusEnum`（新，`enums/contract`）；`CrmContractEsignTaskDO`（新，BaseDO＋
+  `@KeySequence`，与 `CrmContractDO` 同式）；`CrmContractEsignTaskMapper`（新：
+  `selectByTaskNo` / `selectLatestByContractId`（orderByDesc id `LIMIT 1`））。
+- **指针语义**：`crm_contract.esign_task_id` ＝「最新任务号」**缓存指针**（真值在任务表）；
+  init 与签名写回更新；**回调不得以入参覆盖指针**（写回恒为任务行 task_no）。
+- **`CrmContractEsignServiceImpl` 重写（真状态机）**：
+  init：合同无→000；最新任务 10→**003**（进行中勿重发）/ 20→002（已签署）/ 30 或无→新建 10 任务
+  ＋指针更新；status：任务必须真存在（空/未知→001）；download：合同无→CONTRACT_NOT_EXISTS、
+  任务无→001、非 20→**004**（新增：「尚未完成电子签署，无法下载签署文件」）、20→任务
+  signed_file_urls（可空列表；**不回退原件**）；callback：任务无或归属不符→001、10→20（写
+  sign_time〔回调值优先缺省 now〕/signed_file_urls；合同指针回写＋**§12.207 审批回写
+  audit_status=APPROVE(20)**）、10→30（task 30；不动 audit_status）、20/20 与 30/30 **同态幂等**
+  no-op、跨终态（20→30、30→20）与未知状态值→**005**（「静默丢弃」废止）。
+- 新错误码 3 枚：`1_020_018_003` TASK_ALREADY_EXISTS / `_004` NOT_SIGNED / `_005` STATUS_ILLEGAL；
+  回调 VO ＋可选 `fileUrls`；Service 接口注释去 Stub 自述。
+- **回调鉴权维持现状**（`crm:contract:update`）：不开放未验签公网写（安全默认开启）。
+
+**前端（最小面）**：
+- `api/crm/contract/esign/index.ts`（**纯 LF**）：状态常量＋`REJECTED: 30`、注释去 Stub；
+- `views/crm/contract/detail/index.vue`（**纯 CRLF**）：三态标签（10 待签署 info / 20 已签署
+  success / 30 已拒签 danger）、载入静默查状态得 `esignRejected` →（无任务 ∥ 30）显隐「发起／
+  重新发起电子签」、下载**仅 20** 时请求（防弹假文件位）。
+
+**测试面**：
+- 新 `CrmContractEsignServiceImplTest`（BaseDbUnitTest＋@Import＋真 Mapper/H2，**19 例**）：init×5
+  （合同无/成功〔返回格式＋任务行＋指针〕/进行中 003/已签署 002/拒签重发〔新任务＋旧保持 30〕）＋
+  status×3（空与未知 001/待签署/已签署字段）＋download×4（合同无/任务无/未签 004/已签文件）＋
+  callback×7（任务无 001/归属不匹配 001/未知状态 99→005/签名成功含写回/幂等不覆盖 sign_time/
+  拒签成功含同态重复与 30→20 非法/20→30 非法）。
+
+### 12.271.3 验证链（逐项实测）
+
+| 环节 | 结果 |
+|------|------|
+| 基线 | CRM 模块 **111/0/0/5 skipped**（§12.267.3 所载 D1 收官读数；本项未另跑实施前基线） |
+| 实施 | 脚本 A–D（数据/后端/测试/前端）；守卫式单次运行；零 fix 轮 |
+| 定向单测 | **19/0/0/0**（新类 CrmContractEsignServiceImplTest） |
+| 模块回归 | **130/0/0/5 skipped**（111+19 精确对齐；零回归） |
+| 门禁 | errcode **1974**（+3）✓；preauthorize 523 Controller 面 RC=0 ✓；scan_tx **0** ✓；bare_throws OK ✓；duplicate_ddl tables **671（+1）**·findings=0 ✓；契约 **tracked=123·scanned=219·findings=0** ✓ |
+| SQL lint | **219 文件 / 16 条 R5** 全既有（V213 零新增；migration 目录口径；RC=1 既有红） |
+| do_ddl（辅助） | CRM H2 口径 **30 DO / 30 表完全一致**（新表镜像同步；121「表缺失」为他模块 H2 部分文件既有设计，不在本项口径） |
+| 前端 | `ts:check` exit=0；`build:prod` 成功（40.35s） |
+| 停服重打 | **642,913,690B**（Δ+10,906 对 D4 基线 642,902,784B） |
+| 冷启 | **412s**；Flyway 213 success=1；新表落地 |
+| 真机 E2E | **48/48（三跑收敛：45/48 → 48/48 → 48/48）** |
+
+E2E 链路（`Temp/zc_e2e271.py`，P0–P7 共 48 断言；沙箱 / tenant 9001；合同前缀 `E2E271-`）：
+P0 前缀清理（谓词＝合同 `name`）＋残留全 0 → P1 V213 证据（flyway 213 success=1 / 新表）→
+P2 合同 A/B 造数（客户 922000、owner 900100；初始 audit_status=0、指针空）→ P3 init（任务号
+ESIGN+17+3＝25 位、任务行 10、指针回写）＋status 真状态 10 待签署（**恒已签署被证伪**）＋未知
+任务号 001＋进行中重复发起 003＋未签署下载 004 → P4 签名路径（归属不匹配 001/未知任务 001/未知
+状态 99→005；签名回调 10→20、sign_time/fileUrls 落库、**§12.207 audit_status=20**、指针恒为任务
+行；status 20 已签署；download 返回签署后文件；重复回调幂等且不覆盖 sign_time；20→30 非法 005；
+已签署重复发起 002）→ P5 拒签路径（10→30、audit_status 不动；重复 30 幂等；30→20 非法 005；
+重发起新任务号、新 10 旧 30、指针指向新任务、旧任务仍可查 30、未签署下载 004）→ P6 负例（合同
+不存在 init 000；download 合同不存在拒绝）→ P7 零遗留（前缀裸计数＋显式 id 回查全 0、合同数回
+基线 13、A/B 权限行 0；独立探针复核：任务表 0 行）。
+
+### 12.271.4 失败与缺陷登记（诚实链）
+
+1. **E2E 脚本（1 处，首跑 45/48）**：清理/回查谓词误用合同 `no` 列——`no` 为自动生成单号
+   （HT…），造数前缀在 `name`；P7 三项（任务表/合同数/权限行）**如实 FAIL 暴露遗留**（3 任务/
+   2 合同/2 权限行），修正谓词为 `name LIKE` 后 Run2 起 48/48 且物理清干净。值得记录：P7 的失败
+   检查正确拦住了「假清理」——首跑 P0/P7.1 之所以 PASS 正因谓词匹配空集（全谓词盲区），修正后
+   才具备真实护栏。
+2. **既有红不重复登记**：`sql_migration_lint` 16 条 R5；`check_evidence_citations` 1 条；台账
+   §12.201 重复段 / §12.202–213 无节体 / §12.234.10 悬空引用；沙箱 `event_outbox` 6 条旧 DEAD；
+   do_ddl 121「表缺失」（H2 部分文件设计）；python 生产套件 5F+4E+3S（构成见 §12.267.7）。
+   本项零新增红。
+3. 实施脚本面 A–D 一次通过（零中断）；测试类一次全绿（零 fix 轮）；定向/回归/门禁/前端/重打/
+   冷启按序全绿。
+
+### 12.271.5 不扩面与已知限制登记（D11 边界）
+
+1. **真实平台 SDK 调用（法大大/签章 API）不接**（离线沙箱无外部网络）；回调验签/公网网关/租户
+   路由属运维接线面——回调端点维持 `crm:contract:update` 鉴权（不开放未验签公网写），E2E 以带
+   token 调用驱动。
+2. **审批态前置条件不设**（init 不校验 auditStatus；原语义零变更）。
+3. 签署方/多方签署建模不做（单任务单状态）。
+4. 过期/撤回状态不做（仅 10/20/30 三态）。
+5. 历史 stub 数据不回填（沙箱 13 合同 esign_task_id 全 NULL，无存量；无需回填）。
+6. SaveReq 残件（`CrmContractEsignSaveReqVO` 未被端点引用）不清（历史遗物）；本项**零端点/零
+   权限/零菜单**变更。
+7. 合同列表页不展示签署态（详情页状态驱动；留作后续增强）。
+8. task_no uk 为并发兜底（同毫秒＋3 位随机，理论碰撞由库层拒绝）。
+9. `sql/mysql` 无 crm 快照（不存在同步面）。
+
+### 12.271.6 D 组矩阵基线
+
+D1 已收官（§12.267）、D2 已收官（§12.268）、D3 已收官（§12.269）、D4 已收官（§12.270）、**D5
+收官（本项）**。D6（TMS↔WMS 签收全链，来源 §12.95.5）与 E1–E7 照旧、尚未重建确认；重建依据以本
+重建口径与 `Temp/zc_adr_271.md` / `zc_adr_270.md` / `zc_adr_269.md` / `zc_adr_268.md` /
+`zc_adr_267.md` 为准。待兑现登记项沿用（`zc_e2e_preclean.py` 硬删收窄到释放 id 集合；
+`test_plan_commit_groups` 真树「非空」钉法移合成输入）。

@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Schema(description = "管理后台 - CRM 合同电子签回调 Request VO")
 @Data
@@ -25,5 +26,8 @@ public class CrmEsignCallbackReqVO {
 
     @Schema(description = "签署时间")
     private LocalDateTime signTime;
+
+    @Schema(description = "签署后文件 URL 列表（第三方平台回调携带；缺省则已签文件为空列表）")
+    private List<String> fileUrls;
 
 }

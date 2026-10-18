@@ -856,6 +856,13 @@
       "sha256": "432efcd259e490ec0ab0c18d06f63b5fde1d44c334afeab81672a002a27b0a6a",
       "verification_file": "V212_verify.sql",
       "verification_sha256": "16a521b0f40c7cc61fbd86816c60b503b62983433eecb6f05004a319dd0d9f4d"
+    },
+    {
+      "version": 213,
+      "file": "V213__crm_contract_esign_task.sql",
+      "sha256": "640ad7a07346d3f082b543ef616954949c6bf2f2989583d4f26871c955743532",
+      "verification_file": "V213_verify.sql",
+      "verification_sha256": "7dd4335fec5dfc6fb749fda500792e8f9be51ef71041e0e223cf37cd70a7df3f"
     }
   ]
 }

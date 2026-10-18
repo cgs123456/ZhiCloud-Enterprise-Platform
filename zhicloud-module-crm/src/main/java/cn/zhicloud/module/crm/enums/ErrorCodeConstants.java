@@ -156,6 +156,9 @@ public interface ErrorCodeConstants {
     ErrorCode CONTRACT_ESIGN_INIT_FAIL = new ErrorCode(1_020_018_000, "发起电子签失败，原因：合同不存在");
     ErrorCode CONTRACT_ESIGN_TASK_NOT_EXISTS = new ErrorCode(1_020_018_001, "电子签任务不存在");
     ErrorCode CONTRACT_ESIGN_ALREADY_SIGNED = new ErrorCode(1_020_018_002, "合同已签署，无需重复发起");
+    ErrorCode CONTRACT_ESIGN_TASK_ALREADY_EXISTS = new ErrorCode(1_020_018_003, "该合同已有进行中的电子签任务，请勿重复发起");
+    ErrorCode CONTRACT_ESIGN_NOT_SIGNED = new ErrorCode(1_020_018_004, "合同尚未完成电子签署，无法下载签署文件");
+    ErrorCode CONTRACT_ESIGN_STATUS_ILLEGAL = new ErrorCode(1_020_018_005, "电子签任务当前状态不允许该操作");
 
     // ========== 售后工单 1_020_019_000 ==========
     ErrorCode WORK_ORDER_NOT_EXISTS = new ErrorCode(1_020_019_000, "售后工单不存在");

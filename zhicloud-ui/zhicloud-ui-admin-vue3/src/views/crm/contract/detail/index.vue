@@ -5,13 +5,13 @@
       编辑
     </el-button>
     <el-button
-      v-if="permissionListRef?.validateWrite && !contract.esignTaskId"
+      v-if="permissionListRef?.validateWrite && (!contract.esignTaskId || esignRejected)"
       v-hasPermi="['crm:contract:update']"
       type="warning"
       :loading="esignLoading"
       @click="handleInitEsign"
     >
-      发起电子签
+      {{ esignRejected ? '重新发起电子签' : '发起电子签' }}
     </el-button>
     <el-button
       v-if="contract.esignTaskId"
@@ -78,8 +78,8 @@
         <span>{{ esignInfo.esignTaskId }}</span>
       </el-form-item>
       <el-form-item v-if="esignInfo?.status" label="签署状态">
-        <el-tag :type="esignInfo.status === 20 ? 'success' : 'info'">
-          {{ esignInfo.statusName || (esignInfo.status === 20 ? '已签署' : '待签署') }}
+        <el-tag :type="esignInfo.status === 20 ? 'success' : esignInfo.status === 30 ? 'danger' : 'info'">
+          {{ esignInfo.statusName || (esignInfo.status === 20 ? '已签署' : esignInfo.status === 30 ? '已拒签' : '待签署') }}
         </el-tag>
       </el-form-item>
       <el-form-item v-if="esignInfo?.signTime" label="签署时间">
@@ -103,7 +103,7 @@
 import { useTagsViewStore } from '@/store/modules/tagsView'
 import { OperateLogVO } from '@/api/system/operatelog'
 import * as ContractApi from '@/api/crm/contract'
-import { CrmContractEsignApi } from '@/api/crm/contract/esign'
+import { CrmContractEsignApi, CrmContractEsignStatus } from '@/api/crm/contract/esign'
 import ContractDetailsInfo from './ContractDetailsInfo.vue'
 import ContractDetailsHeader from './ContractDetailsHeader.vue'
 import ContractProductList from './ContractProductList.vue'
@@ -138,6 +138,7 @@ const getContractData = async () => {
   try {
     contract.value = await ContractApi.getContract(contractId.value)
     await getOperateLog(contractId.value)
+    await refreshEsignRejected()
   } finally {
     loading.value = false
   }
@@ -175,12 +176,28 @@ const close = () => {
   delView(unref(currentRoute))
 }
 
-/** 电子签（Stub 模式，不实际调法大大；发起后回写 esignTaskId，状态恒为已签署） */
+/** 电子签（真状态机：10 待签署 / 20 已签署 / 30 已拒签；ADR 271） */
 const esignLoading = ref(false)
 const esignVisible = ref(false)
 const esignMode = ref<'init' | 'status'>('init')
 const esignInfo = ref<any>({})
 const esignDialogTitle = ref('')
+const esignRejected = ref(false) // 最新任务是否已拒签（决定「重新发起」入口显隐）
+
+/** 查询最新任务状态（仅用于「重新发起」入口显隐；失败静默不打扰） */
+const refreshEsignRejected = async () => {
+  esignRejected.value = false
+  const taskId = contract.value.esignTaskId
+  if (!taskId) {
+    return
+  }
+  try {
+    const status = await CrmContractEsignApi.getEsignStatus(taskId)
+    esignRejected.value = status?.status === CrmContractEsignStatus.REJECTED
+  } catch {
+    esignRejected.value = false
+  }
+}
 
 const handleInitEsign = () => {
   esignMode.value = 'init'
@@ -197,9 +214,10 @@ const submitInitEsign = async () => {
     esignInfo.value = {
       esignTaskId: taskId,
       contractId: contractId.value,
-      status: 10,
+      status: CrmContractEsignStatus.PENDING,
       statusName: '待签署'
     }
+    esignRejected.value = false
     esignMode.value = 'status'
     esignDialogTitle.value = '电子签已发起'
     message.success('电子签已发起')
@@ -223,10 +241,12 @@ const handleViewEsign = async () => {
         status.contractId = contractId.value
       }
       esignInfo.value = status || {}
-      // 顺带拉取已签署文件列表
-      const downloaded = await CrmContractEsignApi.downloadSignedContract(contractId.value)
-      if (downloaded?.fileUrls?.length) {
-        esignInfo.value.fileUrls = downloaded.fileUrls
+      // 仅已签署时拉取签署后文件（未签署下载端点返回 1020018004，避免弹假文件位）
+      if (status?.status === CrmContractEsignStatus.SIGNED) {
+        const downloaded = await CrmContractEsignApi.downloadSignedContract(contractId.value)
+        if (downloaded?.fileUrls?.length) {
+          esignInfo.value.fileUrls = downloaded.fileUrls
+        }
       }
     }
   } finally {
