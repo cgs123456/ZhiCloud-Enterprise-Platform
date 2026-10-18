@@ -12683,3 +12683,16 @@ receipt=10 / accounting_event=22 / outbox=10 / inbox=10 / 默认账户还原 NUL
 
 D1 收官（**本项**）。D 组六项明细系重建产物（原会话明细未落盘）：D2–D6 与 E1–E7 照旧、尚未重建
 确认；重建依据与原会话登记原文可能存在偏差，以本重建口径与 `Temp/zc_adr_267.md` 为准。
+
+### 12.267.7 提交后实证（1936b13e9 推送后补记）
+
+- 提交：`1936b13e9`（29 文件，+1425/−202）；**直连推送成功**（`4a740c28a..1936b13e9`，未挂代理）；
+  远端 master = `1936b13e979d6d8a571a6dfbb8d2e3a8a8dde188` = 本地 HEAD。
+- 工作区全净（`git status --porcelain` 空）。
+- plan 门禁：`plan_commit_groups.py --json` exit=0，`violations=[]`（worktree 各计数全 0）。
+- python 生产套件全量复跑：**665 tests，392.216s，FAILED (failures=5, errors=4, skipped=3)**——红项构成与
+  §12.264.4 第 6 条 / §12.265.4 / §12.266.4 逐项一致（4E=PowerShell 移植性 ×4；5F=coverage-shrink 守卫 /
+  原生 MySQL 沙箱 / plan 真树「非空」钉法 / PowerShell CLI ×2），**本项零新增红**。
+- 服务现状：pid 43452（jar 642,867,652B @2026-10-18T18:13:57，Flyway 209/210 success=1），沙箱
+  `zhicloud_sandbox_v140` / tenant 9001；E2E 种子已还原（默认账户回 NULL、MDM 种子移除、E2E
+  回款/收款单/事件/会计事件全清）。

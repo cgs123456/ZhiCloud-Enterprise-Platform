@@ -449,3 +449,7 @@
 - **不扩面登记**：付款单不接 / CRM 不回显 / 删单反审核不回流 / 不做部分回款 / 无默认账户 fail-closed /
   HTTP 人工入口 23 类明细不设防 / `FinanceReceiptForm.vue` 错标仅登记 / 零迁移零新表。
 - **下一项**：D2–D6 逐项重建确认；E1–E7 照旧。
+
+- **提交后补记（`1936b13e9` 推送后实证）**：远端 master=1936b13e979d6d8a571a6dfbb8d2e3a8a8dde188（直连推送成功）；
+  工作区全净；plan 门禁 exit=0、violations=[]；python 全量复跑 665 tests，392.216s，FAILED (failures=5, errors=4,
+  skipped=3)，红项构成同前登记、本项零新增红；服务 pid 43452 运行中（Flyway 209/210 success=1），E2E 夹具已清理复原。
