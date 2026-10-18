@@ -12436,3 +12436,126 @@ FMS/ERP 融合删除时被裁掉的「期初余额」前端（api 6 端点 + 页
 
 C6 三块分次会话：①=§12.264（done）；③=本项（done，§12.265）；②=FMS 账表（顺延，16 端点契约在备份）。
 D1-D6、E1-E7 照旧。重建依据与原会话登记原文可能存在偏差，以 HANDOFF 各 §12.2xx 原文为准。
+
+## 12.266 C 组第 6 项（②）——FMS 账表（账套口径·金额式四族）重建（ERP 单一真相）
+
+### 12.266.1 背景与目标
+
+FMS/ERP 融合（V190，提交 `412be4c6c`）删掉的「账表」死页于本项重建：`api/fms/ledger` 16 端点契约
++ 8 页面 + 3 组件（备份 `Temp/zc_fms_backup/`）。后端**从未存在**：`git log -S FmsLedger / -S fms/ledger
+-- '*.java'` 全仓零命中；`zhicloud-module-fms` 现存 Controller 仅 config 九类、无 ledger 域；`module-fms`
+无 `api` 包且全仓无外部 import `module.fms`；菜单从未种过（§12.181 原则）。设计定稿
+`Temp/zc_adr_266.md`（11 条裁定）。
+
+范围取舍（**一期金额式**）：只建明细账 / 总账 / 科目余额表 / 多栏账四族 × (list + export) = 8 端点，
+外加明细账科目树端点 = **9 端点**；辅助明细账 / 辅助余额表 / 数量明细账 / 数量总账四族（8 端点）**砍掉并
+登记**——硬依据是 `erp_gl_voucher_entry` 纯金额式（无数量列、无辅助核算列），强建需先造分录维度表 +
+凭证 UI 三层改造，属独立增量。
+
+### 12.266.2 实施内容
+
+- **迁移 V210**（`V210__erp_gl_ledger_menus.sql`，6938B，sha256=`de5cac87c5c380a47a7870d7b37c542c61f10879f5f6b9cfe8d6dbf33995a0e2`）：账表是纯查询域，
+  **不含 DDL**——本迁移只播种菜单（V158 头注计划里「账簿待后端完成后追加」的那一步）。菜单 9081–9084
+  四页面（明细账 / 总账 / 科目余额表 / 多栏账，type=2、parent=9000、sort=10–13、component=
+  `fms/ledger/*/index`）+ 9085 账簿导出 / 9086 账簿打印（type=3 共享按钮）；权限串
+  `erp:gl-ledger:{query,export,print}`（print 为纯前端权限，无后端端点）。**幂等口径按需调整**：四页共用
+  同一权限串，故页面按 `(id, path)` 预检、按钮按 `(id, permission)` 预检（若沿 V209 的 permission 预检，
+  第二页起会被首行误挡）。迁移内联自检 6 项、`V210_verify.sql` 独立复核 7 项、不种 `role_menu`
+  （V158/V149 先例）。契约 120 条。
+- **后端（module-erp）**：按职责拆四件（**单文件均 <500 行红线**）——
+  `ErpGlLedgerQueryContext`（单次查询上下文 + 派生余额口径）、`ErpGlLedgerQueryEngine`（账簿链/凭证/分录/
+  期初/科目装载 + 原始量与子树量聚合 + 范围工具）、`ErpGlLedgerRowAssembler`（四族行模型 + Excel 装配）、
+  `ErpGlLedgerServiceImpl`（9 端点门面，构造器注入）+ `ErpGlLedgerController`（9 端点，权限/访问日志）
+  + 11 个 VO（`vo/glledger/`）。**未新增 Mapper 方法**：复用 `selectListByAccountSetId` / `selectList(wrapper)` /
+  `selectListByVoucherIds`（三表服务同型链路）。多栏账导出走 `FastExcelFactory` 动态表头（框架 `ExcelUtils`
+  仅支持类头；复用其行数护栏常量与列宽 handler，**不扩框架工具类**——单一场景直接实现）。
+- **余额口径**（借正贷负净额空间）：方向系数 `s`（借向 10 / 双向 30 取 +1、贷向 20 取 −1）折算期初锚点；
+  期初 = 子树锚点净额 + 期初之前发生净额；期末 = 子树锚点净额 + 期末之前发生净额；本期发生额取原始借贷两列；
+  展示按符号拆借贷列与方向列。**父级聚合不做方向二次变换**（方向折算只在叶子发生一次）。
+  **本年累计 δ 口径**：叠加期初行的本年累计发生额当且仅当「该账套账簿链下不存在更早的已审核凭证」
+  （不读 `fms_account_set` 启用月，采用证据近似；跨模块读表破坏模块边界）。
+- **前端**：恢复裁剪 10 个新文件（`api/fms/ledger/{index,types}.ts` + 四页面 + 三组件 +
+  `FmsSubjectSelect.vue`）+ 修改 2 个现存文件（科目 API 增 `getDetailSubjectList` 与 `children`；
+  ERP 凭证列表页补 `route.query.id` 自动打开凭证）。四处旧缺陷修正：①权限串收敛 `erp:gl-ledger:*`
+  （凭证链接改 `erp:gl-voucher:query`、跳转目标由已删除的 `/fms/voucher/create` 改 `/erp/gl-voucher?id=`）；
+  ②科目来源改现成端点（`/erp/gl-account/list`；旧 `getSubjectSimpleList` 已不存在）；③账套 `start_time`
+  为 yyyyMM 数字，按字符串切月（不再 `dayjs(number)` 误解析，与 ADR 265 的 `isJanuary` 同源修正）；
+  ④多栏账专栏分组判定改 ERP 方向值域 10/20（旧死页是 FMS 的 1/2）。
+
+### 12.266.3 验证链（逐项实测）
+
+| 环节 | 结果 |
+|------|------|
+| 编译（module-erp） | BUILD SUCCESS |
+| 定向单测 | `ErpGlLedgerServiceImplTest` **17/0/0**（17 例：方向拆分/父级子树聚合/δ 两分支/四族行模型/专栏/过滤/空账套/导出） |
+| 模块回归 | `mvn -pl zhicloud-module-erp test` **222/0/0/0** |
+| 门禁 | errcode RC=0、preauthorize RC=0、scan_tx RC=0、bare_throws RC=0、duplicate_ddl RC=0、契约 RC=0（tracked=120） |
+| SQL lint | 本项迁移/复核零违规（全库 19 条为既有红，与本项无关） |
+| 前端 | `ts:check` RC=0（首跑 8 错，已修）、`build:prod` RC=0 |
+| 停服重打 | 停旧进程 → `mvn -o -B -DskipTests -pl zhicloud-server -am package` → jar 642,851,352B @2026-10-18T16:23:23 |
+| 冷启 | 582s，Flyway V210 success=1 |
+| 真机 E2E | **102/102（四跑收敛：首跑 93/100 → 二跑 101/102 → 三跑 101/102 → 四跑 102/102）** |
+
+E2E 共 **102 项**（分段：夹具 1 + 菜单与权限面 8 + 科目树 3 + 明细账 21 + 总账 11 +
+科目余额表 17 + 多栏账 16 + 隔离与空结果 7 + 导出 xlsx 实读 8 + 入参与鉴权 4 + 清理复原 6）：
+含跨年 δ=0、草稿/无账簿/他账套凭证排除、双向账套隔离（有账簿有凭证 vs 有账簿无凭证 vs 不存在
+账套）、多栏账自然方向专栏，四个导出 xlsx 由 openpyxl 实读表头与行数。
+
+### 12.266.4 失败与缺陷登记（诚实链）
+
+1. **产品缺陷（自查发现并修正）**：父级期初丢子科目锚点——原实现 `openingNet(父) = s(父) × opening(父) + …`，
+   子科目各自的 `s × opening` 从未进入父级期初，导致父级期初恒丢子树期初。修正为科目级存「方向折算后的
+   锚点净额」、子树只做加法（ADR 裁定 5），并由单测 `testGetDetailList_parentSubtreeAggregationKeepsChildDirection`
+   与 `testGetSubjectBalanceList_parentAggregatesChildOpeningWithoutSecondTransform` 钉住。
+2. **编译面**：`@ExcelProperty` 误用 `com.alibaba.excel.annotation`（本仓为 FastExcel `cn.idev.excel`）→ 首跑
+   29 错；`FastExcelFactory.write(stream, head)` 无动态表头重载 → 改 `write(stream).head(head)`。
+3. **迁移面（本项最贵的一次）**：V210 按钮种子写成 ``'system' AS `creator', NOW() AS `create_time` ``
+   （`creator` 的反引号被单引号顶掉）→ Flyway 报 SQL 语法错 → **冷启失败、服务没起来**（Tomcat 未启动，
+   就绪探针 900s 超时）。处置：修笔误 → 重算 V210 原始字节 sha256 并同步契约 → 删 Flyway `success=0` 的
+   失败行（MySQL 无事务 DDL，需 repair）→ 重打包重启。**新增手法（后续迁移沿用）**：迁移脚本先在真库
+   `START TRANSACTION; … ROLLBACK;` 里跑一遍，确认 6 条自检全 PASS 且回滚后零副作用，再重打包重启
+   ——不必靠"重打→重启→翻日志"发现低级语法错。本次首轮已按此手法复验：6/6 PASS、回滚后菜单计数 0。
+4. **结构红线**：ServiceImpl 初稿 1066 行（>500 行红线）→ 按「上下文/引擎/装配/门面」拆四件；顺带把方向系数
+   收敛到上下文唯一口径（删引擎副本）。
+5. **测试面**：两处单测期望写错（总账本年累计行 rowType=4 而非 3；多栏账导出父科目有子科目→
+   动态表头 8 列而非 7）。**E2E 四跑收敛**：首跑 93/100 → 二跑 101/102 → 三跑 101/102 → 四跑
+   102/102，失败项全部为断言或夹具口径错，产品行为无误——母体本年累计贷方漏算 1002 的 500（应 900）；
+   科目树活动集为 6 非 7；总账行类型序列末位是 4（总账无「本期合计」行）；**隔离面夹具自相矛盾**
+   （给乙账套放了凭证却断言其为空——改为新增丙账套「有账簿无凭证」测空结果，乙账套改断言「只看得到
+   自己的 666」，形成双向隔离）；入参与未登录按框架统一风格判**响应体 code**（400/401，HTTP 均为
+   200）而非 HTTP 状态；脚本 `sql()` 把 DELETE 的空输出当失败（改为按返回码判错、仅查询类要求非空，
+   避免静默吞错）。
+6. **前端面**：`ts:check` 首跑 8 错——期间字段声明为可选致 `buildPeriodFilename` 4 处类型不匹配、`el-option`
+   的 `value` 不接受 `undefined`、以及**科目 API 导入方式**沿用旧死页的 `import * as`（旧契约导出独立函数，
+   现文件导出对象 `FmsSubjectApi`）3 处「方法不存在」。中途我一度误判为 vue-tsc 增量缓存陈旧（清理了
+   tsbuildinfo）——判断有误，根因是导入方式，已如实登记。
+7. **既有红不重复登记**：`sql_migration_lint` 全库 19 条（R5 文件末尾缺回车等）集中在历史迁移与
+   verify，本项新增文件零违规；守卫测试真树「非空」钉法红（修法=移合成输入）等前登记项维持。
+
+### 12.266.5 不扩面与已知限制登记
+
+1. 辅助/数量四族 8 端点不建（分录层无该两类事实）——独立增量项。
+2. δ 为证据近似：启用年无任何凭证 + 跨年查询 + `yD/yC ≠ 0` 时「本年累计」偏移 `(yD−yC)`；`yD=yC=0` 时两分支
+   恒等、零偏差。
+3. 口径前提：账表面向「启用后」期间（启用前无已审核凭证）；直连 API 可传启用前期间，结果与真实不符
+   （前端期间选择器已按账套启用月禁用，服务端登记为已知边界）。
+4. 双向(30)科目按借方口径锚定；净贷时展示为贷方列。
+5. 多栏账：挂在父级本身或更深后代的分录不进专栏（只计入行借贷/余额）。
+6. 本项不新增错误码（只读域无业务拒绝）、不新增 DB 表、不种 `role_menu`；错误码段 1-030-713 留给后续。
+7. 账表**消费** C6③ 的 `erp_gl_initial_balance`，但**不消费** `erp_gl_account.opening_*/closing_*`
+   （租户口径双轨并存，ADR 265 登记 2 延续）。
+8. 聚合一次性加载 `voucher_date ≤ 期末` 的全部历史凭证（期初口径需要全量前置发生额；不读账套表取不到启用月
+   下界）——大租户数据量列为后续优化项。
+9. 菜单图标取 ep:* 命名空间（明细账 ep:list / 总账 ep:document / 科目余额表 ep:grid / 多栏账 ep:histogram），
+   非契约项。
+11. 导出响应在本仓**全局**不带 `Content-Disposition` / `Content-Type`（框架 `ExcelUtils`
+   先 `doWrite` 冲刷流、后设响应头，响应已以 chunked 提交）——已实测对照 C6③ 的
+   `/erp/gl-initial-balance/export-excel`，行为完全一致，**非本项引入**；前端按 blob +
+   自定文件名保存（`download.excel(data, name)`）故不受影响。修该框架顺序属共享基础设施
+   变更，本项不扩面，登记备查。
+10. demo 工具链冻结不动（R-033 裁决阻塞全量重生）；旧 verify 不改；`migration-contract.json` 仅 +V210。
+
+### 12.266.6 C 组矩阵基线（C6 三块收官）
+
+C6 三块全部收官：①=§12.264（HRM 尾置）、③=§12.265（FMS 期初余额）、②=§12.266（FMS 账表，**本项**）。
+D1-D6、E1-E7 照旧。重建依据与原会话登记原文可能存在偏差，以 HANDOFF 各 §12.2xx 原文为准。

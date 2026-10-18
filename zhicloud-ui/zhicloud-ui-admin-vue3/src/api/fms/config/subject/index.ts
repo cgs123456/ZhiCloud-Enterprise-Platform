@@ -30,6 +30,7 @@ export interface FmsSubjectVO {
   sort?: number
   remark?: string
   createTime?: Date
+  children?: FmsSubjectVO[] // 子科目（前端 handleTree 建树后回填）
 }
 
 export const FmsSubjectApi = {
@@ -44,6 +45,14 @@ export const FmsSubjectApi = {
   // 查询详情
   getSubject: async (id: number) => {
     return await request.get({ url: '/erp/gl-account/get?id=' + id })
+  },
+  // 查询明细账科目树节点（期间内有发生额或期初非零的科目及其祖先，账表口径 C6②）
+  getDetailSubjectList: async (params: {
+    accountSetId: number
+    startMonth: string
+    endMonth: string
+  }) => {
+    return await request.get<FmsSubjectVO[]>({ url: '/erp/gl-ledger/detail-subjects', params })
   },
   // 新增
   createSubject: async (data: FmsSubjectVO) => {

@@ -154,6 +154,7 @@ import ErpGlVoucherForm from './ErpGlVoucherForm.vue'
 defineOptions({ name: 'ErpGlVoucher' })
 
 const message = useMessage()
+const route = useRoute()
 
 const loading = ref(true)
 const list = ref<any[]>([])
@@ -221,5 +222,12 @@ const handleDelete = async (id: number) => {
   } catch {}
 }
 
-onMounted(() => getList())
+// 账表页跳凭证：/erp/gl-voucher?id=xxx 直接打开该凭证（旧 FMS 凭证页已随融合删除，ADR 266 裁定 10）
+onMounted(async () => {
+  await getList()
+  const voucherId = Number(route.query.id)
+  if (voucherId) {
+    openForm('update', voucherId)
+  }
+})
 </script>

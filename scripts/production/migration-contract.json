@@ -835,6 +835,13 @@
       "sha256": "7cbd5f8b9f88fbf80fbafa593fbd5cbafa1095df50546f89bd4eac47179f77c0",
       "verification_file": "V209_verify.sql",
       "verification_sha256": "872230897fe457f54599894011af1d2ac7685b52b0b865ffa4d3087078c19d6e"
+    },
+    {
+      "version": 210,
+      "file": "V210__erp_gl_ledger_menus.sql",
+      "sha256": "de5cac87c5c380a47a7870d7b37c542c61f10879f5f6b9cfe8d6dbf33995a0e2",
+      "verification_file": "V210_verify.sql",
+      "verification_sha256": "25b4e0e2ad078748863b560db54a0f89603e0796b5ce2bab1db5223ad84734a4"
     }
   ]
 }
