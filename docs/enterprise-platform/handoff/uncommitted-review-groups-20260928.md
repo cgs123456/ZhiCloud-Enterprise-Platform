@@ -12559,3 +12559,19 @@ E2E 共 **102 项**（分段：夹具 1 + 菜单与权限面 8 + 科目树 3 + �
 
 C6 三块全部收官：①=§12.264（HRM 尾置）、③=§12.265（FMS 期初余额）、②=§12.266（FMS 账表，**本项**）。
 D1-D6、E1-E7 照旧。重建依据与原会话登记原文可能存在偏差，以 HANDOFF 各 §12.2xx 原文为准。
+
+### 12.266.7 提交后实证（d43bed4ea 推送后补记）
+
+- 提交：`d43bed4ea`（35 文件，+4342/−1）；**直连推送成功**（`3d98e007d..d43bed4ea`，未挂代理）；
+  远端 master = `d43bed4eae94814304560ece35ba77cd8db16f2f` = 本地 HEAD。
+- 工作区全净（`git status --porcelain` 空）。
+- plan 门禁：`plan_commit_groups.py --json` exit=0，`violations=[]`。
+- `V210_verify.sql` 对已应用迁移的沙箱库**实跑 7/7 PASS**（Flyway 记录、菜单挂载、页面 component+sort、
+  导出/打印按钮、权限串恰好 3 个、无 `fms:ledger` 平行串、未种 role_menu）。
+- python 生产套件全量复跑：**665 tests，445.706s，FAILED (failures=5, errors=4, skipped=3)**——红项构成与 §12.264.4 第 6 条 / §12.265.4 逐项一致
+  （4E = PowerShell 移植性用例 ×4：脚本可发现性、非 ASCII 脚本 BOM、双宿主解析、pwsh 版本记录；
+  5F = coverage-shrink 守卫 / 原生 MySQL 沙箱 / plan 真树「非空」钉法 / PowerShell CLI ×2），
+  **本项零新增红**（用例总数与上轮相同，新增的 V210 契约条目、菜单专用迁移与四个账表页面未引入任何新红）。
+- 服务现状：pid 35564（jar 642,851,352B @2026-10-18T16:23:23，Flyway V210 success=1），沙箱
+  `zhicloud_sandbox_v140` / tenant 9001；E2E 夹具已清理复原（`WF-LG-` 账套与账簿、`WFLG` 科目、
+  9082xx 凭证与分录、`WF-LG` 期初行全部归零，原有 6 张凭证与 6 条无账簿凭证未受影响）。
