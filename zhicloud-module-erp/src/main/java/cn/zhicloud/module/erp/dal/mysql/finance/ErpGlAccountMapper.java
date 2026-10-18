@@ -43,6 +43,24 @@ public interface ErpGlAccountMapper extends BaseMapperX<ErpGlAccountDO> {
         return selectList(ErpGlAccountDO::getIsLeaf, isLeaf);
     }
 
+    /**
+     * 按科目类型查询（期初余额页按类别取该类别全树，按编码升序；C6③ / ADR 265）
+     */
+    default List<ErpGlAccountDO> selectListByType(Integer type) {
+        return selectList(new LambdaQueryWrapperX<ErpGlAccountDO>()
+                .eq(ErpGlAccountDO::getType, type)
+                .orderByAsc(ErpGlAccountDO::getCode));
+    }
+
+    /**
+     * 查询全部末级科目（按编码升序；期初余额导出 / 导入模板，C6③ / ADR 265）
+     */
+    default List<ErpGlAccountDO> selectListByLeafOrderByCode() {
+        return selectList(new LambdaQueryWrapperX<ErpGlAccountDO>()
+                .eq(ErpGlAccountDO::getIsLeaf, true)
+                .orderByAsc(ErpGlAccountDO::getCode));
+    }
+
     default PageResult<ErpGlAccountDO> selectPage(ErpGlAccountPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<ErpGlAccountDO>()
                 .likeIfPresent(ErpGlAccountDO::getCode, reqVO.getCode())

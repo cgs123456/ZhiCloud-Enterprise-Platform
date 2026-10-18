@@ -8,6 +8,7 @@ import cn.zhicloud.module.erp.dal.dataobject.finance.ErpGlVoucherDO;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -55,6 +56,17 @@ public interface ErpGlVoucherMapper extends BaseMapperX<ErpGlVoucherDO> {
 
     default Long selectCountByAccountBookId(Long accountBookId) {
         return selectCount(ErpGlVoucherDO::getAccountBookId, accountBookId);
+    }
+
+    /**
+     * 统计指定账簿集合下指定状态的凭证数（期初余额保存护栏：已审核凭证锁定，C6③ / ADR 265）
+     *
+     * <p>调用方须保证 accountBookIds 非空（空集合 IN 查询语义歧义）。
+     */
+    default Long selectCountByAccountBookIdsAndStatus(Collection<Long> accountBookIds, Integer status) {
+        return selectCount(new LambdaQueryWrapperX<ErpGlVoucherDO>()
+                .in(ErpGlVoucherDO::getAccountBookId, accountBookIds)
+                .eq(ErpGlVoucherDO::getStatus, status));
     }
 
 }

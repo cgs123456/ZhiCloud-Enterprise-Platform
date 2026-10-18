@@ -9,3 +9,4 @@ DELETE FROM "erp_finance_payment";
 DELETE FROM "erp_finance_receipt";
 DELETE FROM "inventory_item";
 DELETE FROM "erp_stock";
+DELETE FROM "erp_gl_initial_balance";

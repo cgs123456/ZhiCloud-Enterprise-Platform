@@ -380,3 +380,21 @@
   （§12.117 同类；修法=移合成输入，登记为后续项）；python 全量二跑 Ran 665 tests，448.911s，FAILED (failures=5, errors=4, skipped=3)，余红均本机环境项
   （node_modules MAX_PATH / 原生 MySQL 组件缺 / BASELINE dangling=0 用例），与本项无关。
 - **下一项**：C6③（FMS 期初余额——先 ADR 定账套口径）→ C6②（FMS 账表）；D/E 组照旧。
+
+## 后记十二：C 组第 6 项（③）——§12.265 FMS 期初余额（账套口径）重建
+
+- **已完成**：FMS 期初余额重建于 ERP 单一真相——新表 erp_gl_initial_balance（uk=tenant/账套/科目、
+  13 列、无冗余索引）+ 6 端点（list/save/trial-balance/export-excel/get-import-template/import，权限
+  erp:gl-initial-balance:*）+ 菜单 9090–9093（FMS 配置树，不种 role_menu）+ 前端 4 文件恢复裁剪
+  （直连 ERP，V194 口径；数量/辅助核算与旧 closing 域不恢复，旧页 isJanuary 误解析与 editable 依赖
+  两缺陷修正）。证据：基线 188/0 → 契约 119/215/0 → 阶段校验 116/116 ALL PASS → 定向 17/17 →
+  回归 205/0/0 → 四门禁 RC=0 → ts:check 0 + build:prod 0 → 重打 0 → 冷启 ~428s（Flyway V209
+  success=1）→ 真机 E2E 58/58（二跑）。
+- **失败登记**：见 HANDOFF §12.265.4——apply2 锚点笔误（apply2b 补完）、DO javadoc `*/` 自终止、
+  MP insert 重载 any() 歧义、严格存根口径、阶段校验端点计数注释误计、E2E 首跑 57/58（system_menu
+  本无 tenant_id 列 + sql() 静默吞错）；均工具/脚本面，已修，产品零缺陷。
+- **口径提醒**：派生年初余额=只读不入库；负数三重护栏（前端 min=0 / VO @DecimalMin / 导入 712-005）
+  → API 不可产生负数，trial 负数拆分为防御面（历史/旁路数据，DB 直写已验）；差分 upsert=提交行全量
+  写、未提交行不动、零行保留、无删除路径；无账簿视为可保存；锁定=账套经账簿链存在 status=20 凭证；
+  导入四金额全空行跳过、null=0（显式 0=清零）、返回写入行数。
+- **下一项**：C6②（FMS 账表 ledger 域，16 端点契约在备份）；D/E 组照旧。

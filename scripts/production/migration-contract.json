@@ -828,6 +828,13 @@
       "sha256": "f49f1f060886dc920c66ec761163140ed5585bce108e3c8a7c613cb155d94c89",
       "verification_file": "V208_verify.sql",
       "verification_sha256": "70915628a7f479e038c888bd8da042bd0b0059d029dc8e4957578d54c7154d49"
+    },
+    {
+      "version": 209,
+      "file": "V209__erp_gl_initial_balance.sql",
+      "sha256": "7cbd5f8b9f88fbf80fbafa593fbd5cbafa1095df50546f89bd4eac47179f77c0",
+      "verification_file": "V209_verify.sql",
+      "verification_sha256": "872230897fe457f54599894011af1d2ac7685b52b0b865ffa4d3087078c19d6e"
     }
   ]
 }

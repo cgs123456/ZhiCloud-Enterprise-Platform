@@ -12320,3 +12320,111 @@ sql/mysql 安装脚本与旧 verify 不动等裁定在内）。
 
 C6 三块分次会话：①=本项（done，§12.264）；③=FMS 期初余额、②=FMS 账表（顺延，先 ADR 定口径）。
 D1-D6、E1-E7 照旧。重建依据与原会话登记原文可能存在偏差，以 HANDOFF 各 §12.2xx 原文为准。
+
+## 12.265 C 组第 6 项（③）——FMS 期初余额（账套口径）重建（ERP 单一真相）
+
+### 12.265.1 背景与目标
+
+FMS/ERP 融合删除时被裁掉的「期初余额」前端（api 6 端点 + 页面/试算弹窗/导入弹窗）于本项在 ERP 侧重建：
+数据落 ERP 新表 `erp_gl_initial_balance`（**账套口径**，uk=tenant/账套/科目），FMS 页面直连 ERP 端点
+（V194 科目先例：权限的单一真相在 ERP，不造 fms:* 平行串）。旧 FMS closing 域（期间/结账/currentMonth
+比对）已随融合删除，本项不恢复；设计定稿 `Temp/zc_adr_265.md`（含两次修订：导入行语义、索引取舍）。
+
+### 12.265.2 实施内容
+
+- **迁移 V209**（`V209__erp_gl_initial_balance.sql`，7231B，sha256=7cbd5f8b…）：新表 13 列（金额
+  decimal(20,4)，uk=(tenant_id,account_set_id,account_id) 不含 deleted——V199 先例；**不建**冗余非唯一
+  索引，uk 前缀即覆盖账套维度查询——ADR 索引取舍）+ 菜单种子 9090–9093（9090=FMS 配置树 9000 下
+  「期初余额」sort=9、icon=ep:money、component=fms/config/initial-balance/index；9091–9093=保存/导入/导出
+  按钮；幂等预检 V194 式、不种 role_menu——V158 先例）+ 迁移内联自检 6 项。
+  `V209_verify.sql`（LF 归一化 sha256=87223089…）独立复核 5 项。契约 119 条。
+- **后端（module-erp）**：DO / Mapper / Service+Impl / Controller + 4 VO（`vo/glinitialbalance/`）；
+  6 端点：`GET /erp/gl-initial-balance/list`、`PUT /save`、`GET /trial-balance`、`GET /export-excel`、
+  `GET /get-import-template`、`POST /import`（multipart）；权限
+  `erp:gl-initial-balance:{query,update,import,export}`（模板下载复用 import 权限，不单设按钮）。
+  错误码启用 `1-030-712-000..005`（LOCKED / SUBJECT_DUPLICATE / PROFIT_LOSS_YEAR_OPENING /
+  IMPORT_SUBJECT_NOT_EXISTS / IMPORT_SUBJECT_NOT_LEAF / IMPORT_AMOUNT_INVALID）。
+  支撑增补：`ErpGlAccountMapper.selectListByType`、`selectListByLeafOrderByCode`；
+  `ErpGlVoucherMapper.selectCountByAccountBookIdsAndStatus`。
+- **派生与试算口径**：年初余额=派生只读（借向 10：opening−yearDebit+yearCredit；贷向 20/双向 30：
+  opening+yearDebit−yearCredit）；试算平衡按方向归集期初（10→借、20→贷、30 按符号拆分，负数
+  negate() 等额计贷方、两列非负），`balanced`=期初差与累计差 |差|<0.005；数据源=该账套表内全行
+  （未录行按 0）。
+- **保存语义/护栏**：差分 upsert（请求内科目行全量写、未提交行不动、**零行保留**、无删除路径）；
+  护栏=账套经账簿链存在 status=20 凭证即拒写（无账簿视为可保存）；损益类（40/50）|年初|<0.005 才可写；
+  校验顺序 护栏→科目重复→末级（含存在性）→损益类年初→upsert。
+- **导入语义（终稿）**：四金额全空行跳过（模板未动过）；任一非空则 null=0 参与（显式填 0=清零）；
+  编码空/不存在→712-003、非末级→712-004、负数→712-005、文件内重复科目→712-001（经 save 汇总校验）；
+  整批校验失败事务回滚；返回写入行数。模板=本租户全部末级科目（金额留空）。
+- **非负三重护栏（口径登记）**：前端输入 min=0（沿旧页）+ save VO 四金额 `@DecimalMin(0)` + 导入
+  712-005 → **API 面不可产生负数**；trial 的「负计贷方」为防御面（ADR 裁定 5 保留口径，覆盖历史/旁路
+  数据），本项以 DB 直写（out-of-band）在真机证其拆分正确（E2E 断言 14），并断言 API 负数被 VO 拒绝
+  （断言 23）。
+- **前端（恢复裁剪）**：`api/fms/config/initial-balance/index.ts`（6 端点直连 ERP + 3 类型 VO）+
+  `views/fms/config/initial-balance/`（index.vue / FmsTrialBalanceDialog.vue /
+  FmsInitialBalanceImportForm.vue）；**不恢复** FmsInitialAssistForm.vue（数量/辅助核算整链砍掉，
+  一期金额式——ADR 裁定 9）；值域用 ERP 枚举本地常量镜像（不依赖未播种字典）；旧页两缺陷修正：
+  `isJanuary` 用 `startTime % 100 === 1`（不再 `new Date` 毫秒误解析）、`editable` 作废（按钮可用性
+  =fmsStore.isAccountSetWritable+权限串，服务端强校验为准）；试算弹窗口径行改「期初余额/累计发生额」。
+- **测试面**：`ErpGlInitialBalanceServiceImplTest` 13 例 Mockito + `ErpGlInitialBalanceH2TableTest`
+  4 例真表（列对齐/唯一键/账套隔离/update）；H2 `create_tables.sql` 追加表镜像（+1235B）+
+  `clean.sql` 追加 DELETE（+38B）。
+
+### 12.265.3 验证链与实证
+
+- 改动前基线（先测）：module-erp **188/0/0**。
+- 实施五段（apply1/2/2b/3/4，Python 字节级脚本、一次性禁止重跑）：V209/V209_verify/契约 → 9 Java 文件
+  + 2 Mapper 增补（编译 SUCCESS）→ 测试 + H2 SQL → 前端 4 文件。
+- 契约门禁：**PASSED tracked=119 scanned=215 findings=0**（V209 原始字节哈希 + V209_verify LF 归一化
+  哈希实算一致）。
+- 阶段校验（`Temp/zc_c6c_stage.py`，字节级）：**116 项 PASS / 0 FAIL ALL PASS**——含 V209/V209_verify
+  行尾与 lint R1-R5 零 findings、四门禁 RC=0（errcode/scan_tx/bare-throws/preauthorize）、
+  duplicate_ddl findings=0、后端符号/权限面、H2 镜像、前端 6 端点与旧缺陷修正断言、UI 全仓无
+  FmsInitialAssistForm / 无 fms:* 平行串、编辑文件行尾不变量。
+- 定向测试：新 **17/17**（13 Mockito + 4 H2）。
+- 模块回归：**205/0/0**（188 + 17）。
+- 前端：`ts:check` **RC=0**；`build:prod` **RC=0**（前端 diff 非零，按定式全跑）。
+- 重打：`mvn -o -B -DskipTests package -pl zhicloud-server -am` **PKG_RC=0**（jar 642,791,501B @14:42）。
+- 停旧服（pid 31980）→ 启新服（pid 41144）→ 冷启就绪 ~428s → Flyway **V209 success=1**（E2E 读数）。
+- 真机 E2E（`Temp/zc_c6c_e2e.py`，tenant 9001 / zhicloud_sandbox_v140）：**58/58 PASS**（二跑；
+  首跑 57/58 见 .4）——6 端点全链、派生三向年初、试算含双向负数拆分、7 类错误码（712-000..005 六码
+  + 复用 701-003 非末级）、锁定双端点（save+import 同锁）且只读不受限、模板/导出 xlsx 用 openpyxl
+  实读对账、差分语义（未提交行不动/零行保留/二次导入幂等=update）、边界（不存在账套全零读数）与隔离
+  （账套 B 全零）、DB 落地面（表/唯一键 3 列/无非唯一索引/Flyway/菜单 4 条/权限串 4 唯一/组件与父级/
+  无 role_menu）、清理复原。
+- 日志留档：`Temp/zc-c6c-stage.log`、`Temp/zc-c6c-e2e.log`、`Temp/zc_mvn_pkg_265.log`、
+  `Temp/zc_build_265.log`、`Temp/zc_server_265.log`。
+
+### 12.265.4 首跑与执行实证登记（诚实链）
+
+1. **apply2 锚点笔误（脚本缺陷，已修）**：ErpGlAccountMapper 补丁锚点把 `selectPage` 返回泛型写成
+   ReqVO（实际 `PageResult<ErpGlAccountDO>`）→ 断言失败中断；人工核对断点后以 apply2b 补完两处 Mapper
+   增补（apply2 已写内容逐项核对，无半成品残留）。
+2. **DO Javadoc `*/` 自终止（编码缺陷，已修）**：块注释内 `opening_*/current_*/closing_*` 的 `*/` 提前
+   闭合 → javac 连锁报错；改为 `opening_* /` 后编译 SUCCESS（此后注释避免 `_*/` 序列）。
+3. **Mockito/MP 口径两则（装配缺陷，已修）**：MP 3.5.16 `insert` 有 `Collection` 重载 → `any()` 歧义，
+   改 `any(ErpGlInitialBalanceDO.class)`；严格存根下导入类错误码用例（未知科目/负数）在进入 save 前
+   抛出，不桩账簿护栏（多余桩即 UnnecessaryStubbing）。
+4. **阶段校验首跑 1 红（脚本缺陷，已修）**：api 端点计数断言把文件头注释中的
+   `/erp/gl-initial-balance/*` 一并计入（7≠6）；改为按 `url: '` 前缀精确计数后 ALL PASS。
+5. **E2E 首跑 57/58（脚本缺陷链，已修）**：断言 56 以 `tenant_id IS NOT NULL` 查 system_menu——该表
+   **本无 tenant_id 列**（全局表），SQL 报错被 `sql()` 静默吞为 `""`（假绿路径）；修正为「断言该列
+   不存在」并让 `sql()` 透出 stderr 首行，二跑 58/58。
+6. **负数口径登记（设计事实）**：见 12.265.2 三重护栏——API 不可产生负数，trial 负数拆分为防御面
+   （DB 直写验证）；E2E 断言 23 以 VO 拒绝（code=400）为证。
+7. **就绪等待（工具口径沿用）**：`zc_wait_265.py` 直接使用有效枚 token（264 修正下沉），冷启 ~428s
+   就绪，无 token 误报。
+
+### 12.265.5 不扩面登记（维持）
+
+- 数量核算 / 辅助核算整链不建（不恢复 `FmsInitialAssistForm.vue`）；一期金额式（ADR 裁定 9）。
+- 旧 FMS closing 域（期间/结账/currentMonth 比对）不恢复；旧 `editable` 逻辑作废。
+- `erp_gl_account.opening_*/current_*/closing_*`（租户口径）两轨并存、**暂不互写**；三表仍为纯凭证
+  聚合，期初接线（三表消费期初）归 C6② 一并评估（登记）。
+- demo 工具链冻结不动（R-033 裁决阻塞全量重生）；旧 verify 不改；`migration-contract.json` 仅 +V209。
+- C6②（FMS 账表 ledger 域）顺延为下一项；D/E 组照旧。
+
+### 12.265.6 C 组矩阵基线（顺延声明）
+
+C6 三块分次会话：①=§12.264（done）；③=本项（done，§12.265）；②=FMS 账表（顺延，16 端点契约在备份）。
+D1-D6、E1-E7 照旧。重建依据与原会话登记原文可能存在偏差，以 HANDOFF 各 §12.2xx 原文为准。

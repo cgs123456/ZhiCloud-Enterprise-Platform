@@ -262,6 +262,14 @@ ErrorCode PURCHASE_ORDER_ITEM_RETURN_FAIL_IN_EXCEED = new ErrorCode(1_030_101_00
             "累计过账金额({})超过来源单据勾稽总额({})：事件类型({})，来源单据({}:{})");
     ErrorCode ACCOUNTING_EVENT_TENANT_REQUIRED = new ErrorCode(1_030_711_017, "会计事件操作缺少租户上下文，已拒绝执行");
 
+    // ========== ERP 期初余额（账套口径，C6③ / ADR 265）1-030-712-000 ==========
+    ErrorCode GL_INITIAL_BALANCE_LOCKED = new ErrorCode(1_030_712_000, "账套已存在已审核凭证，初始余额不可修改");
+    ErrorCode GL_INITIAL_BALANCE_SUBJECT_DUPLICATE = new ErrorCode(1_030_712_001, "初始余额中存在重复科目({})");
+    ErrorCode GL_INITIAL_BALANCE_PROFIT_LOSS_YEAR_OPENING = new ErrorCode(1_030_712_002, "损益类科目({})的年初余额必须为 0");
+    ErrorCode GL_INITIAL_BALANCE_IMPORT_SUBJECT_NOT_EXISTS = new ErrorCode(1_030_712_003, "导入文件第({})行科目编码({})不存在");
+    ErrorCode GL_INITIAL_BALANCE_IMPORT_SUBJECT_NOT_LEAF = new ErrorCode(1_030_712_004, "导入文件第({})行科目编码({})非末级科目");
+    ErrorCode GL_INITIAL_BALANCE_IMPORT_AMOUNT_INVALID = new ErrorCode(1_030_712_005, "导入文件第({})行金额({})不合法");
+
     // ========== ERP 库存批次 1-030-405-000 ==========
     ErrorCode STOCK_BATCH_NOT_EXISTS = new ErrorCode(1_030_405_000, "库存批次不存在");
     ErrorCode STOCK_BATCH_NO_DUPLICATE = new ErrorCode(1_030_405_001, "批次号已存在：{}");
