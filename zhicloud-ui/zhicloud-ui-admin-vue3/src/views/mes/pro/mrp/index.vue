@@ -61,6 +61,16 @@
           >
             转建议
           </el-button>
+          <!-- 3 已转建议：查看逐行转出工单回链（结果行 → 工单） -->
+          <el-button
+            v-if="scope.row.status === MrpPlanStatus.CONVERTED"
+            v-hasPermi="['mes:pro-mrp:query']"
+            link
+            type="primary"
+            @click="openConvertOrders(scope.row)"
+          >
+            转出工单
+          </el-button>
           <el-button v-hasPermi="['mes:pro-mrp:query']" link type="primary" @click="openResult(scope.row)">
             结果
           </el-button>
@@ -89,10 +99,14 @@
       <el-table-column label="供应商" align="center" prop="supplierId" />
     </el-table>
   </Dialog>
+
+  <!-- MRP 转出工单回链弹窗（3 已转建议） -->
+  <ConvertOrdersDialog ref="convertOrdersRef" />
 </template>
 <script setup lang="ts">
 import { MrpApi } from '@/api/mes/pro/mrp'
 import { dateFormatter } from '@/utils/formatTime'
+import ConvertOrdersDialog from './ConvertOrdersDialog.vue'
 
 defineOptions({ name: 'MesMrp' })
 
@@ -188,6 +202,12 @@ const openResult = async (row: any) => {
   } finally {
     resultLoading.value = false
   }
+}
+
+/** 转出工单回链弹窗（3 已转建议；历史已转计划无链可回溯） */
+const convertOrdersRef = ref()
+const openConvertOrders = (row: any) => {
+  convertOrdersRef.value?.open(row)
 }
 
 onMounted(() => getList())

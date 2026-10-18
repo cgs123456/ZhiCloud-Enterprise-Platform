@@ -3,6 +3,7 @@ package cn.zhicloud.module.mes.controller.admin.pro.mrp;
 import cn.zhicloud.framework.common.pojo.CommonResult;
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
+import cn.zhicloud.module.mes.controller.admin.pro.mrp.vo.MesProMrpConvertLinkRespVO;
 import cn.zhicloud.module.mes.controller.admin.pro.mrp.vo.MesProMrpConvertRespVO;
 import cn.zhicloud.module.mes.controller.admin.pro.mrp.vo.MesProMrpPlanCreateReqVO;
 import cn.zhicloud.module.mes.controller.admin.pro.mrp.vo.MesProMrpPlanPageReqVO;
@@ -90,6 +91,14 @@ public class MesProMrpController {
     @PreAuthorize("@ss.hasPermission('mes:pro-mrp:calculate')")
     public CommonResult<MesProMrpConvertRespVO> convertMrpPlan(@RequestParam("id") Long id) {
         return success(mrpService.convertMrpPlan(id));
+    }
+
+    @GetMapping("/plan/{planId}/convert-link")
+    @Operation(summary = "获取 MRP 计划转建议的行级回链")
+    @Parameter(name = "planId", description = "MRP 计划编号", required = true, example = "1024")
+    @PreAuthorize("@ss.hasPermission('mes:pro-mrp:query')")
+    public CommonResult<List<MesProMrpConvertLinkRespVO>> getMrpConvertLinks(@PathVariable("planId") Long planId) {
+        return success(mrpService.getMrpConvertLinks(planId));
     }
 
 }

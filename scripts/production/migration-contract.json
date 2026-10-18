@@ -849,6 +849,13 @@
       "sha256": "9bfb081eddbce67db3996759cd9966fcce51d930b3de44ca3bd1be437c4b0420",
       "verification_file": "V211_verify.sql",
       "verification_sha256": "bd00fd1486477e94c03a11bbf817632340f41d201f2f800e750dc38854aec92c"
+    },
+    {
+      "version": 212,
+      "file": "V212__mes_route_capacity_mrp_convert_link.sql",
+      "sha256": "432efcd259e490ec0ab0c18d06f63b5fde1d44c334afeab81672a002a27b0a6a",
+      "verification_file": "V212_verify.sql",
+      "verification_sha256": "16a521b0f40c7cc61fbd86816c60b503b62983433eecb6f05004a319dd0d9f4d"
     }
   ]
 }

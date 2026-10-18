@@ -51,6 +51,9 @@ public class MesProRouteServiceImpl implements MesProRouteService {
     private MesProRouteProductBomService routeProductBomService;
     @Resource
     @Lazy
+    private MesProRouteCapacityService routeCapacityService;
+    @Resource
+    @Lazy
     private MesMdItemService itemService;
 
     @Override
@@ -101,6 +104,7 @@ public class MesProRouteServiceImpl implements MesProRouteService {
         routeProcessService.deleteRouteProcessByRouteId(id);
         routeProductService.deleteRouteProductByRouteId(id);
         routeProductBomService.deleteRouteProductBomByRouteId(id);
+        routeCapacityService.deleteRouteCapacityByRouteId(id);
         // 2.2 删除工艺路线
         routeMapper.deleteById(id);
     }

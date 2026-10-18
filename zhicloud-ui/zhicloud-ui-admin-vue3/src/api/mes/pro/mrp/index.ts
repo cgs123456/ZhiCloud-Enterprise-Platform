@@ -30,4 +30,8 @@ export const MrpApi = {
     // 转采购/生产建议（2 已确认 → 3 已转建议；逐行落地为草稿工单）
     return await request.post({ url: `/mes/pro/mrp/plan/convert?id=` + id })
   },
+  getMrpConvertLink: async (planId: number) => {
+    // 获取转建议行级回链（结果行 → 工单；历史已转计划返回空列表）
+    return await request.get({ url: `/mes/pro/mrp/plan/` + planId + `/convert-link` })
+  },
 }

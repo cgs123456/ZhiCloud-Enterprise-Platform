@@ -4,6 +4,8 @@ import cn.zhicloud.framework.test.core.ut.BaseDbUnitTest;
 import cn.zhicloud.module.mes.controller.admin.pro.aps.vo.MesProApsGenerateReqVO;
 import cn.zhicloud.module.mes.dal.dataobject.md.workstation.MesMdWorkstationDO;
 import cn.zhicloud.module.mes.dal.dataobject.pro.aps.MesProApsPlanDO;
+import cn.zhicloud.module.mes.dal.dataobject.pro.route.MesProRouteCapacityDO;
+import cn.zhicloud.module.mes.dal.dataobject.pro.route.MesProRouteProductDO;
 import cn.zhicloud.module.mes.dal.dataobject.pro.workorder.MesProWorkOrderDO;
 import cn.zhicloud.module.mes.dal.mysql.pro.aps.MesProApsPlanMapper;
 import cn.zhicloud.module.mes.enums.pro.MesProApsPlanStatusEnum;
@@ -13,6 +15,7 @@ import cn.zhicloud.module.mes.service.pro.aps.strategy.ApsContext;
 import cn.zhicloud.module.mes.service.pro.aps.strategy.ApsResult;
 import cn.zhicloud.module.mes.service.pro.aps.strategy.ApsStrategy;
 import cn.zhicloud.module.mes.service.pro.aps.strategy.ApsTimeRange;
+import cn.zhicloud.module.mes.service.pro.route.MesProRouteCapacityService;
 import cn.zhicloud.module.mes.service.pro.route.MesProRouteProductService;
 import cn.zhicloud.module.mes.service.pro.workorder.MesProWorkOrderService;
 import jakarta.annotation.Resource;
@@ -71,6 +74,8 @@ public class MesProApsServiceImplTest extends BaseDbUnitTest {
     private MesMdWorkstationService workstationService;
     @MockitoBean
     private MesProRouteProductService routeProductService;
+    @MockitoBean
+    private MesProRouteCapacityService routeCapacityService;
     @MockitoBean
     private ApsStrategy apsStrategy; // 供 List<ApsStrategy> 注入，本测试不触达排产算法
 
@@ -332,5 +337,95 @@ public class MesProApsServiceImplTest extends BaseDbUnitTest {
         assertEquals(Collections.emptyList(), context.getWorkstationFreeGaps().get(WORKSTATION_ID));
     }
 
+    // ==================== 生成排产：时长估算产能输入路由（§12.270 D4-A：路线产能优先 → 工位回退） ====================
+
+    private MesProWorkOrderDO buildGenerateWorkOrderWithProduct() {
+        return MesProWorkOrderDO.builder()
+                .id(1000L).code("WO-CAP-1")
+                .status(MesProWorkOrderStatusEnum.CONFIRMED.getStatus())
+                .productId(2000L)
+                .quantity(BigDecimal.TEN)
+                .build();
+    }
+
+    /**
+     * 执行一次 generate 并捕获上下文（产能输入定制版：工艺路线产品 + 路线产能 + 单工位）
+     */
+    private ApsContext captureGenerateContextWithCapacity(MesProWorkOrderDO workOrder,
+                                                          MesProRouteProductDO routeProduct,
+                                                          MesProRouteCapacityDO routeCapacity,
+                                                          MesMdWorkstationDO workstation) {
+        when(workOrderService.getWorkOrderList(any())).thenReturn(new ArrayList<>(List.of(workOrder)));
+        when(apsPlanMapper.selectListByWorkOrderIds(any())).thenReturn(Collections.emptyList());
+        when(workstationService.getWorkstationListByStatus(any()))
+                .thenReturn(workstation != null ? List.of(workstation) : Collections.emptyList());
+        when(routeProductService.getRouteProductByItemId(any())).thenReturn(routeProduct);
+        when(routeCapacityService.getRouteCapacityByRouteId(any())).thenReturn(routeCapacity);
+        ArgumentCaptor<ApsContext> contextCaptor = ArgumentCaptor.forClass(ApsContext.class);
+        when(apsStrategy.schedule(any(), contextCaptor.capture()))
+                .thenReturn(ApsResult.builder().plans(Collections.emptyList())
+                        .skippedWorkOrderIds(new HashSet<>()).build());
+
+        apsService.generateSchedule(buildGenerateReq(workOrder.getId()));
+
+        return contextCaptor.getValue();
+    }
+
+    @Test
+    public void testGenerate_routeCapacityTakesPriorityOverWorkstation() {
+        // 路线产能 2 件/小时：10 件 × 0.5 小时/件 ÷ 2 ÷ 1 = 2.5 → ceil 3 小时（工位产能 100 不参与）
+        MesProWorkOrderDO workOrder = buildGenerateWorkOrderWithProduct();
+        ApsContext context = captureGenerateContextWithCapacity(workOrder,
+                MesProRouteProductDO.builder().routeId(500L)
+                        .productionTime(new BigDecimal("0.5")).timeUnitType("HOUR").build(),
+                MesProRouteCapacityDO.builder().routeId(500L)
+                        .capacity(new BigDecimal("2")).efficiency(BigDecimal.ONE).build(),
+                MesMdWorkstationDO.builder().id(WORKSTATION_ID)
+                        .capacity(new BigDecimal("100")).efficiency(BigDecimal.ONE).build());
+
+        assertEquals(3L, context.getWorkOrderDurationHours().get(workOrder.getId()).longValue());
+    }
+
+    @Test
+    public void testGenerate_routeCapacityEfficiencyApplied() {
+        // 路线效率 0.5（与产能同源配对）：10 件 × 0.5 ÷ 2 ÷ 0.5 = 5 小时（工位回退口径会得 1 小时）
+        MesProWorkOrderDO workOrder = buildGenerateWorkOrderWithProduct();
+        ApsContext context = captureGenerateContextWithCapacity(workOrder,
+                MesProRouteProductDO.builder().routeId(500L)
+                        .productionTime(new BigDecimal("0.5")).timeUnitType("HOUR").build(),
+                MesProRouteCapacityDO.builder().routeId(500L)
+                        .capacity(new BigDecimal("2")).efficiency(new BigDecimal("0.5")).build(),
+                MesMdWorkstationDO.builder().id(WORKSTATION_ID)
+                        .capacity(new BigDecimal("100")).efficiency(BigDecimal.ONE).build());
+
+        assertEquals(5L, context.getWorkOrderDurationHours().get(workOrder.getId()).longValue());
+    }
+
+    @Test
+    public void testGenerate_zeroRouteCapacityFallsBackToWorkstationAverage() {
+        // 路线产能 0 = 未配置 → 回退工位平均：10 × 0.5 ÷ 2.5 ÷ 2 = 1 小时
+        MesProWorkOrderDO workOrder = buildGenerateWorkOrderWithProduct();
+        ApsContext context = captureGenerateContextWithCapacity(workOrder,
+                MesProRouteProductDO.builder().routeId(500L)
+                        .productionTime(new BigDecimal("0.5")).timeUnitType("HOUR").build(),
+                MesProRouteCapacityDO.builder().routeId(500L)
+                        .capacity(BigDecimal.ZERO).efficiency(BigDecimal.ONE).build(),
+                MesMdWorkstationDO.builder().id(WORKSTATION_ID)
+                        .capacity(new BigDecimal("2.5")).efficiency(new BigDecimal("2")).build());
+
+        assertEquals(1L, context.getWorkOrderDurationHours().get(workOrder.getId()).longValue());
+    }
+
+    @Test
+    public void testGenerate_noRouteProductKeepsLegacyUnitHours() {
+        // 无工艺路线产品 → 旧口径：10 件 × 1 小时/件（回退）÷ 工位 5 = 2 小时
+        MesProWorkOrderDO workOrder = buildGenerateWorkOrderWithProduct();
+        ApsContext context = captureGenerateContextWithCapacity(workOrder,
+                null, null,
+                MesMdWorkstationDO.builder().id(WORKSTATION_ID)
+                        .capacity(new BigDecimal("5")).efficiency(BigDecimal.ONE).build());
+
+        assertEquals(2L, context.getWorkOrderDurationHours().get(workOrder.getId()).longValue());
+    }
 
 }

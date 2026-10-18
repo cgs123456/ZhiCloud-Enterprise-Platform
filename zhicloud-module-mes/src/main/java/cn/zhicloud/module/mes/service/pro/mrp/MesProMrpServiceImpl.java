@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.zhicloud.framework.common.pojo.PageParam;
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.common.util.object.BeanUtils;
+import cn.zhicloud.module.mes.controller.admin.pro.mrp.vo.MesProMrpConvertLinkRespVO;
 import cn.zhicloud.module.mes.controller.admin.pro.mrp.vo.MesProMrpConvertRespVO;
 import cn.zhicloud.module.mes.controller.admin.pro.mrp.vo.MesProMrpPlanCreateReqVO;
 import cn.zhicloud.module.mes.controller.admin.pro.mrp.vo.MesProMrpPlanPageReqVO;
@@ -13,10 +14,12 @@ import cn.zhicloud.module.mes.controller.admin.pro.workorder.vo.MesProWorkOrderS
 import cn.zhicloud.module.mes.controller.admin.wm.materialstock.vo.MesWmMaterialStockListReqVO;
 import cn.zhicloud.module.mes.dal.dataobject.md.item.MesMdItemDO;
 import cn.zhicloud.module.mes.dal.dataobject.md.item.MesMdProductBomDO;
+import cn.zhicloud.module.mes.dal.dataobject.pro.mrp.MesProMrpConvertLinkDO;
 import cn.zhicloud.module.mes.dal.dataobject.pro.mrp.MesProMrpPlanDO;
 import cn.zhicloud.module.mes.dal.dataobject.pro.mrp.MesProMrpResultDO;
 import cn.zhicloud.module.mes.dal.dataobject.pro.workorder.MesProWorkOrderDO;
 import cn.zhicloud.module.mes.dal.dataobject.wm.materialstock.MesWmMaterialStockDO;
+import cn.zhicloud.module.mes.dal.mysql.pro.mrp.MesProMrpConvertLinkMapper;
 import cn.zhicloud.module.mes.dal.mysql.pro.mrp.MesProMrpPlanMapper;
 import cn.zhicloud.module.mes.dal.mysql.pro.mrp.MesProMrpResultMapper;
 import cn.zhicloud.module.mes.controller.admin.pro.workorder.vo.MesProWorkOrderPageReqVO;
@@ -44,6 +47,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -79,6 +83,8 @@ public class MesProMrpServiceImpl implements MesProMrpService {
     private MesProMrpPlanMapper mrpPlanMapper;
     @Resource
     private MesProMrpResultMapper mrpResultMapper;
+    @Resource
+    private MesProMrpConvertLinkMapper mrpConvertLinkMapper;
     @Resource
     private MesProWorkOrderService workOrderService;
     @Resource
@@ -315,7 +321,10 @@ public class MesProMrpServiceImpl implements MesProMrpService {
             orderReq.setRequestDate(line.getPlannedOrderDate() != null ? line.getPlannedOrderDate()
                     : (plan.getPlanDate() != null ? plan.getPlanDate() : LocalDateTime.now()));
             orderReq.setRemark("由 MRP 计划「" + plan.getPlanNo() + "」转建议生成");
-            workOrderService.createWorkOrder(orderReq);
+            Long workOrderId = workOrderService.createWorkOrder(orderReq);
+            // 行级回链落链（同事务；一次性转换语义由 plan 状态 CAS 保证，无重复写）——§12.270 D6
+            mrpConvertLinkMapper.insert(MesProMrpConvertLinkDO.builder()
+                    .planId(id).resultId(line.getId()).workOrderId(workOrderId).build());
             if (produce) {
                 convertResult.setProduceCount(convertResult.getProduceCount() + 1);
             } else {
@@ -324,6 +333,45 @@ public class MesProMrpServiceImpl implements MesProMrpService {
             convertResult.setTotalCount(convertResult.getTotalCount() + 1);
         }
         return convertResult;
+    }
+
+    @Override
+    public List<MesProMrpConvertLinkRespVO> getMrpConvertLinks(Long planId) {
+        // 1. 校验计划存在（友好错误）
+        validateMrpPlanExists(planId);
+
+        // 2. 回链列表（历史已转计划无链 → 空列表；不回填）
+        List<MesProMrpConvertLinkDO> links = mrpConvertLinkMapper.selectListByPlanId(planId);
+        if (CollUtil.isEmpty(links)) {
+            return Collections.emptyList();
+        }
+
+        // 3. 批量回填：结果行（计划订单量）+ 工单（编码/类型）+ 物料（名称），无 N+1
+        Map<Long, MesProMrpResultDO> resultMap = mrpResultMapper.selectListByPlanId(planId).stream()
+                .collect(Collectors.toMap(MesProMrpResultDO::getId, line -> line, (a, b) -> a));
+        Map<Long, MesProWorkOrderDO> workOrderMap = workOrderService.getWorkOrderList(
+                        links.stream().map(MesProMrpConvertLinkDO::getWorkOrderId).collect(Collectors.toSet()))
+                .stream().collect(Collectors.toMap(MesProWorkOrderDO::getId, order -> order, (a, b) -> a));
+        Map<Long, MesMdItemDO> itemMap = itemService.getItemMap(links.stream()
+                .map(link -> resultMap.get(link.getResultId()))
+                .filter(Objects::nonNull)
+                .map(MesProMrpResultDO::getProductId).collect(Collectors.toSet()));
+
+        // 4. 拼装回链 VO（查不到的关联置空，不阻断）
+        return links.stream().map(link -> {
+            MesProMrpResultDO result = resultMap.get(link.getResultId());
+            MesProWorkOrderDO workOrder = workOrderMap.get(link.getWorkOrderId());
+            MesMdItemDO item = result != null ? itemMap.get(result.getProductId()) : null;
+            MesProMrpConvertLinkRespVO vo = new MesProMrpConvertLinkRespVO();
+            vo.setResultId(link.getResultId());
+            vo.setProductId(result != null ? result.getProductId() : null);
+            vo.setProductName(item != null ? item.getName() : null);
+            vo.setPlannedOrderQty(result != null ? result.getPlannedOrderQty() : null);
+            vo.setWorkOrderId(link.getWorkOrderId());
+            vo.setWorkOrderCode(workOrder != null ? workOrder.getCode() : null);
+            vo.setWorkOrderType(workOrder != null ? workOrder.getType() : null);
+            return vo;
+        }).collect(Collectors.toList());
     }
 
     // ==================== 校验方法 ====================

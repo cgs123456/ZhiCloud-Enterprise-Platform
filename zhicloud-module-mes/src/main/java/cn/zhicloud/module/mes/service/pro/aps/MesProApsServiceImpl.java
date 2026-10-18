@@ -15,6 +15,7 @@ import cn.zhicloud.module.mes.dal.mysql.pro.aps.MesProApsPlanMapper;
 import cn.zhicloud.module.mes.enums.pro.MesProApsPlanPriorityEnum;
 import cn.zhicloud.module.mes.enums.pro.MesProApsPlanStatusEnum;
 import cn.zhicloud.module.mes.service.md.workstation.MesMdWorkstationService;
+import cn.zhicloud.module.mes.service.pro.route.MesProRouteCapacityService;
 import cn.zhicloud.module.mes.service.pro.route.MesProRouteProductService;
 import cn.zhicloud.module.mes.service.pro.workorder.MesProWorkOrderService;
 import jakarta.annotation.Resource;
@@ -62,13 +63,13 @@ import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_APS_PLAN_WORKS
  * 采用贪婪算法（有限产能排产），P0-12 改造后逻辑：
  * 1. 工单按 <b>自身优先级</b>（高→中→低，空值默认中）+ 需求日期（早→晚）排序
  * 2. 依次为每张工单寻找最早可容纳其时长的工位空隙（窗口内空闲区间，§12.263 空隙建模）
- * 3. 工序时长按 <b>工艺路线生产用时 + 工位产能/效率</b> 精确估算（{@link ApsDurationEstimator}）：
+ * 3. 工序时长按 <b>工艺路线生产用时 + 产能（路线优先/工位回退）</b> 精确估算（{@link ApsDurationEstimator}）：
  *    <pre>
  *    unitHours    = routeProduct.productionTime（按 timeUnitType 换算为小时）
  *    durationHours = ceil( quantity * unitHours / capacity / efficiency )
  *    </pre>
- *    工位 capacity/efficiency 为空时按 1.0 处理；
- *    工艺路线 productionTime 为空时回退到旧的"1 件 = 1 小时"简化估算并记日志（不阻断排产）。
+ *    产能/效率优先取工艺路线产能（mes_pro_route_capacity，§12.270 D4-A），未配置回退工位平均
+ *    （空按 1.0）；工艺路线 productionTime 为空时回退到旧的"1 件 = 1 小时"简化估算并记日志（不阻断排产）。
  *
  * @author 智云
  */
@@ -90,6 +91,8 @@ public class MesProApsServiceImpl implements MesProApsService {
     private MesMdWorkstationService workstationService;
     @Resource
     private MesProRouteProductService routeProductService;
+    @Resource
+    private MesProRouteCapacityService routeCapacityService;
 
     /**
      * 全部排产策略（Spring 自动注入所有 {@link ApsStrategy} 实现）
@@ -169,7 +172,8 @@ public class MesProApsServiceImpl implements MesProApsService {
         Map<Long, Long> workOrderDurationHours = new HashMap<>();
         Set<Long> skippedWorkOrders = new HashSet<>();
         for (MesProWorkOrderDO workOrder : workOrders) {
-            long durationHours = ApsDurationEstimator.estimateDurationHours(workOrder, workstations, routeProductService);
+            long durationHours = ApsDurationEstimator.estimateDurationHours(workOrder, workstations,
+                    routeProductService, routeCapacityService);
             workOrderDurationHours.put(workOrder.getId(), durationHours);
             if (durationHours <= 0) {
                 skippedWorkOrders.add(workOrder.getId());

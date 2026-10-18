@@ -55,6 +55,9 @@
           <el-tab-pane label="关联产品" name="product">
             <RouteProductList :routeId="formData.id" :form-type="formType" />
           </el-tab-pane>
+          <el-tab-pane label="产能配置" name="capacity">
+            <RouteCapacityPanel :routeId="formData.id" :form-type="formType" />
+          </el-tab-pane>
         </el-tabs>
       </template>
     </el-form>
@@ -77,6 +80,7 @@ import { AutoCodeRecordApi } from '@/api/mes/md/autocode/record'
 import { MesAutoCodeRuleCode } from '@/views/mes/utils/constants'
 import RouteProcessList from './RouteProcessList.vue'
 import RouteProductList from './RouteProductList.vue'
+import RouteCapacityPanel from './RouteCapacityPanel.vue'
 
 defineOptions({ name: 'RouteForm' })
 const emit = defineEmits(['success'])

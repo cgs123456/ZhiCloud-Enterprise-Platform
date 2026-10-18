@@ -2,6 +2,7 @@ package cn.zhicloud.module.mes.service.pro.mrp;
 
 import cn.zhicloud.framework.common.pojo.PageResult;
 import cn.zhicloud.framework.test.core.ut.BaseDbUnitTest;
+import cn.zhicloud.module.mes.controller.admin.pro.mrp.vo.MesProMrpConvertLinkRespVO;
 import cn.zhicloud.module.mes.controller.admin.pro.mrp.vo.MesProMrpConvertRespVO;
 import cn.zhicloud.module.mes.controller.admin.pro.mrp.vo.MesProMrpPlanCreateReqVO;
 import cn.zhicloud.module.mes.controller.admin.pro.mrp.vo.MesProMrpPlanPageReqVO;
@@ -10,10 +11,12 @@ import cn.zhicloud.module.mes.controller.admin.pro.workorder.vo.MesProWorkOrderS
 import cn.zhicloud.module.mes.controller.admin.wm.materialstock.vo.MesWmMaterialStockListReqVO;
 import cn.zhicloud.module.mes.dal.dataobject.md.item.MesMdItemDO;
 import cn.zhicloud.module.mes.dal.dataobject.md.item.MesMdProductBomDO;
+import cn.zhicloud.module.mes.dal.dataobject.pro.mrp.MesProMrpConvertLinkDO;
 import cn.zhicloud.module.mes.dal.dataobject.pro.mrp.MesProMrpPlanDO;
 import cn.zhicloud.module.mes.dal.dataobject.pro.mrp.MesProMrpResultDO;
 import cn.zhicloud.module.mes.dal.dataobject.pro.workorder.MesProWorkOrderDO;
 import cn.zhicloud.module.mes.dal.dataobject.wm.materialstock.MesWmMaterialStockDO;
+import cn.zhicloud.module.mes.dal.mysql.pro.mrp.MesProMrpConvertLinkMapper;
 import cn.zhicloud.module.mes.dal.mysql.pro.mrp.MesProMrpPlanMapper;
 import cn.zhicloud.module.mes.dal.mysql.pro.mrp.MesProMrpResultMapper;
 import cn.zhicloud.module.mes.enums.md.MesMrpLotSizeRuleEnum;
@@ -62,6 +65,8 @@ public class MesProMrpServiceImplTest extends BaseDbUnitTest {
     private MesProMrpPlanMapper mrpPlanMapper;
     @MockitoBean
     private MesProMrpResultMapper mrpResultMapper;
+    @MockitoBean
+    private MesProMrpConvertLinkMapper mrpConvertLinkMapper;
     @MockitoBean
     private MesProWorkOrderService workOrderService;
     @MockitoBean
@@ -590,6 +595,86 @@ public class MesProMrpServiceImplTest extends BaseDbUnitTest {
         assertEquals(PLAN_DATE, captor.getValue().getRequestDate());
         // 无 BOM 主数据（默认空）→ 采购型
         assertEquals(MesProWorkOrderTypeEnum.PURCHASE.getType(), captor.getValue().getType());
+    }
+
+    // ========== 行级回链（§12.270 D6/D7：转换落链 + 查询回填） ==========
+
+    @Test
+    public void testConvertMrpPlan_writesRowLevelConvertLinks() {
+        when(mrpPlanMapper.selectById(PLAN_ID)).thenReturn(buildPlan(MesProMrpPlanStatusEnum.CONFIRMED.getStatus()));
+        when(mrpResultMapper.selectListByPlanId(PLAN_ID)).thenReturn(Arrays.asList(
+                buildConvertLine(1L, "10", PLAN_DATE.minusDays(3)),
+                buildConvertLine(2L, "20", PLAN_DATE.minusDays(7)),
+                buildConvertLine(3L, "0", PLAN_DATE.minusDays(7)))); // 跳过行不落链
+        when(mrpPlanMapper.updateByIdAndStatus(anyLong(), anyList(), any(MesProMrpPlanDO.class))).thenReturn(1);
+        // 建单回填工单编号：首单 901，次单 902
+        when(workOrderService.createWorkOrder(any(MesProWorkOrderSaveReqVO.class))).thenReturn(901L, 902L);
+
+        mrpService.convertMrpPlan(PLAN_ID);
+
+        // 仅对可转行逐行落链：plan/result/work_order 三键对齐（§12.270 D6）
+        ArgumentCaptor<MesProMrpConvertLinkDO> linkCaptor = ArgumentCaptor.forClass(MesProMrpConvertLinkDO.class);
+        verify(mrpConvertLinkMapper, times(2)).insert(linkCaptor.capture());
+        List<MesProMrpConvertLinkDO> links = linkCaptor.getAllValues();
+        assertEquals(PLAN_ID, links.get(0).getPlanId());
+        assertEquals(1L, links.get(0).getResultId());
+        assertEquals(901L, links.get(0).getWorkOrderId());
+        assertEquals(PLAN_ID, links.get(1).getPlanId());
+        assertEquals(2L, links.get(1).getResultId());
+        assertEquals(902L, links.get(1).getWorkOrderId());
+        // 跳过行（id=3）不落链
+        verify(mrpConvertLinkMapper, never()).insert(argThat((MesProMrpConvertLinkDO link) -> Long.valueOf(3L).equals(link.getResultId())));
+    }
+
+    @Test
+    public void testGetMrpConvertLinks_batchFill() {
+        when(mrpPlanMapper.selectById(PLAN_ID)).thenReturn(buildPlan(MesProMrpPlanStatusEnum.CONVERTED.getStatus()));
+        when(mrpConvertLinkMapper.selectListByPlanId(PLAN_ID)).thenReturn(Arrays.asList(
+                MesProMrpConvertLinkDO.builder().id(1L).planId(PLAN_ID).resultId(11L).workOrderId(901L).build(),
+                MesProMrpConvertLinkDO.builder().id(2L).planId(PLAN_ID).resultId(12L).workOrderId(902L).build()));
+        when(mrpResultMapper.selectListByPlanId(PLAN_ID)).thenReturn(Arrays.asList(
+                MesProMrpResultDO.builder().id(11L).planId(PLAN_ID).productId(1L)
+                        .plannedOrderQty(new BigDecimal("10")).build(),
+                MesProMrpResultDO.builder().id(12L).planId(PLAN_ID).productId(2L)
+                        .plannedOrderQty(new BigDecimal("20")).build()));
+        when(workOrderService.getWorkOrderList(anyCollection())).thenReturn(Arrays.asList(
+                MesProWorkOrderDO.builder().id(901L).code("MRP-100-1")
+                        .type(MesProWorkOrderTypeEnum.SELF.getType()).build(),
+                MesProWorkOrderDO.builder().id(902L).code("MRP-100-2")
+                        .type(MesProWorkOrderTypeEnum.PURCHASE.getType()).build()));
+        mockItemMap(MesMdItemDO.builder().id(1L).code("I001").name("成品A").build(),
+                MesMdItemDO.builder().id(2L).code("I002").name("来料B").build());
+
+        List<MesProMrpConvertLinkRespVO> links = mrpService.getMrpConvertLinks(PLAN_ID);
+
+        assertEquals(2, links.size());
+        assertEquals(11L, links.get(0).getResultId());
+        assertEquals(1L, links.get(0).getProductId());
+        assertEquals("成品A", links.get(0).getProductName());
+        assertEquals(0, links.get(0).getPlannedOrderQty().compareTo(new BigDecimal("10")));
+        assertEquals(901L, links.get(0).getWorkOrderId());
+        assertEquals("MRP-100-1", links.get(0).getWorkOrderCode());
+        assertEquals(MesProWorkOrderTypeEnum.SELF.getType(), links.get(0).getWorkOrderType());
+        assertEquals("来料B", links.get(1).getProductName());
+        assertEquals("MRP-100-2", links.get(1).getWorkOrderCode());
+        assertEquals(MesProWorkOrderTypeEnum.PURCHASE.getType(), links.get(1).getWorkOrderType());
+    }
+
+    @Test
+    public void testGetMrpConvertLinks_emptyWhenNoLinks() {
+        // 历史已转计划无回链 → 空列表（不回填，也不触发工单批量查询）
+        when(mrpPlanMapper.selectById(PLAN_ID)).thenReturn(buildPlan(MesProMrpPlanStatusEnum.CONVERTED.getStatus()));
+        when(mrpConvertLinkMapper.selectListByPlanId(PLAN_ID)).thenReturn(Collections.emptyList());
+
+        assertTrue(mrpService.getMrpConvertLinks(PLAN_ID).isEmpty());
+        verify(workOrderService, never()).getWorkOrderList(anyCollection());
+    }
+
+    @Test
+    public void testGetMrpConvertLinks_planNotExists() {
+        when(mrpPlanMapper.selectById(PLAN_ID)).thenReturn(null);
+
+        assertServiceException(() -> mrpService.getMrpConvertLinks(PLAN_ID), PRO_MRP_PLAN_NOT_EXISTS);
     }
 
 }

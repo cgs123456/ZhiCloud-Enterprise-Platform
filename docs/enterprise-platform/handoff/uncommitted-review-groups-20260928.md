@@ -12920,3 +12920,128 @@ D1 已收官（§12.267）、D2 已收官（§12.268）、**D3 收官（本项�
   MySQL 沙箱 / plan 真树「非空」钉法 / PowerShell CLI ×2），**本项零新增红**。
 - 服务现状：pid 9448（jar 642,879,893B，Flyway 210/211 success=1），沙箱 `zhicloud_sandbox_v140` /
   tenant 9001；E2E269 夹具收尾清理（前缀面 库位/库存行/批次/出库单 全 0；流水为历史留痕）。
+
+## 12.270 D 组第 4 项（D4）——MES 产能后继（工艺路线产能表接线＋MRP 结果行→工单行级回链）重建
+
+### 12.270.1 背景与目标
+
+D 组第 4 项（用户令「继续处理 D2–D6」）。**D 组六项明细系重建产物**（原会话明细未落盘，同 §12.267/
+§12.268/§12.269 披露）；D4 明细经搜证重建并锁定于 `Temp/zc_adr_270.md`（§0 搜证 9 条；来源登记：
+§12.263.5「时长估算并入工艺路线产能表：不引入（登记为后续候选）」＋§12.262.5「MRP 结果行 → 工单的
+来源回链表：现仅以 orderSourceCode 关联，无行级外键（登记为后续候选）」——两处「后续候选」原文
+即本项接线；矩阵锚定见 `Temp/zc_adr_267.md` §0 D4）。
+
+缺陷面（先证后修）：
+1. **A 面 产能输入单轨**：APS 时长估算的产能/效率输入只有「工位平均值」一条轨
+   （`mes_md_workstation.capacity/efficiency`）——同一工艺路线在不同工位集合下估算漂移，路线域
+   无产能承载面；「工艺路线产能表」全仓零命中（代码/迁移/前端/验证 SQL 全无，`git log -S` 唯一
+   命中为 §12.263 文档提交），属从零引入。
+2. **B 面 行级回链缺失**：`convertMrpPlan` 逐行建草稿工单（`MRP-{planId}-{seq}`、
+   orderSourceType=MRP、orderSourceCode=planNo）后把 `createWorkOrder` 返回的工单 id **丢弃**；
+   `mes_pro_mrp_result.id ↔ mes_pro_work_order.id` 行级关联零落库——「哪一结果行生成了哪张工单」
+   不可查询。
+
+### 12.270.2 实施内容（29 文件＝16 新 / 13 改；A/B 两面）
+
+**A 面（产能表与估算接线）**：
+- **V212** `V212__mes_route_capacity_mrp_convert_link.sql`（两表 `CREATE TABLE IF NOT EXISTS`，
+  幂等、纯增零存量）＋`V212_verify.sql`（两表断言）；契约 +V212 双文件 sha256（tracked 121→122）；
+  H2 `create_tables.sql` 同步两表（测试 parity，部分文件设计维持）。
+- 新表 `mes_pro_route_capacity`：`route_id` / `capacity` decimal(12,2) NOT NULL DEFAULT 0
+  （件/小时；**0＝未配置**）/ `efficiency` decimal(6,3) NOT NULL DEFAULT 1（≤0/空按 1.0）/ `remark`；
+  uk `uk_mes_pro_route_capacity_route`(tenant_id, route_id)。
+- 产能 CRUD：`MesProRouteCapacityService/Impl`（getByRouteId / save upsert（查无 insert、有则
+  update，唯一键兜底并发）/ deleteByRouteId **物理删**——防软删残留顶撞唯一键，D3 批次物理冲洗
+  同径）；控制器 `/mes/pro/route-capacity`：GET `/get-by-route`（`mes:pro-route:query`）＋
+  PUT `/save`（`mes:pro-route:update`）；save 沿用子表护栏 `validateRouteNotEnable`。
+- 估算接线：`ApsDurationEstimator.estimateDurationHours(...)` 签名扩展（显式入参
+  `routeCapacityService`，同 §12.263 D6「不改注入面」惯例）；取值优先级 **路线产能（capacity>0）→
+  工位平均 → 1.0**，efficiency 随源配对（路线源取路线值、工位源取工位平均）；公式
+  `ceil(quantity × unitHours / capacity / efficiency)` 与「≥1h」下限**逐字不变**；
+  `MesProApsServiceImpl` 注入并透传（唯一调用点）。**零行行为等价**：产能行不存在时逐字走旧路径。
+- 级联收口：`MesProRouteServiceImpl.deleteRoute` 级联四件套 +routeCapacity（防孤儿）。
+
+**B 面（行级回链）**：
+- 新表 `mes_pro_mrp_convert_link`：`plan_id` / `result_id` / `work_order_id`；uk(tenant_id,
+  result_id)＋uk(tenant_id, work_order_id)＋idx(tenant_id, plan_id)。
+- 写入：`convertMrpPlan` 循环捕获 `createWorkOrder` id，逐可转行（plannedOrderQty>0）**同事务**
+  insert link；一次性转换语义不变（plan 状态 CAS CONFIRMED→CONVERTED，无重复风险）。
+- 查询：`getMrpConvertLinks(planId)` → RespVO（resultId / productId / productName /
+  plannedOrderQty / workOrderId / workOrderCode / workOrderType）；GET
+  `/mes/pro/mrp/plan/{planId}/convert-link`（`mes:pro-mrp:query`）；实现＝link 列表 +
+  `workOrderService.getWorkOrderList(ids)` + `itemService.getItemMap` 批量回填（无 N+1）；计划不存在
+  先给 `PRO_MRP_PLAN_NOT_EXISTS` 友好错误；空链 `Collections.emptyList()`。
+
+**前端（最小面）**：
+- RouteForm 第三 tab「产能配置」→ `RouteCapacityPanel.vue`（加载/编辑/保存；未配置提示；detail
+  只读）；api `api/mes/pro/route/capacity/index.ts`（新）。
+- MRP 页 CONVERTED 行「转出工单」按钮 → `ConvertOrdersDialog.vue`（回链列表：产品/计划订单量/
+  工单编码/类型＝{1 自行生产, 2 代工, 3 采购}；历史转换空态）；`api/mes/pro/mrp/index.ts` +方法。
+
+### 12.270.3 验证链（逐项实测）
+
+| 环节 | 结果 |
+|------|------|
+| 基线 | MES 模块 **876/0/0/0**（实施前实测，2026-10-18 21:53） |
+| 实施 | 脚本 A–E（迁移/后端/回链/测试/前端）＋ fix1（argThat 显式定型）；守卫式单次运行 |
+| 定向单测 | **62/0/0/0**（APS 19 ＋ MRP 39 ＋ 产能服务新类 4） |
+| 模块回归 | **888/0/0/0**（+12；零回归） |
+| 门禁 | errcode **1971** ✓；preauthorize RC=0（523 Controller 面）✓；scan_tx **0** ✓；bare_throws OK ✓；duplicate_ddl tables **670（+2）**·duplicate_groups=11·conflicting=3·findings=0 ✓；契约 **tracked=122·scanned=218·findings=0** ✓ |
+| SQL lint | **218 文件 / 16 条 R5** 全既有（V212 零新增；migration 目录口径；verify 目录 3 条既有 R5 不在链内；RC=1 既有红） |
+| do_ddl（辅助） | 121「表缺失」为 H2 部分文件既有设计、**0 列缺失**、两新表不在缺失清单（H2 镜像一致） |
+| 前端 | `ts:check` exit=0；`build:prod` 成功（36.42s，dist-prod 产出） |
+| 停服重打 | **642,902,784B**（Δ+22,891 对 D3 基线 642,879,893B） |
+| 冷启 | **427s**；Flyway 210/211/212 success=1；两新表落地 |
+| 真机 E2E | **35/35（三跑收敛）** |
+
+E2E 链路（`Temp/zc_e2e270.py`，P0–P7 共 35 断言；沙箱 / tenant 9001）：P0 前缀清理＋残留全 0 →
+P1 V212 证据（flyway 212 success=1 / 两表）→ P2 路线＋产能 upsert（未配置 null → 首存 → 二存**同
+id** → 回读 2.50/1.000/备注 → 行数唯一 → 路线产品 0.5h/件）→ P3 APS 时长 **2h**（产能 2.5 优先于
+工位平均 1.0；10 件×0.5h/2.5；若回退则为 5h、旧「1 件=1 小时」口径为 4h）→ P4 产能归零回退
+**5h**（工位平均 1.0）→ P5 级联删除（路线/产品/工序/BOM 清空＋产能行**物理删**，无 deleted 过滤
+仍 0）→ P6 MRP（计算恰 1 行：需求 2020 − 库存 1602.838 ＝ 净 **417.162**；确认；转换
+totalCount=1/purchaseCount=1 → 回链 1 条 `MRP-9-1`、采购型 3、数量=结果行、工单
+`order_source_code=计划号`、库侧一致；负例 1040510000 计划不存在）→ P7 零遗留（前缀裸计数＋显式
+id 回查全 0）。
+
+### 12.270.4 失败与缺陷登记（诚实链）
+
+1. **环境/数据（1 处，E2E 二跑暴露）**：沙箱既有数据漂移——DEMO-WO-00001..00008（id
+   5960000–5960007）引用 product 912000–912007，`mes_md_item` 无对应主数据（工单 14 张中 8 张
+   悬挂）；其中 DEMO-WO-00002（唯一 CONFIRMED）参与 MRP 转换时 `createWorkOrder →
+   validateItemExists` **fail-closed 整体回滚**（非 D4 代码路径；fail-closed 本身为正确方向）。
+   E2E 以「P6 结构性隔离（临时降 PREPARE）＋事后复位＋回查」处理，不扩面修复（沙箱夹具面，
+   另行裁决）。二跑 P6 全线 FAIL 的真因即此（经服务端日志定位）。
+2. **E2E 脚本（1 处）**：首跑以字符串解析计划时间 → 平台 Jackson 以 **epoch 毫秒**序列化
+   LocalDateTime（WRITE_DATES_AS_TIMESTAMPS）→ 解析中断；修正 `parse_dt` 兼容 int（两值同口径，
+   差值与时区无关）。
+3. **E2E 回查口径（1 处）**：二跑 P7 裸计数把逻辑删 tombstone（route / route_product）计入 →
+   改为与 P0 同式（物理清后裸计数）→ 三跑收敛。
+4. **实施脚本（1 处）**：脚本 B 首跑因 `vo/capacity` 目录缺失中断（补 makedirs 后重跑，分步守卫
+   跳过已落文件）；脚本类不重复登记定式维持。
+5. **测试面（1 处）**：Mockito `argThat` lambda 在 `BaseMapper.insert(T)`/`insert(Collection<T>)`
+   重载下无法定型 → 编译失败；fix1 显式参数类型 `(MesProMrpConvertLinkDO link) ->` 修复
+   （重载消歧定式，测试处注释留痕）。
+6. **既有红不重复登记**：`sql_migration_lint` 16 条 R5；`check_evidence_citations` 1 条；台账
+   §12.201 重复段 / §12.202–213 无节体 / §12.234.10 悬空引用；沙箱 `event_outbox` 6 条旧 DEAD；
+   python 生产套件 5F+4E+3S（构成见 §12.267.7）；do_ddl 121「表缺失」（H2 部分文件设计）。
+   本项零新增红。
+
+### 12.270.5 不扩面与已知限制登记（D11 边界）
+
+1. **历史已转计划回链不回填**（无数据可回溯）；convert-link 对历史计划返回空链（前端空态）。
+2. 多段工序建模不做（§12.263.5-1 另行）；工序链时长估算单段口径不变。
+3. 工位产能面不动（不迁移、不废弃 `workstation.capacity/efficiency`）——回退轨保留。
+4. 排产结果回写工单字段不做（§12.263.5-3 另行）。
+5. MRP 转换不做部分/勾选转换（§12.262.5-2 维持）。
+6. route/product/process 端点字段零扩展；零菜单/role_menu；零新错误码/权限（复用
+   `mes:pro-route:query|update`、`mes:pro-mrp:query`）。
+7. `sql/mysql/mes.sql` 为陈旧快照（最后提交停在 P0-3 期），按既有惯例**不同步**。
+8. 沙箱 DEMO 工单悬挂物料引用（912000–912007 无主数据）登记为在库事实，不在本项修复范围。
+
+### 12.270.6 D 组矩阵基线
+
+D1 已收官（§12.267）、D2 已收官（§12.268）、D3 已收官（§12.269）、**D4 收官（本项）**。D5（CRM
+电子签）/D6（TMS↔WMS 签收全链）与 E1–E7 照旧、尚未重建确认；重建依据以本重建口径与
+`Temp/zc_adr_270.md` / `zc_adr_269.md` / `zc_adr_268.md` / `zc_adr_267.md` 为准。待兑现登记项沿用
+（`zc_e2e_preclean.py` 硬删收窄到释放 id 集合；`test_plan_commit_groups` 真树「非空」钉法移合成输入）。
