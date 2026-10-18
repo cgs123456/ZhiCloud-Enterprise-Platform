@@ -12415,6 +12415,14 @@ FMS/ERP 融合删除时被裁掉的「期初余额」前端（api 6 端点 + 页
 7. **就绪等待（工具口径沿用）**：`zc_wait_265.py` 直接使用有效枚 token（264 修正下沉），冷启 ~428s
    就绪，无 token 误报。
 
+8. **提交后补证（非产品项，补记，与 §12.264.4 第 6 条同口径）**：远端 master=62790af7c（直连推送成功、
+   无代理）；内层仓工作区全净（git status 空）；plan 门禁 `plan_commit_groups.py --json` exit=0、
+   violations=[]（提交后待提交面为空，枚举为 0 属成功提交后的正常态）；其守卫测试 10 例 9 绿，余 1 红
+   维持 §12.264.4 定性（真树「非空」钉法在「工作区全净 + evidence 全量入仓」下结构性不可满足；修法=
+   移合成输入，登记为后续项，不重复登记）；标准口径提交后全量复跑：**Ran 665 tests，514.929s，
+   FAILED (failures=5, errors=4, skipped=3)**——红项构成与 §12.264.4 第 6 条逐项一致（4E=PowerShell
+   移植性用例×4；5F=coverage-shrink / 原生 MySQL 沙箱 / plan 真树钉法 / PowerShell CLI×2），本项零新增红。
+
 ### 12.265.5 不扩面登记（维持）
 
 - 数量核算 / 辅助核算整链不建（不恢复 `FmsInitialAssistForm.vue`）；一期金额式（ADR 裁定 9）。
