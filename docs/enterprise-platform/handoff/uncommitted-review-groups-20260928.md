@@ -13045,3 +13045,17 @@ D1 已收官（§12.267）、D2 已收官（§12.268）、D3 已收官（§12.26
 电子签）/D6（TMS↔WMS 签收全链）与 E1–E7 照旧、尚未重建确认；重建依据以本重建口径与
 `Temp/zc_adr_270.md` / `zc_adr_269.md` / `zc_adr_268.md` / `zc_adr_267.md` 为准。待兑现登记项沿用
 （`zc_e2e_preclean.py` 硬删收窄到释放 id 集合；`test_plan_commit_groups` 真树「非空」钉法移合成输入）。
+
+### 12.270.7 提交后实证（0ccb676aa 推送后补记）
+
+- 提交：`0ccb676aa`（31 文件，+1306/−28）；**直连推送成功**（`491867cc9..0ccb676aa`，未挂代理）；
+  远端 master = `0ccb676aae90c402ede55964a9411c1478d0edac` = 本地 HEAD。
+- 工作区全净（`git status --porcelain` 空）。
+- plan 门禁：`plan_commit_groups.py --json` exit=0，`violations=[]`（worktree 各计数全 0）。
+- python 生产套件全量复跑：**665 tests，308.895s，FAILED (failures=5, errors=4, skipped=3)**
+  ——红项构成与 §12.269.7 / §12.268.7 / §12.267.7 逐项一致（4E=PowerShell 移植性 ×4；
+  5F=coverage-shrink 守卫 / 原生 MySQL 沙箱 / plan 真树「非空」钉法 / PowerShell CLI ×2），
+  **本项零新增红**。
+- 服务现状：pid 40780（jar 642,902,784B，Flyway 210/211/212 success=1），沙箱
+  `zhicloud_sandbox_v140` / tenant 9001；E2E270 夹具收尾清理（前缀面 路线/产能/工单/排产/MRP/回链
+  全 0，DEMO-WO-00002 状态复位）。

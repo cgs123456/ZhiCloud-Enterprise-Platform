@@ -522,3 +522,8 @@
 - **不扩面登记**：历史不回填 / 多段工序不做 / 工位产能面不动 / 排产回写不做 / 部分转换不做 /
   端点零扩展 / 零菜单零新码 / `sql/mysql/mes.sql` 不同步 / 沙箱夹具漂移不修。
 - **下一项**：D5（CRM 电子签）/D6（TMS↔WMS 签收全链）逐项重建确认；E1–E7 照旧。
+
+- **提交后补记（`0ccb676aa` 推送后实证）**：远端 master=0ccb676aae90c402ede55964a9411c1478d0edac（直连
+  推送成功）；工作区全净；plan 门禁 exit=0、violations=[]；python 全量复跑 665 tests，308.895s，
+  FAILED (failures=5, errors=4, skipped=3)，红项构成同前登记、本项零新增红；服务 pid 40780 运行中
+  （jar 642,902,784B，Flyway 210/211/212 success=1），E2E270 夹具已收尾清理。
