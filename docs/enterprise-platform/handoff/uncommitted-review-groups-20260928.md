@@ -13192,3 +13192,21 @@ D1 已收官（§12.267）、D2 已收官（§12.268）、D3 已收官（§12.26
 重建口径与 `Temp/zc_adr_271.md` / `zc_adr_270.md` / `zc_adr_269.md` / `zc_adr_268.md` /
 `zc_adr_267.md` 为准。待兑现登记项沿用（`zc_e2e_preclean.py` 硬删收窄到释放 id 集合；
 `test_plan_commit_groups` 真树「非空」钉法移合成输入）。
+
+### 12.271.7 提交后实证（2567aa401 推送后补记）
+
+- 提交：`2567aa401`（16 文件，+845/−57）；**直连推送成功**（`b4ffa926f..2567aa401`；首次连接
+  失败、重试 1 次成功，未挂代理）；远端 master = `2567aa401e792156ba56ac85cead59691c99c4e1`
+  = 本地 HEAD。
+- 工作区全净（`git status --porcelain` 空）。
+- plan 门禁：`plan_commit_groups.py --json` exit=0，`violations=[]`（worktree 各计数全 0）。
+- python 生产套件全量复跑：**665 tests（653 passed / 9 failed / 3 skipped），313.33s**——9 红构成：
+  PowerShell 面 6（`test_powershell_portability.py`×3：repo_contains / non_ascii_bom / parse_7_and_51
+  ＋`test_powershell_portability_cli.py`×3：reports_zero / evidence_json / pwsh_version）＋
+  `test_check_evidence_citations` coverage-shrink 守卫＋`test_native_mysqld_sandbox` 未标记数据目录
+  拒绝例＋`test_plan_commit_groups` 真树「非空」钉法；与前项登记的「4E=PowerShell 移植性×4；5F=
+  coverage-shrink／原生 MySQL 沙箱／plan 真树「非空」钉法／PowerShell CLI×2」同集合（PowerShell
+  面总数 6 项一致；前项拆分口径中的「移植性」含 CLI 面解析执行类），**本项零新增红**。
+- 服务现状：pid 228（jar 642,913,690B，Flyway 212/213 success=1），沙箱
+  `zhicloud_sandbox_v140` / tenant 9001；E2E271 夹具已收尾清理（前缀面 合同/任务/权限行全 0、
+  合同数回基线 13、独立探针复核任务表 0 行）。
