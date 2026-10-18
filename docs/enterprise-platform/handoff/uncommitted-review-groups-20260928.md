@@ -12296,6 +12296,15 @@ sql/mysql 安装脚本与旧 verify 不动等裁定在内）。
    `test-only-for-local900100`），导致就绪探测 15 分钟误报超时；两个 E2E 脚本已实现双 token
    回退（实测择优），此为本机 mock 配置的既有事实，登记备查。
 
+6. **python 套件提交后补证（非产品项，补记）**：标准口径 `unittest discover` 提交前 Ran 665
+   （failures=6/errors=4/skipped=3，10 红）；提交后 plan 互引瞬红清零（`plan_commit_groups --json`
+   exit=0、violations=[]、CLI JSON 用例转绿），定向复跑该测试文件余 1 红仅为
+   `test_current_plan_is_self_consistent_and_not_empty` 的「工作区非空/未入库证据非空」真树钉法——
+   内层仓工作区全净 + evidence 全量入仓（§12.161）后结构性不可满足（§12.117 同类已知：真树钉法
+   会在成功提交后自红；修法=移合成输入），登记为后续项；其余 8 红为本机环境项（1× coverage-shrink
+   用例在 BASELINE dangling_advisories=0 后恒红；6× PowerShell 门禁扫描 node_modules 深路径
+   WinError 3；1× 原生 MySQL 沙箱缺 C:\tools\mysql8）。提交后全量二跑：Ran 665 tests，448.911s，FAILED (failures=5, errors=4, skipped=3)。
+
 ### 12.264.5 不扩面登记（维持）
 
 - demo 工具链（`demo-data/cleanup_demo.sql` 对将删表的引用、冻结快照 474 表早于 V161/V140 且

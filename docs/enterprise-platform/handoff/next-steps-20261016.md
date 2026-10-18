@@ -375,4 +375,8 @@
   登记为独立专项（R-033 阻塞全量重生）；`zc_e2e_preclean.py` 工号槽位硬删为表级（会顺带清历史
   软删残留），后续会话宜收窄到本次释放 id 集合；本机 mock 双 token 以
   `test-only-for-local900100` 为有效枚。
+- **提交后补记（d44f2d0e3 推送后实证）**：plan 互引瞬红随提交清零（CLI exit=0、violations=[]）；
+  同测试文件余 1 红为「非空」真树钉法在「工作区全净 + evidence 全量入仓」下结构性不可满足
+  （§12.117 同类；修法=移合成输入，登记为后续项）；python 全量二跑 Ran 665 tests，448.911s，FAILED (failures=5, errors=4, skipped=3)，余红均本机环境项
+  （node_modules MAX_PATH / 原生 MySQL 组件缺 / BASELINE dangling=0 用例），与本项无关。
 - **下一项**：C6③（FMS 期初余额——先 ADR 定账套口径）→ C6②（FMS 账表）；D/E 组照旧。
