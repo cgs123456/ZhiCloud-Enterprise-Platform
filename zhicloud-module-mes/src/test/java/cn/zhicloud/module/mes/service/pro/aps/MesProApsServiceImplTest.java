@@ -12,6 +12,7 @@ import cn.zhicloud.module.mes.service.md.workstation.MesMdWorkstationService;
 import cn.zhicloud.module.mes.service.pro.aps.strategy.ApsContext;
 import cn.zhicloud.module.mes.service.pro.aps.strategy.ApsResult;
 import cn.zhicloud.module.mes.service.pro.aps.strategy.ApsStrategy;
+import cn.zhicloud.module.mes.service.pro.aps.strategy.ApsTimeRange;
 import cn.zhicloud.module.mes.service.pro.route.MesProRouteProductService;
 import cn.zhicloud.module.mes.service.pro.workorder.MesProWorkOrderService;
 import jakarta.annotation.Resource;
@@ -36,7 +37,6 @@ import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_APS_PLAN_NOT_D
 import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_APS_PLAN_NOT_EXISTS;
 import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_APS_PLAN_RESCHEDULE_TIME_INVALID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -51,7 +51,8 @@ import static org.mockito.Mockito.when;
  *
  * 覆盖业务断点 2：确认/取消状态流转（CAS + 精确错误出口）+ 重排产修正
  *（起止同步平移保持时长、真重叠冲突检测、已取消/已完成不阻断）；
- * A 组第 1 项：generate 工位占用时间线（真重叠 + 状态过滤，§12.244）。
+ * A 组第 1 项：generate 工位占用时间线（真重叠 + 状态过滤，§12.244）；
+ * C 组第 5 项：generate 工位空闲空隙构建（裁剪/合并/整窗/早段，§12.263）。
  */
 @Import(MesProApsServiceImpl.class)
 public class MesProApsServiceImplTest extends BaseDbUnitTest {
@@ -229,7 +230,7 @@ public class MesProApsServiceImplTest extends BaseDbUnitTest {
                 PRO_APS_PLAN_NOT_EXISTS);
     }
 
-    // ==================== 生成排产：工位占用时间线（§12.244 真重叠 + 状态过滤） ====================
+    // ==================== 生成排产：工位占用时间线（§12.244 真重叠 + 状态过滤）与空闲空隙（§12.263） ====================
 
     private MesProApsGenerateReqVO buildGenerateReq(Long workOrderId) {
         MesProApsGenerateReqVO reqVO = new MesProApsGenerateReqVO();
@@ -248,7 +249,7 @@ public class MesProApsServiceImplTest extends BaseDbUnitTest {
     }
 
     /**
-     * 执行一次 generate 并捕获传给策略的上下文（供断言工位可用时间）
+     * 执行一次 generate 并捕获传给策略的上下文（供断言工位空闲空隙）
      */
     private ApsContext captureGenerateContext(List<MesProApsPlanDO> existingPlans) {
         MesProWorkOrderDO workOrder = buildGenerateWorkOrder();
@@ -269,8 +270,8 @@ public class MesProApsServiceImplTest extends BaseDbUnitTest {
     }
 
     @Test
-    public void testGenerate_leftStraddlePlanPushesAvailabilityToItsEnd() {
-        // 左跨计划 [START-3h, START+10h)：start < 窗口起点，旧「被包含」查询必漏
+    public void testGenerate_leftStraddlePlanBlocksWholeWindow() {
+        // 左跨计划 [START-3h, START+10h)：start < 窗口起点，裁剪后 [START, END) 整窗占用 → 空隙为空（本窗口不可排）
         MesProApsPlanDO leftStraddle = MesProApsPlanDO.builder()
                 .id(200L).workstationId(WORKSTATION_ID)
                 .plannedStartTime(START.minusHours(3)).plannedEndTime(START.plusHours(10))
@@ -279,21 +280,25 @@ public class MesProApsServiceImplTest extends BaseDbUnitTest {
 
         ApsContext context = captureGenerateContext(List.of(leftStraddle));
 
-        assertEquals(START.plusHours(10), context.getWorkstationAvailableTime().get(WORKSTATION_ID));
+        assertEquals(Collections.emptyList(), context.getWorkstationFreeGaps().get(WORKSTATION_ID));
         verify(apsPlanMapper).selectListOverlappingByWorkstationIdsAndTimeRange(
                 eq(List.of(WORKSTATION_ID)), eq(START), eq(END));
     }
 
     @Test
-    public void testGenerate_noExistingPlansAvailabilityAtStartDate() {
+    public void testGenerate_noExistingPlansWholeWindowGap() {
         ApsContext context = captureGenerateContext(Collections.emptyList());
 
-        assertEquals(START, context.getWorkstationAvailableTime().get(WORKSTATION_ID));
+        List<ApsTimeRange> gaps = context.getWorkstationFreeGaps().get(WORKSTATION_ID);
+        assertEquals(1, gaps.size());
+        assertEquals(START, gaps.get(0).getStart());
+        assertEquals(END, gaps.get(0).getEnd());
     }
 
     @Test
-    public void testGenerate_planSpanningBeyondEndFailsSafe() {
-        // 右跨到窗口之外 [START+2h, END+5h)：可用时间被推到窗口外 → 该工位本窗口内不可排（fail-safe）
+    public void testGenerate_rightStraddlePlanLeavesEarlyGap() {
+        // 右跨到窗口之外 [START+2h, END+5h)：裁剪后仅封锁 [START+2h, END)，早段 [START, START+2h) 仍为空隙
+        //（旧标量模型把可用时间推到窗口外 → 该工位整窗不可排 fail-safe；§12.263 起为空隙语义：早段可利用）
         MesProApsPlanDO spanning = MesProApsPlanDO.builder()
                 .id(201L).workstationId(WORKSTATION_ID)
                 .plannedStartTime(START.plusHours(2)).plannedEndTime(END.plusHours(5))
@@ -302,9 +307,29 @@ public class MesProApsServiceImplTest extends BaseDbUnitTest {
 
         ApsContext context = captureGenerateContext(List.of(spanning));
 
-        LocalDateTime availability = context.getWorkstationAvailableTime().get(WORKSTATION_ID);
-        assertEquals(END.plusHours(5), availability);
-        assertTrue(availability.isAfter(END));
+        List<ApsTimeRange> gaps = context.getWorkstationFreeGaps().get(WORKSTATION_ID);
+        assertEquals(1, gaps.size());
+        assertEquals(START, gaps.get(0).getStart());
+        assertEquals(START.plusHours(2), gaps.get(0).getEnd());
+    }
+
+    @Test
+    public void testGenerate_twoAdjacentPlansMergeToEmptyGaps() {
+        // 相邻两计划 [START, START+1h) + [START+1h, END)：合并后整窗占用 → 空隙为空
+        MesProApsPlanDO first = MesProApsPlanDO.builder()
+                .id(202L).workstationId(WORKSTATION_ID)
+                .plannedStartTime(START).plannedEndTime(START.plusHours(1))
+                .status(MesProApsPlanStatusEnum.DRAFT.getStatus())
+                .build();
+        MesProApsPlanDO second = MesProApsPlanDO.builder()
+                .id(203L).workstationId(WORKSTATION_ID)
+                .plannedStartTime(START.plusHours(1)).plannedEndTime(END)
+                .status(MesProApsPlanStatusEnum.CONFIRMED.getStatus())
+                .build();
+
+        ApsContext context = captureGenerateContext(List.of(first, second));
+
+        assertEquals(Collections.emptyList(), context.getWorkstationFreeGaps().get(WORKSTATION_ID));
     }
 
 

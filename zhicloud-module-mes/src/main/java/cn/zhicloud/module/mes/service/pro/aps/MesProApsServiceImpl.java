@@ -10,12 +10,10 @@ import cn.zhicloud.module.mes.controller.admin.pro.aps.vo.MesProApsGenerateReqVO
 import cn.zhicloud.module.mes.controller.admin.pro.aps.vo.MesProApsPlanPageReqVO;
 import cn.zhicloud.module.mes.dal.dataobject.md.workstation.MesMdWorkstationDO;
 import cn.zhicloud.module.mes.dal.dataobject.pro.aps.MesProApsPlanDO;
-import cn.zhicloud.module.mes.dal.dataobject.pro.route.MesProRouteProductDO;
 import cn.zhicloud.module.mes.dal.dataobject.pro.workorder.MesProWorkOrderDO;
 import cn.zhicloud.module.mes.dal.mysql.pro.aps.MesProApsPlanMapper;
 import cn.zhicloud.module.mes.enums.pro.MesProApsPlanPriorityEnum;
 import cn.zhicloud.module.mes.enums.pro.MesProApsPlanStatusEnum;
-import cn.zhicloud.module.mes.enums.pro.MesTimeUnitTypeEnum;
 import cn.zhicloud.module.mes.service.md.workstation.MesMdWorkstationService;
 import cn.zhicloud.module.mes.service.pro.route.MesProRouteProductService;
 import cn.zhicloud.module.mes.service.pro.workorder.MesProWorkOrderService;
@@ -23,20 +21,19 @@ import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Value;
 import cn.zhicloud.module.mes.enums.pro.ApsAlgorithmEnum;
 import cn.zhicloud.module.mes.service.pro.aps.strategy.ApsContext;
+import cn.zhicloud.module.mes.service.pro.aps.strategy.ApsGapHelper;
 import cn.zhicloud.module.mes.service.pro.aps.strategy.ApsResult;
 import cn.zhicloud.module.mes.service.pro.aps.strategy.ApsStrategy;
+import cn.zhicloud.module.mes.service.pro.aps.strategy.ApsTimeRange;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -64,8 +61,8 @@ import static cn.zhicloud.module.mes.enums.ErrorCodeConstants.PRO_APS_PLAN_WORKS
  *
  * 采用贪婪算法（有限产能排产），P0-12 改造后逻辑：
  * 1. 工单按 <b>自身优先级</b>（高→中→低，空值默认中）+ 需求日期（早→晚）排序
- * 2. 依次为每张工单寻找最早空闲的工位时段
- * 3. 工序时长按 <b>工艺路线生产用时 + 工位产能/效率</b> 精确估算：
+ * 2. 依次为每张工单寻找最早可容纳其时长的工位空隙（窗口内空闲区间，§12.263 空隙建模）
+ * 3. 工序时长按 <b>工艺路线生产用时 + 工位产能/效率</b> 精确估算（{@link ApsDurationEstimator}）：
  *    <pre>
  *    unitHours    = routeProduct.productionTime（按 timeUnitType 换算为小时）
  *    durationHours = ceil( quantity * unitHours / capacity / efficiency )
@@ -84,21 +81,6 @@ public class MesProApsServiceImpl implements MesProApsService {
      * 默认优先级（中），工单未配置 priority 时回退使用
      */
     private static final int DEFAULT_PRIORITY = MesProApsPlanPriorityEnum.MEDIUM.getPriority();
-
-    /**
-     * 默认工位产能（件/小时），capacity 为空时回退使用
-     */
-    private static final BigDecimal DEFAULT_CAPACITY = BigDecimal.ONE;
-
-    /**
-     * 默认效率系数，efficiency 为空/非正数时回退使用
-     */
-    private static final BigDecimal DEFAULT_EFFICIENCY = BigDecimal.ONE;
-
-    /**
-     * 旧简化估算的默认单位时长（1 件 = 1 小时）
-     */
-    private static final BigDecimal LEGACY_UNIT_HOURS = BigDecimal.ONE;
 
     @Resource
     private MesProApsPlanMapper apsPlanMapper;
@@ -166,37 +148,28 @@ public class MesProApsServiceImpl implements MesProApsService {
             throw exception(PRO_APS_PLAN_WORKSTATION_EMPTY);
         }
 
-        // 4. 读取区间内已有的排产计划，构建工位占用时间线
-        // 工位下次可用时间 = 已有计划的最晚结束时间（不早于排产开始时间）
+        // 4. 读取区间内已有的排产计划，构建工位空闲空隙（§12.263 空隙建模）
+        // 空隙 = 窗口 [startDate, endDate) 扣除既有计划占用（裁剪 + 合并）后的空闲区间：
+        // ①中段占用不再把早段空闲一并封锁（新计划可落于早段空隙）；
+        // ②跨窗占用只封锁被裁进窗口的部分（旧标量模型「工位下次可用时间 = 最晚结束时间」
+        //   在右跨时把整窗判不可排——§12.244.5-2 登记的空隙课题，本项收口）。
         // 查询采用「重叠」语义（左跨/右跨/被包含全覆盖）；占位状态按「排除终态」口径
         // （锚定 MesProApsPlanStatusEnum.TERMINAL_STATUS_VALUES）：仅已完成/已取消不占位，
         // 其余状态（含枚举域外的未知值）一律按占位——保守方向，宁可低估空档不超排。
-        // 旧「被包含」查询会漏计左跨计划（可用时间低估 → 新计划可能与既有计划重叠）、
-        // 且已取消/已完成计划仍占位（可用时间虚高）（§12.240.5 登记、§12.244 收口，
-        // 状态集收口 §12.251）
+        // 旧「被包含」查询会漏计左跨计划（空隙虚高 → 新计划可能与既有计划重叠）、
+        // 且已取消/已完成计划仍占位（§12.240.5 登记、§12.244 收口，状态集收口 §12.251）
         // 一次 IN 查询 + 内存按 workstationId 分组，避免按工位逐个查询的 N+1
-        Map<Long, LocalDateTime> workstationAvailableTime = new HashMap<>();
-        List<MesProApsPlanDO> rangePlans = apsPlanMapper.selectListOverlappingByWorkstationIdsAndTimeRange(
-                workstations.stream().map(MesMdWorkstationDO::getId).collect(Collectors.toList()),
+        Map<Long, List<ApsTimeRange>> workstationFreeGaps = ApsGapHelper.buildFreeGaps(workstations,
+                apsPlanMapper.selectListOverlappingByWorkstationIdsAndTimeRange(
+                        workstations.stream().map(MesMdWorkstationDO::getId).collect(Collectors.toList()),
+                        reqVO.getStartDate(), reqVO.getEndDate()),
                 reqVO.getStartDate(), reqVO.getEndDate());
-        Map<Long, List<MesProApsPlanDO>> plansByWorkstation = rangePlans.stream()
-                .filter(p -> p.getWorkstationId() != null)
-                .collect(Collectors.groupingBy(MesProApsPlanDO::getWorkstationId));
-        for (MesMdWorkstationDO ws : workstations) {
-            LocalDateTime latestEnd = reqVO.getStartDate();
-            for (MesProApsPlanDO p : plansByWorkstation.getOrDefault(ws.getId(), Collections.emptyList())) {
-                if (p.getPlannedEndTime() != null && p.getPlannedEndTime().isAfter(latestEnd)) {
-                    latestEnd = p.getPlannedEndTime();
-                }
-            }
-            workstationAvailableTime.put(ws.getId(), latestEnd);
-        }
 
         // 5. 构建排产上下文 + 预估工单时长
         Map<Long, Long> workOrderDurationHours = new HashMap<>();
         Set<Long> skippedWorkOrders = new HashSet<>();
         for (MesProWorkOrderDO workOrder : workOrders) {
-            long durationHours = estimateDurationHours(workOrder, workstations);
+            long durationHours = ApsDurationEstimator.estimateDurationHours(workOrder, workstations, routeProductService);
             workOrderDurationHours.put(workOrder.getId(), durationHours);
             if (durationHours <= 0) {
                 skippedWorkOrders.add(workOrder.getId());
@@ -206,7 +179,7 @@ public class MesProApsServiceImpl implements MesProApsService {
                 .startDate(reqVO.getStartDate())
                 .endDate(reqVO.getEndDate())
                 .workstations(workstations)
-                .workstationAvailableTime(workstationAvailableTime)
+                .workstationFreeGaps(workstationFreeGaps)
                 .workOrderDurationHours(workOrderDurationHours)
                 .build();
         // 6. 按配置选择排产策略执行排产（策略模式：贪婪 / TOC-DBR / 遗传）
@@ -374,125 +347,6 @@ public class MesProApsServiceImpl implements MesProApsService {
     private static Integer resolvePriority(MesProWorkOrderDO workOrder) {
         Integer p = workOrder.getPriority();
         return (p == null) ? DEFAULT_PRIORITY : p;
-    }
-
-    /**
-     * 估算工序时长（小时），基于工艺路线生产用时 + 工位产能/效率
-     * <p>
-     * 公式：
-     * <pre>
-     *   unitHours    = routeProduct.productionTime（按 timeUnitType 换算为小时）
-     *   capacity     = workstation.capacity（空则 1.0）
-     *   efficiency   = workstation.efficiency（空/非正数则 1.0）
-     *   durationHours = ceil( quantity * unitHours / capacity / efficiency )
-     * </pre>
-     * <p>
-     * 回退策略（不阻断整体排产）：
-     * 1. 工单数量为空或 ≤0 → 返回 0，跳过该工单
-     * 2. 工艺路线 productionTime 为空 → 回退到旧的"1 件 = 1 小时"简化估算
-     * 3. 工位 capacity/efficiency 为空 → 按 1.0 处理
-     *
-     * @param workOrder   生产工单
-     * @param workstations 可用工位列表（用于取平均产能做估算；具体到工位的差异由贪婪分配阶段补偿）
-     * @return 工序时长（小时），返回 0 表示无法排产
-     */
-    private long estimateDurationHours(MesProWorkOrderDO workOrder, List<MesMdWorkstationDO> workstations) {
-        // 1. 校验数量
-        BigDecimal quantity = workOrder.getQuantity();
-        if (quantity == null || quantity.signum() <= 0) {
-            return 0L;
-        }
-
-        // 2. 读取单位产品工时（小时/件）：优先从工艺路线取，取不到回退到 1 小时/件
-        BigDecimal unitHours = resolveUnitHours(workOrder.getProductId());
-
-        // 3. 取可用工位的平均产能与平均效率（避免单一工位极端值影响整体估算）
-        BigDecimal avgCapacity = resolveAvgCapacity(workstations);
-        BigDecimal avgEfficiency = resolveAvgEfficiency(workstations);
-
-        // 4. durationHours = ceil( quantity * unitHours / capacity / efficiency )
-        BigDecimal duration = quantity.multiply(unitHours)
-                .divide(avgCapacity, 4, RoundingMode.HALF_UP)
-                .divide(avgEfficiency, 0, RoundingMode.UP);
-        // 至少 1 小时
-        long hours = duration.longValue();
-        return Math.max(hours, 1L);
-    }
-
-    /**
-     * 解析单位产品工时（小时/件）
-     * <p>
-     * 从 mes_pro_route_product.productionTime + timeUnitType 换算：
-     * - MINUTE → / 60
-     * - HOUR   → 直接使用
-     * - DAY    → * 24
-     * <p>
-     * 若产品未配置工艺路线或生产用时为空，回退到 1 小时/件。
-     */
-    private BigDecimal resolveUnitHours(Long productId) {
-        if (productId == null) {
-            return LEGACY_UNIT_HOURS;
-        }
-        MesProRouteProductDO routeProduct = routeProductService.getRouteProductByItemId(productId);
-        if (routeProduct == null || routeProduct.getProductionTime() == null) {
-            // 回退到简化估算（不阻断排产）
-            return LEGACY_UNIT_HOURS;
-        }
-        BigDecimal productionTime = routeProduct.getProductionTime();
-        String unitType = routeProduct.getTimeUnitType();
-        if (unitType == null) {
-            return LEGACY_UNIT_HOURS;
-        }
-        return switch (unitType) {
-            case "MINUTE" -> productionTime.divide(BigDecimal.valueOf(60), 4, RoundingMode.HALF_UP);
-            case "HOUR" -> productionTime;
-            case "DAY" -> productionTime.multiply(BigDecimal.valueOf(24));
-            default -> LEGACY_UNIT_HOURS;
-        };
-    }
-
-    /**
-     * 解析可用工位的平均产能（件/小时），空值回退到 1.0
-     */
-    private BigDecimal resolveAvgCapacity(List<MesMdWorkstationDO> workstations) {
-        if (CollUtil.isEmpty(workstations)) {
-            return DEFAULT_CAPACITY;
-        }
-        BigDecimal sum = BigDecimal.ZERO;
-        int count = 0;
-        for (MesMdWorkstationDO ws : workstations) {
-            BigDecimal cap = ws.getCapacity();
-            if (cap != null && cap.signum() > 0) {
-                sum = sum.add(cap);
-                count++;
-            }
-        }
-        if (count == 0) {
-            return DEFAULT_CAPACITY;
-        }
-        return sum.divide(BigDecimal.valueOf(count), 4, RoundingMode.HALF_UP);
-    }
-
-    /**
-     * 解析可用工位的平均效率系数，空值/非正数回退到 1.0
-     */
-    private BigDecimal resolveAvgEfficiency(List<MesMdWorkstationDO> workstations) {
-        if (CollUtil.isEmpty(workstations)) {
-            return DEFAULT_EFFICIENCY;
-        }
-        BigDecimal sum = BigDecimal.ZERO;
-        int count = 0;
-        for (MesMdWorkstationDO ws : workstations) {
-            BigDecimal eff = ws.getEfficiency();
-            if (eff != null && eff.signum() > 0) {
-                sum = sum.add(eff);
-                count++;
-            }
-        }
-        if (count == 0) {
-            return DEFAULT_EFFICIENCY;
-        }
-        return sum.divide(BigDecimal.valueOf(count), 4, RoundingMode.HALF_UP);
     }
 
     /**

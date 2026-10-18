@@ -12125,3 +12125,93 @@ C4=MRP 转采购/生产建议；C5=APS 空隙建模；C6=FMS/HRM 接线与旧 /h
 
 C5=APS 空隙建模；C6=FMS/HRM 接线与旧 /hr 退役（尾置）。
 重建依据与原会话登记原文可能存在偏差，以 HANDOFF 各 §12.2xx 原文为准（重建披露在 next-steps 后记六同步）。
+
+## 12.263 APS 工位空隙建模（C 组第 5 项，§12.244.5-2 空隙课题收口）
+
+### 12.263.1 背景与目标
+
+§12.244 把工位可用性建模为标量「下次可用时间」（窗口内既有计划重叠查询的最晚 plan_end，默认=窗口起点）：
+中段占用会把早段空闲一并封锁（新计划永远排在占用之后），右跨占用更把整窗判为不可排
+（fail-safe 跳过，§12.244.5-2 登记为单立课题）。本项以「空隙建模」替换标量模型：
+窗口扣除既有占用后的空闲区间（裁剪 + 合并 + 补集）直接作为排产容量，计划只落于验证过为空的区间——
+早段空隙可用、跨窗占用只封锁被裁部分、与既有计划重叠不可能。设计锁 D1-D10 见 ADR `Temp/zc_adr_263.md`。
+
+### 12.263.2 实施内容
+
+- 契约替换（D1）：`ApsContext.workstationAvailableTime`（`Map<Long, LocalDateTime>`）→
+  `workstationFreeGaps`（`Map<Long, List<ApsTimeRange>>`）；服务 step 4 改调
+  `ApsGapHelper.buildFreeGaps(workstations, 重叠计划, startDate, endDate)`。
+- 新增 `strategy/ApsTimeRange.java`：不可变半开区间 `[start, end)`，
+  `canFit(effectiveStart, durationHours)`（紧贴边界可容纳）。
+- 新增 `strategy/ApsGapHelper.java`：占用先裁至窗口（左跨/右跨只封锁被裁部分，空段丢弃）→
+  按起点升序游标合并（重叠与相邻自然合并）→ 窗口补集即空隙；每个工位必有条目（无空隙=空列表），
+  升序、两两不相交且不相邻。
+- `strategy/ApsAllocationHelper.allocate` 重写（D4，GREEDY/GENETIC 共用）：基于空隙副本计算
+  （不污染上下文）；逐工单找「最早可容纳」空隙（起点严格更早者胜——平局取序前者，与旧模型同一
+  取胜规则；空隙信息缺失的工位按不可用保守处理）；放置于空隙起点；放置后消耗空隙（剩余
+  `[plannedEnd, gapEnd)` 回填为新空隙、恰满移除）；无空隙 skip。
+- `strategy/TocDbrApsStrategy`（D5）：瓶颈空隙 + 绳序游标；候选 = `max(空隙起点, 绳序游标) + 1h 缓冲`，
+  按空隙顺序找第一个可容纳者；游标单调不回填；skip 不推进游标；标量退化工况（单空隙/占用贴尾）
+  与旧「下次可用时间 + 缓冲」逐式对齐。
+- `MesProApsServiceImpl`：step 4 改空隙构建（注释按新语义重写）；时长估算四方法 + 三常量抽取至
+  新增 `ApsDurationEstimator`（D6，静态工具，`MesProRouteProductService` 显式入参，行为零变化）；
+  506→360 行（含导入清理与 §12.263 javadoc 补注）。
+- 行为变更（D7 清单外零扩面）：中段占用不再封锁早段空闲；右跨占用不再整窗封锁（旧 fail-safe 反转）
+  ——E2E 对两例做新旧几何对照断言；域外状态（枚举外未知值）维持「占位」黑名单口径、
+  已完成/已取消维持不占位（终态口径沿用 §12.251）。
+- 迁移与门禁（D8）：零迁移、零新错误码、零权限、零契约变更（`migration-contract.json` 不动）；
+  lint 与契约门禁只作回归验证。
+
+### 12.263.3 验证链与实证
+
+- 改动前基线（先测）：MES 模块回归 **854/0**（`Temp/zc_aps263_baseline.log`）。
+- 阶段校验：74 项字节级断言 **ALL PASS**（LF-only 行尾 + 全仓旧契约 `workstationAvailableTime` 残留=0 等）。
+- 定向测试：**36/36**——`MesProApsServiceImplTest` 15（14→15：左跨案改「空隙为空」、无占用案改
+  「整窗空隙」、右跨案改「早段空隙可落窗首」、+相邻合并新案）+ `ApsGapHelperTest` 9 +
+  `ApsAllocationHelperTest` 8 + `TocDbrApsStrategyTest` 4。
+- MES 模块回归（终稿源码）：**876/0**（=854 − 14 + 36）。
+- errcode 扫描：1962 定义 / 0 冲突。
+- lint：迁移目录 213 文件 / 16 违规（历史存量，零新增）；契约门禁：**tracked=117 scanned=213
+  findings=0 PASSED**。
+- reactor 打包 BUILD SUCCESS（注释微调后重打，jar 与终稿源码严格对齐）。
+- 真机 E2E：**56/56 PASS**（二跑；首跑 55/56 为脚本预期值算错，见 §12.263.4）——
+  tenant 9001 / zhicloud_sandbox_v140：单工位受控摆景（8 工位快照临时禁 7 留 1，finally 复原）；
+  K=2h 实测（探针工单窗首落位后删行，场景零干扰）；8 组场景：①早段空隙利用（OCC1 中段
+  [B+8K,B+12K)，S1 落窗首 B；旧口径 SQL 复算 max_end=B+12K → 旧模型必弃早段）②同空隙连续回填
+  （S2 落 S1.end）③有界空隙（OCC2 [B+16K,B+20K)，S3 落 S2.end）④全占窗跳过（空结果、零落库）
+  ⑤右跨不再整窗封锁（OCC3 [B+66K,B+75K) 右跨 W4 [B+60K,B+70K)，S5 落窗首；旧口径复算
+  max_end=B+75K > 窗尾 → 旧必跳过）⑥左跨裁剪收口（OCC4 [B+75K,B+84K) 左跨 W5 [B+80K,B+90K)，
+  S6 落 OCC4.end）⑦域外状态 99 占位（S7 落 OCC5.end）⑧已取消(4)不占位（S8 落窗首）；
+  清理零遗留（计划/工单/占用/域外值）+ 工位状态复原 + 产能账 13 = 7 场景计划 + 6 占用。
+- 前端：本项零改动 → 按定型规则（前端 diff 非零才跑）跳过 `ts:check`/`build:prod`，登记于此。
+
+### 12.263.4 首跑与执行实证登记（诚实链）
+
+1. **实施期缺陷 1（编译级，已修）**：方法抽取锚点截短 javadoc 残片 → `illegal character '\uff08'`
+   编译失败（350 行处）；字节级修复补回「生成排产计划编号」javadoc 头（`Temp/zc_aps263_fix1.py`），
+   复核 line=358 通过。
+2. **实施期缺陷 2（注释级，已修）**：splice 锚点语义（尾锚点整行随替换消费）吞掉
+   「// 5. 构建排产上下文 + 预估工单时长」注释行（步骤号 4→6 跳号，无编译影响）；
+   字节级补回（358→360 行，`Temp/zc_aps263_fix2.py`）——因行号位移改变 class 行号表，
+   触发注释微调后二次打包重验（jar 与终稿源码严格对齐）。
+3. **实施期缺陷 3（注释级，已修）**：测试 `captureGenerateContext` javadoc 旧措辞残留
+   （「工位可用时间」→「工位空闲空隙」，`Temp/zc_aps263_fix3.py`）。
+4. **E2E 首跑 55/56（脚本预期值算错）**：产能账检查把「S4 全占跳过」也计入落库预期（预期 14），
+   实测 13 = 7 场景计划 + 6 占用为正确值；产品几何 55 项首跑全绿；修正断言后二跑 56/56。
+5. **回归基线**：本项按「先测改动前基线」执行（854/0 实测），吸取 §12.262.4-4 教训；
+   终稿源码复跑 876/0（`Temp/zc_aps263_regress2.log`）。
+6. **服务端日志核对**：首跑构建零 ERROR；二跑构建 4 条 ERROR 均为 Redisson 流监听调度环境噪声
+   （`EmptyMap cannot be cast to List` @ `RedissonStreamCommands.xReadGroup`，与 APS 零关联）。
+
+### 12.263.5 不扩面登记（维持）
+
+- 工序链/多段工序建模：仍为单段时长估算（`ApsDurationEstimator` 四方法原样搬家，口径零变化）。
+- 时长估算并入工艺路线产能表：不引入（登记为后续候选）。
+- 排产结果回写工单字段：不扩面（维持既有 plan 落库口径）。
+- reschedule 冲突检测（§12.240）与重复排产白名单校验（§12.251）：本项不动。
+- 算法枚举/配置/前端：本项零改动。
+
+### 12.263.6 C 组矩阵基线（顺延声明）
+
+C6=FMS/HRM 接线与旧 /hr 退役（尾置）；D1-D6、E1-E7 照旧。
+重建依据与原会话登记原文可能存在偏差，以 HANDOFF 各 §12.2xx 原文为准（重建披露在 next-steps 后记六同步）。

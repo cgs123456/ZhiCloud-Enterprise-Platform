@@ -59,12 +59,16 @@ public class TocDbrApsStrategy implements ApsStrategy {
                 .thenComparing(MesProWorkOrderDO::getRequestDate, Comparator.nullsLast(Comparator.naturalOrder())));
 
         // 3. 按瓶颈节奏排产（所有工单流经瓶颈，受 Rope 限制投料节奏）
-        LocalDateTime bottleneckAvailable = context.getWorkstationAvailableTime() == null
-                ? context.getStartDate()
-                : context.getWorkstationAvailableTime().getOrDefault(bottleneck.getId(), context.getStartDate());
-        if (bottleneckAvailable.isBefore(context.getStartDate())) {
-            bottleneckAvailable = context.getStartDate();
+        // 瓶颈空闲空隙 + 绳序游标（§12.263 空隙建模）：
+        //   候选起点 = max(空隙起点, 绳序游标) + 1h 缓冲
+        // 空隙起点即前一占用结束/窗口起点，标量退化工况与旧「下次可用时间 + 缓冲」逐式对齐；
+        // 绳序游标单调（不回填更早空隙），保证后序工单不会插到先序工单之前（Drum 顺序）。
+        List<ApsTimeRange> bottleneckGaps = new ArrayList<>();
+        if (context.getWorkstationFreeGaps() != null
+                && context.getWorkstationFreeGaps().get(bottleneck.getId()) != null) {
+            bottleneckGaps.addAll(context.getWorkstationFreeGaps().get(bottleneck.getId()));
         }
+        LocalDateTime ropeCursor = context.getStartDate();
 
         for (MesProWorkOrderDO workOrder : drumOrders) {
             long durationHours = context.getWorkOrderDurationHours() == null
@@ -74,17 +78,25 @@ public class TocDbrApsStrategy implements ApsStrategy {
                 skipped.add(workOrder.getId());
                 continue;
             }
-            // Buffer：瓶颈前设置时间缓冲，避免瓶颈饥饿
-            LocalDateTime start = bottleneckAvailable.plusHours(BUFFER_HOURS);
-            if (start.isBefore(context.getStartDate())) {
-                start = context.getStartDate();
+            // Buffer：候选起点先加瓶颈前时间缓冲（1h），再做容纳判定
+            LocalDateTime start = null;
+            int gapIndex = -1;
+            for (int i = 0; i < bottleneckGaps.size(); i++) {
+                ApsTimeRange gap = bottleneckGaps.get(i);
+                LocalDateTime candidate = gap.getStart().isAfter(ropeCursor) ? gap.getStart() : ropeCursor;
+                candidate = candidate.plusHours(BUFFER_HOURS);
+                if (gap.canFit(candidate, durationHours)) {
+                    start = candidate;
+                    gapIndex = i;
+                    break;
+                }
             }
-            LocalDateTime end = start.plusHours(durationHours);
-            // 超过排产截止时间，瓶颈产能不足
-            if (end.isAfter(context.getEndDate())) {
+            // 本窗瓶颈产能不足：跳过且游标不动（后续更短工单仍可在原节奏点尝试）
+            if (start == null) {
                 skipped.add(workOrder.getId());
                 continue;
             }
+            LocalDateTime end = start.plusHours(durationHours);
             MesProApsPlanDO plan = MesProApsPlanDO.builder()
                     .workOrderId(workOrder.getId())
                     .productId(workOrder.getProductId())
@@ -96,8 +108,15 @@ public class TocDbrApsStrategy implements ApsStrategy {
                     .status(MesProApsPlanStatusEnum.DRAFT.getStatus())
                     .build();
             plans.add(plan);
-            // Rope：下一张工单的投料节奏受瓶颈约束
-            bottleneckAvailable = end;
+            // Rope：下一张工单的投料节奏受瓶颈约束（游标推进到本计划结束）
+            ropeCursor = end;
+            // 消耗空隙：剩余 [end, gapEnd) 回填；恰好填满则移除
+            ApsTimeRange gap = bottleneckGaps.get(gapIndex);
+            if (end.isBefore(gap.getEnd())) {
+                bottleneckGaps.set(gapIndex, new ApsTimeRange(end, gap.getEnd()));
+            } else {
+                bottleneckGaps.remove(gapIndex);
+            }
         }
         return ApsResult.builder().plans(plans).skippedWorkOrderIds(skipped).build();
     }
