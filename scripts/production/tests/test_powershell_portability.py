@@ -13,6 +13,7 @@ LF」，Windows PowerShell 5.1 会按系统 ANSI 代码页（cp936/GBK）解码�
 修复方式统一为：UTF-8 带 BOM（5.1 与 7 都能正确解码），并在本测试中固化门禁。
 """
 
+import os
 import shutil
 import subprocess
 import tempfile
@@ -43,7 +44,14 @@ foreach ($file in $Files) {
 def powershell_scripts() -> list[Path]:
     if not REPO_ROOT.is_dir():
         return []
-    return sorted(REPO_ROOT.rglob("*.ps1"))
+    _EXCLUDED = {"node_modules", ".git", "target", "dist", "build", "__pycache__"}
+    result = []
+    for dirpath, dirnames, filenames in os.walk(REPO_ROOT):
+        dirnames[:] = [d for d in dirnames if d not in _EXCLUDED]
+        for fn in filenames:
+            if fn.endswith(".ps1"):
+                result.append(Path(dirpath) / fn)
+    return sorted(result)
 
 
 def parse_errors(host: str, scripts: list[Path]) -> list[str]:

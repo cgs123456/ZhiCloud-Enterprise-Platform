@@ -176,10 +176,15 @@ class RealTreeTests(unittest.TestCase):
         docs = sorted(p for p in gate.DOCS_ROOT.rglob("*.md") if p.is_file())
         tracked = {l.replace("\\", "/") for l in gate.git_lines("ls-files")}
         original = dict(gate.BASELINE)
+        # dangling_advisories 在干净真树上可能为 0：0*100 仍为 0，floor=0，measured=0 不会 trip，
+        # 导致该指标无法被"抬高基线"路径覆盖。用合成非零基线钉住判定（与 docs_scanned/path_citations 同形）。
+        shrink_baseline = dict(original)
+        if shrink_baseline.get("dangling_advisories", 0) == 0:
+            shrink_baseline["dangling_advisories"] = 10
         try:
-            gate.BASELINE.update({"docs_scanned": original["docs_scanned"] * 100,
-                                  "path_citations": original["path_citations"] * 100,
-                                  "dangling_advisories": original["dangling_advisories"] * 100})
+            gate.BASELINE.update({"docs_scanned": shrink_baseline["docs_scanned"] * 100,
+                                  "path_citations": shrink_baseline["path_citations"] * 100,
+                                  "dangling_advisories": shrink_baseline["dangling_advisories"] * 100})
             tripped = gate.evaluate(docs, tracked, gate.DOCS_ROOT, gate.REPO)
             metrics = sorted({v["metric"] for v in tripped["violations"] if v["kind"] == "coverage-shrink"})
             self.assertEqual(["dangling_advisories", "docs_scanned", "path_citations"], metrics,

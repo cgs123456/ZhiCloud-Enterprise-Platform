@@ -118,18 +118,20 @@ function Assert-PidIsOurMysqld {
 switch ($Command) {
 
     'start' {
-        foreach ($bin in @($mysqldBin, $mysqlBin, $adminBin)) {
-            if (-not (Test-Path -LiteralPath $bin -PathType Leaf)) { throw "缺少原生 MySQL 组件：$bin" }
-        }
-        New-Item -ItemType Directory -Force -Path $BaseDir | Out-Null
-        New-Item -ItemType Directory -Force -Path $logDir | Out-Null
-
+        # 先验 datadir（拒绝非空无标记目录），再验二进制：这样在缺少 mysqld 二进制的环境里，
+        # 脚本仍能对"非空无标记 datadir"正确拒绝（§12.60 守卫测试 test_non_empty_unmarked_datadir_*
+        # 不依赖本机是否装了 MySQL 二进制）。
         $dataExists = Test-Path -LiteralPath $dataDir -PathType Container
         if (-not (Test-Path -LiteralPath $marker -PathType Leaf)) {
             if ($dataExists -and @(Get-ChildItem -LiteralPath $dataDir -Force).Count -gt 0) {
                 throw "datadir 已存在且非空，却没有 $MarkerName 标记：$dataDir 可能属于别人，拒绝初始化、拒绝复用、更拒绝删除"
             }
         }
+        foreach ($bin in @($mysqldBin, $mysqlBin, $adminBin)) {
+            if (-not (Test-Path -LiteralPath $bin -PathType Leaf)) { throw "缺少原生 MySQL 组件：$bin" }
+        }
+        New-Item -ItemType Directory -Force -Path $BaseDir | Out-Null
+        New-Item -ItemType Directory -Force -Path $logDir | Out-Null
         if (-not $dataExists) { New-Item -ItemType Directory -Force -Path $dataDir | Out-Null }
         if (-not (Test-Path -LiteralPath $marker -PathType Leaf)) {
             Set-Content -LiteralPath $marker -Value ('created=' + (Get-Date -Format 'yyyy-MM-ddTHH:mm:sszzz')) -Encoding ASCII

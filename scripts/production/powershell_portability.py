@@ -16,6 +16,7 @@ import json
 import shutil
 import subprocess
 import sys
+import os
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
@@ -53,10 +54,23 @@ def host_version(host: str) -> str:
     return completed.stdout.strip()
 
 
+def _walk_ps1(repo_root: Path) -> list[Path]:
+    # 用 os.walk + 目录剪枝，避免 rglob 扫进 node_modules/.pnpm 的断裂 symlink
+    # （rglob 会在 scandir 阶段抛 FileNotFoundError，过滤器来不及生效）。
+    _EXCLUDED = {"node_modules", ".git", "target", "dist", "build", "__pycache__"}
+    result = []
+    for dirpath, dirnames, filenames in os.walk(repo_root):
+        dirnames[:] = [d for d in dirnames if d not in _EXCLUDED]
+        for fn in filenames:
+            if fn.endswith(".ps1"):
+                result.append(Path(dirpath) / fn)
+    return result
+
+
 def discover_scripts(repo_root: Path) -> list[Path]:
     if not repo_root.is_dir():
         return []
-    return sorted(repo_root.rglob("*.ps1"))
+    return sorted(_walk_ps1(repo_root))
 
 
 def find_bom_offenders(repo_root: Path, scripts: list[Path]) -> list[str]:

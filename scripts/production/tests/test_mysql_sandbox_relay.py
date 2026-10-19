@@ -133,14 +133,19 @@ class RelayWiringTests(unittest.TestCase):
         self.assertGreater(parent, -1, '拆卸段找不到父容器删除调用')
         self.assertLess(relay, parent, '必须先删中继再删父容器')
 
-    def test_grant_wording_is_still_loopback_only_in_the_runner_verifier(self):
-        # 方向3 的全部意义：不放宽授权。若有人改成 @'%' 或 @'172.17.0.1'，这条必须红。
+    def test_grant_wording_matches_actual_source_ip_after_r033_direction2(self):
+        # R-033 方向 2（用户裁决 2026-10-19）：宿主 Java 进程经 Docker 发布端口连入时，
+        # MySQL 在容器内看到的来源地址是 bridge 网关 172.17.0.1（不是 127.0.0.1），
+        # 授权主机改为 % 以匹配实际来源。安全边界由 Assert-LoopbackSandboxHost 对 -DatabaseHost
+        # （连接目标）的回环守卫保证——脚本仍只允许连 127.0.0.1/::1/localhost，不会被指向远程实例。
         verifier = (REPO / 'scripts' / 'production' / 'verify_mysql_runner_sandbox.ps1').read_text(
             encoding='utf-8-sig')
-        self.assertIn("CREATE USER '$DbUser'@'127.0.0.1'", verifier)
-        self.assertIn("GRANT ALL PRIVILEGES ON ``$DbName``.* TO '$DbUser'@'127.0.0.1'", verifier)
-        for widened in ("'$DbUser'@'%'", "'$DbUser'@'172.17.0.1'", "'$DbUser'@'localhost'"):
-            self.assertNotIn(widened, verifier, f'授权被放宽：{widened}')
+        self.assertIn("'$DbUser'@'%'", verifier, "授权主机应为 %（实际来源 = Docker bridge 网关）")
+        # loopback 守卫仍严格：DatabaseHost 只允许回环
+        self.assertIn("SandboxLoopbackHosts = @('127.0.0.1', '::1', 'localhost')", verifier)
+        # 授权主机不再是 127.0.0.1（来源地址不匹配，方向 1 已证伪）
+        self.assertNotIn("'$DbUser'@'127.0.0.1'", verifier,
+                         "授权主机不应仍为 127.0.0.1（来源地址不匹配）")
 
     def test_transport_preflight_retries_only_the_probe(self):
         # R-034 的结构锁：允许对无副作用的 `SELECT 1` 做有界重试，
