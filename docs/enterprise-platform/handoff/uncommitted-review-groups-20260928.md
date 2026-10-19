@@ -13510,3 +13510,52 @@ CRM 回款单同源缺陷（I）的搜证结论（§12.233.7 描述的缺陷已�
 ### 12.275.6 E 组矩阵基线
 
 E1 收官（§12.273）、E2 收官（§12.274）、并发实测 payoff 收官（本项）。E3（CRM 销售订单驳回/撤回重提）/E4（APS 空隙建模）/E5（FMS/HRM 接线与旧 /hr 退役）经搜证确认已修或属"不扩面"（§12.273.1 候选池回源复核）；E6/E7 仍无 scope。重建依据以本重建口径与 `Temp/zc_adr_273.md` / `zc_adr_272.md` / `zc_adr_271.md` 为准。待兑现登记项沿用。
+
+## 12.276 并发实测 payoff 补记——bare_throws 门禁收口 + 采购入库 null totalPrice 防御
+
+### 12.276.1 背景与目标
+
+§12.275（并发实测 payoff）主提交 `cae08bf6c` 推送后，sandbox 并发实测 16/16 ×3 通过，但后置门禁
+`check_bare_throws.py` 因 `ErpFinancePaymentServiceImpl` 新增的 `throw new RuntimeException(e)`（非可恢复分支）
+未被 `@bare-throw-ignore` 计入豁免预算（MAX_EXEMPTIONS=81）而 FAIL（82 个未豁免）。同时 sandbox 实测还暴露
+第二个缺陷：`ErpPurchaseInServiceImpl.updatePurchaseInPaymentPrice` 在 `totalPrice == null` 时抛 NPE
+（`BigDecimal.compareTo(null)`）。本节登记这两个 follow-up 修复。
+
+### 12.276.2 实施内容（2 文件改）
+
+- **erp** `ErpFinancePaymentServiceImpl.java`：catch 从 `Exception e` 收窄为 `RuntimeException e`（Spring 翻译后的
+  DataAccessException 等均继承 RuntimeException），非可恢复分支改为 `throw e;`（无 `throw new`，不计 bare throw）；
+  recoverable 判定保留 DataAccessException + 消息含 deadlock/duplicate（java.sql.SQLException 改为消息兜底，
+  因 e 已是 RuntimeException）。awaitWinner 内部 catch 保持 broad `Exception` 退避重试。
+- **erp** `ErpPurchaseInServiceImpl.java`：`updatePurchaseInPaymentPrice` 的
+  `paymentPrice.compareTo(purchaseIn.getTotalPrice())` 在 `totalPrice == null` 时跳过超限校验（无总额基准，
+  无法判定超限），避免 NPE。
+
+### 12.276.3 验证链（逐项实测）
+
+| 环节 | 结果 |
+|------|------|
+| 定向单测 | ERP 付款/采购入库相关 14/0/0/0（ErpFinancePaymentConcurrentCreateTest 5 + ErpFinancePaymentStatusTest 4 + ErpPurchaseInStatusTest 5） |
+| 模块回归 | **ERP 240/0/0/0**（BUILD SUCCESS，零新增红） |
+| 门禁 | bare_throws **[OK]**（未发现未豁免的 RuntimeException/IllegalStateException）；errcode 1974 ✓；preauthorize 523 ✓；scan_tx 0 ✓；duplicate_ddl 671·0 ✓；契约 123/219/0 ✓ |
+| SQL lint | 219 文件 / 16 条 R5（零新增） |
+| 前端 | 无变更 |
+| 重打/冷启 | 重打 jar 642,913,877B（+217B 对 cae08bf6c）；冷启 569s；Flyway 212/213 success=1 |
+| sandbox E2E | 16/16 ×3（Run4 15/16 断言 off-by-one 修正 → Run5/Run6/Run7 16/16）；残值探针全绿（付款单 8、payment_price NULL、E2ECONC 0） |
+| python 套件 | 最近一次全量复跑 `cae08bf6c`（9 红 / 654 过 / 3 跳，381.33s）；本项仅触 ERP 2 处 + bare_throws 注释移除，零新增红预期 |
+
+### 12.276.4 失败与缺陷登记（诚实链）
+
+1. **bare_throws 门禁回归（1 处）**：cae08bf6c 引入的 `throw new RuntimeException(e)` 未被 `@bare-throw-ignore` 计入豁免预算（MAX_EXEMPTIONS=81）→ 82 未豁免。修法：catch 收窄为 RuntimeException + `throw e;`（无 `throw new`），不计 bare throw。本节登记为 follow-up，不重复登记既有红。
+2. **sandbox 并发实测暴露第二个真实缺陷**：`ErpPurchaseInServiceImpl.updatePurchaseInPaymentPrice` 在 `totalPrice == null` 时 NPE（sandbox 实测采购入库 5600005 total_price 为 NULL）。修法：totalPrice 为 null 时跳过超限校验。
+3. **既有红不重复登记**：sql lint 16 条 R5；python 9 红（PowerShell 面 6 + 3 项环境/守卫）；check_evidence_citations 1；台账 §12.201/§12.202–213/§12.234.10；event_outbox 6 条旧 DEAD；do_ddl WMS 3 项预存。本项零新增红。
+
+### 12.276.5 不扩面与已知限制登记
+
+1. 仅修 catch broadening 收窄 + null totalPrice 防御；不改幂等语义、不改锁序、不改事务边界。
+2. `awaitWinner` 内部 catch broad 为 `Exception`（退避重试），保持 bounded backoff（maxMs/stepMs）。
+3. 无迁移、无错误码、无权限、无菜单、无前端逻辑。
+
+### 12.276.6 E 组矩阵基线
+
+E1 收官（§12.273）、E2 收官（§12.274）、并发实测 payoff 收官（§12.275 + 本节补记）。E3（CRM 销售订单驳回/撤回重提）/E4（APS 空隙建模）/E5（FMS/HRM 接线与旧 /hr 退役）经搜证确认已修或属"不扩面"（§12.273.1 候选池回源复核）；E6/E7 仍无 scope。重建依据以本重建口径与 `Temp/zc_adr_273.md` / `zc_adr_272.md` / `zc_adr_271.md` 为准。待兑现登记项沿用。

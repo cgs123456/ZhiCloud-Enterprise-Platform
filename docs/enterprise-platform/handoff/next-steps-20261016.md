@@ -635,3 +635,11 @@
 - **失败登记**：E2E 脚本 1 处（P0.1 断言 status=10 实际 status=20，修正为 20）；sandbox 并发实测暴露 2 个真实缺陷（均已修复并复验）；既有红零新增。
 - **不扩面登记**：见 §12.275.5。
 - **下一项**：E3/E4/E5 经搜证确认已修或属"不扩面"，E6/E7 仍无 scope；E 组 effectively 完成。待兑现登记项沿用。
+
+## 后记二十四：并发实测 payoff 补记——§12.276 bare_throws 门禁收口 + 采购入库 null totalPrice NPE 修复
+
+- **已完成**：§12.275 并发实测 payoff 的 follow-up 修复：(1) `ErpFinancePaymentServiceImpl.createFinancePayment` catch 从 broad `Exception` 收窄为 `RuntimeException` + `throw e;`（无 `throw new`），bare_throws 门禁 [OK]；(2) `ErpPurchaseInServiceImpl.updatePurchaseInPaymentPrice` 在 `totalPrice == null` 时跳过超限校验，避免 NPE。sandbox 并发 E2E 复验 16/16 ×3（Run4 15/16 断言 off-by-one 修正 → Run5/Run6/Run7 16/16），残值探针全绿（付款单 8、payment_price NULL、E2ECONC 0）。CRM 回款单同源缺陷（I）搜证结论：§12.233.7 描述的缺陷已在 §12.247 收口，§12.233.12 已实测 16×20=320/320 全成功/0 死锁，无需再做。
+- **证据**：基线 ERP 回归 240/0/0/0 → 定向 14/0/0/0 → 门禁 6 项 RC=0（bare_throws [OK] / errcode 1974 / preauthorize 523 / scan_tx 0 / duplicate_ddl 671·0 / 契约 123/219/0）→ sql lint 219/16 零新增 → 重打 jar 642,913,877B（+217B）→ 冷启 569s（Flyway 212/213 success=1）→ sandbox E2E 16/16 ×3。既有红零新增。
+- **失败登记**：bare_throws 门禁回归 1 处（cae08bf6c 引入的 `throw new RuntimeException(e)` 未计豁免预算，已修）；sandbox 并发实测暴露第二个真实缺陷（null totalPrice NPE，已修）；既有红零新增。
+- **不扩面登记**：见 §12.276.5。
+- **下一项**：E3/E4/E5 经搜证确认已修或属"不扩面"，E6/E7 仍无 scope；E 组 effectively 完成。待兑现登记项沿用。
