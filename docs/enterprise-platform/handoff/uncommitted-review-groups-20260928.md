@@ -13667,3 +13667,72 @@ host 网络作用于 Linux VM 命名空间，Windows 宿主连不上 VM loopback
 
 R-033 方向 2 实施完成（脚本改动）。E1 收官（§12.273）、E2 收官（§12.274）、并发实测 payoff 收官（§12.275/§12.276）、
 R-033 方向 2（本节）。E3–E7 无 scope 或已修/不扩面。D 组 + E 组重建矩阵全部收官。
+
+## §12.279 demo-data 全量重生实跑通过（R-033 方向 2 实跑兑现）＋ 五张旧 /hr 表引用退役 ＋ Read-CountMap 单连接批量重写
+
+### 12.279.1 背景与裁决
+
+- 用户裁决（2026-10-19）：demo-data 全量重生实跑验证"直接跑，不要考虑什么负责人，这是我自研项目，
+  我就是负责人"——R-033 方向 2（授权主机 %）的实跑验证无需安全责任人背书，R-G3.5-6/8 实跑阻塞解除。
+- 对 demo SQL stale 修复项补问"需要登记到台账吗？"后，用户指令"解决 demo 数据重生仍失败的问题，
+  修复 scope 需要数据迁移任务那就做"——按数据迁移专项处理，非登记不修。
+
+### 12.279.2 修复清单（数据迁移专项）
+
+| # | 文件 | 修复 |
+|---|------|------|
+| 1 | demo-data/sql/mysql/demo_master_data.sql | hr_employee 40 行 INSERT 移除 V208 已 DROP 的 6 旧列（gender/birth_date/hire_date/leave_date/status/employment_type），新列（sex/birthday/entry_time/leave_time/entry_status/employee_status/type）交由 DB 默认值填充 |
+| 2 | demo-data/sql/mysql/demo_business_documents.sql | 删除 5 张 V208 已 DROP 旧 /hr 表全部 INSERT：hr_attendance 800 行、hr_leave_balance 160 行、hr_salary 120 行、hr_performance 80 行、hr_contract 40 行（合计 1,200 行）；剩余引用仅为注释 |
+| 3 | demo-data/schema/demo_business_documents_summary.json | 同步上述退役：99→94 张表、row_total 2,458→1,258 |
+| 4 | demo-data/cleanup/cleanup_demo.sql | 第 0 节预检 UNION ALL 块与 DELETE 段各移除同一 5 张已 DROP 表引用 |
+| 5 | scripts/production/verify_demo_data_mysql.ps1 | ①S6_hire_to_retire 场景重写：丢弃 hr_contract/hr_attendance/hr_salary/hr_performance 连接，改 hr_employee×hr_leave_request 单关联；②CREATE DATABASE collation utf8mb4_0900_ai_ci→utf8mb4_unicode_ci（与 Flyway 建表一致，实跑 ERROR 1267 佐证）；③行数/清理张数断言 118→113（随 manifest 同步）；④Read-CountMap 逐表独立 mysql 连接（113 连）重写为单连接批量 UNION ALL（113 表一次返回），返回结构 {tables, values, mismatches} 不变，并加"返回张数≠清单张数即抛错"守卫 |
+
+### 12.279.3 缺陷登记与根因（诚实链）
+
+1. **Read-CountMap 逐连接计数偶发失真（本次根因）**：两次实跑（_141428 / _142008）各随机把 2 张有数据的表
+   记成 expected≠0/actual=0（141428=erp_product_unit 8→0、mes_wm_material_stock 48→0；
+   142008=erp_purchase_return 2→0、crm_receivable_plan 12→0），两次的表不同且 mysql 退出码均为 0；
+   同批 cleanup 第 0 节预检（单连接 UNION ALL 批查）两轮均 113 表全对。判定：逐连接各自起新 mysql 进程
+   共 113 个，存在偶发失真 → 改为单连接批量（与已验证可靠的预检同机制），顺带 113 次进程启动降为 1 次。
+2. 实跑过程性失败链（均已归零）：ERROR 1267 排序规则混合（liberary collation vs 表 collation）→ 修复 #5②；
+   ERROR 1146 五张旧 /hr 表 → 修复 #2/#4；cleanup line 282 旧表 DELETE → 修复 #4；
+   118 vs 113 断言语义漂移 → 修复 #5③；hr_employee V208 列不存在 → 修复 #1。
+3. python 门禁：test_business_document_generators（断言生成器内存数据集 99/2458，静态形态锁定，
+   不读被修文件）31 passed；test_mysql_sandbox_stderr_guard / test_sandbox_native_seam /
+   test_sandbox_native_behavior passed——ps1 执行器 seam 未被本次改动破坏。
+
+### 12.279.4 验证链
+
+| 环节 | 结果 |
+|------|------|
+| 实跑 | verify_demo_data_mysql.ps1 -DatabasePort 55101 → status=passed |
+| required_checks | 9/9 True（row_count_tables_113 / row_count_mismatches_zero / S1–S6 正性 / cleanup_tables_113 / cleanup_mismatches_zero） |
+| 场景计数 | S1_lead_to_cash=4、S1_erp_sale_to_out=48、S2=6、S3=12、S4=64、S5=6、S6=20 |
+| 行数校验 | 113/113 张表 manifest 相等，mismatches=[]；cleanup Remaining 全 0 |
+| 证据 | docs/enterprise-platform/evidence/production/demo-data-mysql-20261019_143551.json（+ -cleanup.log / -migration.log）；8 份 status=failed 过程证据（_135520/_135534/_135601/_140002/_140550/_141017/_141428/_142008 及其日志）已清理 |
+
+### 12.279.5 不扩面与已知限制登记
+
+1. **生成器层未对齐（登记不修，属后续专项）**：demo-data/generators/generate_master_data.py、
+   generate_business_documents.py、schema_snapshot.py 与 demo-data/schema/schema-snapshot.json 仍为
+   V208 前形态（snapshot 仍含 hr_attendance/hr_contract/hr_interview/hr_leave_balance/hr_performance/
+   hr_salary 等 9 张已 DROP 旧表；生成器测试断言 99/2458 静态形态）。**在生成器/快照对齐专项完成前，
+   禁止重跑生成器**：重跑会把旧表 INSERT 与旧列 hr_employee 写回 demo SQL，令本次修复回归。
+2. **MES sandbox 旧代 demo 数据清理（随本项一并）**：zhicloud_sandbox_v140 删除旧 demo 代 8 张工单
+   （creator='demo-seed'，code='DEMO-WO-000%'，product_id 指向旧代 erp_product 912000..912007，
+   当前 schema 工单关联语义已改 mes_md_item→应用视图下无主数据）及其子表：mes_pro_task 24、
+   mes_pro_work_order_bom 24、mes_pro_feedback 24、mes_pro_task_issue 48，合计 128 行；
+   路径锚定三重限定（code+creator+路径级联），creator='900100' 的 E2E 工单 5960008 及其数据未动。
+   旧代 erp_product 912000..912007 等无工单引用的遗留 demo 行不在本次清理范围。
+3. **运行环境事件（非代码缺陷）**：zc-live-redis / zc-live-rabbit 与 zc-live-mysql 约三小时前一并退出
+   （宿主重启副作用），仅 MySQL 被随本项工作拉起。48080 服务（pid 9392）出现 DB 连接池僵尸连接
+   （容器 MySQL processlist 零应用连接、业务 API 500）→ 服务重启为 pid 32764，
+   连接池重建（5 个 172.17.0.1 Sleep 连接挂 zhicloud_sandbox_v140）确认。
+   Redis 启动后 spring-data-redis Stream 轮询线程持续抛 ClassCastException（RedissonStreamCommands.xReadGroup），
+   属后台监听线程非致命错误，不阻塞服务启动，保留观察登记。
+
+### 12.279.6 收官判定
+
+demo-data 全量重生实跑 status=passed，R-033 方向 2 实跑验证兑现（R-G3.5-6/8 解除），
+五张旧 /hr 表引用从 demo 数据面正式退役（AI 组 D1"IT 基础设施修复"遗留最后一项闭环）。
+生成器/快照对齐登记为后续专项；E 组矩阵 + 本项全部收官。

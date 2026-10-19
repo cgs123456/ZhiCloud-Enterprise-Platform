@@ -200,18 +200,8 @@ UNION ALL SELECT 'crm_invoice' AS tbl, COUNT(*) AS demo_rows, 5 AS expected_smal
   FROM crm_invoice WHERE tenant_id = 9001 AND creator = 'demo-seed'
 UNION ALL SELECT 'crm_invoice_line' AS tbl, COUNT(*) AS demo_rows, 10 AS expected_small
   FROM crm_invoice_line WHERE tenant_id = 9001 AND creator = 'demo-seed'
-UNION ALL SELECT 'hr_leave_balance' AS tbl, COUNT(*) AS demo_rows, 160 AS expected_small
-  FROM hr_leave_balance WHERE tenant_id = 9001 AND creator = 'demo-seed'
 UNION ALL SELECT 'hr_leave_request' AS tbl, COUNT(*) AS demo_rows, 20 AS expected_small
   FROM hr_leave_request WHERE tenant_id = 9001 AND creator = 'demo-seed'
-UNION ALL SELECT 'hr_attendance' AS tbl, COUNT(*) AS demo_rows, 800 AS expected_small
-  FROM hr_attendance WHERE tenant_id = 9001 AND creator = 'demo-seed'
-UNION ALL SELECT 'hr_contract' AS tbl, COUNT(*) AS demo_rows, 40 AS expected_small
-  FROM hr_contract WHERE tenant_id = 9001 AND creator = 'demo-seed'
-UNION ALL SELECT 'hr_salary' AS tbl, COUNT(*) AS demo_rows, 120 AS expected_small
-  FROM hr_salary WHERE tenant_id = 9001 AND creator = 'demo-seed'
-UNION ALL SELECT 'hr_performance' AS tbl, COUNT(*) AS demo_rows, 80 AS expected_small
-  FROM hr_performance WHERE tenant_id = 9001 AND creator = 'demo-seed'
 UNION ALL SELECT 'oa_announcement' AS tbl, COUNT(*) AS demo_rows, 6 AS expected_small
   FROM oa_announcement WHERE tenant_id = 9001 AND creator = 'demo-seed'
 UNION ALL SELECT 'oa_reimburse' AS tbl, COUNT(*) AS demo_rows, 8 AS expected_small
@@ -289,12 +279,7 @@ DELETE FROM oa_meeting_reservation WHERE tenant_id = 9001 AND creator = 'demo-se
 DELETE FROM oa_reimburse_item WHERE tenant_id = 9001 AND creator = 'demo-seed';
 DELETE FROM oa_reimburse WHERE tenant_id = 9001 AND creator = 'demo-seed';
 DELETE FROM oa_announcement WHERE tenant_id = 9001 AND creator = 'demo-seed';
-DELETE FROM hr_performance WHERE tenant_id = 9001 AND creator = 'demo-seed';
-DELETE FROM hr_salary WHERE tenant_id = 9001 AND creator = 'demo-seed';
-DELETE FROM hr_contract WHERE tenant_id = 9001 AND creator = 'demo-seed';
-DELETE FROM hr_attendance WHERE tenant_id = 9001 AND creator = 'demo-seed';
 DELETE FROM hr_leave_request WHERE tenant_id = 9001 AND creator = 'demo-seed';
-DELETE FROM hr_leave_balance WHERE tenant_id = 9001 AND creator = 'demo-seed';
 DELETE FROM crm_invoice_line WHERE tenant_id = 9001 AND creator = 'demo-seed';
 DELETE FROM crm_invoice WHERE tenant_id = 9001 AND creator = 'demo-seed';
 DELETE FROM crm_follow_up_record WHERE tenant_id = 9001 AND creator = 'demo-seed';
@@ -488,12 +473,7 @@ UNION ALL SELECT 'crm_contact' AS tbl, COUNT(*) AS remain FROM crm_contact WHERE
 UNION ALL SELECT 'crm_follow_up_record' AS tbl, COUNT(*) AS remain FROM crm_follow_up_record WHERE tenant_id = 9001
 UNION ALL SELECT 'crm_invoice' AS tbl, COUNT(*) AS remain FROM crm_invoice WHERE tenant_id = 9001
 UNION ALL SELECT 'crm_invoice_line' AS tbl, COUNT(*) AS remain FROM crm_invoice_line WHERE tenant_id = 9001
-UNION ALL SELECT 'hr_leave_balance' AS tbl, COUNT(*) AS remain FROM hr_leave_balance WHERE tenant_id = 9001
 UNION ALL SELECT 'hr_leave_request' AS tbl, COUNT(*) AS remain FROM hr_leave_request WHERE tenant_id = 9001
-UNION ALL SELECT 'hr_attendance' AS tbl, COUNT(*) AS remain FROM hr_attendance WHERE tenant_id = 9001
-UNION ALL SELECT 'hr_contract' AS tbl, COUNT(*) AS remain FROM hr_contract WHERE tenant_id = 9001
-UNION ALL SELECT 'hr_salary' AS tbl, COUNT(*) AS remain FROM hr_salary WHERE tenant_id = 9001
-UNION ALL SELECT 'hr_performance' AS tbl, COUNT(*) AS remain FROM hr_performance WHERE tenant_id = 9001
 UNION ALL SELECT 'oa_announcement' AS tbl, COUNT(*) AS remain FROM oa_announcement WHERE tenant_id = 9001
 UNION ALL SELECT 'oa_reimburse' AS tbl, COUNT(*) AS remain FROM oa_reimburse WHERE tenant_id = 9001
 UNION ALL SELECT 'oa_reimburse_item' AS tbl, COUNT(*) AS remain FROM oa_reimburse_item WHERE tenant_id = 9001

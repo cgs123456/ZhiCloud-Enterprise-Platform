@@ -1,0 +1,227 @@
+48a25e0f0254	zhicloud_demo_20261019_143551	3306	zdemo_143551@%
+erp_account	4	4
+wms_item_sku	40	40
+mes_md_unit_measure	6	6
+mes_md_item_type	4	4
+mes_md_item	12	12
+mes_md_client	6	6
+mes_md_vendor	5	5
+mes_pro_process	6	6
+mes_md_workshop	2	2
+mes_md_workstation	8	8
+mes_pro_route	2	2
+mes_pro_route_process	12	12
+mes_md_bom	6	6
+mes_md_bom_detail	18	18
+crm_product_category	3	3
+crm_product	10	10
+crm_business_status_type	2	2
+crm_business_status	8	8
+qms_inspection_item	5	5
+qms_instrument	3	3
+hr_leave_type	4	4
+oa_meeting_room	3	3
+erp_sale_order	10	10
+erp_sale_order_items	30	30
+erp_sale_out	8	8
+erp_sale_out_items	16	16
+erp_sale_return	3	3
+erp_sale_return_items	6	6
+erp_purchase_order	8	8
+erp_purchase_order_items	24	24
+erp_purchase_in	6	6
+erp_purchase_in_items	12	12
+erp_purchase_return	2	2
+erp_purchase_return_items	4	4
+erp_stock_in	5	5
+erp_stock_in_item	10	10
+erp_stock_out	5	5
+erp_stock_out_item	10	10
+erp_stock_move	4	4
+erp_stock_move_item	8	8
+erp_stock	96	96
+erp_stock_record	36	36
+erp_stock_check	3	3
+erp_stock_check_item	9	9
+erp_finance_receipt	6	6
+erp_finance_receipt_item	6	6
+erp_finance_payment	5	5
+erp_finance_payment_item	5	5
+mes_pro_work_order	8	8
+mes_pro_work_order_bom	24	24
+mes_pro_task	24	24
+mes_pro_task_issue	48	48
+mes_pro_feedback	24	24
+mes_wm_material_stock	48	48
+wms_asn_order	5	5
+wms_asn_order_detail	10	10
+wms_receipt_order	8	8
+wms_receipt_order_detail	16	16
+wms_inventory	160	160
+wms_shipment_order	8	8
+wms_shipment_order_detail	16	16
+wms_wave_order	4	4
+wms_wave_order_detail	16	16
+wms_pick_task	16	16
+wms_movement_order	3	3
+wms_movement_order_detail	6	6
+qms_inspection_order	8	8
+qms_inspection_record	24	24
+qms_ncr_document	4	4
+qms_capa_document	3	3
+qms_customer_complaint	4	4
+qms_instrument_calibration	6	6
+crm_clue	12	12
+crm_business	10	10
+crm_business_product	20	20
+crm_contract	6	6
+crm_contract_product	12	12
+crm_receivable_plan	12	12
+crm_receivable	12	12
+crm_contact	15	15
+crm_follow_up_record	20	20
+crm_invoice	5	5
+crm_invoice_line	10	10
+hr_leave_request	20	20
+oa_announcement	6	6
+oa_reimburse	8	8
+oa_reimburse_item	16	16
+oa_meeting_reservation	6	6
+oa_schedule	10	10
+tms_shipment	8	8
+tms_shipment_stop	16	16
+tms_tracking_event	24	24
+tms_freight	8	8
+tms_freight_reconciliation	3	3
+erp_product_category	8	8
+erp_product_unit	8	8
+erp_product	24	24
+erp_customer	12	12
+erp_supplier	10	10
+erp_warehouse	4	4
+wms_warehouse	4	4
+wms_zone	12	12
+wms_location	48	48
+wms_item_category	6	6
+wms_item	20	20
+wms_merchant	8	8
+crm_customer	15	15
+hr_department	8	8
+hr_position	10	10
+hr_employee	40	40
+tms_carrier	6	6
+tms_driver	12	12
+tms_vehicle	12	12
+erp_account	0
+wms_item_sku	0
+mes_md_unit_measure	0
+mes_md_item_type	0
+mes_md_item	0
+mes_md_client	0
+mes_md_vendor	0
+mes_pro_process	0
+mes_md_workshop	0
+mes_md_workstation	0
+mes_pro_route	0
+mes_pro_route_process	0
+mes_md_bom	0
+mes_md_bom_detail	0
+crm_product_category	0
+crm_product	0
+crm_business_status_type	0
+crm_business_status	0
+qms_inspection_item	0
+qms_instrument	0
+hr_leave_type	0
+oa_meeting_room	0
+erp_sale_order	0
+erp_sale_order_items	0
+erp_sale_out	0
+erp_sale_out_items	0
+erp_sale_return	0
+erp_sale_return_items	0
+erp_purchase_order	0
+erp_purchase_order_items	0
+erp_purchase_in	0
+erp_purchase_in_items	0
+erp_purchase_return	0
+erp_purchase_return_items	0
+erp_stock_in	0
+erp_stock_in_item	0
+erp_stock_out	0
+erp_stock_out_item	0
+erp_stock_move	0
+erp_stock_move_item	0
+erp_stock	0
+erp_stock_record	0
+erp_stock_check	0
+erp_stock_check_item	0
+erp_finance_receipt	0
+erp_finance_receipt_item	0
+erp_finance_payment	0
+erp_finance_payment_item	0
+mes_pro_work_order	0
+mes_pro_work_order_bom	0
+mes_pro_task	0
+mes_pro_task_issue	0
+mes_pro_feedback	0
+mes_wm_material_stock	0
+wms_asn_order	0
+wms_asn_order_detail	0
+wms_receipt_order	0
+wms_receipt_order_detail	0
+wms_inventory	0
+wms_shipment_order	0
+wms_shipment_order_detail	0
+wms_wave_order	0
+wms_wave_order_detail	0
+wms_pick_task	0
+wms_movement_order	0
+wms_movement_order_detail	0
+qms_inspection_order	0
+qms_inspection_record	0
+qms_ncr_document	0
+qms_capa_document	0
+qms_customer_complaint	0
+qms_instrument_calibration	0
+crm_clue	0
+crm_business	0
+crm_business_product	0
+crm_contract	0
+crm_contract_product	0
+crm_receivable_plan	0
+crm_receivable	0
+crm_contact	0
+crm_follow_up_record	0
+crm_invoice	0
+crm_invoice_line	0
+hr_leave_request	0
+oa_announcement	0
+oa_reimburse	0
+oa_reimburse_item	0
+oa_meeting_reservation	0
+oa_schedule	0
+tms_shipment	0
+tms_shipment_stop	0
+tms_tracking_event	0
+tms_freight	0
+tms_freight_reconciliation	0
+erp_product_category	0
+erp_product_unit	0
+erp_product	0
+erp_customer	0
+erp_supplier	0
+erp_warehouse	0
+wms_warehouse	0
+wms_zone	0
+wms_location	0
+wms_item_category	0
+wms_item	0
+wms_merchant	0
+crm_customer	0
+hr_department	0
+hr_position	0
+hr_employee	0
+tms_carrier	0
+tms_driver	0
+tms_vehicle	0

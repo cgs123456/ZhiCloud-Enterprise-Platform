@@ -131,6 +131,11 @@ function Invoke-JavaMigration {
     }
 }
 
+# 行数校验改单连接批量 UNION ALL（2026-10-19）：此前逐表各自起 mysql 进程/连接（113 连），
+# 实跑两次各随机把 2 张有数据的表记成 0（141428=erp_product_unit/mes_wm_material_stock、
+# 142008=erp_purchase_return/crm_receivable_plan，退出码均 0，其余 111 张全对），而同批
+# cleanup 第 0 节预检（单连接 UNION ALL 批查）两轮均全对。判定为逐连接偶发失真，
+# 改用同一单连接批量机制，顺带把 113 次进程启动降为 1 次。见 §12.279。
 function Read-CountMap {
     param([Parameter(Mandatory = $true)][string]$Database, [Parameter(Mandatory = $true)][string]$Password, [string]$User = $AdminUser, [switch]$Remaining)
     $master = Get-Content -LiteralPath $MasterManifest -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -138,11 +143,21 @@ function Read-CountMap {
     $tables = @($master.tables) + @($business.tables)
     $result = [ordered]@{}
     $mismatches = @()
+    $where = if ($Remaining) { "tenant_id = 9001" } else { "tenant_id = 9001 AND creator = 'demo-seed'" }
+    $parts = foreach ($entry in $tables) {
+        "SELECT '$($entry.table)' AS tbl, COUNT(*) AS cnt FROM ``$($entry.table)`` WHERE $where"
+    }
+    $output = Invoke-MysqlText -Sql (($parts -join ' UNION ALL ') + ';') -Database $Database -Password $Password -User $User
+    foreach ($line in ($output -split "`r?`n" | Where-Object { $_.Trim().Length -gt 0 })) {
+        $cells = $line -split "`t"
+        if ($cells.Count -ge 2) { $result[$cells[0]] = [int]$cells[1] }
+    }
+    if ($result.Count -ne $tables.Count) {
+        throw "行数批量校验返回 $($result.Count)/$($tables.Count) 张表，疑似批量查询被截断，拒绝继续"
+    }
     foreach ($entry in $tables) {
-        $where = if ($Remaining) { "tenant_id = 9001" } else { "tenant_id = 9001 AND creator = 'demo-seed'" }
-        $actual = [int](Invoke-MysqlText -Sql "SELECT COUNT(*) FROM $($entry.table) WHERE $where;" -Database $Database -Password $Password -User $User)
         $expected = if ($Remaining) { 0 } else { [int]$entry.rows }
-        $result[$entry.table] = $actual
+        $actual = $result[$entry.table]
         if ($actual -ne $expected) {
             $mismatches += [ordered]@{ table = $entry.table; expected = $expected; actual = $actual }
         }
@@ -181,7 +196,7 @@ $result = [ordered]@{
 }
 
 try {
-    Invoke-MysqlText -Sql "DROP DATABASE IF EXISTS ``$DbName``; DROP USER IF EXISTS '$DbUser'@'%'; CREATE DATABASE ``$DbName`` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci; CREATE USER '$DbUser'@'%' IDENTIFIED BY '$DbPassword'; GRANT ALL PRIVILEGES ON ``$DbName``.* TO '$DbUser'@'%'; FLUSH PRIVILEGES;" | Out-Null
+    Invoke-MysqlText -Sql "DROP DATABASE IF EXISTS ``$DbName``; DROP USER IF EXISTS '$DbUser'@'%'; CREATE DATABASE ``$DbName`` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; CREATE USER '$DbUser'@'%' IDENTIFIED BY '$DbPassword'; GRANT ALL PRIVILEGES ON ``$DbName``.* TO '$DbUser'@'%'; FLUSH PRIVILEGES;" | Out-Null
     # R-033 方向 2：宿主 Java 进程经 Docker 发布端口连入时来源地址是 bridge 网关 172.17.0.1，授权主机改为 %
 
     $url = "jdbc:mysql://${DatabaseHost}:${DatabasePort}/${DbName}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=utf8"
@@ -197,7 +212,7 @@ UNION ALL SELECT 'S2_purchase_to_qms', COUNT(*) FROM erp_purchase_order po JOIN 
 UNION ALL SELECT 'S3_work_order_to_feedback', COUNT(*) FROM mes_pro_work_order wo JOIN mes_pro_task t ON t.work_order_id=wo.id JOIN mes_pro_feedback f ON f.work_order_id=wo.id AND f.task_id=t.id JOIN qms_inspection_order q ON q.work_order_id=wo.id WHERE wo.tenant_id=9001 AND wo.quantity>=wo.quantity_produced AND t.quantity>=t.produced_quantity
 UNION ALL SELECT 'S4_order_to_tms', COUNT(*) FROM erp_sale_order so JOIN wms_shipment_order ws ON ws.biz_order_no=so.no JOIN wms_shipment_order_detail wsd ON wsd.order_id=ws.id JOIN wms_wave_order_detail wvd ON wvd.shipment_order_id=ws.id JOIN wms_wave_order wo ON wo.id=wvd.wave_order_id JOIN wms_pick_task pt ON pt.shipment_order_id=ws.id AND pt.wave_order_id=wo.id JOIN tms_shipment ts ON ts.source_order_no=so.no WHERE so.tenant_id=9001
 UNION ALL SELECT 'S5_complaint_to_ncr_capa_return', COUNT(*) FROM qms_customer_complaint cc JOIN qms_ncr_document ncr ON ncr.product_id=cc.product_id JOIN qms_capa_document capa ON capa.status IN (10,20,30,40) JOIN erp_sale_return_items sri ON sri.product_id=cc.product_id JOIN erp_sale_return sr ON sr.id=sri.master_id WHERE cc.tenant_id=9001
-UNION ALL SELECT 'S6_hire_to_retire', COUNT(*) FROM hr_employee e JOIN hr_contract hc ON hc.employee_id=e.id JOIN hr_attendance ha ON ha.employee_id=e.id JOIN hr_salary hs ON hs.employee_id=e.id JOIN hr_performance hp ON hp.employee_id=e.id JOIN hr_leave_request lr ON lr.employee_id=e.id WHERE e.tenant_id=9001;
+UNION ALL SELECT 'S6_hire_to_retire', COUNT(*) FROM hr_employee e JOIN hr_leave_request lr ON lr.employee_id=e.id WHERE e.tenant_id=9001;
 "@
     $scenarioOutput = Invoke-MysqlText -Sql $scenarioSql -Database $DbName -Password $DbPassword -User $DbUser
     $scenarioCounts = [ordered]@{}
@@ -212,7 +227,7 @@ UNION ALL SELECT 'S6_hire_to_retire', COUNT(*) FROM hr_employee e JOIN hr_contra
     $result.cleanup_counts = Read-CountMap -Database $DbName -Password $DbPassword -User $DbUser -Remaining
 
     $result.required_checks = [ordered]@{
-        row_count_tables_118 = ($result.row_counts.tables -eq 118)
+        row_count_tables_113 = ($result.row_counts.tables -eq 113)
         row_count_mismatches_zero = ($result.row_counts.mismatches.Count -eq 0)
         scenario_s1_positive = ([int]$scenarioCounts['S1_lead_to_cash'] -gt 0 -and [int]$scenarioCounts['S1_erp_sale_to_out'] -gt 0)
         scenario_s2_positive = ([int]$scenarioCounts['S2_purchase_to_qms'] -gt 0)
@@ -220,7 +235,7 @@ UNION ALL SELECT 'S6_hire_to_retire', COUNT(*) FROM hr_employee e JOIN hr_contra
         scenario_s4_positive = ([int]$scenarioCounts['S4_order_to_tms'] -gt 0)
         scenario_s5_positive = ([int]$scenarioCounts['S5_complaint_to_ncr_capa_return'] -gt 0)
         scenario_s6_positive = ([int]$scenarioCounts['S6_hire_to_retire'] -gt 0)
-        cleanup_tables_118 = ($result.cleanup_counts.tables -eq 118)
+        cleanup_tables_113 = ($result.cleanup_counts.tables -eq 113)
         cleanup_mismatches_zero = ($result.cleanup_counts.mismatches.Count -eq 0)
     }
     $result.status = if (($result.required_checks.Values | Where-Object { -not $_ }).Count -eq 0) { 'passed' } else { 'failed' }

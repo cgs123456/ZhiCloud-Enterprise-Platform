@@ -671,3 +671,19 @@
 - **失败登记**：无。既有红（powershell_portability 6 项，node_modules scandir 环境问题）不重复登记。
 - **不扩面登记**：见 §12.278.5。
 - **R-033 最终状态**：方向 1 证伪，方向 2 已实施（脚本改动），方向 3 未实施。实跑验证待安全责任人背书。
+
+## 后记二十七：demo-data 全量重生实跑通过——§12.279 数据迁移专项收官
+
+- **已完成**：verify_demo_data_mysql.ps1 实跑 status=passed（required_checks 9/9 True，S1–S6 全正性，
+  113/113 张 manifest 相等，cleanup Remaining 全 0，证据 demo-data-mysql-20261019_143551.json）。
+  R-033 方向 2 实跑验证兑现，R-G3.5-6/8 解除。
+- **修复面**：①demo_master_data.sql hr_employee 40 行对齐 V208 新列；②demo_business_documents.sql
+  退役 5 张已 DROP 旧 /hr 表 1,200 行 INSERT；③business manifest 99→94 表/2,458→1,258 行；
+  ④cleanup_demo.sql 同步移除旧表引用；⑤verify 脚本：S6 重写、DB collation 对齐 unicode_ci、
+  断言 118→113、**Read-CountMap 逐连接计数（113 连）重写为单连接批量 UNION ALL**
+  （根因：逐连接偶发失真，两次实跑各随机 2 张表记 0，单连接批查两轮全对；加返回张数守卫）。
+- **失败登记**：过程性失败全部归零（ERROR 1267/1146、cleanup 旧表引用、断言语义漂移、逐连接失真）。
+- **不扩面登记**：生成器/快照仍为 V208 前形态（snapshot 含已 DROP 旧表），**禁止重跑生成器**直至对齐
+  专项完成（否则本次修复回归）；生成器测试断言 99/2458 保持。见 §12.279.5。
+- **附带**：MES sandbox 旧代 8 张悬挂工单及子表 128 行已清理（creator='demo-seed' 路径锚定，
+  E2E 工单 5960008 保留）；zc-live-redis/rabbit 因宿主重启退出已拉起，48080 服务重启后连接池重建。

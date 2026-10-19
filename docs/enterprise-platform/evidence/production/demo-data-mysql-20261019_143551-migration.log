@@ -1,0 +1,1556 @@
+[flyway-migration] target=jdbc:mysql://127.0.0.1:55101/zhicloud_demo_20261019_143551 mode=clean
+[flyway-migration] clean baseline: sourceSha256=5b202dcb1223343844aea26dcdc10417f324ac8dbcefa25c912e3c5901d3f181, outputSha256=1eede7a86b9905cbcc01992a89b7889d9f39e88109e83e71df4258fd844695c4, statements=3849
+14:36:09.120 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:mysql://127.0.0.1:55101/zhicloud_demo_20261019_143551?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=utf8 (MySQL 8.4)
+14:36:09.225 [main] WARN org.flywaydb.core.internal.database.base.Database -- Flyway upgrade recommended: MySQL 8.4 is newer than this version of Flyway and support has not been tested. The latest supported version of MySQL is 8.1.
+14:36:09.417 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table `zhicloud_demo_20261019_143551`.`flyway_schema_history` does not exist yet
+14:36:09.435 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 219 migrations (execution time 00:00.165s)
+14:36:09.498 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table `zhicloud_demo_20261019_143551`.`flyway_schema_history` with baseline ...
+14:36:09.637 [main] INFO org.flywaydb.core.internal.command.DbBaseline -- Successfully baselined schema with version: 1.1
+14:36:09.697 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema `zhicloud_demo_20261019_143551`: 1.1
+14:36:09.736 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "2 - qms init"
+14:36:10.002 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "3 - aimultiagent init"
+14:36:10.153 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "4 - wms wave init"
+14:36:10.337 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "5 - qms capa workflow ext"
+14:36:10.857 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "6 - erp period close"
+14:36:10.928 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:36:10.994 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:36:11.111 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "7 - erp gl account voucher"
+14:36:11.207 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:36:11.207 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:36:11.298 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:36:11.373 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:36:11.569 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "8 - user totp"
+14:36:11.578 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---+
+| 1 |
++---+
+| 1 |
++---+
+
+14:36:11.589 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---+
+| 1 |
++---+
+| 1 |
++---+
+
+14:36:11.640 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "9 - operate log hash chain"
+14:36:11.817 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "10 - erp ddl"
+14:36:13.320 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Table 'erp_period' already exists (SQL State: 42S01 - Error Code: 1050)
+14:36:13.329 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Table 'erp_period_close' already exists (SQL State: 42S01 - Error Code: 1050)
+14:36:13.726 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "11 - wms ddl"
+14:36:15.000 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Table 'wms_wave_order' already exists (SQL State: 42S01 - Error Code: 1050)
+14:36:15.007 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Table 'wms_wave_order_detail' already exists (SQL State: 42S01 - Error Code: 1050)
+14:36:15.310 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "12 - mes ddl"
+14:36:26.023 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "13 - qms ddl"
+14:36:26.036 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Table 'qms_inspection_item' already exists (SQL State: 42S01 - Error Code: 1050)
+14:36:26.046 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Table 'qms_inspection_order' already exists (SQL State: 42S01 - Error Code: 1050)
+14:36:26.060 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Table 'qms_inspection_record' already exists (SQL State: 42S01 - Error Code: 1050)
+14:36:26.075 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Table 'qms_capa_document' already exists (SQL State: 42S01 - Error Code: 1050)
+14:36:26.685 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "14 - aimultiagent ddl"
+14:36:26.697 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Table 'aimultiagent_topology' already exists (SQL State: 42S01 - Error Code: 1050)
+14:36:26.712 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Table 'aimultiagent_execution_log' already exists (SQL State: 42S01 - Error Code: 1050)
+14:36:26.825 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "15 - erp indexes"
+14:36:26.839 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_add_index_if_not_exists does not exist (SQL State: 42000 - Error Code: 1305)
+14:36:26.878 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_add_unique_if_not_exists does not exist (SQL State: 42000 - Error Code: 1305)
+14:36:36.027 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "16 - wms indexes"
+14:36:36.043 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_add_index_if_not_exists does not exist (SQL State: 42000 - Error Code: 1305)
+14:36:40.123 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "17 - mes indexes"
+14:36:40.137 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_mes_add_tenant_deleted_index does not exist (SQL State: 42000 - Error Code: 1305)
+14:36:40.160 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_mes_add_create_time_index does not exist (SQL State: 42000 - Error Code: 1305)
+14:36:40.185 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_mes_add_status_index does not exist (SQL State: 42000 - Error Code: 1305)
+14:36:40.218 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_mes_add_code_index does not exist (SQL State: 42000 - Error Code: 1305)
+14:36:40.243 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_mes_add_fk_indexes does not exist (SQL State: 42000 - Error Code: 1305)
+14:37:02.938 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "18 - qms indexes"
+14:37:02.946 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_add_index_if_not_exists does not exist (SQL State: 42000 - Error Code: 1305)
+14:37:02.964 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_add_unique_if_not_exists does not exist (SQL State: 42000 - Error Code: 1305)
+14:37:05.351 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "19 - aimultiagent indexes"
+14:37:05.361 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_add_index_if_not_exists does not exist (SQL State: 42000 - Error Code: 1305)
+14:37:05.670 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "20 - erp multi currency columns"
+14:37:05.681 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_erp_add_currency_columns does not exist (SQL State: 42000 - Error Code: 1305)
+14:37:08.263 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "21 - qms fmea action priority"
+14:37:08.275 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_qms_fmea_add_action_priority does not exist (SQL State: 42000 - Error Code: 1305)
+14:37:08.499 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "22 - mes mrp low level safety lot"
+14:37:08.511 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_mes_mrp_add_columns does not exist (SQL State: 42000 - Error Code: 1305)
+14:37:10.025 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "23 - mes aps priority capacity"
+14:37:10.037 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_mes_aps_add_columns does not exist (SQL State: 42000 - Error Code: 1305)
+14:37:10.631 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "24 - wms fefo slotting fields"
+14:37:10.640 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_wms_fefo_add_columns does not exist (SQL State: 42000 - Error Code: 1305)
+14:37:11.044 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_wms_fefo_add_index does not exist (SQL State: 42000 - Error Code: 1305)
+14:37:11.157 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "25 - erp budget tables"
+14:37:11.256 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:11.320 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:11.437 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "26 - erp consolidation tables"
+14:37:11.521 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:11.614 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "27 - erp fixed asset tables"
+14:37:11.690 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:11.771 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:11.855 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "28 - erp fixed asset change"
+14:37:11.943 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:11.951 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_erp_add_voucher_no_column does not exist (SQL State: 42000 - Error Code: 1305)
+14:37:12.175 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "29 - mes oee iso22400 fields"
+14:37:12.522 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "30 - erp account book"
+14:37:12.596 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:12.596 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:12.847 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "31 - erp consolidation engine"
+14:37:12.959 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:13.055 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:13.146 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "32 - qms eight d"
+14:37:13.290 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "33 - qms training"
+14:37:13.604 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "34 - qms complaint"
+14:37:13.739 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "35 - qms sqm"
+14:37:14.077 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "36 - mes bom"
+14:37:14.190 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:14.256 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:14.304 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "37 - wms sn"
+14:37:14.419 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:14.466 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "38 - ai nl2sql history"
+14:37:14.529 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:14.563 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "39 - ai rag evaluation"
+14:37:14.626 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:14.626 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:14.672 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "40 - erp customer credit fields"
+14:37:15.204 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "41 - erp fund management"
+14:37:15.411 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "42 - mes bom substitute"
+14:37:15.510 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:15.566 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "43 - wms inventory alert"
+14:37:15.654 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:15.764 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:15.805 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "44 - wms check order ext"
+14:37:16.209 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:16.209 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:16.248 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "45 - wms shipment order status"
+14:37:16.322 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "46 - qms fqc type"
+14:37:16.391 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "47 - qms quality cost"
+14:37:16.516 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "48 - hr contract"
+14:37:16.740 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "49 - hr leave"
+14:37:16.982 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "50 - hr social insurance"
+14:37:17.089 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "51 - hr recruitment"
+14:37:17.358 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "51.1 - crm ddl"
+14:37:18.604 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "52 - crm patch"
+14:37:18.658 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:18.706 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:18.760 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:18.760 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:18.760 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:18.814 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:18.861 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "53 - erp purchase inquiry"
+14:37:18.953 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:19.022 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:19.107 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:19.181 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:19.270 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:19.345 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:19.345 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:19.382 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "54 - mes scada piecework"
+14:37:19.462 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:19.564 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:19.656 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:20.081 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "55 - oa init"
+14:37:20.768 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "56 - wms 3pl"
+14:37:21.040 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:21.111 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:21.188 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:21.256 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:21.354 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:21.516 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:21.553 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "57 - erp vmi cpfr"
+14:37:21.631 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:21.721 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:21.796 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:21.881 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:21.947 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:21.985 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "58 - tms init"
+14:37:22.046 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:22.127 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:22.220 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:22.342 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:22.420 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:22.499 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:22.554 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "59 - system menu new modules"
+14:37:22.792 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "60 - erp mrp credit supplier cashier"
+14:37:22.874 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:22.965 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:23.044 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:23.128 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:23.244 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:23.493 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:23.642 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "60.1 - qms inspection aql"
+14:37:24.706 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "61 - mes scada pda ecn"
+14:37:24.799 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:24.885 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:24.956 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:25.003 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "61.1 - wms receipt qc"
+14:37:25.241 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "62 - wms asn pick batch"
+14:37:25.824 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:25.926 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:26.004 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:26.132 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:26.178 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "62.1 - wms inventory version"
+14:37:26.393 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "63 - crm saleorder channel esign wo"
+14:37:26.716 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "63.1 - mes pro work order version"
+14:37:27.107 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "64 - oa phase4 enhancements"
+14:37:27.964 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: InnoDB rebuilding table to add column FTS_DOC_ID (SQL State: HY000 - Error Code: 124)
+14:37:31.438 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "64.1 - qms inspection order version"
+14:37:31.668 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "65 - crm optimistic lock"
+14:37:31.748 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "66 - crm receivable optimistic lock"
+14:37:31.905 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "67 - tms freight"
+14:37:31.992 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:32.024 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "68 - tms gps"
+14:37:32.093 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:32.128 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "69 - mes energy"
+14:37:32.228 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "70 - oa schedule"
+14:37:32.363 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "71 - tms freight reconciliation fleet operation"
+14:37:32.544 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "72 - wms zone location tables"
+14:37:32.613 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:32.709 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:32.760 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "73 - ai ddl"
+14:37:32.830 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:32.891 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:32.948 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:33.006 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:33.063 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:33.131 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:33.195 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:33.254 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:33.316 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:33.379 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:33.459 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:33.466 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:33.466 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Table 'ai_nl2sql_query_history' already exists (SQL State: 42S01 - Error Code: 1050)
+14:37:33.525 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:33.594 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:33.656 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:33.694 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "74 - bpm ddl"
+14:37:33.764 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:33.832 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:33.904 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:34.014 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:34.091 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:34.189 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:34.270 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:34.340 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:37:34.399 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "75 - wms pda permissions"
+14:37:34.477 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "76 - mes pda permissions"
+14:37:34.533 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "77 - aimultiagent resilience"
+14:37:34.864 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "78 - crm receivable unique constraint"
+14:37:34.945 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "79 - mes material stock unique constraint"
+14:37:34.956 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v79_add_material_stock_uk does not exist (SQL State: 42000 - Error Code: 1305)
+14:37:35.066 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "80 - erp stock version column"
+14:37:35.248 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "81 - inventory item"
+14:37:35.341 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "82 - fix do column mappings"
+14:37:35.348 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v80_add_column does not exist (SQL State: 42000 - Error Code: 1305)
+14:37:52.030 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "83 - hr base tables"
+14:37:52.556 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "84 - hr salary unique constraint"
+14:37:52.646 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "85 - aimultiagent checkpoint"
+14:37:52.797 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "86 - airag eval dataset"
+14:37:53.072 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "87 - aimultiagent skill"
+14:37:53.391 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "88 - aimultiagent execute menu"
+14:37:53.438 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "89 - aimultiagent trace"
+14:37:53.582 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "90 - fix erp bill master columns"
+14:37:53.593 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v90_add_column does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:02.920 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v90_copy_legacy does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:03.030 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v90_add_index does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:03.392 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v90_self_check does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:03.512 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "91 - unblock erp phantom not null columns"
+14:38:03.529 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v91_make_nullable does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:06.610 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v91_copy_legacy does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:06.707 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v91_self_check does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:06.767 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-------+-----------------------+-----------------------------------------------------------------------------------------------------------------------+
+| level | message               | v_sql_mode                                                                                                            |
++-------+-----------------------+-----------------------------------------------------------------------------------------------------------------------+
+| OK    | V91 self-check passed | ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION |
++-------+-----------------------+-----------------------------------------------------------------------------------------------------------------------+
+
+14:38:06.880 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "92 - ensure id auto increment"
+14:38:06.892 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v92_ensure_auto_increment does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:23.622 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Unknown table 'zhicloud_demo_20261019_143551.tmp_v92_expected' (SQL State: 42S02 - Error Code: 1051)
+14:38:23.642 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v92_self_check does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:23.865 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-------------------------------------------------------+
+| v92_result                                            |
++-------------------------------------------------------+
+| V92 OK: all 95 expected id columns are AUTO_INCREMENT |
++-------------------------------------------------------+
+
+14:38:23.911 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-----------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------+
+| global_sql_mode                                                                                                       | session_sql_mode                                                                                                      |
++-----------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------+
+| ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION | ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION |
++-----------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------+
+
+14:38:24.050 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "93 - erp tax ddl"
+14:38:24.655 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v93_normalize_table_options does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:24.688 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v93_add_column does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:24.926 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v93_normalize_legacy_columns does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:24.985 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v93_ensure_auto_increment does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:25.034 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v93_ensure_unique_index does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:25.067 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v93_drop_index_if_exists does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:25.207 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "94 - erp accounting foundation"
+14:38:26.092 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v94_add_column_if_not_exists does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:26.983 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v94_add_index_if_not_exists does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:27.143 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "95 - erp posting rule seed"
+14:38:27.416 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "96 - erp accounting event sequence"
+14:38:27.437 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v96_add_column_if_not_exists does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:27.698 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v96_replace_source_unique_key does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:28.065 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "97 - erp return posting rule seed"
+14:38:28.250 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "98 - reconcile duplicate table ddl"
+14:38:28.273 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v98_add_column does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:28.333 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v98_widen_column does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:28.426 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v98_ensure_auto_increment does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:28.491 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v98_ensure_index does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:29.679 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "99 - erp accounting event doc total"
+14:38:29.694 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v99_add_column_if_not_exists does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:30.094 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "100 - event outbox inbox"
+14:38:30.402 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "101 - mdm cross ref"
+14:38:30.542 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "102 - mdm cross ref seed"
+14:38:30.551 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'VALUES function' is deprecated and will be removed in a future release. Please use an alias (INSERT INTO ... VALUES (...) AS alias) and replace VALUES(col) in the ON DUPLICATE KEY UPDATE clause with alias.col instead (SQL State: HY000 - Error Code: 1287)
+14:38:30.551 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'VALUES function' is deprecated and will be removed in a future release. Please use an alias (INSERT INTO ... VALUES (...) AS alias) and replace VALUES(col) in the ON DUPLICATE KEY UPDATE clause with alias.col instead (SQL State: HY000 - Error Code: 1287)
+14:38:30.551 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'VALUES function' is deprecated and will be removed in a future release. Please use an alias (INSERT INTO ... VALUES (...) AS alias) and replace VALUES(col) in the ON DUPLICATE KEY UPDATE clause with alias.col instead (SQL State: HY000 - Error Code: 1287)
+14:38:30.564 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'VALUES function' is deprecated and will be removed in a future release. Please use an alias (INSERT INTO ... VALUES (...) AS alias) and replace VALUES(col) in the ON DUPLICATE KEY UPDATE clause with alias.col instead (SQL State: HY000 - Error Code: 1287)
+14:38:30.564 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'VALUES function' is deprecated and will be removed in a future release. Please use an alias (INSERT INTO ... VALUES (...) AS alias) and replace VALUES(col) in the ON DUPLICATE KEY UPDATE clause with alias.col instead (SQL State: HY000 - Error Code: 1287)
+14:38:30.564 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'VALUES function' is deprecated and will be removed in a future release. Please use an alias (INSERT INTO ... VALUES (...) AS alias) and replace VALUES(col) in the ON DUPLICATE KEY UPDATE clause with alias.col instead (SQL State: HY000 - Error Code: 1287)
+14:38:30.570 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'VALUES function' is deprecated and will be removed in a future release. Please use an alias (INSERT INTO ... VALUES (...) AS alias) and replace VALUES(col) in the ON DUPLICATE KEY UPDATE clause with alias.col instead (SQL State: HY000 - Error Code: 1287)
+14:38:30.571 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'VALUES function' is deprecated and will be removed in a future release. Please use an alias (INSERT INTO ... VALUES (...) AS alias) and replace VALUES(col) in the ON DUPLICATE KEY UPDATE clause with alias.col instead (SQL State: HY000 - Error Code: 1287)
+14:38:30.571 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'VALUES function' is deprecated and will be removed in a future release. Please use an alias (INSERT INTO ... VALUES (...) AS alias) and replace VALUES(col) in the ON DUPLICATE KEY UPDATE clause with alias.col instead (SQL State: HY000 - Error Code: 1287)
+14:38:30.621 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "103 - wms order type range"
+14:38:31.146 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "104 - integration monitoring indexes"
+14:38:31.277 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "105 - event dlq replay log"
+14:38:31.392 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "106 - event dlq permissions"
+14:38:31.461 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "107 - event tenant unique keys"
+14:38:31.473 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v107_assert_column does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:31.483 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v107_ensure_tenant_unique_index does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:31.502 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v107_drop_index_if_exists does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:31.885 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "108 - tenant isolation p0"
+14:38:31.910 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v108_ensure_tenant_isolation does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:32.212 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "109 - wms shipment order tenant unique"
+14:38:32.225 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v109_assert_column does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:32.241 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v109_ensure_tenant_unique_index does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:32.263 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v109_drop_index_if_exists does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:32.465 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "110 - erp cost mps tables"
+14:38:32.906 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "111 - mes tpm rework tables"
+14:38:33.334 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "112 - qms document audit instrument tables"
+14:38:34.613 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "113 - tenant indexes"
+14:38:34.632 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v113_add_tenant_indexes does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:34.666 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Unknown table 'zhicloud_demo_20261019_143551.v113_tenant_index_targets' (SQL State: 42S02 - Error Code: 1051)
+14:38:36.637 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "114 - ai metadata tables"
+14:38:36.897 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "115 - production seed account cleanup"
+14:38:36.908 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v115_production_seed_cleanup does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:36.912 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Unknown table 'zhicloud_demo_20261019_143551.tmp_v115_seed_users' (SQL State: 42S02 - Error Code: 1051)
+14:38:37.045 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "116 - system users active username unique"
+14:38:37.056 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v116_system_users_active_username_unique does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:37.393 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "117 - crm receivable idempotency"
+14:38:37.408 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v117_crm_receivable_idempotency does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:37.975 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "118 - bpm process instance idempotency"
+14:38:38.268 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "119 - inventory item tenant unique"
+14:38:38.290 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v119_assert_table does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:38.302 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v119_assert_column does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:38.313 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v119_ensure_tenant_unique_index does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:38.324 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v119_drop_legacy_index_if_exists does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:38.333 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v119_assert_no_global_unique_index does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:38.679 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "120 - event outbox inbox owner lease"
+14:38:38.693 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v120_event_outbox_inbox_owner_lease does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:39.692 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "121 - bpm process instance idempotency claim token"
+14:38:39.705 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: PROCEDURE zhicloud_demo_20261019_143551.p_v121_bpm_process_instance_idempotency_claim_token does not exist (SQL State: 42000 - Error Code: 1305)
+14:38:40.184 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "122 - iot ddl"
+14:38:41.399 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "123 - mall pay ddl"
+14:38:46.349 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "124 - tms wms shipment link"
+14:38:47.125 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "125 - member ddl"
+14:38:47.839 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "126 - business report views"
+14:38:47.940 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "127 - hr leave request bpm link"
+14:38:48.146 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "128 - business pk auto increment"
+14:38:50.141 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "129 - report ddl"
+14:38:50.245 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "130 - bpm inflight view fix"
+14:38:50.263 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------------+
+| v130_view_predicate_check |
++---------------------------+
+| V130 self-check passed    |
++---------------------------+
+
+14:38:50.329 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "131 - hr leave type seed"
+14:38:50.335 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +----------------------------+
+| check_result               |
++----------------------------+
+| V131_LEAVE_TYPE_COUNT PASS |
++----------------------------+
+
+14:38:50.336 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +------------------------------+
+| check_result                 |
++------------------------------+
+| V131_UNPAID_TYPE_EXISTS PASS |
++------------------------------+
+
+14:38:50.397 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "132 - member level group seed"
+14:38:50.467 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "133 - qms view dimension gap"
+14:38:50.545 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "134 - hr qms menu seed"
+14:38:50.651 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "135 - pay app mock channel seed"
+14:38:50.668 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +--------------------------+
+| check_result             |
++--------------------------+
+| V135_APP_PER_TENANT PASS |
++--------------------------+
+
+14:38:50.672 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-----------------------------+
+| check_result                |
++-----------------------------+
+| V135_NOTIFY_CONVENTION PASS |
++-----------------------------+
+
+14:38:50.675 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------------------+
+| check_result                    |
++---------------------------------+
+| V135_MOCK_CHANNEL_DISABLED PASS |
++---------------------------------+
+
+14:38:50.678 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +--------------------------+
+| check_result             |
++--------------------------+
+| V135_CHANNEL_LINKED_PASS |
++--------------------------+
+
+14:38:50.730 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "136 - wallet app channels and notify url fix"
+14:38:50.751 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +----------------------------+
+| check_result               |
++----------------------------+
+| V136_MALL_NOTIFY_URLS PASS |
++----------------------------+
+
+14:38:50.752 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-------------------------------+
+| check_result                  |
++-------------------------------+
+| V136_WALLET_APP_COVERAGE PASS |
++-------------------------------+
+
+14:38:50.757 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +----------------------------------+
+| check_result                     |
++----------------------------------+
+| V136_WALLET_CHANNEL_ENABLED PASS |
++----------------------------------+
+
+14:38:50.759 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +----------------------------------+
+| check_result                     |
++----------------------------------+
+| V136_RECHARGE_MOCK_DISABLED PASS |
++----------------------------------+
+
+14:38:50.813 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "137 - wallet recharge pay status default"
+14:38:50.919 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +------------------------------+
+| check_result                 |
++------------------------------+
+| V137_NO_NULL_PAY_STATUS PASS |
++------------------------------+
+
+14:38:50.922 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------------+
+| check_result              |
++---------------------------+
+| V137_COLUMN_NOT_NULL PASS |
++---------------------------+
+
+14:38:50.968 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "138 - brokerage withdraw status default"
+14:38:51.059 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +--------------------------+
+| check_result             |
++--------------------------+
+| V138_NO_NULL_STATUS PASS |
++--------------------------+
+
+14:38:51.061 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------------+
+| check_result              |
++---------------------------+
+| V138_COLUMN_NOT_NULL PASS |
++---------------------------+
+
+14:38:51.102 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "139 - trade order refund point default"
+14:38:51.210 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +--------------------------------+
+| check_result                   |
++--------------------------------+
+| V139_NO_NULL_REFUND_POINT PASS |
++--------------------------------+
+
+14:38:51.212 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------------+
+| check_result              |
++---------------------------+
+| V139_COLUMN_NOT_NULL PASS |
++---------------------------+
+
+14:38:51.280 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "140 - drop commercial domain"
+14:38:53.746 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +--------------------------------+
+| check_result                   |
++--------------------------------+
+| V140_NO_COMMERCIAL_TABLES PASS |
++--------------------------------+
+
+14:38:53.749 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-------------------------------+
+| check_result                  |
++-------------------------------+
+| V140_NO_COMMERCIAL_MENUS PASS |
++-------------------------------+
+
+14:38:53.751 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------------+
+| check_result              |
++---------------------------+
+| V140_NO_ORPHAN_MENUS PASS |
++---------------------------+
+
+14:38:53.752 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-------------------------------+
+| check_result                  |
++-------------------------------+
+| V140_NO_COMMERCIAL_DICTS PASS |
++-------------------------------+
+
+14:38:53.756 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +----------------------------------------+
+| check_result                           |
++----------------------------------------+
+| V140_ENTERPRISE_TABLES_INTACT PASS 459 |
++----------------------------------------+
+
+14:38:53.788 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "141 - inventory ledgers overview view"
+14:38:53.808 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-----------------------+
+| check_result          |
++-----------------------+
+| V141_VIEW_EXISTS PASS |
++-----------------------+
+
+14:38:53.809 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-------------------------+
+| check_result            |
++-------------------------+
+| V141_THREE_LEDGERS_PASS |
++-------------------------+
+
+14:38:53.812 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +----------------------+
+| check_result         |
++----------------------+
+| V141_SELECTABLE PASS |
++----------------------+
+
+14:38:53.850 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "142 - mdm cross ref menu seed"
+14:38:53.858 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-------------------------------------------+
+| check_result                              |
++-------------------------------------------+
+| V142_MDM_MENUS_SEEDED FAIL 权限点不齐，接口会恒 403 |
++-------------------------------------------+
+
+14:38:53.860 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------+
+| check_result        |
++---------------------+
+| V142_NO_ORPHAN PASS |
++---------------------+
+
+14:38:53.900 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "143 - inventory reconcile erp wms view"
+14:38:53.919 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-----------------------+
+| check_result          |
++-----------------------+
+| V143_VIEW_EXISTS PASS |
++-----------------------+
+
+14:38:53.925 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +------------------------+
+| check_result           |
++------------------------+
+| V143_TABLES_WIRED PASS |
++------------------------+
+
+14:38:53.930 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +----------------------+
+| check_result         |
++----------------------+
+| V143_SELECTABLE PASS |
++----------------------+
+
+14:38:54.020 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "144 - mdm menu selfcheck fix"
+14:38:54.029 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-----------------------------------+
+| check_result                      |
++-----------------------------------+
+| V144_MDM_PERMISSIONS_PRESENT PASS |
++-----------------------------------+
+
+14:38:54.034 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-----------------------------+
+| check_result                |
++-----------------------------+
+| V144_MENU_UNDER_SYSTEM PASS |
++-----------------------------+
+
+14:38:54.175 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "145 - inventory reconcile mes wms view"
+14:38:54.214 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-----------------------+
+| check_result          |
++-----------------------+
+| V145_VIEW_EXISTS PASS |
++-----------------------+
+
+14:38:54.219 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +------------------------+
+| check_result           |
++------------------------+
+| V145_TABLES_WIRED PASS |
++------------------------+
+
+14:38:54.232 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +----------------------+
+| check_result         |
++----------------------+
+| V145_SELECTABLE PASS |
++----------------------+
+
+14:38:54.311 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "146 - drop commercial jobs"
+14:38:54.329 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +------------------------------+
+| check_result                 |
++------------------------------+
+| V146_NO_COMMERCIAL_JOBS PASS |
++------------------------------+
+
+14:38:54.331 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------------+
+| check_result              |
++---------------------------+
+| V146_SURVIVOR_JOBS_PASS 6 |
++---------------------------+
+
+14:38:54.332 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +------------------------------+
+| check_result                 |
++------------------------------+
+| V146_NO_ORPHAN_JOB_LOGS PASS |
++------------------------------+
+
+14:38:54.391 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "147 - quartz tables"
+14:38:55.085 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-------------------------------+
+| check_result                  |
++-------------------------------+
+| V147_QRTZ_TABLES_PRESENT PASS |
++-------------------------------+
+
+14:38:55.090 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +------------------------+
+| check_result           |
++------------------------+
+| V147_NO_ORPHAN_FK PASS |
++------------------------+
+
+14:38:55.092 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-----------------------------------+
+| check_result                      |
++-----------------------------------+
+| V147_NO_COMMERCIAL_CRON_ROWS PASS |
++-----------------------------------+
+
+14:38:55.130 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "148 - inventory reconcile mes wms warehouse"
+14:38:55.145 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-----------------------+
+| check_result          |
++-----------------------+
+| V148_VIEW_EXISTS PASS |
++-----------------------+
+
+14:38:55.148 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +----------------------+
+| check_result         |
++----------------------+
+| V148_SELECTABLE PASS |
++----------------------+
+
+14:38:55.150 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-----------------------+
+| check_result          |
++-----------------------+
+| V148_STATUS_ENUM PASS |
++-----------------------+
+
+14:38:55.189 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "149 - statement reconcile menu seed"
+14:38:55.196 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-------------------------------------+
+| check_result                        |
++-------------------------------------+
+| V149_STATEMENT_RECONCILE_MENUS PASS |
++-------------------------------------+
+
+14:38:55.198 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------+
+| check_result        |
++---------------------+
+| V149_NO_ORPHAN PASS |
++---------------------+
+
+14:38:55.236 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "150 - tms shipment unicode collation"
+14:38:55.481 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "151 - default oauth2 client bootstrap"
+14:38:55.493 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +--------------------------------+
+| check_result                   |
++--------------------------------+
+| V151_DEFAULT_CLIENT_READY PASS |
++--------------------------------+
+
+14:38:55.495 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------------------+
+| check_result                    |
++---------------------------------+
+| V151_DEFAULT_CLIENT_UNIQUE PASS |
++---------------------------------+
+
+14:38:55.546 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "152 - fix qms menu component paths"
+14:38:55.552 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +--------------------------+
+| check_result             |
++--------------------------+
+| V152_QMS_COMPONENTS PASS |
++--------------------------+
+
+14:38:55.556 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +--------------------------+
+| check_result             |
++--------------------------+
+| V152_QMS_MENU_COUNT PASS |
++--------------------------+
+
+14:38:55.595 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "153 - fix codegen demo menu component"
+14:38:55.598 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +----------------------------------+
+| check_result                     |
++----------------------------------+
+| V153_TESTDEMO_DIR_COMPONENT PASS |
++----------------------------------+
+
+14:38:55.600 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-----------------------------+
+| check_result                |
++-----------------------------+
+| V153_TESTDEMO_CHILDREN PASS |
++-----------------------------+
+
+14:38:55.645 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "154 - report jimu tables"
+14:38:55.732 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.732 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.732 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.732 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.732 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.732 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.732 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.732 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.732 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:38:55.732 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.732 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.732 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.732 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.732 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: The ZEROFILL attribute is deprecated and will be removed in a future release. Use the LPAD function to zero-pad numbers, or store the formatted numbers in a CHAR column. (SQL State: HY000 - Error Code: 1681)
+14:38:55.732 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:38:55.732 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.732 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.732 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.732 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.802 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.802 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.802 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.802 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.802 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.802 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.802 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.802 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.802 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.803 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.803 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:38:55.803 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:38:55.803 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.803 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.803 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.803 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.803 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.803 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.866 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.866 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.867 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.903 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:38:55.903 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:38:55.903 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.903 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.903 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.903 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:55.903 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:38:55.959 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:38:55.959 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:55.959 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.029 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.086 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.087 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.087 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.087 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.087 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.087 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.087 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.087 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.087 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.087 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.087 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.087 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.087 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.087 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.087 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.087 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.087 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:38:56.087 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:38:56.087 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:38:56.087 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:38:56.087 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.087 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.087 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.087 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.087 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.087 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.087 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.087 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.087 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.087 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.136 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.136 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.136 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.136 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.136 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.136 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.136 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.137 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.137 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.137 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.137 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:38:56.137 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.137 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.137 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.137 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.137 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:38:56.137 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.137 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.137 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:38:56.137 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.137 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.137 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.137 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.137 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.137 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.137 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.137 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.178 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:38:56.178 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.178 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.178 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.178 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.178 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.178 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.219 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.219 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.219 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.219 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.219 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.219 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.270 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:38:56.320 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.320 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.320 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.320 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.320 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.320 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.320 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:38:56.491 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.491 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.491 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.491 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.491 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.491 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.491 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.491 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.491 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.491 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.491 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.491 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.491 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.491 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.491 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.491 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.491 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8' is currently an alias for the character set UTF8MB3, but will be an alias for UTF8MB4 in a future release. Please consider using UTF8MB4 in order to be unambiguous. (SQL State: HY000 - Error Code: 3719)
+14:38:56.491 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: 'utf8mb3_general_ci' is a collation of the deprecated character set UTF8MB3. Please consider using UTF8MB4 with an appropriate collation instead. (SQL State: HY000 - Error Code: 3778)
+14:38:56.568 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Duplicate index 'uniq_jrs_report_id' defined on the table 'zhicloud_demo_20261019_143551.jimu_report_share'. This is deprecated and will be disallowed in a future release. (SQL State: HY000 - Error Code: 1831)
+14:38:56.635 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681)
+14:38:57.347 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "155 - mp tables"
+14:38:57.796 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "156 - im tables"
+14:38:58.737 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "157 - fms config tables"
+14:38:59.316 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "158 - fms config menu seed"
+14:38:59.368 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "159 - fms config dict seed"
+14:38:59.427 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "161 - hr employee hrm superset"
+14:38:59.834 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "162 - hr employee sub tables"
+14:39:00.502 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "163 - hrm employee dict seed"
+14:39:00.574 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "164 - hrm employee dept menu seed"
+14:39:00.624 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "165 - hr employee personal note"
+14:39:00.718 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "166 - hrm attendance tables"
+14:39:01.149 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "167 - hrm attendance menu dict seed"
+14:39:01.214 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "168 - hrm insurance standard tables"
+14:39:01.546 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "169 - hrm insurance standard seed"
+14:39:01.602 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "170 - hrm insurance standard menu seed"
+14:39:01.662 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "171 - hrm recruit tables"
+14:39:02.061 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "172 - hrm recruit menu dict seed"
+14:39:02.130 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "173 - hrm home operatelog menu seed"
+14:39:02.190 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "174 - hrm performance tables"
+14:39:02.679 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "175 - hrm performance menu dict seed"
+14:39:02.731 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "176 - hrm salary config tables"
+14:39:02.968 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "177 - hrm salary config menu dict seed"
+14:39:03.027 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "178 - hrm salary business tables"
+14:39:03.447 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "179 - hrm salary business menu seed"
+14:39:03.486 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "180 - hrm portal appeal column menu seed"
+14:39:03.659 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "181 - hrm insurance month tables"
+14:39:03.811 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "182 - hrm insurance month menu seed"
+14:39:03.862 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "183 - hrm missing dict seed"
+14:39:03.932 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "184 - hrm position menu seed"
+14:39:03.995 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "185 - retire hr legacy menu"
+14:39:04.085 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-----------------------+
+| check_result          |
++-----------------------+
+| V185_NO_HR_MENUS PASS |
++-----------------------+
+
+14:39:04.089 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +----------------------------+
+| check_result               |
++----------------------------+
+| V185_HRM_MENUS_INTACT PASS |
++----------------------------+
+
+14:39:04.095 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------------+
+| check_result              |
++---------------------------+
+| V185_NO_ORPHAN_MENUS PASS |
++---------------------------+
+
+14:39:04.098 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-----------------------------+
+| check_result                |
++-----------------------------+
+| V185_HRM_TABLES_INTACT PASS |
++-----------------------------+
+
+14:39:04.101 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +--------------------------------+
+| check_result                   |
++--------------------------------+
+| V185_INFLIGHT_VIEW_INTACT PASS |
++--------------------------------+
+
+14:39:04.103 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +----------------------------------------+
+| check_result                           |
++----------------------------------------+
+| V185_ENTERPRISE_MENUS_INTACT PASS 1628 |
++----------------------------------------+
+
+14:39:04.219 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "186 - erp wms mes missing menu seed"
+14:39:04.378 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +------------------------+
+| check_result           |
++------------------------+
+| V186_MENUS_SEEDED PASS |
++------------------------+
+
+14:39:04.381 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------------+
+| check_result              |
++---------------------------+
+| V186_NO_ORPHAN_MENUS PASS |
++---------------------------+
+
+14:39:04.383 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------------------+
+| check_result                    |
++---------------------------------+
+| V186_ENTERPRISE_MENUS PASS 1933 |
++---------------------------------+
+
+14:39:04.435 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "187 - erp wms mes action menu seed"
+14:39:04.446 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +------------------------------+
+| check_result                 |
++------------------------------+
+| V187_ACTION_MENUS FAIL 13/27 |
++------------------------------+
+
+14:39:04.448 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------------+
+| check_result              |
++---------------------------+
+| V187_NO_ORPHAN_MENUS PASS |
++---------------------------+
+
+14:39:04.450 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------------------+
+| check_result                    |
++---------------------------------+
+| V187_ENTERPRISE_MENUS PASS 1946 |
++---------------------------------+
+
+14:39:04.498 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "188 - fix action domain buttons"
+14:39:04.570 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-----------------------------+
+| check_result                |
++-----------------------------+
+| V188_BUTTONS_SEEDED PASS 16 |
++-----------------------------+
+
+14:39:04.575 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------------+
+| check_result              |
++---------------------------+
+| V188_NO_ORPHAN_MENUS PASS |
++---------------------------+
+
+14:39:04.577 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------------------+
+| check_result                    |
++---------------------------------+
+| V188_ENTERPRISE_MENUS PASS 1962 |
++---------------------------------+
+
+14:39:04.617 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "189 - fix action button names"
+14:39:04.627 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +------------------------------+
+| check_result                 |
++------------------------------+
+| V189_BUTTON_NAMES FIXED PASS |
++------------------------------+
+
+14:39:04.630 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------------+
+| check_result              |
++---------------------------+
+| V189_NO_ORPHAN_MENUS PASS |
++---------------------------+
+
+14:39:04.670 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "190 - fms erp finance merge"
+14:39:04.852 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +--------------------------------+
+| check_result                   |
++--------------------------------+
+| V190_FMS_CURRENCY_DROPPED PASS |
++--------------------------------+
+
+14:39:04.856 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +----------------------------------+
+| check_result                     |
++----------------------------------+
+| V190_CURRENCY_CODE_BACKFILL PASS |
++----------------------------------+
+
+14:39:04.858 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +------------------------------+
+| check_result                 |
++------------------------------+
+| V190_CURRENCY_MENU_GONE PASS |
++------------------------------+
+
+14:39:04.861 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +--------------------------------------+
+| check_result                         |
++--------------------------------------+
+| V190_FMS_CONFIG_MENUS_INTACT PASS 31 |
++--------------------------------------+
+
+14:39:04.863 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-------------------------------------+
+| check_result                        |
++-------------------------------------+
+| V190_ERP_CURRENCY_TABLE_INTACT PASS |
++-------------------------------------+
+
+14:39:04.866 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------------+
+| check_result              |
++---------------------------+
+| V190_NO_ORPHAN_MENUS PASS |
++---------------------------+
+
+14:39:04.904 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "191 - erp account book link account set"
+14:39:05.037 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-----------------------------------+
+| check_result                      |
++-----------------------------------+
+| V191_ACCOUNT_BOOK_SET_COLUMN PASS |
++-----------------------------------+
+
+14:39:05.039 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +------------------------------------+
+| check_result                       |
++------------------------------------+
+| V191_ACCOUNT_BOOK_SET_INDEX FAIL 2 |
++------------------------------------+
+
+14:39:05.041 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-----------------------------+
+| check_result                |
++-----------------------------+
+| V191_BACKWARD_COMPAT PASS 1 |
++-----------------------------+
+
+14:39:05.043 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +----------------------------------+
+| check_result                     |
++----------------------------------+
+| V191_FMS_ACCOUNT_SET_INTACT PASS |
++----------------------------------+
+
+14:39:05.045 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------------------+
+| check_result                    |
++---------------------------------+
+| V191_ERP_GL_VOUCHER_INTACT PASS |
++---------------------------------+
+
+14:39:05.046 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-----------------------------+
+| check_result                |
++-----------------------------+
+| V191_MENUS_INTACT PASS 1958 |
++-----------------------------+
+
+14:39:05.077 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "192 - fix v191 index selfcheck"
+14:39:05.080 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +----------------------------------+
+| check_result                     |
++----------------------------------+
+| V192_ACCOUNT_BOOK_SET_INDEX PASS |
++----------------------------------+
+
+14:39:05.081 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-----------------------------------+
+| check_result                      |
++-----------------------------------+
+| V192_ACCOUNT_BOOK_SET_COLUMN PASS |
++-----------------------------------+
+
+14:39:05.082 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------+
+| check_result        |
++---------------------+
+| V192_LINKED_BOOKS=0 |
++---------------------+
+
+14:39:05.115 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "193 - account set voucher flow"
+14:39:05.117 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------------+
+| check_result              |
++---------------------------+
+| V193_BOOK_SET_COLUMN PASS |
++---------------------------+
+
+14:39:05.119 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +--------------------------+
+| check_result             |
++--------------------------+
+| V193_BOOK_SET_INDEX PASS |
++--------------------------+
+
+14:39:05.120 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------------------------+
+| check_result                          |
++---------------------------------------+
+| V193_VOUCHER_NO_REDUNDANT_COLUMN PASS |
++---------------------------------------+
+
+14:39:05.122 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +----------------------------------+
+| check_result                     |
++----------------------------------+
+| V193_FMS_ACCOUNT_SET_INTACT PASS |
++----------------------------------+
+
+14:39:05.124 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------+
+| check_result        |
++---------------------+
+| V193_LINKED_BOOKS=0 |
++---------------------+
+
+14:39:05.158 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "194 - fms subject menu and report selfcheck"
+14:39:05.164 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------------+
+| check_result              |
++---------------------------+
+| V194_BOOK_SET_COLUMN PASS |
++---------------------------+
+
+14:39:05.166 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +--------------------------+
+| check_result             |
++--------------------------+
+| V194_BOOK_SET_INDEX PASS |
++--------------------------+
+
+14:39:05.167 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------------------------+
+| check_result                          |
++---------------------------------------+
+| V194_VOUCHER_NO_REDUNDANT_COLUMN PASS |
++---------------------------------------+
+
+14:39:05.169 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-----------------------------+
+| check_result                |
++-----------------------------+
+| V194_GL_ACCOUNT_INTACT PASS |
++-----------------------------+
+
+14:39:05.171 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +------------------------------+
+| check_result                 |
++------------------------------+
+| V194_GL_ACCOUNT_BUTTONS PASS |
++------------------------------+
+
+14:39:05.174 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-------------------------------------+
+| check_result                        |
++-------------------------------------+
+| V194_NO_PARALLEL_SUBJECT_TABLE PASS |
++-------------------------------------+
+
+14:39:05.204 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "195 - bank account link account book"
+14:39:05.308 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +------------------------------------+
+| check_result                       |
++------------------------------------+
+| V195_BANK_ACCOUNT_BOOK_COLUMN PASS |
++------------------------------------+
+
+14:39:05.309 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-----------------------------------+
+| check_result                      |
++-----------------------------------+
+| V195_BANK_ACCOUNT_BOOK_INDEX PASS |
++-----------------------------------+
+
+14:39:05.310 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-----------------------+
+| check_result          |
++-----------------------+
+| V195_NO_BACKFILL PASS |
++-----------------------+
+
+14:39:05.312 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-------------------------------+
+| check_result                  |
++-------------------------------+
+| V195_CASH_FLOW_UNTOUCHED PASS |
++-------------------------------+
+
+14:39:05.341 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "196 - qms document multi version unique key"
+14:39:05.382 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +--------------------------+
+| check_result             |
++--------------------------+
+| V196_OLD_UK_REMOVED PASS |
++--------------------------+
+
+14:39:05.384 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +--------------------------+
+| check_result             |
++--------------------------+
+| V196_NEW_UK_PRESENT PASS |
++--------------------------+
+
+14:39:05.387 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +--------------------------+
+| check_result             |
++--------------------------+
+| V196_NEW_UK_COLUMNS PASS |
++--------------------------+
+
+14:39:05.390 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------------+
+| check_result              |
++---------------------------+
+| V196_MULTI_VERSION_DOCS=0 |
++---------------------------+
+
+14:39:05.435 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "197 - tms oa crm missing domain menus"
+14:39:05.534 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +----------------------+
+| check_result         |
++----------------------+
+| V197_MENU_COUNT PASS |
++----------------------+
+
+14:39:05.536 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-----------------------+
+| check_result          |
++-----------------------+
+| V197_PERMISSIONS PASS |
++-----------------------+
+
+14:39:05.537 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------+
+| check_result        |
++---------------------+
+| V197_NO_ORPHAN PASS |
++---------------------+
+
+14:39:05.539 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +------------------------------+
+| check_result                 |
++------------------------------+
+| V197_MEETING_QUERY_MENU PASS |
++------------------------------+
+
+14:39:05.574 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "198 - tms freight report menu"
+14:39:05.579 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-------------------------------+
+| check_result                  |
++-------------------------------+
+| V198_FREIGHT_REPORT_MENU PASS |
++-------------------------------+
+
+14:39:05.608 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "199 - erp stock unique key"
+14:39:05.637 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +----------------------+
+| check_result         |
++----------------------+
+| V199_UNIQUE_KEY_PASS |
++----------------------+
+
+14:39:05.640 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +------------------------------+
+| check_result                 |
++------------------------------+
+| V199_UNIQUE_KEY_COLUMNS_PASS |
++------------------------------+
+
+14:39:05.642 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-----------------------------+
+| check_result                |
++-----------------------------+
+| V199_DUPLICATE_DIMENSIONS=0 |
++-----------------------------+
+
+14:39:05.645 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +----------------------------+
+| check_result               |
++----------------------------+
+| V199_PLAIN_INDEX_KEPT_PASS |
++----------------------------+
+
+14:39:05.679 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "200 - erp finance idempotency key"
+14:39:05.931 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-------------------------------+
+| check_result                  |
++-------------------------------+
+| V200_PAYMENT_IDEMPOTENCY_PASS |
++-------------------------------+
+
+14:39:05.933 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------------------------+
+| check_result                          |
++---------------------------------------+
+| V200_PAYMENT_IDEMPOTENCY_COLUMNS_PASS |
++---------------------------------------+
+
+14:39:05.934 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-------------------------------+
+| check_result                  |
++-------------------------------+
+| V200_RECEIPT_IDEMPOTENCY_PASS |
++-------------------------------+
+
+14:39:05.936 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------------------------+
+| check_result                          |
++---------------------------------------+
+| V200_RECEIPT_IDEMPOTENCY_COLUMNS_PASS |
++---------------------------------------+
+
+14:39:05.938 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-------------------------------+
+| check_result                  |
++-------------------------------+
+| V200_PAYLOAD_HASH_LENGTH_PASS |
++-------------------------------+
+
+14:39:05.940 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +----------------------------------+
+| check_result                     |
++----------------------------------+
+| V200_EXISTING_IDEMPOTENCY_NULL=0 |
++----------------------------------+
+
+14:39:05.942 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-------------------------------+
+| check_result                  |
++-------------------------------+
+| V200_PAYMENT_NO_KEY_KEPT_PASS |
++-------------------------------+
+
+14:39:05.990 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "201 - tms shipment concurrency"
+14:39:06.357 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-------------------------+
+| result                  |
++-------------------------+
+| PASS V201 columns added |
++-------------------------+
+
+14:39:06.440 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "202 - qms status dict seed"
+14:39:06.545 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "203 - erp fixed asset disposal menu"
+14:39:06.552 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +------------------------+
+| check_result           |
++------------------------+
+| V203_DISPOSE_PERM PASS |
++------------------------+
+
+14:39:06.554 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------+
+| check_result        |
++---------------------+
+| V203_NO_ORPHAN PASS |
++---------------------+
+
+14:39:06.604 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "204 - mes aps mrp dict seed"
+14:39:06.660 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "205 - wms inventory location dimension"
+14:39:07.172 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "206 - crm sale order audit status"
+14:39:07.347 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "207 - mes mrp convert dict seed"
+14:39:07.408 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "208 - hr legacy retirement"
+14:39:07.843 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +----------------------------------+
+| check_result                     |
++----------------------------------+
+| V208_LEGACY_COLUMNS_DROPPED PASS |
++----------------------------------+
+
+14:39:07.845 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +------------------------------+
+| check_result                 |
++------------------------------+
+| V208_IDX_STATUS_DROPPED PASS |
++------------------------------+
+
+14:39:07.848 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------------------+
+| check_result                    |
++---------------------------------+
+| V208_ORPHAN_TABLES_DROPPED PASS |
++---------------------------------+
+
+14:39:07.850 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +------------------------------+
+| check_result                 |
++------------------------------+
+| V208_KEPT_TABLES_INTACT PASS |
++------------------------------+
+
+14:39:07.851 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------------------+
+| check_result                    |
++---------------------------------+
+| V208_RETIRED_DICTS_CLEARED PASS |
++---------------------------------+
+
+14:39:07.852 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +------------------------------------+
+| check_result                       |
++------------------------------------+
+| V208_POSITION_LEVEL_DICT_KEPT PASS |
++------------------------------------+
+
+14:39:07.854 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +------------------------------+
+| check_result                 |
++------------------------------+
+| V208_HR_EMPLOYEE_INTACT FAIL |
++------------------------------+
+
+14:39:07.856 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-------------------------------+
+| check_result                  |
++-------------------------------+
+| V208_NEW_COLUMNS_PRESENT PASS |
++-------------------------------+
+
+14:39:07.895 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "209 - erp gl initial balance"
+14:39:07.944 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +-----------------+
+| check_result    |
++-----------------+
+| V209_TABLE_PASS |
++-----------------+
+
+14:39:07.947 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +--------------------------+
+| check_result             |
++--------------------------+
+| V209_AMOUNT_COLUMNS_PASS |
++--------------------------+
+
+14:39:07.949 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +----------------------+
+| check_result         |
++----------------------+
+| V209_UNIQUE_KEY_PASS |
++----------------------+
+
+14:39:07.963 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +----------------+
+| check_result   |
++----------------+
+| V209_MENU_PASS |
++----------------+
+
+14:39:07.964 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +--------------------------+
+| check_result             |
++--------------------------+
+| V209_MENU_COMPONENT_PASS |
++--------------------------+
+
+14:39:07.966 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +----------------------------------+
+| check_result                     |
++----------------------------------+
+| V209_NO_PARALLEL_PERMISSION_PASS |
++----------------------------------+
+
+14:39:08.014 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "210 - erp gl ledger menus"
+14:39:08.037 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +----------------------+
+| check_result         |
++----------------------+
+| V210_MENU_COUNT PASS |
++----------------------+
+
+14:39:08.041 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +--------------------------+
+| check_result             |
++--------------------------+
+| V210_PAGE_COMPONENT PASS |
++--------------------------+
+
+14:39:08.044 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +----------------------+
+| check_result         |
++----------------------+
+| V210_PERMISSION PASS |
++----------------------+
+
+14:39:08.048 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +----------------------------------+
+| check_result                     |
++----------------------------------+
+| V210_NO_PARALLEL_PERMISSION PASS |
++----------------------------------+
+
+14:39:08.050 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +------------------------+
+| check_result           |
++------------------------+
+| V210_NO_ROLE_MENU PASS |
++------------------------+
+
+14:39:08.052 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +---------------------+
+| check_result        |
++---------------------+
+| V210_NO_ORPHAN PASS |
++---------------------+
+
+14:39:08.112 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "211 - wms inventory history location id"
+14:39:08.296 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "212 - mes route capacity mrp convert link"
+14:39:08.356 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +--------------------------------+
+| check_result                   |
++--------------------------------+
+| V212_ROUTE_CAPACITY_TABLE_PASS |
++--------------------------------+
+
+14:39:08.463 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +------------------------------+
+| check_result                 |
++------------------------------+
+| V212_CONVERT_LINK_TABLE_PASS |
++------------------------------+
+
+14:39:08.511 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `zhicloud_demo_20261019_143551` to version "213 - crm contract esign task"
+14:39:08.584 [main] INFO org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- +----------------------------+
+| check_result               |
++----------------------------+
+| V213_ESIGN_TASK_TABLE_PASS |
++----------------------------+
+
+14:39:08.655 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 217 migrations to schema `zhicloud_demo_20261019_143551`, now at version v213 (execution time 02:48.060s)
+[flyway-migration] verification PASS: resource=db/verification/V116_verify.sql, checks=3
+[flyway-migration] verification PASS: resource=db/verification/V117_verify.sql, checks=3
+[flyway-migration] verification PASS: resource=db/verification/V118_verify.sql, checks=2
+[flyway-migration] verification PASS: resource=db/verification/V119_verify.sql, checks=4
+[flyway-migration] verification PASS: resource=db/verification/V120_verify.sql, checks=4
+[flyway-migration] verification PASS: resource=db/verification/V121_verify.sql, checks=1
+[flyway-migration] success: applied=217, initialVersion=1.1, targetVersion=213, cost=194811ms

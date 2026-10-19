@@ -12,8 +12,8 @@
     "master_data_tenant_id": 9001,
     "master_data_seed": 20260928
   },
-  "table_count": 99,
-  "row_total": 2458,
+  "table_count": 94,
+  "row_total": 1258,
   "tables": [
     {
       "table": "erp_account",
@@ -348,28 +348,8 @@
       "rows": 10
     },
     {
-      "table": "hr_leave_balance",
-      "rows": 160
-    },
-    {
       "table": "hr_leave_request",
       "rows": 20
-    },
-    {
-      "table": "hr_attendance",
-      "rows": 800
-    },
-    {
-      "table": "hr_contract",
-      "rows": 40
-    },
-    {
-      "table": "hr_salary",
-      "rows": 120
-    },
-    {
-      "table": "hr_performance",
-      "rows": 80
     },
     {
       "table": "oa_announcement",
