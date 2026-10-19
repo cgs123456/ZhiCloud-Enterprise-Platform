@@ -108,9 +108,9 @@ public class IotMessageBusAutoConfiguration {
     public static class IotRedisMessageBusConfiguration {
 
         @Bean
-        public IotRedisMessageBus iotRedisMessageBus(StringRedisTemplate redisTemplate) {
+        public IotRedisMessageBus iotRedisMessageBus(StringRedisTemplate redisTemplate, RedissonClient redissonClient) {
             log.info("[iotRedisMessageBus][创建 IoT Redis 消息总线]");
-            return new IotRedisMessageBus(redisTemplate);
+            return new IotRedisMessageBus(redisTemplate, redissonClient);
         }
 
         /**

@@ -11,6 +11,7 @@ import cn.zhicloud.framework.mq.redis.core.job.RedisPendingMessageResendJob;
 import cn.zhicloud.framework.mq.redis.core.job.RedisStreamMessageCleanupJob;
 import cn.zhicloud.framework.mq.redis.core.pubsub.AbstractRedisChannelMessageListener;
 import cn.zhicloud.framework.mq.redis.core.stream.AbstractRedisStreamMessageListener;
+import cn.zhicloud.framework.mq.redis.core.stream.StreamSafeRedissonConnectionFactory;
 import cn.zhicloud.framework.redis.config.ZhiCloudRedisAutoConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
@@ -95,7 +96,7 @@ public class ZhiCloudRedisMQConsumerAutoConfiguration {
     @Bean(initMethod = "start", destroyMethod = "stop")
     @ConditionalOnBean(AbstractRedisStreamMessageListener.class) // 只有 AbstractStreamMessageListener 存在的时候，才需要注册 Redis pubsub 监听
     public StreamMessageListenerContainer<String, ObjectRecord<String, String>> redisStreamMessageListenerContainer(
-            RedisMQTemplate redisMQTemplate, List<AbstractRedisStreamMessageListener<?>> listeners) {
+            RedisMQTemplate redisMQTemplate, RedissonClient redissonClient, List<AbstractRedisStreamMessageListener<?>> listeners) {
         RedisTemplate<String, ?> redisTemplate = redisMQTemplate.getRedisTemplate();
         checkRedisVersion(redisTemplate);
         // 第一步，创建 StreamMessageListenerContainer 容器
@@ -106,8 +107,9 @@ public class ZhiCloudRedisMQConsumerAutoConfiguration {
                         .targetType(String.class) // 目标类型。统一使用 String，通过自己封装的 AbstractStreamMessageListener 去反序列化
                         .build();
         // 创建 container 对象
+        // 使用空读豁免的连接工厂（redisson 上游缺陷：空阻塞读回 Map 但适配器声明 List，见 StreamSafeRedisStreamCommands）
         StreamMessageListenerContainer<String, ObjectRecord<String, String>> container =
-                StreamMessageListenerContainer.create(redisMQTemplate.getRedisTemplate().getRequiredConnectionFactory(), containerOptions);
+                StreamMessageListenerContainer.create(new StreamSafeRedissonConnectionFactory(redissonClient), containerOptions);
 
         // 第二步，注册监听器，消费对应的 Stream 主题
         String consumerName = buildConsumerName();

@@ -4,12 +4,14 @@ import cn.zhicloud.framework.common.exception.enums.GlobalErrorCodeConstants;
 import cn.zhicloud.framework.common.exception.ServiceException;
 import cn.hutool.core.util.TypeUtil;
 import cn.zhicloud.framework.common.util.json.JsonUtils;
+import cn.zhicloud.framework.mq.redis.core.stream.StreamSafeRedissonConnectionFactory;
 import cn.zhicloud.module.iot.core.messagebus.core.IotMessageBus;
 import cn.zhicloud.module.iot.core.messagebus.core.IotMessageSubscriber;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.connection.stream.*;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.stream.StreamMessageListenerContainer;
@@ -36,7 +38,7 @@ public class IotRedisMessageBus implements IotMessageBus {
     @Getter
     private final List<IotMessageSubscriber<?>> subscribers = new ArrayList<>();
 
-    public IotRedisMessageBus(RedisTemplate<String, ?> redisTemplate) {
+    public IotRedisMessageBus(RedisTemplate<String, ?> redisTemplate, RedissonClient redissonClient) {
         this.redisTemplate = redisTemplate;
         checkRedisVersion(redisTemplate);
         // 创建 options 配置
@@ -46,8 +48,9 @@ public class IotRedisMessageBus implements IotMessageBus {
                         .targetType(String.class) // 目标类型。统一使用 String，通过自己封装的 AbstractStreamMessageListener 去反序列化
                         .build();
         // 创建 container 对象
+        // 使用空读豁免的连接工厂（redisson 上游缺陷：空阻塞读回 Map 但适配器声明 List，见 StreamSafeRedisStreamCommands）
         this.redisStreamMessageListenerContainer =
-                StreamMessageListenerContainer.create(redisTemplate.getRequiredConnectionFactory(), containerOptions);
+                StreamMessageListenerContainer.create(new StreamSafeRedissonConnectionFactory(redissonClient), containerOptions);
     }
 
     @PostConstruct
