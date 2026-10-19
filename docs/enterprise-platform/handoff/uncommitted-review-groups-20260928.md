@@ -13903,3 +13903,23 @@ demo-data 全量重生实跑 status=passed，R-033 方向 2 实跑验证兑现�
    **0 个文件**：引擎表由 Flowable 运行时自建，从不进迁移链，也就**从不进静态快照契约**；
    因此"快照 587 表"与"沙箱 DB 640 表"的差集按设计就是这个运行时面 + 模块迁移叠加
    （§12.279 已披露模块迁移不在契约内）。属**契约而非缺陷**，评测错误不得以 587≠640 作为证据。
+### 12.285.1 提交后实证（33b6f0c3d 推送后补记）
+
+- 四笔提交（全量 message 见 Temp/zc_msg_{A..D}.txt）：
+  `3bea895a0` fix(mq)（7 文件，+365/−6；StreamSafe 双件 + iot 接线 + 单测 + starter test 依赖）；
+  `036e4843a` fix(demo-data+tooling)（18 文件，+41853/−34781；按 groups-must-merge 并单笔）；
+  `8c0293df5` docs(evidence)（3 文件 +2071）；`33b6f0c3d` docs(handoff)（1 文件 +167）。
+- **推送一次成功**：`f39ba2cf0..33b6f0c3d master -> master`（未挂代理）；
+  远端 master = `33b6f0c3dbd12dcd06d567f188d3b4a6525b75ba` = 本地 HEAD；工作树全净
+  （`git status --porcelain` 空）。
+- **plan 门禁终值**：`plan_commit_groups.py --json` **rc=0，violations=[]**（六组计数全 0）；
+  §12.285 的两条预提交 red（logs 运行期 unclassified 两件 + 合组指示）按预期消解。
+- **全量 python 套件终读数**：**674 passed / 0 failed / 3 skipped / 190 subtests**（5:10.32），
+  较 pre-commit 的 671/3 全部转红→转绿，与 §12.285 归因互证：plan 真树 ×2 属设计性前提红、
+  seam 属已补对价，均随提交与豁免落地转绿。至此项 6 兜底读数 ≤ 本终值基线（674 passed 含
+  项 4 增补 9 守卫与全部既有面，三次 skipped 维持既有登记）。
+- **运行面现状**：boot#3（restore_local_stack.ps1 -ForceRestart，18:44:51，pid 28600）
+  持续在听 48080，业务探活 code=0；第二次 CCE 观察窗（1910+ 行）零 ClassCastException。
+- 六项收口结论：①证据引用校验器（§12.279 前批）②Redisson CCE（本批 A 笔）③一键恢复脚本
+  （本批 B 笔 + 双路径实跑）④生成器/快照/工件对齐（本批 B 笔）⑤不扩面摸底出院（§12.284）
+  ⑥全量兜底（终读数 674/0/3）——零遗留红、零未归因项。
