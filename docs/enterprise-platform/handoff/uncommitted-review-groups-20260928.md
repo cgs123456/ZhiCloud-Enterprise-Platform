@@ -13389,3 +13389,16 @@ E1 实测：createLocation 传 LOCKED(30) → 落库 IDLE(10)（ArgumentCaptor �
 ### 12.273.6 E 组矩阵基线
 
 E1 收官（本项）。E2（台账悬空引用）/E3（CRM 销售订单驳回重提）/E4（APS 空隙建模）/E5（FMS/HRM 接线与旧 /hr 退役）待续；E6/E7 仍无 scope。重建依据以本重建口径与 `Temp/zc_adr_273.md` 为准。待兑现登记项沿用（zc_e2e_preclean.py 硬删收窄已完成；test_plan_commit_groups 真树钉法已移合成输入）。
+
+### 12.273.7 提交后实证（1f3ddefcc 推送后补记）
+
+- 提交：`1f3ddefcc`（4 文件，+112/−0）；**直连推送成功**（`81caf046b..1f3ddefcc`，未挂代理）；
+  远端 master = `1f3ddefcc37d05fe510e9fbc959051a95424207e` = 本地 HEAD。
+- 工作区全净（`git status --porcelain` 空）。
+- plan 门禁：`plan_commit_groups.py --json` exit=0，`violations=[]`（worktree 各计数全 0）。
+- WMS 定向单测：`WmsLocationServiceImplUnitTest` 19/0/0/0（18+1，statusForcedToIdle 全绿）；
+  WMS 模块回归 294/0/0/0（BUILD SUCCESS）。
+- python 生产套件：最近一次全量复跑 `81caf046b`（8 红 / 655 过 / 3 跳，346.58s）；E1 仅触
+  WmsLocationServiceImpl createLocation 1 处 + 单测 1 例，零新增红预期（无迁移/无错误码/无 schema 变更）。
+- 服务现状：pid 228（jar 642,913,690B，Flyway 212/213 success=1），沙箱
+  `zhicloud_sandbox_v140` / tenant 9001；E1 无 sandbox 夹具（纯代码 + unit tests，无 DB 迁移）。
