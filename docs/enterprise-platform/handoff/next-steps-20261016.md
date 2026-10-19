@@ -648,3 +648,14 @@
   （直连推送成功，未挂代理）；工作区全净；plan 门禁 exit=0、violations=[]；python 全量复跑 666 tests
   （655 passed / 8 failed / 3 skipped，348.96s），8 红构成同前登记、本项零新增红；服务 pid 9392 运行中
   （jar 642,913,877B，Flyway 212/213 success=1），并发 payoff 夹具已收尾清理。
+
+## 后记二十五：R-033 裁决 + E6/E7 scope 收口（§12.277）
+
+- **R-033 方向 1 最终 verdict**：用户启用 Docker Desktop "Host networking" 后实测仍失败
+  （Windows 宿主 `urllib.request.urlopen('http://127.0.0.1:18099/')` → ConnectionRefusedError [WinError 10061]）。
+  方向 1 在 Docker Desktop for Windows 上根本不可行（host 网络作用于 Linux VM 命名空间，≠ Windows 宿主 loopback）。
+  方向 2/3 留待安全责任人背书。
+- **E6/E7 scope**：搜证全库零命中，E 组无来源 anchor。裁决：E6/E7 标记"无 scope，不重建"，从重建矩阵移除。
+  E 组 effectively 完成。
+- **"不扩面"项**：用户裁决"不影响使用就不修，当前阶段先确保业务功能正常使用"——全部跳过。
+- **D 组 + E 组重建矩阵全部收官。**

@@ -13574,3 +13574,49 @@ E1 收官（§12.273）、E2 收官（§12.274）、并发实测 payoff 收官�
 - 服务现状：pid 9392（jar 642,913,877B，Flyway 212/213 success=1），沙箱
   `zhicloud_sandbox_v140` / tenant 9001；并发 payoff 夹具已收尾清理（付款单 8、payment_price NULL、
   E2ECONC 前缀 0、purchase_in 5600005 状态 20 不变）。
+
+## 12.277 R-033 裁决 + E6/E7 scope 收口（用户裁决 2026-10-19）
+
+### 12.277.1 R-033 方向 1 最终 verdict
+
+用户启用 Docker Desktop "Host networking"（settings-store.json `HostNetworkingEnabled=True`）后实测：
+启动 `python:3.12-slim-bookworm` 容器 `--network host` 监听 18099，Windows 宿主
+`urllib.request.urlopen('http://127.0.0.1:18099/')` → `ConnectionRefusedError [WinError 10061]`。
+**方向 1 在 Docker Desktop for Windows 上根本不可行**：host 网络作用于 Linux VM 命名空间，
+不等于 Windows 宿主 loopback，`HostNetworkingEnabled=True` 不改变这一点（§11.1 实测结论成立）。
+
+**三个方向最终状态**：
+- 方向 1（改变沙箱网络形态）：❌ 已证伪（plain `--network host` + HostNetworkingEnabled 均不可达 Windows loopback）
+- 方向 2（改设计 + 收紧守卫：授权 `@'172.17.0.1'` 或 `@'%'` + 同步收紧 loopback 守卫）：⚠️ 需安全责任人背书，未实施
+- 方向 3（容器内执行）：⚠️ 改变被测形态，代价最大，未实施
+
+**裁决**：方向 1 不可行；方向 2/3 留待安全责任人背书后再实施。R-033 保持 OPEN，不阻塞业务功能开发
+（demo 数据重生仅影响 E2E 验证与演示，不影响业务功能正常使用）。
+
+### 12.277.2 E6/E7 scope 收口
+
+全库（ledger 626 sections + next-steps + Temp + main java）搜证：E 组无任何来源 anchor/候选项/ADR。
+E1–E5 经回源复核确认已修或属"不扩面"（详见 §12.273.1 候选池回源复核表）。
+**裁决：E6/E7 标记"无 scope，不重建"**，从重建矩阵中移除。E 组 effectively 完成（E1/E2 收官 + E3–E5
+已修/不扩面 + E6/E7 无 scope）。
+
+### 12.277.3 "不扩面"项裁决（用户裁决 2026-10-19）
+
+用户裁决：**不影响使用就不修，当前阶段先确保业务功能正常使用**。以下"不扩面"项全部跳过（不修），
+按需单独立项：
+
+- CRM 电子签：真实平台 SDK / 审批态前置 / 多方签署 / 过期撤回 / SaveReq 残件清理 / 合同列表页展示签署态
+- CRM 销售订单：驳回/撤回后重提 + 撤回前端入口
+- ERP 固定资产：处置/报废后反向（re-enable）
+- WMS 库位：@InEnum on status / 前端 status 字段保留
+- 通用：审批态前置 / 过期撤回 / 历史 stub 回填
+- MES sandbox 漂移（8 张悬挂工单）：数据清理，不影响业务功能
+
+### 12.277.4 E 组矩阵基线
+
+E1 收官（§12.273）、E2 收官（§12.274）、并发实测 payoff 收官（§12.275/§12.276）、
+R-033/E6/E7 收口（本节）。**E 组 effectively 完成**（E1/E2 收官 + E3–E5 已修/不扩面 + E6/E7 无 scope）。
+D 组 6 项 + E 组 effectively 完成。重建矩阵（D+E）全部收官。
+
+**D 组 + E 组重建矩阵全部收官。** 待兑现登记项沿用（zc_e2e_preclean.py 硬删收窄已完成；
+test_plan_commit_groups 真树钉法已移合成输入）。
