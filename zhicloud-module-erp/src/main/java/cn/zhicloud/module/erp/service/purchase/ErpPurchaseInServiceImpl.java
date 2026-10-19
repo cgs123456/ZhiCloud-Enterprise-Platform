@@ -275,8 +275,11 @@ public class ErpPurchaseInServiceImpl implements ErpPurchaseInService {
         if (defaultZero(purchaseIn.getPaymentPrice()).equals(paymentPrice)) {
             return;
         }
-        if (paymentPrice.compareTo(purchaseIn.getTotalPrice()) > 0) {
-            throw exception(PURCHASE_IN_FAIL_PAYMENT_PRICE_EXCEED, paymentPrice, purchaseIn.getTotalPrice());
+        // total_price 为 null（建单未录总额）时无法判定超限，跳过该校验——
+        // 否则 BigDecimal.compareTo(null) 抛 NPE（sandbox 并发实测暴露，§12.233.6 同族金额 NPE）。
+        BigDecimal totalPrice = purchaseIn.getTotalPrice();
+        if (totalPrice != null && paymentPrice.compareTo(totalPrice) > 0) {
+            throw exception(PURCHASE_IN_FAIL_PAYMENT_PRICE_EXCEED, paymentPrice, totalPrice);
         }
         purchaseInMapper.updateById(new ErpPurchaseInDO().setId(id).setPaymentPrice(paymentPrice));
     }

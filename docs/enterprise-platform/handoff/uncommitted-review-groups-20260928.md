@@ -13456,3 +13456,57 @@ E 组第 2 项（用户令「按 A→B→C→D→E 顺序连续推进」）。**
 E1 收官（§12.273）、E2 收官（本项，登记不修）。E3（CRM 销售订单驳回/撤回重提）/E4（APS 空隙建模）/
 E5（FMS/HRM 接线与旧 /hr 退役）待续；E6/E7 仍无 scope。重建依据以本重建口径与
 `Temp/zc_adr_274.md` / `zc_adr_273.md` 为准。待兑现登记项沿用。
+
+## 12.275 并发实测 payoff——ERP 付款单创建幂等 broad catch + 采购入库 null totalPrice NPE 修复
+
+### 12.275.1 背景与目标
+
+用户令「先做并发实测，要外部数据的等会告诉我去哪找」。本节记录 sandbox ERP 付款单创建幂等并发实测
+（`Temp/zc_e2e_conc.py`，P0–P5 共 16 断言，三跑收敛 16/16）暴露并修复的两个真实缺陷，以及
+CRM 回款单同源缺陷（I）的搜证结论（§12.233.7 描述的缺陷已在 §12.247 收口，§12.233.12 已实测
+16×20=320/320 全成功、0 死锁，无需再做）。
+
+### 12.275.2 实施内容（2 文件改）
+
+- **erp** `ErpFinancePaymentServiceImpl.java`：`createFinancePayment` 的 catch 从
+  `DuplicateKeyException | DeadlockLoserDataAccessException` broad 为 `Exception e` + 可恢复判定
+  （DataAccessException / SQLException / 消息含 deadlock/duplicate），不可恢复原样抛出；
+  `awaitWinner` 内部 catch 同样 broad 为 `Exception`（退避重试），避免回查期间的死锁泄漏成 500。
+  根因：sandbox N=8 同键并发实测中 insert 抛 `MySQLTransactionRollbackException` (ER_LOCK_DEADLOCK 1213)，
+  Spring 翻译后的异常不是 `DeadlockLoserDataAccessException`，原 catch 漏接 → 500。
+- **erp** `ErpPurchaseInServiceImpl.java`：`updatePurchaseInPaymentPrice` 的
+  `paymentPrice.compareTo(purchaseIn.getTotalPrice())` 在 `totalPrice == null` 时抛 NPE
+ （`BigDecimal.compareTo(null)`）；修法：totalPrice 为 null 时跳过超限校验（无总额基准，无法判定超限）。
+  根因：sandbox 实测中采购入库 5600005 的 total_price 为 NULL，首次付款回写即 NPE。
+
+### 12.275.3 验证链（逐项实测）
+
+| 环节 | 结果 |
+|------|------|
+| 并发实测 | **16/16 ×3**（Run1 16/16、Run2 16/16、Run3 16/16） |
+| E2E 链路 | purchase_in 5600005 (status 20, supplier 914005) → P1 单键创建（id P1，幂等键落库）→ P2 同键同载荷重提（返回同一 id，付款单数不增）→ P3 同键不同载荷（FINANCE_PAYMENT_IDEMPOTENCY_KEY_CONFLICT 拒绝）→ P4 N=8 并发同键 K2（全部 HTTP 200 / biz code 0 / 全部返回同一 id / 付款单数 +2 / 幂等键 K2 落库 1 行）→ P5 清理（付款单数还原、payment_price 还原 NULL、无 E2ECONC 前缀残留） |
+| 定向单测 | ERP 付款/采购入库相关 19/0/0/0（ErpFinancePaymentConcurrentCreateTest 5 + ErpFinancePaymentStatusTest 4 + ErpPurchaseInStatusTest 5 + ErpFinancePaymentReceiptH2TableTest 5） |
+| 模块回归 | **ERP 240/0/0/0**（BUILD SUCCESS，零新增红） |
+| 门禁 | errcode **1974** ✓；preauthorize 523 ✓；scan_tx **0** ✓；bare_throws OK ✓；duplicate_ddl 671·0 ✓；契约 123/219/0 ✓；sql lint 219/16 零新增 ✓ |
+| 前端 | 无变更 |
+| 重打/冷启 | 重打 jar 642,913,924B（Δ+217B）；冷启 545s；Flyway 212/213 success=1 |
+| 既有红 | python 8 红（PowerShell 面 6 + 2 项环境/守卫）零新增 |
+
+### 12.275.4 失败与缺陷登记（诚实链）
+
+1. **sandbox 并发实测暴露两个真实缺陷**（均已修复并复验）：
+   - `ErpFinancePaymentServiceImpl.createFinancePayment` catch 漏接 MySQL ER_LOCK_DEADLOCK(1213) → 500（sandbox N=8 同键并发实测暴露）。
+   - `ErpPurchaseInServiceImpl.updatePurchaseInPaymentPrice` 在 `totalPrice == null` 时 NPE（sandbox 实测采购入库 5600005 total_price 为 NULL）。
+2. **既有红不重复登记**：sql lint 16 条 R5；python 8 红；check_evidence_citations 1；台账 §12.201/§12.202–213/§12.234.10；event_outbox 6 条旧 DEAD；do_ddl WMS 3 项预存。本项零新增红。
+3. 实施脚本零中断；ERP 模块回归 240/0/0/0；门禁 6 项 RC=0；sandbox E2E 16/16 ×3。
+
+### 12.275.5 不扩面与已知限制登记
+
+1. 仅修 catch broadening + null totalPrice 防御；不改幂等语义、不改锁序、不改事务边界。
+2. `awaitWinner` 内部 catch broad 为 `Exception`（退避重试），保持 bounded backoff（maxMs/stepMs）。
+3. 无迁移、无错误码、无权限、无菜单、无前端逻辑。
+4. sandbox 夹具已收尾清理（付款单 8→8、payment_price NULL 还原、无 E2ECONC 前缀残留、purchase_in 5600005 状态 20 不变）。
+
+### 12.275.6 E 组矩阵基线
+
+E1 收官（§12.273）、E2 收官（§12.274）、并发实测 payoff 收官（本项）。E3（CRM 销售订单驳回/撤回重提）/E4（APS 空隙建模）/E5（FMS/HRM 接线与旧 /hr 退役）经搜证确认已修或属"不扩面"（§12.273.1 候选池回源复核）；E6/E7 仍无 scope。重建依据以本重建口径与 `Temp/zc_adr_273.md` / `zc_adr_272.md` / `zc_adr_271.md` 为准。待兑现登记项沿用。

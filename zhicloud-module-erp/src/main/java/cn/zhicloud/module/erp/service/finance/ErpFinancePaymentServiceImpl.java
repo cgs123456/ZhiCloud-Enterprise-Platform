@@ -144,7 +144,22 @@ public class ErpFinancePaymentServiceImpl implements ErpFinancePaymentService {
         calculateTotalPrice(payment, paymentItems);
         try {
             financePaymentMapper.insert(payment);
-        } catch (DuplicateKeyException | DeadlockLoserDataAccessException e) {
+        } catch (Exception e) {
+            // 并发兜底的可恢复判定（§12.233 实测 + sandbox 并发实测 2026-10-19 暴露）：
+            // Spring 对 MySQL ER_LOCK_DEADLOCK(1213) 的翻译在部分路径下不是
+            // DeadlockLoserDataAccessException，sandbox N=8 同键并发实测中 insert 抛出的
+            // MySQLTransactionRollbackException 未被原 catch (DuplicateKey | DeadlockLoser) 接住
+            // → 500。这里 broad 为 DataAccessException/SQLException + 消息兜底，
+            // 只有死锁/唯一键冲突才走 awaitWinner 回查；其它异常原样抛出（不伪装成幂等成功）。
+            boolean recoverable = e instanceof org.springframework.dao.DataAccessException
+                    || e instanceof java.sql.SQLException
+                    || (e.getMessage() != null && e.getMessage().toLowerCase().contains("deadlock"))
+                    || (e.getMessage() != null && e.getMessage().toLowerCase().contains("duplicate"));
+            if (!recoverable) {
+                if (e instanceof RuntimeException) throw (RuntimeException) e;
+                throw new RuntimeException(e);
+            }
+            RuntimeException fallback = (e instanceof RuntimeException) ? (RuntimeException) e : new RuntimeException(e);
             // 同键并发的两种失败形态，收敛到同一条幂等回查路径：
             //   - DuplicateKeyException：我插入时那一行已提交
             //   - DeadlockLoserDataAccessException：多插入争同一唯一键，insert intention
@@ -168,7 +183,7 @@ public class ErpFinancePaymentServiceImpl implements ErpFinancePaymentService {
             // 间隙锁之间兼容（实测 B 在 A 持锁期间 0.27s 即返回），全部线程照旧走到 INSERT。
             //
             // 锁读的代价是回查本身也会死锁，处理见 awaitWinner：退避重试，不重排锁序。
-            ErpFinancePaymentDO existing2 = awaitWinner(idempotencyKey, e);
+            ErpFinancePaymentDO existing2 = awaitWinner(idempotencyKey, fallback);
             log.info("[createFinancePayment][幂等键={} 并发重复提交，返回已有 id={}]",
                     idempotencyKey, existing2.getId());
             return resolveIdempotentPayment(existing2, payloadHash);
@@ -216,9 +231,12 @@ public class ErpFinancePaymentServiceImpl implements ErpFinancePaymentService {
                 if (existing != null) {
                     return existing;
                 }
-            } catch (DeadlockLoserDataAccessException de) {
-                // 回查自己被选为牺牲品：与「赢家已提交」这一事实无关，重试即可
-                lastDeadlock = de;
+            } catch (Exception de) {
+                // 回查自己被选为牺牲品：与「赢家已提交」这一事实无关，重试即可。
+                // broad 为 Exception：Spring 对 MySQL ER_LOCK_DEADLOCK(1213) 的翻译在部分
+                // 路径下不是 DeadlockLoserDataAccessException（sandbox 并发实测暴露），
+                // 必须 broad catch 才能退避重试，避免回查期间的死锁泄漏成 500。
+                lastDeadlock = (de instanceof RuntimeException) ? (RuntimeException) de : new RuntimeException(de);
             }
             if (System.currentTimeMillis() >= deadline) {
                 // 等不到就抛最原始的那个异常：调用方关心的是最初为什么失败

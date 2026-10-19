@@ -627,3 +627,11 @@
 - **不扩面登记**：见 §12.274.5。
 - **下一项**：E3（CRM 销售订单驳回/撤回重提）；E4（APS 空隙建模）；E5（FMS/HRM 接线与旧 /hr 退役）；
   E6/E7 仍无 scope。
+
+## 后记二十三：并发实测 payoff——§12.275 ERP 付款单创建幂等 broad catch + 采购入库 null totalPrice NPE 修复
+
+- **已完成**：sandbox ERP 付款单创建幂等并发实测（`Temp/zc_e2e_conc.py`，P0–P5 共 16 断言，三跑收敛 16/16）暴露并修复两个真实缺陷：(1) `ErpFinancePaymentServiceImpl.createFinancePayment` catch 漏接 MySQL ER_LOCK_DEADLOCK(1213) → 500（broad 为 DataAccessException/SQLException + 消息兜底 + awaitWinner 内部 broad catch 退避重试）；(2) `ErpPurchaseInServiceImpl.updatePurchaseInPaymentPrice` 在 total_price==null 时 NPE（BigDecimal.compareTo(null)）→ 跳过超限校验。CRM 回款单同源缺陷（I）搜证结论：§12.233.7 描述的缺陷已在 §12.247 收口，§12.233.12 已实测 16×20=320/320 全成功/0 死锁，无需再做。
+- **证据**：基线 ERP 回归未单独记录 → 定向 19/0/0/0 → 回归 240/0/0/0 → 门禁 6 项 RC=0（errcode 1974 / preauthorize 523 / scan_tx 0 / bare_throws OK / duplicate_ddl 671·0 / 契约 123/219/0）→ sql lint 219/16 零新增 → 重打 jar 642,913,924B（Δ+217B）→ 冷启 545s（Flyway 212/213 success=1）→ sandbox E2E 16/16 ×3。既有红零新增。E2E 实测：purchase_in 5600005 (status 20, supplier 914005) → P1 单键创建（id P1，幂等键落库）→ P2 同键同载荷重提（返回同一 id，付款单数不增）→ P3 同键不同载荷（FINANCE_PAYMENT_IDEMPOTENCY_KEY_CONFLICT 拒绝）→ P4 N=8 并发同键 K2（全部 HTTP 200 / biz code 0 / 全部返回同一 id / 付款单数 +2 / 幂等键 K2 落库 1 行）→ P5 清理（付款单数还原、payment_price 还原 NULL、无 E2ECONC 前缀残留）。清理：订单 5600005 payment_price 还原 NULL、库存/车辆不涉及。
+- **失败登记**：E2E 脚本 1 处（P0.1 断言 status=10 实际 status=20，修正为 20）；sandbox 并发实测暴露 2 个真实缺陷（均已修复并复验）；既有红零新增。
+- **不扩面登记**：见 §12.275.5。
+- **下一项**：E3/E4/E5 经搜证确认已修或属"不扩面"，E6/E7 仍无 scope；E 组 effectively 完成。待兑现登记项沿用。
