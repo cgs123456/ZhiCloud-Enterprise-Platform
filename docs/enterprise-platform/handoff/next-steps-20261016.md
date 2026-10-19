@@ -581,3 +581,9 @@
 - **不扩面登记**：idempotency 语义不改；reverse path/退款/撤回不做；前端无变更；零迁移/零错误码/零权限/
   零菜单；sql/mysql 无 wms 快照面。
 - **D 组收官**：D1–D6 全部收官；E1–E7 照旧、尚未重建确认。
+
+**提交后补记（`a1158f5b9` 推送后实证）**：远端 master=a1158f5b95ba27c8ffe9a0463e558c7ded7049d8
+  （直连推送成功，未挂代理）；工作区全净；plan 门禁 exit=0、violations=[]；python 全量复跑 665 tests
+  （653 passed / 9 failed / 3 skipped，307.84s），9 红构成同前登记、本项零新增红；服务 pid 228 运行中
+  （jar 642,913,690B，Flyway 212/213 success=1），E2E272 夹具已收尾清理（前缀面全 0、订单 6180005
+  还原、库存还原、车辆/司机 10）。
