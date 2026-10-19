@@ -181,7 +181,8 @@ $result = [ordered]@{
 }
 
 try {
-    Invoke-MysqlText -Sql "DROP DATABASE IF EXISTS ``$DbName``; DROP USER IF EXISTS '$DbUser'@'127.0.0.1'; CREATE DATABASE ``$DbName`` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci; CREATE USER '$DbUser'@'127.0.0.1' IDENTIFIED BY '$DbPassword'; GRANT ALL PRIVILEGES ON ``$DbName``.* TO '$DbUser'@'127.0.0.1'; FLUSH PRIVILEGES;" | Out-Null
+    Invoke-MysqlText -Sql "DROP DATABASE IF EXISTS ``$DbName``; DROP USER IF EXISTS '$DbUser'@'%'; CREATE DATABASE ``$DbName`` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci; CREATE USER '$DbUser'@'%' IDENTIFIED BY '$DbPassword'; GRANT ALL PRIVILEGES ON ``$DbName``.* TO '$DbUser'@'%'; FLUSH PRIVILEGES;" | Out-Null
+    # R-033 方向 2：宿主 Java 进程经 Docker 发布端口连入时来源地址是 bridge 网关 172.17.0.1，授权主机改为 %
 
     $url = "jdbc:mysql://${DatabaseHost}:${DatabasePort}/${DbName}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=utf8"
     Invoke-JavaMigration -Url $url

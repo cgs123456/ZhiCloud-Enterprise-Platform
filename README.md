@@ -30,7 +30,7 @@
 
 | 技术 | 版本 | 用途 |
 |------|------|------|
-| JDK | 21 (Eclipse Temurin 21.0.11) | 虚拟线程（Project Loom）、Pattern Matching、Record |
+| JDK | 21 (Eclipse Temurin 21.0.12) | 虚拟线程（Project Loom）、Pattern Matching、Record |
 | Spring Boot | 3.5.16 | 应用开发框架 |
 | Spring Modulith | 1.3.5 | 模块化单体架构（@ApplicationModule） |
 | Spring Security | 6.5.11 | 认证鉴权、RBAC、SSO |
@@ -128,6 +128,9 @@
 - V115–V121：生产种子账号清理、BPM businessKey 幂等登记与 claim-token ownership
 - V126–V140：业务报表视图、商业域（Trade/Pay/Promotion/Member/Product）整体移除
 - V141–V151：默认 OAuth2 客户端引导、V77 恢复路径与对账告警等生产就绪修复
+- V152–V180：HRM 域接线（V152–V184：员工/考勤/薪资/社保/绩效/招聘/请假/合同）、旧 /hr 退役（V185）、V171/V172 招聘域
+- V181–V200：ERP 修复（V199 库存唯一键、V200 并发/幂等收口）、CRM 回款幂等、MES/QMS 伪成功修复
+- V201–V213：D/E 组重建（V206 CRM 销售订单 audit_status、V207 MRP 转建议、V208 HR 旧镜像退役、V209 FMS 期初、V212 MES 产能/MRP 回链、V213 CRM 电子签任务表）
 
 > 迁移契约门禁：python scripts/production/check_migration_contract.py（已审核迁移的字节哈希、版本唯一性、验证 SQL 与 lint）。
 > 该门禁只证明文本契约，**不替代**真实 MySQL 影子库 / 预生产执行。
