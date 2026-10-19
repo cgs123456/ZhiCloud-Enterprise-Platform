@@ -13736,3 +13736,170 @@ R-033 方向 2（本节）。E3–E7 无 scope 或已修/不扩面。D 组 + E �
 demo-data 全量重生实跑 status=passed，R-033 方向 2 实跑验证兑现（R-G3.5-6/8 解除），
 五张旧 /hr 表引用从 demo 数据面正式退役（AI 组 D1"IT 基础设施修复"遗留最后一项闭环）。
 生成器/快照对齐登记为后续专项；E 组矩阵 + 本项全部收官。
+## 12.280 demo 工具链与快照对齐专项崩盘兜回——生成器/快照/工件三方落定（项 4 收口）
+
+接 §12.279.5-1 的重跑禁令：本节为目标全量执行记录，即对齐专项完成、禁令解除的依据链。
+
+### 12.280.1 生成器代码对齐（三方真值对齐）
+
+1. **业务生成器 HR 退役收尾**（`demo-data/generators/generate_business_documents.py`）：
+   TABLE_ORDER 99→94——V208 已 DROP 的 hr_attendance / hr_leave_balance / hr_salary /
+   hr_performance / hr_contract 五表及其 HR_* 常量、biz_month、build_hr 对应块全部移除，
+   仅保留 hr_leave_request请假链；与 `Temp/zc_fix_business_gen.py` 字节级脚本落地一致。
+2. **主数据生成器三修**（`demo-data/generators/generate_master_data.py`，LF 纪律文件）：
+   ① `gm.with_audit` 补 `version` 兜底（对齐业务生成器审计块；V201 乐观锁 NOT NULL DEFAULT 0，
+   tms_driver / tms_vehicle 等命中，12 行）；② hr_employee 行块按 V208 后 48 列形态重写：
+   legacy 六列（gender / birth_date / hire_date / leave_date / status / employment_type）已不存在，
+   产出 sex / birthday(00:00:00) / entry_time(09:00:00) / leave_time(None) /
+   entry_status / employee_status / type 七轴；员工状态轮转 (1,4) 对齐沙箱 DB DISTINCT 实证，
+   type 由 employee_status=1(正式)→1 其余→2 派生（V161 回填 CASE 镜像，注释锚定）；
+   ③ 全员 entry_status=1 在职、leave_time 恒空、无独立随机器；salary_card 等余量可空列刻意留空
+   =不扩面。`Temp/zc_fix_gm_hrm.py` 留痕。
+3. **业务生成器 V205 库位维度**：wms_asn_order_detail.location_id 与 wms_inventory.location_id
+   补真实主数据引用 `loc_ids[i % len]`（沿用 1468 行既有轮转约定；demo 行关联 master
+   wms_location 918000 段真实 id；0=未定位语义只属于迁移对存量行的基线）。公差：库存行
+   (sku,wh,loc) 三元 uk 下按 (sku,wh) 唯一建行，不受影响。
+4. **fail-closed 缺口盘点方法**：以收集器替换两套生成器的 validate_rows 一次性盘全量缺口
+   （不逐个撞错）——唯一缺口集即上列 {location_id×2, hr_employee 三轴, version×2}，
+   列 meta 与出处迁移（V205/V201/V161）逐一核对后实现。教训落账：盘点器的 unknown 段在
+   长输出下被截读，一度误判"无 unknown"——hr_employee 的 legacy 六列其实已报 unknown；
+   真实判定必须以**不带收集器的真回放**为准。
+
+### 12.280.2 schema_snapshot 回放契约与先红后绿守卫
+
+1. **新增守卫文件** `scripts/production/tests/test_schema_snapshot_replay.py`（9 tests，
+   合成夹具不连库）：参数化 add_column 过程（参数头截取 + CONCAT 空格保真）、BOM 头 SET
+   内嵌 DDL、`''` 成对转义 + 相邻字面量拼接、主链 DROP 后安装脚本"诈尸"阻断、裸 DROP
+   缺表告警、未定义 DDL 后缀 CALL 告警（数据型 helper 静默=契约）、融合 IF 体 carve。
+2. **先红后绿验证**：将 4 类已修复缺陷（decl-slice / strip 内层 / BOM / doubling）逐一回植
+   临时副本（`ZC_SNAP_GEN_DIR` 环境变量通道，须**后插** sys.path 才能压过正式 GENERATORS_DIR
+   ——首版顺序颠倒导致假阴性，已复盘），4/4 对应测试变红，恢复即绿。探针
+   `Temp/zc_probe_b4.py`：B4 在列名层不敏感，须断言 `a1["raw"]` 含带引号
+   `COMMENT '类型（1 暗 / 2 明）'` 才咬。
+3. **模块新增语义**：`_embedded_ddl` 支持 MySQL 相邻字符串字面量拼接——仅纯空白相连才并入
+   同一语句，逗号/括号/任意 token 即断（保护 V44/V205 护栏真/假分支互不粘连）；修复态以
+   `COMMENT '…'` 带引号原文直证 doubling 语义。`Temp/zc_fix_embedded_concat.py` 留痕（勿重跑）。
+4. **契约固定三条**：过程作用域=文件（真实链 V22/V98/V205 的过程与 CALL 全部同文件，
+   跨文件不可见即契约）；未知非 DDL 后缀 CALL 静默（数据 helper 族多，全告警是噪音）；
+   merge 复活阻断由 `primary["dropped"]` + merge_snapshots 承担（main() 的 primary/secondary
+   分建用法）。模块 docstring 已补齐完整回放契约与静默边界（触发器/视图/函数/索引/数据族
+   不建模；SELECT-INTO 变量近似；表达式默认值/字符集/分区仅留痕）。
+5. **无回归证明**：修改后全链重放生成快照与已入库存档**字节相同**
+   （payload 10e3ffb5…、file 6b1166ca…）；9 守卫复跳全绿。
+
+## 12.282 工件终态与 DB 全链实跑（verify 终态证据）
+
+| 工件 | sha256（前 16） |
+|------|--------|
+| demo_master_data.sql | f4c2a2782d35cdd4 |
+| demo_business_documents.sql | 575d1abc24f5a039 |
+| demo_master_data.json | bb942127d670d686 |
+| demo_business_documents.json | a89d827faed794ff |
+| manifest ×2（summary 内嵌） | 2e00d1790e1f… / 5cb322ba22a0… |
+| cleanup_demo.sql | ef19f2f06794dacb（未改动；113 DELETE 与 94+19 新工件精确互斥/齐备） |
+
+1. 主数据 19 表 267 行（hr_employee 新轴、tms_* version=0）；业务 94 表 1258 行
+   （wms 两表 location_id=918000 段、hr_leave_request 20 行、死 5 表零残留）;
+   两件内嵌 snapshot_payload_sha256 一致命中 10e3ffb5…
+2. **verify_demo_data_mysql.ps1 -DatabasePort 55101 → status=passed**（终态证据
+   `docs/enterprise-platform/evidence/production/demo-data-mysql-20261019_175434.json`）：
+   十项 required_checks 全 true（113/113 张表 manifest 相等、六场景正性
+   S1=4 / S1_erp_sale_to_out=48 / S2=6 / S3=12 / S4=64 / S5=6 / S6_hire_to_retire=20、
+   cleanup Remaining 0）；证据 artifacts 三 sha 与当前文件一致，manifest 双 sha 命中。
+   02:39 的旧证据（20261019_143551）属重生成前跑（数据量一致但工件 sha 不同），不作为终态引用。
+3. caveats 原样保留：只证静态 SQL 可导入/计数/关联/清理，不证应用层流程——demo 数据级通过
+   不抬高 gate3_passed / production_ready（两者维持 False）。
+4. **解除 §12.279.5-1 禁令**：生成器/快照对齐专项完成，重跑禁令撤销；后续重跑仍以
+   "三 sha 与引文一致才可作为终态证据"为口径。
+
+## 12.283 restore_local_stack.ps1 双路径实跑 + 运行链环境事件（非代码缺陷，留档）
+
+### 12.283.1 时间线（宿主机视角，全部取自实盘日志）
+
+- 17:59:31 健康快路径实跑：docker 三容器已 Up、mysqladmin alive、48080 探活 code=0（pid 7244 留用），
+  4 秒收账（`logs/restore-local-stack-20261019_175931.json`，运行期文件不入库）。
+- 17:59:52 `-ForceRestart` 冷启启动（boot#3 首跑，pid 37964，stdout 重定向
+  `logs/restore-server-20261019_175952.log`）。
+- 18:00–18:01 Quartz 起来后 Druid 主从建连持续 `CommunicationsException`（55101 拒连）——
+  **同一窗口 Docker Desktop 守护进程消失**（npipe dockerDesktopLinuxEngine 不存在），三容器全停。
+- 18:09:20 Spring context init 取消（AnnotationConfigServletWebServerApplicationContext:636 cancelling）；
+  18:09:36 Tomcat stop、Druid dataSource already closed；main 结束但 quartz ClusterManager 等非守护
+  线程把 JVM 吊成僵尸（jcmd 74 线程、无 main；jstat：FGC 115 次后静止、Old 97.65%）；
+  Quartz ClusterManager 的 DataSourceClosedException 循环刷到 18:40:03 为止。
+- 观察一个副产品：24703 行 stdout 内容**在整个运行期间文件保持 0 字节**，进程终结（18:40:03
+  taskkill）后才一次性落盘——控制台 appender 缓冲形态，留档备查。
+- 18:36–18:40 诊断：jcmd/jstat；手动冷启一次（与 boot#2 同参数）也吃 55101 拒连（docker 未恢复）。
+- 18:38 Docker Desktop 重启 → docker start 三容器全 Up（55101 / 16380 / 56721）→ mysqladmin alive。
+- 18:44:51 `-ForceRestart` 后台重跑（boot#3 次跑，pid 28600）→ **18:52:10 probe code=0**（439 秒），
+  `Started ZhiCloudServerApplication` 横幅在位，boot 日志 1910 行（且持续在增，服务在线），
+  **ClassCastException 0 次**（err.log 仅 2 行 logback 启动告警）——恢复脚本的
+  "杀旧冷启+限时探活+证据 JSON"全链闭环，第二次 CCE 观察窗干净。
+
+### 12.283.2 诚实登记（不粉饰）
+
+1. **zc_app_boot2.log 被覆盖**：项 2 的 boot#2 零 CCE 实证日志（1709 行）在 18:36 的手动冷启中
+   被同路径覆盖（那次因 docker 未恢复连库失败）。项 2 的"零 CCE"结论现由两路支撑：
+   ① boot#3 次跑 1910 行 0 CCE（参数与 boot#2 一致，仅 --server.port 落默认）；② 会话存档里
+   的 1709 行观察记录。旧原件不可恢复，教训：**boot 证据日志唯一名不带时间戳属自毁形态**。
+2. restore 首跑死线未触达（预期 18:29:52 throw、实际 18:34:36 被外层 35 分钟强杀）——未复现、
+   未定论；与 Docker daemon 同窗消失是否相关无法证实，如实登记为待观察。
+3. 守护纪律缺口的**发现即修**（见 12.283.3）：首跑 boot 失败路径没有自己收尸（当时 JVM 僵尸被
+   人手 taskkill）；已补，不让同类事件再依赖人手反应。
+
+### 12.283.3 代码侧回填（seam 契约内聚）
+
+1. **restore_local_stack.ps1 收尸补丁**：boot 死线未健康路径先 `taskkill /F /T /PID`（stage
+   `reap-boot-failed-jvm`，60s 硬界）再 throw——对应 mysqld 先例的守护纪律第三条；注释按本脚本
+   既有**纯 ASCII** 契约写英文（首版中文注释触发 BOM 门禁红，已回改）。
+2. **seam 守卫登记豁免并对价**：`test_sandbox_native_seam.py` 的
+   DAEMON_LAUNCH_EXCEPTIONS 增补 `restore_local_stack.ps1` 条目（48080 服务恢复守护：
+   JVM 必须比脚本长寿、 Start-Process -PassThru 拿 PID、`$BootTimeoutSeconds` 死线 + while 循环
+   探活 + "exited during boot" 即抛、失败收尸、docker/mysqladmin/taskkill 全走执行器），
+   并给该豁免配**镜像纪律块真断言**（例外集中式断言同步扩为双条目，逐断言以待回访）——
+   seam + powershell_portability + CLI 三件 26 passed 全绿。
+3. **.gitignore /logs/ 整目录**（承 §12.173 Temp/ 强制入库的同一逻辑）：运行期
+   restore/boot/探活日志与恢复摘要 JSON 无 tracked 先例（git ls-files logs/ 恒空），plan 工具
+   同步给根 .gitignore 认领（tooling 组）。plan 门禁 rerun：logs 类 unclassified 清零，仅剩
+   demo-data↔tooling 合组指示（提交时并组，见 §12.284）。
+4. **plan 提交组形态（并入指示）**：demo-data↔tooling 互引用（schema_snapshot ↔ 街道守卫测试 ↔
+   生成器）→ 按 groups-must-merge 指示**并成一次提交**；business-code（Redisson CCE 修复）
+   独立成笔在前。证据三件（demo-data-mysql-20261019_175434.*）按证据单独提交评审（§3.4）。
+
+## 12.284 不扩面缺口摸底出院（项 5）——四项全部"有出处闭环"
+
+方法：以台账登记原文为真值源逐项回源，并在**现树上代码级佐证**（两处）——不修代码、不动文件。
+
+| 项 | 注册原文（出处） | 现状判定 |
+|----|----------------|---------|
+| CRM 合同电子签 | §12.221（2026-10-14 增强三项）：入口挂合同详情页、init/status/download 三端点、19/19 真机 E2E；line 8535 的"剩：合同详情页增强"发生于实施前，以 §12.221 实施记录为准 | 已实现。残留仅"签署状态展示在合同列表"之类增强项，无已知缺陷，登记不扩面 |
+| ERP 销售订单驳回重提 | §12.273.1 回源复核：CRM sale order 的 ship/complete/cancel 与 submit→BPM 已真实现；§12.259.5/11962 D9 不扩面清单显式含"驳回重提、撤回前端入口、审批中编辑观察、待办定制、审批进度跳转"；§12.275.5 line 13512 E3 定性=不扩面 | 有意不扩面（submit→BPM 已真实现后，审批闭环属 BPM 原生语义） |
+| ERP 固定资产 re-enable | §12.237（2026-10-16）：D2 idle/enable/dispose/scrap 四端点 + 生命周期 CAS + `@InEnum` + 3 错误码；idle↔enable 双向可逆 | 已实现闭环（enable 20→10 即 re-enable）。**现树佐证**：@PutMapping("/idle"|"/enable"|"/dispose"|"/scrap") 四注解全部在位 |
+| WMS @InEnum | §12.131 坑3（2026-10-1x E2E 实测）：入库/出库 type @InEnum 101/201，传 1 直接 400；§12.273.5-1：库位 status **有意不加** @InEnum（force-IDLE 已覆盖，同 §12.235.6 口径） | 严格面在位且**有意豁免**（不是缺口）。**现树佐证**：createLocation `location.setStatus(WmsLocationStatusEnum.IDLE.getStatus())` 在位（WmsLocationServiceImpl:66） |
+
+结论：四项零新增行动项；台账登记与代码现状一致。后续如 G 组重新盘点以本节表格为出院基准。
+
+## 12.285 全量 python 套件与门禁计数（项 6，pre-commit 读数）
+
+1. **全量 677 collected：671 passed / 3 failed / 3 skipped / 190 subtests**（6:38.29）。
+   3 红全部归因，无未知红：
+   - `test_plan_commit_groups.py` 真树 ×2（cli_json_is_strict_utf8 / current_plan_is_self_consistent）：
+     工作树含未提交变更为**设计性前提红**（该面测试假设"提交后树净"），提交后应绿；
+   - `test_sandbox_native_seam.py::test_no_script_reimplements_process_launching`：
+     restore_local_stack.ps1 的 Start-Process 未登记守护豁免——本项补收尸 + 豁免 + 对价块后
+     seam/portability/CLI **26 passed** 全绿（§12.283.3-2）。
+2. 生成器/快照定向：9 守卫复跳全绿；35 生成器测试随全量内零红。
+3. 基线口径：§12.279 记录的 663 passed/3 skipped 为**该时点 passed 数**；本次收集 677 与之差
+   +14 中 9 条是本项守卫新文件，其余 5 例归 §12.275 以来测试增长，未逐一归因（不影响判定）。
+4. 提交后终读数与 plan 门禁终值待 §12.286 补记（工作树净空后 plan 真树 ×2 应转绿）。
+* 补录 §12.282 两点契约史注记（齐 §12.280 序列的登记闭环）：
+
+### 12.282.5 快照契约边界的历史注记
+
+1. **QRTZ（quartz）11 表**：R-031 收口（L6148/L6159 登记）——全新库原生缺 11 张 QRTZ_* 表，
+   经 **V147** 纳入 Flyway 链；此后快照在链内如实含表（587 表面），demo 种子不含
+   （demo INSERT 型 SQL 不进快照，quartz 属引擎自管数据）；install-only=11 张 quartz 为合法形态，
+   与 §12.280 序列的 587 表锚无冲突。
+2. **ACT_* / FLW_*（Flowable 引擎表）**：普查登记（L1982–L1983）——全仓 `*.sql` 中引擎建表
+   **0 个文件**：引擎表由 Flowable 运行时自建，从不进迁移链，也就**从不进静态快照契约**；
+   因此"快照 587 表"与"沙箱 DB 640 表"的差集按设计就是这个运行时面 + 模块迁移叠加
+   （§12.279 已披露模块迁移不在契约内）。属**契约而非缺陷**，评测错误不得以 587≠640 作为证据。
