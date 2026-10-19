@@ -659,3 +659,15 @@
   E 组 effectively 完成。
 - **"不扩面"项**：用户裁决"不影响使用就不修，当前阶段先确保业务功能正常使用"——全部跳过。
 - **D 组 + E 组重建矩阵全部收官。**
+
+## 后记二十六：R-033 方向 2 实施——§12.278 runner 沙箱授权主机 127.0.0.1 -> %
+
+- **已完成**：R-033 方向 2 实施（用户裁决 2026-10-19）：verify_mysql_runner_sandbox.ps1 授权主机从 127.0.0.1
+  改为 %（CREATE USER + GRANT 两处），同步收紧守卫说明（Assert-LoopbackSandboxHost 对 DatabaseHost 保持回环）。
+  方向 1 已证伪（Docker Desktop for Windows host 网络 ≠ Windows 宿主 loopback）。PowerShell 5.1 + 7.6 解析 0 错，
+  BOM 保持。demo-data 全量重生仍需实跑验证（R-G3.5-6/8 仍阻塞，需安全责任人背书后执行）。
+- **证据**：脚本改动 1 文件（verify_mysql_runner_sandbox.ps1），授权主机 127.0.0.1 -> %，守卫保持回环。
+  无代码/测试/migration 变更，其余门禁沿用。
+- **失败登记**：无。既有红（powershell_portability 6 项，node_modules scandir 环境问题）不重复登记。
+- **不扩面登记**：见 §12.278.5。
+- **R-033 最终状态**：方向 1 证伪，方向 2 已实施（脚本改动），方向 3 未实施。实跑验证待安全责任人背书。

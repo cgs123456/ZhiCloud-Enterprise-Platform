@@ -54,7 +54,8 @@ param(
 
 $ErrorActionPreference = 'Stop'
 # fail-closed 守卫：本脚本会执行 CREATE DATABASE / CREATE USER / GRANT / DROP DATABASE，
-# 因此只允许连接回环地址上的沙箱实例。此前 -DatabaseHost 可取任意主机，
+# 因此只允许连接回环地址上的沙箱实例（R-033 方向 2：授权主机已改为 %，
+# 安全边界完全由本守卫保证——DatabaseHost 必须是 127.0.0.1/::1/localhost）。此前 -DatabaseHost 可取任意主机，
 # 一旦误指共享库或生产库就会直接造成破坏（登记的 R-G4-1 / R-G3-1 即此）。
 $script:SandboxLoopbackHosts = @('127.0.0.1', '::1', 'localhost')
 function Assert-LoopbackSandboxHost {
@@ -444,7 +445,10 @@ function New-SandboxDatabase {
     param([Parameter(Mandatory = $true)][string]$DatabaseName)
 
     Invoke-MysqlText -Sql "CREATE DATABASE ``$DatabaseName`` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;" | Out-Null
-    Invoke-MysqlText -Sql "GRANT ALL PRIVILEGES ON ``$DatabaseName``.* TO '$DbUser'@'127.0.0.1'; FLUSH PRIVILEGES;" | Out-Null
+    Invoke-MysqlText -Sql "GRANT ALL PRIVILEGES ON ``$DatabaseName``.* TO '$DbUser'@'%'; FLUSH PRIVILEGES;" | Out-Null
+# R-033 方向 2：宿主 Java 进程经 Docker 发布端口连入时，MySQL 在容器内看到的来源地址是 bridge 网关
+# 172.17.0.1（不是 127.0.0.1）；授权主机必须匹配实际来源。安全边界由 Assert-LoopbackSandboxHost
+# 对 -DatabaseHost（连接目标）的回环守卫保证，脚本仍只允许连 127.0.0.1/::1/localhost。
 }
 
 function Wait-SandboxNamespaceReady {
@@ -754,7 +758,9 @@ $result = [ordered]@{
 
 try {
     Invoke-MysqlText -Sql "CREATE DATABASE ``$DbName`` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;" | Out-Null
-    $createUserSql = "CREATE USER '$DbUser'@'127.0.0.1' IDENTIFIED BY '$DbPassword'; GRANT ALL PRIVILEGES ON ``$DbName``.* TO '$DbUser'@'127.0.0.1'; FLUSH PRIVILEGES;"
+    $createUserSql = "CREATE USER '$DbUser'@'%' IDENTIFIED BY '$DbPassword'; GRANT ALL PRIVILEGES ON ``$DbName``.* TO '$DbUser'@'%'; FLUSH PRIVILEGES;"
+# R-033 方向 2：授权主机改为 %（实际来源 = Docker bridge 网关 172.17.0.1，见 §11.1 实测）；
+# 安全边界由 Assert-LoopbackSandboxHost（连接目标仅回环）保证。
     Invoke-MysqlText -Sql $createUserSql | Out-Null
     $result.mysql.server_version = Invoke-MysqlScalar -Sql 'SELECT VERSION();'
     if ($JavaInSandboxNamespace) {

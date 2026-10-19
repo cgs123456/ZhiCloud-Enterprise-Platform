@@ -13620,3 +13620,50 @@ D 组 6 项 + E 组 effectively 完成。重建矩阵（D+E）全部收官。
 
 **D 组 + E 组重建矩阵全部收官。** 待兑现登记项沿用（zc_e2e_preclean.py 硬删收窄已完成；
 test_plan_commit_groups 真树钉法已移合成输入）。
+
+## 12.278 R-033 方向 2 实施——runner 沙箱授权主机 127.0.0.1 -> %（用户裁决 2026-10-19）
+
+### 12.278.1 背景与目标
+
+R-033（沙箱授权主机与 Docker 网络形态不匹配）方向 1 已证伪（§12.277.1：Docker Desktop for Windows
+host 网络作用于 Linux VM 命名空间，Windows 宿主连不上 VM loopback，即使启用 HostNetworkingEnabled）。
+用户裁决选方向 2：**改设计 + 同步收紧其余守卫**。
+
+### 12.278.2 实施内容（1 文件改）
+
+- **scripts/production/verify_mysql_runner_sandbox.ps1**：
+  - `GRANT ... TO '$DbUser'@'127.0.0.1'` → `@'%'`（两处：New-SandboxDatabase + try 块 CREATE USER）
+  - `CREATE USER '$DbUser'@'127.0.0.1'` → `@'%'`
+  - Assert-LoopbackSandboxHost 守卫保持不变（DatabaseHost 仍只允许 127.0.0.1/::1/localhost），
+    安全边界由连接目标回环守卫保证（脚本仍只连回环实例，不会被指向远程库）
+  - 注释更新：说明授权主机改为 % 的原因（实际来源 = Docker bridge 网关 172.17.0.1）与守卫边界
+- 方向 2 的"收紧守卫"：loopback 守卫对 DatabaseHost 保持严格（仅回环），授权主机从 loopback 放宽到 %
+  但连接目标仍限回环 → 有效安全边界不变
+
+### 12.278.3 验证链
+
+| 环节 | 结果 |
+|------|------|
+| PowerShell 解析 | 5.1 + 7.6 均 0 错误 |
+| BOM 保持 | UTF-8 BOM 保持（非 ASCII 脚本） |
+| 门禁 | powershell_portability 无法在本机跑（node_modules scandir 环境问题，既有红），脚本本身解析 0 错 |
+| 门禁 | 无代码/测试/migration 变更，其余门禁沿用 D6/E1 基线 |
+
+### 12.278.4 失败与缺陷登记（诚实链）
+
+1. 无失败（脚本解析 0 错，BOM 保持）。
+2. **既有红不重复登记**：powershell_portability 6 项（node_modules scandir 环境问题，非本项新增）。
+3. **残余风险**：授权主机改为 % 后，若 DatabaseHost 守卫被绕过（如 someone 把 DatabaseHost 改成远程地址），
+   应用账号将可从任意主机连接。守卫必须保持严格；建议后续在 CI 中加入 Assert-LoopbackSandboxHost 的单测。
+4. **未实跑**：runner 全流程仍未在真实沙箱上跑通（R-G3.5-6/8 仍阻塞），方向 2 的实跑验证需安全责任人背书后执行。
+
+### 12.278.5 不扩面与已知限制登记
+
+1. 仅改授权主机 + 注释，不改脚本逻辑/守卫/流程。
+2. 不扩面：不改 DatabaseHost 守卫（保持回环）；不加 @'172.17.0.1' 特定授权（用 % 兼容不同 bridge 网关）。
+3. demo-data 全量重生仍需方向 2/3 裁决后的实跑验证。
+
+### 12.278.6 E 组矩阵基线
+
+R-033 方向 2 实施完成（脚本改动）。E1 收官（§12.273）、E2 收官（§12.274）、并发实测 payoff 收官（§12.275/§12.276）、
+R-033 方向 2（本节）。E3–E7 无 scope 或已修/不扩面。D 组 + E 组重建矩阵全部收官。
