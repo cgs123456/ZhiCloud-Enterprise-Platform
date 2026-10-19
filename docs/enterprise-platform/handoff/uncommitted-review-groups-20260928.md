@@ -13210,3 +13210,100 @@ D1 已收官（§12.267）、D2 已收官（§12.268）、D3 已收官（§12.26
 - 服务现状：pid 228（jar 642,913,690B，Flyway 212/213 success=1），沙箱
   `zhicloud_sandbox_v140` / tenant 9001；E2E271 夹具已收尾清理（前缀面 合同/任务/权限行全 0、
   合同数回基线 13、独立探针复核任务表 0 行）。
+
+## 12.272 D 组第 6 项（D6）——TMS↔WMS 签收全链（签收回传 → 出库单完成 → 库存扣减）重建
+
+### 12.272.1 背景与目标
+
+D 组第 6 项 / 末项（用户令「继续处理 D2–D6」）。**D 组六项明细系重建产物**（原会话明细未落盘，同
+§12.267–§12.271 披露）；D6 明细经搜证重建并锁定于 `Temp/zc_adr_272.md`（§0 搜证；来源登记：
+§12.95.5「④ TMS↔WMS 真跑到哪、停在哪」——当时停在"跨模块调用可达、方向与顺序正确、被 WMS 业务规则
+挡在门口"；后续 §12.96.1（2026-10-02，SQL 造前置 + 真 HTTP 链跑通，库存 100→94）与 §12.131
+（2026-10-06，WMS 出库细化状态机全链 + TMS 签收 + 库存扣减 10→6，§12.95.5 那段真机闭环）两次
+真机闭环；矩阵锚定见 `Temp/zc_adr_267.md` §0 D6）。
+
+**本项重建目的**：在**当前 HEAD**（D3 库位/库存重构 + §12.230–233 CAS 重构之后）复验整链仍通，并修补
+真机暴露的缺陷。搜证结论：**代码链已完备、无代码缺口**——
+`TmsShipmentServiceImpl.confirmSign`（CAS ARRIVED→SIGNED + signTime）→
+`WmsShipmentOrderApiImpl.signShipmentOrderByWaybill`（先登记 waybill_id 再 `finish()`，顺序防"完成了却
+查不到运单"）→ `WmsShipmentOrderServiceImpl.finish()`（SHIPPED→FINISHED + `changeInventory` OUT 扣减）；
+链路完整、事务边界正确（同 JVM @Transactional REQUIRED 加入同一事务，回滚方向正确）、fail-closed 守卫
+齐备（detail 必须存在、status 必须 SHIPPED、CAS 互斥）。本项不发明新语义。
+
+缺陷面（先证后修，四条）：
+1. **finish() 零单测覆盖**：`WmsShipmentOrderServiceImpl.finish()`（SHIPPED→FINISHED + 库存扣减）在 D6 前
+   无任何单测——`WmsShipmentOrderServiceImplTest` 只测 `completeShipmentOrder`（fast-complete 旁路，仅
+   allow-fast-complete=true 时可用）的 3 例；sign-return 完成路径的 stock-deduction 契约无网。
+2. **signShipmentOrderByWaybill 仅 mock 级验证**：`WmsShipmentOrderApiImplTest` 4 例覆盖归属/顺序/拒绝，
+   无真 H2 落库。
+3. **整链真机验证停在 §12.131**：§12.96.1/§12.131 的闭环发生在旧代码；当前 HEAD 的 `changeInventory`
+   已经是 V205/V211 库位维度 + 行级流水口径，`confirmSign` 是 CAS 版本，整链未在当前 HEAD 复验。
+4. **代码链已完备、无代码缺口**（本 ADR 不发明新语义；idempotency 语义维持 fail-closed，与
+   §12.230–233 一致，不照搬 D5 的 same-state no-op——TMS confirmSign 是操作员动作而非平台回调，
+   fail-closed 更安全）。
+
+### 12.272.2 实施内容（1 文件改）
+
+- **wms** `WmsShipmentOrderServiceImplTest.java`：+4 `finish()` 用例（`zc_edit_272_a.py`）——success
+  （SHIPPED→FINISHED + OUT 扣减，DTO 字段逐项断言，与 completeShipmentOrder_success 同口径）/
+  detailRequired（缺明细 003 + 不写库存）/ notShipped（PREPARE 不能 finish → NOT_FINISHABLE 005 + 不写库存）/
+  duplicateFinish（二次 finish → NOT_FINISHABLE 005 + 库存只写一次）。
+- **e2e** `Temp/zc_e2e272.py`：P0–P7 共 28 断言，三跑收敛。
+- 零迁移、零错误码、零权限、零菜单、零前端逻辑、零生产代码改动。
+
+### 12.272.3 验证链（逐项实测）
+
+| 环节 | 结果 |
+|------|------|
+| 基线 | WMS 模块回归未单独记录（D6 前未跑 WMS 全量；D6 实施后 293/0/0/0） |
+| 实施 | `zc_edit_272_a.py`（finish 单测 ×4）；`zc_e2e272.py`（E2E P0–P7 共 28 断言）；守卫式单次运行 |
+| 定向单测 | **15/0/0/0**（`WmsShipmentOrderServiceImplTest`：11+4，finish ×4 全绿） |
+| 模块回归 | **WMS 293/0/0/0**（0 失败 0 错误 0 跳过，BUILD SUCCESS） |
+| 门禁 | errcode **1974** ✓；preauthorize 523 Controller 面 RC=0 ✓；scan_tx **0** ✓；bare_throws OK ✓；duplicate_ddl tables **671·findings=0** ✓；契约 **tracked=123·scanned=219·findings=0** ✓ |
+| SQL lint | **219 文件 / 16 条 R5** 全既有（D6 零新增；migration 目录口径；RC=1 既有红） |
+| do_ddl（辅助） | WMS H2 口径 **3 项预存缺失**（wms_cross_dock_order / wms_cross_dock_order_detail / wms_pick_task，H2 部分文件设计，非新增） |
+| 前端 | 无变更（D5 验证沿用：`ts:check` exit=0 + `build:prod` 40.35s） |
+| 重打/冷启 | 无生产代码变更 → 不重打（D5 jar 642,913,690B / Flyway 213 沿用） |
+| 真机 E2E | **28/28（三跑收敛：27/28 → 28/28 → 28/28）** |
+
+E2E 链路（`Temp/zc_e2e272.py`，P0–P7 共 28 断言；沙箱 / tenant 9001；复用 SHIPPED 出库单
+`6180005`（DEMO-SHP-00006，warehouse 916001，merchant 921006，明细 sku 5020011 ×15.034 +
+sku 5020012 ×147.415）；车辆 928000 / 司机 927000）：
+P0 基线（库存 available A=252.977/B=694.846、订单 status 50/waybill NULL、历史 0、车辆/司机 10、
+tms 前缀 0）→ P1 TMS 建单挂 shipmentOrderId=6180005（validateShippableForWaybill 放行）→
+P2 dispatch（@RequestBody，车辆/司机 AVAILABLE→运输中）→ P3 confirm-arrival（@RequestParam，运输中→已到达，
+车辆/司机恢复可用）→ P4 confirm-sign（@RequestParam，已到达→已签收 + sign_time 落库）→
+P5 WMS 回写：订单 50→99 FINISHED + waybill_id 回填；库存 A 252.977→237.943（-15.034）、
+B 694.846→547.431（-147.415）；库存历史 0→2（每明细一行）→ P6 幂等/负例：重复签收被拒
+（TMS 状态机）、FINISHED 后再建运单被拒（validateShippableForWaybill）→ P7 清理还原：
+订单 status 50/waybill NULL、库存 A/B 还原、历史 0、tms 前缀 0、车辆/司机 10；独立探针复核
+（订单 50/NULL、inv A=252.977/B=694.846、hist 0、tms 前缀 0、vehicle/driver 10）。
+
+### 12.272.4 失败与缺陷登记（诚实链）
+
+1. **E2E 脚本（1 处，Run1 27/28）**：P5.5 库存历史断言 off-by-one——`finish()` 对每条明细写一行
+   库存历史（2 行），脚本期望 +1；修正为 +2 后 Run2/Run3 全绿。代码无缺陷，断言口径修正。
+2. **do_ddl WMS 3 项预存缺失**（wms_cross_dock_order / wms_cross_dock_order_detail / wms_pick_task，
+   H2 部分文件设计）——D6 未触 WMS H2 镜像，非新增；与 §12.267.7 登记的 121「表缺失」同源。
+3. **既有红不重复登记**：sql lint 16 条 R5；python 9 红（PowerShell 面 6 + 3 项环境/守卫）；
+   check_evidence_citations 1；台账 §12.201/§12.202–213/§12.234.10；event_outbox 6 条旧 DEAD。
+   本项零新增红。
+4. 实施脚本零中断；finish 单测一次全绿（零 fix 轮）；WMS 模块回归 293/0/0/0；门禁 6 项 RC=0；
+   E2E 三跑收敛。
+
+### 12.272.5 不扩面与已知限制登记
+
+1. **idempotency 语义不改**：confirmSign / signShipmentOrderByWaybill 维持 fail-closed（重复签收被拒）；
+   不照搬 D5 的 same-state no-op（TMS confirmSign 是操作员动作而非平台回调）。
+2. reverse path / 退款 / 撤回不做；前端无变更；零迁移/零错误码/零权限/零菜单。
+3. `sql/mysql` 无 wms 快照面（按惯例不同步）。
+4. 真机 E2E 复用已有 SHIPPED 出库单 6180005（DEMO 数据）+ 车辆/司机 928000/927000，清理按基线
+   物理还原；未造新 WMS 出库单（避免 FINISHED 不可删的清理困境）。
+
+### 12.272.6 D 组矩阵基线
+
+D1 已收官（§12.267）、D2 已收官（§12.268）、D3 已收官（§12.269）、D4 已收官（§12.270）、
+D5 已收官（§12.271）、**D6 收官（本项）**。**D 组六项全部收官**。E1–E7 照旧、尚未重建确认；重建依据
+以本重建口径与 `Temp/zc_adr_272.md` / `zc_adr_271.md` / `zc_adr_270.md` / `zc_adr_269.md` /
+`zc_adr_268.md` / `zc_adr_267.md` 为准。待兑现登记项沿用（`zc_e2e_preclean.py` 硬删收窄到释放 id
+集合；`test_plan_commit_groups` 真树「非空」钉法移合成输入）。

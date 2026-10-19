@@ -31,6 +31,7 @@ import java.util.List;
 
 import static cn.zhicloud.framework.test.core.util.AssertUtils.assertServiceException;
 import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.SHIPMENT_ORDER_DETAIL_REQUIRED;
+import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.SHIPMENT_ORDER_NOT_FINISHABLE;
 import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.SHIPMENT_ORDER_STATUS_NOT_DELETABLE;
 import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.SHIPMENT_ORDER_STATUS_NOT_PREPARE;
 import static cn.zhicloud.module.wms.enums.ErrorCodeConstants.SHIPMENT_ORDER_QC_FAILED;
@@ -260,7 +261,84 @@ public class WmsShipmentOrderServiceImplTest extends BaseDbUnitTest {
                 SHIPMENT_ORDER_STATUS_NOT_DELETABLE);
     }
 
-    private static WmsShipmentOrderDO createShipmentOrder(Long warehouseId) {
+    
+    @Test
+    public void testFinish_success() {
+        // mock 数据
+        Long warehouseId = 100L;
+        Long skuId = 200L;
+        WmsShipmentOrderDO order = createShipmentOrder(warehouseId);
+        order.setStatus(WmsOrderStatusEnum.SHIPPED.getStatus());
+        shipmentOrderMapper.insert(order);
+        shipmentOrderDetailMapper.insert(createShipmentOrderDetail(order.getId(), skuId, warehouseId));
+
+        // 调用
+        shipmentOrderService.finish(order.getId());
+
+        // 断言：出库单 SHIPPED -> FINISHED
+        WmsShipmentOrderDO dbOrder = shipmentOrderMapper.selectById(order.getId());
+        assertNotNull(dbOrder);
+        assertEquals(WmsOrderStatusEnum.FINISHED.getStatus(), dbOrder.getStatus());
+        // 断言：库存变更（与 completeShipmentOrder_success 同口径，OUT 扣减）
+        ArgumentCaptor<WmsInventoryChangeReqDTO> captor = ArgumentCaptor.forClass(WmsInventoryChangeReqDTO.class);
+        verify(inventoryService).changeInventory(captor.capture());
+        WmsInventoryChangeReqDTO inventoryReqDTO = captor.getValue();
+        assertEquals(order.getId(), inventoryReqDTO.getOrderId());
+        assertEquals(order.getNo(), inventoryReqDTO.getOrderNo());
+        assertEquals(WmsOrderTypeEnum.SHIPMENT.getType(), inventoryReqDTO.getOrderType());
+        assertEquals(1, inventoryReqDTO.getItems().size());
+        assertEquals(skuId, inventoryReqDTO.getItems().get(0).getSkuId());
+        assertEquals(warehouseId, inventoryReqDTO.getItems().get(0).getWarehouseId());
+        assertEquals(WmsInventoryChangeTypeEnum.OUT, inventoryReqDTO.getItems().get(0).getChangeType());
+        assertEquals(0, new BigDecimal("2.00").compareTo(inventoryReqDTO.getItems().get(0).getQuantity()));
+        assertEquals(0, new BigDecimal("40.00").compareTo(inventoryReqDTO.getItems().get(0).getTotalPrice()));
+    }
+
+    @Test
+    public void testFinish_detailRequired() {
+        // mock 数据：SHIPPED 状态但无明细
+        WmsShipmentOrderDO order = createShipmentOrder(100L);
+        order.setStatus(WmsOrderStatusEnum.SHIPPED.getStatus());
+        shipmentOrderMapper.insert(order);
+
+        // 调用，并断言：缺明细不能完成，且不写库存
+        assertServiceException(() -> shipmentOrderService.finish(order.getId()),
+                SHIPMENT_ORDER_DETAIL_REQUIRED);
+        verify(inventoryService, never()).changeInventory(any());
+    }
+
+    @Test
+    public void testFinish_notShipped() {
+        // mock 数据：PREPARE 状态（非 SHIPPED）不能 finish
+        WmsShipmentOrderDO order = createShipmentOrder(100L);
+        order.setStatus(WmsOrderStatusEnum.PREPARE.getStatus());
+        shipmentOrderMapper.insert(order);
+        shipmentOrderDetailMapper.insert(createShipmentOrderDetail(order.getId(), 200L, 100L));
+
+        // 调用，并断言
+        assertServiceException(() -> shipmentOrderService.finish(order.getId()),
+                SHIPMENT_ORDER_NOT_FINISHABLE);
+        verify(inventoryService, never()).changeInventory(any());
+    }
+
+    @Test
+    public void testFinish_duplicateFinish() {
+        // mock 数据
+        WmsShipmentOrderDO order = createShipmentOrder(100L);
+        order.setStatus(WmsOrderStatusEnum.SHIPPED.getStatus());
+        shipmentOrderMapper.insert(order);
+        shipmentOrderDetailMapper.insert(createShipmentOrderDetail(order.getId(), 200L, 100L));
+
+        // 调用
+        shipmentOrderService.finish(order.getId());
+
+        // 调用，并断言：二次完成不能再次写库存
+        assertServiceException(() -> shipmentOrderService.finish(order.getId()),
+                SHIPMENT_ORDER_NOT_FINISHABLE);
+        verify(inventoryService).changeInventory(any());
+    }
+
+private static WmsShipmentOrderDO createShipmentOrder(Long warehouseId) {
         return new WmsShipmentOrderDO()
                 .setNo("CK202605120001")
                 .setType(WmsShipmentOrderTypeEnum.SALE.getType())

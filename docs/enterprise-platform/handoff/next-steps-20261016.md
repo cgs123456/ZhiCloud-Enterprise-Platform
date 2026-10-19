@@ -558,3 +558,26 @@
   python 全量复跑 665 tests（653 passed / 9 failed / 3 skipped，313.33s），9 红构成同前登记（PowerShell
   面 6＋3 项环境/守卫），本项零新增红；服务 pid 228 运行中（jar 642,913,690B，Flyway 212/213
   success=1），E2E271 夹具已收尾清理（前缀面全 0、合同数回基线 13）。
+
+## 后记二十：D 组第 6 项（D6）——§12.272 TMS↔WMS 签收全链
+
+- **已完成**：D 组末项重建（D 组六项明细系重建产物）——整链代码已完备（TMS confirmSign CAS → WMS
+  signShipmentOrderByWaybill 先登记 waybill 再 finish → 库存 OUT 扣减），本项 (a) 补 `finish()`
+  单测 4 例（SHIPPED→FINISHED + OUT 扣减 / 缺明细 003 / 非 SHIPPED 005 / 二次完成 005，库存只写一次），
+  (b) 当前 HEAD 全链真机复验 **28/28**（三跑收敛；Run1 27/28 为断言 off-by-one，修正 +2 后全绿）。
+  证据：基线 WMS 回归未单独记录 → 定向 15/0/0/0 → 回归 293/0/0/0 → 门禁 RC=0（errcode 1974 /
+  preauthorize 523 面 / scan_tx 0 / bare_throws OK / duplicate_ddl 671·findings=0 / 契约 123/219/0）→
+  sql lint 219/16 零新增 → do_ddl WMS 3 项预存 → 前端无变更 → E2E 28/28 ×3。E2E 实测：出库单
+  6180005 (SHIPPED) → TMS 建单挂 shipmentOrderId → dispatch → confirm-arrival → confirm-sign 四步 code=0；
+  TMS 10→20→30→40 + sign_time；WMS 50→99 FINISHED + waybill_id 回填；库存 A 252.977→237.943
+  (-15.034)、B 694.846→547.431 (-147.415)；库存历史 0→2；幂等：重复签收被拒、FINISHED 后再建运单被拒。
+  清理：订单 50/NULL、库存还原、历史 0、tms 前缀 0、车辆/司机 10（独立探针复核全绿）。
+- **口径提醒**：整链代码无缺口，无生产代码改动；idempotency 维持 fail-closed（不照搬 D5 same-state no-op）；
+  库存扣减发生在 finish()（签收回传时），ship 阶段不扣；available 不足时 changeInventory 整体拒绝并回滚
+  （事务保证 TMS/WMS 一致）。TMS confirmSign 是 @Transactional，WMS signShipmentOrderByWaybill 是
+  @Transactional(REQUIRED) 加入同一事务。
+- **失败登记**：E2E 脚本 1 处（P5.5 期望 +1 实际 +2，修正为 +2）；do_ddl WMS 3 项预存（H2 部分文件设计）；
+  既有红零新增；finish 单测一次全绿（零 fix 轮）。
+- **不扩面登记**：idempotency 语义不改；reverse path/退款/撤回不做；前端无变更；零迁移/零错误码/零权限/
+  零菜单；sql/mysql 无 wms 快照面。
+- **D 组收官**：D1–D6 全部收官；E1–E7 照旧、尚未重建确认。
