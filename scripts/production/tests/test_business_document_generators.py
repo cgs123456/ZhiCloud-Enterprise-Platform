@@ -80,8 +80,8 @@ class FailClosedInputTest(unittest.TestCase):
     def test_default_dataset_builds_without_contract_regression(self):
         snapshot, master = _load_inputs()
         dataset = g.build_dataset(snapshot, g.DEFAULT_SEED, g.DEFAULT_TENANT_ID, "small", master)
-        self.assertEqual(99, len(dataset))
-        self.assertEqual(2458, sum(len(item["rows"]) for item in dataset))
+        self.assertEqual(94, len(dataset))
+        self.assertEqual(1258, sum(len(item["rows"]) for item in dataset))
 
 
 if __name__ == "__main__":

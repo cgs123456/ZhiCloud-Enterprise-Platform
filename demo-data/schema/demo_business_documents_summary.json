@@ -5,10 +5,10 @@
   "scale": "small",
   "dialect": "mysql",
   "snapshot": "demo-data/schema/schema-snapshot.json",
-  "snapshot_payload_sha256": "37df29503a427702fb61f62da187de6e75ba55c636cafe5ec664502ed573ac3d",
+  "snapshot_payload_sha256": "10e3ffb5d58dd85b3c5447f85d40d78ac7029812bf9ce1225b99c3f5888427d3",
   "depends_on": {
     "master_data_json": "demo-data/schema/demo_master_data.json",
-    "master_data_file_sha256": "3a6a06cdf4a5de4ffece26deda01fcb9db2c02bde7ae57277461692ecf5e9552",
+    "master_data_file_sha256": "bb942127d670d686ebedd5caeb404c91ff69dddfe12049bf75b02edcc671ecc0",
     "master_data_tenant_id": 9001,
     "master_data_seed": 20260928
   },
@@ -410,22 +410,20 @@
     "crm_invoice.invoice_type / crm_invoice_line.tax_rate（按 10/20 与 13% 常见取值填充，未与税务配置核对）",
     "crm_invoice.buyer_tax_no（DEMO_TAXNO_ 前缀占位，非真实纳税人识别号）",
     "tms_freight.billing_method（按 (10,20,30) 取值域填充，未定位枚举定义）",
-    "oa_schedule.user_id / oa_reimburse.applicant_user_id / oa_meeting_reservation.organizer_user_id / oa_announcement.publisher_user_id（NOT NULL 但指向 system 用户，demo 数据无真实用户，统一填占位 ID=1，未校验 system_users 中是否存在该行）",
-    "hr_attendance.check_in_time / check_out_time（按状态推导的演示时刻，未与考勤规则引擎核对）",
-    "hr_performance.period（使用 2026-H1/H2 半年度格式，未与绩效周期配置核对）"
+    "oa_schedule.user_id / oa_reimburse.applicant_user_id / oa_meeting_reservation.organizer_user_id / oa_announcement.publisher_user_id（NOT NULL 但指向 system 用户，demo 数据无真实用户，统一填占位 ID=1，未校验 system_users 中是否存在该行）"
   ],
   "artifacts": {
     "sql": {
       "path": "demo-data/sql/mysql/demo_business_documents.sql",
-      "payload_sha256": "cbdef89eac7267103def39e210a3b6f1dfc3a6d6714aa02e15ff215231a181b4",
-      "file_sha256": "cbdef89eac7267103def39e210a3b6f1dfc3a6d6714aa02e15ff215231a181b4",
-      "bytes": 1087216
+      "payload_sha256": "575d1abc24f5a039fd8e2acab1d288efa9c23c3eeafb188a614400c1bbd2dd1d",
+      "file_sha256": "575d1abc24f5a039fd8e2acab1d288efa9c23c3eeafb188a614400c1bbd2dd1d",
+      "bytes": 627005
     },
     "json": {
       "path": "demo-data/schema/demo_business_documents.json",
-      "payload_sha256": "dcf1ca7565004e71aa765dfc22caacbd36bd3318eb7dd71346069af226667be8",
-      "file_sha256": "dcf1ca7565004e71aa765dfc22caacbd36bd3318eb7dd71346069af226667be8",
-      "bytes": 1453540
+      "payload_sha256": "a89d827faed794ff79650565f2e6a92817de403a8e90289d1834ee1a31add028",
+      "file_sha256": "a89d827faed794ff79650565f2e6a92817de403a8e90289d1834ee1a31add028",
+      "bytes": 866685
     }
   },
   "status": "STATIC_ONLY —— 未在任何数据库执行过，可执行性未验证"

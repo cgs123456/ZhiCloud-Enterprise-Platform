@@ -110,13 +110,8 @@ MES_BOM_TYPE = ("MANUFACTURING", "ENGINEERING", "PHANTOM")
 MES_ITEM_OR_PRODUCT = ("ITEM", "PRODUCT")
 MES_COMMON_STATUS_ON = 0                           # CommonStatusEnum：0 启用 / 1 停用
 
-# HR：V83__hr_base_tables.sql
-HR_ATTENDANCE_STATUS = (10, 20, 30, 40, 50)        # 10 正常 20 迟到 30 早退 40 缺勤 50 加班
+# HR：V83__hr_base_tables.sql（旧 /hr 孤儿表已由 V208 清退，仅余请假域）
 HR_LEAVE_STATUS = (0, 1, 2, 3)                     # 0 待审批 1 已批准 2 已驳回 3 已撤销
-HR_CONTRACT_TYPE = (1, 2, 3, 4)
-HR_CONTRACT_STATUS = (0, 1, 2, 3, 4)
-HR_SALARY_STATUS = (10, 20, 30)
-HR_PERF_GRADE = (10, 20, 30, 40)                   # 10 A 20 B 30 C 40 D
 # OA：oa 模块 DDL
 OA_ANNOUNCEMENT_STATUS = (10, 20, 30, 40)
 OA_REIMBURSE_TYPE = (10, 20, 30, 40, 50)
@@ -203,9 +198,8 @@ TABLE_ORDER = [
     "crm_receivable_plan", "crm_receivable",
     "crm_contact", "crm_follow_up_record",
     "crm_invoice", "crm_invoice_line",
-    # --- HR 单据
-    "hr_leave_balance", "hr_leave_request", "hr_attendance",
-    "hr_contract", "hr_salary", "hr_performance",
+    # --- HR 单据（V208 清退旧 /hr 孤儿表后，本域仅剩请假申请）
+    "hr_leave_request",
     # --- OA 单据
     "oa_announcement", "oa_reimburse", "oa_reimburse_item",
     "oa_meeting_reservation", "oa_schedule",
@@ -433,13 +427,6 @@ def biz_datetime(offset_days: int, hour: int = 9, minute: int = 0) -> str:
 
 def biz_date(offset_days: int) -> str:
     return biz_datetime(offset_days)[:10]
-
-
-def biz_month(offset_months: int) -> str:
-    """2026-01 起按月偏移，产出 'YYYY-MM'。"""
-    total = 2026 * 12 + (1 - 1) + int(offset_months)
-    y, m = divmod(total, 12)
-    return "%04d-%02d" % (y, m + 1)
 
 
 def money(x) -> float:
@@ -1328,7 +1315,8 @@ def build_wms(b: Builder):
                           "expected_quantity": exp, "received_quantity": recv,
                           "product_name": sku_name(i * 2 + k), "unit": "DEMO_个",
                           "lot_number": "DEMO-LOT-%04d" % (i * 2 + k + 1),
-                          "production_date": biz_date(i * 4), "expiry_date": biz_date(i * 4 + 365)})
+                          "production_date": biz_date(i * 4), "expiry_date": biz_date(i * 4 + 365),
+                          "location_id": loc_ids[(i * 2 + k) % len(loc_ids)]})  # V205 收货库位
         asn_heads.append({
             "id": asn_ids[i], "no": b.biz_no("ASN", i),
             "supplier_id": b.m_id("erp_supplier", i), "warehouse_id": wh_ids[i % len(wh_ids)],
@@ -1395,7 +1383,8 @@ def build_wms(b: Builder):
             inv.append({"id": None, "sku_id": sk, "warehouse_id": w, "quantity": q,
                         "available_quantity": qty(q - locked - frozen),
                         "locked_quantity": locked, "frozen_quantity": frozen,
-                        "owner_id": merch_ids[(i + k) % len(merch_ids)]})
+                        "owner_id": merch_ids[(i + k) % len(merch_ids)],
+                        "location_id": loc_ids[(i + k) % len(loc_ids)]})  # V205 库位维度
     inv_ids = b.alloc("wms_inventory", len(inv))
     for row, rid in zip(inv, inv_ids):
         row["id"] = rid
@@ -1894,22 +1883,6 @@ def build_hr(b: Builder):
     emp_ids = [r["id"] for r in emp]
     leave_types = b.own("hr_leave_type")
     lt_ids = [r["id"] for r in leave_types]
-    LT_TOTAL = {0: 10.0, 1: 5.0, 2: 10.0, 3: 3.0}   # 年假/事假/病假/调休 年度额度
-
-    # --- 假期余额（员工 × 假期类型）
-    bal_rows = []
-    for ei, eid in enumerate(emp_ids):
-        for li, lid in enumerate(lt_ids):
-            total = LT_TOTAL.get(li % len(LT_TOTAL), 5.0)
-            used = money(min(total, round((ei * 0.5 + li) % (total + 1), 1)))
-            bal_rows.append({"id": None, "employee_id": eid, "leave_type_id": lid,
-                             "year": 2026, "total_days": total, "used_days": used,
-                             "remaining_days": money(total - used),
-                             "remark": "DEMO_演示假期余额"})
-    bal_ids = b.alloc("hr_leave_balance", len(bal_rows))
-    for row, rid in zip(bal_rows, bal_ids):
-        row["id"] = rid
-    b.emit("hr_leave_balance", bal_rows)
 
     # --- 请假申请
     n_lr = 20 * s
@@ -1927,92 +1900,6 @@ def build_hr(b: Builder):
         "approve_time": biz_datetime(i * 6 + 2, 17, 0) if i % 4 != 0 else None,
         "approve_remark": "DEMO_演示审批意见",
     } for i in range(n_lr)])
-
-    # --- 考勤（每员工 20 个工作日）
-    att_rows = []
-    for ei, eid in enumerate(emp_ids):
-        for d in range(20):
-            st = HR_ATTENDANCE_STATUS[(ei + d) % len(HR_ATTENDANCE_STATUS)]
-            day = biz_date(ei % 5 + d * 7)
-            att_rows.append({
-                "id": None, "employee_id": eid,
-                "attendance_date": day,
-                "check_in_time": "%s 08:%02d:00" % (day, 55 if st == 20 else 30),
-                "check_out_time": "%s 18:%02d:00" % (day, 5 if st == 30 else 30),
-                "status": st,
-                "overtime_hours": money(2.0) if st == 50 else money(0.0),
-                "remark": "DEMO_演示考勤",
-            })
-    att_ids = b.alloc("hr_attendance", len(att_rows))
-    for row, rid in zip(att_rows, att_ids):
-        row["id"] = rid
-    b.emit("hr_attendance", att_rows)
-
-    # --- 劳动合同（每员工 1 份）
-    n_hc = len(emp_ids)
-    hc_ids = b.alloc("hr_contract", n_hc)
-    b.emit("hr_contract", [{
-        "id": hc_ids[i],
-        "employee_id": emp_ids[i],
-        "contract_no": "DEMO-LABOR-%05d" % (i + 1),
-        "contract_type": HR_CONTRACT_TYPE[i % len(HR_CONTRACT_TYPE)],
-        "start_date": biz_date(i),
-        "end_date": biz_date(i + 1095),
-        "sign_date": biz_date(max(i - 5, 0)),
-        "probation_end_date": biz_date(i + 90),
-        "position_id": b.m_id("hr_position", i),
-        "department_id": b.m_id("hr_department", i),
-        "salary": money(b.rnd.uniform(6000, 26000)),
-        "status": HR_CONTRACT_STATUS[i % len(HR_CONTRACT_STATUS)],
-        "file_url": None, "remark": "DEMO_演示劳动合同",
-    } for i in range(n_hc)])
-
-    # --- 薪资（每员工 3 个月）
-    sal_rows = []
-    for ei, eid in enumerate(emp_ids):
-        for m in range(3):
-            base = money(b.rnd.uniform(6000, 26000))
-            ot = money(b.rnd.uniform(0, 3000))
-            bonus = money(b.rnd.uniform(0, 6000))
-            ded = money(b.rnd.uniform(0, 800))
-            si = money(base * 0.105)
-            hf = money(base * 0.07)
-            taxable = max(base + ot + bonus - ded - si - hf, 0)
-            tax = money(taxable * 0.10)
-            net = money(base + ot + bonus - ded - si - hf - tax)
-            sal_rows.append({
-                "id": None, "employee_id": eid, "salary_month": biz_month(m),
-                "base_salary": base, "overtime_pay": ot, "bonus": bonus,
-                "deduction": ded, "social_insurance": si, "housing_fund": hf,
-                "tax": tax, "net_salary": net,
-                "status": HR_SALARY_STATUS[(ei + m) % len(HR_SALARY_STATUS)],
-                "remark": "DEMO_演示薪资",
-            })
-    sal_ids = b.alloc("hr_salary", len(sal_rows))
-    for row, rid in zip(sal_rows, sal_ids):
-        row["id"] = rid
-    b.emit("hr_salary", sal_rows)
-
-    # --- 绩效（每员工 2 个周期）
-    perf_rows = []
-    for ei, eid in enumerate(emp_ids):
-        for p in range(2):
-            score = money(b.rnd.uniform(60, 99))
-            perf_rows.append({
-                "id": None, "employee_id": eid,
-                "period": "2026-H%d" % (p + 1),
-                "score": score,
-                "grade": HR_PERF_GRADE[min(int((100 - score) // 10), len(HR_PERF_GRADE) - 1)],
-                "evaluator_id": emp_ids[(ei + 11) % len(emp_ids)],
-                "evaluation_date": biz_date(90 + p * 90),
-                "comment": "DEMO_演示绩效评语",
-                "remark": "DEMO_演示绩效",
-            })
-    perf_ids = b.alloc("hr_performance", len(perf_rows))
-    for row, rid in zip(perf_rows, perf_ids):
-        row["id"] = rid
-    b.emit("hr_performance", perf_rows)
-
 
 # ------------------------------ OA 单据 ------------------------------
 def build_oa(b: Builder):
@@ -2249,8 +2136,6 @@ UNVERIFIED_FIELDS_EXTRA = [
     "oa_schedule.user_id / oa_reimburse.applicant_user_id / oa_meeting_reservation.organizer_user_id / "
     "oa_announcement.publisher_user_id（NOT NULL 但指向 system 用户，demo 数据无真实用户，"
     "统一填占位 ID=1，未校验 system_users 中是否存在该行）",
-    "hr_attendance.check_in_time / check_out_time（按状态推导的演示时刻，未与考勤规则引擎核对）",
-    "hr_performance.period（使用 2026-H1/H2 半年度格式，未与绩效周期配置核对）",
 ]
 
 

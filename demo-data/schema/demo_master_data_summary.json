@@ -5,7 +5,7 @@
   "scale": "small",
   "dialect": "mysql",
   "snapshot": "demo-data/schema/schema-snapshot.json",
-  "snapshot_payload_sha256": "37df29503a427702fb61f62da187de6e75ba55c636cafe5ec664502ed573ac3d",
+  "snapshot_payload_sha256": "10e3ffb5d58dd85b3c5447f85d40d78ac7029812bf9ce1225b99c3f5888427d3",
   "table_count": 19,
   "row_total": 267,
   "tables": [
@@ -98,15 +98,15 @@
   "artifacts": {
     "sql": {
       "path": "demo-data/sql/mysql/demo_master_data.sql",
-      "payload_sha256": "d7be937714aeb9ad4c344b2705224387d18c640c42ac47de15479cbd27c7c789",
-      "file_sha256": "d7be937714aeb9ad4c344b2705224387d18c640c42ac47de15479cbd27c7c789",
-      "bytes": 128815
+      "payload_sha256": "f4c2a2782d35cdd40938e23d39abf9cdf4658bf9cc3d064381243c5219a49829",
+      "file_sha256": "f4c2a2782d35cdd40938e23d39abf9cdf4658bf9cc3d064381243c5219a49829",
+      "bytes": 160253
     },
     "json": {
       "path": "demo-data/schema/demo_master_data.json",
-      "payload_sha256": "3a6a06cdf4a5de4ffece26deda01fcb9db2c02bde7ae57277461692ecf5e9552",
-      "file_sha256": "3a6a06cdf4a5de4ffece26deda01fcb9db2c02bde7ae57277461692ecf5e9552",
-      "bytes": 176368
+      "payload_sha256": "bb942127d670d686ebedd5caeb404c91ff69dddfe12049bf75b02edcc671ecc0",
+      "file_sha256": "bb942127d670d686ebedd5caeb404c91ff69dddfe12049bf75b02edcc671ecc0",
+      "bytes": 222847
     }
   },
   "status": "STATIC_ONLY —— 未在任何数据库执行过，可执行性未验证"

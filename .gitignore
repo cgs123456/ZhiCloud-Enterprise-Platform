@@ -119,5 +119,8 @@ __pycache__/
 # 第 40 行的 *.log 覆盖不到（后缀是 .jsonl，另有 .hash-chain），
 # 而内容是本机跑出来的真实审计记录（含 bizId/creator/requestUrl/traceId），
 # 绝不该进仓。若不排除，`git add .` / `git add -A` 会把本机调试期间的审计数据提交上去。
-/logs/audit/
+# §12.283 扩为整目录：restore/boot/探活日志与 restore-local-stack-*.json 恢复摘要同属
+# 运行期时点产物，从未有过 tracked 先例（git ls-files logs/ 恒空）；证据级工件按约定
+# 落 docs/enterprise-platform/evidence/（单独审查提交）。
+/logs/
 /Temp/

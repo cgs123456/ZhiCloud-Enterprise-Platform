@@ -160,7 +160,8 @@ def scan_docs(files: list[Path], repo_root: Path) -> list[dict]:
                           if not is_dir and h.start() > start and (h.start() - start) <= 400]
                 citations.append({"doc": f.relative_to(repo_root).as_posix(),
                                   "line": lineno, "raw": raw, "directory": is_dir,
-                                  "context": line[:600], "hashes": nearby})
+                                  "context": line[:600], "hashes": nearby,
+                                  "all_hashes": [h.group(0) for h in SHA64.finditer(line)]})
             # 后置遍历，只**追加**省略式引用：既有 197 条的来源不动，所以这一步在结构上
             # 不可能让 path_citations 变小（上一版就是把展开写进主循环，静默吞掉 29 条）。
             last_full = None
@@ -179,6 +180,7 @@ def scan_docs(files: list[Path], repo_root: Path) -> list[dict]:
                     citations.append({"doc": f.relative_to(repo_root).as_posix(),
                                       "line": lineno, "raw": abbrev, "directory": False,
                                       "context": line[:600], "hashes": tail_hashes,
+                                      "all_hashes": [h.group(0) for h in SHA64.finditer(line)],
                                       "abbreviated": True})
     return citations
 
@@ -237,10 +239,23 @@ def evaluate(doc_files: list[Path], tracked: set[str], docs_root: Path, repo_roo
             advisories.append({"kind": "untracked-but-present", "doc": c["doc"], "line": c["line"],
                                "path": rel,
                                "detail": "文件在本机存在但不在版本库：干净检出的人拿不到它（§3.4 代价）"})
-        if not c["hashes"]:
-            continue
         cited = {h.lower() for h in c["hashes"]}
         identities = identity_hashes(resolved)
+        # 自身身份回退（2026-10-19，§12.280）：nearby 窗口只有 400 字符，长中文描述会把文件
+        # **自身**的哈希挤到窗外（08-测试与证据.md:64 实判例：`evidence.json SHA-256 981C…`
+        # 与文件字节身份完全一致却因 >400 字符被判 hash-unattributable）。只认"值 == 已解析
+        # 文件自身合法身份"的字面相等——两个不同文件除非逐字节相同才可能同值，零跨配误判；
+        # 窗口尺寸不动，第一次版同行多引用串位的教训不回潮。embedded_* 是证据文件内部记录的
+        # 被验对象身份，不属于文件本体，故排除在本回退之外。
+        own_identities = {hx for name, hx in identities.items()
+                          if name == "bytes_sha256" or name == "canonical_lf_sha256"
+                          or name == "sidecar_sha256"
+                          or name in ("payload_sha256", "file_sha256", "sha256")}
+        if any(hx.lower() in own_identities for hx in c.get("all_hashes", [])):
+            hash_checked += 1
+            continue
+        if not c["hashes"]:
+            continue
         matched = [name for name, hx in identities.items() if hx in cited]
         if not matched:
             # 文档用标签说明"这个哈希属于哪种产物"（`01-平台现状核验.md:166` 明写
@@ -266,10 +281,16 @@ def evaluate(doc_files: list[Path], tracked: set[str], docs_root: Path, repo_roo
                                "detail": "所引 SHA 在证据文件内部被记录（如 bom_sha256），属被验对象身份；"
                                          "该证据文件自身的字节哈希未经此值核对"})
             continue
-        # 行内其它证据文件才是这个哈希的主人（省略式路径、一条引用带多个哈希都会走到这里）
+        # 行内其它证据文件才是这个哈希的主人（省略式路径、一条引用带多个哈希都会走到这里）。
+        # 2026-10-19（§12.280）：归属池并入本行**全部**哈希，不再限于 cited 的 ±400 字符窗口——
+        # 长中文描述会把真身的哈希挤到窗外（08-测试与证据.md:64 实判例：SUMMARY.md 省略式引用，
+        # evidence.json 自身的 981C… 在窗口之外，owner 找不到主人被判 hash-unattributable）。
+        # 放宽仍零歧义：值必须与另一份证据文件的完整字节身份相等才归属；归属错位与复制错值
+        # 两个方向都由等值判据保护，错位走 advisory 由人裁决的规矩不变。
+        line_hash_pool = cited | {h.lower() for h in c.get("all_hashes", [])}
         owner = next((s for s in (resolve(x["raw"], docs_root, repo_root) for x in citations
                                   if x["doc"] == c["doc"] and x["line"] == c["line"])
-                      if s and identity_hashes(s).get("bytes_sha256") in cited), None)
+                      if s and identity_hashes(s).get("bytes_sha256") in line_hash_pool), None)
         if owner is not None:
             advisories.append({"kind": "hash-attributed-elsewhere", "doc": c["doc"], "line": c["line"],
                                "path": rel, "real_owner": owner.relative_to(repo_root).as_posix(),

@@ -38,7 +38,10 @@ PROCESS_LAUNCH_EXCEPTIONS = {"verify_mysql_history_lock.ps1"}
 # 容器形态里对应的位置是 `docker run -d`：CLI 立刻返回、进程由容器持有。
 # 代价是这里必须由**另一套**纪律代替硬超时：起后限时探活、停前核对 PID 归属、
 # 失败路径自己收尸。下面每条都真断言，所以这不是放宽，而是换个形状继续收紧。
-DAEMON_LAUNCH_EXCEPTIONS = {"native_mysqld_sandbox.ps1": "宿主原生 mysqld 守护进程（R-040 方案 B）"}
+DAEMON_LAUNCH_EXCEPTIONS = {"native_mysqld_sandbox.ps1": "宿主原生 mysqld 守护进程（R-040 方案 B）",
+                            "restore_local_stack.ps1": "48080 服务恢复守护：JVM 必须比脚本长寿（§12.283 场景恢复取证）——"
+                                                      "用 Start-Process + 后台探活（boot 死线 + 失败路径 taskkill 收尸，"
+                                                      "生命周期停前核对 PID 归属 get-owner），执行器的「必退」契约与之相反"}
 
 SELF_LAUNCH = re.compile(r"New-Object\s+System\.Diagnostics\.Process"
                          r"|\[[A-Za-z.]*Process(?:StartInfo)?::new\(\)"
@@ -121,7 +124,8 @@ class SandboxNativeSeamTests(unittest.TestCase):
         每条都是真断言，且这个例外必须**仍然命中**一次自造启动 ——
         否则它就成了"为让门禁变绿而留的空条目"（同 test_allowed_unbounded_sites_still_exist 的道理）。
         """
-        self.assertEqual({"native_mysqld_sandbox.ps1"}, set(DAEMON_LAUNCH_EXCEPTIONS),
+        self.assertEqual({"native_mysqld_sandbox.ps1", "restore_local_stack.ps1"},
+                         set(DAEMON_LAUNCH_EXCEPTIONS),
                          "守护进程例外被悄悄扩大：每加一个都要重谈对价")
         path = PRODUCTION_DIR / "native_mysqld_sandbox.ps1"
         self.assertTrue(path.is_file(), "例外指向的脚本已不存在，条目应一并删除")
@@ -150,6 +154,40 @@ class SandboxNativeSeamTests(unittest.TestCase):
                                 "netstat/初始化/隔离对照/shutdown 至少要 4 次有界调用")
         self.assertNotRegex(body, r"(?<![\w.\-])&\s+\$(?:mysqlBin|adminBin|mysqldBin)\b",
                             "客户端二进制必须走执行器，否则又回到无超时挂死")
+        self.assertEqual(1, len(dot_source_lines(text)), "使用执行器却没有 dot-source 它")
+
+        # ---- restore_local_stack.ps1（48080 服务恢复守护）的对价 ----
+        # ① 起后限时探活：$deadline = AddSeconds($BootTimeoutSeconds) + while 循环 + 探败抛错；
+        # ② 停之前核对 PID 归属：杀的是**监听 48080 的 owning process**，不是按名猜 pid；
+        # ③ 失败路径自己收尸：boot 死线后先 taskkill 再 throw（reap-boot-failed-jvm）；
+        # ④ 其余 docker/mysqladmin/taskkill 客户端调用仍走执行器。
+        path = PRODUCTION_DIR / "restore_local_stack.ps1"
+        self.assertTrue(path.is_file(), "例外指向的脚本已不存在，条目应一并删除")
+        text = read(path)
+        body = code_only(text)
+
+        launched = [(no, line) for no, line in code_lines(text) if SELF_LAUNCH.search(line)]
+        self.assertEqual(1, len(launched), f"守护进程启动点应有且只有 1 处，实得 {len(launched)}")
+        launch_no = launched[0][0]
+        window = "\n".join(text.splitlines()[launch_no - 2:launch_no + 4])
+        self.assertIn("$JavaPath", window, "唯一允许的自启动必须是服务 JVM 本身")
+        self.assertIn("-PassThru", window, "拿不到 PID 就无法在收尸时 taskkill")
+
+        self.assertIn("AddSeconds($BootTimeoutSeconds)", body,
+                      "boot 探活必须有硬上限（$BootTimeoutSeconds 死线）")
+        self.assertRegex(body, r"while \(\(Get-Date\) -lt \$deadline\)",
+                         "探活必须是死线循环，不是无限等")
+        self.assertIn("did not become healthy within", body,
+                      "探活失败必须抛错，不能带着没起来的 JVM 继续跑")
+        self.assertIn("exited during boot", body,
+                      "JVM 中途退出必须立刻报错，不能等死线耗尽")
+        self.assertGreaterEqual(body.count("Get-ServerOwningProcess"), 1,
+                                "stop 分支必须先解析 48080 的 owning process 再杀（按名猜 pid 不算）")
+        self.assertIn("/PID", body, "taskkill 必须带 /PID，禁止按映像名全杀")
+        self.assertIn("reap-boot-failed-jvm", body,
+                      "失败路径自己收尸，不留无人认领的 JVM")
+        self.assertGreaterEqual(body.count("Invoke-BoundedNative"), 4,
+                                "docker/mysqladmin/taskkill 客户端调用必须走执行器")
         self.assertEqual(1, len(dot_source_lines(text)), "使用执行器却没有 dot-source 它")
 
     def test_concurrent_session_launcher_shares_the_killer(self):

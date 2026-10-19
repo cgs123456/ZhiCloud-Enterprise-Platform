@@ -68,9 +68,11 @@ WMS_MERCHANT_TYPE = (1, 2, 3)
 # HR：V83__hr_base_tables.sql
 HR_DEPT_STATUS_ON = 10                    # 10 启用 / 20 禁用
 HR_POSITION_LEVEL = (10, 20, 30, 40, 50)  # 10 初级 20 中级 30 高级 40 专家 50 管理
-HR_GENDER = (10, 20)                      # 10 男 20 女
-HR_EMP_STATUS_ON = 10                     # 10 在职 / 20 离职 / 30 停薪
-HR_EMPLOYMENT_TYPE = (10, 20, 30, 40)     # 10 全职 20 兼职 30 实习 40 外包
+# HRM 员工轴（V161 增列 / V208 清退旧 gender/status/employment_type 后的唯一形态）
+HR_SEX = (1, 2)                           # 1 男 / 2 女（对齐 system_user_sex）
+HR_EMPLOYEE_ENTRY_STATUS_ON = 1           # 入职状态：1 在职（demo 全员在职，leave_time 恒空，与库中离职=4 不混用）
+HRM_EMPLOYEE_STATUS = (1, 4)              # 员工状态：1 正式 4 兼职（与库中 DISTINCT {1,4} 对齐）
+HR_EMPLOYEE_FORMAL_STATUS = 1             # 员工状态=1（正式）→ 聘用形式 type=1，其余=2
 # CRM：CrmCustomerLevelEnum（zhicloud-module-crm）
 CRM_LEVEL = (1, 2, 3)                     # 1 A重点 2 B普通 3 C非优先
 # crm_customer.version：V65__crm_optimistic_lock.sql DEFAULT 0，MyBatis-Plus 乐观锁
@@ -156,6 +158,8 @@ def with_audit(row: dict, cols: dict, tenant: int) -> dict:
         out.setdefault("deleted", 0)          # BIT(1) → b'0'；TINYINT(1) → 0
     if "tenant_id" in cols:
         out.setdefault("tenant_id", tenant)
+    if "version" in cols:
+        out.setdefault("version", 0)         # 乐观锁列（V201 等）补 0，与业务生成器审计块一致
     return out
 
 
@@ -459,17 +463,18 @@ def build_dataset(snapshot: dict, seed: int, tenant: int, scale: str) -> list:
         {"id": emp_ids[i],
          "emp_no": "DEMO_EMP%05d" % (i + 1),
          "name": "DEMO_员工-%05d" % (i + 1),
-         "gender": HR_GENDER[i % len(HR_GENDER)],
-         "birth_date": "19%02d-%02d-%02d" % (80 + (i % 20), (i % 12) + 1, (i % 28) + 1),
+         "sex": HR_SEX[i % len(HR_SEX)],
+         "birthday": "19%02d-%02d-%02d 00:00:00" % (80 + (i % 20), (i % 12) + 1, (i % 28) + 1),
          "id_card": None,                              # 见 UNVERIFIED_FIELDS
          "phone": str(PHONE_BASE + 4 * PHONE_BLOCK + i),
          "email": "emp%05d@%s" % (i + 1, EMAIL_DOMAIN),
          "dept_id": dept_ids[i % len(dept_ids)],
          "position_id": pos_ids[i % len(pos_ids)],
-         "hire_date": "20%02d-%02d-%02d" % (18 + (i % 8), (i % 12) + 1, (i % 28) + 1),
-         "leave_date": None,
-         "status": HR_EMP_STATUS_ON,
-         "employment_type": HR_EMPLOYMENT_TYPE[i % len(HR_EMPLOYMENT_TYPE)],
+         "entry_time": "20%02d-%02d-%02d 09:00:00" % (18 + (i % 8), (i % 12) + 1, (i % 28) + 1),
+         "leave_time": None,
+         "entry_status": HR_EMPLOYEE_ENTRY_STATUS_ON,
+         "employee_status": HRM_EMPLOYEE_STATUS[i % len(HRM_EMPLOYEE_STATUS)],
+         "type": 1 if HRM_EMPLOYEE_STATUS[i % len(HRM_EMPLOYEE_STATUS)] == HR_EMPLOYEE_FORMAL_STATUS else 2,
          "remark": "DEMO 员工（证件号刻意留空）", "sort": (i + 1) * 10}
         for i in range(n_emp)])
 

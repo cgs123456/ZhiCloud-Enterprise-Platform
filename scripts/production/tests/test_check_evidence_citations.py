@@ -107,6 +107,45 @@ class CategoryTests(Harness):
                                              "docs/evidence/production/two.json"})
         self.assertNotIn("hash-unattributable", self.kinds(report), json_dumps(report["violations"])[:400])
 
+    def test_own_file_hash_beyond_window_is_verified(self):
+        # 窗口判例的补集（08-测试与证据.md:64）：nearby 只收 ±400 字符，长中文描述会把文件
+        # **自身**的哈希挤到窗外，于是"evidence.json SHA-256 981C…"这条合法引用被判
+        # hash-unattributable。值 == 已解析文件自身合法身份的字面相等是零歧义配对，
+        # 必须直接计为核验；窗口尺寸不动，窗口配对规则不动。
+        self.evidence("long.json", payload=b"payload-a")
+        filler = "背景描述" * 300      # 1,200 字，把哈希推到窗口外
+        d = self.doc("00.md",
+                     [f"`evidence/production/long.json`；同表行{filler}执行脚本与 JSON SHA-256 `{SHA_A}`"])
+        report = self.evaluate([d], tracked={"docs/evidence/production/long.json"})
+        rel = "docs/evidence/production/long.json"
+        self.assertEqual([], [v for v in report["violations"] if v.get("path") == rel],
+                         json_dumps(report["violations"])[:300])
+        self.assertEqual(1, report["coverage"]["hash_citations_verified_match"],
+                         json_dumps(report["coverage"])[:300])
+
+    def test_line_scoped_owner_attribution_beyond_window(self):
+        # 真实判例的夹具化（08-测试与证据.md:64）：省略式 `.../SUMMARY.md` 的 tail 窗口装进了
+        # 一个无关的脚本哈希，而 evidence.json 自身的哈希在 400 字符之外——第一版 owner 池
+        # 只看 cited，找不到主人就误判 hash-unattributable。归属池扩到本行全部哈希后
+        # 按等值落到真身上（advisory 由人裁决）；池内等不到值仍按原规矩红。
+        run = self.ev / "run"
+        run.mkdir()
+        (run / "evidence.json").write_bytes(b"payload-a")
+        (run / "SUMMARY.md").write_bytes(b"summary-bytes")
+        far = "证据说明" * 300       # 1,200 字，把真身哈希挤到省略式窗口之外
+        line = ("`evidence/production/run/evidence.json`；`.../SUMMARY.md`（同内：脚本 SHA `"
+                f"{SHA_B}`；" f"{far}之后附上 JSON SHA-256 `{SHA_A}`）")
+        d = self.doc("00.md", [line])
+        report = self.evaluate([d])
+        rel = "docs/evidence/production/run/SUMMARY.md"
+        self.assertNotIn("hash-unattributable", self.kinds(report),
+                         "归属池扩大后省略式引用仍被红掉：等值归属出口没接上"
+                         + json_dumps(report["violations"])[:300])
+        hit = [a for a in report["advisories"]
+               if a["kind"] == "hash-attributed-elsewhere" and a.get("path") == rel]
+        self.assertEqual(1, len(hit), json_dumps(report["advisories"])[:300])
+        self.assertTrue(hit[0]["real_owner"].endswith("evidence.json"), json_dumps(hit)[:300])
+
     def test_directory_mentions_are_not_file_citations(self):
         d = self.doc("00.md", ["`evidence/production/**` 下的执行证据不入版本库"])
         report = self.evaluate([d])
