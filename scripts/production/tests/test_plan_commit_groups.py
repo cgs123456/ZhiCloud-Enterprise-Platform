@@ -101,26 +101,28 @@ class RealTreeTests(unittest.TestCase):
     def setUpClass(cls):
         cls.plan = gate.build_plan()
 
-    def test_current_plan_is_self_consistent_and_not_empty(self):
+    def test_current_plan_is_self_consistent(self):
+        # 真树只证明"自洽"：violations 为空、可提交计数与分组计数一致、git status 行数与
+        # untracked+modified 一致。"非空"不再钉真树——每次成功提交后真树都会变空，钉非空
+        # 会让工具在每次成功提交后自红（本仓库约定的"真树非空钉法"已移至合成输入，
+        # 见 test_analyzer_counts_non_empty_worktree）。
         self.assertEqual([], self.plan["violations"],
                          json.dumps(self.plan["violations"], ensure_ascii=False)[:800])
         w = self.plan["worktree"]
-        # 枚举为空就等于一切"通过"：必须证明它真的量到了工作树。
-        # 注意这里钉的是"非空"而不是某批的绝对数量：上一批 242 个路径提交完之后，
-        # 可提交面本来就该变小，把 >100 当常量会让工具在每次成功提交后自红。
-        self.assertGreater(w["items_seen"], 0, f"枚举为空，门禁在空转：{w}")
-        self.assertGreater(w["evidence_untracked"], 0,
-                           f"证据面异常小（本仓库按约定始终有未入库证据）：{w}")
-        pending_non_evidence = (w["untracked_total"] - w["evidence_untracked"]) + w["modified_tracked"]
-        if pending_non_evidence:
-            # 有真实待提交项却一个都没分类出去 = 规则集体失灵；
-            # 这里刻意不钉">100"这种某批次的绝对数量：上一批 242 个路径提交完之后
-            # 可提交面本来就该只剩几条，钉绝对值会让工具在每次成功提交后自红。
-            self.assertGreaterEqual(w["committable_items"], 1,
-                                    f"待提交 {pending_non_evidence} 项却分类为空：{w}")
         self.assertEqual(w["committable_items"], sum(g["count"] for g in self.plan["groups"]))
         self.assertEqual(w["git_status_uall_lines"],
                          w["untracked_total"] + w["modified_tracked"])
+
+    def test_analyzer_counts_non_empty_worktree(self):
+        # "非空"口径钉在合成输入上：喂一份非空工作树，分析器必须真正量到它（items_seen>0、
+        # committable_items 与分组计数一致），而不是在空转。结论与"今天是否脏"无关。
+        items = [CONTRACT, JAVA_MAIN, SQL_V119]
+        texts = {CONTRACT: json.dumps({"files": [{"path": JAVA_MAIN}]})}
+        out = plan(items, texts)
+        w = out["worktree"]
+        self.assertGreater(w["items_seen"], 0, w)
+        self.assertGreater(w["committable_items"], 0, w)
+        self.assertEqual(w["committable_items"], sum(g["count"] for g in out["groups"]))
 
     def test_scripts_and_tests_are_one_atomic_group(self):
         """本轮实测出的结论：.ps1、门禁 .py、守卫测试 .py 互相引用，分不开。
