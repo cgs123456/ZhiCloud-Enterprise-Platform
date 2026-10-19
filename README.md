@@ -14,14 +14,14 @@
 
 ## 📊 项目规模
 
-| 指标 | 数值（2026-10-09 实测，git ls-files） |
+| 指标 | 数值（2026-10-19 实测，git ls-files） |
 |------|------|
-| Java 源文件 | 5,882（主代码）+ 404（测试） |
-| Controller | 513（`@RestController`/`@Controller` 注解判定，含 `*/controller/` 下 512 个 + IoT `/rpc-api` 设备端 1 个，与 CI 门禁口径一致） |
+| Java 源文件 | 6,221（主代码）+ 460（测试） |
+| Controller | 531（`@RestController`/`@Controller` 注解判定，含 `*/controller/` 下 530 个 + IoT `/rpc-api` 设备端 1 个，与 CI 门禁口径一致） |
 | Maven 子模块 | 22 个（20 个进构建；IM / MP 未进构建，Report 进构建但未接入 server，见下方「模块启用状态」） |
-| Flyway 迁移脚本 | 158 个（最高 V151） |
-| SQL 文件 | 341 个（含 Flyway 迁移、多方言安装脚本、demo-data 与审计证据） |
-| 单元测试文件 | 404 个 |
+| Flyway 迁移脚本 | 219 个（最高 V213） |
+| SQL 文件 | 464 个（含 Flyway 迁移、多方言安装脚本、demo-data 与审计证据） |
+| 单元测试文件 | 460 个 |
 | 框架 Starter | 18 个（zhicloud-common + 17 个 spring-boot-starter-*） |
 
 ## 🏗️ 技术架构
@@ -114,7 +114,7 @@
 
 ## 🗄️ 数据库版本管理
 
-采用 Flyway 管理 **158 个迁移脚本（V1–V151）**，覆盖：
+采用 Flyway 管理 **219 个迁移脚本（V1–V213）**，覆盖：
 
 - V1 基线 → V6 期间结转 → V8 TOTP → V9 操作日志哈希链
 - ERP：多币种/预算/合并/固定资产/总账/采购询价/VMI/CPFR/MRP/信用管理
@@ -364,7 +364,31 @@ start-frontend.bat
 
 
 
-## 🔄 最近更新（2026-10-10）
+## 🔄 最近更新（2026-10-19）
+
+> 本节按时间倒序记录 2026-10-10 之后的重建工作（D 组 6 项 + E 组 + 并发 payoff + R-033 方向 2）。
+> 详细证据见 `docs/enterprise-platform/handoff/uncommitted-review-groups-20260928.md` §12.267–§12.278
+> 与 `docs/enterprise-platform/handoff/next-steps-20261016.md` 后记十九–二十六。
+
+- **D 组重建（2026-10-18/19，6 项全部收官）**：
+  - D1 CRM 回款审批 → ERP 收款单联动（事件驱动，幂等四层，outbox/inbox/relay）
+  - D2 FMS 三表消费期初（二轨按作用域接线）
+  - D3 WMS 库位维度后继（PDA 移库真实化 + 行级流水 + 批次孤儿冲洗）
+  - D4 MES 产能并入工艺路线 + MRP 结果行→工单行级回链
+  - D5 CRM 合同电子签真实化（Stub → 任务真状态机 10/20/30，V213 新表）
+  - D6 TMS↔WMS 签收全链（签收回传 → 出库单完成 → 库存扣减）
+- **E 组**：E1 WMS 库位状态单向门收口；E2 台账 8 处悬空引用登记（不修，按 §12.234.10 原文）；
+  E3–E5 经搜证确认已修或属"不扩面"；E6/E7 无 scope，标记"不重建"
+- **并发 payoff**：ERP 付款单创建幂等 broad catch 修复 + 采购入库 null totalPrice NPE 修复；
+  sandbox N=8 同键并发实测 16/16 ×3 通过
+- **R-033**：方向 1 证伪（Docker Desktop for Windows host 网络 ≠ Windows loopback）；
+  方向 2 实施（runner 沙箱授权主机 127.0.0.1 → %），实跑验证待安全责任人背书
+- **测试基线**：python 生产套件 663 passed / 0 failed / 3 skipped（PowerShell 面 6 + 2 环境/守卫已全部清零）；
+  WMS 294/0/0/0、ERP 240/0/0/0、CRM 130/0/0/5、MES 888/0/0/0
+- **门禁**：errcode 1974 / preauthorize 523 / scan_tx 0 / bare_throws OK / duplicate_ddl 671·0 / 契约 123/219/0 /
+  sql lint 219/16 零新增
+- **Flyway**：V213（最高），219 个迁移脚本
+
 
 - **代码 Review**：修复 BPM 状态回写 listener 同族 `Long.parseLong` 缺陷（HR/OA×3）、签名框架 timestamp 500、操作日志 bizNo 审计丢失、预算明细 N+1（§12.158）
 - **前后端接口匹配**：扫描 2,435 前端调用 vs 2,974 后端端点；修复 IoT OTA 固件缺 DELETE 端点 + 短信渠道前导 `/`（§12.159）
