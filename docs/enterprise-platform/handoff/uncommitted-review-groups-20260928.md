@@ -13322,3 +13322,70 @@ D5 已收官（§12.271）、**D6 收官（本项）**。**D 组六项全部收�
 - 服务现状：pid 228（jar 642,913,690B，Flyway 212/213 success=1），沙箱
   `zhicloud_sandbox_v140` / tenant 9001；E2E272 夹具已收尾清理（前缀面 tms 运单 0、WMS 订单 6180005
   还原 status 50/waybill NULL、库存 A/B 还原 252.977/694.846、库存历史 0、车辆/司机 10；独立探针复核全绿）。
+
+## 12.273 E 组第 1 项（E1）——WMS 库位状态单向门收口（D 组 E1 / §12.273）
+
+### 12.273.1 背景与目标
+
+E 组第 1 项（用户令「按 A→B→C→D→E 顺序连续推进」）。**E 组（E1–E7）明细系重建产物**（原会话明细未落盘，
+同 D 组披露）；E1 明细经搜证重建并锁定于 `Temp/zc_adr_273.md`（§0 候选池 12 项回源复核后收口为 1 项；
+来源登记：§12.234.2 #5「WMS 库位状态是只写不生效字段」+ §12.235.4「库位状态单向门」+ §12.235.6
+「建单即可写入终态」统一修法先例）。
+
+搜证结论：§12.234.2 / §12.235.x / §12.259.5 / §12.261.5 / §12.264 中大量"未修"条目已被后续会话修掉
+（§12.235.5 的 10 项全部已修、§12.224.2 Top5 全部已修、WMS location status 已有 4 处消费、
+QMS doc 前端已有 submit/approve/reject/revoke、CRM sale order 的 ship/complete/cancel 与 submit→BPM 已真实现）。
+本 ADR 锚定仍开放且自包含的候选项之首：**WMS 库位状态单向门**（status 直落库 + BeanUtils 全量拷贝，
+调用方建单可直接写入 LOCKED/DISABLED 终态）。
+
+缺陷面（先证后修，四条）：
+1. `WmsLocationSaveReqVO.status` 为 `@NotNull` 无 `@InEnum`，任意整数可通过 Bean Validation。
+2. `WmsLocationServiceImpl.createLocation`：`BeanUtils.toBean(createReqVO, WmsLocationDO.class)` 后直接 insert，
+   status 直落库，调用方传 LOCKED(30)/DISABLED(40) 即可创建"已锁定/已禁用"库位，绕过 idle→locked/disabled
+   流转门禁。
+3. `updateLocation` 已 `setStatus(null)`（MyBatis 跳过，保持原值）——更新路径安全。
+4. `validateLocationStatus` 仅校验"是合法枚举值"，不校验"是允许的初始态"——单向门的根因。
+
+真机影响：WMS 库位状态是移库/收货/发运流程的门禁依据（LOCKED/DISABLED 库位禁止占用/出入库）；
+一次 POST 即可造出"已锁定"库位，使门禁失效。
+
+### 12.273.2 实施内容（1 文件改 + 1 测试）
+
+- **wms** `WmsLocationServiceImpl.java`：`createLocation` +`setStatus(IDLE)`（force，忽略 client 输入，
+  与 §12.235.6 同一条领域规则）。
+- **wms** `WmsLocationServiceImplUnitTest.java`：+1 `testCreateLocation_statusForcedToIdle`（传 LOCKED(30)，
+  断言落库 IDLE(10)）。
+- 零迁移、零错误码、零权限、零菜单、零前端逻辑、零 VO 改动。
+
+### 12.273.3 验证链（逐项实测）
+
+| 环节 | 结果 |
+|------|------|
+| 基线 | WMS 模块 **294/0/0/0**（E1 实施前，D6 收官后读数） |
+| 实施 | `zc_edit_273_a.py`（code fix + test ×1）；守卫式单次运行 |
+| 定向单测 | **19/0/0/0**（`WmsLocationServiceImplUnitTest`：18+1，statusForcedToIdle 全绿） |
+| 模块回归 | **WMS 294/0/0/0**（0 失败 0 错误 0 跳过，BUILD SUCCESS） |
+| 门禁 | errcode **1974** ✓；preauthorize 523 Controller 面 RC=0 ✓；scan_tx **0** ✓；bare_throws OK ✓；duplicate_ddl tables **671·findings=0** ✓；契约 **tracked=123·scanned=219·findings=0** ✓ |
+| SQL lint | **219 文件 / 16 条 R5** 全既有（E1 零新增；migration 目录口径；RC=1 既有红） |
+| do_ddl（辅助） | WMS H2 口径 **3 项预存缺失**（H2 部分文件设计，非新增） |
+| 前端 | 无变更（D5 验证沿用：`ts:check` exit=0 + `build:prod` 40.35s） |
+| 重打/冷启 | 无迁移 → 不重打（D6 jar 642,913,690B / Flyway 213 沿用） |
+| E2E | 无（纯代码 + unit tests，无 DB 迁移，无外部数据） |
+
+E1 实测：createLocation 传 LOCKED(30) → 落库 IDLE(10)（ArgumentCaptor 断言）；updateLocation 仍 status=null（保持原值，MyBatis 跳过）；validateLocationStatus 仍拒绝非法枚举值（99 → LOCATION_STATUS_INVALID，既有测试 18/18 全绿）。
+
+### 12.273.4 失败与缺陷登记（诚实链）
+
+1. 无失败。实施脚本一次通过（零中断）；单测一次全绿（零 fix 轮）；WMS 模块回归 294/0/0/0；门禁 6 项 RC=0；E2E 不适用（纯代码 + unit tests）。
+2. **既有红不重复登记**：sql lint 16 条 R5；python 8 红（PowerShell 面 6 + 2 项环境/守卫，本会话 deferred (b) 已修 1 条）；check_evidence_citations 1；台账 §12.201/§12.202–213/§12.234.10；event_outbox 6 条旧 DEAD；do_ddl WMS 3 项预存缺失。本项零新增红。
+
+### 12.273.5 不扩面与已知限制登记
+
+1. `@InEnum` 不加（force 已覆盖，与 §12.235.6 同口径）。
+2. 前端 `status` 字段保留（兼容，服务端忽略；与 §12.235.4「先定领域规则再统一处理」一致，不先打补丁）。
+3. update 路径 `status=null` 保持（status 只能由 idle/enable/lock/disable 流转方法写入）。
+4. 零迁移、零错误码、零权限、零菜单、零前端逻辑。
+
+### 12.273.6 E 组矩阵基线
+
+E1 收官（本项）。E2（台账悬空引用）/E3（CRM 销售订单驳回重提）/E4（APS 空隙建模）/E5（FMS/HRM 接线与旧 /hr 退役）待续；E6/E7 仍无 scope。重建依据以本重建口径与 `Temp/zc_adr_273.md` 为准。待兑现登记项沿用（zc_e2e_preclean.py 硬删收窄已完成；test_plan_commit_groups 真树钉法已移合成输入）。

@@ -587,3 +587,22 @@
   （653 passed / 9 failed / 3 skipped，307.84s），9 红构成同前登记、本项零新增红；服务 pid 228 运行中
   （jar 642,913,690B，Flyway 212/213 success=1），E2E272 夹具已收尾清理（前缀面全 0、订单 6180005
   还原、库存还原、车辆/司机 10）。
+
+## 后记二十一：E 组第 1 项（E1）——§12.273 WMS 库位状态单向门收口
+
+- **已完成**：E 组第 1 项重建（E 组明细系重建产物）——WMS 库位 `status` 直落库 + BeanUtils 全量拷贝导致的单向门收口：
+  `WmsLocationServiceImpl.createLocation` 强制 `setStatus(IDLE)`（忽略调用方传入的任何 status，与 §12.235.6
+  同一条领域规则）；`updateLocation` 保持 `status=null`（MyBatis 跳过，保持原值，status 只能由
+  idle/enable/lock/disable 流转方法写入）。证据：基线 WMS 294/0/0/0 → 定向 19/0/0/0（+1 statusForcedToIdle）→
+  回归 294/0/0/0 → 门禁 6 项 RC=0（errcode 1974 / preauthorize 523 / scan_tx 0 / bare_throws OK /
+  duplicate_ddl 671·0 / 契约 123/219/0）→ sql lint 219/16 零新增 → do_ddl WMS 3 项预存 → 前端无变更
+  （D5 验证沿用）→ 无迁移（不重打，D6 jar 沿用）→ E2E 不适用（纯代码 + unit tests）。E1 实测：createLocation
+  传 LOCKED(30) → 落库 IDLE(10)（ArgumentCaptor 断言）；updateLocation 仍 status=null；validateLocationStatus
+  仍拒绝非法枚举值（99 → LOCATION_STATUS_INVALID，既有 18 测试全绿）。
+- **口径提醒**：`@InEnum` 不加（force 已覆盖）；前端 `status` 字段保留（兼容，服务端忽略）；update 路径
+  `status=null` 保持；零迁移/零错误码/零权限/零菜单/零前端逻辑；代码改动 1 处（createLocation +setStatus）+
+  测试 1 例。
+- **失败登记**：无。实施脚本一次通过；单测一次全绿；WMS 模块回归 294/0/0/0；门禁 6 项 RC=0；既有红零新增。
+- **不扩面登记**：见 §12.273.5。
+- **下一项**：E2（台账 8 处悬空引用，纯文档）；E3（CRM 销售订单驳回/撤回重提）；E4（APS 空隙建模）；
+  E5（FMS/HRM 接线与旧 /hr 退役）；E6/E7 仍无 scope。

@@ -60,6 +60,10 @@ public class WmsLocationServiceImpl implements WmsLocationService {
 
         // 插入
         WmsLocationDO location = BeanUtils.toBean(createReqVO, WmsLocationDO.class);
+        // 状态由服务端固定为「空闲」：建单不接受调用方传入的任何 status（与 §12.235.6
+        // 同一条领域规则——通用新增/修改都不接受外部状态值），防止建单即可写入
+        // LOCKED/DISABLED 终态的单向门。
+        location.setStatus(WmsLocationStatusEnum.IDLE.getStatus());
         locationMapper.insert(location);
         return location.getId();
     }

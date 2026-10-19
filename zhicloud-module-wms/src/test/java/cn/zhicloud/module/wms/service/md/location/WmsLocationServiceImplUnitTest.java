@@ -119,6 +119,28 @@ public class WmsLocationServiceImplUnitTest {
     }
 
     @Test
+    public void testCreateLocation_statusForcedToIdle() {
+        when(zoneService.validateZoneExists(10L)).thenReturn(WmsZoneDO.builder().id(10L).warehouseId(77L).build());
+        when(locationMapper.selectByCode(10L, "L001")).thenReturn(null);
+        when(locationMapper.selectByBarcode("BC001")).thenReturn(null);
+        doAnswer(invocation -> {
+            WmsLocationDO arg = invocation.getArgument(0);
+            arg.setId(200L);
+            return 1;
+        }).when(locationMapper).insert(any(WmsLocationDO.class));
+
+        // 调用方试图建单即锁定：status 应被服务端强制为「空闲」，忽略外部输入
+        WmsLocationSaveReqVO reqVO = buildSaveReqVO(null, "BC001");
+        reqVO.setStatus(WmsLocationStatusEnum.LOCKED.getStatus());
+        Long id = locationService.createLocation(reqVO);
+
+        assertEquals(200L, id);
+        ArgumentCaptor<WmsLocationDO> captor = ArgumentCaptor.forClass(WmsLocationDO.class);
+        verify(locationMapper).insert(captor.capture());
+        assertEquals(WmsLocationStatusEnum.IDLE.getStatus(), captor.getValue().getStatus());
+    }
+
+    @Test
     public void testUpdateLocation_success() {
         when(locationMapper.selectById(5L)).thenReturn(WmsLocationDO.builder().id(5L).build());
         when(zoneService.validateZoneExists(10L)).thenReturn(WmsZoneDO.builder().id(10L).warehouseId(77L).build());
