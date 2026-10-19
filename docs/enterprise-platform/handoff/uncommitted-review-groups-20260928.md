@@ -13559,3 +13559,18 @@ E1 收官（§12.273）、E2 收官（§12.274）、并发实测 payoff 收官�
 ### 12.276.6 E 组矩阵基线
 
 E1 收官（§12.273）、E2 收官（§12.274）、并发实测 payoff 收官（§12.275 + 本节补记）。E3（CRM 销售订单驳回/撤回重提）/E4（APS 空隙建模）/E5（FMS/HRM 接线与旧 /hr 退役）经搜证确认已修或属"不扩面"（§12.273.1 候选池回源复核）；E6/E7 仍无 scope。重建依据以本重建口径与 `Temp/zc_adr_273.md` / `zc_adr_272.md` / `zc_adr_271.md` 为准。待兑现登记项沿用。
+
+### 12.276.7 提交后实证（9169a59e5 推送后补记）
+
+- 提交：`9169a59e5`（3 文件，+60/−6）；**直连推送成功**（`cae08bf6c..9169a59e5`，未挂代理）；
+  远端 master = `9169a59e5f6c2c7faad3b197cc2702277f81b50a` = 本地 HEAD。
+- 工作区全净（`git status --porcelain` 空）。
+- plan 门禁：`plan_commit_groups.py --json` exit=0，`violations=[]`（worktree 各计数全 0）。
+- python 生产套件全量复跑：**666 tests（655 passed / 8 failed / 3 skipped），348.96s**——8 红构成：
+  `test_check_evidence_citations` coverage-shrink 守卫 + `test_native_mysqld_sandbox` 未标记数据目录拒绝例 +
+  PowerShell 面 6（`test_powershell_portability.py`×3 + `test_powershell_portability_cli.py`×3）；
+  与前项登记的「PowerShell 面 6 + 2 项环境/守卫」一致，**本项零新增红**
+  （bare_throws 门禁回归已收口，`test_check_bare_throws` 由红转绿）。
+- 服务现状：pid 9392（jar 642,913,877B，Flyway 212/213 success=1），沙箱
+  `zhicloud_sandbox_v140` / tenant 9001；并发 payoff 夹具已收尾清理（付款单 8、payment_price NULL、
+  E2ECONC 前缀 0、purchase_in 5600005 状态 20 不变）。

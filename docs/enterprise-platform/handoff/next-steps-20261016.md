@@ -643,3 +643,8 @@
 - **失败登记**：bare_throws 门禁回归 1 处（cae08bf6c 引入的 `throw new RuntimeException(e)` 未计豁免预算，已修）；sandbox 并发实测暴露第二个真实缺陷（null totalPrice NPE，已修）；既有红零新增。
 - **不扩面登记**：见 §12.276.5。
 - **下一项**：E3/E4/E5 经搜证确认已修或属"不扩面"，E6/E7 仍无 scope；E 组 effectively 完成。待兑现登记项沿用。
+
+**提交后补记（`9169a59e5` 推送后实证）**：远端 master=9169a59e5f6c2c7faad3b197cc2702277f81b50a
+  （直连推送成功，未挂代理）；工作区全净；plan 门禁 exit=0、violations=[]；python 全量复跑 666 tests
+  （655 passed / 8 failed / 3 skipped，348.96s），8 红构成同前登记、本项零新增红；服务 pid 9392 运行中
+  （jar 642,913,877B，Flyway 212/213 success=1），并发 payoff 夹具已收尾清理。
