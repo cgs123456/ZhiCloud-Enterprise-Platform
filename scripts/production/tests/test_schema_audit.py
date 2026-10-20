@@ -173,6 +173,23 @@ class P0ChecksTest(unittest.TestCase):
         self.assertEqual(["id_not_auto_increment"], categories(result))
         self.assertIn("v92_verify", result.findings[0].sources)
 
+    def test_ddl_only_table_is_not_forced_to_have_auto_increment_id(self):
+        tables = [table_row("qrtz_locks")]
+        columns = [column("qrtz_locks", "lock_name", "varchar(100)", "varchar", key="PRI", char_length="100")]
+        indexes = index_rows("qrtz_locks", "PRIMARY", "0", ["lock_name"])
+        entry = sa.ExpectedTable(name="qrtz_locks")
+        entry.add_column("lock_name", "ddl")
+        entry.sources.add("ddl")
+        result = sa.analyze({"qrtz_locks": entry}, live_from(tables, columns, indexes))
+        self.assertEqual([], categories(result))
+
+    def test_do_string_id_does_not_require_auto_increment(self):
+        tables = [table_row("jimu_dict")]
+        columns = [column("jimu_dict", "id", "varchar(32)", "varchar", key="PRI", char_length="32")]
+        indexes = index_rows("jimu_dict", "PRIMARY", "0", ["id"])
+        result = sa.analyze(expected_table("jimu_dict", []), live_from(tables, columns, indexes))
+        self.assertEqual([], categories(result))
+
     def test_missing_id_column_is_p0_blocker(self):
         tables = [table_row("erp_sale_order")]
         columns = [column("erp_sale_order", "order_no", "varchar(64)", "varchar", char_length="64", key="PRI")]
@@ -435,6 +452,24 @@ class StaticParsingTest(unittest.TestCase):
             {"id": "Long", "custom_col": "String", "total_price": "BigDecimal"}, fields
         )
 
+    def test_parse_do_fields_ignores_comments_nested_classes_and_static_fields(self):
+        text = (
+            '@TableName("mp_menu")\n'
+            "public class MpMenuDO extends BaseDO {\n"
+            "    private static final Long ID_ROOT = 0L;\n"
+            "    /** 注释里的 @TableField(\"menuKey\") 不是注解。 */\n"
+            "    private String menuKey;\n"
+            "    private String event;\n"
+            "    @Data\n"
+            "    public static class Article {\n"
+            '        @TableField("picUrl")\n'
+            "        private String picUrl;\n"
+            "    }\n"
+            "}\n"
+        )
+        fields = sa.parse_do_fields(text)
+        self.assertEqual({"menu_key": "String", "event": "String"}, fields)
+
     def test_parsed_columns_match_check_do_ddl(self):
         sys.path.insert(0, str(SCRIPTS_DIR.parent))
         import check_do_ddl
@@ -511,6 +546,41 @@ class StaticParsingTest(unittest.TestCase):
         self.assertIn("tenant_id", entry.columns)
         self.assertIn(("tenant_id", "bill_no"), entry.unique_indexes)
         self.assertIn(("tenant_id", "bill_no"), entry.indexes)
+
+    def test_parse_ddl_applies_drop_and_rename_in_version_order(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            (root / "V1__create.sql").write_text(
+                "CREATE TABLE `erp_demo` (\n"
+                "  `id` bigint NOT NULL AUTO_INCREMENT,\n"
+                "  `old_col` varchar(64),\n"
+                "  `status` varchar(16),\n"
+                "  PRIMARY KEY (`id`),\n"
+                "  KEY `idx_status` (`status`)\n"
+                ") ENGINE = InnoDB;\n"
+                "CREATE TABLE `erp_legacy` (\n"
+                "  `id` bigint NOT NULL AUTO_INCREMENT,\n"
+                "  PRIMARY KEY (`id`)\n"
+                ") ENGINE = InnoDB;\n",
+                encoding="utf-8",
+            )
+            (root / "V2__change.sql").write_text(
+                "ALTER TABLE `erp_demo` CHANGE COLUMN `old_col` `new_col` varchar(128);\n"
+                "ALTER TABLE `erp_demo` DROP COLUMN `status`;\n",
+                encoding="utf-8",
+            )
+            (root / "V3__drop.sql").write_text(
+                "DROP TABLE IF EXISTS `erp_legacy`;\n", encoding="utf-8"
+            )
+            tables = sa.parse_ddl_expectations(sorted(root.glob("V*.sql")))
+
+        entry = tables["erp_demo"]
+        self.assertNotIn("old_col", entry.columns)
+        self.assertNotIn("status", entry.columns)
+        self.assertIn("new_col", entry.columns)
+        self.assertEqual("varchar(128)", entry.ddl_types["new_col"])
+        self.assertNotIn(("status",), entry.indexes)
+        self.assertNotIn("erp_legacy", tables)
 
     def test_check_do_ddl_applies_static_alter_add_column(self):
         sys.path.insert(0, str(SCRIPTS_DIR.parent))

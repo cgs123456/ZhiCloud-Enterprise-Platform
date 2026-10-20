@@ -14154,3 +14154,74 @@ demo-data 全量重生实跑 status=passed，R-033 方向 2 实跑验证兑现�
 - 独立复核未误删企业字典：`crm_product_*`、`mes_wm_product_*`、`iot_product_*`、
   `im_group_member_*` 均为企业前缀，保留。
 - `gate3/production_ready=False` 签核位未翻转。
+## §12.290 生产可用性复验：V215 MP 事件列 + schema/许可门禁分层（2026-10-20）
+
+承 §12.289，本轮继续补齐本地可执行验证，并修正上一轮 schema 审计中大量
+“静态 DDL 并集”造成的假阳性。结论不变：**当前只能证明本地沙箱可运行，
+不能宣称生产可用；`production_ready=False`、`gate3_passed=False`、Go/No-Go=No-Go
+均保持原样。**
+
+### V215：`mp_message` 事件列补齐
+
+- 根因：`MpMessageDO` 把顶层 `event` / `eventKey` 当作普通持久化字段，
+  MyBatis-Plus 生成的 SELECT/INSERT 会引用 `event`、`event_key`；V155 建表未包含
+  这两列，事件消息分页或落库会报 `Unknown column`。
+- `V215__mp_message_event_columns.sql` 以可空列补齐 `event varchar(64)`、
+  `event_key varchar(255)`，不重写历史文本消息。
+- `V215_verify.sql` 3/3 PASS：Flyway 215 success、两列存在、类型/可空性符合。
+- 沙箱重启后 `GET /admin-api/mp/message/page?accountId=1` 返回 `code=0`，
+  证明 DO 生成的查询不再触发缺列。
+- `migration-contract.json`：tracked=125 / scanned=221 / findings=0；V215 lint 1/0。
+
+### Schema 审计假阳性分层与修正
+
+上一轮 `schema_audit` 的 304 findings / 136 P0 不能直接当成 136 个生产缺陷：
+
+- 84 张“缺表”全部是后续迁移主动删除：V140 商业域 74 张、V190 `fms_currency`、
+  V208 HR legacy 9 张；这些表没有残留 DO。
+- 25 个“缺列”中，6 个是 V208 主动 DROP 的 `hr_employee` 旧列；19 个来自
+  DO 嵌套 DTO 字段或 Javadoc 里的 `@TableField` 文本（例如 `iot_data_rule`、
+  `iot_scene_rule`、`mp_menu`、`mp_message.Article`），并非表列。
+- 11 个 `qrtz_*` 是 Quartz 自管表，没有 MyBatis-Plus DO，也不使用 `id` 主键。
+- 16 个 `jimu_*` 是报表引擎的字符串主键表，不应要求 AUTO_INCREMENT。
+- 其中 `mp_message.event` / `event_key` 是唯一真实缺列，已由 V215 修复。
+
+审计器已改为按 Flyway 版本顺序重放 `CREATE/ALTER/DROP/CHANGE/RENAME`，剥离 SQL
+注释；DO 解析只接受顶层、非 static 字段，避免嵌套 DTO 与注释误判；id 规则只对
+带 DO 或 V92 自增清单的表生效，字符串/二进制主键不强制自增。
+
+修正后沙箱结果：expected=587 / present=587，expected columns=9554 / present=9554，
+**P0=0**；`fail-on P0` exit=0。仍余 P1=60（FMS/HR/MP 的 `tenant_id` 首列索引缺失）
+和 P2=110（列类型声明漂移）；P1 不阻塞默认门禁，但属于生产性能风险，未在本轮
+擅自扩张为 60 条索引迁移。
+
+### 本地运行证据
+
+- 完整 Maven：459 个 surefire 报告，3743 tests，0 failures / 0 errors / 224 skipped，
+  `BUILD SUCCESS`。
+- `pytest scripts/production/tests`：678 passed / 3 skipped / 190 subtests，
+  487.86s，rc=0。
+- 六域 E2E（重启 V215 后复跑）：MES 21、CRM 36、ERP 33、WMS 90、HRM 47、TMS 23，
+  合计 250/250 PASS，rc=0。
+- 前端：`pnpm ts:check` rc=0；`pnpm build:prod` rc=0（1m27s，dist-prod 生成）。
+- 其他：V214 verify 9/9；约束语义 5/5；preflight ready；迁移契约 pass；
+  commit readiness 17/17；重复 DDL 0；证据凭据 0 hits；证据引用 0 violations；
+  安全基线 611 文件 P0=0/P1=216；租户隔离静态 343 项 P1（均未清零）。
+
+### 真实未通过项
+
+- **许可策略门禁 fail**：基于 `maven-license-inventory-regen-20260928_0127.json`
+  与当前 `license-policy.json`，components=862、allowed=811、denied=13、
+  review_required=38、runtime_blocked=38、allowlist_hits=0，exit=1。该门禁是
+  合规/法务签字项，不能由代码或本地沙箱替代。
+- 完整 SQL lint 仍有 16 个历史迁移 `MISSING_TRAILING_NEWLINE`；这些文件受
+  `migration-contract.json` 字节锁和 Flyway checksum 约束，本轮未改写历史文件。
+  V215 本身 lint 1/0。
+- P1=60 的 FMS/HR/MP `tenant_id` 索引缺口未处理；需要单独迁移、在线 DDL 评估
+  与容量/锁表验证。
+
+### 生产边界
+
+G4–G8 仍未执行：真实 K8s/Helm、迁移 Job、TLS/Secret/MFA、HA/failover、备份恢复/
+RTO/RPO、监控告警/on-call、合规矩阵与独立复核。上述任一项缺失，都不能把本地
+沙箱结果外推为生产可用。`production_ready=False` 不由本轮验证翻转。

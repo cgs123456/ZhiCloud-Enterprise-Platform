@@ -25,6 +25,11 @@ INHERITED_COLUMNS = {
     "creator", "create_time", "updater", "update_time", "deleted", "tenant_id",
 }
 
+FIELD_TYPE_RE = re.compile(
+    r"^\s*private\s+(?:static\s+|final\s+|transient\s+)*"
+    r"([\w.<>,\[\]\s]+?)\s+(\w+)\s*;",
+    re.MULTILINE,
+)
 FIELD_RE = re.compile(
     r"^\s*private\s+(?:static\s+|final\s+|transient\s+)*"
     r"[\w.<>,\[\]\s]+?\s+(\w+)\s*;",
@@ -54,30 +59,82 @@ def camel_to_snake(name: str) -> str:
     return re.sub(r"(?<!^)(?=[A-Z])", "_", name).lower()
 
 
+def _mask_java(text: str, *, strings: bool) -> str:
+    """把 Java 注释（以及可选的字符串字面量）替换为空格，保留换行与长度。
+
+    这样字段正则和花括号深度不会命中注释里的 ``@TableField``、嵌套类字段
+    或字符串里的 ``{}``；注解值本身需要保留，所以解析列名时只屏蔽注释。
+    """
+    chars = list(text)
+    i = 0
+    n = len(text)
+    while i < n:
+        if text.startswith("/*", i):
+            end = text.find("*/", i + 2)
+            end = n if end < 0 else end + 2
+        elif text.startswith("//", i):
+            end = text.find("\n", i + 2)
+            end = n if end < 0 else end
+        elif strings and text[i] in ('"', "'"):
+            quote = text[i]
+            end = i + 1
+            while end < n:
+                if text[end] == "\\":
+                    end += 2
+                elif text[end] == quote:
+                    end += 1
+                    break
+                else:
+                    end += 1
+        else:
+            i += 1
+            continue
+        for pos in range(i, min(end, n)):
+            if chars[pos] != "\n":
+                chars[pos] = " "
+        i = end
+    return "".join(chars)
+
+
+def parse_do_field_map(text: str) -> dict[str, str]:
+    """解析 DO 顶层字段，返回 {列名: Java 类型}。
+
+    只接受类体第一层的非 static 字段：嵌套类里的 DTO/JSON 字段不是数据库列，
+    注释里的 ``@TableField`` 也不是注解。列名规则与 ``check_do_ddl`` 一致。
+    """
+    commentless = _mask_java(text, strings=False)
+    code_only = _mask_java(text, strings=True)
+    fields: dict[str, str] = {}
+    for match in FIELD_TYPE_RE.finditer(code_only):
+        if re.search(r"\bstatic\b", match.group(0)):
+            continue
+        prefix = code_only[:match.start()]
+        if prefix.count("{") - prefix.count("}") != 1:
+            continue
+        java_type, name = match.group(1).strip(), match.group(2)
+        head = code_only[:match.start()]
+        boundary = max(head.rfind(";"), head.rfind("}"))
+        segment = commentless[boundary + 1:match.start()]
+        annotation = TABLE_FIELD_RE.search(segment)
+        if annotation:
+            body = annotation.group(1)
+            if re.search(r"exist\s*=\s*false", body):
+                continue
+            column = re.search(r'(?:value\s*=\s*)?"([^"]+)"', body)
+            if column:
+                fields[column.group(1).lower()] = java_type
+                continue
+        fields[camel_to_snake(name)] = java_type
+    return fields
+
+
 def parse_do(path: Path):
     """解析单个 DO 文件，返回 (表名, {列名})。表名未显式声明时返回 None。"""
     text = path.read_text(encoding="utf-8", errors="replace")
     m = TABLE_NAME_RE.search(text)
     if not m:
         return None, set()
-    table = m.group(1)
-
-    columns = set()
-    for fm in FIELD_RE.finditer(text):
-        field = fm.group(1)
-        # 向前回看该字段的注解块，识别 exist=false / 自定义列名
-        head = text[max(0, fm.start() - 400):fm.start()]
-        ann = TABLE_FIELD_RE.search(head[head.rfind("/**"):] if "/**" in head else head)
-        if ann:
-            body = ann.group(1)
-            if re.search(r"exist\s*=\s*false", body):
-                continue
-            cm = re.search(r'(?:value\s*=\s*)?"([^"]+)"', body)
-            if cm:
-                columns.add(cm.group(1).lower())
-                continue
-        columns.add(camel_to_snake(field))
-    return table, columns
+    return m.group(1), set(parse_do_field_map(text))
 
 
 def parse_ddl(paths):

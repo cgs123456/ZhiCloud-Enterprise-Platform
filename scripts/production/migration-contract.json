@@ -870,6 +870,13 @@
       "sha256": "e2cdfff49a4169873e7d452388532c36486d9bc2a62cd449a54fdd53b31e2d8b",
       "verification_file": "V214_verify.sql",
       "verification_sha256": "d546aad67eb97cc575e90bbcee013225abcd04b566293391ce65e6d8904fe88f"
+    },
+    {
+      "version": 215,
+      "file": "V215__mp_message_event_columns.sql",
+      "sha256": "556cf8b7eb89950784cac355a7d6b565d5020eb8bceb206972414f5bcaf34a4c",
+      "verification_file": "V215_verify.sql",
+      "verification_sha256": "4cbb2fecdf5715bde6b6e8e3984908d3de360b6e2438777ba25927ea12b42232"
     }
   ]
 }

@@ -43,8 +43,8 @@ if str(_SCRIPTS_DIR) not in sys.path:
 from check_do_ddl import (  # noqa: E402
     CREATE_TABLE_RE,
     INHERITED_COLUMNS,
-    TABLE_FIELD_RE,
     camel_to_snake,
+    parse_do_field_map,
 )
 
 SEVERITIES = ("P0_BLOCKER", "P1_HIGH", "P2_REVIEW")
@@ -56,12 +56,6 @@ AUTO_FILLED_COLUMNS = set(INHERITED_COLUMNS) | {"id"}
 DEFAULT_DDL_GLOB = "zhicloud-server/src/main/resources/db/migration/V*.sql"
 DEFAULT_LEGACY_DDL_GLOB = "sql/mysql/*.sql"
 DEFAULT_VERIFY_SQL_DIR = "script/enterprise-platform-upgrade/verification"
-
-FIELD_TYPE_RE = re.compile(
-    r"^\s*private\s+(?:static\s+|final\s+|transient\s+)*"
-    r"([\w.<>,\[\]\s]+?)\s+(\w+)\s*;",
-    re.MULTILINE,
-)
 
 DDL_COLUMN_RE = re.compile(
     r'^[`"]?(\w+)[`"]?\s+'
@@ -93,6 +87,23 @@ ALTER_ADD_UNIQUE_RE = re.compile(
 ALTER_ADD_KEY_RE = re.compile(
     r"\bADD\s+(?:KEY|INDEX)\s+[`\"]?\w+[`\"]?\s*\(([^)]*)\)",
     re.IGNORECASE,
+)
+ALTER_DROP_COLUMN_RE = re.compile(
+    r"\bDROP\s+COLUMN\s+(?:IF\s+EXISTS\s+)?[`\"]?(\w+)[`\"]?",
+    re.IGNORECASE,
+)
+ALTER_CHANGE_COLUMN_RE = re.compile(
+    r"\bCHANGE\s+(?:COLUMN\s+)?[`\"]?(\w+)[`\"]?\s+[`\"]?(\w+)[`\"]?\s+"
+    r"([A-Za-z][A-Za-z0-9]*(?:\s*\([^)]*\))?(?:\s+unsigned)?(?:\s+zerofill)?)",
+    re.IGNORECASE,
+)
+ALTER_RENAME_COLUMN_RE = re.compile(
+    r"\bRENAME\s+COLUMN\s+[`\"]?(\w+)[`\"]?\s+TO\s+[`\"]?(\w+)[`\"]?",
+    re.IGNORECASE,
+)
+DROP_TABLE_RE = re.compile(
+    r"^\s*DROP\s+TABLE\s+(?:IF\s+EXISTS\s+)?([^;]+);",
+    re.IGNORECASE | re.MULTILINE,
 )
 ALTER_NON_COLUMN_TOKENS = {
     "primary", "unique", "key", "index", "constraint", "foreign",
@@ -399,29 +410,10 @@ class AnalysisResult:
 def parse_do_fields(text: str) -> dict[str, str]:
     """解析单个 DO 源码，返回 {列名: Java 类型}。
 
-    列名口径与 ``scripts/check_do_ddl.py`` 完全一致：``@TableField(value="x")`` 覆盖、
-    ``exist = false`` 跳过、其余按驼峰转下划线。
+    与 ``scripts/check_do_ddl.py`` 共用同一口径：只取顶层、非 static 字段，
+    注释里的 ``@TableField`` 与嵌套 DTO 字段不会被误当成数据库列。
     """
-    fields: dict[str, str] = {}
-    for match in FIELD_TYPE_RE.finditer(text):
-        java_type, name = match.group(1).strip(), match.group(2)
-        # 只看本字段声明之前、上一个语句结束符之后的那一段：
-        # 旧口径用「前 400 字符 + 最后一个 /**」划窗口，遇到没有 javadoc 的字段时
-        # 会把上一条字段的 @TableField 误配到本字段（列名与类型都会被带偏）。
-        head = text[:match.start()]
-        boundary = max(head.rfind(";"), head.rfind("}"))
-        segment = head[boundary + 1:]
-        annotation = TABLE_FIELD_RE.search(segment)
-        if annotation:
-            body = annotation.group(1)
-            if re.search(r"exist\s*=\s*false", body):
-                continue
-            column = re.search(r'(?:value\s*=\s*)?"([^"]+)"', body)
-            if column:
-                fields[column.group(1).lower()] = java_type
-                continue
-        fields[camel_to_snake(name)] = java_type
-    return fields
+    return parse_do_field_map(text)
 
 
 def parse_do_expectations(module_dirs: Iterable[Path]) -> dict[str, ExpectedTable]:
@@ -461,77 +453,183 @@ def _index_spec_columns(spec: str) -> tuple[str, ...]:
     return tuple(columns)
 
 
-def parse_ddl_expectations(ddl_files: Iterable[Path]) -> dict[str, ExpectedTable]:
-    """从 CREATE TABLE 与静态 ALTER TABLE 迁移语句推导期望结构。
+def _migration_version(path: Path) -> tuple[int, ...] | None:
+    match = re.match(r"V(\d+(?:\.\d+)*)__", path.name, re.IGNORECASE)
+    if not match:
+        return None
+    return tuple(int(part) for part in match.group(1).split("."))
 
-    迁移文件按字符串排序时，V108 可能排在 V52 前面；因此必须先收集所有
-    CREATE TABLE，再统一应用 ALTER，避免把合法补列误报为缺列。动态拼接
-    的 PREPARE/CONCAT 语句不进入静态期望值，由真库结果作为最终事实源。
+
+def _ordered_ddl_files(ddl_files: Iterable[Path]) -> list[Path]:
+    paths = [Path(path) for path in ddl_files]
+    versioned = [(_migration_version(path), index, path) for index, path in enumerate(paths)]
+    if all(version is not None for version, _, _ in versioned):
+        versioned.sort(key=lambda item: (item[0], item[1]))
+        return [path for _, _, path in versioned]
+    return paths
+
+
+def _strip_sql_comments(text: str) -> str:
+    """去掉 SQL 注释但保留换行，避免注释里的 DROP/ALTER 进入静态模型。"""
+    def replace(match: re.Match[str]) -> str:
+        return "".join("\n" if char == "\n" else " " for char in match.group(0))
+
+    return re.sub(r"/\*.*?\*/|--[^\n]*", replace, text, flags=re.DOTALL)
+
+
+def _drop_table_names(spec: str) -> list[str]:
+    names: list[str] = []
+    for part in spec.split(","):
+        match = re.match(r'\s*[`"]?(\w+)[`"]?', part)
+        if match:
+            names.append(match.group(1).lower())
+    return names
+
+
+def _rename_index_columns(
+    indexes: set[tuple[str, ...]], old: str, new: str
+) -> set[tuple[str, ...]]:
+    return {tuple(new if column == old else column for column in index) for index in indexes}
+
+
+def _apply_alter(entry: ExpectedTable, body: str) -> None:
+    """按语句内出现顺序应用补列、删列、改名与索引变更。"""
+    actions: list[tuple[int, str, tuple[str, ...]]] = []
+    for match in ALTER_ADD_COLUMN_RE.finditer(body):
+        column = match.group(1).lower()
+        if column in ALTER_NON_COLUMN_TOKENS:
+            continue
+        actions.append((
+            match.start(),
+            "add",
+            (column, re.sub(r"\s+", " ", match.group(2).strip().lower())),
+        ))
+    for match in ALTER_DROP_COLUMN_RE.finditer(body):
+        actions.append((match.start(), "drop", (match.group(1).lower(),)))
+    for match in ALTER_CHANGE_COLUMN_RE.finditer(body):
+        actions.append((
+            match.start(),
+            "change",
+            (
+                match.group(1).lower(),
+                match.group(2).lower(),
+                re.sub(r"\s+", " ", match.group(3).strip().lower()),
+            ),
+        ))
+    for match in ALTER_RENAME_COLUMN_RE.finditer(body):
+        actions.append((
+            match.start(),
+            "rename",
+            (match.group(1).lower(), match.group(2).lower()),
+        ))
+
+    for _, kind, payload in sorted(actions, key=lambda item: item[0]):
+        if kind == "add":
+            column, column_type = payload
+            entry.add_column(column, "ddl")
+            entry.ddl_types[column] = column_type
+        elif kind == "drop":
+            column = payload[0]
+            entry.columns.pop(column, None)
+            entry.ddl_types.pop(column, None)
+            entry.unique_indexes = {
+                index for index in entry.unique_indexes if column not in index
+            }
+            entry.indexes = {index for index in entry.indexes if column not in index}
+        elif kind == "change":
+            old, new, column_type = payload
+            if old in entry.columns:
+                entry.columns[new] = entry.columns.pop(old)
+                entry.ddl_types.pop(old, None)
+                entry.ddl_types[new] = column_type
+                entry.unique_indexes = _rename_index_columns(entry.unique_indexes, old, new)
+                entry.indexes = _rename_index_columns(entry.indexes, old, new)
+        else:
+            old, new = payload
+            if old in entry.columns:
+                entry.columns[new] = entry.columns.pop(old)
+                if old in entry.ddl_types:
+                    entry.ddl_types[new] = entry.ddl_types.pop(old)
+                entry.unique_indexes = _rename_index_columns(entry.unique_indexes, old, new)
+                entry.indexes = _rename_index_columns(entry.indexes, old, new)
+
+    for unique in ALTER_ADD_UNIQUE_RE.finditer(body):
+        columns = _index_spec_columns(unique.group(1))
+        if columns:
+            entry.unique_indexes.add(columns)
+    for key in ALTER_ADD_KEY_RE.finditer(body):
+        columns = _index_spec_columns(key.group(1))
+        if columns:
+            entry.indexes.add(columns)
+    entry.sources.add("ddl")
+
+
+def _apply_create_table(tables: dict[str, ExpectedTable], match: re.Match[str]) -> None:
+    table_name = match.group(1).lower()
+    entry = tables.setdefault(table_name, ExpectedTable(name=table_name))
+    for line in match.group(2).splitlines():
+        stripped = line.strip().rstrip(",")
+        if not stripped or stripped.startswith("--"):
+            continue
+        unique = DDL_UNIQUE_RE.match(stripped)
+        if unique:
+            columns = _index_spec_columns(unique.group(1))
+            if columns:
+                entry.unique_indexes.add(columns)
+            continue
+        key = DDL_KEY_RE.match(stripped)
+        if key:
+            columns = _index_spec_columns(key.group(1))
+            if columns:
+                entry.indexes.add(columns)
+            continue
+        if DDL_CONSTRAINT_RE.match(stripped):
+            # 表级约束：早期版本会把 PRIMARY KEY (id) 解析成列 primary。
+            continue
+        column = DDL_COLUMN_RE.match(stripped)
+        if column:
+            column_name = column.group(1).lower()
+            entry.add_column(column_name, "ddl")
+            entry.ddl_types[column_name] = re.sub(
+                r"\s+", " ", column.group(2).strip().lower()
+            )
+    entry.sources.add("ddl")
+
+
+def parse_ddl_expectations(ddl_files: Iterable[Path]) -> dict[str, ExpectedTable]:
+    """按 Flyway 版本顺序从 CREATE/ALTER/DROP 推导期望结构。
+
+    旧实现只做 CREATE 与 ALTER ADD 的并集，会把后续迁移主动 DROP 的表/列
+    继续当作期望值。这里按版本和语句位置重放静态 DDL；动态 PREPARE/CONCAT
+    仍不进入静态期望值，由真库结果作为最终事实源。
     """
     tables: dict[str, ExpectedTable] = {}
-    documents: list[str] = []
-
-    # Pass 1: CREATE TABLE.
-    for ddl_file in ddl_files:
-        ddl_file = Path(ddl_file)
+    documents: list[tuple[Path, str]] = []
+    for ddl_file in _ordered_ddl_files(ddl_files):
         if not ddl_file.exists():
             continue
         text = ddl_file.read_text(encoding="utf-8", errors="replace")
-        documents.append(text)
+        documents.append((ddl_file, _strip_sql_comments(text)))
+
+    operations: list[tuple[int, int, str, re.Match[str]]] = []
+    for file_index, (_, text) in enumerate(documents):
         for match in CREATE_TABLE_RE.finditer(text):
+            operations.append((file_index, match.start(), "create", match))
+        for match in ALTER_TABLE_RE.finditer(text):
+            operations.append((file_index, match.start(), "alter", match))
+        for match in DROP_TABLE_RE.finditer(text):
+            operations.append((file_index, match.start(), "drop", match))
+
+    for _, _, kind, match in sorted(operations, key=lambda item: (item[0], item[1])):
+        if kind == "create":
+            _apply_create_table(tables, match)
+        elif kind == "alter":
             table_name = match.group(1).lower()
             entry = tables.setdefault(table_name, ExpectedTable(name=table_name))
-            for line in match.group(2).splitlines():
-                stripped = line.strip().rstrip(",")
-                if not stripped or stripped.startswith("--"):
-                    continue
-                unique = DDL_UNIQUE_RE.match(stripped)
-                if unique:
-                    columns = _index_spec_columns(unique.group(1))
-                    if columns:
-                        entry.unique_indexes.add(columns)
-                    continue
-                key = DDL_KEY_RE.match(stripped)
-                if key:
-                    columns = _index_spec_columns(key.group(1))
-                    if columns:
-                        entry.indexes.add(columns)
-                    continue
-                if DDL_CONSTRAINT_RE.match(stripped):
-                    # 表级约束：早期版本会把 PRIMARY KEY (id) 解析成列 primary。
-                    continue
-                column = DDL_COLUMN_RE.match(stripped)
-                if column:
-                    column_name = column.group(1).lower()
-                    entry.add_column(column_name, "ddl")
-                    entry.ddl_types[column_name] = re.sub(
-                        r"\s+", " ", column.group(2).strip().lower()
-                    )
-            entry.sources.add("ddl")
-
-    # Pass 2: static ALTER TABLE ADD COLUMN / ADD INDEX / ADD UNIQUE.
-    for text in documents:
-        for alter in ALTER_TABLE_RE.finditer(text):
-            table_name = alter.group(1).lower()
-            entry = tables.setdefault(table_name, ExpectedTable(name=table_name))
-            body = alter.group(2)
-            for add in ALTER_ADD_COLUMN_RE.finditer(body):
-                column_name = add.group(1).lower()
-                if column_name in ALTER_NON_COLUMN_TOKENS:
-                    continue
-                entry.add_column(column_name, "ddl")
-                entry.ddl_types[column_name] = re.sub(
-                    r"\s+", " ", add.group(2).strip().lower()
-                )
-            for unique in ALTER_ADD_UNIQUE_RE.finditer(body):
-                columns = _index_spec_columns(unique.group(1))
-                if columns:
-                    entry.unique_indexes.add(columns)
-            for key in ALTER_ADD_KEY_RE.finditer(body):
-                columns = _index_spec_columns(key.group(1))
-                if columns:
-                    entry.indexes.add(columns)
-            entry.sources.add("ddl")
+            _apply_alter(entry, match.group(2))
+        else:
+            for table_name in _drop_table_names(match.group(1)):
+                tables.pop(table_name, None)
     return tables
 
 
@@ -871,8 +969,11 @@ def analyze(
                 )
             )
 
+        # id 自动递增/主键形状是 MyBatis-Plus DO 的约束；纯 DDL 表（Quartz、
+        # 报表引擎的字符串主键表）没有 DO，不能套用这套规则。
+        id_checks = "do" in entry.sources or key in auto_tables
         id_column = live_columns.get("id")
-        if id_column is None:
+        if id_checks and id_column is None:
             result.findings.append(
                 Finding(
                     severity="P0_BLOCKER",
@@ -885,8 +986,8 @@ def analyze(
                     sources=sources,
                 )
             )
-        else:
-            if not id_column.is_auto_increment:
+        elif id_checks:
+            if not id_column.is_auto_increment and id_column.family not in {"string", "binary"}:
                 result.findings.append(
                     Finding(
                         severity="P0_BLOCKER",
