@@ -1,0 +1,80 @@
+menus=2022 dirs=56 pages=412 buttons=1554
+controllers_endpoints=3179 permissions_with_endpoint=1564
+e2e_scripts=81 e2e_distinct_paths=475
+page_status={'NO_API': 40, 'NO_VIEW': 7, 'API_ONLY': 241, 'E2E': 124}
+
+domain	pages	E2E	API_ONLY	NO_API	NO_VIEW
+MES 系统	76	9	63	4	0
+ERP 系统	64	25	38	1	0
+CRM 系统	30	9	20	1	0
+系统管理	28	1	23	1	3
+WMS 系统	28	11	17	0	0
+人力资源 HRM	24	23	1	0	0
+质量管理 QMS	23	18	5	0	0
+基础设施	22	0	12	8	2
+AI 大模型	19	0	14	5	0
+工作流程	15	3	9	2	1
+IM 即时通讯	14	0	14	0	0
+财务管理 FMS	13	9	0	4	0
+公众号管理	11	0	11	0	0
+OA管理	11	5	6	0	0
+IoT 物联网	11	0	0	11	0
+运输管理	10	7	3	0	0
+erp	6	3	3	0	0
+wms	2	1	0	1	0
+report	1	0	0	0	1
+mes	1	0	1	0	0
+jimu-report	1	0	0	1	0
+jimu-bi	1	0	0	1	0
+go-view	1	0	1	0	0
+
+NO_VIEW pages:
+  id=1281 path=/report component=NULL name=报表管理
+  id=1224 path=tenant component=NULL name=租户管理
+  id=1261 path=oauth2 component=NULL name=OAuth 2.0
+  id=1083 path=log component=NULL name=API 日志
+  id=1243 path=file component=NULL name=文件管理
+  id=1200 path=task component=NULL name=审批中心
+  id=2130 path=mail component=NULL name=邮箱管理
+
+NO_API pages:
+  id=6735 path=/wms/wave-order component=wms/waveOrder/index name=波次单管理
+  id=2083 path=area component=system/area/index name=地区管理
+  id=114 path=build component=infra/build/index name=表单构建
+  id=116 path=swagger component=infra/swagger/index name=API 接口
+  id=2525 path=websocket component=infra/webSocket/index name=WebSocket
+  id=2497 path=demo03-erp component=infra/demo/demo03/erp/index name=主子表（ERP）
+  id=2472 path=demo03-inner component=infra/demo/demo03/inner/index name=主子表（内嵌）
+  id=2720 path=create component=bpm/processInstance/create/index name=发起流程
+  id=1208 path=done component=bpm/task/done/index name=已办任务
+  id=1282 path=jimu-report component=report/jmreport/index name=报表设计器
+  id=5009 path=jimu-bi component=report/jmreport/bi name=仪表盘设计器
+  id=2701 path=backlog component=crm/backlog/index name=待办事项
+  id=9706 path=sale-order-ddd component=erp/sale-order-ddd/index name=销售订单查询
+  id=111 path=druid component=infra/druid/index name=MySQL 监控
+  id=112 path=admin-server component=infra/server/index name=Java 监控
+  id=1077 path=skywalking component=infra/skywalking/index name=链路追踪
+  id=2759 path=chat component=ai/chat/index/index.vue name=AI 对话
+  id=2783 path=image component=ai/image/index/index.vue name=AI 绘画
+  id=2792 path=write component=ai/write/index/index.vue name=AI 写作
+  id=2796 path=music component=ai/music/index/index.vue name=AI 音乐
+  id=2798 path=mind-map component=ai/mindmap/index/index.vue name=AI 思维导图
+  id=4050 path=home component=iot/home/index name=IoT 首页
+  id=4002 path=product component=iot/product/product/index name=产品管理
+  id=4008 path=device component=iot/device/device/index name=设备管理
+  id=4014 path=product-category component=iot/product/category/index name=产品分类
+  id=4031 path=device-group component=iot/device/group/index name=设备分组
+  id=4037 path=thing-model component=iot/thingmodel/index name=产品物模型
+  id=5032 path=ota/firmware component=iot/ota/firmware/index name=OTA 固件
+  id=4049 path=scene component=iot/rule/scene/index name=场景联动
+  id=4051 path=data-rule component=iot/rule/data/index name=数据流转
+  id=5022 path=config component=iot/alert/config/index name=告警配置
+  id=5029 path=record component=iot/alert/record/index name=告警记录
+  id=9554 path=energy-consumption component=mes/energy-consumption/index name=能耗管理
+  id=9560 path=bom component=mes/md/bom/index name=md/bom
+  id=9565 path=bom-detail component=mes/md/bom-detail/index name=md/bom-detail
+  id=9570 path=bom-substitute component=mes/md/bom-substitute/index name=md/bom-substitute
+  id=9081 path=ledger/detail component=fms/ledger/detail/index name=明细账
+  id=9082 path=ledger/general component=fms/ledger/general/index name=总账
+  id=9083 path=ledger/subject-balance component=fms/ledger/subject-balance/index name=科目余额表
+  id=9084 path=ledger/multi-column component=fms/ledger/multi-column/index name=多栏账

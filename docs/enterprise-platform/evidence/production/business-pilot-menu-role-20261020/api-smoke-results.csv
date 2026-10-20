@@ -1,0 +1,326 @@
+﻿domain,id,name,path,endpoint,http,code,msg,total,result
+AI 大模型,6100,Agent编排执行,multiagent-execute,/aimultiagent/checkpoint/list,200,400,请求参数缺失:executionLogId,,FAIL
+ERP 系统,9424,主生产计划,mps-plan,/erp/mps-plan/detail/list,200,400,请求参数缺失:planId,,FAIL
+ERP 系统,9434,供应商评估,supplier-evaluation,/erp/supplier-evaluation/item/list,200,400,请求参数缺失:evaluationId,,FAIL
+IM 即时通讯,6540,群聊列表,list,/im/manager/group/member/list,200,400,请求参数缺失:groupId,,FAIL
+MES 系统,5220,班组设置,team,/mes/cal/team-member/page,200,400,请求参数不正确:班组编号不能为空,,FAIL
+MES 系统,5260,排班日历,calendar,/mes/cal/calendar/list,200,400,请求参数不正确:结束日期不能为空,,FAIL
+MES 系统,5510,常见缺陷,defect,/mes/qc/defect-record/page,200,400,请求参数不正确:检验单 ID 不能为空,,FAIL
+MES 系统,5530,生产工单,work-order,/mes/pro/work-order-bom/page,200,400,请求参数不正确:生产工单编号不能为空,,FAIL
+MES 系统,5560,工序流转,card,/mes/pro/card-process/page,200,400,请求参数不正确:流转卡编号不能为空,,FAIL
+MES 系统,5630,质检方案,template,/mes/qc/template/indicator/page,200,400,请求参数不正确:质检方案ID不能为空,,FAIL
+MES 系统,5650,过程检验,ipqc,/mes/qc/ipqc/line/page,200,400,请求参数不正确:过程检验单 ID 不能为空,,FAIL
+MES 系统,5660,出货检验,oqc,/mes/qc/oqc/line/page,200,400,请求参数不正确:出货检验单 ID 不能为空,,FAIL
+MES 系统,5670,退料检验,rqc,/mes/qc/rqc/line/page,200,400,请求参数不正确:退货检验单 ID 不能为空,,FAIL
+MES 系统,5792,到货通知,arrival-notice,/mes/wm/arrival-notice-line/page,200,400,请求参数不正确:到货通知单编号不能为空,,FAIL
+MES 系统,5805,生产领料,product-issue,/mes/wm/product-issue-line/page,200,400,请求参数不正确:领料单编号不能为空,,FAIL
+MES 系统,5830,采购退货,return-vendor,/mes/wm/return-vendor-line/page,200,400,请求参数不正确:退货单编号不能为空,,FAIL
+MES 系统,5840,生产退料,return-issue,/mes/wm/return-issue-line/page,200,400,请求参数不正确:退料单编号不能为空,,FAIL
+MES 系统,5857,杂项出库,misc-issue,/mes/wm/misc-issue-line/page,200,400,请求参数不正确:出库单编号不能为空,,FAIL
+MES 系统,5881,外协发料,outsource-issue,/mes/wm/outsource-issue-line/page,200,400,请求参数不正确:发料单ID不能为空,,FAIL
+MES 系统,5888,杂项入库,misc-receipt,/mes/wm/misc-receipt-line/page,200,400,请求参数不正确:入库单编号不能为空,,FAIL
+MES 系统,5917,装箱管理,packages,/mes/wm/package-line/page,200,400,请求参数不正确:装箱单 ID 不能为空,,FAIL
+MES 系统,5922,转移调拨,transfer,/mes/wm/transfer-line/list,200,400,请求参数缺失:transferId,,FAIL
+MES 系统,5951,盘点方案,plan,/mes/wm/stocktaking-plan-param/page,200,400,请求参数不正确:方案 ID 不能为空,,FAIL
+OA管理,3200,文章评论,comment,/oa/knowledge-comment/list,200,400,请求参数缺失:articleId,,FAIL
+WMS 系统,6441,库存统计,index,/wms/inventory/list,200,400,请求参数不正确:仓库编号不能为空,,FAIL
+wms,6776,PDA 作业,/wms/pda,/wms/pda/task/list,200,501,[WMS 仓库管理系统 zhicloud-module-wms - 已禁用][参考 https://doc.zhicloud.cn/wms/build/ 开启],,FAIL
+人力资源 HRM,9110,员工管理,employee,/hrm/employee/certificate/list,200,400,请求参数缺失:employeeId,,FAIL
+人力资源 HRM,9237,员工薪资,salary/employee-info,/hrm/salary/change-record/list,200,400,请求参数缺失:employeeId,,FAIL
+人力资源 HRM,9241,月度工资表,salary/month-record,/hrm/salary/month-employee-record/list,200,400,请求参数缺失:monthRecordId,,FAIL
+人力资源 HRM,9246,工资条发放,salary/slip/send-record,/hrm/portal/salary/slip/list,200,1050022000,当前账号未绑定员工，无法使用员工自助功能,,FAIL
+公众号管理,2099,粉丝管理,user,/mp/user/page,200,400,请求参数不正确:公众号账号的编号不能为空,,FAIL
+公众号管理,2103,消息管理,message,/mp/message/page,200,400,请求参数不正确:公众号账号的编号不能为空,,FAIL
+公众号管理,2104,图文发表记录,free-publish,/mp/free-publish/page,200,400,请求参数不正确:公众号账号的编号不能为空,,FAIL
+公众号管理,2108,图文草稿箱,draft,/mp/draft/page,200,400,请求参数不正确:公众号账号的编号不能为空,,FAIL
+公众号管理,2113,素材管理,material,/mp/material/page,200,400,请求参数不正确:公众号账号的编号不能为空,,FAIL
+公众号管理,2119,菜单管理,menu,/mp/menu/list,200,400,请求参数缺失:accountId,,FAIL
+公众号管理,2120,自动回复,auto-reply,/mp/auto-reply/page,200,400,请求参数不正确:公众号账号的编号不能为空,,FAIL
+基础设施,115,代码生成,codegen,/infra/codegen/table/list,200,400,请求参数缺失:dataSourceConfigId,,FAIL
+基础设施,2490,主子表（标准）,demo03-normal,/infra/demo03-student-erp/demo03-course/page,200,400,请求参数缺失:studentId,,FAIL
+系统管理,100,用户管理,user,/system/user/list,200,400,请求参数缺失:ids,,FAIL
+财务管理 FMS,9010,账套管理,config/account-set,/fms/config/account-user/list,200,400,请求参数缺失:accountSetId,,FAIL
+财务管理 FMS,9030,凭证字管理,config/voucher-word,/fms/config/voucher-word/list,200,400,请求参数缺失:accountSetId,,FAIL
+财务管理 FMS,9040,常用摘要管理,config/digest,/fms/config/digest/list,200,400,请求参数缺失:accountSetId,,FAIL
+财务管理 FMS,9050,辅助核算管理,config/auxiliary,/fms/config/auxiliary-item/list,200,400,请求参数缺失:accountSetId,,FAIL
+财务管理 FMS,9060,凭证模板管理,config/voucher-template,/fms/config/voucher-template/list,200,400,请求参数缺失:accountSetId,,FAIL
+财务管理 FMS,9070,财务指标管理,config/finance-indicator,/fms/config/finance-indicator/list,200,400,请求参数缺失:accountSetId,,FAIL
+质量管理 QMS,7630,MSA 分析,msa,/qms/msa/measurement/list,200,400,请求参数缺失:studyId,,FAIL
+质量管理 QMS,7640,不合格品处理,ncr,/qms/ncr/mrb-record/list,200,400,请求参数缺失:ncrId,,FAIL
+AI 大模型,2761,API 密钥,api-key,/ai/api-key/page,200,0,,0,PASS
+AI 大模型,2767,模型配置,model,/ai/model/page,200,0,,0,PASS
+AI 大模型,2773,聊天角色,chat-role,/ai/chat-role/page,200,0,,0,PASS
+AI 大模型,2778,聊天管理,chat-conversation,/ai/chat/conversation/page,200,0,,0,PASS
+AI 大模型,2784,绘画管理,image,/ai/image/page,200,0,,0,PASS
+AI 大模型,2788,音乐管理,music,/ai/music/page,200,0,,0,PASS
+AI 大模型,2793,写作管理,write,/ai/write/page,200,0,,0,PASS
+AI 大模型,2799,导图管理,mind-map,/ai/mind-map/page,200,0,,0,PASS
+AI 大模型,2915,AI 知识库,knowledge,/ai/knowledge/document/page,200,0,,0,PASS
+AI 大模型,2920,工具管理,tool,/ai/tool/page,200,0,,0,PASS
+AI 大模型,5000,AI 工作流,workflow,/ai/workflow/page,200,0,,0,PASS
+AI 大模型,6200,RAG评估,rag-eval,/ai/rag/eval/dataset/list,200,0,,,PASS
+CRM 系统,2391,客户管理,customer,/crm/customer/page,200,0,,26,PASS
+CRM 系统,2398,合同管理,contract,/crm/contract/page,200,0,,13,PASS
+CRM 系统,2404,线索管理,clue,/crm/clue/page,200,0,,12,PASS
+CRM 系统,2410,商机管理,business,/crm/business/page,200,0,,11,PASS
+CRM 系统,2416,联系人管理,contact,/crm/contact/page,200,0,,15,PASS
+CRM 系统,2422,回款管理,receivable,/crm/receivable/page,200,0,,12,PASS
+CRM 系统,2428,回款计划,receivable-plan,/crm/receivable-plan/page,200,0,,12,PASS
+CRM 系统,2518,客户限制配置,customer-limit-config,/crm/customer-limit-config/page,200,0,,0,PASS
+CRM 系统,2526,产品管理,product,/crm/product/page,200,0,,10,PASS
+CRM 系统,2532,产品分类配置,product/category,/crm/product-category/list,200,0,,,PASS
+CRM 系统,2703,商机状态配置,business-status,/crm/business-status/page,200,0,,2,PASS
+CRM 系统,3083,开票管理,invoice,/crm/invoice/page,200,0,,5,PASS
+CRM 系统,3088,拜访签到,visit-record,/crm/visit-record/page,200,0,,0,PASS
+CRM 系统,3300,线索渠道,clue-channel,/crm/clue-channel/page,200,0,,1,PASS
+CRM 系统,3320,销售订单,sale-order,/crm/sale-order/page,200,0,,15,PASS
+CRM 系统,3330,售后工单,work-order,/crm/work-order/page,200,0,,1,PASS
+CRM 系统,3350,业绩目标设置,performance-config,/crm/performance-config/page,200,0,,0,PASS
+ERP 系统,2565,产品信息,product,/erp/product/page,200,0,,24,PASS
+ERP 系统,2571,产品分类,product-category,/erp/product-category/list,200,0,,,PASS
+ERP 系统,2577,产品单位,unit,/erp/product-unit/page,200,0,,8,PASS
+ERP 系统,2584,仓库信息,warehouse,/erp/warehouse/page,200,0,,4,PASS
+ERP 系统,2590,产品库存,stock,/erp/stock/page,200,0,,96,PASS
+ERP 系统,2593,出入库明细,record,/erp/stock-record/page,200,0,,45,PASS
+ERP 系统,2596,其它入库,in,/erp/stock-in/page,200,0,,7,PASS
+ERP 系统,2603,供应商信息,supplier,/erp/supplier/page,200,0,,10,PASS
+ERP 系统,2610,其它出库,out,/erp/stock-out/page,200,0,,6,PASS
+ERP 系统,2618,客户信息,customer,/erp/customer/page,200,0,,12,PASS
+ERP 系统,2624,库存调拨,move,/erp/stock-move/page,200,0,,5,PASS
+ERP 系统,2631,库存盘点,check,/erp/stock-check/page,200,0,,3,PASS
+ERP 系统,2638,销售订单,order,/erp/sale-order/page,200,0,,11,PASS
+ERP 系统,2646,结算账户,account,/erp/account/page,200,0,,4,PASS
+ERP 系统,2652,销售出库,out,/erp/sale-out/page,200,0,,9,PASS
+ERP 系统,2659,销售退货,return,/erp/sale-return/page,200,0,,4,PASS
+ERP 系统,2666,采购订单,order,/erp/purchase-order/page,200,0,,9,PASS
+ERP 系统,2673,采购入库,in,/erp/purchase-in/page,200,0,,8,PASS
+ERP 系统,2680,采购退货,return,/erp/purchase-return/page,200,0,,2,PASS
+ERP 系统,2687,付款单,payment,/erp/finance-payment/page,200,0,,7,PASS
+ERP 系统,2694,收款单,receipt,/erp/finance-receipt/page,200,0,,7,PASS
+ERP 系统,3041,询价单,purchase-inquiry,/erp/purchase-inquiry/page,200,0,,0,PASS
+ERP 系统,3047,报价单,purchase-quote,/erp/purchase-quote/page,200,0,,0,PASS
+ERP 系统,3053,比价单,purchase-compare,/erp/purchase-compare/page,200,0,,0,PASS
+ERP 系统,9305,CPFR异常,cpfr-exception,/erp/cpfr-exception/page,200,0,,0,PASS
+ERP 系统,9309,CPFR预测,cpfr-forecast,/erp/cpfr-forecast/page,200,0,,0,PASS
+ERP 系统,9314,实际成本,actual-cost,/erp/actual-cost/page,200,0,,0,PASS
+ERP 系统,9319,银行账户,bank-account,/erp/bank-account/page,200,0,,0,PASS
+ERP 系统,9324,现金流量,cash-flow,/erp/cash-flow/page,200,0,,0,PASS
+ERP 系统,9328,合并范围,consolidation-scope,/erp/consolidation-scope/page,200,0,,0,PASS
+ERP 系统,9333,合并工作底稿,consolidation-worksheet,/erp/consolidation-worksheet/page,200,0,,0,PASS
+ERP 系统,9338,成本分摊,cost-allocation,/erp/cost-allocation/page,200,0,,0,PASS
+ERP 系统,9343,成本中心,cost-center,/erp/cost-center/list,200,0,,,PASS
+ERP 系统,9348,成本项目,cost-item,/erp/cost-item/list,200,0,,,PASS
+ERP 系统,9353,成本差异,cost-variance,/erp/cost-variance/page,200,0,,0,PASS
+ERP 系统,9358,币别,currency,/erp/currency/page,200,0,,0,PASS
+ERP 系统,9363,汇率,exchange-rate,/erp/exchange-rate/page,200,0,,0,PASS
+ERP 系统,9368,资产变动,fa-change,/erp/fa-change/page,200,0,,0,PASS
+ERP 系统,9373,固定资产,fixed-asset,/erp/fixed-asset/page,200,0,,0,PASS
+ERP 系统,9378,资金计划,fund-plan,/erp/fund-plan/page,200,0,,0,PASS
+ERP 系统,9383,利润中心,profit-center,/erp/profit-center/list,200,0,,,PASS
+ERP 系统,9388,盈利能力分析,profitability-analysis,/erp/profitability-analysis/page,200,0,,0,PASS
+ERP 系统,9393,标准成本,standard-cost,/erp/standard-cost/page,200,0,,0,PASS
+ERP 系统,9398,税务发票,tax-invoice,/erp/tax-invoice/page,200,0,,0,PASS
+ERP 系统,9403,发票明细,tax-invoice-line,/erp/tax-invoice-line/page,200,0,,0,PASS
+ERP 系统,9408,税率,tax-rate,/erp/tax-rate/page,200,0,,0,PASS
+ERP 系统,9414,工单成本,work-order-cost,/erp/work-order-cost/page,200,0,,0,PASS
+ERP 系统,9419,收付款,cashier,/erp/cashier/page,200,0,,0,PASS
+ERP 系统,9429,物料需求计划,mrp-plan,/erp/mrp-plan/page,200,0,,0,PASS
+ERP 系统,9439,信用额度,credit-limit,/erp/credit-limit/page,200,0,,0,PASS
+ERP 系统,9449,库存批次,stock-batch,/erp/stock-batch/page,200,0,,0,PASS
+ERP 系统,9454,库存序列号,stock-serial,/erp/stock-serial/page,200,0,,0,PASS
+ERP 系统,9459,VMI库存,vmi-inventory,/erp/vmi-inventory/page,200,0,,0,PASS
+ERP 系统,9464,VMI补货,vmi-replenishment,/erp/vmi-replenishment/page,200,0,,0,PASS
+IM 即时通讯,6515,好友申请,friend-request,/im/manager/friend-request/page,200,0,,0,PASS
+IM 即时通讯,6520,好友列表,friend,/im/manager/friend/page,200,0,,0,PASS
+IM 即时通讯,6530,好友消息,message,/im/manager/message/group/page,200,0,,0,PASS
+IM 即时通讯,6545,群聊申请,request,/im/manager/group-request/page,200,0,,0,PASS
+IM 即时通讯,6550,群聊消息,message,/im/manager/message/group/page,200,0,,0,PASS
+IM 即时通讯,6560,敏感词管理,sensitive-word,/im/manager/sensitive-word/page,200,0,,0,PASS
+IM 即时通讯,6571,系统表情,pack,/im/manager/face-pack-item/page,200,0,,0,PASS
+IM 即时通讯,6580,用户表情,user-item,/im/manager/face-user-item/page,200,0,,0,PASS
+IM 即时通讯,6611,通话记录,rtc,/im/manager/rtc/page,200,0,,0,PASS
+IM 即时通讯,6710,频道列表,list,/im/manager/channel/page,200,0,,0,PASS
+IM 即时通讯,6720,频道素材,material,/im/manager/channel-material/page,200,0,,0,PASS
+IM 即时通讯,6730,频道消息,message,/im/manager/channel-message/page,200,0,,0,PASS
+MES 系统,3071,计件规则,piecework-rule,/mes/pro-piecework-rule/page,200,0,,0,PASS
+MES 系统,3075,计件记录,piecework-record,/mes/pro-piecework-record/page,200,0,,0,PASS
+MES 系统,3079,SCADA配置,scada-config,/mes/dv-scada-config/page,200,0,,0,PASS
+MES 系统,5110,物料产品分类,item-type,/mes/md/item-type/list,200,0,,,PASS
+MES 系统,5120,物料产品管理,item,/mes/md/item/page,200,0,,12,PASS
+MES 系统,5130,计量单位,unit-measure,/mes/md/unit-measure/page,200,0,,6,PASS
+MES 系统,5140,客户管理,client,/mes/md-client/page,200,0,,6,PASS
+MES 系统,5150,供应商管理,vendor,/mes/md-vendor/page,200,0,,5,PASS
+MES 系统,5160,车间设置,workstation/workshop,/mes/md-workshop/page,200,0,,2,PASS
+MES 系统,5170,工作站设置,workstation,/mes/md-workstation/page,200,0,,8,PASS
+MES 系统,5190,编码规则,auto-code,/mes/md/auto-code-rule/page,200,0,,0,PASS
+MES 系统,5230,排班计划,plan,/mes/cal/plan-shift/page,200,0,,0,PASS
+MES 系统,5250,节假日设置,holiday,/mes/cal/holiday/list,200,0,,,PASS
+MES 系统,5310,设备类型,machinery/type,/mes/dv/machinery-type/list,200,0,,,PASS
+MES 系统,5320,设备台账,machinery,/mes/dv/machinery/page,200,0,,0,PASS
+MES 系统,5330,点检保养项目,subject,/mes/dv/subject/page,200,0,,0,PASS
+MES 系统,5340,保养记录,mainten-record,/mes/dv/mainten-record-line/page,200,0,,0,PASS
+MES 系统,5350,点检保养方案,checkplan,/mes/dv/check-plan/page,200,0,,0,PASS
+MES 系统,5360,点检记录,check-record,/mes/dv/check-record-line/page,200,0,,0,PASS
+MES 系统,5370,维修单,repair,/mes/dv/repair-line/page,200,0,,0,PASS
+MES 系统,5410,工具类型设置,tool/type,/mes/tm/tool-type/page,200,0,,0,PASS
+MES 系统,5420,工装夹具台账,tool,/mes/tm/tool/page,200,0,,0,PASS
+MES 系统,5540,生产排产,task,/mes/pro/task/page,200,0,,0,PASS
+MES 系统,5550,生产报工,feedback,/mes/pro/feedback/page,200,0,,0,PASS
+MES 系统,5610,检测项设置,indicator,/mes/qc/indicator/page,200,0,,0,PASS
+MES 系统,5640,来料检验,iqc,/mes/qc/indicator-result/page,200,0,,0,PASS
+MES 系统,5680,待检任务,pending-inspect,/mes/qc/pending-inspect/page,200,0,,0,PASS
+MES 系统,5710,工序设置,process,/mes/pro/process/page,200,0,,6,PASS
+MES 系统,5720,工艺流程,route,/mes/pro/route/page,200,0,,2,PASS
+MES 系统,5750,安灯呼叫,andon,/mes/pro/andon-config/list,200,0,,,PASS
+MES 系统,5781,仓库设置,warehouse,/mes/wm/warehouse-area/page,200,0,,0,PASS
+MES 系统,5786,库存现有量,material-stock,/mes/wm/material-stock/page,200,0,,48,PASS
+MES 系统,5798,采购入库,item-receipt,/mes/wm/item-receipt-line/page,200,0,,0,PASS
+MES 系统,5819,产品入库,product-receipt,/mes/wm/product-receipt-line/page,200,0,,0,PASS
+MES 系统,5847,销售退货,return-sales,/mes/wm/return-sales-line/page,200,0,,0,PASS
+MES 系统,5867,发货通知,sales-notice,/mes/wm/sales-notice-line/page,200,0,,0,PASS
+MES 系统,5873,外协入库,outsource-receipt,/mes/wm/outsource-receipt-line/page,200,0,,0,PASS
+MES 系统,5906,条码配置,barcode/config,/mes/wm/barcode-config/page,200,0,,0,PASS
+MES 系统,5911,赋能管理,barcode,/mes/wm/barcode/page,200,0,,0,PASS
+MES 系统,5957,盘点任务,task,/mes/wm/stocktaking-task-line/page,200,0,,0,PASS
+MES 系统,5966,批次追溯,batch-trace,/mes/wm/batch/page,200,0,,0,PASS
+MES 系统,5970,销售出库,product-sales,/mes/wm/product-sales-line/page,200,0,,0,PASS
+MES 系统,5981,工作记录,workrecord,/mes/pro/workrecord/log/page,200,0,,0,PASS
+MES 系统,9575,md-ecn-order,md-ecn-order,/mes/md-ecn-order/page,200,0,,0,PASS
+MES 系统,9711,设备综合效率,oee,/mes/dv/oee/record/list,200,0,,0,PASS
+MES 系统,9713,设备数据采集,dv-device-data,/mes/dv-device-data/page,200,0,,0,PASS
+MES 系统,9720,高级排产,aps,/mes/pro/aps/plan/list,200,0,,0,PASS
+MES 系统,9723,物料需求计划,mrp,/mes/pro/mrp/plan/list,200,0,,0,PASS
+OA管理,3001,报销管理,reimburse,/oa/reimburse/page,200,0,,8,PASS
+OA管理,3006,会议室管理,meeting-room,/oa/meeting-room/page,200,0,,3,PASS
+OA管理,3013,公文管理,document,/oa/document/page,200,0,,0,PASS
+OA管理,3101,知识分类,category,/oa/knowledge-category/list,200,0,,,PASS
+OA管理,3102,知识文章,article,/oa/knowledge-article/page,200,0,,2,PASS
+OA管理,3111,公告管理,announcement,/oa/announcement/page,200,0,,6,PASS
+OA管理,3120,审批模板,approval-template,/oa/approval-template/page,200,0,,0,PASS
+OA管理,3210,版本历史,version,/oa/knowledge-article/page,200,0,,2,PASS
+OA管理,3220,会议预约,meeting-reservation,/oa/meeting-reservation/page,200,0,,11,PASS
+OA管理,3230,日程管理,schedule,/oa/schedule/page,200,0,,11,PASS
+WMS 系统,3059,越库管理,cross-dock-order,/wms/cross-dock-order/page,200,0,,0,PASS
+WMS 系统,3063,计费合同,billing-contract,/wms/billing-contract/page,200,0,,0,PASS
+WMS 系统,3067,计费账单,billing-bill,/wms/billing-bill/page,200,0,,0,PASS
+WMS 系统,6402,仓库管理,warehouse,/wms/warehouse/page,200,0,,4,PASS
+WMS 系统,6411,商品品牌,item/brand,/wms/item-brand/page,200,0,,0,PASS
+WMS 系统,6419,商品分类,item/category,/wms/item-category/list,200,0,,,PASS
+WMS 系统,6424,商品管理,item,/wms/item-sku/page,200,0,,40,PASS
+WMS 系统,6430,往来企业,merchant,/wms/merchant/page,200,0,,8,PASS
+WMS 系统,6445,库存流水,history,/wms/inventory-history/page,200,0,,27,PASS
+WMS 系统,6451,入库管理,receipt,/wms/receipt-order/page,200,0,,9,PASS
+WMS 系统,6461,出库管理,shipment,/wms/shipment-order/page,200,0,,9,PASS
+WMS 系统,6470,移库管理,movement,/wms/movement-order/page,200,0,,3,PASS
+WMS 系统,6480,盘库管理,check,/wms/check-order/page,200,0,,0,PASS
+WMS 系统,9471,库存预警,inventory-alert,/wms/inventory-alert/page,200,0,,0,PASS
+WMS 系统,9474,安全库存配置,safety-stock-config,/wms/safety-stock-config/page,200,0,,0,PASS
+WMS 系统,9479,批次过期预警,batch-expiry-alert,/wms/batch-expiry-alert/page,200,0,,0,PASS
+WMS 系统,9481,库存批次,inventory-batch,/wms/inventory-batch/page,200,0,,7,PASS
+WMS 系统,9486,库位,location,/wms/location/list,200,0,,,PASS
+WMS 系统,9492,序列号,sn,/wms/sn/page,200,0,,0,PASS
+WMS 系统,9497,库区,zone,/wms/zone/list,200,0,,,PASS
+WMS 系统,9503,预到货通知,asn-order,/wms/asn-order/page,200,0,,6,PASS
+WMS 系统,9508,循环盘点计划,check-cycle-plan,/wms/check-cycle-plan/page,200,0,,0,PASS
+WMS 系统,9513,月台,dock,/wms/dock/page,200,0,,0,PASS
+WMS 系统,9518,拣货任务,pick-task,/wms/pick-task/page,200,0,,16,PASS
+erp,6741,期末处理,/erp/period-close,/erp/period/page,200,0,,1,PASS
+erp,6748,会计科目,/erp/gl-account,/erp/gl-account/list,200,0,,,PASS
+erp,6753,会计凭证,/erp/gl-voucher,/erp/gl-voucher/page,200,0,,7,PASS
+erp,6759,预算管理,/erp/budget,/erp/budget/page,200,0,,0,PASS
+erp,6765,合并抵消分录,/erp/consolidation-entry,/erp/consolidation-entry/page,200,0,,0,PASS
+erp,6771,账簿管理,/erp/account-book,/erp/account-book/page,200,0,,0,PASS
+人力资源 HRM,9120,部门管理,dept,/system/dept/list,200,0,,,PASS
+人力资源 HRM,9130,考勤记录,attendance/clock,/hrm/attendance/clock/page,200,0,,1,PASS
+人力资源 HRM,9140,请假记录,attendance/leave,/hrm/attendance/leave/page,200,0,,34,PASS
+人力资源 HRM,9160,考勤组配置,attendance/config/group,/hrm/attendance/group/page,200,0,,1,PASS
+人力资源 HRM,9170,节假日配置,attendance/config/holiday,/hrm/attendance/holiday/page,200,0,,0,PASS
+人力资源 HRM,9180,参保方案,insurance/scheme,/hrm/insurance/scheme/list,200,0,,,PASS
+人力资源 HRM,9190,招聘职位,recruit/post,/hrm/recruit/post-type/list,200,0,,,PASS
+人力资源 HRM,9193,候选人,recruit/candidate,/hrm/recruit/candidate/page,200,0,,1,PASS
+人力资源 HRM,9199,招聘渠道,recruit/channel,/hrm/recruit/channel/page,200,0,,2,PASS
+人力资源 HRM,9206,绩效计划,performance/plan,/hrm/performance/assessment/page,200,0,,0,PASS
+人力资源 HRM,9210,考核模板,performance/config/assessment-template,/hrm/performance/assessment-template/page,200,0,,1,PASS
+人力资源 HRM,9214,结果模板,performance/config/result-template,/hrm/performance/result-template/page,200,0,,1,PASS
+人力资源 HRM,9219,薪资组,salary/config/group,/hrm/salary/group/page,200,0,,0,PASS
+人力资源 HRM,9223,薪资项,salary/config/option,/hrm/salary/option/list,200,0,,,PASS
+人力资源 HRM,9227,计税规则,salary/config/tax-rule,/hrm/salary/tax-rule/list,200,0,,,PASS
+人力资源 HRM,9231,调薪模板,salary/config/change-template,/hrm/salary/change-template/list,200,0,,,PASS
+人力资源 HRM,9254,月度社保,insurance/month-record,/hrm/insurance/month-employee-record/page,200,0,,0,PASS
+人力资源 HRM,9258,职位管理,position,/hrm/position/page,200,0,,10,PASS
+公众号管理,2085,账号管理,account,/mp/account/page,200,0,,0,PASS
+公众号管理,2093,标签管理,tag,/mp/tag/page,200,0,,0,PASS
+公众号管理,5042,模版消息,message-template,/mp/message-template/list,200,0,,,PASS
+基础设施,106,配置管理,config,/infra/config/page,200,0,,7,PASS
+基础设施,1078,访问日志,api-access-log,/infra/api-access-log/page,200,0,,0,PASS
+基础设施,1083,API 日志,log,/infra/api-access-log/page,200,0,,0,PASS
+基础设施,1084,错误日志,api-error-log,/infra/api-error-log/page,200,0,,953,PASS
+基础设施,1090,文件列表,file,/infra/file/page,200,0,,0,PASS
+基础设施,110,定时任务,job,/infra/job-log/page,200,0,,0,PASS
+基础设施,1237,文件配置,file-config,/infra/file-config/page,200,0,,11,PASS
+基础设施,1243,文件管理,file,/infra/file-config/page,200,0,,11,PASS
+基础设施,1255,数据源配置,data-source-config,/infra/data-source-config/list,200,0,,,PASS
+基础设施,2478,单表（增删改查）,demo01-contact,/infra/demo01-contact/page,200,0,,0,PASS
+基础设施,2484,树表（增删改查）,demo02-category,/infra/demo02-category/list,200,0,,,PASS
+工作流程,1118,请假查询,leave,/bpm/oa/leave/page,200,0,,0,PASS
+工作流程,1187,流程表单,form,/bpm/form/page,200,0,,0,PASS
+工作流程,1193,流程模型,model,/bpm/process-definition/page,200,0,,6,PASS
+工作流程,1209,用户分组,user-group,/bpm/user-group/page,200,0,,0,PASS
+工作流程,2713,抄送我的,copy,/bpm/process-instance/copy/page,200,0,,0,PASS
+工作流程,2714,流程分类,category,/bpm/category/page,200,0,,0,PASS
+工作流程,2726,流程监听器,process-listener,/bpm/process-listener/page,200,0,,0,PASS
+工作流程,2731,流程表达式,process-expression,/bpm/process-expression/page,200,0,,0,PASS
+系统管理,101,角色管理,role,/system/role/page,200,0,,1,PASS
+系统管理,102,菜单管理,menu,/system/menu/list,200,0,,,PASS
+系统管理,103,部门管理,dept,/system/dept/list,200,0,,,PASS
+系统管理,104,岗位管理,post,/system/post/page,200,0,,0,PASS
+系统管理,105,字典管理,dict,/system/dict-data/page,200,0,,1259,PASS
+系统管理,107,通知公告,notice,/system/notice/page,200,0,,0,PASS
+系统管理,109,令牌管理,token,/system/oauth2-token/page,200,0,,0,PASS
+系统管理,1094,短信渠道,sms-channel,/system/sms-channel/page,200,0,,3,PASS
+系统管理,1100,短信模板,sms-template,/system/sms-template/page,200,0,,15,PASS
+系统管理,1107,短信日志,sms-log,/system/sms-log/page,200,0,,0,PASS
+系统管理,1138,租户列表,list,/system/tenant/page,200,0,,4,PASS
+系统管理,1224,租户管理,tenant,/system/tenant-package/page,200,0,,2,PASS
+系统管理,1225,租户套餐,package,/system/tenant-package/page,200,0,,2,PASS
+系统管理,1261,OAuth 2.0,oauth2,/system/oauth2-client/page,200,0,,1,PASS
+系统管理,1263,应用管理,oauth2/application,/system/oauth2-client/page,200,0,,1,PASS
+系统管理,2130,邮箱管理,mail,/system/mail-account/page,200,0,,2,PASS
+系统管理,2131,邮箱账号,mail-account,/system/mail-account/page,200,0,,2,PASS
+系统管理,2136,邮件模版,mail-template,/system/mail-template/page,200,0,,2,PASS
+系统管理,2141,邮件记录,mail-log,/system/mail-log/page,200,0,,0,PASS
+系统管理,2145,模板管理,notify-template,/system/notify-template/page,200,0,,1,PASS
+系统管理,2151,消息记录,notify-message,/system/notify-message/page,200,0,,0,PASS
+系统管理,2448,三方应用,client,/system/social-client/page,200,0,,0,PASS
+系统管理,2453,三方用户,user,/system/social-user/page,200,0,,0,PASS
+系统管理,500,操作日志,operate-log,/system/operate-log/page,200,0,,464,PASS
+系统管理,501,登录日志,login-log,/system/login-log/page,200,0,,23,PASS
+系统管理,7900,主数据跨域对照,mdm-cross-ref,/system/mdm-cross-ref/page,200,0,,0,PASS
+财务管理 FMS,9020,会计科目,config/subject,/erp/gl-account/list,200,0,,,PASS
+质量管理 QMS,7510,质量审核,audit,/qms/audit-nonconformity/page,200,0,,1,PASS
+质量管理 QMS,7520,CAPA 改善,capa,/qms/capa/page,200,0,,3,PASS
+质量管理 QMS,7530,客户投诉,customer-complaint,/qms/customer-complaint/page,200,0,,4,PASS
+质量管理 QMS,7540,质量文件,document,/qms/document-change-request/page,200,0,,0,PASS
+质量管理 QMS,7550,8D 报告,eight-d,/qms/eight-d/page,200,0,,0,PASS
+质量管理 QMS,7560,电子签名,electronic-signature,/qms/electronic-signature/page,200,0,,116,PASS
+质量管理 QMS,7570,FMEA,fmea,/qms/fmea/item/page,200,0,,0,PASS
+质量管理 QMS,7580,检验项目,inspection-item,/qms/inspection-item/page,200,0,,5,PASS
+质量管理 QMS,7590,检验单,inspection-order,/qms/inspection-order/page,200,0,,10,PASS
+质量管理 QMS,7600,检验记录,inspection-record,/qms/inspection-record/page,200,0,,26,PASS
+质量管理 QMS,7610,量具管理,instrument,/qms/instrument/page,200,0,,3,PASS
+质量管理 QMS,7620,量具校准,instrument-calibration,/qms/instrument-calibration/page,200,0,,6,PASS
+质量管理 QMS,7650,资质管理,qualification,/qms/qualification/page,200,0,,0,PASS
+质量管理 QMS,7660,质量成本,quality-cost,/qms/quality-cost/page,200,0,,0,PASS
+质量管理 QMS,7670,供应商纠正措施,scar,/qms/scar/page,200,0,,0,PASS
+质量管理 QMS,7690,供应商审核,supplier-audit,/qms/supplier-audit/page,200,0,,0,PASS
+质量管理 QMS,7700,供应商评级,supplier-rating,/qms/supplier-rating/page,200,0,,0,PASS
+质量管理 QMS,7720,training-plan,training-plan,/qms/training-plan/page,200,0,,0,PASS
+质量管理 QMS,7730,training-record,training-record,/qms/training-record/page,200,0,,0,PASS
+运输管理,3021,承运商,carrier,/tms/carrier/page,200,0,,6,PASS
+运输管理,3025,车辆,vehicle,/tms/vehicle/page,200,0,,14,PASS
+运输管理,3029,司机,driver,/tms/driver/page,200,0,,12,PASS
+运输管理,3033,运单,shipment,/tms/shipment/page,200,0,,9,PASS
+运输管理,3160,运费结算,freight,/tms/freight/page,200,0,,9,PASS
+运输管理,3166,运费报表,freight-report,/tms/freight/page,200,0,,9,PASS
+运输管理,3170,运费对账,freight-reconciliation,/tms/freight-reconciliation/page,200,0,,4,PASS
+运输管理,3180,车队运营,fleet-operation,/tms/fleet-operation/page,200,0,,1,PASS

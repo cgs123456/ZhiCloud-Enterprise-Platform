@@ -1,0 +1,14 @@
+no-role	uid=990000	tenant=1	code=0	roles=[]	menus_top=0	permissions=0	user=True
+  msg=
+common(2)	uid=990002	tenant=1	code=0	roles=['common']	menus_top=7	permissions=153	user=True
+  first_menus=['作者动态', '系统管理', '  租户管理', '    租户列表', '    租户套餐', '  用户管理', '  角色管理', '  菜单管理', '  部门管理', '  岗位管理']
+crm_admin(3)	uid=990003	tenant=1	code=0	roles=['crm_admin']	menus_top=1	permissions=102	user=True
+  first_menus=['CRM 系统', '  待办事项', '  线索管理', '  客户管理', '  线索渠道', '  销售订单', '  售后工单', '  跟进记录', '  联系人管理', '  客户公海']
+tenant_admin(109)	uid=990109	tenant=121	code=0	roles=['tenant_admin']	menus_top=3	permissions=132	user=True
+  first_menus=['系统管理', '  租户管理', '    租户列表', '    租户套餐', '  用户管理', '  角色管理', '  菜单管理', '  部门管理', '  消息中心', '    通知公告']
+tenant_admin(111)	uid=990111	tenant=122	code=0	roles=['tenant_admin']	menus_top=3	permissions=132	user=True
+  first_menus=['系统管理', '  租户管理', '    租户列表', '    租户套餐', '  用户管理', '  角色管理', '  菜单管理', '  部门管理', '  消息中心', '    通知公告']
+test-dp(155)	uid=990155	tenant=1	code=0	roles=['test-dp']	menus_top=3	permissions=69	user=True
+  first_menus=['公众号管理', '  账号管理', '  数据统计', '  标签管理', '  粉丝管理', '  消息管理', '  模版消息', '  菜单管理', '  自动回复', '  素材管理']
+super_admin(900101)	uid=900100	tenant=9001	code=0	roles=['super_admin']	menus_top=29	permissions=1646	user=True
+  first_menus=['作者动态', 'Boot 开发文档', '质量管理 QMS', '  质量审核', '  CAPA 改善', '  客户投诉', '  质量文件', '  8D 报告', '  电子签名', '  FMEA']

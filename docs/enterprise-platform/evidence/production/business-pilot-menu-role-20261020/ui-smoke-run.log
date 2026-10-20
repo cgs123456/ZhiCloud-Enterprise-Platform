@@ -1,0 +1,23 @@
+routes to smoke: 403
+[20/403] /infra/build layout=YES body=739 elapsed=1.7s console=0 api=0 http=0
+[40/403] /bpm/manager/category layout=YES body=475 elapsed=1.7s console=0 api=0 http=0
+[60/403] /mp/account layout=YES body=445 elapsed=1.7s console=0 api=0 http=0
+[80/403] /crm/sale-order layout=YES body=1821 elapsed=1.3s console=0 api=0 http=0
+[100/403] /crm/config/performance-config layout=YES body=574 elapsed=1.4s console=0 api=0 http=0
+[120/403] /erp/currency layout=YES body=569 elapsed=2.8s console=0 api=0 http=0
+[140/403] /erp/vmi-replenishment layout=YES body=579 elapsed=1.4s console=0 api=0 http=0
+[160/403] /erp/purchase/supplier layout=YES body=1680 elapsed=1.8s console=0 api=0 http=0
+[180/403] /ai/music layout=YES body=515 elapsed=1.9s console=0 api=0 http=0
+[200/403] /oa/approval-template layout=YES body=583 elapsed=1.3s console=0 api=0 http=0
+[220/403] /iot/device/product-category layout=YES body=393 elapsed=1.6s console=0 api=0 http=0
+[240/403] /mes/md/item layout=YES body=1779 elapsed=1.2s console=0 api=0 http=0
+[260/403] /mes/tm/tool/type layout=YES body=602 elapsed=1.2s console=0 api=0 http=0
+[280/403] /mes/pro/workrecord layout=YES body=631 elapsed=1.5s console=0 api=0 http=0
+[300/403] /mes/wm/stock-taking/plan layout=YES body=703 elapsed=1.4s console=0 api=0 http=0
+[320/403] /wms/cross-dock-order layout=YES body=599 elapsed=1.2s console=0 api=0 http=0
+[340/403] /im/group/message layout=YES body=431 elapsed=1.2s console=0 api=0 http=0
+[360/403] /qms/scar layout=YES body=560 elapsed=1.2s console=0 api=0 http=0
+[380/403] /hrm/employee layout=YES body=2245 elapsed=1.2s console=0 api=0 http=0
+[400/403] /hrm/salary/month-record layout=YES body=484 elapsed=1.1s console=0 api=0 http=0
+[403/403] /hrm/position layout=YES body=1464 elapsed=1.2s console=0 api=0 http=0
+DONE

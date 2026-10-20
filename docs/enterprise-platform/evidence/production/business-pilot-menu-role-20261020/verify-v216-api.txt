@@ -1,0 +1,24 @@
+=== 1. 瑙掕壊 3锛坈rm_admin锛夎彍鍗?===
+crm_admin 椤剁骇鑿滃崟=1 鑿滃崟鑺傜偣=33 鏉冮檺=102
+椤剁骇鑿滃崟鍚嶇О: ['CRM 绯荤粺']
+CRM 鏉冮檺鏁? 101
+
+=== 2. MES PDA 绠＄悊鍚庡彴鎺ュ彛锛堟柊澧?admin 鎺у埗鍣級 ===
+[mes pda my-feedback-list] HTTP=200 code=0 msg= list_len=0
+
+=== 3. WMS PDA 绠＄悊鍚庡彴鎺ュ彛锛堟柊澧?admin 鎺у埗鍣級 ===
+[wms pda task/list] HTTP=200 code=0 msg= list_len=9
+
+=== 4. IoT 缁熻锛圱Dengine 宸叉帴鍏ワ級 ===
+[iot statistics summary] HTTP=200 code=0 msg=
+[iot message summary by date] HTTP=400 raw=<!doctype html><html lang="en"><head><title>HTTP Status 400 鈥?Bad Request</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 400 鈥?
+
+=== 5. 鐧诲綍鏃ュ織锛堝墠绔櫧鍚嶅崟淇鍚庡簲甯?token锛?===
+[system login-log page] HTTP=200 code=0 msg=
+
+=== 6. CRM 缁熻锛堝甫 deptId锛?===
+[crm statistics customer] HTTP=400 raw=<!doctype html><html lang="en"><head><title>HTTP Status 400 鈥?Bad Request</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 400 鈥?
+[crm statistics performance] HTTP=400 raw=<!doctype html><html lang="en"><head><title>HTTP Status 400 鈥?Bad Request</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 400 鈥?
+
+=== 7. WMS ABC 鍒嗘瀽 ===
+[wms abc report] HTTP=200 code=0 msg=

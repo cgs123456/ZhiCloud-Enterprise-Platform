@@ -1,0 +1,16 @@
+mysql: [Warning] Using a password on the command line interface can be insecure.
++--------------------------+
+| check_result             |
++--------------------------+
+| V217_FLYWAY_APPLIED PASS |
++--------------------------+
++-----------------------------+
+| check_result                |
++-----------------------------+
+| V217_MES_BOM_COMPONENT PASS |
++-----------------------------+
++--------------------------------+
+| check_result                   |
++--------------------------------+
+| V217_MES_BOM_NO_LOWERCASE PASS |
++--------------------------------+

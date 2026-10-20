@@ -1,0 +1,44 @@
+鎬昏彍鍗曢〉: 403
+甯冨眬鏈覆鏌? 0 | 瀵艰埅寮傚父: 0 | 绌虹櫧椤? 0 | 璺崇櫥褰? 0
+API 杩斿洖闈?0: 0 | HTTP 5xx: 0 | console 鎶ラ敊: 13
+
+=== API 闈?0 鍒嗙被 ===
+
+=== console 鎶ラ敊鍒嗙被 ===
+   15  PAGEERROR canceled
+    7  Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N鈥?.
+    2  Failed to load resource: the server responded with a status of 404 (File not found)
+    1  WebSocket connection to 'ws://127.0.0.1:5191/infra/ws?token=test-only-for-local900100' fai
+    1  REQFAIL http://127.0.0.1:3000/?accessToken=test-only-for-local900100&refreshToken=null
+    1  PAGEERROR Failed to read the 'localStorage' property from 'Window': Access is denied for t
+    1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)
+    1  Error: <g> attribute trans
+
+=== 閫愰〉澶辫触鏄庣粏 ===
+  /infra/swagger | layout=YES | body=390
+      console: Failed to load resource: the server responded with a status of 404 (File not found)
+  /infra/websocket | layout=YES | body=457
+      console: WebSocket connection to 'ws://127.0.0.1:5191/infra/ws?token=test-only-for-local900100' failed: Error during WebSocket handshake: Unexpected response code: 200
+  /system/log/login-log | layout=YES | body=1418
+  /bpm/manager/form | layout=YES | body=448
+      console: PAGEERROR canceled
+  /report/go-view | layout=YES | body=347
+      console: REQFAIL http://127.0.0.1:3000/?accessToken=test-only-for-local900100&refreshToken=null | PAGEERROR Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
+  /crm/backlog | layout=YES | body=654
+      console: PAGEERROR canceled | PAGEERROR canceled | PAGEERROR canceled | PAGEERROR canceled | PAGEERROR canceled | PAGEERROR canceled | PAGEERROR canceled | PAGEERROR canceled
+  /crm/product | layout=YES | body=1758
+      console: PAGEERROR canceled
+  /infra/monitors/druid | layout=YES | body=500
+      console: Failed to load resource: the server responded with a status of 404 (File not found)
+  /infra/monitors/redis | layout=YES | body=652
+      console: PAGEERROR canceled
+  /infra/monitors/skywalking | layout=YES | body=431
+      console: Failed to load resource: the server responded with a status of 502 (Bad Gateway)
+  /ai/mind-map | layout=YES | body=787
+      console: Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N鈥?. | Error: <g> attribute transform: Expected number, "translate(NaN,NaN) scale(N鈥?. | Error: <g> attribute transform: Expected number, "transl
+  /mes/cal/calendar | layout=YES | body=1039
+      console: PAGEERROR canceled | PAGEERROR canceled
+  /fms/ledger/general | layout=YES | body=527
+      console: PAGEERROR canceled
+  /fms/ledger/subject-balance | layout=YES | body=581
+      console: PAGEERROR canceled

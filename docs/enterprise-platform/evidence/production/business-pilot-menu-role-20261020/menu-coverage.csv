@@ -1,0 +1,413 @@
+﻿domain,id,name,path,component,view,button_count,permissions,endpoints,e2e_endpoints,primary_list,status
+wms,6735,波次单管理,/wms/wave-order,wms/waveOrder/index,yes,0,0,0,0,,NO_API
+report,1281,报表管理,/report,NULL,NO,6,6,5,0,,NO_VIEW
+erp,6741,期末处理,/erp/period-close,erp/periodClose/index,yes,6,6,9,0,/erp/period/page,API_ONLY
+erp,6748,会计科目,/erp/gl-account,erp/glAccount/index,yes,4,4,8,6,/erp/gl-account/list;/erp/gl-account/page,E2E
+erp,6753,会计凭证,/erp/gl-voucher,erp/glVoucher/index,yes,5,5,7,4,/erp/gl-voucher/page,E2E
+erp,6759,预算管理,/erp/budget,erp/budget/index,yes,5,5,6,0,/erp/budget/page,API_ONLY
+erp,6765,合并抵消分录,/erp/consolidation-entry,erp/consolidationEntry/index,yes,5,5,6,0,/erp/consolidation-entry/page,API_ONLY
+erp,6771,账簿管理,/erp/account-book,erp/accountBook/index,yes,4,4,6,2,/erp/account-book/page,E2E
+wms,6776,PDA 作业,/wms/pda,wms/pda/index,yes,7,7,14,2,/wms/pda/task/list,E2E
+mes,6784,PDA 报工,/mes/pda,mes/pda/index,yes,2,2,4,0,,API_ONLY
+系统管理,1224,租户管理,tenant,NULL,NO,10,10,13,0,/system/tenant-package/page;/system/tenant/page,NO_VIEW
+系统管理,100,用户管理,user,system/user/index,yes,7,8,15,0,/system/user/list;/system/user/page,API_ONLY
+系统管理,101,角色管理,role,system/role/index,yes,8,8,12,0,/system/role/page,API_ONLY
+系统管理,102,菜单管理,menu,system/menu/index,yes,4,4,6,0,/system/menu/list,API_ONLY
+系统管理,103,部门管理,dept,system/dept/index,yes,4,4,6,0,/system/dept/list,API_ONLY
+系统管理,104,岗位管理,post,system/post/index,yes,5,5,7,0,/system/post/page,API_ONLY
+系统管理,105,字典管理,dict,system/dict/index,yes,5,5,14,1,/system/dict-data/page;/system/dict-type/page,E2E
+系统管理,1261,OAuth 2.0,oauth2,NULL,NO,6,6,9,0,/system/oauth2-client/page;/system/oauth2-token/page,NO_VIEW
+系统管理,2083,地区管理,area,system/area/index,yes,0,0,0,0,,NO_API
+系统管理,7900,主数据跨域对照,mdm-cross-ref,system/mdmcrossref/index,yes,3,3,3,0,/system/mdm-cross-ref/page,API_ONLY
+基础设施,115,代码生成,codegen,infra/codegen/index,yes,5,6,10,0,/infra/codegen/table/list;/infra/codegen/table/page,API_ONLY
+基础设施,1255,数据源配置,data-source-config,infra/dataSourceConfig/index,yes,5,5,6,0,/infra/data-source-config/list,API_ONLY
+基础设施,114,表单构建,build,infra/build/index,yes,0,1,0,0,,NO_API
+基础设施,116,API 接口,swagger,infra/swagger/index,yes,0,1,0,0,,NO_API
+基础设施,1083,API 日志,log,NULL,NO,5,5,6,0,/infra/api-access-log/page;/infra/api-error-log/page,NO_VIEW
+基础设施,2525,WebSocket,websocket,infra/webSocket/index,yes,0,0,0,0,,NO_API
+基础设施,1243,文件管理,file,NULL,NO,7,7,12,0,/infra/file-config/page;/infra/file/page,NO_VIEW
+基础设施,110,定时任务,job,infra/job/index,yes,7,6,13,0,/infra/job-log/page;/infra/job/page,API_ONLY
+基础设施,106,配置管理,config,infra/config/index,yes,5,5,7,0,/infra/config/page,API_ONLY
+工作流程,1118,请假查询,leave,bpm/oa/leave/index,yes,2,2,3,0,/bpm/oa/leave/page,API_ONLY
+系统管理,500,操作日志,operate-log,system/operatelog/index,yes,2,2,3,0,/system/operate-log/page,API_ONLY
+系统管理,501,登录日志,login-log,system/loginlog/index,yes,2,2,3,0,/system/login-log/page,API_ONLY
+基础设施,2478,单表（增删改查）,demo01-contact,infra/demo/demo01/index,yes,5,5,7,0,/infra/demo01-contact/page,API_ONLY
+基础设施,2484,树表（增删改查）,demo02-category,infra/demo/demo02/index,yes,5,5,6,0,/infra/demo02-category/list,API_ONLY
+基础设施,2490,主子表（标准）,demo03-normal,infra/demo/demo03/normal/index,yes,5,5,37,0,/infra/demo03-student-erp/demo03-course/page;/infra/demo03-student-erp/demo03-grade/page;/infra/demo03-student-erp/page;/infra/demo03-student-inner/page,API_ONLY
+基础设施,2497,主子表（ERP）,demo03-erp,infra/demo/demo03/erp/index,yes,0,0,0,0,,NO_API
+基础设施,2472,主子表（内嵌）,demo03-inner,infra/demo/demo03/inner/index,yes,0,0,0,0,,NO_API
+基础设施,1078,访问日志,api-access-log,infra/apiAccessLog/index,yes,2,2,3,0,/infra/api-access-log/page,API_ONLY
+基础设施,1084,错误日志,api-error-log,infra/apiErrorLog/index,yes,3,3,3,0,/infra/api-error-log/page,API_ONLY
+系统管理,1094,短信渠道,sms-channel,system/sms/channel/index,yes,4,4,6,0,/system/sms-channel/page,API_ONLY
+系统管理,1100,短信模板,sms-template,system/sms/template/index,yes,6,6,8,0,/system/sms-template/page,API_ONLY
+系统管理,1107,短信日志,sms-log,system/sms/log/index,yes,2,2,3,0,/system/sms-log/page,API_ONLY
+工作流程,1200,审批中心,task,NULL,NO,5,5,24,4,,NO_VIEW
+工作流程,1193,流程模型,model,bpm/model/index,yes,10,10,12,1,/bpm/process-definition/page,E2E
+工作流程,1187,流程表单,form,bpm/form/index,yes,5,5,5,0,/bpm/form/page,API_ONLY
+工作流程,2714,流程分类,category,bpm/category/index,yes,4,4,6,0,/bpm/category/page,API_ONLY
+工作流程,1209,用户分组,user-group,bpm/group/index,yes,4,4,5,0,/bpm/user-group/page,API_ONLY
+工作流程,2726,流程监听器,process-listener,bpm/processListener/index,yes,4,4,5,0,/bpm/process-listener/page,API_ONLY
+工作流程,2731,流程表达式,process-expression,bpm/processExpression/index,yes,4,4,5,0,/bpm/process-expression/page,API_ONLY
+工作流程,2721,流程实例,process-instance/manager,bpm/processInstance/manager/index,yes,2,2,2,0,,API_ONLY
+工作流程,2724,流程任务,process-tasnk,bpm/task/manager/index,yes,1,1,1,0,,API_ONLY
+工作流程,2720,发起流程,create,bpm/processInstance/create/index,yes,0,0,0,0,,NO_API
+工作流程,1201,我的流程,my,bpm/processInstance/index,yes,3,3,8,1,,E2E
+工作流程,1207,待办任务,todo,bpm/task/todo/index,yes,2,2,16,3,,E2E
+工作流程,1208,已办任务,done,bpm/task/done/index,yes,0,0,0,0,,NO_API
+工作流程,2713,抄送我的,copy,bpm/task/copy/index,yes,0,1,1,0,/bpm/process-instance/copy/page,API_ONLY
+系统管理,1138,租户列表,list,system/tenant/index,yes,6,6,7,0,/system/tenant/page,API_ONLY
+系统管理,1225,租户套餐,package,system/tenantPackage/index,yes,4,4,6,0,/system/tenant-package/page,API_ONLY
+基础设施,1237,文件配置,file-config,infra/fileConfig/index,yes,5,5,8,0,/infra/file-config/page,API_ONLY
+基础设施,1090,文件列表,file,infra/file/index,yes,2,2,4,0,/infra/file/page,API_ONLY
+系统管理,1263,应用管理,oauth2/application,system/oauth2/client/index,yes,4,4,6,0,/system/oauth2-client/page,API_ONLY
+系统管理,109,令牌管理,token,system/oauth2/token/index,yes,2,2,3,0,/system/oauth2-token/page,API_ONLY
+jimu-report,1282,报表设计器,jimu-report,report/jmreport/index,yes,0,0,0,0,,NO_API
+jimu-bi,5009,仪表盘设计器,jimu-bi,report/jmreport/bi,yes,0,0,0,0,,NO_API
+go-view,2153,大屏设计器,go-view,report/goview/index,yes,6,6,5,0,,API_ONLY
+公众号管理,2085,账号管理,account,mp/account/index,yes,6,6,9,0,/mp/account/page,API_ONLY
+公众号管理,2092,数据统计,statistics,mp/statistics/index,yes,0,1,4,0,,API_ONLY
+公众号管理,2093,标签管理,tag,mp/tag/index,yes,5,5,6,0,/mp/tag/page,API_ONLY
+公众号管理,2099,粉丝管理,user,mp/user/index,yes,3,3,4,0,/mp/user/page,API_ONLY
+公众号管理,2103,消息管理,message,mp/message/index,yes,2,2,2,0,/mp/message/page,API_ONLY
+公众号管理,5042,模版消息,message-template,mp/messageTemplate/index,yes,4,4,5,0,/mp/message-template/list,API_ONLY
+公众号管理,2119,菜单管理,menu,mp/menu/index,yes,3,3,3,0,/mp/menu/list,API_ONLY
+公众号管理,2120,自动回复,auto-reply,mp/autoReply/index,yes,4,4,5,0,/mp/auto-reply/page,API_ONLY
+公众号管理,2113,素材管理,material,mp/material/index,yes,5,5,5,0,/mp/material/page,API_ONLY
+公众号管理,2108,图文草稿箱,draft,mp/draft/index,yes,4,4,2,0,/mp/draft/page,API_ONLY
+公众号管理,2104,图文发表记录,free-publish,mp/freePublish/index,yes,3,3,1,0,/mp/free-publish/page,API_ONLY
+系统管理,2131,邮箱账号,mail-account,system/mail/account/index,yes,4,4,6,0,/system/mail-account/page,API_ONLY
+系统管理,2136,邮件模版,mail-template,system/mail/template/index,yes,5,5,7,0,/system/mail-template/page,API_ONLY
+系统管理,2141,邮件记录,mail-log,system/mail/log/index,yes,1,1,2,0,/system/mail-log/page,API_ONLY
+系统管理,2145,模板管理,notify-template,system/notify/template/index,yes,5,5,7,0,/system/notify-template/page,API_ONLY
+系统管理,2151,消息记录,notify-message,system/notify/message/index,yes,1,1,2,0,/system/notify-message/page,API_ONLY
+CRM 系统,2701,待办事项,backlog,crm/backlog/index,yes,0,0,0,0,,NO_API
+CRM 系统,2404,线索管理,clue,crm/clue/index,yes,5,5,10,3,/crm/clue/page,E2E
+CRM 系统,2391,客户管理,customer,crm/customer/index,yes,6,6,15,1,/crm/customer/page,E2E
+CRM 系统,3300,线索渠道,clue-channel,crm/clue/channel/index,yes,3,4,5,1,/crm/clue-channel/page,E2E
+CRM 系统,3320,销售订单,sale-order,crm/saleOrder/index,yes,4,5,11,8,/crm/sale-order/page,E2E
+CRM 系统,3330,售后工单,work-order,crm/workOrder/index,yes,4,5,9,1,/crm/work-order/page,E2E
+CRM 系统,3340,跟进记录,follow-up-record,crm/followup/index,yes,1,2,2,0,,API_ONLY
+CRM 系统,2416,联系人管理,contact,crm/contact/index,yes,7,7,13,0,/crm/contact/page,API_ONLY
+CRM 系统,2546,客户公海,customer/pool,crm/customer/pool/index,yes,2,2,2,0,,API_ONLY
+CRM 系统,3083,开票管理,invoice,crm/invoice/index,yes,4,5,6,1,/crm/invoice/page,E2E
+CRM 系统,3088,拜访签到,visit-record,crm/visit-record/index,yes,4,5,5,0,/crm/visit-record/page,API_ONLY
+CRM 系统,2410,商机管理,business,crm/business/index,yes,5,5,13,2,/crm/business/page,E2E
+CRM 系统,2398,合同管理,contract,crm/contract/index,yes,5,5,15,7,/crm/contract/page,E2E
+CRM 系统,2422,回款管理,receivable,crm/receivable/index,yes,5,5,8,4,/crm/receivable/page,E2E
+CRM 系统,2428,回款计划,receivable-plan,crm/receivable/plan/index,yes,5,5,7,0,/crm/receivable-plan/page,API_ONLY
+CRM 系统,2526,产品管理,product,crm/product/index,yes,5,5,6,0,/crm/product/page,API_ONLY
+系统管理,2448,三方应用,client,system/social/client/index.vue,yes,4,4,7,0,/system/social-client/page,API_ONLY
+系统管理,2453,三方用户,user,system/social/user/index.vue,yes,0,1,2,0,/system/social-user/page,API_ONLY
+CRM 系统,2516,客户公海配置,customer-pool-config,crm/customer/poolConfig/index,yes,2,2,2,0,,API_ONLY
+CRM 系统,2518,客户限制配置,customer-limit-config,crm/customer/limitConfig/index,yes,5,5,5,0,/crm/customer-limit-config/page,API_ONLY
+CRM 系统,2532,产品分类配置,product/category,crm/product/category/index,yes,4,4,5,0,/crm/product-category/list,API_ONLY
+CRM 系统,2703,商机状态配置,business-status,crm/business/status/index,yes,4,4,5,0,/crm/business-status/page,API_ONLY
+CRM 系统,2708,合同配置,contract-config,crm/contract/config/index,yes,2,2,2,0,,API_ONLY
+CRM 系统,3310,线索公海配置,clue-pool-config,crm/clue/poolConfig/index,yes,1,2,2,0,,API_ONLY
+CRM 系统,3350,业绩目标设置,performance-config,crm/performance/config/index,yes,3,4,5,0,/crm/performance-config/page,API_ONLY
+CRM 系统,2712,客户分析,customer,crm/statistics/customer/index.vue,yes,0,1,12,0,,API_ONLY
+CRM 系统,2561,排行榜,ranking,crm/statistics/rank/index,yes,0,1,8,0,,API_ONLY
+CRM 系统,2736,员工业绩,performance,crm/statistics/performance/index,yes,0,1,4,0,,API_ONLY
+CRM 系统,2737,客户画像,portrait,crm/statistics/portrait/index,yes,0,1,4,0,,API_ONLY
+CRM 系统,2738,销售漏斗,funnel,crm/statistics/funnel/index,yes,0,1,5,0,,API_ONLY
+CRM 系统,3360,产品统计,product,crm/statistics/product/index,yes,0,1,2,0,,API_ONLY
+CRM 系统,3370,业绩目标统计,performance-target,crm/statistics/performanceTarget/index,yes,0,1,1,0,,API_ONLY
+ERP 系统,2702,ERP 首页,home,erp/home/index.vue,yes,0,1,4,0,,API_ONLY
+ERP 系统,9305,CPFR异常,cpfr-exception,erp/cpfr-exception/index,yes,3,3,4,0,/erp/cpfr-exception/page,API_ONLY
+ERP 系统,9309,CPFR预测,cpfr-forecast,erp/cpfr-forecast/index,yes,4,4,7,0,/erp/cpfr-forecast/page,API_ONLY
+ERP 系统,9314,实际成本,actual-cost,erp/actual-cost/index,yes,4,4,5,1,/erp/actual-cost/page,E2E
+ERP 系统,9319,银行账户,bank-account,erp/bank-account/index,yes,4,4,5,2,/erp/bank-account/page,E2E
+ERP 系统,9324,现金流量,cash-flow,erp/cash-flow/index,yes,3,3,5,1,/erp/cash-flow/page,E2E
+ERP 系统,9328,合并范围,consolidation-scope,erp/consolidation-scope/index,yes,4,4,5,0,/erp/consolidation-scope/page,API_ONLY
+ERP 系统,9333,合并工作底稿,consolidation-worksheet,erp/consolidation-worksheet/index,yes,4,4,5,0,/erp/consolidation-worksheet/page,API_ONLY
+ERP 系统,9338,成本分摊,cost-allocation,erp/cost-allocation/index,yes,4,4,5,0,/erp/cost-allocation/page,API_ONLY
+ERP 系统,9343,成本中心,cost-center,erp/cost-center/index,yes,4,4,6,1,/erp/cost-center/list;/erp/cost-center/page,E2E
+ERP 系统,9348,成本项目,cost-item,erp/cost-item/index,yes,4,4,6,1,/erp/cost-item/list;/erp/cost-item/page,E2E
+ERP 系统,9353,成本差异,cost-variance,erp/cost-variance/index,yes,4,4,5,1,/erp/cost-variance/page,E2E
+ERP 系统,9358,币别,currency,erp/currency/index,yes,4,4,5,1,/erp/currency/page,E2E
+ERP 系统,9363,汇率,exchange-rate,erp/exchange-rate/index,yes,4,4,5,0,/erp/exchange-rate/page,API_ONLY
+ERP 系统,9368,资产变动,fa-change,erp/fa-change/index,yes,4,4,6,0,/erp/fa-change/page,API_ONLY
+ERP 系统,9373,固定资产,fixed-asset,erp/fixed-asset/index,yes,5,5,10,8,/erp/fixed-asset/page,E2E
+ERP 系统,9378,资金计划,fund-plan,erp/fund-plan/index,yes,4,4,6,1,/erp/fund-plan/page,E2E
+ERP 系统,9383,利润中心,profit-center,erp/profit-center/index,yes,4,4,6,1,/erp/profit-center/list;/erp/profit-center/page,E2E
+ERP 系统,9388,盈利能力分析,profitability-analysis,erp/profitability-analysis/index,yes,4,4,5,0,/erp/profitability-analysis/page,API_ONLY
+ERP 系统,9393,标准成本,standard-cost,erp/standard-cost/index,yes,4,4,6,1,/erp/standard-cost/page,E2E
+ERP 系统,9398,税务发票,tax-invoice,erp/tax-invoice/index,yes,4,4,5,0,/erp/tax-invoice/page,API_ONLY
+ERP 系统,9403,发票明细,tax-invoice-line,erp/tax-invoice-line/index,yes,4,4,6,0,/erp/tax-invoice-line/page,API_ONLY
+ERP 系统,9408,税率,tax-rate,erp/tax-rate/index,yes,4,4,6,2,/erp/tax-rate/page,E2E
+ERP 系统,9414,工单成本,work-order-cost,erp/work-order-cost/index,yes,4,4,5,0,/erp/work-order-cost/page,API_ONLY
+ERP 系统,9419,收付款,cashier,erp/cashier/index,yes,4,4,6,1,/erp/cashier/page,E2E
+ERP 系统,9424,主生产计划,mps-plan,erp/mps-plan/index,yes,4,4,6,1,/erp/mps-plan/detail/list;/erp/mps-plan/page,E2E
+ERP 系统,9429,物料需求计划,mrp-plan,erp/mrp-plan/index,yes,4,4,7,1,/erp/mrp-plan/page;/erp/mrp-plan/result/list;/erp/mrp-plan/result/page,E2E
+ERP 系统,9434,供应商评估,supplier-evaluation,erp/supplier-evaluation/index,yes,4,4,6,1,/erp/supplier-evaluation/item/list;/erp/supplier-evaluation/page,E2E
+ERP 系统,9439,信用额度,credit-limit,erp/credit-limit/index,yes,4,4,5,1,/erp/credit-limit/page,E2E
+ERP 系统,9449,库存批次,stock-batch,erp/stock-batch/index,yes,4,4,6,1,/erp/stock-batch/page,E2E
+ERP 系统,9454,库存序列号,stock-serial,erp/stock-serial/index,yes,4,4,6,1,/erp/stock-serial/page,E2E
+ERP 系统,9459,VMI库存,vmi-inventory,erp/vmi-inventory/index,yes,4,4,6,0,/erp/vmi-inventory/page,API_ONLY
+ERP 系统,9464,VMI补货,vmi-replenishment,erp/vmi-replenishment/index,yes,4,4,5,0,/erp/vmi-replenishment/page,API_ONLY
+ERP 系统,9700,供应链BI,scm-bi,erp/scm-bi/index,yes,5,5,8,3,,E2E
+ERP 系统,9702,合并引擎,consolidation-engine,erp/consolidation-engine/index,yes,2,3,7,0,,API_ONLY
+ERP 系统,9703,成本计算,cost-calculation,erp/cost-calculation/index,yes,1,2,3,0,,API_ONLY
+ERP 系统,9704,增值税计算,vat-calculation,erp/vat-calculation/index,yes,1,1,3,2,,E2E
+ERP 系统,9706,销售订单查询,sale-order-ddd,erp/sale-order-ddd/index,yes,5,5,0,0,,NO_API
+ERP 系统,2565,产品信息,product,erp/product/product/index,yes,5,5,6,0,/erp/product/page,API_ONLY
+ERP 系统,2571,产品分类,product-category,erp/product/category/index,yes,5,5,6,0,/erp/product-category/list,API_ONLY
+ERP 系统,2577,产品单位,unit,erp/product/unit/index,yes,5,5,6,0,/erp/product-unit/page,API_ONLY
+ERP 系统,2584,仓库信息,warehouse,erp/stock/warehouse/index,yes,5,5,7,0,/erp/warehouse/page,API_ONLY
+ERP 系统,2590,产品库存,stock,erp/stock/stock/index,yes,2,2,2,1,/erp/stock/page,E2E
+ERP 系统,2593,出入库明细,record,erp/stock/record/index,yes,2,2,3,0,/erp/stock-record/page,API_ONLY
+ERP 系统,2596,其它入库,in,erp/stock/in/index,yes,6,6,7,0,/erp/stock-in/page,API_ONLY
+ERP 系统,2610,其它出库,out,erp/stock/out/index,yes,6,6,7,0,/erp/stock-out/page,API_ONLY
+ERP 系统,2624,库存调拨,move,erp/stock/move/index,yes,6,6,7,0,/erp/stock-move/page,API_ONLY
+ERP 系统,2631,库存盘点,check,erp/stock/check/index,yes,6,6,7,0,/erp/stock-check/page,API_ONLY
+ERP 系统,8101,库存对账,inventory-reconcile,erp/stock/reconcile/index,yes,0,1,2,0,,API_ONLY
+ERP 系统,2666,采购订单,order,erp/purchase/order/index,yes,6,6,7,0,/erp/purchase-order/page,API_ONLY
+ERP 系统,2673,采购入库,in,erp/purchase/in/index,yes,6,6,7,0,/erp/purchase-in/page,API_ONLY
+ERP 系统,2680,采购退货,return,erp/purchase/return/index,yes,6,6,7,0,/erp/purchase-return/page,API_ONLY
+ERP 系统,2603,供应商信息,supplier,erp/purchase/supplier/index,yes,5,5,6,0,/erp/supplier/page,API_ONLY
+ERP 系统,3041,询价单,purchase-inquiry,erp/purchase/inquiry/index,yes,5,6,7,0,/erp/purchase-inquiry/page,API_ONLY
+ERP 系统,3047,报价单,purchase-quote,erp/purchase/quote/index,yes,5,6,5,0,/erp/purchase-quote/page,API_ONLY
+ERP 系统,3053,比价单,purchase-compare,erp/purchase/compare/index,yes,5,6,2,0,/erp/purchase-compare/page,API_ONLY
+ERP 系统,2638,销售订单,order,erp/sale/order/index,yes,6,6,10,0,/erp/sale-order/page,API_ONLY
+ERP 系统,2652,销售出库,out,erp/sale/out/index,yes,6,6,7,0,/erp/sale-out/page,API_ONLY
+ERP 系统,2659,销售退货,return,erp/sale/return/index,yes,6,6,7,0,/erp/sale-return/page,API_ONLY
+ERP 系统,2618,客户信息,customer,erp/sale/customer/index,yes,5,5,6,0,/erp/customer/page,API_ONLY
+ERP 系统,2687,付款单,payment,erp/finance/payment/index,yes,6,6,7,3,/erp/finance-payment/page,E2E
+ERP 系统,2694,收款单,receipt,erp/finance/receipt/index,yes,6,6,7,2,/erp/finance-receipt/page,E2E
+ERP 系统,2646,结算账户,account,erp/finance/account/index,yes,5,5,7,0,/erp/account/page,API_ONLY
+ERP 系统,8100,财务报表,financial-statement,erp/finance/financialStatement/index,yes,0,1,2,2,,E2E
+系统管理,2130,邮箱管理,mail,NULL,NO,10,10,15,0,/system/mail-account/page;/system/mail-log/page;/system/mail-template/page,NO_VIEW
+系统管理,107,通知公告,notice,system/notice/index,yes,4,4,7,0,/system/notice/page,API_ONLY
+基础设施,111,MySQL 监控,druid,infra/druid/index,yes,0,0,0,0,,NO_API
+基础设施,113,Redis 监控,redis,infra/redis/index,yes,2,2,1,0,,API_ONLY
+基础设施,112,Java 监控,admin-server,infra/server/index,yes,0,0,0,0,,NO_API
+基础设施,1077,链路追踪,skywalking,infra/skywalking/index,yes,0,0,0,0,,NO_API
+AI 大模型,2759,AI 对话,chat,ai/chat/index/index.vue,yes,0,0,0,0,,NO_API
+AI 大模型,2783,AI 绘画,image,ai/image/index/index.vue,yes,0,0,0,0,,NO_API
+AI 大模型,2792,AI 写作,write,ai/write/index/index.vue,yes,0,0,0,0,,NO_API
+AI 大模型,2796,AI 音乐,music,ai/music/index/index.vue,yes,0,0,0,0,,NO_API
+AI 大模型,2915,AI 知识库,knowledge,ai/knowledge/knowledge/index,yes,4,4,21,0,/ai/knowledge/document/page;/ai/knowledge/page;/ai/knowledge/segment/page,API_ONLY
+AI 大模型,5000,AI 工作流,workflow,ai/workflow/index.vue,yes,5,5,10,0,/ai/workflow/page,API_ONLY
+AI 大模型,2798,AI 思维导图,mind-map,ai/mindmap/index/index.vue,yes,0,0,0,0,,NO_API
+AI 大模型,6100,Agent编排执行,multiagent-execute,ai/multiagent/index,yes,2,2,7,0,/aimultiagent/checkpoint/list;/aimultiagent/execute/log/list,API_ONLY
+AI 大模型,6200,RAG评估,rag-eval,ai/eval/index,yes,2,2,7,0,/ai/rag/eval/dataset/list,API_ONLY
+AI 大模型,6300,技能目录,multiagent-skill,ai/multiagent/skill,yes,2,2,6,0,,API_ONLY
+AI 大模型,2761,API 密钥,api-key,ai/model/apiKey/index.vue,yes,4,4,5,0,/ai/api-key/page,API_ONLY
+AI 大模型,2767,模型配置,model,ai/model/model/index.vue,yes,4,4,5,0,/ai/model/page,API_ONLY
+AI 大模型,2773,聊天角色,chat-role,ai/model/chatRole/index.vue,yes,4,4,8,0,/ai/chat-role/page,API_ONLY
+AI 大模型,2920,工具管理,tool,ai/model/tool/index.vue,yes,4,4,5,0,/ai/tool/page,API_ONLY
+AI 大模型,2778,聊天管理,chat-conversation,ai/chat/manager/index.vue,yes,4,4,10,0,/ai/chat/conversation/page;/ai/chat/message/page,API_ONLY
+AI 大模型,2784,绘画管理,image,ai/image/manager/index.vue,yes,3,3,5,0,/ai/image/page,API_ONLY
+AI 大模型,2788,音乐管理,music,ai/music/manager/index.vue,yes,3,3,6,0,/ai/music/page,API_ONLY
+AI 大模型,2793,写作管理,write,ai/write/manager/index.vue,yes,2,2,3,0,/ai/write/page,API_ONLY
+AI 大模型,2799,导图管理,mind-map,ai/mindmap/manager/index,yes,2,2,3,0,/ai/mind-map/page,API_ONLY
+OA管理,3001,报销管理,reimburse,oa/reimburse/index,yes,7,8,11,0,/oa/reimburse/page,API_ONLY
+OA管理,3006,会议室管理,meeting-room,oa/meeting-room/index,yes,6,7,8,1,/oa/meeting-room/page,E2E
+OA管理,3013,公文管理,document,oa/document/index,yes,6,7,9,0,/oa/document/page,API_ONLY
+OA管理,3230,日程管理,schedule,oa/schedule/index,yes,3,4,8,1,/oa/schedule/page,E2E
+OA管理,3120,审批模板,approval-template,oa/approval-template/index,yes,4,4,7,0,/oa/approval-template/page,API_ONLY
+OA管理,3220,会议预约,meeting-reservation,oa/meeting-reservation/index,yes,0,1,3,1,/oa/meeting-reservation/page,E2E
+运输管理,3021,承运商,carrier,tms/carrier/index,yes,3,4,5,0,/tms/carrier/page,API_ONLY
+运输管理,3025,车辆,vehicle,tms/vehicle/index,yes,3,4,5,1,/tms/vehicle/page,E2E
+运输管理,3029,司机,driver,tms/driver/index,yes,3,4,5,0,/tms/driver/page,API_ONLY
+运输管理,3033,运单,shipment,tms/shipment/index,yes,3,4,9,7,/tms/shipment/page,E2E
+运输管理,3037,跟踪,tracking,tms/tracking/index,yes,3,4,4,0,,API_ONLY
+运输管理,3160,运费结算,freight,tms/freight/index,yes,5,6,8,2,/tms/freight/page,E2E
+运输管理,3170,运费对账,freight-reconciliation,tms/freight-reconciliation/index,yes,3,4,8,1,/tms/freight-reconciliation/page,E2E
+运输管理,3180,车队运营,fleet-operation,tms/fleet-operation/index,yes,3,4,5,1,/tms/fleet-operation/page,E2E
+运输管理,3190,GPS 定位,gps,tms/gps/index,yes,1,2,3,1,,E2E
+OA管理,3101,知识分类,category,oa/knowledge/category/index,yes,4,4,6,0,/oa/knowledge-category/list;/oa/knowledge-category/page,API_ONLY
+OA管理,3102,知识文章,article,oa/knowledge/article/index,yes,5,5,13,1,/oa/knowledge-article/page;/oa/knowledge-version/page,E2E
+OA管理,3200,文章评论,comment,oa/knowledge/comment/index,yes,3,4,6,1,/oa/knowledge-comment/list;/oa/knowledge-comment/page,E2E
+OA管理,3210,版本历史,version,oa/knowledge/version/index,yes,1,2,10,0,/oa/knowledge-article/page;/oa/knowledge-version/page,API_ONLY
+OA管理,3111,公告管理,announcement,oa/portal/announcement/index,yes,4,5,9,0,/oa/announcement/page,API_ONLY
+运输管理,3166,运费报表,freight-report,tms/freight/report/index,yes,0,1,3,1,/tms/freight/page,E2E
+IoT 物联网,4050,IoT 首页,home,iot/home/index,yes,0,0,0,0,,NO_API
+IoT 物联网,4002,产品管理,product,iot/product/product/index,yes,5,5,0,0,,NO_API
+IoT 物联网,4008,设备管理,device,iot/device/device/index,yes,9,9,0,0,,NO_API
+IoT 物联网,4014,产品分类,product-category,iot/product/category/index,yes,4,4,0,0,,NO_API
+IoT 物联网,4031,设备分组,device-group,iot/device/group/index,yes,4,4,0,0,,NO_API
+IoT 物联网,4037,产品物模型,thing-model,iot/thingmodel/index,yes,5,5,0,0,,NO_API
+IoT 物联网,5032,OTA 固件,ota/firmware,iot/ota/firmware/index,yes,9,9,0,0,,NO_API
+IoT 物联网,4049,场景联动,scene,iot/rule/scene/index,yes,5,5,0,0,,NO_API
+IoT 物联网,4051,数据流转,data-rule,iot/rule/data/index,yes,8,8,0,0,,NO_API
+IoT 物联网,5022,告警配置,config,iot/alert/config/index,yes,4,4,0,0,,NO_API
+IoT 物联网,5029,告警记录,record,iot/alert/record/index,yes,2,2,0,0,,NO_API
+MES 系统,5985,MES 首页,mes/home/index,mes/home/index,yes,0,1,5,1,,E2E
+MES 系统,9554,能耗管理,energy-consumption,mes/energy-consumption/index,yes,4,4,0,0,,NO_API
+MES 系统,9560,md/bom,bom,mes/md/bom/index,yes,4,4,0,0,,NO_API
+MES 系统,9565,md/bom-detail,bom-detail,mes/md/bom-detail/index,yes,4,4,0,0,,NO_API
+MES 系统,9570,md/bom-substitute,bom-substitute,mes/md/bom-substitute/index,yes,4,4,0,0,,NO_API
+MES 系统,9575,md-ecn-order,md-ecn-order,mes/md-ecn-order/index,yes,4,4,6,1,/mes/md-ecn-order/page,E2E
+MES 系统,9711,设备综合效率,oee,mes/dv/oee/index,yes,7,7,3,1,/mes/dv/oee/record/list,E2E
+MES 系统,9713,设备数据采集,dv-device-data,mes/dv-device-data/index,yes,6,6,8,1,/mes/dv-device-data/page,E2E
+MES 系统,9716,TPM指标,tp-kpi,mes/dv/tp-kpi/index,yes,7,7,3,0,,API_ONLY
+MES 系统,9718,生产看板,dashboard,mes/dashboard/index,yes,2,2,5,1,,E2E
+MES 系统,9720,高级排产,aps,mes/pro/aps/index,yes,8,8,7,3,/mes/pro/aps/plan/list,E2E
+MES 系统,9723,物料需求计划,mrp,mes/pro/mrp/index,yes,8,8,8,6,/mes/pro/mrp/plan/list,E2E
+MES 系统,9726,工单齐套分析,work-order-kitting,mes/pro/work-order-kitting/index,yes,6,6,1,0,,API_ONLY
+MES 系统,5120,物料产品管理,item,mes/md/item/index,yes,6,6,28,0,/mes/md/item/page;/mes/md/product-bom/page;/mes/md/product-sip/page;/mes/md/product-sop/page,API_ONLY
+MES 系统,5110,物料产品分类,item-type,mes/md/item/type/index,yes,4,4,5,0,/mes/md/item-type/list,API_ONLY
+MES 系统,5130,计量单位,unit-measure,mes/md/unitmeasure/index,yes,5,5,6,0,/mes/md/unit-measure/page,API_ONLY
+MES 系统,5140,客户管理,client,mes/md/client/index,yes,6,6,7,0,/mes/md-client/page,API_ONLY
+MES 系统,5150,供应商管理,vendor,mes/md/vendor/index,yes,6,6,6,0,/mes/md-vendor/page,API_ONLY
+MES 系统,5160,车间设置,workstation/workshop,mes/md/workstation/workshop/index,yes,4,4,5,0,/mes/md-workshop/page,API_ONLY
+MES 系统,5170,工作站设置,workstation,mes/md/workstation/index,yes,5,5,17,0,/mes/md-workstation/page,API_ONLY
+MES 系统,5190,编码规则,auto-code,mes/md/autocode/index,yes,5,5,12,0,/mes/md/auto-code-rule/page,API_ONLY
+MES 系统,5220,班组设置,team,mes/cal/team/index,yes,5,5,12,0,/mes/cal/team-member/page;/mes/cal/team/list;/mes/cal/team/page,API_ONLY
+MES 系统,5230,排班计划,plan,mes/cal/plan/index,yes,5,5,16,0,/mes/cal/plan-shift/page;/mes/cal/plan/page,API_ONLY
+MES 系统,5250,节假日设置,holiday,mes/cal/holiday/index,yes,5,5,3,0,/mes/cal/holiday/list,API_ONLY
+MES 系统,5260,排班日历,calendar,mes/cal/calendar/index,yes,1,1,2,0,/mes/cal/calendar/list;/mes/cal/team-shift/list,API_ONLY
+MES 系统,5310,设备类型,machinery/type,mes/dv/machinery/type/index,yes,5,5,5,0,/mes/dv/machinery-type/list,API_ONLY
+MES 系统,5320,设备台账,machinery,mes/dv/machinery/index,yes,6,6,7,0,/mes/dv/machinery/page,API_ONLY
+MES 系统,5330,点检保养项目,subject,mes/dv/subject/index,yes,5,5,7,0,/mes/dv/subject/page,API_ONLY
+MES 系统,5350,点检保养方案,checkplan,mes/dv/checkplan/index,yes,5,5,14,0,/mes/dv/check-plan/page,API_ONLY
+MES 系统,5360,点检记录,check-record,mes/dv/checkrecord/index,yes,6,6,15,0,/mes/dv/check-record-line/page;/mes/dv/check-record/page,API_ONLY
+MES 系统,5340,保养记录,mainten-record,mes/dv/maintenrecord/index,yes,5,5,14,0,/mes/dv/mainten-record-line/page;/mes/dv/mainten-record/page,API_ONLY
+MES 系统,5370,维修单,repair,mes/dv/repair/index,yes,5,5,16,0,/mes/dv/repair-line/page;/mes/dv/repair/page,API_ONLY
+MES 系统,3079,SCADA配置,scada-config,mes/dv/scada-config/index,yes,3,4,5,0,/mes/dv-scada-config/page,API_ONLY
+MES 系统,5410,工具类型设置,tool/type,mes/tm/tool/type/index,yes,5,5,6,0,/mes/tm/tool-type/page,API_ONLY
+MES 系统,5420,工装夹具台账,tool,mes/tm/tool/index,yes,5,5,7,0,/mes/tm/tool/page,API_ONLY
+MES 系统,5510,常见缺陷,defect,mes/qc/defect/index,yes,5,5,11,0,/mes/qc/defect-record/page;/mes/qc/defect/page,API_ONLY
+MES 系统,5610,检测项设置,indicator,mes/qc/indicator/index,yes,5,5,6,0,/mes/qc/indicator/page,API_ONLY
+MES 系统,5630,质检方案,template,mes/qc/template/index,yes,5,5,16,0,/mes/qc/template/indicator/page;/mes/qc/template/item/page;/mes/qc/template/page,API_ONLY
+MES 系统,5680,待检任务,pending-inspect,mes/qc/pendinginspect/index,yes,1,1,1,0,/mes/qc/pending-inspect/page,API_ONLY
+MES 系统,5640,来料检验,iqc,mes/qc/iqc/index,yes,5,5,12,0,/mes/qc/indicator-result/page;/mes/qc/iqc/line/page;/mes/qc/iqc/page,API_ONLY
+MES 系统,5650,过程检验,ipqc,mes/qc/ipqc/index,yes,5,5,8,0,/mes/qc/ipqc/line/page;/mes/qc/ipqc/page,API_ONLY
+MES 系统,5670,退料检验,rqc,mes/qc/rqc/index,yes,5,5,8,0,/mes/qc/rqc/line/page;/mes/qc/rqc/page,API_ONLY
+MES 系统,5660,出货检验,oqc,mes/qc/oqc/index,yes,5,5,8,0,/mes/qc/oqc/line/page;/mes/qc/oqc/page,API_ONLY
+MES 系统,5966,批次追溯,batch-trace,mes/qc/batchtrace/index,yes,1,1,4,0,/mes/wm/batch/page,API_ONLY
+MES 系统,5530,生产工单,work-order,mes/pro/workorder/index,yes,5,5,20,2,/mes/pro/work-order-bom/page;/mes/pro/work-order/page,E2E
+MES 系统,5710,工序设置,process,mes/pro/process/index,yes,5,5,11,0,/mes/pro/process/page,API_ONLY
+MES 系统,5720,工艺流程,route,mes/pro/route/index,yes,5,5,25,3,/mes/pro/route/page,E2E
+MES 系统,5540,生产排产,task,mes/pro/task/index,yes,5,5,7,0,/mes/pro/task/page,API_ONLY
+MES 系统,5550,生产报工,feedback,mes/pro/feedback/index,yes,6,6,10,0,/mes/pro/feedback/page;/mes/wm/item-consume-line/page,API_ONLY
+MES 系统,5560,工序流转,card,mes/pro/card/index,yes,6,6,14,0,/mes/pro/card-process/page;/mes/pro/card/page,API_ONLY
+MES 系统,5750,安灯呼叫,andon,mes/pro/andon/record/index,yes,9,9,12,0,/mes/pro/andon-config/list;/mes/pro/andon-config/page;/mes/pro/andon-record/page,API_ONLY
+MES 系统,3071,计件规则,piecework-rule,mes/pro/piecework-rule/index,yes,3,4,5,0,/mes/pro-piecework-rule/page,API_ONLY
+MES 系统,3075,计件记录,piecework-record,mes/pro/piecework-record/index,yes,3,4,3,0,/mes/pro-piecework-record/page,API_ONLY
+MES 系统,5981,工作记录,workrecord,mes/pro/workrecord/index,yes,3,3,6,0,/mes/pro/workrecord/log/page,API_ONLY
+MES 系统,5781,仓库设置,warehouse,mes/wm/warehouse/index,yes,4,4,16,0,/mes/wm/warehouse-area/page;/mes/wm/warehouse-location/page;/mes/wm/warehouse/page,API_ONLY
+MES 系统,5786,库存现有量,material-stock,mes/wm/materialstock/index,yes,5,5,4,0,/mes/wm/material-stock/page,API_ONLY
+MES 系统,5798,采购入库,item-receipt,mes/wm/itemreceipt/index,yes,6,6,20,0,/mes/wm/item-receipt-line/page;/mes/wm/item-receipt/page,API_ONLY
+MES 系统,5792,到货通知,arrival-notice,mes/wm/arrivalnotice/index,yes,5,5,12,0,/mes/wm/arrival-notice-line/page;/mes/wm/arrival-notice/page,API_ONLY
+MES 系统,5830,采购退货,return-vendor,mes/wm/returnvendor/index,yes,6,6,21,0,/mes/wm/return-vendor-line/page;/mes/wm/return-vendor/page,API_ONLY
+MES 系统,5805,生产领料,product-issue,mes/wm/productissue/index,yes,6,6,22,0,/mes/wm/product-issue-line/page;/mes/wm/product-issue/page,API_ONLY
+MES 系统,5840,生产退料,return-issue,mes/wm/returnissue/index,yes,6,6,21,0,/mes/wm/return-issue-line/page;/mes/wm/return-issue/page,API_ONLY
+MES 系统,5819,产品入库,product-receipt,mes/wm/productreceipt/index,yes,6,6,21,0,/mes/wm/product-receipt-line/page;/mes/wm/product-receipt/page,API_ONLY
+MES 系统,5867,发货通知,sales-notice,mes/wm/salesnotice/index,yes,5,5,12,0,/mes/wm/sales-notice-line/page;/mes/wm/sales-notice/page,API_ONLY
+MES 系统,5970,销售出库,product-sales,mes/wm/productsales/index,yes,10,10,22,0,/mes/wm/product-sales-line/page;/mes/wm/product-sales/page,API_ONLY
+MES 系统,5847,销售退货,return-sales,mes/wm/returnsales/index,yes,9,9,22,0,/mes/wm/return-sales-line/page;/mes/wm/return-sales/page,API_ONLY
+MES 系统,5922,转移调拨,transfer,mes/wm/transfer/index,yes,9,9,21,0,/mes/wm/transfer-line/list;/mes/wm/transfer/page,API_ONLY
+MES 系统,5917,装箱管理,packages,mes/wm/packages/index,yes,4,4,13,0,/mes/wm/package-line/page;/mes/wm/package/page,API_ONLY
+MES 系统,5906,条码配置,barcode/config,mes/wm/barcode/config/index,yes,4,4,5,0,/mes/wm/barcode-config/page,API_ONLY
+MES 系统,5911,赋能管理,barcode,mes/wm/barcode/index,yes,5,5,7,0,/mes/wm/barcode/page,API_ONLY
+MES 系统,5897,SN 码,sn,mes/wm/sn/index,yes,4,4,6,0,,API_ONLY
+MES 系统,5881,外协发料,outsource-issue,mes/wm/outsourceissue/index,yes,6,6,21,0,/mes/wm/outsource-issue-line/page;/mes/wm/outsource-issue/page,API_ONLY
+MES 系统,5873,外协入库,outsource-receipt,mes/wm/outsourcereceipt/index,yes,6,6,20,0,/mes/wm/outsource-receipt-line/page;/mes/wm/outsource-receipt/page,API_ONLY
+MES 系统,5888,杂项入库,misc-receipt,mes/wm/miscreceipt/index,yes,8,8,15,0,/mes/wm/misc-receipt-line/page;/mes/wm/misc-receipt/page,API_ONLY
+MES 系统,5857,杂项出库,misc-issue,mes/wm/miscissue/index,yes,6,6,14,0,/mes/wm/misc-issue-line/page;/mes/wm/misc-issue/page,API_ONLY
+MES 系统,5951,盘点方案,plan,mes/wm/stocktaking/plan/index,yes,5,5,12,0,/mes/wm/stocktaking-plan-param/page;/mes/wm/stocktaking-plan/page,API_ONLY
+MES 系统,5957,盘点任务,task,mes/wm/stocktaking/task/index,yes,5,5,19,0,/mes/wm/stocktaking-task-line/page;/mes/wm/stocktaking-task-result/page;/mes/wm/stocktaking-task/page,API_ONLY
+WMS 系统,6490,WMS 首页,home,wms/home/index,yes,0,1,3,0,,API_ONLY
+WMS 系统,6451,入库管理,receipt,wms/order/receipt/index,yes,7,7,9,0,/wms/receipt-order/page,API_ONLY
+WMS 系统,9471,库存预警,inventory-alert,wms/inventory-alert/index,yes,2,2,4,1,/wms/inventory-alert/page,E2E
+WMS 系统,9474,安全库存配置,safety-stock-config,wms/safety-stock-config/index,yes,4,4,5,1,/wms/safety-stock-config/page,E2E
+WMS 系统,9479,批次过期预警,batch-expiry-alert,wms/batch-expiry-alert/index,yes,1,1,1,0,/wms/batch-expiry-alert/page,API_ONLY
+WMS 系统,9481,库存批次,inventory-batch,wms/inventory-batch/index,yes,4,4,10,1,/wms/inventory-batch/page,E2E
+WMS 系统,9486,库位,location,wms/location/index,yes,5,5,7,4,/wms/location/list;/wms/location/page,E2E
+WMS 系统,9492,序列号,sn,wms/sn/index,yes,4,4,11,5,/wms/sn/page,E2E
+WMS 系统,9497,库区,zone,wms/zone/index,yes,5,5,7,1,/wms/zone/list;/wms/zone/page,E2E
+WMS 系统,9503,预到货通知,asn-order,wms/asn-order/index,yes,4,4,8,1,/wms/asn-order/page,E2E
+WMS 系统,9508,循环盘点计划,check-cycle-plan,wms/check-cycle-plan/index,yes,4,4,5,1,/wms/check-cycle-plan/page,E2E
+WMS 系统,9513,月台,dock,wms/dock/index,yes,4,4,5,1,/wms/dock/page,E2E
+WMS 系统,9518,拣货任务,pick-task,wms/pick-task/index,yes,3,3,3,1,/wms/pick-task/page,E2E
+WMS 系统,9522,拣货路径,pick-path,wms/pick-path/index,yes,1,1,2,0,,API_ONLY
+WMS 系统,9708,ABC分析,abc-analysis,wms/abc-analysis/index,yes,2,2,2,1,,E2E
+WMS 系统,6461,出库管理,shipment,wms/order/shipment/index,yes,7,7,15,0,/wms/shipment-order/page,API_ONLY
+WMS 系统,6470,移库管理,movement,wms/order/movement/index,yes,7,7,9,0,/wms/movement-order/page,API_ONLY
+WMS 系统,6480,盘库管理,check,wms/order/check/index,yes,7,7,9,0,/wms/check-order/page,API_ONLY
+WMS 系统,3059,越库管理,cross-dock-order,wms/cross-dock-order/index,yes,3,4,5,0,/wms/cross-dock-order/page,API_ONLY
+WMS 系统,3063,计费合同,billing-contract,wms/billing-contract/index,yes,3,4,5,0,/wms/billing-contract/page,API_ONLY
+WMS 系统,3067,计费账单,billing-bill,wms/billing-bill/index,yes,3,4,5,0,/wms/billing-bill/page,API_ONLY
+WMS 系统,6402,仓库管理,warehouse,wms/md/warehouse/index,yes,5,5,7,0,/wms/warehouse/page,API_ONLY
+WMS 系统,6419,商品分类,item/category,wms/md/item/category/index,yes,4,4,6,0,/wms/item-category/list,API_ONLY
+WMS 系统,6411,商品品牌,item/brand,wms/md/item/brand/index,yes,5,5,7,0,/wms/item-brand/page,API_ONLY
+WMS 系统,6424,商品管理,item,wms/md/item/index,yes,5,5,8,0,/wms/item-sku/page;/wms/item/page,API_ONLY
+WMS 系统,6430,往来企业,merchant,wms/md/merchant/index,yes,5,5,7,0,/wms/merchant/page,API_ONLY
+WMS 系统,6441,库存统计,index,wms/inventory/index/index,yes,1,1,2,0,/wms/inventory/list;/wms/inventory/page,API_ONLY
+WMS 系统,6445,库存流水,history,wms/inventory/history/index,yes,1,1,1,0,/wms/inventory-history/page,API_ONLY
+IM 即时通讯,6510,数据统计,statistics,im/manager/statistics/index,yes,0,1,6,0,,API_ONLY
+IM 即时通讯,6611,通话记录,rtc,im/manager/rtc/index,yes,1,1,3,0,/im/manager/rtc/page,API_ONLY
+IM 即时通讯,6560,敏感词管理,sensitive-word,im/manager/sensitiveword/index,yes,4,5,6,0,/im/manager/sensitive-word/page,API_ONLY
+IM 即时通讯,6571,系统表情,pack,im/manager/face/pack/index,yes,8,9,12,0,/im/manager/face-pack-item/page;/im/manager/face-pack/page,API_ONLY
+IM 即时通讯,6580,用户表情,user-item,im/manager/face/userItem/index,yes,2,3,2,0,/im/manager/face-user-item/page,API_ONLY
+IM 即时通讯,6520,好友列表,friend,im/manager/friend/index,yes,1,2,1,0,/im/manager/friend/page,API_ONLY
+IM 即时通讯,6515,好友申请,friend-request,im/manager/friend/request/index,yes,0,1,1,0,/im/manager/friend-request/page,API_ONLY
+IM 即时通讯,6530,好友消息,message,im/manager/message/private/index,yes,1,2,4,0,/im/manager/message/group/page;/im/manager/message/private/page,API_ONLY
+IM 即时通讯,6540,群聊列表,list,im/manager/group/index,yes,3,4,6,0,/im/manager/group/member/list;/im/manager/group/page,API_ONLY
+IM 即时通讯,6545,群聊申请,request,im/manager/group/request/index,yes,0,1,1,0,/im/manager/group-request/page,API_ONLY
+IM 即时通讯,6550,群聊消息,message,im/manager/message/group/index,yes,1,2,4,0,/im/manager/message/group/page;/im/manager/message/private/page,API_ONLY
+IM 即时通讯,6710,频道列表,list,im/manager/channel/list/index,yes,4,4,5,0,/im/manager/channel/page,API_ONLY
+IM 即时通讯,6720,频道素材,material,im/manager/channel/material/index,yes,4,4,5,0,/im/manager/channel-material/page,API_ONLY
+IM 即时通讯,6730,频道消息,message,im/manager/channel/message/index,yes,3,3,4,0,/im/manager/channel-message/page,API_ONLY
+质量管理 QMS,7510,质量审核,audit,qms/audit/plan/index,yes,8,8,27,17,/qms/audit-nonconformity/page;/qms/audit-plan/auditor/list;/qms/audit-plan/page;/qms/audit-report/page,E2E
+质量管理 QMS,7520,CAPA 改善,capa,qms/capa/document/index,yes,7,7,8,5,/qms/capa/page,E2E
+质量管理 QMS,7530,客户投诉,customer-complaint,qms/complaint/customer/index,yes,4,4,7,3,/qms/customer-complaint/page,E2E
+质量管理 QMS,7540,质量文件,document,qms/document/index,yes,8,8,24,12,/qms/document-change-request/page;/qms/document-distribute/page;/qms/document/page,E2E
+质量管理 QMS,7550,8D 报告,eight-d,qms/eightd/report/index,yes,4,4,7,4,/qms/eight-d/page,E2E
+质量管理 QMS,7560,电子签名,electronic-signature,qms/electronic-signature/index,yes,1,1,1,0,/qms/electronic-signature/page,API_ONLY
+质量管理 QMS,7570,FMEA,fmea,qms/fmea/document/index,yes,4,4,11,3,/qms/fmea/item/page;/qms/fmea/page,E2E
+质量管理 QMS,7580,检验项目,inspection-item,qms/inspection/item/index,yes,4,4,5,2,/qms/inspection-item/page,E2E
+质量管理 QMS,7590,检验单,inspection-order,qms/inspection/order/index,yes,5,5,8,5,/qms/inspection-order/page,E2E
+质量管理 QMS,7600,检验记录,inspection-record,qms/inspection/record/index,yes,4,4,5,5,/qms/inspection-record/page,E2E
+质量管理 QMS,7610,量具管理,instrument,qms/instrument/list/index,yes,4,4,7,6,/qms/instrument/page,E2E
+质量管理 QMS,7620,量具校准,instrument-calibration,qms/instrument/calibration/index,yes,4,4,6,4,/qms/instrument-calibration/page,E2E
+质量管理 QMS,7630,MSA 分析,msa,qms/msa/study/index,yes,4,4,8,3,/qms/msa/measurement/list;/qms/msa/page,E2E
+质量管理 QMS,7640,不合格品处理,ncr,qms/ncr/document/index,yes,6,6,9,2,/qms/ncr/mrb-record/list;/qms/ncr/page,E2E
+质量管理 QMS,7650,资质管理,qualification,qms/training/qualification/index,yes,4,4,6,2,/qms/qualification/page,E2E
+质量管理 QMS,7660,质量成本,quality-cost,qms/quality-cost/index,yes,4,4,8,1,/qms/quality-cost/page,E2E
+质量管理 QMS,7670,供应商纠正措施,scar,qms/sqm/scar/index,yes,4,4,6,2,/qms/scar/page,E2E
+质量管理 QMS,7680,SPC 控制图,spc,qms/spc/index,yes,1,1,2,0,,API_ONLY
+质量管理 QMS,7690,供应商审核,supplier-audit,qms/sqm/supplier-audit/index,yes,4,4,5,0,/qms/supplier-audit/page,API_ONLY
+质量管理 QMS,7700,供应商评级,supplier-rating,qms/sqm/supplier-rating/index,yes,4,4,6,0,/qms/supplier-rating/page,API_ONLY
+质量管理 QMS,7710,traceability,traceability,qms/traceability/index,yes,1,1,2,0,,API_ONLY
+质量管理 QMS,7720,training-plan,training-plan,qms/training/plan/index,yes,4,4,5,2,/qms/training-plan/page,E2E
+质量管理 QMS,7730,training-record,training-record,qms/training/record/index,yes,4,4,6,2,/qms/training-record/page,E2E
+财务管理 FMS,9020,会计科目,config/subject,fms/config/subject/index,yes,0,1,5,3,/erp/gl-account/list;/erp/gl-account/page,E2E
+财务管理 FMS,9010,账套管理,config/account-set,fms/config/account-set/index,yes,4,5,8,4,/fms/config/account-user/list,E2E
+财务管理 FMS,9030,凭证字管理,config/voucher-word,fms/config/voucher-word/index,yes,3,4,5,1,/fms/config/voucher-word/list,E2E
+财务管理 FMS,9040,常用摘要管理,config/digest,fms/config/digest/index,yes,3,4,5,1,/fms/config/digest/list,E2E
+财务管理 FMS,9050,辅助核算管理,config/auxiliary,fms/config/auxiliary/index,yes,5,6,14,2,/fms/config/auxiliary-item/list;/fms/config/auxiliary-item/page;/fms/config/auxiliary-type/list,E2E
+财务管理 FMS,9060,凭证模板管理,config/voucher-template,fms/config/voucher-template/index,yes,6,7,8,1,/fms/config/voucher-template/list,E2E
+财务管理 FMS,9070,财务指标管理,config/finance-indicator,fms/config/finance-indicator/index,yes,3,4,5,1,/fms/config/finance-indicator/list,E2E
+财务管理 FMS,9080,账套参数,config/finance-parameter,fms/config/finance-parameter/index,yes,0,1,2,1,,E2E
+财务管理 FMS,9090,期初余额,config/initial-balance,fms/config/initial-balance/index,yes,3,4,5,5,,E2E
+财务管理 FMS,9081,明细账,ledger/detail,fms/ledger/detail/index,yes,0,1,0,0,,NO_API
+财务管理 FMS,9082,总账,ledger/general,fms/ledger/general/index,yes,0,1,0,0,,NO_API
+财务管理 FMS,9083,科目余额表,ledger/subject-balance,fms/ledger/subject-balance/index,yes,0,1,0,0,,NO_API
+财务管理 FMS,9084,多栏账,ledger/multi-column,fms/ledger/multi-column/index,yes,0,1,0,0,,NO_API
+人力资源 HRM,9110,员工管理,employee,hrm/employee/index,yes,8,9,77,34,/hrm/employee/certificate/list;/hrm/employee/change-record/list;/hrm/employee/config/archive-field/list;/hrm/employee/config/create-field/list,E2E
+人力资源 HRM,9120,部门管理,dept,hrm/dept/index,yes,0,1,2,0,/system/dept/list,API_ONLY
+人力资源 HRM,9130,考勤记录,attendance/clock,hrm/attendance/clock/index,yes,4,5,11,7,/hrm/attendance/clock/page;/hrm/portal/attendance/clock/list,E2E
+人力资源 HRM,9140,请假记录,attendance/leave,hrm/attendance/leave/index,yes,1,2,4,3,/hrm/attendance/leave/page;/hrm/portal/attendance/leave/list,E2E
+人力资源 HRM,9150,月度考勤,attendance/month,hrm/attendance/month/index,yes,1,2,6,4,,E2E
+人力资源 HRM,9160,考勤组配置,attendance/config/group,hrm/attendance/config/group/index,yes,3,4,6,3,/hrm/attendance/group/page,E2E
+人力资源 HRM,9170,节假日配置,attendance/config/holiday,hrm/attendance/config/holiday/index,yes,3,4,5,3,/hrm/attendance/holiday/page,E2E
+人力资源 HRM,9180,参保方案,insurance/scheme,hrm/insurance/scheme/index,yes,6,7,13,13,/hrm/insurance/scheme/list,E2E
+人力资源 HRM,9190,招聘职位,recruit/post,hrm/recruit/post/index,yes,2,3,8,5,/hrm/recruit/post-type/list;/hrm/recruit/post/page,E2E
+人力资源 HRM,9193,候选人,recruit/candidate,hrm/recruit/candidate/index,yes,5,6,18,11,/hrm/recruit/candidate/page;/hrm/recruit/config/eliminate-reason/list,E2E
+人力资源 HRM,9199,招聘渠道,recruit/channel,hrm/recruit/channel/index,yes,4,5,8,5,/hrm/recruit/channel/page,E2E
+人力资源 HRM,9206,绩效计划,performance/plan,hrm/performance/plan/index,yes,4,5,36,27,/hrm/performance/assessment/page;/hrm/performance/plan/page;/hrm/portal/performance/assessment/page,E2E
+人力资源 HRM,9210,考核模板,performance/config/assessment-template,hrm/performance/config/assessment-template/index,yes,3,4,7,2,/hrm/performance/assessment-template/page,E2E
+人力资源 HRM,9214,结果模板,performance/config/result-template,hrm/performance/config/result-template/index,yes,3,4,7,1,/hrm/performance/result-template/page,E2E
+人力资源 HRM,9219,薪资组,salary/config/group,hrm/salary/config/group/index,yes,3,4,6,3,/hrm/salary/group/page,E2E
+人力资源 HRM,9223,薪资项,salary/config/option,hrm/salary/config/option/index,yes,3,4,8,6,/hrm/salary/option/list,E2E
+人力资源 HRM,9227,计税规则,salary/config/tax-rule,hrm/salary/config/tax-rule/index,yes,3,4,5,5,/hrm/salary/tax-rule/list,E2E
+人力资源 HRM,9231,调薪模板,salary/config/change-template,hrm/salary/config/change-template/index,yes,3,4,5,3,/hrm/salary/change-template/list,E2E
+人力资源 HRM,9235,薪资设置,salary/config/config,hrm/salary/config/config/index,yes,1,2,3,2,,E2E
+人力资源 HRM,9237,员工薪资,salary/employee-info,hrm/salary/employee-info/index,yes,3,4,12,5,/hrm/salary/change-record/list;/hrm/salary/employee-info/page,E2E
+人力资源 HRM,9241,月度工资表,salary/month-record,hrm/salary/month-record/index,yes,4,5,18,12,/hrm/salary/month-employee-record/list;/hrm/salary/month-employee-record/page;/hrm/salary/month-record/page,E2E
+人力资源 HRM,9246,工资条发放,salary/slip/send-record,hrm/salary/slip/send-record/index,yes,3,4,16,12,/hrm/portal/salary/slip/list;/hrm/salary/slip-send-record/page;/hrm/salary/slip-template/list;/hrm/salary/slip/page,E2E
+人力资源 HRM,9254,月度社保,insurance/month-record,hrm/insurance/month-record/index,yes,3,4,9,9,/hrm/insurance/month-employee-record/page;/hrm/insurance/month-record/list,E2E
+人力资源 HRM,9258,职位管理,position,hrm/position/index,yes,3,4,6,6,/hrm/position/page,E2E
