@@ -6,6 +6,14 @@
 > 当前分支：`upgrade/production-readiness`
 > 当前 HEAD：`d0ebc96c9f864450c9c293094e114aff0e4e8588`
 > 交付状态：00-14 方案基线已形成；V115-V118 已在隔离 MySQL clean 沙箱路径执行并验证重跑幂等；V119 库存租户唯一约束、V120 Outbox/Inbox owner/lease 迁移和 V121 BPM claim-token ownership 另有隔离 MySQL 8.4.11 沙箱/静态证据（V119 4/4；V120 首次/幂等重跑 exit=0、4/4 验证及不兼容索引 fail-closed；V121 claim-token unit 4/0/0/0、真实链 fail-closed 2/0/0/0、10 并发 1/0/0/0、SQL lint 2 文件 0 违规），不属于 V115-V118 clean 全链；V116/V117 的并发重复拒绝、软删除语义和 100,000 行合成 DDL 成本已有历史沙箱证据，当前 T-000 约束语义复跑使用 MySQL 8.4.11 并 5/5 通过；MySQL bootstrap runner 已通过历史沙箱创建/noop/fail-closed/rotate 与只读审计；H2/历史单实例 MySQL 回滚，以及隔离 MySQL 8.4.11 的 CRM→真实 BPM→Flowable 事务链 2/2、同 `businessKey` 10 并发 1/1、动态数据源路由/事务绑定 3/3 已有证据，但生产 `DynamicRoutingDataSource`/物理主从/真实读写分离/多租户物理连接、生产故障、生产规模、Outbox/补偿对账、存量生产库全链、非 MySQL、TLS/K8s/灾备仍未闭环，生产就绪结论不变
+>
+> **时效提示（2026-10-20）**：以上"当前分支 / 当前 HEAD / 日期"描述的是 2026-09-27 的方案基线快照，不代表现在的主线。
+> 交付与验收口径以 [pilot-deployment-20261020.md](handoff/pilot-deployment-20261020.md)（安装启动）与
+> [business-pilot-20261020.md](handoff/business-pilot-20261020.md)（业务试点）为准；状态仍为
+> `production_ready=false`、`gate3_passed=false`、`independent_review=false`、Go/No-Go = **No-Go**。
+>
+> **阅读顺序**：想装起来 → 上面两份 handoff；想了解方案与边界 → 01 → 02 → 03 → 04；
+> 想复核证据 → 08 → 12 → 13 → `evidence/`；想接手开发 → 根目录 [README](../../README.md)。
 
 ## 0. 一句话结论
 

@@ -2,6 +2,8 @@
 
 > 基于 Spring AI 1.1.8 的多 Agent 编排模块：实现 Supervisor-Worker 架构与 ReAct（Reasoning + Acting）循环。
 
+**目录**：[1. 模块简介](#1-模块简介) · [2. 核心能力](#2-核心能力) · [3. 技术栈](#3-技术栈) · [4. 模块结构](#4-模块结构) · [5. API 端点](#5-api-端点) · [6. 设计要点](#6-设计要点) · [7. 使用前提](#7-使用前提) · [8. 参考链接](#8-参考链接)
+
 ## 1. 模块简介
 
 `zhicloud-module-ai-multiagent` 是 zhicloud 项目的可选模块（Spring Modulith 声明 A3），在 `zhicloud-module-ai` 之上提供**多 Agent 编排能力**：

@@ -20,8 +20,8 @@
 
 两条路径的**关键约束**一致：
 
-1. **迁移只做一次**：A 路径由 PreSync Job 执行；B 路径由业务进程在启动时执行（local profile 的 Flyway 默认开启）。
-   业务进程**不要**再开 Flyway（A 路径已通过 `SPRING_FLYWAY_ENABLED=false` 关闭）。
+1. **迁移只做一次**：A 路径由 PreSync Job 执行；B 路径由 `db-migration` 一次性服务执行。
+   两条路径的业务进程都通过 `SPRING_FLYWAY_ENABLED=false` 关闭自动迁移，不再"起来时顺手迁移"。
 2. **引导管理员只做一次**：`scripts/production/init_bootstrap_admin.py`（脚本）或 `BootstrapAdminRunner`（K8s Job），
    幂等语义为 `ensure`（已存在则不动），口令由 Secret 注入，不写死在脚本或镜像里。
 3. **prod profile 禁止自动 DDL**：`flowable.database-schema-update=false`、Flowable/Quartz 等引擎表由迁移链建好
@@ -60,7 +60,7 @@
 `scripts/production/init_bootstrap_admin.py`）加上限校验，并把脚本默认生成长度从 24 字节改成 12 字节
 （`token_urlsafe(12)` = 16 字符，正好落在窗口内）。
 
-## 3. 本轮修掉的 4 个"prod 起不来"阻塞
+## 3. 本轮修掉的 5 个"prod 起不来"阻塞
 
 | # | 现象 | 根因 | 修复 |
 | --- | --- | --- | --- |
