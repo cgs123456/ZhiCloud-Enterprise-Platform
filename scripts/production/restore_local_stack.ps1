@@ -186,7 +186,7 @@ function Start-ServerJvm {
         '-Dspring.data.redis.host=127.0.0.1',
         "-Dspring.data.redis.port=$RedisPort",
         "-Dspring.data.redis.password=$redisPassword",
-        '-Xms512m', '-Xmx1536m', '-XX:+UseSerialGC',
+        '-Xms2g', '-Xmx3g', '-XX:+UseG1GC', '-XX:MaxGCPauseMillis=200',
         '-Djava.net.preferIPv4Stack=true',
         '-jar', 'zhicloud-server/target/zhicloud-server.jar',
         '--spring.profiles.active=local',
