@@ -19,7 +19,7 @@ python scripts/check_electronic_signature.py
 python scripts/production/check_migration_contract.py
 ```
 
-`scripts/check_bare_throws.py` 用于统计裸抛异常，目前 82 处已超出豁免预算 81；新增代码不要带裸抛，需要时先看它的输出，别直接调大 `MAX_EXEMPTIONS`。
+`scripts/check_bare_throws.py` 统计裸抛异常，当前已超出豁免预算（脚本会以非 0 退出），不作为提交阻塞项；新增代码仍应避免裸抛，别直接调大 `MAX_EXEMPTIONS`。
 
 改前端时另跑：
 
