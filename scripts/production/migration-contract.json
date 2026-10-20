@@ -863,6 +863,13 @@
       "sha256": "640ad7a07346d3f082b543ef616954949c6bf2f2989583d4f26871c955743532",
       "verification_file": "V213_verify.sql",
       "verification_sha256": "7dd4335fec5dfc6fb749fda500792e8f9be51ef71041e0e223cf37cd70a7df3f"
+    },
+    {
+      "version": 214,
+      "file": "V214__purge_commercial_residue.sql",
+      "sha256": "e2cdfff49a4169873e7d452388532c36486d9bc2a62cd449a54fdd53b31e2d8b",
+      "verification_file": "V214_verify.sql",
+      "verification_sha256": "d546aad67eb97cc575e90bbcee013225abcd04b566293391ce65e6d8904fe88f"
     }
   ]
 }
