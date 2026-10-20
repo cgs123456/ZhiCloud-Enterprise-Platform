@@ -31,6 +31,17 @@ server:
 
 --- #################### 数据源配置 ####################
 spring:
+  autoconfigure:
+    # 该列表是整体替换 base 的同名列表，必须写全（见 application.yaml 的说明）。
+    # prod 曾因漏掉 Qdrant/Milvus 而启动失败：两个自动配置都注册名为 vectorStore 的 bean。
+    exclude:
+      - org.springframework.ai.vectorstore.pgvector.autoconfigure.PgVectorStoreAutoConfiguration
+      - org.springframework.ai.vectorstore.qdrant.autoconfigure.QdrantVectorStoreAutoConfiguration
+      - org.springframework.ai.vectorstore.milvus.autoconfigure.MilvusVectorStoreAutoConfiguration
+      - org.springframework.ai.model.azure.openai.autoconfigure.AzureOpenAiEmbeddingAutoConfiguration
+      - org.springframework.ai.model.ollama.autoconfigure.OllamaEmbeddingAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiEmbeddingAutoConfiguration
+      - com.alibaba.cloud.ai.autoconfigure.dashscope.DashScopeEmbeddingAutoConfiguration
   datasource:
     druid:
       stat-view-servlet:
@@ -155,6 +166,63 @@ logging:
     cn.zhicloud.module: info # 生产环境日志降为 info
     cn.zhicloud.module.*.dal.mysql: info # 显式覆盖 local/dev 中的 debug 配置，生产环境不打印 SQL
     root: info
+
+--- #################### 微信公众号、小程序、第三方登录 ####################
+## 说明：WxJava / JustAuth 的 starter 在装配 bean 时就要求 appid 非空，
+##      prod profile 若完全不给这些占位配置，直接启动失败（appid不能设置为null），
+##      即使客户根本没用微信。所以这里与 local 保持同一套配置结构，取值一律走环境变量。
+wx:
+  mp: # 公众号配置，参见 https://github.com/Wechat-Group/WxJava/blob/develop/spring-boot-starters/wx-java-mp-spring-boot-starter/README.md
+    app-id: ${WX_MP_APP_ID:} # 公众号 AppID（通过环境变量注入）
+    secret: ${WX_MP_SECRET:} # 公众号秘钥（通过环境变量注入）
+    config-storage:
+      type: RedisTemplate # 采用 RedisTemplate 操作 Redis，会自动从 Spring 中获取
+      key-prefix: wx # Redis Key 的前缀
+      http-client-type: HttpComponents # 采用 HttpComponents（HttpClient 5）请求微信公众号平台
+  miniapp: # 小程序配置，参见 https://github.com/Wechat-Group/WxJava/blob/develop/spring-boot-starters/wx-java-miniapp-spring-boot-starter/README.md
+    appid: ${WX_MINIAPP_APPID:} # 小程序 AppID（通过环境变量注入）
+    secret: ${WX_MINIAPP_SECRET:} # 小程序秘钥（通过环境变量注入）
+    config-storage:
+      type: RedisTemplate
+      key-prefix: wa
+      http-client-type: HttpComponents
+
+justauth:
+  enabled: true
+  type:
+    DINGTALK: # 钉钉
+      client-id: ${DINGTALK_CLIENT_ID:}
+      client-secret: ${DINGTALK_CLIENT_SECRET:}
+      ignore-check-redirect-uri: true
+    WECHAT_ENTERPRISE: # 企业微信
+      client-id: ${WECHAT_ENTERPRISE_CLIENT_ID:}
+      client-secret: ${WECHAT_ENTERPRISE_CLIENT_SECRET:}
+      agent-id: 1000004
+      ignore-check-redirect-uri: true
+    # noinspection SpringBootApplicationYaml
+    WECHAT_MINI_PROGRAM: # 微信小程序
+      client-id: ${wx.miniapp.appid}
+      client-secret: ${wx.miniapp.secret}
+      ignore-check-redirect-uri: true
+      ignore-check-state: true # 微信小程序，不会使用到 state，所以不进行校验
+    WECHAT_MP: # 微信公众号
+      client-id: ${wx.mp.app-id}
+      client-secret: ${wx.mp.secret}
+      ignore-check-redirect-uri: true
+  cache:
+    type: REDIS
+    prefix: 'social_auth_state:' # 缓存前缀，目前只对 Redis 缓存生效，默认 JUSTAUTH::STATE::
+    timeout: 24h # 超时时长，目前只对 Redis 缓存生效，默认 3 分钟
+
+--- #################### 消息队列 ####################
+## IM / 站内信等依赖 RabbitMQ 转发 WebSocket 消息；未部署 MQ 时保持关闭，避免连 localhost。
+spring:
+  rabbitmq:
+    host: ${RABBITMQ_HOST:127.0.0.1}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    virtual-host: ${RABBITMQ_VHOST:/}
 
 --- #################### Spring Boot Admin 配置 ####################
 spring:

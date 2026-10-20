@@ -275,7 +275,9 @@ services:
         --spring.data.redis.host=${REDIS_HOST:-zhicloud-redis}
         --spring.data.redis.port=6379
         --spring.data.redis.password=${REDIS_PASSWORD:?REDIS_PASSWORD is required}
-        --zhicloud.airag.enabled=true
+        # AI-RAG 默认关闭：需要 classpath:airag/ 下的 BGE 模型文件（jar 内不含），
+        # 缺模型时开启会直接启动失败。部署 Postgres+pgvector 并下载模型后再改 true。
+        --zhicloud.airag.enabled=false
         --zhicloud.airag.datasource.url=jdbc:postgresql://zhicloud-postgres:5432/${POSTGRES_DB:-zhicloud_rag}
         --zhicloud.airag.datasource.username=${POSTGRES_USER:-zhicloud}
         --zhicloud.airag.datasource.password=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}

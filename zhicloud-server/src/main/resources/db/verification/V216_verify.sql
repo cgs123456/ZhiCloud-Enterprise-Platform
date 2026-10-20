@@ -1,33 +1,51 @@
--- V216 验证：crm_admin 角色已获得完整 CRM 菜单树，且不再持有 MES 按钮
--- 迁移执行自检；生产仍需要备份、回滚演练与独立复核。
+-- ============================================================
+-- V216 验证脚本（只读，不修改业务数据）
+--
+-- 门禁：
+--   1. 迁移 V216 已在 flyway_schema_history 成功记录；
+--   2. crm_admin（role_id=3）不再持有 V1.1 种子误绑的 MES 按钮 5811；
+--   3. CRM 根菜单已绑定到 role 3（若实例已裁剪掉 CRM 菜单则不做要求）；
+--   4. CRM 菜单树在 role 3 上没有缺失绑定；
+--   5. role 3 没有重复的有效菜单绑定。
+--
+-- 说明：部署期由 DatabaseMigrationRunner 的迁移后语义校验执行，
+--      任何一项非 PASS 都会让 PreSync 迁移 Job 失败并阻断业务发布。
+-- ============================================================
 
--- 1. Flyway 成功记录
-SELECT CASE WHEN (SELECT COUNT(*) FROM flyway_schema_history
-                   WHERE version = '216' AND success = 1) = 1
-            THEN 'V216_FLYWAY_APPLIED PASS'
-            ELSE 'V216_FLYWAY_APPLIED FAIL 版本 216 不在成功记录中' END AS check_result;
+SELECT 'V216_FLYWAY_APPLIED' AS check_name,
+       CASE
+           WHEN (SELECT COUNT(*) FROM flyway_schema_history
+                  WHERE version = '216' AND success = 1) = 1
+           THEN 'PASS' ELSE 'FAIL'
+       END AS verdict;
 
--- 2. role 3 不再绑定 MES 领料出库单完成按钮
-SELECT CASE WHEN COUNT(*) = 0
-            THEN 'V216_CRM_ROLE_MES_LEAK PASS'
-            ELSE CONCAT('V216_CRM_ROLE_MES_LEAK FAIL ', COUNT(*)) END AS check_result
-  FROM `system_role_menu`
- WHERE `role_id` = 3
-   AND `menu_id` = 5811
-   AND `deleted` = b'0';
+SELECT 'V216_CRM_ROLE_MES_LEAK' AS check_name,
+       CASE
+           WHEN (SELECT COUNT(*) FROM `system_role_menu`
+                  WHERE `role_id` = 3
+                    AND `menu_id` = 5811
+                    AND `deleted` = b'0') = 0
+           THEN 'PASS' ELSE 'FAIL'
+       END AS verdict;
 
--- 3. CRM 根菜单已绑定
-SELECT CASE WHEN COUNT(*) = 1
-            THEN 'V216_CRM_ROOT PASS'
-            ELSE CONCAT('V216_CRM_ROOT FAIL ', COUNT(*)) END AS check_result
-  FROM `system_role_menu` rm
-  JOIN `system_menu` m ON m.`id` = rm.`menu_id`
- WHERE rm.`role_id` = 3
-   AND rm.`deleted` = b'0'
-   AND m.`path` = '/crm'
-   AND m.`parent_id` = 0;
+SELECT 'V216_CRM_ROOT' AS check_name,
+       CASE
+           WHEN NOT EXISTS (SELECT 1 FROM `system_menu`
+                             WHERE `path` = '/crm'
+                               AND `parent_id` = 0
+                               AND `deleted` = b'0')
+           THEN 'PASS'
+           WHEN EXISTS (SELECT 1
+                          FROM `system_role_menu` rm
+                          JOIN `system_menu` m ON m.`id` = rm.`menu_id`
+                         WHERE rm.`role_id` = 3
+                           AND rm.`deleted` = b'0'
+                           AND m.`path` = '/crm'
+                           AND m.`parent_id` = 0
+                           AND m.`deleted` = b'0')
+           THEN 'PASS' ELSE 'FAIL'
+       END AS verdict;
 
--- 4. CRM 菜单树没有缺失绑定
 WITH RECURSIVE `crm_menu` (`id`) AS (
     SELECT `id`
       FROM `system_menu`
@@ -40,27 +58,27 @@ WITH RECURSIVE `crm_menu` (`id`) AS (
       JOIN `crm_menu` c ON m.`parent_id` = c.`id`
      WHERE m.`deleted` = b'0'
 )
-SELECT CASE WHEN COUNT(*) = 0
-            THEN 'V216_CRM_MENUS COMPLETE PASS'
-            ELSE CONCAT('V216_CRM_MENUS COMPLETE FAIL missing=', COUNT(*)) END AS check_result
-  FROM `crm_menu` c
- WHERE NOT EXISTS (
-       SELECT 1
-         FROM `system_role_menu` rm
-        WHERE rm.`role_id` = 3
-          AND rm.`menu_id` = c.`id`
-          AND rm.`deleted` = b'0'
-   );
+SELECT 'V216_CRM_MENUS_COMPLETE' AS check_name,
+       CASE
+           WHEN (SELECT COUNT(*)
+                   FROM `crm_menu` c
+                  WHERE NOT EXISTS (SELECT 1
+                                      FROM `system_role_menu` rm
+                                     WHERE rm.`role_id` = 3
+                                       AND rm.`menu_id` = c.`id`
+                                       AND rm.`deleted` = b'0')) = 0
+           THEN 'PASS' ELSE 'FAIL'
+       END AS verdict;
 
--- 5. role 3 没有重复的有效菜单绑定
-SELECT CASE WHEN COUNT(*) = 0
-            THEN 'V216_CRM_ROLE_NO_DUPLICATE PASS'
-            ELSE CONCAT('V216_CRM_ROLE_NO_DUPLICATE FAIL groups=', COUNT(*)) END AS check_result
-  FROM (
-       SELECT `menu_id`, COUNT(*) AS cnt
-         FROM `system_role_menu`
-        WHERE `role_id` = 3
-          AND `deleted` = b'0'
-        GROUP BY `menu_id`
-       HAVING cnt > 1
-   ) dup;
+SELECT 'V216_CRM_ROLE_NO_DUPLICATE' AS check_name,
+       CASE
+           WHEN (SELECT COUNT(*) FROM (
+                     SELECT `menu_id`
+                       FROM `system_role_menu`
+                      WHERE `role_id` = 3
+                        AND `deleted` = b'0'
+                      GROUP BY `menu_id`
+                     HAVING COUNT(*) > 1
+                   ) dup) = 0
+           THEN 'PASS' ELSE 'FAIL'
+       END AS verdict;

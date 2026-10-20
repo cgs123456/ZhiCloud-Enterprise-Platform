@@ -208,7 +208,9 @@ env:
   REDIS_HOST: "zhicloud-redis"
   REDIS_PORT: "6379"
   # ----- RAG 数据源 -----
-  ZHICLOUD_AIRAG_ENABLED: "true"
+  # AI-RAG 默认关闭：启用需同时具备 ① PostgreSQL+pgvector 数据源 ② classpath:airag/ 下的 BGE 模型文件
+  # （scripts/download-bge-model.sh 下载，jar 内不含模型）。缺任一项都会导致服务启动失败。
+  ZHICLOUD_AIRAG_ENABLED: "false"
   ZHICLOUD_AIRAG_DATASOURCE_URL: "jdbc:postgresql://zhicloud-postgres:5432/zhicloud_rag"
   ZHICLOUD_AIRAG_DATASOURCE_USERNAME: "zhicloud"
   # 生产/默认路径禁止应用启动 DDL；表和索引由 sql/postgresql/airag_pgvector.sql 显式创建

@@ -50,7 +50,9 @@ USER_PLACEHOLDER = "__ZHICLOUD_BOOTSTRAP_USERNAME__"
 HASH_PLACEHOLDER = "__ZHICLOUD_BOOTSTRAP_PASSWORD_HASH__"
 DEFAULT_USERNAME = "zhicloud_admin"
 DEFAULT_COST = 12
-DEFAULT_PASSWORD_BYTES = 24
+DEFAULT_PASSWORD_BYTES = 12
+# 登录接口 AuthLoginReqVO 的口令长度上限（@Length(min = 4, max = 16)），超过就登不进去
+MAX_PASSWORD_LENGTH = 16
 ROLE_ID = 1
 POST_ID = 4
 TENANT_ID = 1
@@ -352,6 +354,14 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit("[FAIL] 缺少 bcrypt 依赖：pip install bcrypt（渲染口令哈希必需）。")
 
     password = secrets.token_urlsafe(args.password_bytes)
+    # 登录接口 AuthLoginReqVO 对口令做了 @Length(min = 4, max = 16) 校验：
+    # 生成的口令一旦超过 16 位，账号虽然写进库了，但登录时会在参数校验阶段被拒，
+    # 表现为"引导成功却登不进去"。这里提前拦掉，别把问题留给交付现场。
+    if len(password) > MAX_PASSWORD_LENGTH:
+        raise SystemExit(
+            f"[FAIL] 生成的管理员口令长度 {len(password)} 超过 {MAX_PASSWORD_LENGTH} 位，"
+            f"会被登录接口拒绝；请调小 --password-bytes。"
+        )
     password_hash = bcrypt.hashpw(
         password.encode("utf-8"),
         bcrypt.gensalt(args.cost, prefix=b"2a"),

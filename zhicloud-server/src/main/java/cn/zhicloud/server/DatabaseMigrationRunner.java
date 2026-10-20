@@ -67,6 +67,9 @@ public final class DatabaseMigrationRunner {
     static final String V119_VERIFICATION_RESOURCE = "db/verification/V119_verify.sql";
     static final String V120_VERIFICATION_RESOURCE = "db/verification/V120_verify.sql";
     static final String V121_VERIFICATION_RESOURCE = "db/verification/V121_verify.sql";
+    static final String V216_VERIFICATION_RESOURCE = "db/verification/V216_verify.sql";
+    static final String V217_VERIFICATION_RESOURCE = "db/verification/V217_verify.sql";
+    static final String V218_VERIFICATION_RESOURCE = "db/verification/V218_verify.sql";
 
     /**
      * 已发布 V1.1 的 Flyway checksum。该值来自 Flyway 11.7.2 的 CRC32 行拼接算法，
@@ -112,7 +115,26 @@ public final class DatabaseMigrationRunner {
                     "V120_EVENT_INBOX_LEASE_INDEX",
                     "V120_EVENT_OUTBOX_LEASE_INDEX")),
             new VerificationSpec(V121_VERIFICATION_RESOURCE, Set.of(
-                    "V121_BPM_IDEMPOTENCY_CLAIM_TOKEN_COLUMN")));
+                    "V121_BPM_IDEMPOTENCY_CLAIM_TOKEN_COLUMN")),
+            // 业务可用性门禁：V216 修 crm_admin 角色的 CRM 菜单绑定（否则该角色登录后菜单为空），
+            // V217 修 MES BOM 菜单的组件路径大小写（否则该菜单打开是空白页）。
+            // 这两项一旦在存量库上没生效，Flyway 仍会显示“迁移成功”，只有语义校验能挡住。
+            new VerificationSpec(V216_VERIFICATION_RESOURCE, Set.of(
+                    "V216_FLYWAY_APPLIED",
+                    "V216_CRM_ROLE_MES_LEAK",
+                    "V216_CRM_ROOT",
+                    "V216_CRM_MENUS_COMPLETE",
+                    "V216_CRM_ROLE_NO_DUPLICATE")),
+            new VerificationSpec(V217_VERIFICATION_RESOURCE, Set.of(
+                    "V217_FLYWAY_APPLIED",
+                    "V217_MES_BOM_COMPONENT",
+                    "V217_MES_BOM_NO_LOWERCASE")),
+            // V218 建 Flowable 引擎表：prod profile 禁用自动 DDL，缺表时服务根本起不来
+            new VerificationSpec(V218_VERIFICATION_RESOURCE, Set.of(
+                    "V218_FLYWAY_APPLIED",
+                    "V218_FLOWABLE_CORE_TABLES",
+                    "V218_FLOWABLE_SCHEMA_VERSION",
+                    "V218_FLOWABLE_ENGINE_TABLES")));
 
     record VerificationSpec(String resource, Set<String> expectedChecks) {
     }

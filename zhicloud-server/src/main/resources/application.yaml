@@ -4,9 +4,15 @@
 
   # 禁用 PgVectorStore 自动配置 + 多个 EmbeddingModel 自动配置（避免 bean 冲突，由 AiragConfiguration 自定义）
   # 注意：spring.autoconfigure.exclude 用全限定类名逗号分隔
+  # 重要：这是 List 属性，**profile 覆盖是整体替换而不是合并**。
+  #      任何 profile 只要重新声明这个列表，就必须把下面 7 项写全，
+  #      否则被 profile 覆盖掉的项会重新生效（例如 prod 未排除 Qdrant/Milvus，
+  #      两个自动配置都注册名为 vectorStore 的 bean，prod profile 直接启动失败）。
   autoconfigure:
     exclude:
       - org.springframework.ai.vectorstore.pgvector.autoconfigure.PgVectorStoreAutoConfiguration
+      - org.springframework.ai.vectorstore.qdrant.autoconfigure.QdrantVectorStoreAutoConfiguration
+      - org.springframework.ai.vectorstore.milvus.autoconfigure.MilvusVectorStoreAutoConfiguration
       - org.springframework.ai.model.azure.openai.autoconfigure.AzureOpenAiEmbeddingAutoConfiguration
       - org.springframework.ai.model.ollama.autoconfigure.OllamaEmbeddingAutoConfiguration
       - org.springframework.ai.model.openai.autoconfigure.OpenAiEmbeddingAutoConfiguration

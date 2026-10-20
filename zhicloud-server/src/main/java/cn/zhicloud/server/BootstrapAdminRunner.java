@@ -57,6 +57,8 @@ public final class BootstrapAdminRunner {
     private static final int MIN_BCRYPT_COST = 10;
     private static final int MAX_BCRYPT_COST = 16;
     private static final int MIN_PASSWORD_LENGTH = 12;
+    /** 登录接口 AuthLoginReqVO 对口令的 @Length(min = 4, max = 16) 约束，超长口令会导致无法登录。 */
+    private static final int MAX_PASSWORD_LENGTH = 16;
     private static final int MAX_PASSWORD_BYTES = 72;
     private static final String ACTOR = "bootstrap-admin";
     private static final Pattern USERNAME_PATTERN =
@@ -407,6 +409,11 @@ public final class BootstrapAdminRunner {
             }
             if (password.length() < MIN_PASSWORD_LENGTH) {
                 throw new IllegalStateException("管理员口令至少需要 " + MIN_PASSWORD_LENGTH + " 个字符");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
+            }
+            if (password.length() > MAX_PASSWORD_LENGTH) {
+                // 登录接口 AuthLoginReqVO 对口令做了 4-16 位校验：超长口令虽然能写进库，
+                // 但登录时会在参数校验阶段被拒，表现为"账号建好了却登不进去"，必须在引导阶段就拦住。
+                throw new IllegalStateException("管理员口令长度不得超过 " + MAX_PASSWORD_LENGTH + " 个字符（登录接口限制 4-16 位，超长将无法登录）");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
             }
             if (password.getBytes(StandardCharsets.UTF_8).length > MAX_PASSWORD_BYTES) {
                 throw new IllegalStateException("管理员口令 UTF-8 长度不得超过 " + MAX_PASSWORD_BYTES + " 字节");  // @bare-throw-ignore Flyway/引导 CLI 运行在 Spring 容器之外，硬套 ServiceException 只会污染业务错误码空间
