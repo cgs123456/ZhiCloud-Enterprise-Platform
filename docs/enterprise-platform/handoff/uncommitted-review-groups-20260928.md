@@ -14071,3 +14071,46 @@ demo-data 全量重生实跑 status=passed，R-033 方向 2 实跑验证兑现�
 - `scripts/production/restore_local_stack.ps1`：JVM 参数（§①）。
 - `zhicloud-ui/zhicloud-ui-admin-vue3/vite.config.ts`：chunk 阈值 22000（§④）。
 - 本台账 §12.286（验收）+ §12.287（本节）。
+## §12.288 8 方言安装脚本 / admin UI 的 V140 商业种子清零（2026-10-20）
+
+提交：`326137001`（安装 SQL + 分组器）、`b35a2fd32`（admin UI）。
+
+**范围**：`sql/**` 8 个方言安装脚本 + `zhicloud-ui-admin-vue3`；不动 Flyway 历史迁移、
+`controller/app/**` 企业端控制器、`AuthController` 的 6 个非密码登录端点。
+
+**安装 SQL（每个方言脚本同一组行）**
+- `system_menu` 263 行：V140 规则 206 直接命中 + 57 个仅由父节点带入的子孙；
+  `system_role_menu` 201 行、`system_dict_type` 27 行、`system_dict_data` 108 行。
+- `infra_job` 12 行：V146 清单里的 pay*/mall* handler（pay 5 + mall 7）。
+- `system_notify_message` 2 行：`brokerage_withdraw_audit_approve`。
+- `system_tenant_package` 111 的 `menu_ids` 去掉 77 个已删商业菜单 id（260→183 个引用）。
+
+**前端**
+- `utils/dict.ts` 删除 34 个零引用商业枚举（PAY 7、TRADE 8、BROKERAGE 7、PROMOTION 9、
+  MEMBER 2、PRODUCT 1）；2526 个源文件复查无标识符引用、无字面量 dict_type 引用。
+- 删除 5 个零引用 SVG：`member_balance` / `member_expenditure_balance` / `member_level` /
+  `member_point` / `member_recharge_balance`。
+
+**验证**
+- 临时 MySQL schema 整库导入安装 SQL 前后对比：`deleted=263`、
+  `deleted_outside_closure=0`、`new_menu_rows=0`、`after_orphans=0`、
+  `role/dict deleted_outside_*=0`；`job 18→6`、`job_deleted_outside_list=0`；
+  `notify 9→7`、`notify_deleted_outside_brokerage=0`；`pkg refs 260→183`。
+  企业前缀菜单保留：mes 316 / erp 112 / system 91 / crm 67 / infra 55 / iot 55 /
+  wms 55 / bpm 42 / im 42 / mp 40 / ai 39 / report 6。
+- `pnpm build:local` rc=0（1m3s，chunk 20,704 kB，阈值 22,000）。
+- `pytest scripts/production/tests`：674 passed / 3 skipped / 190 subtests，rc=0（7m40s）。
+- plan gate rc=0。分组器新增 `install-sql` 组（4），business-code/demo-data/tooling
+  顺延 5/6/7；否则 `sql/` 变更会被判 unclassified。
+
+**既有库残余（本轮未动，需单独立项）**
+- 沙箱 `zhicloud_sandbox_v140` 实测：商业菜单/字典/调度均为 0，但
+  `system_tenant_package` 仍有 77 个指向已删菜单的陈旧 `menu_ids`（2 行、260 个引用），
+  `system_notify_message` 仍有 2 条 brokerage 通知；`role_menu_orphans=0`。
+- 根因：`V1.1__system_base_schema.sql` 用 `INSERT IGNORE` 种入了这两组行。V140 删除菜单
+  但不更新套餐 CSV（其注释称引用为 0，与实测不符）；V140/V146 都不碰 notify。
+- 影响：Flyway 新装时套餐 111 会因安装 SQL 已存在而保留清理后的 `menu_ids`，但 V1.1 会把
+  2 条 brokerage 通知重新种入；既有库两类都保留。新建租户时才会把 77 个已删 id 写进
+  `system_role_menu`。
+- 处置建议：另加一笔 V150 迁移（删除 `brokerage%` 通知 + 按现存菜单过滤套餐 menu_ids）
+  并补 verify SQL；V1.1 是哈希钉住的历史迁移，不应直接改。
