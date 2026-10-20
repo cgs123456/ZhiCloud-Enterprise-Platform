@@ -85,7 +85,9 @@ export default ({command, mode}: ConfigEnv): UserConfig => {
         build: {
             // HSK file-hosting has a 2000-file limit; codeSplitting=false intentionally emits one large entry.
             // Raise the threshold for this known trade-off so builds do not emit a noisy chunk-size warning.
-            chunkSizeWarningLimit: 20000,
+            // 2026-10-20 实测 build:local 单包 20714 kB：阈值 20000 仍会告警，对齐到 22000（分包需先解除
+            // 2000 文件数托管限制，属 infra 决策，不在此改）。
+            chunkSizeWarningLimit: 22000,
             minify: 'oxc',
             outDir: env.VITE_OUT_DIR || 'dist',
             reportCompressedSize: false,
