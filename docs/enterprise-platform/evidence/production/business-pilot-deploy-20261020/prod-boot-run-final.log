@@ -1,0 +1,9 @@
+
+===== PHASE B锛氬畬鏁磋繍缁寸幆澧冨彉閲?=====
+health: {"code":404,"msg":"璇锋眰鍦板潃涓嶅瓨鍦?actuator/health","data":null}
+鍚姩鎴愬姛锛岀瓑寰?5 绉掑悗妫€鏌ョ櫥褰曟帴鍙?
+    {"@timestamp":"2026-10-20T18:09:23.2167738+08:00","@version":"1","message":"Started ZhiCloudServerApplication in 149.637 seconds (process running for 151.057)","logger_name":"cn.zhicloud.server.ZhiCloudServerApplication"
+鐧诲綍鍝嶅簲: {"code":0,"msg":"","data":{"userId":227,"accessToken":"518bec5a4d1b44ca83aa05144e5e2103","refreshToken":"10b115eac2a74dcf8c1bcc40558e6487","expiresTime":1792492769607}}
+鏉冮檺鎺ュ彛 code=0 椤剁骇鑿滃崟=29 鏉冮檺=1646
+椤剁骇鑿滃崟: ['浣滆€呭姩鎬?, 'Boot 寮€鍙戞枃妗?, '璐ㄩ噺绠＄悊 QMS', '璐㈠姟绠＄悊 FMS', '浜哄姏璧勬簮 HRM', 'Cloud 寮€鍙戞枃妗?, '绯荤粺绠＄悊', '鍩虹璁炬柦', '娉㈡鍗曠鐞?, '鎶ヨ〃绠＄悊', '宸ヤ綔娴佺▼', '鏈熸湯澶勭悊']
+宸插仠姝㈡祴璇曞疄渚?

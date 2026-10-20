@@ -1,0 +1,62 @@
+
+===== PHASE A锛氭渶灏忚繍缁寸幆澧冨彉閲忥紙鍙湁鏁版嵁搴?+ Redis锛?=====
+杩涚▼鎻愬墠閫€鍑?exit=1
+--- 鍚姩澶辫触鏃ュ織灏鹃儴 ---
+    16:42:11,636 |-WARN in ch.qos.logback.core.model.processor.AppenderModelHandler - Appender named [STDOUT] not referenced. Skipping further processing.
+    {"@timestamp":"2026-10-20T16:42:12.3570866+08:00","@version":"1","message":"HV000001: Hibernate Validator 8.0.3.Final","logger_name":"org.hibernate.validator.internal.util.Version","thread_name":"background-preinit","level":"INFO","level_va
+    16:42:13,715 |-WARN in ch.qos.logback.core.model.processor.AppenderModelHandler - Appender named [STDOUT] not referenced. Skipping further processing.
+    锟斤拷锟斤拷 http://www.zhicloud.cn
+    Application Version: 1.0.0
+    Spring Boot Version: 3.5.16
+    
+    .__   __.   ______      .______    __    __    _______
+    |  \ |  |  /  __  \     |   _  \  |  |  |  |  /  _____|
+    |   \|  | |  |  |  |    |  |_)  | |  |  |  | |  |  __
+    |  . `  | |  |  |  |    |   _  <  |  |  |  | |  | |_ |
+    |  |\   | |  `--'  |    |  |_)  | |  `--'  | |  |__| |
+    |__| \__|  \______/     |______/   \______/   \______|
+    
+    锟斤拷锟斤拷锟斤拷锟絒   锟斤拷锟斤拷锟絒 锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟絒     锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟絒 锟斤拷锟斤拷锟絒   锟斤拷锟斤拷锟絒 锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟絒
+    锟斤拷锟斤拷锟斤拷锟斤拷锟絒  锟斤拷锟斤拷锟経锟斤拷锟斤拷锟絏锟絋锟絋锟絋锟斤拷锟斤拷锟絒    锟斤拷锟斤拷锟絏锟絋锟絋锟斤拷锟斤拷锟絒锟斤拷锟斤拷锟経   锟斤拷锟斤拷锟経锟斤拷锟斤拷锟絏锟絋锟絋锟絋锟絋锟絘
+    锟斤拷锟斤拷锟絏锟斤拷锟斤拷锟絒 锟斤拷锟斤拷锟経锟斤拷锟斤拷锟経   锟斤拷锟斤拷锟経    锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟絏锟絘锟斤拷锟斤拷锟経   锟斤拷锟斤拷锟経锟斤拷锟斤拷锟経  锟斤拷锟斤拷锟斤拷锟絒
+    锟斤拷锟斤拷锟経锟絕锟斤拷锟斤拷锟絒锟斤拷锟斤拷锟経锟斤拷锟斤拷锟経   锟斤拷锟斤拷锟経    锟斤拷锟斤拷锟絏锟絋锟絋锟斤拷锟斤拷锟絒锟斤拷锟斤拷锟経   锟斤拷锟斤拷锟経锟斤拷锟斤拷锟経   锟斤拷锟斤拷锟経
+    锟斤拷锟斤拷锟経 锟絕锟斤拷锟斤拷锟斤拷锟斤拷锟経锟絕锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟絏锟絘    锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟絏锟絘锟絕锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟絏锟絘锟絕锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟絏锟絘
+    锟絕锟絋锟絘  锟絕锟絋锟絋锟絋锟絘 锟絕锟絋锟絋锟絋锟絋锟絋锟絘     锟絕锟絋锟絋锟絋锟絋锟絋锟絘  锟絕锟絋锟絋锟絋锟絋锟絋锟絘  锟絕锟絋锟絋锟絋锟絋锟絋锟絘
+    
+    {"@timestamp":"2026-10-20T16:42:13.8374848+08:00","@version":"1","message":"The following 1 profile is active: \"prod\"","logger_name":"cn.zhicloud.server.ZhiCloudServerApplication","thread_name":"main","level":"INFO","level_value":20000}
+    {"@timestamp":"2026-10-20T16:42:23.0640391+08:00","@version":"1","message":"Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.support.BeanDefinitionOverrideException: Invalid
+    {"@timestamp":"2026-10-20T16:42:23.0841489+08:00","@version":"1","message":"\r\n\r\nError starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.","logger_name":"org.springframew
+    {"@timestamp":"2026-10-20T16:42:23.159627+08:00","@version":"1","message":"\r\n\r\n***************************\r\nAPPLICATION FAILED TO START\r\n***************************\r\n\r\nDescription:\r\n\r\nThe bean 'vectorStore', defined in class
+缁撹锛歱rod profile 杩橀渶瑕佷笅鍒楃幆澧冨彉閲忔墠鑳藉惎鍔紙瑙?Phase B锛?
+
+===== PHASE B锛氬畬鏁磋繍缁寸幆澧冨彉閲?=====
+杩涚▼鎻愬墠閫€鍑?exit=1
+--- 鍚姩澶辫触鏃ュ織灏鹃儴 ---
+    16:42:26,778 |-WARN in ch.qos.logback.core.model.processor.AppenderModelHandler - Appender named [STDOUT] not referenced. Skipping further processing.
+    {"@timestamp":"2026-10-20T16:42:27.6155683+08:00","@version":"1","message":"HV000001: Hibernate Validator 8.0.3.Final","logger_name":"org.hibernate.validator.internal.util.Version","thread_name":"background-preinit","level":"INFO","level_va
+    16:42:29,016 |-WARN in ch.qos.logback.core.model.processor.AppenderModelHandler - Appender named [STDOUT] not referenced. Skipping further processing.
+    锟斤拷锟斤拷 http://www.zhicloud.cn
+    Application Version: 1.0.0
+    Spring Boot Version: 3.5.16
+    
+    .__   __.   ______      .______    __    __    _______
+    |  \ |  |  /  __  \     |   _  \  |  |  |  |  /  _____|
+    |   \|  | |  |  |  |    |  |_)  | |  |  |  | |  |  __
+    |  . `  | |  |  |  |    |   _  <  |  |  |  | |  | |_ |
+    |  |\   | |  `--'  |    |  |_)  | |  `--'  | |  |__| |
+    |__| \__|  \______/     |______/   \______/   \______|
+    
+    锟斤拷锟斤拷锟斤拷锟絒   锟斤拷锟斤拷锟絒 锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟絒     锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟絒 锟斤拷锟斤拷锟絒   锟斤拷锟斤拷锟絒 锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟絒
+    锟斤拷锟斤拷锟斤拷锟斤拷锟絒  锟斤拷锟斤拷锟経锟斤拷锟斤拷锟絏锟絋锟絋锟絋锟斤拷锟斤拷锟絒    锟斤拷锟斤拷锟絏锟絋锟絋锟斤拷锟斤拷锟絒锟斤拷锟斤拷锟経   锟斤拷锟斤拷锟経锟斤拷锟斤拷锟絏锟絋锟絋锟絋锟絋锟絘
+    锟斤拷锟斤拷锟絏锟斤拷锟斤拷锟絒 锟斤拷锟斤拷锟経锟斤拷锟斤拷锟経   锟斤拷锟斤拷锟経    锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟絏锟絘锟斤拷锟斤拷锟経   锟斤拷锟斤拷锟経锟斤拷锟斤拷锟経  锟斤拷锟斤拷锟斤拷锟絒
+    锟斤拷锟斤拷锟経锟絕锟斤拷锟斤拷锟絒锟斤拷锟斤拷锟経锟斤拷锟斤拷锟経   锟斤拷锟斤拷锟経    锟斤拷锟斤拷锟絏锟絋锟絋锟斤拷锟斤拷锟絒锟斤拷锟斤拷锟経   锟斤拷锟斤拷锟経锟斤拷锟斤拷锟経   锟斤拷锟斤拷锟経
+    锟斤拷锟斤拷锟経 锟絕锟斤拷锟斤拷锟斤拷锟斤拷锟経锟絕锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟絏锟絘    锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟絏锟絘锟絕锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟絏锟絘锟絕锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟絏锟絘
+    锟絕锟絋锟絘  锟絕锟絋锟絋锟絋锟絘 锟絕锟絋锟絋锟絋锟絋锟絋锟絘     锟絕锟絋锟絋锟絋锟絋锟絋锟絘  锟絕锟絋锟絋锟絋锟絋锟絋锟絘  锟絕锟絋锟絋锟絋锟絋锟絋锟絘
+    
+    {"@timestamp":"2026-10-20T16:42:29.1417127+08:00","@version":"1","message":"The following 1 profile is active: \"prod\"","logger_name":"cn.zhicloud.server.ZhiCloudServerApplication","thread_name":"main","level":"INFO","level_value":20000}
+    {"@timestamp":"2026-10-20T16:42:36.764763+08:00","@version":"1","message":"Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.support.BeanDefinitionOverrideException: Invalid 
+    {"@timestamp":"2026-10-20T16:42:36.7785437+08:00","@version":"1","message":"\r\n\r\nError starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.","logger_name":"org.springframew
+    {"@timestamp":"2026-10-20T16:42:36.86942+08:00","@version":"1","message":"\r\n\r\n***************************\r\nAPPLICATION FAILED TO START\r\n***************************\r\n\r\nDescription:\r\n\r\nThe bean 'vectorStore', defined in class 
+     factoryMethodName=vectorStore; initMethodNames=null; destroyMethodNames=[(inferred)]; defined in class path resource [org/springframework/ai/vectorstore/milvus/autoconfigure/MilvusVectorStoreAutoConfiguration.class]] bound.","logger_name":
+    {"@timestamp":"2026-10-20T16:42:36.7785437+08:00","@version":"1","message":"\r\n\r\nError starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.","logger_name":"org.springframew
+    {"@timestamp":"2026-10-20T16:42:36.86942+08:00","@version":"1","message":"\r\n\r\n***************************\r\nAPPLICATION FAILED TO START\r\n***************************\r\n\r\nDescription:\r\n\r\nThe bean 'vectorStore', defined in class 

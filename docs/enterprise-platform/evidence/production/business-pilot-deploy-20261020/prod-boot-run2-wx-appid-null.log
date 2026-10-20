@@ -1,0 +1,89 @@
+
+===== PHASE A锛氭渶灏忚繍缁寸幆澧冨彉閲忥紙鍙湁鏁版嵁搴?+ Redis锛?=====
+杩涚▼鎻愬墠閫€鍑?exit=1
+--- 鍚姩澶辫触鏃ュ織灏鹃儴 ---
+    {"@timestamp":"2026-10-20T16:49:25.6887015+08:00","@version":"1","message":"Bean 'spring.ai.mcp.server.annotation-scanner-org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerProperties' of type [org.
+    {"@timestamp":"2026-10-20T16:49:27.2185776+08:00","@version":"1","message":"Tomcat initialized with port 48081 (http)","logger_name":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","thread_name":"main","level":"INFO","level_v
+    {"@timestamp":"2026-10-20T16:49:27.2548248+08:00","@version":"1","message":"Initializing ProtocolHandler [\"http-nio-48081\"]","logger_name":"org.apache.coyote.http11.Http11NioProtocol","thread_name":"main","level":"INFO","level_value":2000
+    {"@timestamp":"2026-10-20T16:49:27.2587608+08:00","@version":"1","message":"Starting service [Tomcat]","logger_name":"org.apache.catalina.core.StandardService","thread_name":"main","level":"INFO","level_value":20000}
+    {"@timestamp":"2026-10-20T16:49:27.2587608+08:00","@version":"1","message":"Starting Servlet engine: [Apache Tomcat/10.1.55]","logger_name":"org.apache.catalina.core.StandardEngine","thread_name":"main","level":"INFO","level_value":20000}
+    {"@timestamp":"2026-10-20T16:49:27.3530068+08:00","@version":"1","message":"Initializing Spring embedded WebApplicationContext","logger_name":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","thread_name":"main","level":"IN
+    {"@timestamp":"2026-10-20T16:49:27.3530068+08:00","@version":"1","message":"Root WebApplicationContext: initialization completed in 16926 ms","logger_name":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","t
+    {"@timestamp":"2026-10-20T16:49:27.3715181+08:00","@version":"1","message":" Init JimuReport Config [ Token Interceptor & Resource Locations ] ","logger_name":"org.jeecg.modules.jmreport.config.init.JimuReportConfiguration","thread_name":"m
+    
+    ================================================================================================
+                _ _ __  __       ____                       _   
+               | (_)  \/  |_   _|  _ \ ___ _ __   ___  _ __| |_ 
+            _  | | | |\/| | | | | |_) / _ \ '_ \ / _ \| '__| __|
+           | |_| | | |  | | |_| |  _ <  __/ |_) | (_) | |  | |_ 
+            \___/|_|_|  |_|\__,_|_| \_\___| .__/ \___/|_|   \__|
+                                          |_|                   
+    		Version: 2.3.4
+    		锟斤拷锟斤拷 锟斤拷锟斤拷|锟斤拷锟斤拷|专业 锟斤拷 锟斤拷锟斤拷锟捷匡拷锟接伙拷锟斤拷锟斤拷锟斤拷
+    		锟斤拷锟斤拷锟斤拷https://jimureport.com
+    ================================================================================================
+    {"@timestamp":"2026-10-20T16:49:27.4551575+08:00","@version":"1","message":"Unable to proxy interface-implementing method [public final void org.springframework.boot.web.servlet.RegistrationBean.onStartup(jakarta.servlet.ServletContext) thr
+    {"@timestamp":"2026-10-20T16:49:28.7610481+08:00","@version":"1","message":"{dataSource-1,master} inited","logger_name":"com.alibaba.druid.pool.DruidDataSource","thread_name":"main","level":"INFO","level_value":20000}
+    {"@timestamp":"2026-10-20T16:49:28.7690876+08:00","@version":"1","message":"dynamic-datasource - add a datasource named [slave] success","logger_name":"com.baomidou.dynamic.datasource.DynamicRoutingDataSource","thread_name":"main","level":"
+    {"@timestamp":"2026-10-20T16:49:28.7727375+08:00","@version":"1","message":"dynamic-datasource - add a datasource named [master] success","logger_name":"com.baomidou.dynamic.datasource.DynamicRoutingDataSource","thread_name":"main","level":
+    {"@timestamp":"2026-10-20T16:49:28.7727375+08:00","@version":"1","message":"dynamic-datasource initial loaded [2] datasource,primary datasource named [master]","logger_name":"com.baomidou.dynamic.datasource.DynamicRoutingDataSource","thread
+    {"@timestamp":"2026-10-20T16:49:36.8244733+08:00","@version":"1","message":"Redisson 4.6.1","logger_name":"org.redisson.Version","thread_name":"main","level":"INFO","level_value":20000}
+    {"@timestamp":"2026-10-20T16:49:37.7716671+08:00","@version":"1","message":"1 connections initialized for 127.0.0.1/127.0.0.1:16380","logger_name":"org.redisson.connection.ConnectionsHolder","thread_name":"redisson-netty-1-4","level":"INFO"
+    {"@timestamp":"2026-10-20T16:49:37.8722424+08:00","@version":"1","message":"24 connections initialized for 127.0.0.1/127.0.0.1:16380","logger_name":"org.redisson.connection.ConnectionsHolder","thread_name":"redisson-netty-1-19","level":"INF
+    {"@timestamp":"2026-10-20T16:49:42.9941707+08:00","@version":"1","message":"[TokenLimitFilter] 宸插惎鐢?Token 闄愭祦锛歱erUserHour=100000, perTenantDay=1000000, perIpMinute=10000","logger_name":"cn.zhicloud.module.ai.config.security.TokenLimitFilter",
+    {"@timestamp":"2026-10-20T16:49:47.796056+08:00","@version":"1","message":"Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with n
+    {"@timestamp":"2026-10-20T16:49:47.8171888+08:00","@version":"1","message":"dynamic-datasource start closing ....","logger_name":"com.baomidou.dynamic.datasource.DynamicRoutingDataSource","thread_name":"main","level":"INFO","level_value":20
+    {"@timestamp":"2026-10-20T16:49:47.8192398+08:00","@version":"1","message":"{dataSource-0} closing ...","logger_name":"com.alibaba.druid.pool.DruidDataSource","thread_name":"main","level":"INFO","level_value":20000}
+    {"@timestamp":"2026-10-20T16:49:47.8192398+08:00","@version":"1","message":"dynamic-datasource close the datasource named [slave] success,","logger_name":"com.baomidou.dynamic.datasource.destroyer.DefaultDataSourceDestroyer","thread_name":"
+    {"@timestamp":"2026-10-20T16:49:47.8192398+08:00","@version":"1","message":"{dataSource-1} closing ...","logger_name":"com.alibaba.druid.pool.DruidDataSource","thread_name":"main","level":"INFO","level_value":20000}
+    {"@timestamp":"2026-10-20T16:49:47.8271496+08:00","@version":"1","message":"{dataSource-1} closed","logger_name":"com.alibaba.druid.pool.DruidDataSource","thread_name":"main","level":"INFO","level_value":20000}
+    {"@timestamp":"2026-10-20T16:49:47.8276553+08:00","@version":"1","message":"dynamic-datasource close the datasource named [master] success,","logger_name":"com.baomidou.dynamic.datasource.destroyer.DefaultDataSourceDestroyer","thread_name":
+    {"@timestamp":"2026-10-20T16:49:47.8276553+08:00","@version":"1","message":"dynamic-datasource all closed success,bye","logger_name":"com.baomidou.dynamic.datasource.DynamicRoutingDataSource","thread_name":"main","level":"INFO","level_value
+    {"@timestamp":"2026-10-20T16:49:47.8397964+08:00","@version":"1","message":"Stopping service [Tomcat]","logger_name":"org.apache.catalina.core.StandardService","thread_name":"main","level":"INFO","level_value":20000}
+    {"@timestamp":"2026-10-20T16:49:47.9624958+08:00","@version":"1","message":"\r\n\r\nError starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.","logger_name":"org.springframew
+    {"@timestamp":"2026-10-20T16:49:48.0255021+08:00","@version":"1","message":"Application run failed","logger_name":"org.springframework.boot.SpringApplication","thread_name":"main","level":"ERROR","level_value":40000,"stack_trace":"org.sprin
+缁撹锛歱rod profile 杩橀渶瑕佷笅鍒楃幆澧冨彉閲忔墠鑳藉惎鍔紙瑙?Phase B锛?
+
+===== PHASE B锛氬畬鏁磋繍缁寸幆澧冨彉閲?=====
+杩涚▼鎻愬墠閫€鍑?exit=1
+--- 鍚姩澶辫触鏃ュ織灏鹃儴 ---
+    {"@timestamp":"2026-10-20T16:50:11.2172777+08:00","@version":"1","message":"Tomcat initialized with port 48081 (http)","logger_name":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","thread_name":"main","level":"INFO","level_v
+    {"@timestamp":"2026-10-20T16:50:11.262257+08:00","@version":"1","message":"Initializing ProtocolHandler [\"http-nio-48081\"]","logger_name":"org.apache.coyote.http11.Http11NioProtocol","thread_name":"main","level":"INFO","level_value":20000
+    {"@timestamp":"2026-10-20T16:50:11.2667178+08:00","@version":"1","message":"Starting service [Tomcat]","logger_name":"org.apache.catalina.core.StandardService","thread_name":"main","level":"INFO","level_value":20000}
+    {"@timestamp":"2026-10-20T16:50:11.2667178+08:00","@version":"1","message":"Starting Servlet engine: [Apache Tomcat/10.1.55]","logger_name":"org.apache.catalina.core.StandardEngine","thread_name":"main","level":"INFO","level_value":20000}
+    {"@timestamp":"2026-10-20T16:50:11.3295448+08:00","@version":"1","message":"Initializing Spring embedded WebApplicationContext","logger_name":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","thread_name":"main","level":"IN
+    {"@timestamp":"2026-10-20T16:50:11.3295448+08:00","@version":"1","message":"Root WebApplicationContext: initialization completed in 14944 ms","logger_name":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","t
+    {"@timestamp":"2026-10-20T16:50:11.3549914+08:00","@version":"1","message":" Init JimuReport Config [ Token Interceptor & Resource Locations ] ","logger_name":"org.jeecg.modules.jmreport.config.init.JimuReportConfiguration","thread_name":"m
+    
+    ================================================================================================
+                _ _ __  __       ____                       _   
+               | (_)  \/  |_   _|  _ \ ___ _ __   ___  _ __| |_ 
+            _  | | | |\/| | | | | |_) / _ \ '_ \ / _ \| '__| __|
+           | |_| | | |  | | |_| |  _ <  __/ |_) | (_) | |  | |_ 
+            \___/|_|_|  |_|\__,_|_| \_\___| .__/ \___/|_|   \__|
+                                          |_|                   
+    		Version: 2.3.4
+    		锟斤拷锟斤拷 锟斤拷锟斤拷|锟斤拷锟斤拷|专业 锟斤拷 锟斤拷锟斤拷锟捷匡拷锟接伙拷锟斤拷锟斤拷锟斤拷
+    		锟斤拷锟斤拷锟斤拷https://jimureport.com
+    ================================================================================================
+    {"@timestamp":"2026-10-20T16:50:11.4373212+08:00","@version":"1","message":"Unable to proxy interface-implementing method [public final void org.springframework.boot.web.servlet.RegistrationBean.onStartup(jakarta.servlet.ServletContext) thr
+    {"@timestamp":"2026-10-20T16:50:12.5785328+08:00","@version":"1","message":"{dataSource-1,master} inited","logger_name":"com.alibaba.druid.pool.DruidDataSource","thread_name":"main","level":"INFO","level_value":20000}
+    {"@timestamp":"2026-10-20T16:50:12.5838568+08:00","@version":"1","message":"dynamic-datasource - add a datasource named [slave] success","logger_name":"com.baomidou.dynamic.datasource.DynamicRoutingDataSource","thread_name":"main","level":"
+    {"@timestamp":"2026-10-20T16:50:12.5848636+08:00","@version":"1","message":"dynamic-datasource - add a datasource named [master] success","logger_name":"com.baomidou.dynamic.datasource.DynamicRoutingDataSource","thread_name":"main","level":
+    {"@timestamp":"2026-10-20T16:50:12.5848636+08:00","@version":"1","message":"dynamic-datasource initial loaded [2] datasource,primary datasource named [master]","logger_name":"com.baomidou.dynamic.datasource.DynamicRoutingDataSource","thread
+    {"@timestamp":"2026-10-20T16:50:18.6908557+08:00","@version":"1","message":"Redisson 4.6.1","logger_name":"org.redisson.Version","thread_name":"main","level":"INFO","level_value":20000}
+    {"@timestamp":"2026-10-20T16:50:19.2636088+08:00","@version":"1","message":"1 connections initialized for 127.0.0.1/127.0.0.1:16380","logger_name":"org.redisson.connection.ConnectionsHolder","thread_name":"redisson-netty-1-4","level":"INFO"
+    {"@timestamp":"2026-10-20T16:50:19.3477962+08:00","@version":"1","message":"24 connections initialized for 127.0.0.1/127.0.0.1:16380","logger_name":"org.redisson.connection.ConnectionsHolder","thread_name":"redisson-netty-1-19","level":"INF
+    {"@timestamp":"2026-10-20T16:50:23.2949822+08:00","@version":"1","message":"[TokenLimitFilter] 宸插惎鐢?Token 闄愭祦锛歱erUserHour=100000, perTenantDay=1000000, perIpMinute=10000","logger_name":"cn.zhicloud.module.ai.config.security.TokenLimitFilter",
+    {"@timestamp":"2026-10-20T16:50:26.9535876+08:00","@version":"1","message":"Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with 
+    {"@timestamp":"2026-10-20T16:50:26.9727697+08:00","@version":"1","message":"dynamic-datasource start closing ....","logger_name":"com.baomidou.dynamic.datasource.DynamicRoutingDataSource","thread_name":"main","level":"INFO","level_value":20
+    {"@timestamp":"2026-10-20T16:50:26.9747759+08:00","@version":"1","message":"{dataSource-0} closing ...","logger_name":"com.alibaba.druid.pool.DruidDataSource","thread_name":"main","level":"INFO","level_value":20000}
+    {"@timestamp":"2026-10-20T16:50:26.9747759+08:00","@version":"1","message":"dynamic-datasource close the datasource named [slave] success,","logger_name":"com.baomidou.dynamic.datasource.destroyer.DefaultDataSourceDestroyer","thread_name":"
+    {"@timestamp":"2026-10-20T16:50:26.9747759+08:00","@version":"1","message":"{dataSource-1} closing ...","logger_name":"com.alibaba.druid.pool.DruidDataSource","thread_name":"main","level":"INFO","level_value":20000}
+    {"@timestamp":"2026-10-20T16:50:26.9825627+08:00","@version":"1","message":"{dataSource-1} closed","logger_name":"com.alibaba.druid.pool.DruidDataSource","thread_name":"main","level":"INFO","level_value":20000}
+    {"@timestamp":"2026-10-20T16:50:26.9825627+08:00","@version":"1","message":"dynamic-datasource close the datasource named [master] success,","logger_name":"com.baomidou.dynamic.datasource.destroyer.DefaultDataSourceDestroyer","thread_name":
+    {"@timestamp":"2026-10-20T16:50:26.9825627+08:00","@version":"1","message":"dynamic-datasource all closed success,bye","logger_name":"com.baomidou.dynamic.datasource.DynamicRoutingDataSource","thread_name":"main","level":"INFO","level_value
+    {"@timestamp":"2026-10-20T16:50:26.99559+08:00","@version":"1","message":"Stopping service [Tomcat]","logger_name":"org.apache.catalina.core.StandardService","thread_name":"main","level":"INFO","level_value":20000}
+    {"@timestamp":"2026-10-20T16:50:27.1174953+08:00","@version":"1","message":"\r\n\r\nError starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.","logger_name":"org.springframew
+    {"@timestamp":"2026-10-20T16:50:27.1767804+08:00","@version":"1","message":"Application run failed","logger_name":"org.springframework.boot.SpringApplication","thread_name":"main","level":"ERROR","level_value":40000,"stack_trace":"org.sprin
+    {"@timestamp":"2026-10-20T16:50:27.1767804+08:00","@version":"1","message":"Application run failed","logger_name":"org.springframework.boot.SpringApplication","thread_name":"main","level":"ERROR","level_value":40000,"stack_trace":"org.sprin
