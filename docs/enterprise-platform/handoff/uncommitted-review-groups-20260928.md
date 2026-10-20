@@ -14114,3 +14114,43 @@ demo-data 全量重生实跑 status=passed，R-033 方向 2 实跑验证兑现�
   `system_role_menu`。
 - 处置建议：另加一笔 V150 迁移（删除 `brokerage%` 通知 + 按现存菜单过滤套餐 menu_ids）
   并补 verify SQL；V1.1 是哈希钉住的历史迁移，不应直接改。
+
+## §12.289 既有库商业残留收口：brokerage 字典补漏 + V214（2026-10-20）
+
+承接 §12.288。复核中发现上一轮还有一处漏网：V140 的字典清理只认
+`pay/trade/member/product/promotion` 前缀，`brokerage_*`（分销/佣金，同属已移除的商业域）
+没有进入删除面。既有库实测仍有 7 个字典类型、28 条字典数据；8 个方言安装脚本各 35 行。
+另外 V150 已被 `V150__tms_shipment_unicode_collation.sql` 占用，本轮实际迁移版本为 **V214**
+（当前最大版本 V213）。
+
+**安装脚本**
+- 8 个方言脚本各删 35 行：`system_dict_type` 7 行 + `system_dict_data` 28 行。
+- 逐文件与 `HEAD` 做字节级差分：只删除含 `brokerage_` 的行，混合 EOL 原样保留。
+- MySQL 全量导入后：`system_dict_type=174`、`system_dict_data=900`、`system_notify_message=7`、
+  套餐引用 `183`、悬空套餐 id `0`。累计口径：§12.288 的 27/108 加本轮 7/28 = 34/136。
+
+**V214 迁移**
+- `V214__purge_commercial_residue.sql`：删商业前缀站内信/模板（含 2 条
+  `brokerage_withdraw_audit_approve`）、字典数据/类型；按现存 `system_menu` 重建含悬空 id 的
+  `system_tenant_package.menu_ids`（只改确有悬空的套餐）；删除 `system_role_menu` 孤儿行。
+- 关键实现：`JSON_TABLE` + `GROUP_CONCAT(... ORDER BY ord)`，`group_concat_max_len=1000000`；
+  非法 JSON 用 `CASE` 兜底；临时表先 `DROP IF EXISTS`，重复执行安全。
+- `V214_verify.sql` 9 项断言；`migration-contract.json` 新增 V214 字节锁，
+  `check_migration_contract.py` 结果 tracked=124 / scanned=220 / findings=0。
+
+**验证**
+- live 副本 `zc_v214_probe`：7 类型 / 28 数据 / 2 通知 / 77 悬空 / 1 人造孤儿
+  → 0 / 0 / 0 / 0 / 0；套餐 111 `257→180`、113 `3`，合计 `183`；V214 二次执行仍全 PASS。
+- 清洁安装 MySQL 全量导入：174 类型 / 900 数据 / 7 通知 / 183 引用 / 0 悬空；V214 全 PASS。
+- 沙箱库：先手工执行 V214 清存量，再由重建后的 fat jar 启动，Flyway `214 purge commercial residue`
+  `success=1`；`V214_verify.sql` 9/9 PASS；48080 监听（pid 25040）。
+- `pytest scripts/production/tests`：674 passed / 3 skipped / 190 subtests passed，426.26s；
+  契约/lint/分组相关 34 项先绿；`git diff --check` 干净。
+
+**边界与未做**
+- 未改 V1.1/V140/V146 历史迁移；V214 负责 fresh 安装与既有库的重放清理。
+- 未改 `PermissionServiceImpl#assignRoleMenu`：本轮根因是套餐保存了已删菜单 id，清套餐后
+  标准新建租户不会再产生孤儿；将来若再删菜单，仍需同型数据迁移，不能假设代码会兜底。
+- 独立复核未误删企业字典：`crm_product_*`、`mes_wm_product_*`、`iot_product_*`、
+  `im_group_member_*` 均为企业前缀，保留。
+- `gate3/production_ready=False` 签核位未翻转。
