@@ -50,14 +50,19 @@ GROUP_RULES = [
                 or p.startswith("zhicloud-server/src/main/resources/db/verification/")
                 or p.startswith("scripts/production/migration-contract")),
      "T2 的自败点：契约 JSON 与 V1xx 迁移、验证 SQL 必须**同组**，否则单独 checkout 必 C5。"),
-    (4, "business-code",
+    (4, "install-sql",
+     lambda p: p.startswith("sql/"),
+     "8 个方言安装脚本是 fresh DB 的建库/菜单/字典种子基线（在 Flyway 之前执行）。"
+     "V140 商业域移除后，这些脚本里的商业菜单/字典/角色种子必须同步清零，"
+     "否则新库会重新长出指向已删模块的死菜单。"),
+    (5, "business-code",
      lambda p: p.startswith(("zhicloud-framework/", "zhicloud-module-", "zhicloud-server/", "zhicloud-ui/")),
      "Java 生产/测试代码与测试资源 SQL，以及前端 zhicloud-ui（此前从未 dirty，"
      "商业域移除删除其商城目录后才首次被认领，实测踩到 unclassified）。"),
-    (5, "demo-data",
+    (6, "demo-data",
      lambda p: p.startswith("demo-data/"),
      "演示数据生成器与种子 SQL：被沙箱脚本按路径读取，因此必须早于 tooling。"),
-    (6, "tooling",
+    (7, "tooling",
      lambda p: (p.startswith("scripts/") or p.startswith(".github/workflows/")
                 or p in ("pom.xml", ".gitignore")),
      "门禁脚本 + 沙箱 .ps1 + 守卫测试 + CI 与根构建配置（含根 .gitignore：§12.283 把运行期 logs/ "
