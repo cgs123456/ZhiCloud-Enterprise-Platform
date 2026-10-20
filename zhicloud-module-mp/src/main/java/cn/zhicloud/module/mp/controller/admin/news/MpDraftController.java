@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.bean.draft.*;
@@ -46,7 +47,7 @@ public class MpDraftController {
     @GetMapping("/page")
     @Operation(summary = "获得草稿分页")
     @PreAuthorize("@ss.hasPermission('mp:draft:query')")
-    public CommonResult<PageResult<WxMpDraftItem>> getDraftPage(MpDraftPageReqVO reqVO) {
+    public CommonResult<PageResult<WxMpDraftItem>> getDraftPage(@Valid MpDraftPageReqVO reqVO) {
         // 从公众号查询草稿箱
         WxMpService mpService = mpServiceFactory.getRequiredMpService(reqVO.getAccountId());
         WxMpDraftList draftList;

@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.bean.freepublish.WxMpFreePublishItem;
@@ -47,7 +48,7 @@ public class MpFreePublishController {
     @GetMapping("/page")
     @Operation(summary = "获得已发布的图文分页")
     @PreAuthorize("@ss.hasPermission('mp:free-publish:query')")
-    public CommonResult<PageResult<WxMpFreePublishItem>> getFreePublishPage(MpFreePublishPageReqVO reqVO) {
+    public CommonResult<PageResult<WxMpFreePublishItem>> getFreePublishPage(@Valid MpFreePublishPageReqVO reqVO) {
         // 从公众号查询已发布的图文列表
         WxMpService mpService = mpServiceFactory.getRequiredMpService(reqVO.getAccountId());
         WxMpFreePublishList publicationRecords;

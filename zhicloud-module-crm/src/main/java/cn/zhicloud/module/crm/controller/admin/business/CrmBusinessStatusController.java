@@ -99,7 +99,11 @@ public class CrmBusinessStatusController {
         Map<Long, DeptRespDTO> deptMap = deptApi.getDeptMap(
                 convertSetByFlatMap(pageResult.getList(), CrmBusinessStatusTypeDO::getDeptIds, Collection::stream));
         return success(BeanUtils.toBean(pageResult, CrmBusinessStatusRespVO.class, statusTypeVO -> {
-            statusTypeVO.setCreator(userMap.get(NumberUtils.parseLong(statusTypeVO.getCreator())).getNickname());
+            // creator 可能是历史导入的种子标识或已删除用户，查不到时保留原值，避免整页 NPE
+            AdminUserRespDTO creator = userMap.get(NumberUtils.parseLong(statusTypeVO.getCreator()));
+            if (creator != null) {
+                statusTypeVO.setCreator(creator.getNickname());
+            }
             statusTypeVO.setDeptNames(convertList(statusTypeVO.getDeptIds(),
                     deptId -> deptMap.containsKey(deptId) ? deptMap.get(deptId).getName() : null));
         }));

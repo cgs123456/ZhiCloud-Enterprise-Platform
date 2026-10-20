@@ -877,6 +877,20 @@
       "sha256": "556cf8b7eb89950784cac355a7d6b565d5020eb8bceb206972414f5bcaf34a4c",
       "verification_file": "V215_verify.sql",
       "verification_sha256": "4cbb2fecdf5715bde6b6e8e3984908d3de360b6e2438777ba25927ea12b42232"
+    },
+    {
+      "version": 216,
+      "file": "V216__crm_admin_role_menu.sql",
+      "sha256": "a86a403fed9326ae8abc2a60af7ddd96d73ffa1df67fca0b203b10b4392fe47e",
+      "verification_file": "V216_verify.sql",
+      "verification_sha256": "dbf9dbd75839a6cb5815a6856d013213c54bfa5cd7561f6e093f4f17fe70977b"
+    },
+    {
+      "version": 217,
+      "file": "V217__mes_bom_menu_component_case.sql",
+      "sha256": "2ff3f909f334b0852eb03f6fe4ef853dfb2d6e4db5bf17675be86fc319039ed9",
+      "verification_file": "V217_verify.sql",
+      "verification_sha256": "a57917ef772539f366e14fa4b6f96c4304d30919385eebe3eb31c6233ea695f0"
     }
   ]
 }
