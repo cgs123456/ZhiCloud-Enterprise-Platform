@@ -4,6 +4,8 @@
 
 ![JDK](https://img.shields.io/badge/JDK-21-orange) ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5-blue) ![Vue](https://img.shields.io/badge/Vue-3-42b883) ![MySQL](https://img.shields.io/badge/MySQL-8-4479A1) ![License](https://img.shields.io/badge/License-MIT-yellow)
 
+![WMS 首页看板：入库/出库/移库单据与 30 天趋势](docs/images/wms-dashboard.png)
+
 ## 快速开始
 
 前置：Docker 24+ 与 Docker Compose v2。后端、中间件、数据库迁移和首个管理员账号由 Compose 一并完成。
@@ -20,11 +22,9 @@ docker compose up -d --build
 curl -s http://localhost:48090/actuator/health   # {"status":"UP",...}
 ```
 
-前端不在 Compose 内，单独启动（开发）或构建后交给 nginx（生产）：
-
 ```bash
-cd zhicloud-ui/zhicloud-ui-admin-vue3
-pnpm install && pnpm dev    # 默认 http://localhost，/admin-api 与 /infra/ws 代理到 127.0.0.1:48080
+cd zhicloud-ui/zhicloud-ui-admin-vue3    # 前端不在 Compose 内，需单独启动或构建后交给 nginx
+pnpm install && pnpm dev                 # 默认 http://localhost，/admin-api 与 /infra/ws 代理到 127.0.0.1:48080
 ```
 
 登录：租户 `智云`，账号取 `BOOTSTRAP_ADMIN_USERNAME`（默认 `zhicloud_admin`），口令为你在 `.env` 里设置的值。登录页已预填租户名与账号。
