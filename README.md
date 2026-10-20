@@ -85,8 +85,8 @@ python scripts/production/check_migration_contract.py   # 迁移契约门禁
 ## 已知限制
 
 - **未达生产就绪**：`production_ready=false`，Go/No-Go = No-Go；第三方许可门禁需法务处置后方可对外分发。
-- IM / MP 为预留模块，未进构建、不随应用启动。
-- 报表模块未接入 server：积木报表与大屏设计器需另部署独立服务。
+- IM / MP 随应用构建与启动，但未纳入本次试点验收范围。
+- 报表模块已接入 server（GoView 数据/项目 API）；GoView / 积木报表设计器需另部署独立服务。
 - AI 能力需外部模型 Key；RAG 还需 BGE 模型文件与 pgvector，默认关闭。
 - `demo-data/` 仅供演示与测试，禁止导入生产。
 

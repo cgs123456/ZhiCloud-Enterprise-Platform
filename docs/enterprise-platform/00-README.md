@@ -13,7 +13,7 @@
 > `production_ready=false`、`gate3_passed=false`、`independent_review=false`、Go/No-Go = **No-Go**。
 >
 > **阅读顺序**：想装起来 → 上面两份 handoff；想了解方案与边界 → 01 → 02 → 03 → 04；
-> 想复核证据 → 08 → 12 → 13 → `evidence/`；想接手开发 → 根目录 [README](../../README.md)。
+> 想复核证据 → 08 → 12 → 13 → `evidence/`；想收紧代码 → 15；想接手开发 → 根目录 [README](../../README.md)。
 
 ## 0. 一句话结论
 
