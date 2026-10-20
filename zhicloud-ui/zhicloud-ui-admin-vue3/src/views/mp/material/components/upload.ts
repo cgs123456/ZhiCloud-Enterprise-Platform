@@ -1,8 +1,9 @@
 import type { UploadProps, UploadRawFile } from 'element-plus'
-import { getRefreshToken } from '@/utils/auth'
+import { getAccessToken } from '@/utils/auth'
 import { UploadType, useBeforeUpload } from '@/views/mp/hooks/useUpload'
 
-const HEADERS = { Authorization: 'Bearer ' + getRefreshToken() } // 请求头（解决 el-upload 上传过程中，无法刷新令牌的问题）
+// el-upload 不走 axios 拦截器，令牌要自己带上；后端只认访问令牌，用 refreshToken 会 401
+const HEADERS = { Authorization: 'Bearer ' + getAccessToken() }
 const UPLOAD_URL = import.meta.env.VITE_BASE_URL + '/admin-api/mp/material/upload-permanent' // 上传地址
 
 interface UploadData {

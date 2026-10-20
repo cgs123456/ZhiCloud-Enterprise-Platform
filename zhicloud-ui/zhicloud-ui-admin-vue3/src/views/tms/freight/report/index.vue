@@ -232,7 +232,15 @@ const aggregate = () => {
 
 const carrierSummaryTotal = () => {
   const sum = (field: string) => round2(carrierSummary.value.reduce((p, c) => p + toNum(c[field]), 0))
-  return ['合计', carrierSummary.value.length, sum('totalAmount'), sum('settledAmount'), sum('pendingAmount'), '-']
+  // el-table 的 summary-method 只接受字符串，这里统一转成字符串返回
+  return [
+    '合计',
+    String(carrierSummary.value.length),
+    sum('totalAmount').toFixed(2),
+    sum('settledAmount').toFixed(2),
+    sum('pendingAmount').toFixed(2),
+    '-'
+  ]
 }
 
 const resetQuery = () => {

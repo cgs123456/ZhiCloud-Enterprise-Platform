@@ -2,7 +2,12 @@ import { defineStore } from 'pinia'
 import { store } from '@/store'
 import { cloneDeep } from 'lodash-es'
 import remainingRouter from '@/router/modules/remaining'
-import { flatMultiLevelRoutes, generateRoute } from '@/utils/routerHelper'
+import {
+  collectExplicitRouteNames,
+  ensureUniqueRouteNames,
+  flatMultiLevelRoutes,
+  generateRoute
+} from '@/utils/routerHelper'
 import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 
 const { wsCache } = useCache()
@@ -44,7 +49,10 @@ export const usePermissionStore = defineStore('permission', {
         if (roleRouters) {
           res = roleRouters as AppCustomRouteRecordRaw[]
         }
-        const routerMap: AppRouteRecordRaw[] = generateRoute(res)
+        const routerMap: AppRouteRecordRaw[] = ensureUniqueRouteNames(
+          generateRoute(res),
+          collectExplicitRouteNames(res)
+        )
         // 动态路由，404一定要放到最后面
         // preschooler：vue-router@4以后已支持静态404路由，此处可不再追加
         this.addRouters = routerMap.concat([

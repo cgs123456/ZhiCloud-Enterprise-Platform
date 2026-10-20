@@ -77,8 +77,11 @@ const service: AxiosInstance = axios.create({
 service.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     // 是否需要设置 token；命中白名单的接口（如 /login）不带 token
+    // 必须按路径结尾匹配，不能用 includes：/system/login-log/page 也包含 "/login"，
+    // 否则登录日志接口会被误判成登录接口而丢失 Authorization，直接 401。
     let isToken = (config!.headers || {}).isToken !== false
-    if (isToken && whiteList.some((v) => config.url?.includes(v))) {
+    const requestPath = config.url?.split('?')[0] || ''
+    if (isToken && whiteList.some((v) => requestPath === v || requestPath.endsWith(v))) {
       isToken = false
     }
     if (getAccessToken() && isToken) {

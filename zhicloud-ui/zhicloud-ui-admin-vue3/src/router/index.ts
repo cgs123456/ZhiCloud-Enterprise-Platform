@@ -21,9 +21,11 @@ const router = createRouter({
 
 // 处理动态导入失败（如重新构建后 chunk 哈希变化），自动跳转到目标页面
 router.onError((error, to) => {
+  const message = error instanceof Error ? error.message : String(error)
+  console.error('[router] navigation error', to.fullPath, error)
   if (
-    error.message.includes('Failed to fetch dynamically imported module') ||
-    error.message.includes('Importing a module script failed')
+    message.includes('Failed to fetch dynamically imported module') ||
+    message.includes('Importing a module script failed')
   ) {
     window.location.assign(to.fullPath)
   }

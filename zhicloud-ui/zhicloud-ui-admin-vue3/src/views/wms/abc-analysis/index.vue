@@ -60,9 +60,14 @@ const handleQuery = async () => {
   try {
     // 先触发一次分析，再取报告；报告即分析结果
     let res: any = null
-    try {
-      res = await AbcAnalysisApi.AbcAnalysisAnalyze(queryParams)
-    } catch {
+    // 分析接口必填起止日期：未选日期时直接取报告，避免每次进页面都弹一个 400 参数错误
+    if (queryParams.startDate && queryParams.endDate) {
+      try {
+        res = await AbcAnalysisApi.AbcAnalysisAnalyze(queryParams)
+      } catch {
+        res = await AbcAnalysisApi.AbcAnalysisReport(queryParams)
+      }
+    } else {
       res = await AbcAnalysisApi.AbcAnalysisReport(queryParams)
     }
     summary.value = res || null

@@ -1,5 +1,5 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
-import { getCurrentUserId, getRefreshToken } from '@/utils/auth'
+import { getAccessToken, getCurrentUserId } from '@/utils/auth'
 
 import {
   ImWebSocketMessageType,
@@ -219,10 +219,11 @@ export const useImWebSocketStore = defineStore('imWebSocketStore', {
      * socket 实例即连接 owner，旧连接回调不得进入新连接
      */
     connect() {
-      // 鉴权用 refreshToken（生命周期更长；access token 过期后服务端会通过 frame 通知重登）
-      const refreshToken = getRefreshToken()
+      // 鉴权用 accessToken：后端 /infra/ws 握手走 TokenAuthenticationFilter，
+      // 只认访问令牌（system_oauth2_access_token），传 refreshToken 会直接 401，连接根本建立不起来。
+      const accessToken = getAccessToken()
       const currentUserId = getCurrentUserId()
-      if (!refreshToken || !currentUserId) {
+      if (!accessToken || !currentUserId) {
         console.warn('[IM WS] 登录信息不完整，跳过连接')
         return
       }
@@ -239,7 +240,7 @@ export const useImWebSocketStore = defineStore('imWebSocketStore', {
       if (existingSocket) {
         this.disconnect()
       }
-      const url = `${this.buildWsUrl()}/infra/ws?token=${refreshToken}`
+      const url = `${this.buildWsUrl()}/infra/ws?token=${accessToken}`
       const socket = new WebSocket(url)
       this.socket = socket
       const isActive = () => this.socket === socket

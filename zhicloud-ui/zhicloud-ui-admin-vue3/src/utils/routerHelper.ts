@@ -220,6 +220,115 @@ export const generateRoute = (routes: AppCustomRouteRecordRaw[]): AppRouteRecord
 }
 
 /**
+ * 收集后端菜单显式指定的路由名（componentName）。
+ *
+ * 这些名字与前端组件的 {@code defineOptions({ name })} 一一对应，被 keep-alive 用来决定是否缓存，
+ * 因此不能被重命名，只能让「兜底名」让位。
+ */
+export const collectExplicitRouteNames = (routes: AppCustomRouteRecordRaw[]): Set<string> => {
+  const names = new Set<string>()
+  const walk = (list: AppCustomRouteRecordRaw[]) => {
+    list.forEach((route) => {
+      if (route.componentName) {
+        names.add(route.componentName)
+      }
+      if (route.children?.length) {
+        walk(route.children)
+      }
+    })
+  }
+  walk(routes)
+  return names
+}
+
+/**
+ * 保证路由 name 全局唯一。
+ *
+ * vue-router 要求路由 name 全局唯一：addRoute 时若已存在同名路由，会把先注册的那条移除掉，
+ * 结果就是同名菜单中的一个静默 404（页面提示“访问的页面不存在”）。
+ * 后端菜单里大量菜单没有维护 componentName，name 由 path 兜底生成，因此会出现
+ * /qms/document 与 /oa/document 都是 Document、/wms/md 与 /mes/md 都是 Md 这类重名。
+ *
+ * 处理原则：
+ * - 后端显式给的 componentName 优先保留，冲突时让兜底名改用完整路径重新命名；
+ * - 只重命名冲突项，不改动 path，菜单跳转与高亮都不受影响。
+ */
+export const ensureUniqueRouteNames = (
+  routes: AppRouteRecordRaw[],
+  reservedNames: Set<string> = new Set()
+): AppRouteRecordRaw[] => {
+  const usedNames = new Set<string>()
+  const nameOwner = new Map<string, { route: AppRouteRecordRaw; fullPath: string; explicit: boolean }>()
+
+  const claim = (route: AppRouteRecordRaw, fullPath: string) => {
+    const name = route.name
+    if (!name) {
+      return
+    }
+    const explicit = reservedNames.has(name)
+    const owner = nameOwner.get(name)
+    if (!owner) {
+      nameOwner.set(name, { route, fullPath, explicit })
+      usedNames.add(name)
+      return
+    }
+    if (explicit && !owner.explicit) {
+      // 显式名优先：把占用该名字的兜底名改成按完整路径生成的唯一名
+      const renamed = buildUniqueRouteName(owner.fullPath, usedNames, reservedNames)
+      owner.route.name = renamed
+      usedNames.delete(name)
+      usedNames.add(renamed)
+      nameOwner.delete(name)
+      nameOwner.set(renamed, { route: owner.route, fullPath: owner.fullPath, explicit: false })
+      nameOwner.set(name, { route, fullPath, explicit: true })
+      return
+    }
+    const renamed = buildUniqueRouteName(fullPath, usedNames, reservedNames)
+    route.name = renamed
+    usedNames.add(renamed)
+    nameOwner.set(renamed, { route, fullPath, explicit })
+  }
+
+  const walk = (list: AppRouteRecordRaw[], parentPath: string) => {
+    list.forEach((route) => {
+      const fullPath = !route.path
+        ? parentPath
+        : route.path.startsWith('/')
+          ? route.path
+          : generateRoutePath(parentPath, route.path)
+      claim(route, fullPath)
+      if (route.children?.length) {
+        walk(route.children, fullPath)
+      }
+    })
+  }
+  walk(routes, '')
+  return routes
+}
+
+/**
+ * 按完整路径生成唯一路由名，例如 /qms/document -> QmsDocument。
+ */
+const buildUniqueRouteName = (
+  fullPath: string,
+  usedNames: Set<string>,
+  reservedNames: Set<string>
+) => {
+  const base =
+    fullPath
+      .split('/')
+      .filter(Boolean)
+      .map((segment) => toCamelCase(segment, true))
+      .join('') || 'Route'
+  let name = base
+  let index = 1
+  while (usedNames.has(name) || reservedNames.has(name)) {
+    name = `${base}${index++}`
+  }
+  return name
+}
+
+/**
  * 在已生成的子路由树里查找第一个同名后代路由。
  *
  * vue-router 5 要求 name 全局唯一；后端菜单可能生成“父目录”和“默认子页面”同名的结构。

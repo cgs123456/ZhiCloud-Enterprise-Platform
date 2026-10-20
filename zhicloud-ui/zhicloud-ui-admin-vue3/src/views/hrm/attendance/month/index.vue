@@ -39,10 +39,10 @@
           class="!w-240px"
         >
           <el-option
-            v-for="dict in getIntDictOptions(DICT_TYPE.HRM_ATTENDANCE_YES_NO)"
-            :key="dict.value"
+            v-for="dict in getBoolDictOptions(DICT_TYPE.HRM_ATTENDANCE_YES_NO)"
+            :key="String(dict.value)"
             :label="dict.label"
-            :value="dict.value === 1"
+            :value="dict.value"
           />
         </el-select>
       </el-form-item>
@@ -111,7 +111,7 @@
 </template>
 
 <script lang="ts" setup>
-import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
+import { DICT_TYPE, getBoolDictOptions } from '@/utils/dict'
 import download from '@/utils/download'
 import { formatDate } from '@/utils/formatTime'
 import * as AttendanceStatisticsApi from '@/api/hrm/attendance/statistics'
