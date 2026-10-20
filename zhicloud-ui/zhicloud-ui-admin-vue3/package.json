@@ -1,7 +1,7 @@
 {
   "name": "zhicloud-ui-admin-vue3",
   "version": "2026.07-snapshot",
-  "description": "基于vue3、vite4、element-plus、typesScript",
+  "description": "智云企业数字化平台管理端：Vue 3 + Vite + Element Plus",
   "author": "xingyu",
   "private": true,
   "scripts": {
