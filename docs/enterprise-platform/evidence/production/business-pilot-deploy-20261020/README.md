@@ -40,7 +40,22 @@
 `prod-boot-run-final.log`：prod 启动 → 登录 `code=0` → 权限接口 `code=0`（29 顶级菜单 / 1646 权限）。
 `prod-app-log-full-env.log`：prod 实例完整启动日志。
 
-## 5. 其它随附证据
+## 5. 单机 compose 路径（开箱即用）彩排
+
+| 步骤 | 结果 |
+| --- | --- |
+| 空库（compose 不再挂 initdb 脚本） | 0 张表 |
+| `db-migration` 一次性服务 | clean baseline + **222 个迁移**成功，版本到 v218；9 个语义校验脚本全 PASS |
+| `bootstrap-admin` 一次性服务 | `action=created username=zhicloudadmin tenantId=1 roleId=1 postId=4` |
+| `server` 服务（`SPRING_FLYWAY_ENABLED=false`） | 启动成功，`flyway_schema_history` 停在 218 |
+| 登录 | `code=0`，拿到 accessToken |
+| 权限接口 | `code=0`，顶级菜单 29、权限 1646 |
+
+> 彩排是**代码级**验证：按 compose 的服务顺序执行同一批入口（`DatabaseMigrationRunner` /
+> `BootstrapAdminRunner` / 应用启动），没有构建 Docker 镜像，也没有起 compose 的其余中间件。
+> 证据：`compose-path-rehearsal.log`（1-3 步）、`compose-path-rehearsal-final.log`（4-5 步）、`compose-probe-server.log`（应用日志）。
+
+## 6. 其它随附证据
 
 | 文件 | 内容 |
 | --- | --- |

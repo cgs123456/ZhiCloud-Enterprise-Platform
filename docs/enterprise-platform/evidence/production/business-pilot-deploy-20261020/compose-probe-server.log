@@ -1,0 +1,1443 @@
+19:01:03,292 |-WARN in ch.qos.logback.core.model.processor.AppenderModelHandler - Appender named [JSON_CONSOLE] not referenced. Skipping further processing.
+2026-10-20 19:01:03.375 [background-preinit] [] [] [34mINFO [0;39m [36morg.hibernate.validator.internal.util.Version:21[0;39m - HV000001: Hibernate Validator 8.0.3.Final
+19:01:05,832 |-WARN in ch.qos.logback.core.model.processor.AppenderModelHandler - Appender named [JSON_CONSOLE] not referenced. Skipping further processing.
+���� http://www.zhicloud.cn
+Application Version: 1.0.0
+Spring Boot Version: 3.5.16
+
+.__   __.   ______      .______    __    __    _______
+|  \ |  |  /  __  \     |   _  \  |  |  |  |  /  _____|
+|   \|  | |  |  |  |    |  |_)  | |  |  |  | |  |  __
+|  . `  | |  |  |  |    |   _  <  |  |  |  | |  | |_ |
+|  |\   | |  `--'  |    |  |_)  | |  `--'  | |  |__| |
+|__| \__|  \______/     |______/   \______/   \______|
+
+�������[   �����[ �������������[     �������������[ �����[   �����[ �������������[
+���������[  �����U�����X�T�T�T�����[    �����X�T�T�����[�����U   �����U�����X�T�T�T�T�a
+�����X�����[ �����U�����U   �����U    �������������X�a�����U   �����U�����U  �������[
+�����U�^�����[�����U�����U   �����U    �����X�T�T�����[�����U   �����U�����U   �����U
+�����U �^���������U�^�������������X�a    �������������X�a�^�������������X�a�^�������������X�a
+�^�T�a  �^�T�T�T�a �^�T�T�T�T�T�a     �^�T�T�T�T�T�a  �^�T�T�T�T�T�a  �^�T�T�T�T�T�a
+
+2026-10-20 19:01:06.016 [main] [] [] [34mINFO [0;39m [36mcn.zhicloud.server.ZhiCloudServerApplication:658[0;39m - The following 1 profile is active: "local"
+2026-10-20 19:01:26.988 [main] [] [] [34mINFO [0;39m [36mo.j.minidao.auto.MinidaoAutoConfiguration:23[0;39m -  ******************* init miniDao config [ begin ] *********************** 
+2026-10-20 19:01:26.989 [main] [] [] [34mINFO [0;39m [36mo.j.minidao.auto.MinidaoAutoConfiguration:26[0;39m -  ------ minidao.base-package ------- org.jeecg.modules.jmreport.*,org.jeecg.modules.drag.*
+2026-10-20 19:01:26.991 [main] [] [] [34mINFO [0;39m [36mo.j.minidao.auto.MinidaoAutoConfiguration:50[0;39m -  *******************  init miniDao config  [ end ] *********************** 
+2026-10-20 19:01:27.439 [main] [] [] [31mWARN [0;39m [36morg.mybatis.spring.mapper.ClassPathMapperScanner:44[0;39m - Skipping MapperFactoryBean with name 'inventoryItemMapper' and 'cn.zhicloud.framework.inventory.dal.mysql.InventoryItemMapper' mapperInterface. Bean already defined with the same name!
+2026-10-20 19:01:27.440 [main] [] [] [31mWARN [0;39m [36morg.mybatis.spring.mapper.ClassPathMapperScanner:44[0;39m - Skipping MapperFactoryBean with name 'eventDlqReplayLogMapper' and 'cn.zhicloud.framework.integration.dal.mysql.EventDlqReplayLogMapper' mapperInterface. Bean already defined with the same name!
+2026-10-20 19:01:27.440 [main] [] [] [31mWARN [0;39m [36morg.mybatis.spring.mapper.ClassPathMapperScanner:44[0;39m - Skipping MapperFactoryBean with name 'eventInboxMapper' and 'cn.zhicloud.framework.integration.dal.mysql.EventInboxMapper' mapperInterface. Bean already defined with the same name!
+2026-10-20 19:01:27.440 [main] [] [] [31mWARN [0;39m [36morg.mybatis.spring.mapper.ClassPathMapperScanner:44[0;39m - Skipping MapperFactoryBean with name 'eventOutboxMapper' and 'cn.zhicloud.framework.integration.dal.mysql.EventOutboxMapper' mapperInterface. Bean already defined with the same name!
+2026-10-20 19:01:27.441 [main] [] [] [31mWARN [0;39m [36morg.mybatis.spring.mapper.ClassPathMapperScanner:44[0;39m - Skipping MapperFactoryBean with name 'mdmCrossRefMapper' and 'cn.zhicloud.framework.mdm.dal.mysql.MdmCrossRefMapper' mapperInterface. Bean already defined with the same name!
+2026-10-20 19:01:30.510 [main] [] [] [34mINFO [0;39m [36mo.j.minidao.factory.MiniDaoClassPathMapperScanner:55[0;39m - register minidao name is { org.jeecg.modules.jmreport.desreport.dao.JimuReportCategoryDao }
+2026-10-20 19:01:30.512 [main] [] [] [34mINFO [0;39m [36mo.j.minidao.factory.MiniDaoClassPathMapperScanner:55[0;39m - register minidao name is { org.jeecg.modules.jmreport.desreport.dao.JimuReportDao }
+2026-10-20 19:01:30.512 [main] [] [] [34mINFO [0;39m [36mo.j.minidao.factory.MiniDaoClassPathMapperScanner:55[0;39m - register minidao name is { org.jeecg.modules.jmreport.desreport.dao.JimuReportDataSourceDao }
+2026-10-20 19:01:30.512 [main] [] [] [34mINFO [0;39m [36mo.j.minidao.factory.MiniDaoClassPathMapperScanner:55[0;39m - register minidao name is { org.jeecg.modules.jmreport.desreport.dao.JimuReportDbDao }
+2026-10-20 19:01:30.512 [main] [] [] [34mINFO [0;39m [36mo.j.minidao.factory.MiniDaoClassPathMapperScanner:55[0;39m - register minidao name is { org.jeecg.modules.jmreport.desreport.dao.JimuReportDbFieldDao }
+2026-10-20 19:01:30.512 [main] [] [] [34mINFO [0;39m [36mo.j.minidao.factory.MiniDaoClassPathMapperScanner:55[0;39m - register minidao name is { org.jeecg.modules.jmreport.desreport.dao.JimuReportDbParamDao }
+2026-10-20 19:01:30.512 [main] [] [] [34mINFO [0;39m [36mo.j.minidao.factory.MiniDaoClassPathMapperScanner:55[0;39m - register minidao name is { org.jeecg.modules.jmreport.desreport.dao.JimuReportDictDao }
+2026-10-20 19:01:30.513 [main] [] [] [34mINFO [0;39m [36mo.j.minidao.factory.MiniDaoClassPathMapperScanner:55[0;39m - register minidao name is { org.jeecg.modules.jmreport.desreport.dao.JimuReportDictItemDao }
+2026-10-20 19:01:30.513 [main] [] [] [34mINFO [0;39m [36mo.j.minidao.factory.MiniDaoClassPathMapperScanner:55[0;39m - register minidao name is { org.jeecg.modules.jmreport.desreport.dao.JimuReportExportJobDao }
+2026-10-20 19:01:30.513 [main] [] [] [34mINFO [0;39m [36mo.j.minidao.factory.MiniDaoClassPathMapperScanner:55[0;39m - register minidao name is { org.jeecg.modules.jmreport.desreport.dao.JimuReportExportLogDao }
+2026-10-20 19:01:30.513 [main] [] [] [34mINFO [0;39m [36mo.j.minidao.factory.MiniDaoClassPathMapperScanner:55[0;39m - register minidao name is { org.jeecg.modules.jmreport.desreport.dao.JimuReportExtDataDao }
+2026-10-20 19:01:30.513 [main] [] [] [34mINFO [0;39m [36mo.j.minidao.factory.MiniDaoClassPathMapperScanner:55[0;39m - register minidao name is { org.jeecg.modules.jmreport.desreport.dao.JimuReportLinkDao }
+2026-10-20 19:01:30.513 [main] [] [] [34mINFO [0;39m [36mo.j.minidao.factory.MiniDaoClassPathMapperScanner:55[0;39m - register minidao name is { org.jeecg.modules.jmreport.desreport.dao.JimuReportMapDao }
+2026-10-20 19:01:30.513 [main] [] [] [34mINFO [0;39m [36mo.j.minidao.factory.MiniDaoClassPathMapperScanner:55[0;39m - register minidao name is { org.jeecg.modules.jmreport.desreport.dao.JimuReportShareDao }
+2026-10-20 19:01:30.513 [main] [] [] [34mINFO [0;39m [36mo.j.minidao.factory.MiniDaoClassPathMapperScanner:55[0;39m - register minidao name is { org.jeecg.modules.jmreport.desreport.dao.JimuReportSheetDao }
+2026-10-20 19:01:30.514 [main] [] [] [34mINFO [0;39m [36mo.j.minidao.factory.MiniDaoClassPathMapperScanner:55[0;39m - register minidao name is { org.jeecg.modules.drag.dao.JimuDragCategoryDao }
+2026-10-20 19:01:30.514 [main] [] [] [34mINFO [0;39m [36mo.j.minidao.factory.MiniDaoClassPathMapperScanner:55[0;39m - register minidao name is { org.jeecg.modules.drag.dao.JimuDragMapDao }
+2026-10-20 19:01:30.514 [main] [] [] [34mINFO [0;39m [36mo.j.minidao.factory.MiniDaoClassPathMapperScanner:55[0;39m - register minidao name is { org.jeecg.modules.drag.dao.JimuReportIconLibDao }
+2026-10-20 19:01:30.514 [main] [] [] [34mINFO [0;39m [36mo.j.minidao.factory.MiniDaoClassPathMapperScanner:55[0;39m - register minidao name is { org.jeecg.modules.drag.dao.OnlDragCompDao }
+2026-10-20 19:01:30.514 [main] [] [] [34mINFO [0;39m [36mo.j.minidao.factory.MiniDaoClassPathMapperScanner:55[0;39m - register minidao name is { org.jeecg.modules.drag.dao.OnlDragDataSourceDao }
+2026-10-20 19:01:30.514 [main] [] [] [34mINFO [0;39m [36mo.j.minidao.factory.MiniDaoClassPathMapperScanner:55[0;39m - register minidao name is { org.jeecg.modules.drag.dao.OnlDragDatasetHeadDao }
+2026-10-20 19:01:30.514 [main] [] [] [34mINFO [0;39m [36mo.j.minidao.factory.MiniDaoClassPathMapperScanner:55[0;39m - register minidao name is { org.jeecg.modules.drag.dao.OnlDragDatasetItemDao }
+2026-10-20 19:01:30.514 [main] [] [] [34mINFO [0;39m [36mo.j.minidao.factory.MiniDaoClassPathMapperScanner:55[0;39m - register minidao name is { org.jeecg.modules.drag.dao.OnlDragDatasetParamDao }
+2026-10-20 19:01:30.515 [main] [] [] [34mINFO [0;39m [36mo.j.minidao.factory.MiniDaoClassPathMapperScanner:55[0;39m - register minidao name is { org.jeecg.modules.drag.dao.OnlDragPageCompDao }
+2026-10-20 19:01:30.515 [main] [] [] [34mINFO [0;39m [36mo.j.minidao.factory.MiniDaoClassPathMapperScanner:55[0;39m - register minidao name is { org.jeecg.modules.drag.dao.OnlDragPageDao }
+2026-10-20 19:01:30.515 [main] [] [] [34mINFO [0;39m [36mo.j.minidao.factory.MiniDaoClassPathMapperScanner:55[0;39m - register minidao name is { org.jeecg.modules.drag.dao.OnlDragShareDao }
+2026-10-20 19:01:31.322 [main] [] [] [34mINFO [0;39m [36mo.springframework.cloud.context.scope.GenericScope:280[0;39m - BeanFactory id=bfd3721f-0d3b-3fb3-9291-7f03f9760534
+2026-10-20 19:01:31.898 [main] [] [] [34mINFO [0;39m [36mc.g.y.a.MybatisPlusJoinAutoConfiguration:142[0;39m - MPJ SqlSessionFactory bean definition: sqlSessionFactory factoryBeanName: com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration factoryMethodName: sqlSessionFactory source: com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration.sqlSessionFactory(javax.sql.DataSource)
+2026-10-20 19:01:38.400 [main] [] [] [34mINFO [0;39m [36mo.s.boot.web.embedded.tomcat.TomcatWebServer:111[0;39m - Tomcat initialized with port 48083 (http)
+2026-10-20 19:01:38.467 [main] [] [] [34mINFO [0;39m [36morg.apache.coyote.http11.Http11NioProtocol:168[0;39m - Initializing ProtocolHandler ["http-nio-48083"]
+2026-10-20 19:01:38.474 [main] [] [] [34mINFO [0;39m [36morg.apache.catalina.core.StandardService:168[0;39m - Starting service [Tomcat]
+2026-10-20 19:01:38.475 [main] [] [] [34mINFO [0;39m [36morg.apache.catalina.core.StandardEngine:168[0;39m - Starting Servlet engine: [Apache Tomcat/10.1.55]
+2026-10-20 19:01:38.634 [main] [] [] [34mINFO [0;39m [36mo.a.c.core.ContainerBase.[Tomcat].[localhost].[/]:168[0;39m - Initializing Spring embedded WebApplicationContext
+2026-10-20 19:01:38.634 [main] [] [] [34mINFO [0;39m [36mo.s.b.w.s.c.ServletWebServerApplicationContext:301[0;39m - Root WebApplicationContext: initialization completed in 32535 ms
+2026-10-20 19:01:38.677 [main] [] [] [34mINFO [0;39m [36mo.j.m.jmreport.config.init.JimuReportConfiguration:137[0;39m -  Init JimuReport Config [ Token Interceptor & Resource Locations ] 
+
+================================================================================================
+            _ _ __  __       ____                       _   
+           | (_)  \/  |_   _|  _ \ ___ _ __   ___  _ __| |_ 
+        _  | | | |\/| | | | | |_) / _ \ '_ \ / _ \| '__| __|
+       | |_| | | |  | | |_| |  _ <  __/ |_) | (_) | |  | |_ 
+        \___/|_|_|  |_|\__,_|_| \_\___| .__/ \___/|_|   \__|
+                                      |_|                   
+		Version: 2.3.4
+		���� ����|����|רҵ �� �����ݿ��ӻ�������
+		������https://jimureport.com
+================================================================================================
+2026-10-20 19:01:38.846 [main] [] [] [31mWARN [0;39m [36morg.springframework.aop.framework.CglibAopProxy:296[0;39m - Unable to proxy interface-implementing method [public final void org.springframework.boot.web.servlet.RegistrationBean.onStartup(jakarta.servlet.ServletContext) throws jakarta.servlet.ServletException] because it is marked as final, consider using interface-based JDK proxies instead.
+2026-10-20 19:01:40.891 [main] [] [] [34mINFO [0;39m [36mcom.alibaba.druid.pool.DruidDataSource:673[0;39m - {dataSource-1,master} inited
+2026-10-20 19:01:40.905 [main] [] [] [34mINFO [0;39m [36mc.b.dynamic.datasource.DynamicRoutingDataSource:158[0;39m - dynamic-datasource - add a datasource named [slave] success
+2026-10-20 19:01:40.905 [main] [] [] [34mINFO [0;39m [36mc.b.dynamic.datasource.DynamicRoutingDataSource:158[0;39m - dynamic-datasource - add a datasource named [master] success
+2026-10-20 19:01:40.905 [main] [] [] [34mINFO [0;39m [36mc.b.dynamic.datasource.DynamicRoutingDataSource:241[0;39m - dynamic-datasource initial loaded [2] datasource,primary datasource named [master]
+2026-10-20 19:01:52.536 [main] [] [] [34mINFO [0;39m [36morg.redisson.Version:43[0;39m - Redisson 4.6.1
+2026-10-20 19:01:54.081 [redisson-netty-1-6] [] [] [34mINFO [0;39m [36morg.redisson.connection.ConnectionsHolder:152[0;39m - 1 connections initialized for 127.0.0.1/127.0.0.1:16380
+2026-10-20 19:01:54.363 [redisson-netty-1-19] [] [] [34mINFO [0;39m [36morg.redisson.connection.ConnectionsHolder:152[0;39m - 24 connections initialized for 127.0.0.1/127.0.0.1:16380
+2026-10-20 19:02:01.910 [main] [] [] [34mINFO [0;39m [36mc.z.module.ai.config.security.TokenLimitFilter:169[0;39m - [TokenLimitFilter] 已启用 Token 限流：perUserHour=100000, perTenantDay=1000000, perIpMinute=10000
+2026-10-20 19:02:11.337 [main] [] [] [34mINFO [0;39m [36mc.a.c.config.AjCaptchaServiceAutoConfiguration:33[0;39m - 自定义配置项：
+AjCaptchaProperties{type=BLOCKPUZZLE, jigsaw='classpath:images/jigsaw', picClick='classpath:images/pic-click', waterMark='智云', waterFont='WenQuanZhengHei.ttf', fontType='WenQuanZhengHei.ttf', slipOffset='5', aesStatus=true, interferenceOptions='0', cacheNumber='1000', timingClear='180', cacheType=redis, reqFrequencyLimitEnable=false, reqGetLockLimit=5, reqGetLockSeconds=10, reqGetMinuteLimit=30, reqCheckMinuteLimit=60, reqVerifyMinuteLimit=60}
+2026-10-20 19:02:11.369 [main] [] [] [34mINFO [0;39m [36mcom.anji.captcha.util.ImageUtils:71[0;39m - 自定义resource底图:[SLIDING_BLOCK=[Ljava.lang.String;@34053cb3, ORIGINAL=[Ljava.lang.String;@28c11fd7, PIC_CLICK=[Ljava.lang.String;@5a759671]
+2026-10-20 19:02:11.376 [main] [] [] [34mINFO [0;39m [36mc.anji.captcha.service.impl.CaptchaServiceFactory:52[0;39m - supported-captchaCache-service:[redis, local]
+2026-10-20 19:02:11.394 [main] [] [] [34mINFO [0;39m [36mc.anji.captcha.service.impl.CaptchaServiceFactory:57[0;39m - supported-captchaTypes-service:[clickWord, default, blockPuzzle, pictureWord]
+2026-10-20 19:02:11.395 [main] [] [] [34mINFO [0;39m [36mc.a.c.service.impl.BlockPuzzleCaptchaServiceImpl:80[0;39m - --->>>初始化验证码底图<<<---blockPuzzle
+2026-10-20 19:02:17.948 [main] [] [] [34mINFO [0;39m [36mc.z.f.q.config.ZhiCloudQuartzAutoConfiguration:23[0;39m - [定时任务 - 已禁用][参考 https://doc.zhicloud.cn/job/ 开启]
+2026-10-20 19:02:26.359 [main] [] [] [34mINFO [0;39m [36mo.f.s.b.e.EventRegistryAutoConfiguration:106[0;39m - No deployment resources were found for autodeployment
+2026-10-20 19:02:27.105 [main] [] [] [34mINFO [0;39m [36mo.f.c.engine.impl.async.DefaultAsyncTaskExecutor:132[0;39m - Creating thread pool queue of size 100
+2026-10-20 19:02:27.105 [main] [] [] [34mINFO [0;39m [36mo.f.c.engine.impl.async.DefaultAsyncTaskExecutor:138[0;39m - Creating thread factory with naming pattern flowable-async-task-invoker-%d
+2026-10-20 19:02:27.110 [main] [] [] [34mINFO [0;39m [36mo.f.c.engine.impl.async.DefaultAsyncTaskExecutor:146[0;39m - Creating executor service with corePoolSize 8, maxPoolSize 8 and keepAliveTime 5000
+2026-10-20 19:02:27.824 [main] [] [] [34mINFO [0;39m [36mo.flowable.spring.SpringProcessEngineConfiguration:1075[0;39m - Found 2 Engine Configurators in total:
+2026-10-20 19:02:27.825 [main] [] [] [34mINFO [0;39m [36mo.flowable.spring.SpringProcessEngineConfiguration:1077[0;39m - class org.flowable.eventregistry.spring.configurator.SpringEventRegistryConfigurator (priority:100000)
+2026-10-20 19:02:27.825 [main] [] [] [34mINFO [0;39m [36mo.flowable.spring.SpringProcessEngineConfiguration:1077[0;39m - class org.flowable.idm.engine.configurator.IdmEngineConfigurator (priority:150000)
+2026-10-20 19:02:27.825 [main] [] [] [34mINFO [0;39m [36mo.flowable.spring.SpringProcessEngineConfiguration:1103[0;39m - Executing beforeInit() of class org.flowable.eventregistry.spring.configurator.SpringEventRegistryConfigurator (priority:100000)
+2026-10-20 19:02:27.839 [main] [] [] [34mINFO [0;39m [36mo.flowable.spring.SpringProcessEngineConfiguration:1103[0;39m - Executing beforeInit() of class org.flowable.idm.engine.configurator.IdmEngineConfigurator (priority:150000)
+2026-10-20 19:02:31.355 [main] [] [] [34mINFO [0;39m [36mo.flowable.spring.SpringProcessEngineConfiguration:1110[0;39m - Executing configure() of class org.flowable.eventregistry.spring.configurator.SpringEventRegistryConfigurator (priority:100000)
+2026-10-20 19:02:31.439 [main] [] [] [34mINFO [0;39m [36mo.f.eventregistry.impl.EventRegistryEngineImpl:53[0;39m - EventRegistryEngine default created
+2026-10-20 19:02:31.441 [main] [] [] [34mINFO [0;39m [36mo.flowable.spring.SpringProcessEngineConfiguration:1110[0;39m - Executing configure() of class org.flowable.idm.engine.configurator.IdmEngineConfigurator (priority:150000)
+2026-10-20 19:02:31.515 [main] [] [] [34mINFO [0;39m [36morg.flowable.idm.engine.impl.IdmEngineImpl:52[0;39m - IdmEngine default created
+2026-10-20 19:02:31.964 [main] [] [] [34mINFO [0;39m [36morg.flowable.engine.impl.ProcessEngineImpl:89[0;39m - ProcessEngine default created
+2026-10-20 19:02:32.081 [main] [] [] [34mINFO [0;39m [36mo.flowable.engine.impl.cmd.ValidateV5EntitiesCmd:43[0;39m - Total of v5 deployments found: 0
+2026-10-20 19:02:35.223 [main] [] [] [34mINFO [0;39m [36mc.z.module.mp.service.account.MpAccountServiceImpl:81[0;39m - [initLocalCacheIfUpdate][缓存公众号账号，数量为:0]
+2026-10-20 19:03:19.456 [main] [] [] [34mINFO [0;39m [36mc.zhicloud.module.ai.tool.method.PersonServiceImpl:145[0;39m - Initializing PersonService data store...
+2026-10-20 19:03:19.462 [main] [] [] [34mINFO [0;39m [36mc.zhicloud.module.ai.tool.method.PersonServiceImpl:148[0;39m - PersonService initialized with 100 records. Next ID: 101
+2026-10-20 19:03:20.095 [main] [] [] [34mINFO [0;39m [36mc.z.m.ai.framework.ai.config.AiAutoConfiguration:456[0;39m - [AiAutoConfiguration] 注册 WmsMcpTools 成功
+2026-10-20 19:03:20.152 [main] [] [] [34mINFO [0;39m [36mc.z.m.ai.framework.ai.config.AiAutoConfiguration:462[0;39m - [AiAutoConfiguration] 注册 MesMcpTools 成功
+2026-10-20 19:03:20.222 [main] [] [] [34mINFO [0;39m [36mc.z.m.ai.framework.ai.config.AiAutoConfiguration:468[0;39m - [AiAutoConfiguration] 注册 ErpMcpTools 成功
+2026-10-20 19:03:20.767 [main] [] [] [34mINFO [0;39m [36mc.z.m.ai.framework.ai.config.AiAutoConfiguration:474[0;39m - [AiAutoConfiguration] 注册 QmsMcpTools 成功
+2026-10-20 19:03:26.119 [main] [] [] [34mINFO [0;39m [36mo.s.b.f.a.AutowiredAnnotationBeanPostProcessor:442[0;39m - Inconsistent constructor declaration on bean with name 'multiAgentMetrics': single autowire-marked constructor flagged as optional - this constructor is effectively required since there is no default constructor to fall back to: public cn.zhicloud.module.aimultiagent.service.metrics.MultiAgentMetrics(io.micrometer.core.instrument.MeterRegistry)
+2026-10-20 19:03:29.486 [main] [] [] [34mINFO [0;39m [36mc.z.m.a.service.agent.WorkerAgentRegistry:41[0;39m - [register][Worker 注册成功，name=report-writer, class=DefaultReportWorker]
+2026-10-20 19:03:30.081 [main] [] [] [34mINFO [0;39m [36mc.z.m.a.service.agent.WorkerAgentRegistry:41[0;39m - [register][Worker 注册成功，name=procurement-worker, class=ProcurementWorker]
+2026-10-20 19:03:30.090 [main] [] [] [34mINFO [0;39m [36mc.z.m.a.service.agent.WorkerAgentRegistry:41[0;39m - [register][Worker 注册成功，name=production-worker, class=ProductionWorker]
+2026-10-20 19:03:30.099 [main] [] [] [34mINFO [0;39m [36mc.z.m.a.service.agent.WorkerAgentRegistry:41[0;39m - [register][Worker 注册成功，name=sales-worker, class=SalesWorker]
+2026-10-20 19:03:31.522 [main] [] [] [34mINFO [0;39m [36mc.z.m.i.c.m.config.IotMessageBusAutoConfiguration:112[0;39m - [iotRedisMessageBus][创建 IoT Redis 消息总线]
+2026-10-20 19:03:34.571 [main] [] [] [34mINFO [0;39m [36mc.z.m.i.s.r.s.matcher.IotSceneRuleMatcherManager:83[0;39m - [IotSceneRuleMatcherManager][初始化完成，共加载(8)个匹配器，其中触发器匹配器(5)个，条件匹配器(3)个]
+2026-10-20 19:03:34.573 [main] [] [] [34mINFO [0;39m [36mc.z.m.i.s.r.s.matcher.IotSceneRuleMatcherManager:86[0;39m - [IotSceneRuleMatcherManager][触发器匹配器类型: (DEVICE_STATE_UPDATE), 优先级: (10)] 
+2026-10-20 19:03:34.573 [main] [] [] [34mINFO [0;39m [36mc.z.m.i.s.r.s.matcher.IotSceneRuleMatcherManager:86[0;39m - [IotSceneRuleMatcherManager][触发器匹配器类型: (DEVICE_PROPERTY_POST), 优先级: (20)] 
+2026-10-20 19:03:34.573 [main] [] [] [34mINFO [0;39m [36mc.z.m.i.s.r.s.matcher.IotSceneRuleMatcherManager:86[0;39m - [IotSceneRuleMatcherManager][触发器匹配器类型: (DEVICE_EVENT_POST), 优先级: (30)] 
+2026-10-20 19:03:34.573 [main] [] [] [34mINFO [0;39m [36mc.z.m.i.s.r.s.matcher.IotSceneRuleMatcherManager:86[0;39m - [IotSceneRuleMatcherManager][触发器匹配器类型: (DEVICE_SERVICE_INVOKE), 优先级: (40)] 
+2026-10-20 19:03:34.573 [main] [] [] [34mINFO [0;39m [36mc.z.m.i.s.r.s.matcher.IotSceneRuleMatcherManager:86[0;39m - [IotSceneRuleMatcherManager][触发器匹配器类型: (TIMER), 优先级: (50)] 
+2026-10-20 19:03:34.573 [main] [] [] [34mINFO [0;39m [36mc.z.m.i.s.r.s.matcher.IotSceneRuleMatcherManager:88[0;39m - [IotSceneRuleMatcherManager][条件匹配器类型: (DEVICE_PROPERTY), 优先级: (25)]
+2026-10-20 19:03:34.574 [main] [] [] [34mINFO [0;39m [36mc.z.m.i.s.r.s.matcher.IotSceneRuleMatcherManager:88[0;39m - [IotSceneRuleMatcherManager][条件匹配器类型: (DEVICE_STATE), 优先级: (30)]
+2026-10-20 19:03:34.574 [main] [] [] [34mINFO [0;39m [36mc.z.m.i.s.r.s.matcher.IotSceneRuleMatcherManager:88[0;39m - [IotSceneRuleMatcherManager][条件匹配器类型: (CURRENT_TIME), 优先级: (40)]
+2026-10-20 19:03:34.687 [main] [] [] [34mINFO [0;39m [36mc.z.m.iot.framework.job.core.IotSchedulerManager:60[0;39m - [start][Scheduler 初始化开始]
+2026-10-20 19:03:34.782 [main] [] [] [34mINFO [0;39m [36morg.quartz.impl.StdSchedulerFactory:1222[0;39m - Using default implementation for ThreadExecutor
+2026-10-20 19:03:34.805 [main] [] [] [34mINFO [0;39m [36morg.quartz.core.SchedulerSignalerImpl:62[0;39m - Initialized Scheduler Signaller of type: class org.quartz.core.SchedulerSignalerImpl
+2026-10-20 19:03:34.806 [main] [] [] [34mINFO [0;39m [36morg.quartz.core.QuartzScheduler:224[0;39m - Quartz Scheduler v2.5.2 created.
+2026-10-20 19:03:34.816 [main] [] [] [34mINFO [0;39m [36mo.s.scheduling.quartz.LocalDataSourceJobStore:676[0;39m - Using db table-based data access locking (synchronization).
+2026-10-20 19:03:34.819 [main] [] [] [34mINFO [0;39m [36mo.s.scheduling.quartz.LocalDataSourceJobStore:147[0;39m - JobStoreCMT initialized.
+2026-10-20 19:03:34.820 [main] [] [] [34mINFO [0;39m [36morg.quartz.core.QuartzScheduler:289[0;39m - Scheduler meta-data: Quartz Scheduler (v2.5.2) 'iotScheduler' with instanceId 'WIN-N350HCSNIDQ1792494214785'
+  Scheduler class: 'org.quartz.core.QuartzScheduler' - running locally.
+  NOT STARTED.
+  Currently in standby mode.
+  Number of jobs executed: 0
+  Using thread pool 'org.quartz.simpl.SimpleThreadPool' - with 25 threads.
+  Using job-store 'org.springframework.scheduling.quartz.LocalDataSourceJobStore' - which supports persistence. and is clustered.
+
+2026-10-20 19:03:34.821 [main] [] [] [34mINFO [0;39m [36morg.quartz.impl.StdSchedulerFactory:1376[0;39m - Quartz scheduler 'iotScheduler' initialized from an externally provided properties instance.
+2026-10-20 19:03:34.821 [main] [] [] [34mINFO [0;39m [36morg.quartz.impl.StdSchedulerFactory:1378[0;39m - Quartz scheduler version: 2.5.2
+2026-10-20 19:03:34.821 [main] [] [] [34mINFO [0;39m [36morg.quartz.core.QuartzScheduler:2250[0;39m - JobFactory set to: org.springframework.scheduling.quartz.SpringBeanJobFactory@6455be3
+2026-10-20 19:03:34.821 [main] [] [] [34mINFO [0;39m [36mo.s.scheduling.quartz.SchedulerFactoryBean:730[0;39m - Starting Quartz Scheduler now
+2026-10-20 19:03:34.893 [main] [] [] [34mINFO [0;39m [36morg.quartz.core.QuartzScheduler:541[0;39m - Scheduler iotScheduler_$_WIN-N350HCSNIDQ1792494214785 started.
+2026-10-20 19:03:34.894 [main] [] [] [34mINFO [0;39m [36mc.z.m.iot.framework.job.core.IotSchedulerManager:66[0;39m - [start][Scheduler 初始化完成]
+2026-10-20 19:04:17.409 [main] [] [] [34mINFO [0;39m [36mc.z.m.m.s.d.s.MesDvDeviceDataCollectorServiceImpl:138[0;39m - [startAutoCollection][自动采集已开启]
+2026-10-20 19:04:56.565 [main] [] [] [34mINFO [0;39m [36mcom.tngtech.archunit.core.PluginLoader:67[0;39m - Detected Java version 21.0.12.1
+2026-10-20 19:05:55.641 [main] [] [] [34mINFO [0;39m [36mcn.zhicloud.server.config.ModulithConfiguration:51[0;39m - [ModulithConfiguration] ApplicationModules 创建完成: basePackage=cn.zhicloud.module, modules=# AI 人工智能模块
+> Logical name: ai
+> Base package: cn.zhicloud.module.ai
+> Excluded packages: none
+> Direct module dependencies: erp, mes, qms, wms, system
+> Spring beans:
+  o cn.zhicloud.framework.security.config.AuthorizeRequestsCustomizer
+  o ….config.AiSecurityConfiguration
+  o ….config.security.PiiMaskAdvisor
+  o ….config.security.PiiMaskConverter
+  o ….config.security.PromptInjectionAdvisor
+  o ….config.security.PromptInjectionAspect
+  o ….config.security.TokenLimitFilter
+  o ….config.security.ToolAccessInterceptor
+  o ….controller.admin.chat.AiChatConversationController
+  o ….controller.admin.chat.AiChatMessageController
+  o ….controller.admin.chatmemory.ChatMemoryController
+  o ….controller.admin.image.AiImageController
+  o ….controller.admin.knowledge.AiKnowledgeController
+  o ….controller.admin.knowledge.AiKnowledgeDocumentController
+  o ….controller.admin.knowledge.AiKnowledgeSegmentController
+  o ….controller.admin.mindmap.AiMindMapController
+  o ….controller.admin.model.AiApiKeyController
+  o ….controller.admin.model.AiChatRoleController
+  o ….controller.admin.model.AiModelController
+  o ….controller.admin.model.AiToolController
+  o ….controller.admin.music.AiMusicController
+  o ….controller.admin.nl2sql.Nl2SqlController
+  o ….controller.admin.predictive.PredictiveMaintenanceController
+  o ….controller.admin.prompt.AiPromptTemplateController
+  o ….controller.admin.workflow.AiWorkflowController
+  o ….controller.admin.write.AiWriteController
+  o ….framework.ai.config.AiAutoConfiguration
+  o ….framework.ai.config.ZhiCloudAiProperties
+  o ….framework.ai.core.model.AiModelFactory
+  o ….framework.ai.core.model.baichuan.BaiChuanChatModel
+  o ….framework.ai.core.model.doubao.DouBaoChatModel
+  o ….framework.ai.core.model.gemini.GeminiChatModel
+  o ….framework.ai.core.model.grok.GrokChatModel
+  o ….framework.ai.core.model.hunyuan.HunYuanChatModel
+  o ….framework.ai.core.model.midjourney.api.MidjourneyApi
+  o ….framework.ai.core.model.minimax.MiniMaxChatModel
+  o ….framework.ai.core.model.moonshot.MoonshotChatModel
+  o ….framework.ai.core.model.siliconflow.SiliconFlowChatModel
+  o ….framework.ai.core.model.stepfun.StepFunChatModel
+  o ….framework.ai.core.model.suno.api.SunoApi
+  o ….framework.ai.core.model.xinghuo.XingHuoChatModel
+  o ….framework.ai.core.model.yiyan.YiYanChatModel
+  o ….framework.ai.core.model.zhipu.ZhiPuChatModel
+  o ….framework.ai.core.webserch.AiWebSearchClient
+  o ….framework.ai.security.AiCallGuard
+  o ….framework.ai.security.AiContextPropagator
+  o ….framework.ai.security.SsrfGuard
+  o ….framework.security.config.SecurityConfiguration
+  o ….framework.web.config.AiWebConfiguration
+  o ….job.image.AiMidjourneySyncJob
+  o ….job.music.AiSunoSyncJob
+  o ….mcp.tools.ErpMcpTools
+  o ….mcp.tools.McpToolAuditLogAspect
+  o ….mcp.tools.McpToolSecurityAspect
+  o ….mcp.tools.MesMcpTools
+  o ….mcp.tools.QmsMcpTools
+  o ….mcp.tools.WmsMcpTools
+  o ….service.chat.AiChatConversationServiceImpl
+  o ….service.chat.AiChatMessageServiceImpl
+  o ….service.chatmemory.ChatMemoryServiceImpl
+  o ….service.image.AiImageServiceImpl
+  o ….service.knowledge.AiKnowledgeDocumentServiceImpl
+  o ….service.knowledge.AiKnowledgeSegmentServiceImpl
+  o ….service.knowledge.AiKnowledgeServiceImpl
+  o ….service.mindmap.AiMindMapServiceImpl
+  o ….service.model.AiApiKeyServiceImpl
+  o ….service.model.AiChatRoleServiceImpl
+  o ….service.model.AiModelServiceImpl
+  o ….service.model.AiToolServiceImpl
+  o ….service.music.AiMusicServiceImpl
+  o ….service.nl2sql.Nl2SqlServiceImpl
+  o ….service.nl2sql.SqlSafetyValidator
+  o ….service.predictive.PredictiveMaintenanceServiceImpl
+  o ….service.prompt.AiPromptTemplateServiceImpl
+  o ….service.workflow.AiWorkflowServiceImpl
+  o ….service.write.AiWriteServiceImpl
+  o ….tool.function.DirectoryListToolFunction
+  o ….tool.function.UserProfileQueryToolFunction
+  o ….tool.function.WeatherQueryToolFunction
+  o ….tool.method.PersonServiceImpl
+  o java.util.List
+  o org.springdoc.core.models.GroupedOpenApi
+  o org.springframework.ai.embedding.BatchingStrategy
+  o org.springframework.ai.tokenizer.TokenCountEstimator
+
+# AI MultiAgent 多 Agent 编排模块
+> Logical name: aimultiagent
+> Base package: cn.zhicloud.module.aimultiagent
+> Excluded packages: none
+> Direct module dependencies: ai, wms, qms
+> Spring beans:
+  o ….config.AiMultiAgentConfiguration
+  o ….config.ChatClientHelper
+  o ….config.MultiAgentProperties
+  o ….controller.admin.checkpoint.MultiAgentCheckpointController
+  o ….controller.admin.execute.MultiAgentExecuteController
+  o ….controller.admin.execute.MultiAgentExecuteSseController
+  o ….controller.admin.react.ReActAgentController
+  o ….controller.admin.skill.MultiAgentSkillController
+  o ….controller.admin.topology.MultiAgentTopologyController
+  o ….controller.admin.trace.MultiAgentTraceController
+  o ….service.agent.DefaultReportWorker
+  o ….service.agent.ProcurementWorker
+  o ….service.agent.ProductionWorker
+  o ….service.agent.SalesWorker
+  o ….service.agent.SupervisorAgent
+  o ….service.agent.WorkerAgentRegistry
+  o ….service.agent.WorkerToolExecutor
+  o ….service.execute.MultiAgentExecuteServiceImpl
+  o ….service.llm.LlmGateway
+  o ….service.metrics.MultiAgentMetrics
+  o ….service.react.ReActAgent
+  o ….service.skill.MultiAgentSkillServiceImpl
+  o ….service.skill.SkillCatalogValidator
+  o ….service.topology.MultiAgentTopologyServiceImpl
+  o ….service.trace.MultiAgentSpanServiceImpl
+  o ….service.workflow.MultiAgentExecutorGatewayImpl
+
+# AI RAG 检索增强模块
+> Logical name: airag
+> Base package: cn.zhicloud.module.airag
+> Excluded packages: none
+> Direct module dependencies: ai
+> Spring beans:
+  o ….config.AiragAdvisorProperties
+  o ….config.AiragConfiguration
+  o ….config.AiragDataSourceProperties
+  o ….config.AiragEvalAsyncConfiguration
+  o ….config.AiragImportAsyncConfiguration
+  o ….config.AiragProperties
+  o ….config.RagAdvisor
+  o ….controller.admin.chat.AiragRagChatController
+  o ….controller.admin.document.AiragDocumentController
+  o ….controller.admin.eval.RagEvalBatchController
+  o ….controller.admin.evaluation.RagEvaluationController
+  o ….controller.admin.knowledge.AiragKnowledgeController
+  o ….evaluation.RagEvaluationServiceImpl
+  o ….service.RerankerService
+  o ….service.document.AiragDocumentServiceImpl
+  o ….service.eval.RagEvalBatchService
+  o ….service.knowledge.AiragKnowledgeServiceImpl
+  o ….service.rag.AiragRagServiceImpl
+  o ….service.rag.Bm25LexicalRetriever
+  o javax.sql.DataSource
+  o org.springframework.ai.embedding.EmbeddingModel
+  o org.springframework.ai.vectorstore.VectorStore
+  o org.springframework.core.task.AsyncTaskExecutor
+  o org.springframework.jdbc.core.JdbcTemplate
+  o org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
+
+# CRM 客户关系管理模块
+> Logical name: crm
+> Base package: cn.zhicloud.module.crm
+> Excluded packages: none
+> Direct module dependencies: system
+> Spring beans:
+  o ….controller.admin.business.CrmBusinessController
+  o ….controller.admin.business.CrmBusinessStatusController
+  o ….controller.admin.clue.CrmClueChannelController
+  o ….controller.admin.clue.CrmClueController
+  o ….controller.admin.clue.CrmCluePoolConfigController
+  o ….controller.admin.clue.CrmClueReceiveController
+  o ….controller.admin.contact.CrmContactController
+  o ….controller.admin.contract.CrmContractConfigController
+  o ….controller.admin.contract.CrmContractController
+  o ….controller.admin.contract.CrmContractEsignController
+  o ….controller.admin.customer.CrmCustomerController
+  o ….controller.admin.customer.CrmCustomerLimitConfigController
+  o ….controller.admin.customer.CrmCustomerPoolConfigController
+  o ….controller.admin.followup.CrmFollowUpRecordController
+  o ….controller.admin.invoice.CrmInvoiceController
+  o ….controller.admin.operatelog.CrmOperateLogController
+  o ….controller.admin.performance.CrmPerformanceConfigController
+  o ….controller.admin.permission.CrmPermissionController
+  o ….controller.admin.product.CrmProductCategoryController
+  o ….controller.admin.product.CrmProductController
+  o ….controller.admin.receivable.CrmReceivableController
+  o ….controller.admin.receivable.CrmReceivablePlanController
+  o ….controller.admin.salesorder.CrmSaleOrderController
+  o ….controller.admin.servicecloud.CrmWorkOrderController
+  o ….controller.admin.statistics.CrmStatisticsCustomerController
+  o ….controller.admin.statistics.CrmStatisticsFunnelController
+  o ….controller.admin.statistics.CrmStatisticsPerformanceController
+  o ….controller.admin.statistics.CrmStatisticsPerformanceTargetController
+  o ….controller.admin.statistics.CrmStatisticsPortraitController
+  o ….controller.admin.statistics.CrmStatisticsProductController
+  o ….controller.admin.statistics.CrmStatisticsRankController
+  o ….controller.admin.visit.CrmVisitRecordController
+  o ….dal.redis.no.CrmNoRedisDAO
+  o ….framework.excel.core.AreaExcelColumnSelectFunction
+  o ….framework.operatelog.core.CrmBusinessParseFunction
+  o ….framework.operatelog.core.CrmContactParseFunction
+  o ….framework.operatelog.core.CrmContractParseFunction
+  o ….framework.operatelog.core.CrmCustomerIndustryParseFunction
+  o ….framework.operatelog.core.CrmCustomerLevelParseFunction
+  o ….framework.operatelog.core.CrmCustomerParseFunction
+  o ….framework.operatelog.core.CrmCustomerSourceParseFunction
+  o ….framework.operatelog.core.CrmProductStatusParseFunction
+  o ….framework.operatelog.core.CrmProductUnitParseFunction
+  o ….framework.operatelog.core.CrmReceivablePlanParseFunction
+  o ….framework.operatelog.core.CrmReceivableReturnTypeParseFunction
+  o ….framework.operatelog.core.SysAdminUserParseFunction
+  o ….framework.operatelog.core.SysAreaParseFunction
+  o ….framework.operatelog.core.SysBooleanParseFunction
+  o ….framework.operatelog.core.SysDeptParseFunction
+  o ….framework.operatelog.core.SysSexParseFunction
+  o ….framework.permission.core.aop.CrmPermissionAspect
+  o ….framework.web.config.CrmWebConfiguration
+  o ….job.clue.CrmClueAutoPutPoolJob
+  o ….job.customer.CrmCustomerAutoPutPoolJob
+  o ….service.business.CrmBusinessServiceImpl
+  o ….service.business.CrmBusinessStatusServiceImpl
+  o ….service.clue.CrmCluePoolConfigServiceImpl
+  o ….service.clue.CrmClueServiceImpl
+  o ….service.clue.channel.CrmClueChannelServiceImpl
+  o ….service.contact.CrmContactBusinessServiceImpl
+  o ….service.contact.CrmContactServiceImpl
+  o ….service.contract.CrmContractConfigServiceImpl
+  o ….service.contract.CrmContractServiceImpl
+  o ….service.contract.esign.CrmContractEsignServiceImpl
+  o ….service.contract.listener.CrmContractStatusListener
+  o ….service.customer.CrmCustomerLimitConfigServiceImpl
+  o ….service.customer.CrmCustomerPoolConfigServiceImpl
+  o ….service.customer.CrmCustomerServiceImpl
+  o ….service.followup.CrmFollowUpRecordServiceImpl
+  o ….service.invoice.CrmInvoiceServiceImpl
+  o ….service.invoice.listener.CrmInvoiceStatusListener
+  o ….service.performance.CrmPerformanceConfigServiceImpl
+  o ….service.permission.CrmOwnerRecordServiceImpl
+  o ….service.permission.CrmPermissionServiceImpl
+  o ….service.product.CrmProductCategoryServiceImpl
+  o ….service.product.CrmProductServiceImpl
+  o ….service.receivable.CrmReceivablePlanServiceImpl
+  o ….service.receivable.CrmReceivableServiceImpl
+  o ….service.receivable.listener.CrmReceivableStatusListener
+  o ….service.salesorder.CrmSaleOrderServiceImpl
+  o ….service.salesorder.listener.CrmSaleOrderStatusListener
+  o ….service.servicecloud.CrmWorkOrderServiceImpl
+  o ….service.statistics.CrmStatisticsCustomerServiceImpl
+  o ….service.statistics.CrmStatisticsFunnelServiceImpl
+  o ….service.statistics.CrmStatisticsPerformanceServiceImpl
+  o ….service.statistics.CrmStatisticsPerformanceTargetServiceImpl
+  o ….service.statistics.CrmStatisticsPortraitServiceImpl
+  o ….service.statistics.CrmStatisticsProductServiceImpl
+  o ….service.statistics.CrmStatisticsRankServiceImpl
+  o ….service.visit.CrmVisitRecordServiceImpl
+  o org.springdoc.core.models.GroupedOpenApi
+
+# 数据湖仓模块（Iceberg + Trino）
+> Logical name: datalake
+> Base package: cn.zhicloud.module.datalake
+> Excluded packages: none
+> Direct module dependencies: none
+> Spring beans:
+  o [Lorg.springframework.ai.tool.ToolCallback;
+  o ….config.DataLakeAutoConfiguration
+  o ….config.DataLakeProperties
+  o ….controller.admin.DataLakeController
+  o ….mcp.DataLakeMcpTool
+  o ….service.DataArchivalServiceImpl
+  o ….service.IcebergCatalogServiceImpl
+
+# ERP 企业资源计划模块
+> Logical name: erp
+> Base package: cn.zhicloud.module.erp
+> Excluded packages: none
+> Direct module dependencies: system
+> Spring beans:
+  o ….controller.admin.bi.ScmBiController
+  o ….controller.admin.collaboration.cpfr.ErpCpfrExceptionController
+  o ….controller.admin.collaboration.cpfr.ErpCpfrForecastController
+  o ….controller.admin.finance.ErpAccountBookController
+  o ….controller.admin.finance.ErpAccountController
+  o ….controller.admin.finance.ErpActualCostController
+  o ….controller.admin.finance.ErpBankAccountController
+  o ….controller.admin.finance.ErpBudgetController
+  o ….controller.admin.finance.ErpCashFlowController
+  o ….controller.admin.finance.ErpConsolidationEngineController
+  o ….controller.admin.finance.ErpConsolidationEntryController
+  o ….controller.admin.finance.ErpConsolidationScopeController
+  o ….controller.admin.finance.ErpConsolidationWorksheetController
+  o ….controller.admin.finance.ErpCostAllocationController
+  o ….controller.admin.finance.ErpCostCalculationController
+  o ….controller.admin.finance.ErpCostCenterController
+  o ….controller.admin.finance.ErpCostItemController
+  o ….controller.admin.finance.ErpCostVarianceController
+  o ….controller.admin.finance.ErpCurrencyController
+  o ….controller.admin.finance.ErpExchangeRateController
+  o ….controller.admin.finance.ErpFaChangeController
+  o ….controller.admin.finance.ErpFinancePaymentController
+  o ….controller.admin.finance.ErpFinanceReceiptController
+  o ….controller.admin.finance.ErpFinancialStatementController
+  o ….controller.admin.finance.ErpFixedAssetController
+  o ….controller.admin.finance.ErpFundPlanController
+  o ….controller.admin.finance.ErpGlAccountController
+  o ….controller.admin.finance.ErpGlInitialBalanceController
+  o ….controller.admin.finance.ErpGlLedgerController
+  o ….controller.admin.finance.ErpGlVoucherController
+  o ….controller.admin.finance.ErpPeriodController
+  o ….controller.admin.finance.ErpProfitCenterController
+  o ….controller.admin.finance.ErpProfitabilityAnalysisController
+  o ….controller.admin.finance.ErpStandardCostController
+  o ….controller.admin.finance.ErpTaxInvoiceController
+  o ….controller.admin.finance.ErpTaxInvoiceLineController
+  o ….controller.admin.finance.ErpTaxRateController
+  o ….controller.admin.finance.ErpVatCalculationController
+  o ….controller.admin.finance.ErpWorkOrderCostController
+  o ….controller.admin.finance.cashier.ErpCashierController
+  o ….controller.admin.product.ErpProductCategoryController
+  o ….controller.admin.product.ErpProductController
+  o ….controller.admin.product.ErpProductUnitController
+  o ….controller.admin.production.mps.ErpMpsPlanController
+  o ….controller.admin.production.mrp.ErpMrpPlanController
+  o ….controller.admin.purchase.ErpPurchaseInController
+  o ….controller.admin.purchase.ErpPurchaseOrderController
+  o ….controller.admin.purchase.ErpPurchaseReturnController
+  o ….controller.admin.purchase.ErpSupplierController
+  o ….controller.admin.purchase.evaluation.ErpSupplierEvaluationController
+  o ….controller.admin.purchase.inquiry.ErpPurchaseCompareController
+  o ….controller.admin.purchase.inquiry.ErpPurchaseInquiryController
+  o ….controller.admin.purchase.inquiry.ErpPurchaseQuoteController
+  o ….controller.admin.sale.ErpCustomerController
+  o ….controller.admin.sale.ErpSaleOrderController
+  o ….controller.admin.sale.ErpSaleOutController
+  o ….controller.admin.sale.ErpSaleReturnController
+  o ….controller.admin.sale.credit.ErpCreditLimitController
+  o ….controller.admin.sale.query.SaleOrderQueryController
+  o ….controller.admin.statistics.ErpPurchaseStatisticsController
+  o ….controller.admin.statistics.ErpSaleStatisticsController
+  o ….controller.admin.stock.ErpStockBatchController
+  o ….controller.admin.stock.ErpStockCheckController
+  o ….controller.admin.stock.ErpStockController
+  o ….controller.admin.stock.ErpStockInController
+  o ….controller.admin.stock.ErpStockMoveController
+  o ….controller.admin.stock.ErpStockOutController
+  o ….controller.admin.stock.ErpStockRecordController
+  o ….controller.admin.stock.ErpStockSerialController
+  o ….controller.admin.stock.ErpWarehouseController
+  o ….controller.admin.stock.vmi.ErpVmiInventoryController
+  o ….controller.admin.stock.vmi.ErpVmiReplenishmentController
+  o ….dal.redis.no.ErpNoRedisDAO
+  o ….framework.web.config.ErpWebConfiguration
+  o ….query.sale.SaleOrderQueryServiceImpl
+  o ….service.accounting.ErpAccountingEventServiceImpl
+  o ….service.bi.inventory.ScmInventoryBiServiceImpl
+  o ….service.bi.purchase.ScmPurchaseBiServiceImpl
+  o ….service.bi.sale.ScmSaleBiServiceImpl
+  o ….service.collaboration.cpfr.ErpCpfrExceptionServiceImpl
+  o ….service.collaboration.cpfr.ErpCpfrForecastServiceImpl
+  o ….service.finance.ErpAccountBookApiImpl
+  o ….service.finance.ErpAccountBookServiceImpl
+  o ….service.finance.ErpAccountServiceImpl
+  o ….service.finance.ErpBankAccountServiceImpl
+  o ….service.finance.ErpBudgetServiceImpl
+  o ….service.finance.ErpCashFlowServiceImpl
+  o ….service.finance.ErpConsolidationEngineServiceImpl
+  o ….service.finance.ErpConsolidationEntryServiceImpl
+  o ….service.finance.ErpConsolidationScopeServiceImpl
+  o ….service.finance.ErpConsolidationWorksheetServiceImpl
+  o ….service.finance.ErpCostAllocationServiceImpl
+  o ….service.finance.ErpCostCenterServiceImpl
+  o ….service.finance.ErpCurrencyServiceImpl
+  o ….service.finance.ErpExchangeRateServiceImpl
+  o ….service.finance.ErpFaChangeServiceImpl
+  o ….service.finance.ErpFinancePaymentServiceImpl
+  o ….service.finance.ErpFinanceReceiptServiceImpl
+  o ….service.finance.ErpFinancialStatementApiImpl
+  o ….service.finance.ErpFinancialStatementServiceImpl
+  o ….service.finance.ErpFixedAssetServiceImpl
+  o ….service.finance.ErpFundPlanServiceImpl
+  o ….service.finance.ErpGlAccountServiceImpl
+  o ….service.finance.ErpGlInitialBalanceServiceImpl
+  o ….service.finance.ErpGlLedgerQueryEngine
+  o ….service.finance.ErpGlLedgerRowAssembler
+  o ….service.finance.ErpGlLedgerServiceImpl
+  o ….service.finance.ErpGlVoucherApiImpl
+  o ….service.finance.ErpGlVoucherServiceImpl
+  o ….service.finance.ErpMultiCurrencyServiceImpl
+  o ….service.finance.ErpPeriodServiceImpl
+  o ….service.finance.ErpProfitCenterServiceImpl
+  o ….service.finance.ErpProfitabilityAnalysisServiceImpl
+  o ….service.finance.cashier.ErpBankDirectLinkServiceImpl
+  o ….service.finance.cashier.ErpCashierServiceImpl
+  o ….service.finance.cost.ErpActualCostServiceImpl
+  o ….service.finance.cost.ErpCostCalculationServiceImpl
+  o ….service.finance.cost.ErpCostItemServiceImpl
+  o ….service.finance.cost.ErpCostVarianceServiceImpl
+  o ….service.finance.cost.ErpStandardCostServiceImpl
+  o ….service.finance.cost.ErpWorkOrderCostServiceImpl
+  o ….service.finance.cost.bom.NoOpErpBomProvider
+  o ….service.finance.tax.ErpTaxInvoiceLineServiceImpl
+  o ….service.finance.tax.ErpTaxInvoiceServiceImpl
+  o ….service.finance.tax.ErpTaxRateServiceImpl
+  o ….service.finance.tax.ErpVatCalculationServiceImpl
+  o ….service.finance.tax.GoldenTaxApiStub
+  o ….service.finance.tax.GoldenTaxDisabledFallback
+  o ….service.integration.CrmReceivableApprovedConsumer
+  o ….service.product.ErpProductCategoryServiceImpl
+  o ….service.product.ErpProductServiceImpl
+  o ….service.product.ErpProductUnitServiceImpl
+  o ….service.production.mps.ErpMpsPlanDetailServiceImpl
+  o ….service.production.mps.ErpMpsPlanServiceImpl
+  o ….service.production.mrp.ErpMrpPlanServiceImpl
+  o ….service.production.mrp.ErpMrpResultServiceImpl
+  o ….service.purchase.ErpPurchaseInServiceImpl
+  o ….service.purchase.ErpPurchaseOrderServiceImpl
+  o ….service.purchase.ErpPurchaseReturnServiceImpl
+  o ….service.purchase.ErpSupplierServiceImpl
+  o ….service.purchase.evaluation.ErpSupplierEvaluationServiceImpl
+  o ….service.purchase.inquiry.ErpPurchaseCompareServiceImpl
+  o ….service.purchase.inquiry.ErpPurchaseInquiryServiceImpl
+  o ….service.purchase.inquiry.ErpPurchaseQuoteServiceImpl
+  o ….service.sale.ErpCustomerCreditServiceImpl
+  o ….service.sale.ErpCustomerServiceImpl
+  o ….service.sale.ErpSaleOrderServiceImpl
+  o ….service.sale.ErpSaleOutServiceImpl
+  o ….service.sale.ErpSaleReturnServiceImpl
+  o ….service.sale.credit.ErpCreditCheckServiceImpl
+  o ….service.sale.credit.ErpCreditLimitServiceImpl
+  o ….service.statistics.ErpPurchaseStatisticsServiceImpl
+  o ….service.statistics.ErpSaleStatisticsServiceImpl
+  o ….service.stock.ErpInventoryDualWriter
+  o ….service.stock.ErpInventoryProjectionReader
+  o ….service.stock.ErpStockBatchServiceImpl
+  o ….service.stock.ErpStockCheckServiceImpl
+  o ….service.stock.ErpStockInServiceImpl
+  o ….service.stock.ErpStockMoveServiceImpl
+  o ….service.stock.ErpStockOutServiceImpl
+  o ….service.stock.ErpStockRecordServiceImpl
+  o ….service.stock.ErpStockSerialServiceImpl
+  o ….service.stock.ErpStockServiceImpl
+  o ….service.stock.ErpWarehouseServiceImpl
+  o ….service.stock.vmi.ErpVmiInventoryServiceImpl
+  o ….service.stock.vmi.ErpVmiReplenishmentServiceImpl
+  o org.springdoc.core.models.GroupedOpenApi
+
+# FMS 财务管理系统模块
+> Logical name: fms
+> Base package: cn.zhicloud.module.fms
+> Excluded packages: none
+> Direct module dependencies: erp, system
+> Spring beans:
+  o ….controller.admin.config.FmsAccountSetController
+  o ….controller.admin.config.FmsAccountUserController
+  o ….controller.admin.config.FmsAuxiliaryItemController
+  o ….controller.admin.config.FmsAuxiliaryTypeController
+  o ….controller.admin.config.FmsDigestController
+  o ….controller.admin.config.FmsFinanceIndicatorController
+  o ….controller.admin.config.FmsFinanceParameterController
+  o ….controller.admin.config.FmsVoucherTemplateCategoryController
+  o ….controller.admin.config.FmsVoucherTemplateController
+  o ….controller.admin.config.FmsVoucherWordController
+  o ….framework.web.FmsWebConfiguration
+  o ….service.config.FmsAccountSetServiceImpl
+  o ….service.config.FmsAccountUserServiceImpl
+  o ….service.config.FmsAuxiliaryItemServiceImpl
+  o ….service.config.FmsAuxiliaryTypeServiceImpl
+  o ….service.config.FmsDigestServiceImpl
+  o ….service.config.FmsFinanceIndicatorServiceImpl
+  o ….service.config.FmsFinanceParameterServiceImpl
+  o ….service.config.FmsVoucherTemplateCategoryServiceImpl
+  o ….service.config.FmsVoucherTemplateServiceImpl
+  o ….service.config.FmsVoucherWordServiceImpl
+  o org.springdoc.core.models.GroupedOpenApi
+
+# HR 人力资源管理模块
+> Logical name: hr
+> Base package: cn.zhicloud.module.hr
+> Excluded packages: none
+> Direct module dependencies: system
+> Spring beans:
+  o ….controller.admin.hrm.HrmEmployeeController
+  o ….controller.admin.hrm.HrmEmployeeProfileController
+  o ….controller.admin.hrm.HrmOperateLogController
+  o ….controller.admin.hrm.HrmPositionController
+  o ….controller.admin.hrm.attendance.HrmAttendanceController
+  o ….controller.admin.hrm.home.HrmHomeController
+  o ….controller.admin.hrm.insurance.HrmInsuranceEmployeeInfoController
+  o ….controller.admin.hrm.insurance.HrmInsuranceMonthController
+  o ….controller.admin.hrm.insurance.HrmInsuranceSchemeController
+  o ….controller.admin.hrm.insurance.HrmInsuranceStandardController
+  o ….controller.admin.hrm.performance.HrmPerformanceAssessmentController
+  o ….controller.admin.hrm.performance.HrmPerformancePlanController
+  o ….controller.admin.hrm.performance.HrmPerformanceTemplateController
+  o ….controller.admin.hrm.portal.HrmPortalController
+  o ….controller.admin.hrm.recruit.HrmRecruitCandidateController
+  o ….controller.admin.hrm.recruit.HrmRecruitChannelController
+  o ….controller.admin.hrm.recruit.HrmRecruitPostController
+  o ….controller.admin.hrm.salary.HrmSalaryBusinessController
+  o ….controller.admin.hrm.salary.HrmSalaryConfigController
+  o ….framework.web.config.HrWebConfiguration
+  o ….service.hrm.HrmEmployeeProfileServiceImpl
+  o ….service.hrm.HrmEmployeeServiceImpl
+  o ….service.hrm.attendance.HrmAttendanceServiceImpl
+  o ….service.hrm.home.HrmHomeServiceImpl
+  o ….service.hrm.insurance.HrmInsuranceEmployeeInfoServiceImpl
+  o ….service.hrm.insurance.HrmInsuranceMonthServiceImpl
+  o ….service.hrm.insurance.HrmInsuranceSchemeServiceImpl
+  o ….service.hrm.insurance.HrmInsuranceStandardServiceImpl
+  o ….service.hrm.performance.HrmPerformanceServiceImpl
+  o ….service.hrm.portal.HrmPortalServiceImpl
+  o ….service.hrm.portal.listener.HrmAttendanceLeaveStatusListener
+  o ….service.hrm.recruit.HrmRecruitServiceImpl
+  o ….service.hrm.salary.HrmSalaryBusinessServiceImpl
+  o ….service.hrm.salary.HrmSalaryConfigServiceImpl
+  o ….service.position.HrPositionServiceImpl
+  o org.springdoc.core.models.GroupedOpenApi
+
+# MES 制造执行系统模块
+> Logical name: mes
+> Base package: cn.zhicloud.module.mes
+> Excluded packages: none
+> Direct module dependencies: system, qms
+> Spring beans:
+  o ….controller.admin.cal.calendar.MesCalCalendarController
+  o ….controller.admin.cal.holiday.MesCalHolidayController
+  o ….controller.admin.cal.plan.MesCalPlanController
+  o ….controller.admin.cal.plan.MesCalPlanShiftController
+  o ….controller.admin.cal.plan.MesCalPlanTeamController
+  o ….controller.admin.cal.team.MesCalTeamController
+  o ….controller.admin.cal.team.MesCalTeamMemberController
+  o ….controller.admin.cal.team.MesCalTeamShiftController
+  o ….controller.admin.dv.checkplan.MesDvCheckPlanController
+  o ….controller.admin.dv.checkplan.MesDvCheckPlanMachineryController
+  o ….controller.admin.dv.checkplan.MesDvCheckPlanSubjectController
+  o ….controller.admin.dv.checkrecord.MesDvCheckRecordController
+  o ….controller.admin.dv.checkrecord.MesDvCheckRecordLineController
+  o ….controller.admin.dv.machinery.MesDvMachineryController
+  o ….controller.admin.dv.machinery.MesDvMachineryTypeController
+  o ….controller.admin.dv.maintenrecord.MesDvMaintenRecordController
+  o ….controller.admin.dv.maintenrecord.MesDvMaintenRecordLineController
+  o ….controller.admin.dv.oeerecord.MesDvOeeController
+  o ….controller.admin.dv.repair.MesDvRepairController
+  o ….controller.admin.dv.repair.MesDvRepairLineController
+  o ….controller.admin.dv.scada.MesDvDeviceDataRecordController
+  o ….controller.admin.dv.scada.MesDvScadaConfigController
+  o ….controller.admin.dv.subject.MesDvSubjectController
+  o ….controller.admin.dv.tp.MesDvTpKpiController
+  o ….controller.admin.dv.tp.MesDvTpPlanController
+  o ….controller.admin.dv.tp.MesDvTpPlanItemController
+  o ….controller.admin.dv.tp.MesDvTpRecordController
+  o ….controller.admin.energy.MesEnergyConsumptionController
+  o ….controller.admin.home.MesDashboardController
+  o ….controller.admin.home.MesHomeStatisticsController
+  o ….controller.admin.md.autocode.MesMdAutoCodePartController
+  o ….controller.admin.md.autocode.MesMdAutoCodeRecordController
+  o ….controller.admin.md.autocode.MesMdAutoCodeRuleController
+  o ….controller.admin.md.bom.MesBomController
+  o ….controller.admin.md.bom.MesBomDetailController
+  o ….controller.admin.md.bom.substitute.MesBomSubstituteController
+  o ….controller.admin.md.client.MesMdClientController
+  o ….controller.admin.md.ecn.MesMdEcnOrderController
+  o ….controller.admin.md.item.MesMdItemBatchConfigController
+  o ….controller.admin.md.item.MesMdItemController
+  o ….controller.admin.md.item.MesMdItemTypeController
+  o ….controller.admin.md.item.MesMdProductBomController
+  o ….controller.admin.md.item.MesMdProductSipController
+  o ….controller.admin.md.item.MesMdProductSopController
+  o ….controller.admin.md.unitmeasure.MesMdUnitMeasureController
+  o ….controller.admin.md.vendor.MesMdVendorController
+  o ….controller.admin.md.workstation.MesMdWorkshopController
+  o ….controller.admin.md.workstation.MesMdWorkstationController
+  o ….controller.admin.md.workstation.MesMdWorkstationMachineController
+  o ….controller.admin.md.workstation.MesMdWorkstationToolController
+  o ….controller.admin.md.workstation.MesMdWorkstationWorkerController
+  o ….controller.admin.pro.andon.MesProAndonConfigController
+  o ….controller.admin.pro.andon.MesProAndonRecordController
+  o ….controller.admin.pro.aps.MesProApsController
+  o ….controller.admin.pro.card.MesProCardController
+  o ….controller.admin.pro.card.MesProCardProcessController
+  o ….controller.admin.pro.feedback.MesProFeedbackController
+  o ….controller.admin.pro.mrp.MesProMrpController
+  o ….controller.admin.pro.pda.MesProPdaFeedbackAdminController
+  o ….controller.admin.pro.piecework.MesProPieceworkRecordController
+  o ….controller.admin.pro.piecework.MesProPieceworkRuleController
+  o ….controller.admin.pro.process.MesProProcessContentController
+  o ….controller.admin.pro.process.MesProProcessController
+  o ….controller.admin.pro.rework.MesProReworkOrderController
+  o ….controller.admin.pro.rework.MesProReworkOrderDetailController
+  o ….controller.admin.pro.route.MesProRouteCapacityController
+  o ….controller.admin.pro.route.MesProRouteController
+  o ….controller.admin.pro.route.MesProRouteProcessController
+  o ….controller.admin.pro.route.MesProRouteProductBomController
+  o ….controller.admin.pro.route.MesProRouteProductController
+  o ….controller.admin.pro.task.MesProTaskController
+  o ….controller.admin.pro.task.MesProTaskIssueController
+  o ….controller.admin.pro.workorder.MesProWorkOrderBomController
+  o ….controller.admin.pro.workorder.MesProWorkOrderController
+  o ….controller.admin.pro.workorder.MesProWorkOrderKittingAnalysisController
+  o ….controller.admin.pro.workrecord.MesProWorkRecordController
+  o ….controller.admin.qc.defect.MesQcDefectController
+  o ….controller.admin.qc.defectrecord.MesQcDefectRecordController
+  o ….controller.admin.qc.indicator.MesQcIndicatorController
+  o ….controller.admin.qc.indicatorresult.MesQcIndicatorResultController
+  o ….controller.admin.qc.ipqc.MesQcIpqcController
+  o ….controller.admin.qc.ipqc.MesQcIpqcLineController
+  o ….controller.admin.qc.iqc.MesQcIqcController
+  o ….controller.admin.qc.iqc.MesQcIqcLineController
+  o ….controller.admin.qc.oqc.MesQcOqcController
+  o ….controller.admin.qc.oqc.MesQcOqcLineController
+  o ….controller.admin.qc.pendinginspect.MesQcPendingInspectController
+  o ….controller.admin.qc.rqc.MesQcRqcController
+  o ….controller.admin.qc.rqc.MesQcRqcLineController
+  o ….controller.admin.qc.template.MesQcTemplateController
+  o ….controller.admin.qc.template.MesQcTemplateIndicatorController
+  o ….controller.admin.qc.template.MesQcTemplateItemController
+  o ….controller.admin.tm.tool.MesTmToolController
+  o ….controller.admin.tm.tool.MesTmToolTypeController
+  o ….controller.admin.wm.arrivalnotice.MesWmArrivalNoticeController
+  o ….controller.admin.wm.arrivalnotice.MesWmArrivalNoticeLineController
+  o ….controller.admin.wm.barcode.MesWmBarcodeConfigController
+  o ….controller.admin.wm.barcode.MesWmBarcodeController
+  o ….controller.admin.wm.batch.MesWmBatchController
+  o ….controller.admin.wm.itemconsume.MesWmItemConsumeLineController
+  o ….controller.admin.wm.itemreceipt.MesWmItemReceiptController
+  o ….controller.admin.wm.itemreceipt.MesWmItemReceiptDetailController
+  o ….controller.admin.wm.itemreceipt.MesWmItemReceiptLineController
+  o ….controller.admin.wm.materialstock.MesWmMaterialStockController
+  o ….controller.admin.wm.miscissue.MesWmMiscIssueController
+  o ….controller.admin.wm.miscissue.MesWmMiscIssueLineController
+  o ….controller.admin.wm.miscreceipt.MesWmMiscReceiptController
+  o ….controller.admin.wm.miscreceipt.MesWmMiscReceiptLineController
+  o ….controller.admin.wm.outsourceissue.MesWmOutsourceIssueController
+  o ….controller.admin.wm.outsourceissue.MesWmOutsourceIssueDetailController
+  o ….controller.admin.wm.outsourceissue.MesWmOutsourceIssueLineController
+  o ….controller.admin.wm.outsourcereceipt.MesWmOutsourceReceiptController
+  o ….controller.admin.wm.outsourcereceipt.MesWmOutsourceReceiptDetailController
+  o ….controller.admin.wm.outsourcereceipt.MesWmOutsourceReceiptLineController
+  o ….controller.admin.wm.packages.MesWmPackageController
+  o ….controller.admin.wm.packages.MesWmPackageLineController
+  o ….controller.admin.wm.productissue.MesWmProductIssueController
+  o ….controller.admin.wm.productissue.MesWmProductIssueDetailController
+  o ….controller.admin.wm.productissue.MesWmProductIssueLineController
+  o ….controller.admin.wm.productproduce.MesWmProductProduceLineController
+  o ….controller.admin.wm.productreceipt.MesWmProductReceiptController
+  o ….controller.admin.wm.productreceipt.MesWmProductReceiptDetailController
+  o ….controller.admin.wm.productreceipt.MesWmProductReceiptLineController
+  o ….controller.admin.wm.productsales.MesWmProductSalesController
+  o ….controller.admin.wm.productsales.MesWmProductSalesDetailController
+  o ….controller.admin.wm.productsales.MesWmProductSalesLineController
+  o ….controller.admin.wm.returnissue.MesWmReturnIssueController
+  o ….controller.admin.wm.returnissue.MesWmReturnIssueDetailController
+  o ….controller.admin.wm.returnissue.MesWmReturnIssueLineController
+  o ….controller.admin.wm.returnsales.MesWmReturnSalesController
+  o ….controller.admin.wm.returnsales.MesWmReturnSalesDetailController
+  o ….controller.admin.wm.returnsales.MesWmReturnSalesLineController
+  o ….controller.admin.wm.returnvendor.MesWmReturnVendorController
+  o ….controller.admin.wm.returnvendor.MesWmReturnVendorDetailController
+  o ….controller.admin.wm.returnvendor.MesWmReturnVendorLineController
+  o ….controller.admin.wm.salesnotice.MesWmSalesNoticeController
+  o ….controller.admin.wm.salesnotice.MesWmSalesNoticeLineController
+  o ….controller.admin.wm.sn.MesWmSnController
+  o ….controller.admin.wm.stocktaking.plan.MesWmStockTakingPlanController
+  o ….controller.admin.wm.stocktaking.plan.MesWmStockTakingPlanParamController
+  o ….controller.admin.wm.stocktaking.task.MesWmStockTakingTaskController
+  o ….controller.admin.wm.stocktaking.task.MesWmStockTakingTaskLineController
+  o ….controller.admin.wm.stocktaking.task.MesWmStockTakingTaskResultController
+  o ….controller.admin.wm.transfer.MesWmTransferController
+  o ….controller.admin.wm.transfer.MesWmTransferDetailController
+  o ….controller.admin.wm.transfer.MesWmTransferLineController
+  o ….controller.admin.wm.warehouse.MesWmWarehouseAreaController
+  o ….controller.admin.wm.warehouse.MesWmWarehouseController
+  o ….controller.admin.wm.warehouse.MesWmWarehouseLocationController
+  o ….controller.app.pro.MesProPdaFeedbackController
+  o ….dal.redis.md.autocode.MesMdAutoCodeRedisDAO
+  o ….framework.web.config.MesWebConfiguration
+  o ….framework.websocket.MesDashboardPushService
+  o ….framework.websocket.MesDashboardWebSocketConfig
+  o ….framework.websocket.MesDashboardWebSocketHandler
+  o ….framework.websocket.MesDeviceTelemetryPushServiceImpl
+  o ….job.MesDvDeviceDataCollectJob
+  o ….job.MesDvOeeRealtimeAggregateJob
+  o ….job.MesProPieceworkSummaryJob
+  o ….listener.MesIotDeviceMessageListener
+  o ….listener.MesProFeedbackApproveListener
+  o ….service.cal.holiday.MesCalHolidayServiceImpl
+  o ….service.cal.plan.MesCalPlanServiceImpl
+  o ….service.cal.plan.MesCalPlanShiftServiceImpl
+  o ….service.cal.plan.MesCalPlanTeamServiceImpl
+  o ….service.cal.team.MesCalTeamMemberServiceImpl
+  o ….service.cal.team.MesCalTeamServiceImpl
+  o ….service.cal.team.MesCalTeamShiftServiceImpl
+  o ….service.dv.checkplan.MesDvCheckPlanMachineryServiceImpl
+  o ….service.dv.checkplan.MesDvCheckPlanServiceImpl
+  o ….service.dv.checkplan.MesDvCheckPlanSubjectServiceImpl
+  o ….service.dv.checkrecord.MesDvCheckRecordLineServiceImpl
+  o ….service.dv.checkrecord.MesDvCheckRecordServiceImpl
+  o ….service.dv.gateway.MesDeviceMaintenanceDataGatewayImpl
+  o ….service.dv.machinery.MesDvMachineryServiceImpl
+  o ….service.dv.machinery.MesDvMachineryTypeServiceImpl
+  o ….service.dv.maintenrecord.MesDvMaintenRecordLineServiceImpl
+  o ….service.dv.maintenrecord.MesDvMaintenRecordServiceImpl
+  o ….service.dv.oeerecord.MesDvOeeServiceImpl
+  o ….service.dv.repair.MesDvRepairLineServiceImpl
+  o ….service.dv.repair.MesDvRepairServiceImpl
+  o ….service.dv.scada.MesDvDeviceDataCollectorServiceImpl
+  o ….service.dv.scada.MesDvDeviceDataRecordServiceImpl
+  o ….service.dv.scada.MesDvDeviceDataServiceImpl
+  o ….service.dv.scada.MesDvScadaConfigServiceImpl
+  o ….service.dv.subject.MesDvSubjectServiceImpl
+  o ….service.dv.tp.MesDvTpKpiServiceImpl
+  o ….service.dv.tp.MesDvTpPlanItemServiceImpl
+  o ….service.dv.tp.MesDvTpPlanServiceImpl
+  o ….service.dv.tp.MesDvTpRecordServiceImpl
+  o ….service.energy.MesEnergyConsumptionServiceImpl
+  o ….service.home.MesHomeStatisticsServiceImpl
+  o ….service.md.autocode.MesMdAutoCodePartServiceImpl
+  o ….service.md.autocode.MesMdAutoCodeRecordServiceImpl
+  o ….service.md.autocode.MesMdAutoCodeRuleServiceImpl
+  o ….service.md.autocode.strategy.impl.MesMdAutoCodeDatePartStrategy
+  o ….service.md.autocode.strategy.impl.MesMdAutoCodeFixedCharPartStrategy
+  o ….service.md.autocode.strategy.impl.MesMdAutoCodeInputCharPartStrategy
+  o ….service.md.autocode.strategy.impl.MesMdAutoCodeSerialNumberPartStrategy
+  o ….service.md.bom.MesBomDetailServiceImpl
+  o ….service.md.bom.MesBomServiceImpl
+  o ….service.md.bom.substitute.MesBomSubstituteServiceImpl
+  o ….service.md.client.MesMdClientServiceImpl
+  o ….service.md.ecn.MesMdEcnOrderServiceImpl
+  o ….service.md.item.MesMdItemBatchConfigServiceImpl
+  o ….service.md.item.MesMdItemServiceImpl
+  o ….service.md.item.MesMdItemTypeServiceImpl
+  o ….service.md.item.MesMdProductBomServiceImpl
+  o ….service.md.item.MesMdProductSipServiceImpl
+  o ….service.md.item.MesMdProductSopServiceImpl
+  o ….service.md.unitmeasure.MesMdUnitMeasureServiceImpl
+  o ….service.md.vendor.MesMdVendorServiceImpl
+  o ….service.md.workstation.MesMdWorkshopServiceImpl
+  o ….service.md.workstation.MesMdWorkstationMachineServiceImpl
+  o ….service.md.workstation.MesMdWorkstationServiceImpl
+  o ….service.md.workstation.MesMdWorkstationToolServiceImpl
+  o ….service.md.workstation.MesMdWorkstationWorkerServiceImpl
+  o ….service.pro.andon.MesProAndonConfigServiceImpl
+  o ….service.pro.andon.MesProAndonRecordServiceImpl
+  o ….service.pro.aps.MesProApsServiceImpl
+  o ….service.pro.aps.strategy.GeneticApsStrategy
+  o ….service.pro.aps.strategy.GreedyApsStrategy
+  o ….service.pro.aps.strategy.TocDbrApsStrategy
+  o ….service.pro.card.MesProCardProcessServiceImpl
+  o ….service.pro.card.MesProCardServiceImpl
+  o ….service.pro.feedback.MesProFeedbackServiceImpl
+  o ….service.pro.mrp.MesProMrpServiceImpl
+  o ….service.pro.mrp.gateway.ErpMrpExecutorGatewayImpl
+  o ….service.pro.piecework.MesProPieceworkRecordServiceImpl
+  o ….service.pro.piecework.MesProPieceworkRuleServiceImpl
+  o ….service.pro.piecework.MesProPieceworkSummaryServiceImpl
+  o ….service.pro.process.MesProProcessContentServiceImpl
+  o ….service.pro.process.MesProProcessServiceImpl
+  o ….service.pro.rework.MesProReworkOrderDetailServiceImpl
+  o ….service.pro.rework.MesProReworkOrderServiceImpl
+  o ….service.pro.route.MesProRouteCapacityServiceImpl
+  o ….service.pro.route.MesProRouteProcessServiceImpl
+  o ….service.pro.route.MesProRouteProductBomServiceImpl
+  o ….service.pro.route.MesProRouteProductServiceImpl
+  o ….service.pro.route.MesProRouteServiceImpl
+  o ….service.pro.task.MesProTaskIssueServiceImpl
+  o ….service.pro.task.MesProTaskServiceImpl
+  o ….service.pro.workorder.MesProWorkOrderBomServiceImpl
+  o ….service.pro.workorder.MesProWorkOrderKittingAnalysisServiceImpl
+  o ….service.pro.workorder.MesProWorkOrderServiceImpl
+  o ….service.pro.workrecord.MesProWorkRecordServiceImpl
+  o ….service.qc.defect.MesQcDefectServiceImpl
+  o ….service.qc.defectrecord.MesQcDefectRecordServiceImpl
+  o ….service.qc.indicator.MesQcIndicatorServiceImpl
+  o ….service.qc.indicatorresult.MesQcIndicatorResultDetailServiceImpl
+  o ….service.qc.indicatorresult.MesQcIndicatorResultServiceImpl
+  o ….service.qc.ipqc.MesQcIpqcLineServiceImpl
+  o ….service.qc.ipqc.MesQcIpqcServiceImpl
+  o ….service.qc.iqc.MesQcIqcLineServiceImpl
+  o ….service.qc.iqc.MesQcIqcServiceImpl
+  o ….service.qc.oqc.MesQcOqcLineServiceImpl
+  o ….service.qc.oqc.MesQcOqcServiceImpl
+  o ….service.qc.pendinginspect.MesQcPendingInspectServiceImpl
+  o ….service.qc.rqc.MesQcRqcLineServiceImpl
+  o ….service.qc.rqc.MesQcRqcServiceImpl
+  o ….service.qc.template.MesQcTemplateIndicatorServiceImpl
+  o ….service.qc.template.MesQcTemplateItemServiceImpl
+  o ….service.qc.template.MesQcTemplateServiceImpl
+  o ….service.tm.tool.MesTmToolServiceImpl
+  o ….service.tm.tool.MesTmToolTypeServiceImpl
+  o ….service.wm.arrivalnotice.MesWmArrivalNoticeLineServiceImpl
+  o ….service.wm.arrivalnotice.MesWmArrivalNoticeServiceImpl
+  o ….service.wm.barcode.MesWmBarcodeConfigServiceImpl
+  o ….service.wm.barcode.MesWmBarcodeServiceImpl
+  o ….service.wm.batch.MesWmBatchServiceImpl
+  o ….service.wm.itemconsume.MesWmItemConsumeDetailServiceImpl
+  o ….service.wm.itemconsume.MesWmItemConsumeLineServiceImpl
+  o ….service.wm.itemconsume.MesWmItemConsumeServiceImpl
+  o ….service.wm.itemreceipt.MesWmItemReceiptDetailServiceImpl
+  o ….service.wm.itemreceipt.MesWmItemReceiptLineServiceImpl
+  o ….service.wm.itemreceipt.MesWmItemReceiptServiceImpl
+  o ….service.wm.materialstock.MesInventoryDualWriter
+  o ….service.wm.materialstock.MesInventoryProjectionReader
+  o ….service.wm.materialstock.MesWmMaterialStockServiceImpl
+  o ….service.wm.miscissue.MesWmMiscIssueDetailServiceImpl
+  o ….service.wm.miscissue.MesWmMiscIssueLineServiceImpl
+  o ….service.wm.miscissue.MesWmMiscIssueServiceImpl
+  o ….service.wm.miscreceipt.MesWmMiscReceiptDetailServiceImpl
+  o ….service.wm.miscreceipt.MesWmMiscReceiptLineServiceImpl
+  o ….service.wm.miscreceipt.MesWmMiscReceiptServiceImpl
+  o ….service.wm.outsourceissue.MesWmOutsourceIssueDetailServiceImpl
+  o ….service.wm.outsourceissue.MesWmOutsourceIssueLineServiceImpl
+  o ….service.wm.outsourceissue.MesWmOutsourceIssueServiceImpl
+  o ….service.wm.outsourcereceipt.MesWmOutsourceReceiptDetailServiceImpl
+  o ….service.wm.outsourcereceipt.MesWmOutsourceReceiptLineServiceImpl
+  o ….service.wm.outsourcereceipt.MesWmOutsourceReceiptServiceImpl
+  o ….service.wm.packages.MesWmPackageLineServiceImpl
+  o ….service.wm.packages.MesWmPackageServiceImpl
+  o ….service.wm.productissue.MesWmProductIssueDetailServiceImpl
+  o ….service.wm.productissue.MesWmProductIssueLineServiceImpl
+  o ….service.wm.productissue.MesWmProductIssueServiceImpl
+  o ….service.wm.productproduce.MesWmProductProduceDetailServiceImpl
+  o ….service.wm.productproduce.MesWmProductProduceLineServiceImpl
+  o ….service.wm.productproduce.MesWmProductProduceServiceImpl
+  o ….service.wm.productreceipt.MesWmProductReceiptDetailServiceImpl
+  o ….service.wm.productreceipt.MesWmProductReceiptLineServiceImpl
+  o ….service.wm.productreceipt.MesWmProductReceiptServiceImpl
+  o ….service.wm.productsales.MesWmProductSalesDetailServiceImpl
+  o ….service.wm.productsales.MesWmProductSalesLineServiceImpl
+  o ….service.wm.productsales.MesWmProductSalesServiceImpl
+  o ….service.wm.returnissue.MesWmReturnIssueDetailServiceImpl
+  o ….service.wm.returnissue.MesWmReturnIssueLineServiceImpl
+  o ….service.wm.returnissue.MesWmReturnIssueServiceImpl
+  o ….service.wm.returnsales.MesWmReturnSalesDetailServiceImpl
+  o ….service.wm.returnsales.MesWmReturnSalesLineServiceImpl
+  o ….service.wm.returnsales.MesWmReturnSalesServiceImpl
+  o ….service.wm.returnvendor.MesWmReturnVendorDetailServiceImpl
+  o ….service.wm.returnvendor.MesWmReturnVendorLineServiceImpl
+  o ….service.wm.returnvendor.MesWmReturnVendorServiceImpl
+  o ….service.wm.salesnotice.MesWmSalesNoticeLineServiceImpl
+  o ….service.wm.salesnotice.MesWmSalesNoticeServiceImpl
+  o ….service.wm.sn.MesWmSnServiceImpl
+  o ….service.wm.stocktaking.plan.MesWmStockTakingPlanParamServiceImpl
+  o ….service.wm.stocktaking.plan.MesWmStockTakingPlanServiceImpl
+  o ….service.wm.stocktaking.task.MesWmStockTakingTaskLineServiceImpl
+  o ….service.wm.stocktaking.task.MesWmStockTakingTaskResultServiceImpl
+  o ….service.wm.stocktaking.task.MesWmStockTakingTaskServiceImpl
+  o ….service.wm.transaction.MesWmTransactionServiceImpl
+  o ….service.wm.transfer.MesWmTransferDetailServiceImpl
+  o ….service.wm.transfer.MesWmTransferLineServiceImpl
+  o ….service.wm.transfer.MesWmTransferServiceImpl
+  o ….service.wm.warehouse.MesWmWarehouseAreaServiceImpl
+  o ….service.wm.warehouse.MesWmWarehouseLocationServiceImpl
+  o ….service.wm.warehouse.MesWmWarehouseServiceImpl
+  o org.springdoc.core.models.GroupedOpenApi
+
+# OA 办公自动化模块
+> Logical name: oa
+> Base package: cn.zhicloud.module.oa
+> Excluded packages: none
+> Direct module dependencies: none
+> Spring beans:
+  o ….controller.admin.announcement.OaAnnouncementController
+  o ….controller.admin.approvaltemplate.OaApprovalTemplateController
+  o ….controller.admin.document.OaDocumentController
+  o ….controller.admin.knowledge.OaKnowledgeArticleController
+  o ….controller.admin.knowledge.OaKnowledgeCategoryController
+  o ….controller.admin.knowledge.OaKnowledgeCommentController
+  o ….controller.admin.knowledge.OaKnowledgeVersionController
+  o ….controller.admin.meeting.OaMeetingReservationController
+  o ….controller.admin.meeting.OaMeetingRoomController
+  o ….controller.admin.portal.OaPortalController
+  o ….controller.admin.reimburse.OaReimburseController
+  o ….controller.admin.schedule.OaScheduleController
+  o ….framework.web.OaWebConfiguration
+  o ….service.announcement.OaAnnouncementServiceImpl
+  o ….service.approvaltemplate.OaApprovalTemplateServiceImpl
+  o ….service.document.OaDocumentServiceImpl
+  o ….service.document.listener.OaDocumentStatusListener
+  o ….service.knowledge.OaKnowledgeArticleServiceImpl
+  o ….service.knowledge.OaKnowledgeCategoryServiceImpl
+  o ….service.knowledge.OaKnowledgeCommentServiceImpl
+  o ….service.knowledge.OaKnowledgeVersionServiceImpl
+  o ….service.meeting.OaMeetingReservationServiceImpl
+  o ….service.meeting.OaMeetingRoomServiceImpl
+  o ….service.portal.OaPortalServiceImpl
+  o ….service.reimburse.OaReimburseServiceImpl
+  o ….service.reimburse.listener.OaReimburseStatusListener
+  o ….service.schedule.OaScheduleServiceImpl
+  o org.springdoc.core.models.GroupedOpenApi
+
+# QMS 质量管理系统模块
+> Logical name: qms
+> Base package: cn.zhicloud.module.qms
+> Excluded packages: none
+> Direct module dependencies: none
+> Spring beans:
+  o ….api.InspectionOrderApiImpl
+  o ….controller.admin.audit.QmsAuditNonconformityController
+  o ….controller.admin.audit.QmsAuditPlanController
+  o ….controller.admin.audit.QmsAuditReportController
+  o ….controller.admin.capa.CAPADocumentController
+  o ….controller.admin.complaint.CustomerComplaintController
+  o ….controller.admin.document.QmsDocumentChangeRequestController
+  o ….controller.admin.document.QmsDocumentController
+  o ….controller.admin.document.QmsDocumentDistributeController
+  o ….controller.admin.eightd.EightDReportController
+  o ….controller.admin.electronicsignature.ElectronicSignatureLogController
+  o ….controller.admin.fmea.FmeaDocumentController
+  o ….controller.admin.fmea.FmeaItemController
+  o ….controller.admin.inspectionitem.InspectionItemController
+  o ….controller.admin.inspectionorder.InspectionOrderController
+  o ….controller.admin.inspectionrecord.InspectionRecordController
+  o ….controller.admin.instrument.QmsInstrumentCalibrationController
+  o ….controller.admin.instrument.QmsInstrumentController
+  o ….controller.admin.msa.MsaStudyController
+  o ….controller.admin.ncr.NcrDocumentController
+  o ….controller.admin.qualitycost.QmsQualityCostController
+  o ….controller.admin.spc.SpcController
+  o ….controller.admin.sqm.ScarController
+  o ….controller.admin.sqm.SupplierAuditController
+  o ….controller.admin.sqm.SupplierRatingController
+  o ….controller.admin.traceability.QualityTraceabilityController
+  o ….controller.admin.training.QualificationController
+  o ….controller.admin.training.TrainingPlanController
+  o ….controller.admin.training.TrainingRecordController
+  o ….framework.electronicsignature.ElectronicSignatureAspect
+  o ….service.audit.QmsAuditNonconformityServiceImpl
+  o ….service.audit.QmsAuditPlanServiceImpl
+  o ….service.audit.QmsAuditReportServiceImpl
+  o ….service.capa.CAPADocumentServiceImpl
+  o ….service.complaint.CustomerComplaintServiceImpl
+  o ….service.document.QmsDocumentChangeRequestServiceImpl
+  o ….service.document.QmsDocumentDistributeServiceImpl
+  o ….service.document.QmsDocumentServiceImpl
+  o ….service.eightd.EightDReportServiceImpl
+  o ….service.electronicsignature.ElectronicSignatureLogServiceImpl
+  o ….service.fmea.FmeaDocumentServiceImpl
+  o ….service.fmea.FmeaItemServiceImpl
+  o ….service.inspectionitem.InspectionItemServiceImpl
+  o ….service.inspectionorder.InspectionOrderServiceImpl
+  o ….service.inspectionrecord.InspectionRecordServiceImpl
+  o ….service.instrument.QmsInstrumentCalibrationServiceImpl
+  o ….service.instrument.QmsInstrumentServiceImpl
+  o ….service.msa.MsaStudyServiceImpl
+  o ….service.ncr.NcrDocumentServiceImpl
+  o ….service.qualitycost.QmsQualityCostServiceImpl
+  o ….service.spc.SpcServiceImpl
+  o ….service.sqm.ScarServiceImpl
+  o ….service.sqm.SupplierAuditServiceImpl
+  o ….service.sqm.SupplierRatingServiceImpl
+  o ….service.traceability.QualityTraceabilityServiceImpl
+  o ….service.training.QualificationServiceImpl
+  o ….service.training.TrainingPlanServiceImpl
+  o ….service.training.TrainingRecordServiceImpl
+
+# System 系统管理模块
+> Logical name: system
+> Base package: cn.zhicloud.module.system
+> Excluded packages: none
+> Direct module dependencies: none
+> Spring beans:
+  o cn.binarywang.wx.miniapp.config.WxMaConfig
+  o cn.zhicloud.framework.datapermission.core.rule.dept.DeptDataPermissionRuleCustomizer
+  o ….api.dept.DeptApiImpl
+  o ….api.dept.PostApiImpl
+  o ….api.dict.DictDataApiImpl
+  o ….api.logger.LoginLogApiImpl
+  o ….api.logger.OperateLogApiImpl
+  o ….api.mail.MailSendApiImpl
+  o ….api.notify.NotifyMessageSendApiImpl
+  o ….api.oauth2.OAuth2TokenApiImpl
+  o ….api.permission.PermissionApiImpl
+  o ….api.permission.RoleApiImpl
+  o ….api.sms.SmsCodeApiImpl
+  o ….api.sms.SmsSendApiImpl
+  o ….api.social.SocialClientApiImpl
+  o ….api.social.SocialUserApiImpl
+  o ….api.tenant.TenantApiImpl
+  o ….api.user.AdminUserApiImpl
+  o ….controller.admin.auth.AuthController
+  o ….controller.admin.captcha.CaptchaController
+  o ….controller.admin.dept.DeptController
+  o ….controller.admin.dept.PostController
+  o ….controller.admin.dict.DictDataController
+  o ….controller.admin.dict.DictTypeController
+  o ….controller.admin.ip.AreaController
+  o ….controller.admin.logger.LoginLogController
+  o ….controller.admin.logger.OperateLogController
+  o ….controller.admin.mail.MailAccountController
+  o ….controller.admin.mail.MailLogController
+  o ….controller.admin.mail.MailTemplateController
+  o ….controller.admin.notice.NoticeController
+  o ….controller.admin.notify.NotifyMessageController
+  o ….controller.admin.notify.NotifyTemplateController
+  o ….controller.admin.oauth2.OAuth2ClientController
+  o ….controller.admin.oauth2.OAuth2OpenController
+  o ….controller.admin.oauth2.OAuth2TokenController
+  o ….controller.admin.oauth2.OAuth2UserController
+  o ….controller.admin.permission.MenuController
+  o ….controller.admin.permission.PermissionController
+  o ….controller.admin.permission.RoleController
+  o ….controller.admin.sms.SmsCallbackController
+  o ….controller.admin.sms.SmsChannelController
+  o ….controller.admin.sms.SmsLogController
+  o ….controller.admin.sms.SmsTemplateController
+  o ….controller.admin.socail.SocialClientController
+  o ….controller.admin.socail.SocialUserController
+  o ….controller.admin.tenant.TenantController
+  o ….controller.admin.tenant.TenantPackageController
+  o ….controller.admin.user.TotpController
+  o ….controller.admin.user.UserController
+  o ….controller.admin.user.UserProfileController
+  o ….controller.app.dict.AppDictDataController
+  o ….controller.app.ip.AppAreaController
+  o ….controller.app.tenant.AppTenantController
+  o ….dal.redis.oauth2.OAuth2AccessTokenRedisDAO
+  o ….framework.auditlog.config.AuditLogConfiguration
+  o ….framework.auditlog.config.AuditLogProperties
+  o ….framework.auditlog.core.service.AuditLogHashChainService
+  o ….framework.auditlog.core.service.AuditLogPersistService
+  o ….framework.captcha.config.ZhiCloudCaptchaConfiguration
+  o ….framework.datapermission.config.DataPermissionConfiguration
+  o ….framework.justauth.config.ZhiCloudJustAuthConfiguration
+  o ….framework.justauth.core.AuthRequestFactory
+  o ….framework.operatelog.core.AdminUserParseFunction
+  o ….framework.operatelog.core.AreaParseFunction
+  o ….framework.operatelog.core.BooleanParseFunction
+  o ….framework.operatelog.core.DeptParseFunction
+  o ….framework.operatelog.core.PostParseFunction
+  o ….framework.operatelog.core.SexParseFunction
+  o ….framework.sms.config.SmsCodeProperties
+  o ….framework.sms.config.SmsConfiguration
+  o ….framework.sms.core.client.SmsClientFactory
+  o ….framework.web.config.SystemWebConfiguration
+  o ….framework.weixin.config.ZhiCloudWxClientConfiguration
+  o ….job.DemoJob
+  o ….job.token.TokenCleanJob
+  o ….mq.consumer.mail.MailSendConsumer
+  o ….mq.consumer.sms.SmsSendConsumer
+  o ….mq.producer.mail.MailProducer
+  o ….mq.producer.sms.SmsProducer
+  o ….mq.producer.user.AdminUserProducer
+  o ….service.auth.AdminAuthServiceImpl
+  o ….service.dept.DeptServiceImpl
+  o ….service.dept.PostServiceImpl
+  o ….service.dict.DictDataServiceImpl
+  o ….service.dict.DictTypeServiceImpl
+  o ….service.logger.LoginLogServiceImpl
+  o ….service.logger.OperateLogServiceImpl
+  o ….service.mail.MailAccountServiceImpl
+  o ….service.mail.MailLogServiceImpl
+  o ….service.mail.MailSendServiceImpl
+  o ….service.mail.MailTemplateServiceImpl
+  o ….service.member.MemberServiceImpl
+  o ….service.notice.NoticeServiceImpl
+  o ….service.notify.NotifyMessageServiceImpl
+  o ….service.notify.NotifySendServiceImpl
+  o ….service.notify.NotifyTemplateServiceImpl
+  o ….service.oauth2.OAuth2ApproveServiceImpl
+  o ….service.oauth2.OAuth2ClientServiceImpl
+  o ….service.oauth2.OAuth2CodeServiceImpl
+  o ….service.oauth2.OAuth2GrantServiceImpl
+  o ….service.oauth2.OAuth2TokenServiceImpl
+  o ….service.permission.MenuServiceImpl
+  o ….service.permission.PermissionServiceImpl
+  o ….service.permission.RoleServiceImpl
+  o ….service.sms.SmsChannelServiceImpl
+  o ….service.sms.SmsCodeServiceImpl
+  o ….service.sms.SmsLogServiceImpl
+  o ….service.sms.SmsSendServiceImpl
+  o ….service.sms.SmsTemplateServiceImpl
+  o ….service.social.SocialClientServiceImpl
+  o ….service.social.SocialUserServiceImpl
+  o ….service.tenant.TenantPackageServiceImpl
+  o ….service.tenant.TenantServiceImpl
+  o ….service.totp.TotpServiceImpl
+  o ….service.user.AdminUserServiceImpl
+  o com.anji.captcha.service.CaptchaCacheService
+  o me.chanjar.weixin.mp.config.WxMpConfigStorage
+  o me.zhyd.oauth.cache.AuthStateCache
+  o org.springdoc.core.models.GroupedOpenApi
+
+# TMS 运输管理模块
+> Logical name: tms
+> Base package: cn.zhicloud.module.tms
+> Excluded packages: none
+> Direct module dependencies: wms
+> Spring beans:
+  o ….controller.admin.carrier.TmsCarrierController
+  o ….controller.admin.driver.TmsDriverController
+  o ….controller.admin.freight.TmsFreightController
+  o ….controller.admin.freight.TmsFreightReconciliationController
+  o ….controller.admin.gps.TmsGpsController
+  o ….controller.admin.shipment.TmsShipmentController
+  o ….controller.admin.tracking.TmsTrackingController
+  o ….controller.admin.vehicle.TmsFleetOperationController
+  o ….controller.admin.vehicle.TmsVehicleController
+  o ….framework.web.config.TmsWebConfiguration
+  o ….service.carrier.TmsCarrierServiceImpl
+  o ….service.driver.TmsDriverServiceImpl
+  o ….service.freight.TmsFreightReconciliationServiceImpl
+  o ….service.freight.TmsFreightServiceImpl
+  o ….service.gps.TmsGpsServiceImpl
+  o ….service.shipment.TmsShipmentServiceImpl
+  o ….service.tracking.TmsTrackingServiceImpl
+  o ….service.vehicle.TmsFleetOperationServiceImpl
+  o ….service.vehicle.TmsVehicleServiceImpl
+  o org.springdoc.core.models.GroupedOpenApi
+
+# WMS 仓库管理系统模块
+> Logical name: wms
+> Base package: cn.zhicloud.module.wms
+> Excluded packages: none
+> Direct module dependencies: system, qms
+> Spring beans:
+  o ….api.InventoryApiImpl
+  o ….api.WmsShipmentOrderApiImpl
+  o ….controller.admin.abc.WmsAbcAnalysisController
+  o ….controller.admin.billing.WmsBillingBillController
+  o ….controller.admin.billing.WmsBillingContractController
+  o ….controller.admin.home.WmsHomeStatisticsController
+  o ….controller.admin.inventory.WmsInventoryController
+  o ….controller.admin.inventory.WmsInventoryHistoryController
+  o ….controller.admin.inventory.alert.WmsInventoryAlertController
+  o ….controller.admin.inventory.alert.WmsSafetyStockConfigController
+  o ….controller.admin.inventory.batch.WmsBatchExpiryAlertController
+  o ….controller.admin.inventory.batch.WmsInventoryBatchController
+  o ….controller.admin.md.item.WmsItemBrandController
+  o ….controller.admin.md.item.WmsItemCategoryController
+  o ….controller.admin.md.item.WmsItemController
+  o ….controller.admin.md.item.WmsItemSkuController
+  o ….controller.admin.md.location.WmsLocationController
+  o ….controller.admin.md.merchant.WmsMerchantController
+  o ….controller.admin.md.sn.WmsSnController
+  o ….controller.admin.md.warehouse.WmsWarehouseController
+  o ….controller.admin.md.zone.WmsZoneController
+  o ….controller.admin.order.asn.WmsAsnOrderController
+  o ….controller.admin.order.check.WmsCheckCyclePlanController
+  o ….controller.admin.order.check.WmsCheckOrderController
+  o ….controller.admin.order.check.WmsCheckOrderDetailController
+  o ….controller.admin.order.crossdock.WmsCrossDockOrderController
+  o ….controller.admin.order.dock.WmsDockController
+  o ….controller.admin.order.movement.WmsMovementOrderController
+  o ….controller.admin.order.movement.WmsMovementOrderDetailController
+  o ….controller.admin.order.pickstrategy.WmsPickTaskController
+  o ….controller.admin.order.receipt.WmsReceiptOrderController
+  o ….controller.admin.order.receipt.WmsReceiptOrderDetailController
+  o ….controller.admin.order.shipment.WmsShipmentOrderController
+  o ….controller.admin.order.shipment.WmsShipmentOrderDetailController
+  o ….controller.admin.order.wave.WmsWaveOrderController
+  o ….controller.admin.pda.WmsPdaAdminController
+  o ….controller.admin.pickpath.WmsPickPathController
+  o ….controller.app.WmsPdaInventoryController
+  o ….controller.app.WmsPdaPickController
+  o ….controller.app.WmsPdaReceiptController
+  o ….controller.app.pda.WmsPdaController
+  o ….framework.web.config.WmsWebConfiguration
+  o ….job.check.WmsCheckCycleJob
+  o ….job.inventory.WmsBatchExpiryAlertJob
+  o ….job.inventory.WmsInventoryAlertJob
+  o ….service.abc.WmsAbcAnalysisServiceImpl
+  o ….service.billing.WmsBillingBillServiceImpl
+  o ….service.billing.WmsBillingCalculatorServiceImpl
+  o ….service.billing.WmsBillingContractServiceImpl
+  o ….service.home.WmsHomeStatisticsServiceImpl
+  o ….service.integration.ErpSaleOutApprovedConsumer
+  o ….service.inventory.WmsInventoryHistoryServiceImpl
+  o ….service.inventory.WmsInventoryServiceImpl
+  o ….service.inventory.alert.WmsInventoryAlertServiceImpl
+  o ….service.inventory.alert.WmsSafetyStockConfigServiceImpl
+  o ….service.inventory.batch.WmsBatchExpiryAlertServiceImpl
+  o ….service.inventory.batch.WmsInventoryBatchServiceImpl
+  o ….service.inventory.slotting.WmsSlottingServiceImpl
+  o ….service.inventory.transfer.WmsInventoryTransferServiceImpl
+  o ….service.md.item.WmsItemBrandServiceImpl
+  o ….service.md.item.WmsItemCategoryServiceImpl
+  o ….service.md.item.WmsItemServiceImpl
+  o ….service.md.item.WmsItemSkuServiceImpl
+  o ….service.md.location.WmsLocationServiceImpl
+  o ….service.md.merchant.WmsMerchantServiceImpl
+  o ….service.md.sn.WmsSnServiceImpl
+  o ….service.md.warehouse.WmsWarehouseServiceImpl
+  o ….service.md.zone.WmsZoneServiceImpl
+  o ….service.order.asn.WmsAsnOrderDetailServiceImpl
+  o ….service.order.asn.WmsAsnOrderServiceImpl
+  o ….service.order.check.WmsCheckCyclePlanServiceImpl
+  o ….service.order.check.WmsCheckOrderDetailServiceImpl
+  o ….service.order.check.WmsCheckOrderServiceImpl
+  o ….service.order.crossdock.WmsCrossDockOrderDetailServiceImpl
+  o ….service.order.crossdock.WmsCrossDockOrderServiceImpl
+  o ….service.order.dock.WmsDockServiceImpl
+  o ….service.order.movement.WmsMovementOrderDetailServiceImpl
+  o ….service.order.movement.WmsMovementOrderServiceImpl
+  o ….service.order.pickpath.WmsPickPathServiceImpl
+  o ….service.order.pickstrategy.WmsPickStrategyServiceImpl
+  o ….service.order.pickstrategy.WmsPickTaskServiceImpl
+  o ….service.order.receipt.WmsReceiptOrderDetailServiceImpl
+  o ….service.order.receipt.WmsReceiptOrderServiceImpl
+  o ….service.order.shipment.WmsShipmentOrderDetailServiceImpl
+  o ….service.order.shipment.WmsShipmentOrderServiceImpl
+  o ….service.order.wave.WmsWaveOrderServiceImpl
+  o ….service.pda.WmsPdaServiceImpl
+  o org.springdoc.core.models.GroupedOpenApi
+
+2026-10-20 19:05:57.031 [main] [] [] [34mINFO [0;39m [36mcn.zhicloud.server.config.ModulithConfiguration:65[0;39m - [ModulithConfiguration] ApplicationRuntime 创建完成 (覆盖默认)
+2026-10-20 19:05:57.052 [main] [] [] [34mINFO [0;39m [36mcn.zhicloud.server.config.ModulithConfiguration:80[0;39m - [ModulithConfiguration] ApplicationModulesRuntime 创建完成，使用自定义 ApplicationModules
+2026-10-20 19:06:02.763 [main] [] [] [34mINFO [0;39m [36mc.zhicloud.framework.dict.core.DictFrameworkUtils:44[0;39m - [init][初始化 DictFrameworkUtils 成功]
+2026-10-20 19:06:03.444 [main] [] [] [34mINFO [0;39m [36mc.z.f.tracer.core.metrics.DruidMetricsBinder:75[0;39m - [DruidMetricsBinder] 注册 Druid 数据源指标（解包后）: slave (源类型=ItemDataSource, 真实类型=DruidDataSource)
+2026-10-20 19:06:03.444 [main] [] [] [34mINFO [0;39m [36mc.z.f.tracer.core.metrics.DruidMetricsBinder:75[0;39m - [DruidMetricsBinder] 注册 Druid 数据源指标（解包后）: master (源类型=ItemDataSource, 真实类型=DruidDataSource)
+2026-10-20 19:06:03.445 [main] [] [] [34mINFO [0;39m [36mc.z.f.t.config.ZhiCloudMetricsAutoConfiguration:55[0;39m - [ZhiCloudMetricsAutoConfiguration] Druid 指标绑定器已注册动态数据源: [slave, master]
+2026-10-20 19:06:03.454 [main] [] [] [34mINFO [0;39m [36mc.z.f.t.config.ZhiCloudMetricsAutoConfiguration:64[0;39m - [ZhiCloudMetricsAutoConfiguration] Druid 指标已绑定到 MeterRegistry
+2026-10-20 19:06:05.503 [main] [] [] [34mINFO [0;39m [36mcom.alibaba.nacos.client.logging.NacosLogging:52[0;39m - Nacos Logging Adapter Builder: com.alibaba.nacos.logger.adapter.logback12.LogbackNacosLoggingAdapterBuilder
+2026-10-20 19:06:05.512 [main] [] [] [34mINFO [0;39m [36mcom.alibaba.nacos.client.logging.NacosLogging:52[0;39m - Nacos Logging Adapter Builder: com.alibaba.nacos.logger.adapter.logback14.LogbackNacosLoggingAdapterBuilder
+2026-10-20 19:06:05.517 [main] [] [] [34mINFO [0;39m [36mcom.alibaba.nacos.client.logging.NacosLogging:55[0;39m - Nacos Logging Adapter: com.alibaba.nacos.logger.adapter.logback14.LogbackNacosLoggingAdapter match ch.qos.logback.classic.Logger success.
+2026-10-20 19:06:05.564 [main] [] [] [34mINFO [0;39m [36mcom.alibaba.nacos.client.logging.NacosLogging:52[0;39m - Nacos Logging Adapter Builder: com.alibaba.nacos.logger.adapter.log4j2.Log4j2NacosLoggingAdapterBuilder
+2026-10-20 19:06:05.987 [main] [] [] [34mINFO [0;39m [36mc.a.n.p.auth.spi.client.ClientAuthPluginManager:56[0;39m - [ClientAuthPluginManager] Load ClientAuthService com.alibaba.nacos.client.auth.impl.NacosClientAuthServiceImpl success.
+2026-10-20 19:06:05.988 [main] [] [] [34mINFO [0;39m [36mc.a.n.p.auth.spi.client.ClientAuthPluginManager:56[0;39m - [ClientAuthPluginManager] Load ClientAuthService com.alibaba.nacos.client.auth.ram.RamClientAuthServiceImpl success.
+2026-10-20 19:06:08.177 [main] [] [] [34mINFO [0;39m [36mc.b.m.e.spring.MybatisPlusApplicationContextAware:43[0;39m - Register ApplicationContext instances org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@743c3520
+2026-10-20 19:06:09.175 [main] [] [] [34mINFO [0;39m [36mo.a.r.s.autoconfigure.RocketMQAutoConfiguration:125[0;39m - a producer (zhicloud-server_PRODUCER) init on namesrv 127.0.0.1:9876
+2026-10-20 19:06:09.500 [main] [] [] [34mINFO [0;39m [36morg.dromara.common.spring.SpringContextUtil:37[0;39m - ------SpringContextUtil setApplicationContext-------
+2026-10-20 19:06:10.487 [main] [] [] [31mWARN [0;39m [36mo.s.mcp.provider.tool.SyncMcpToolProvider:150[0;39m - No tool methods found in the provided tool objects: []
+2026-10-20 19:06:11.205 [main] [] [] [34mINFO [0;39m [36mc.a.core.http.netty.implementation.NettyUtility:375[0;39m - {"az.sdk.message":"The following Netty versions were found on the classpath and have a mismatch with the versions used by azure-core-http-netty. If your application runs without issue this message can be ignored, otherwise please align the Netty versions used in your application. For more information, see https://aka.ms/azsdk/java/dependency/troubleshoot.","azure-netty-version":"4.1.130.Final","azure-netty-native-version":"2.0.74.Final","classpath-netty-version-io.netty:netty-common":"4.2.15.Final","classpath-netty-version-io.netty:netty-handler":"4.2.15.Final","classpath-netty-version-io.netty:netty-handler-proxy":"4.2.15.Final","classpath-netty-version-io.netty:netty-buffer":"4.2.15.Final","classpath-netty-version-io.netty:netty-codec":"4.2.15.Final","classpath-netty-version-io.netty:netty-codec-http":"4.2.15.Final","classpath-netty-version-io.netty:netty-codec-http2":"4.2.15.Final","classpath-netty-version-io.netty:netty-transport-native-unix-common":"4.2.15.Final","classpath-netty-version-io.netty:netty-transport-native-epoll":"4.1.110.Final","classpath-netty-version-io.netty:netty-transport-native-kqueue":"4.2.15.Final","classpath-native-netty-version-io.netty:netty-tcnative-boringssl-static":"2.0.77.Final"}
+2026-10-20 19:06:17.878 [main] [] [] [31mWARN [0;39m [36mio.micrometer.core.instrument.MeterRegistry:170[0;39m - This Gauge has been already registered (MeterId{name='druid.active.connections', tags=[tag(application=zhicloud-server),tag(datasource=slave)]}), the registration will be ignored. Note that subsequent logs will be logged at debug level.
+2026-10-20 19:06:18.061 [main] [] [] [34mINFO [0;39m [36mo.f.j.s.impl.asyncexecutor.AbstractAsyncExecutor:102[0;39m - Starting up the async job executor [org.flowable.spring.job.service.SpringAsyncExecutor] for engine bpmn
+2026-10-20 19:06:18.082 [Thread-36] [] [] [34mINFO [0;39m [36mo.f.j.s.i.asyncexecutor.ResetExpiredJobsRunnable:63[0;39m - starting to reset expired jobs for engine bpmn
+2026-10-20 19:06:18.082 [main] [] [] [34mINFO [0;39m [36morg.apache.coyote.http11.Http11NioProtocol:168[0;39m - Starting ProtocolHandler ["http-nio-48083"]
+2026-10-20 19:06:18.085 [Thread-35] [] [] [34mINFO [0;39m [36mo.f.j.s.i.asyncexecutor.AcquireTimerJobsRunnable:109[0;39m - starting to acquire async jobs due for engine bpmn
+2026-10-20 19:06:18.085 [Thread-34] [] [] [34mINFO [0;39m [36mo.f.j.s.i.a.AcquireAsyncJobsDueRunnable:106[0;39m - starting to acquire async jobs due for engine bpmn
+2026-10-20 19:06:18.096 [main] [] [] [34mINFO [0;39m [36mo.s.boot.web.embedded.tomcat.TomcatWebServer:243[0;39m - Tomcat started on port 48083 (http) with context path '/'
+2026-10-20 19:06:18.530 [main] [] [] [34mINFO [0;39m [36mo.s.boot.web.embedded.tomcat.TomcatWebServer:111[0;39m - Tomcat initialized with port 48093 (http)
+2026-10-20 19:06:18.531 [main] [] [] [34mINFO [0;39m [36morg.apache.coyote.http11.Http11NioProtocol:168[0;39m - Initializing ProtocolHandler ["http-nio-48093"]
+2026-10-20 19:06:18.532 [main] [] [] [34mINFO [0;39m [36morg.apache.catalina.core.StandardService:168[0;39m - Starting service [Tomcat]
+2026-10-20 19:06:18.532 [main] [] [] [34mINFO [0;39m [36morg.apache.catalina.core.StandardEngine:168[0;39m - Starting Servlet engine: [Apache Tomcat/10.1.55]
+2026-10-20 19:06:18.554 [main] [] [] [34mINFO [0;39m [36mo.a.c.c.ContainerBase.[Tomcat-1].[localhost].[/]:168[0;39m - Initializing Spring embedded WebApplicationContext
+2026-10-20 19:06:18.555 [main] [] [] [34mINFO [0;39m [36mo.s.b.w.s.c.ServletWebServerApplicationContext:301[0;39m - Root WebApplicationContext: initialization completed in 413 ms
+2026-10-20 19:06:18.614 [main] [] [] [34mINFO [0;39m [36mo.s.b.actuate.endpoint.web.EndpointLinksResolver:60[0;39m - Exposing 4 endpoints beneath base path '/actuator'
+2026-10-20 19:06:18.792 [main] [] [] [34mINFO [0;39m [36morg.apache.coyote.http11.Http11NioProtocol:168[0;39m - Starting ProtocolHandler ["http-nio-48093"]
+2026-10-20 19:06:18.795 [main] [] [] [34mINFO [0;39m [36mo.s.boot.web.embedded.tomcat.TomcatWebServer:243[0;39m - Tomcat started on port 48093 (http) with context path '/'
+2026-10-20 19:06:18.891 [main] [] [] [34mINFO [0;39m [36mcn.zhicloud.server.ZhiCloudServerApplication:59[0;39m - Started ZhiCloudServerApplication in 320.713 seconds (process running for 323.228)
+2026-10-20 19:06:19.327 [scheduled-thread-jm-1] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.tenant.TenantMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, name, contact_user_id, contact_name, contact_mobile, status, websites, package_id, expire_time, account_count, create_time, update_time, creator, updater, deleted FROM system_tenant WHERE deleted = 0
+2026-10-20 19:06:19.345 [scheduled-thread-jm-1] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.tenant.TenantMapper.selectList:135[0;39m - ==> Parameters: 
+2026-10-20 19:06:19.403 [scheduled-thread-jm-1] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.tenant.TenantMapper.selectList:135[0;39m - <==      Total: 3
+2026-10-20 19:06:19.560 [main] [] [] [34mINFO [0;39m [36mc.z.m.a.service.skill.SkillCatalogValidator:84[0;39m - [SkillCatalogValidator][技能目录校验完成，Worker 数=4，缺失目录的工具数=0]
+2026-10-20 19:06:19.930 [pool-14-thread-1] [] [] [34mINFO [0;39m [36mc.z.framework.banner.core.BannerApplicationRunner:23[0;39m - 
+----------------------------------------------------------
+	项目启动成功！
+	接口文档: 	https://doc.zhicloud.cn/api-doc/ 
+	开发文档: 	https://doc.zhicloud.cn 
+	视频教程: 	https://t.zsxq.com/02Yf6M7Qn 
+----------------------------------------------------------
+2026-10-20 19:06:19.940 [pool-14-thread-1] [] [] [34mINFO [0;39m [36mc.z.framework.banner.core.BannerApplicationRunner:43[0;39m - [商城系统 zhicloud-module-mall - 已禁用][参考 https://doc.zhicloud.cn/mall/build/ 开启]
+2026-10-20 19:06:19.946 [pool-14-thread-1] [] [] [34mINFO [0;39m [36mc.z.framework.banner.core.BannerApplicationRunner:67[0;39m - [支付系统 zhicloud-module-pay - 已禁用][参考 https://doc.zhicloud.cn/pay/build/ 开启]
+2026-10-20 19:06:20.639 [tomcat-handler-1] [] [] [34mINFO [0;39m [36mo.a.c.core.ContainerBase.[Tomcat].[localhost].[/]:168[0;39m - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-10-20 19:06:20.639 [tomcat-handler-1] [] [] [34mINFO [0;39m [36morg.springframework.web.servlet.DispatcherServlet:532[0;39m - Initializing Servlet 'dispatcherServlet'
+2026-10-20 19:06:20.656 [tomcat-handler-1] [] [] [34mINFO [0;39m [36morg.springframework.web.servlet.DispatcherServlet:554[0;39m - Completed initialization in 16 ms
+2026-10-20 19:06:20.954 [tomcat-handler-1] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.tenant.TenantMapper.selectById:135[0;39m - ==>  Preparing: SELECT id, name, contact_user_id, contact_name, contact_mobile, status, websites, package_id, expire_time, account_count, create_time, update_time, creator, updater, deleted FROM system_tenant WHERE id = ? AND deleted = 0
+2026-10-20 19:06:20.959 [tomcat-handler-1] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.tenant.TenantMapper.selectById:135[0;39m - ==> Parameters: 1(Long)
+2026-10-20 19:06:21.003 [tomcat-handler-1] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.tenant.TenantMapper.selectById:135[0;39m - <==      Total: 1
+2026-10-20 19:06:21.024 [tomcat-handler-1] [] [] [34mINFO [0;39m [36mc.z.f.a.core.interceptor.ApiAccessLogInterceptor:57[0;39m - [preHandle][开始请求 URL(/admin-api/system/auth/login) 参数({"username": "zhicloudadmin", "password": "Pilot@2026Ab!", "tenantName": "\u667a\u4e91"})]
+2026-10-20 19:06:22.210 [tomcat-handler-1] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.user.AdminUserMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, totp_secret, totp_enabled, tenant_id, create_time, update_time, creator, updater, deleted FROM system_users WHERE deleted = 0 AND (username = ?) AND tenant_id = 1
+2026-10-20 19:06:22.214 [tomcat-handler-1] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.user.AdminUserMapper.selectList:135[0;39m - ==> Parameters: zhicloudadmin(String)
+2026-10-20 19:06:22.261 [tomcat-handler-1] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.user.AdminUserMapper.selectList:135[0;39m - <==      Total: 1
+2026-10-20 19:06:22.476 [tomcat-handler-1] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.logger.LoginLogMapper.insert:135[0;39m - ==>  Preparing: INSERT INTO system_login_log (log_type, trace_id, user_id, user_type, username, result, user_ip, user_agent, create_time, update_time, creator, updater, tenant_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+2026-10-20 19:06:22.481 [tomcat-handler-1] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.logger.LoginLogMapper.insert:135[0;39m - ==> Parameters: 100(Integer), (String), 225(Long), 2(Integer), zhicloudadmin(String), 0(Integer), 127.0.0.1(String), Python-urllib/3.11(String), 2026-10-20T19:06:22.458313600(LocalDateTime), 2026-10-20T19:06:22.458313600(LocalDateTime), null, null
+2026-10-20 19:06:22.506 [tomcat-handler-1] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.logger.LoginLogMapper.insert:135[0;39m - <==    Updates: 1
+2026-10-20 19:06:22.529 [tomcat-handler-1] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.user.AdminUserMapper.updateById:135[0;39m - ==>  Preparing: UPDATE system_users SET login_ip = ?, login_date = ?, update_time = ?, updater = ? WHERE id = ? AND deleted = 0 AND tenant_id = 1
+2026-10-20 19:06:22.531 [tomcat-handler-1] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.user.AdminUserMapper.updateById:135[0;39m - ==> Parameters: 127.0.0.1(String), 2026-10-20T19:06:22.512136(LocalDateTime), 2026-10-20T19:06:22.520768200(LocalDateTime), null, 225(Long)
+2026-10-20 19:06:22.545 [tomcat-handler-1] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.user.AdminUserMapper.updateById:135[0;39m - <==    Updates: 1
+2026-10-20 19:06:22.655 [tomcat-handler-1] [] [] [39mDEBUG[0;39m [36mc.z.m.s.d.m.oauth2.OAuth2RefreshTokenMapper.insert:135[0;39m - ==>  Preparing: INSERT INTO system_oauth2_refresh_token (refresh_token, user_id, user_type, client_id, expires_time, create_time, update_time, creator, updater, tenant_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+2026-10-20 19:06:22.656 [tomcat-handler-1] [] [] [39mDEBUG[0;39m [36mc.z.m.s.d.m.oauth2.OAuth2RefreshTokenMapper.insert:135[0;39m - ==> Parameters: 7956ea962889428f9fa79acc8b58f2d7(String), 225(Long), 2(Integer), default(String), 2026-11-19T19:06:22.646729300(LocalDateTime), 2026-10-20T19:06:22.652730(LocalDateTime), 2026-10-20T19:06:22.652730(LocalDateTime), null, null
+2026-10-20 19:06:22.670 [tomcat-handler-1] [] [] [39mDEBUG[0;39m [36mc.z.m.s.d.m.oauth2.OAuth2RefreshTokenMapper.insert:135[0;39m - <==    Updates: 1
+2026-10-20 19:06:22.681 [tomcat-handler-1] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.user.AdminUserMapper.selectById:135[0;39m - ==>  Preparing: SELECT id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, totp_secret, totp_enabled, tenant_id, create_time, update_time, creator, updater, deleted FROM system_users WHERE id = ? AND deleted = 0 AND tenant_id = 1
+2026-10-20 19:06:22.682 [tomcat-handler-1] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.user.AdminUserMapper.selectById:135[0;39m - ==> Parameters: 225(Long)
+2026-10-20 19:06:22.689 [tomcat-handler-1] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.user.AdminUserMapper.selectById:135[0;39m - <==      Total: 1
+2026-10-20 19:06:22.695 [tomcat-handler-1] [] [] [39mDEBUG[0;39m [36mc.z.m.s.d.m.oauth2.OAuth2AccessTokenMapper.insert:135[0;39m - ==>  Preparing: INSERT INTO system_oauth2_access_token (access_token, refresh_token, user_id, user_type, user_info, client_id, expires_time, tenant_id, create_time, update_time, creator, updater) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-10-20 19:06:22.697 [tomcat-handler-1] [] [] [39mDEBUG[0;39m [36mc.z.m.s.d.m.oauth2.OAuth2AccessTokenMapper.insert:135[0;39m - ==> Parameters: 7066409a855c46218d18ea724dc4c7de(String), 7956ea962889428f9fa79acc8b58f2d7(String), 225(Long), 2(Integer), {"nickname":"智云","deptId":"103"}(String), default(String), 2026-10-20T19:36:22.690774100(LocalDateTime), 1(Long), 2026-10-20T19:06:22.692919500(LocalDateTime), 2026-10-20T19:06:22.692919500(LocalDateTime), null, null
+2026-10-20 19:06:22.711 [tomcat-handler-1] [] [] [39mDEBUG[0;39m [36mc.z.m.s.d.m.oauth2.OAuth2AccessTokenMapper.insert:135[0;39m - <==    Updates: 1
+2026-10-20 19:06:22.862 [tomcat-handler-1] [] [] [34mINFO [0;39m [36mc.z.f.a.core.interceptor.ApiAccessLogInterceptor:76[0;39m - [afterCompletion][完成请求 URL(/admin-api/system/auth/login) 耗时(1834 ms)]
+2026-10-20 19:06:22.923 [tomcat-handler-2] [] [] [34mINFO [0;39m [36mc.z.f.a.core.interceptor.ApiAccessLogInterceptor:55[0;39m - [preHandle][开始请求 URL(/admin-api/system/auth/get-permission-info) 无参数]
+2026-10-20 19:06:22.960 [tomcat-handler-2] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.user.AdminUserMapper.selectById:135[0;39m - ==>  Preparing: SELECT id, username, password, nickname, remark, dept_id, post_ids, email, mobile, sex, avatar, status, login_ip, login_date, totp_secret, totp_enabled, tenant_id, create_time, update_time, creator, updater, deleted FROM system_users WHERE id = ? AND deleted = 0 AND tenant_id = 1
+2026-10-20 19:06:22.961 [tomcat-handler-2] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.user.AdminUserMapper.selectById:135[0;39m - ==> Parameters: 225(Long)
+2026-10-20 19:06:22.966 [tomcat-handler-2] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.user.AdminUserMapper.selectById:135[0;39m - <==      Total: 1
+2026-10-20 19:06:22.977 [tomcat-handler-2] [] [] [39mDEBUG[0;39m [36mc.z.m.s.d.m.permission.UserRoleMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, user_id, role_id, create_time, update_time, creator, updater, deleted FROM system_user_role WHERE deleted = 0 AND (user_id = ?) AND tenant_id = 1
+2026-10-20 19:06:22.978 [tomcat-handler-2] [] [] [39mDEBUG[0;39m [36mc.z.m.s.d.m.permission.UserRoleMapper.selectList:135[0;39m - ==> Parameters: 225(Long)
+2026-10-20 19:06:22.994 [tomcat-handler-2] [] [] [39mDEBUG[0;39m [36mc.z.m.s.d.m.permission.UserRoleMapper.selectList:135[0;39m - <==      Total: 1
+2026-10-20 19:06:23.012 [tomcat-handler-2] [] [] [39mDEBUG[0;39m [36mc.z.m.s.d.mysql.permission.RoleMapper.selectByIds:135[0;39m - ==>  Preparing: SELECT id, name, code, sort, status, type, remark, data_scope, data_scope_dept_ids, tenant_id, create_time, update_time, creator, updater, deleted FROM system_role WHERE id IN (?) AND deleted = 0 AND tenant_id = 1
+2026-10-20 19:06:23.013 [tomcat-handler-2] [] [] [39mDEBUG[0;39m [36mc.z.m.s.d.mysql.permission.RoleMapper.selectByIds:135[0;39m - ==> Parameters: 1(Long)
+2026-10-20 19:06:23.025 [tomcat-handler-2] [] [] [39mDEBUG[0;39m [36mc.z.m.s.d.mysql.permission.RoleMapper.selectByIds:135[0;39m - <==      Total: 1
+2026-10-20 19:06:23.052 [tomcat-handler-2] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.permission.MenuMapper.selectList:135[0;39m - ==>  Preparing: SELECT id, name, permission, type, sort, parent_id, path, icon, component, component_name, status, visible, keep_alive, always_show, create_time, update_time, creator, updater, deleted FROM system_menu WHERE deleted = 0
+2026-10-20 19:06:23.053 [tomcat-handler-2] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.permission.MenuMapper.selectList:135[0;39m - ==> Parameters: 
+2026-10-20 19:06:23.402 [tomcat-handler-2] [] [] [39mDEBUG[0;39m [36mc.z.m.s.dal.mysql.permission.MenuMapper.selectList:135[0;39m - <==      Total: 2022
+2026-10-20 19:06:23.598 [tomcat-handler-2] [] [] [39mDEBUG[0;39m [36mc.z.m.s.d.mysql.permission.MenuMapper.selectByIds:135[0;39m - ==>  Preparing: SELECT id, name, permission, type, sort, parent_id, path, icon, component, component_name, status, visible, keep_alive, always_show, create_time, update_time, creator, updater, deleted FROM system_menu WHERE id IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) AND deleted = 0
+2026-10-20 19:06:23.623 [tomcat-handler-2] [] [] [39mDEBUG[0;39m [36mc.z.m.s.d.mysql.permission.MenuMapper.selectByIds:135[0;39m - ==> Parameters: 1(Long), 2(Long), 5(Long), 100(Long), 101(Long), 102(Long), 103(Long), 104(Long), 105(Long), 106(Long), 107(Long), 108(Long), 109(Long), 110(Long), 111(Long), 112(Long), 113(Long), 114(Long), 115(Long), 116(Long), 500(Long), 501(Long), 9000(Long), 9010(Long), 9011(Long), 9012(Long), 9013(Long), 9014(Long), 9020(Long), 9030(Long), 9031(Long), 9032(Long), 9033(Long), 9040(Long), 9041(Long), 9042(Long), 9043(Long), 9050(Long), 9051(Long), 9052(Long), 9053(Long), 9054(Long), 9055(Long), 9060(Long), 9061(Long), 9062(Long), 9063(Long), 9064(Long), 9065(Long), 9066(Long), 9070(Long), 9071(Long), 9072(Long), 9073(Long), 9080(Long), 9081(Long), 9082(Long), 9083(Long), 9084(Long), 9085(Long), 9086(Long), 9090(Long), 9091(Long), 9092(Long), 9093(Long), 5000(Long), 5001(Long), 5002(Long), 5003(Long), 5004(Long), 9100(Long), 5005(Long), 5009(Long), 5010(Long), 5013(Long), 5014(Long), 9110(Long), 5015(Long), 9111(Long), 5016(Long), 9112(Long), 5017(Long), 9113(Long), 5018(Long), 9114(Long), 5019(Long), 9115(Long), 5020(Long), 9116(Long), 5021(Long), 9117(Long), 5022(Long), 9118(Long), 5023(Long), 5024(Long), 9120(Long), 5025(Long), 5026(Long), 5028(Long), 5029(Long), 5030(Long), 5031(Long), 5032(Long), 5033(Long), 5034(Long), 9130(Long), 5035(Long), 9131(Long), 5036(Long), 9132(Long), 5037(Long), 9133(Long), 5038(Long), 9134(Long), 5039(Long), 5040(Long), 5041(Long), 5042(Long), 5043(Long), 5044(Long), 9140(Long), 5045(Long), 9141(Long), 5046(Long), 9150(Long), 9151(Long), 9160(Long), 9161(Long), 9162(Long), 9163(Long), 9170(Long), 9171(Long), 9172(Long), 9173(Long), 9180(Long), 9181(Long), 9182(Long), 9183(Long), 9184(Long), 9185(Long), 9186(Long), 9190(Long), 9191(Long), 9192(Long), 1001(Long), 9193(Long), 1002(Long), 9194(Long), 1003(Long), 9195(Long), 1004(Long), 5100(Long), 9196(Long), 1005(Long), 5101(Long), 9197(Long), 1006(Long), 9198(Long), 1007(Long), 9199(Long), 1008(Long), 9200(Long), 1009(Long), 9201(Long), 1010(Long), 9202(Long), 1011(Long), 9203(Long), 1012(Long), 9204(Long), 1013(Long), 9205(Long), 1014(Long), 5110(Long), 9206(Long), 1015(Long), 5111(Long), 9207(Long), 1016(Long), 5112(Long), 9208(Long), 1017(Long), 5113(Long), 9209(Long), 1018(Long), 5114(Long), 9210(Long), 1019(Long), 9211(Long), 1020(Long), 9212(Long), 1021(Long), 9213(Long), 1022(Long), 9214(Long), 1023(Long), 9215(Long), 1024(Long), 5120(Long), 9216(Long), 1025(Long), 5121(Long), 9217(Long), 1026(Long), 5122(Long), 9218(Long), 1027(Long), 5123(Long), 9219(Long), 1028(Long), 5124(Long), 9220(Long), 1029(Long), 5125(Long), 9221(Long), 1030(Long), 5126(Long), 9222(Long), 1031(Long), 9223(Long), 1032(Long), 9224(Long), 1033(Long), 9225(Long), 1034(Long), 5130(Long), 9226(Long), 1035(Long), 5131(Long), 9227(Long), 1036(Long), 5132(Long), 9228(Long), 1037(Long), 5133(Long), 9229(Long), 1038(Long), 5134(Long), 9230(Long), 1039(Long), 5135(Long), 9231(Long), 1040(Long), 9232(Long), 9233(Long), 1042(Long), 9234(Long), 1043(Long), 9235(Long), 5140(Long), 9236(Long), 1045(Long), 5141(Long), 9237(Long), 1046(Long), 5142(Long), 9238(Long), 5143(Long), 9239(Long), 1048(Long), 5144(Long), 9240(Long), 5145(Long), 9241(Long), 1050(Long), 5146(Long), 9242(Long), 1051(Long), 9243(Long), 1052(Long), 9244(Long), 1053(Long), 9245(Long), 1054(Long), 5150(Long), 9246(Long), 5151(Long), 9247(Long), 1056(Long), 5152(Long), 9248(Long), 1057(Long), 5153(Long), 9249(Long), 1058(Long), 5154(Long), 1059(Long), 5155(Long), 9251(Long), 1060(Long), 5156(Long), 9252(Long), 9253(Long), 9254(Long), 1063(Long), 9255(Long), 1064(Long), 5160(Long), 9256(Long), 1065(Long), 5161(Long), 9257(Long), 1066(Long), 5162(Long), 9258(Long), 1067(Long), 5163(Long), 9259(Long), 5164(Long), 9260(Long), 9261(Long), 1070(Long), 5170(Long), 1075(Long), 5171(Long), 5172(Long), 1077(Long), 5173(Long), 1078(Long), 5174(Long), 5175(Long), 1082(Long), 1083(Long), 1084(Long), 1085(Long), 1086(Long), 1087(Long), 1088(Long), 1089(Long), 1090(Long), 1091(Long), 1092(Long), 1093(Long), 1094(Long), 5190(Long), 1095(Long), 5191(Long), 1096(Long), 5192(Long), 1097(Long), 5193(Long), 1098(Long), 5194(Long), 5195(Long), 1100(Long), 1101(Long), 1102(Long), 1103(Long), 1104(Long), 5200(Long), 1105(Long), 1106(Long), 1107(Long), 1108(Long), 9300(Long), 1109(Long), 9301(Long), 9302(Long), 9303(Long), 9304(Long), 9305(Long), 9306(Long), 9307(Long), 9308(Long), 9309(Long), 1118(Long), 9310(Long), 1119(Long), 9311(Long), 1120(Long), 9312(Long), 9313(Long), 9314(Long), 9315(Long), 5220(Long), 9316(Long), 5221(Long), 9317(Long), 5222(Long), 9318(Long), 5223(Long), 9319(Long), 5224(Long), 9320(Long), 5225(Long), 9321(Long), 9322(Long), 9323(Long), 9324(Long), 9325(Long), 5230(Long), 9326(Long), 5231(Long), 9327(Long), 5232(Long), 9328(Long), 5233(Long), 9329(Long), 1138(Long), 5234(Long), 9330(Long), 1139(Long), 5235(Long), 9331(Long), 1140(Long), 9332(Long), 1141(Long), 9333(Long), 1142(Long), 9334(Long), 1143(Long), 9335(Long), 9336(Long), 9337(Long), 9338(Long), 9339(Long), 9340(Long), 9341(Long), 9342(Long), 9343(Long), 9344(Long), 9345(Long), 5250(Long), 9346(Long), 5251(Long), 9347(Long), 5252(Long), 9348(Long), 5253(Long), 9349(Long), 5254(Long), 9350(Long), 5255(Long), 9351(Long), 9352(Long), 9353(Long), 9354(Long), 9355(Long), 5260(Long), 9356(Long), 5261(Long), 9357(Long), 9358(Long), 9359(Long), 9360(Long), 9361(Long), 9362(Long), 9363(Long), 9364(Long), 9365(Long), 9366(Long), 9367(Long), 9368(Long), 9369(Long), 9370(Long), 9371(Long), 9372(Long), 9373(Long), 9374(Long), 9375(Long), 9376(Long), 1185(Long), 9377(Long), 1186(Long), 9378(Long), 1187(Long), 9379(Long), 1188(Long), 9380(Long), 1189(Long), 9381(Long), 1190(Long), 9382(Long), 1191(Long), 9383(Long), 1192(Long), 9384(Long), 1193(Long), 9385(Long), 1194(Long), 9386(Long), 1195(Long), 9387(Long), 9388(Long), 1197(Long), 9389(Long), 1198(Long), 9390(Long), 1199(Long), 9391(Long), 1200(Long), 9392(Long), 1201(Long), 9393(Long), 1202(Long), 9394(Long), 9395(Long), 5300(Long), 9396(Long), 9397(Long), 9398(Long), 1207(Long), 9399(Long), 1208(Long), 9400(Long), 1209(Long), 9401(Long), 1210(Long), 9402(Long), 1211(Long), 9403(Long), 1212(Long), 9404(Long), 1213(Long), 9405(Long), 5310(Long), 9406(Long), 1215(Long), 5311(Long), 9407(Long), 1216(Long), 5312(Long), 9408(Long), 1217(Long), 5313(Long), 9409(Long), 1218(Long), 5314(Long), 9410(Long), 1219(Long), 5315(Long), 9411(Long), 1220(Long), 9412(Long), 1221(Long), 9413(Long), 1222(Long), 9414(Long), 9415(Long), 1224(Long), 5320(Long), 9416(Long), 1225(Long), 5321(Long), 9417(Long), 1226(Long), 5322(Long), 9418(Long), 1227(Long), 5323(Long), 9419(Long), 1228(Long), 5324(Long), 9420(Long), 1229(Long), 5325(Long), 9421(Long), 5326(Long), 9422(Long), 9423(Long), 9424(Long), 9425(Long), 5330(Long), 9426(Long), 5331(Long), 9427(Long), 5332(Long), 9428(Long), 1237(Long), 5333(Long), 9429(Long), 1238(Long), 5334(Long), 9430(Long), 1239(Long), 5335(Long), 9431(Long), 1240(Long), 9432(Long), 1241(Long), 9433(Long), 1242(Long), 9434(Long), 1243(Long), 9435(Long), 5340(Long), 9436(Long), 5341(Long), 9437(Long), 5342(Long), 9438(Long), 5343(Long), 9439(Long), 5344(Long), 9440(Long), 5345(Long), 9441(Long), 9442(Long), 9443(Long), 9444(Long), 9445(Long), 1254(Long), 5350(Long), 9446(Long), 1255(Long), 5351(Long), 9447(Long), 1256(Long), 5352(Long), 9448(Long), 1257(Long), 5353(Long), 9449(Long), 1258(Long), 5354(Long), 9450(Long), 1259(Long), 5355(Long), 9451(Long), 1260(Long), 9452(Long), 1261(Long), 9453(Long), 9454(Long), 1263(Long), 9455(Long), 1264(Long), 5360(Long), 9456(Long), 1265(Long), 5361(Long), 9457(Long), 1266(Long), 5362(Long), 9458(Long), 1267(Long), 5363(Long), 9459(Long), 5364(Long), 9460(Long), 5365(Long), 9461(Long), 5366(Long), 9462(Long), 9463(Long), 9464(Long), 9465(Long), 5370(Long), 9466(Long), 5371(Long), 9467(Long), 5372(Long), 9468(Long), 5373(Long), 9469(Long), 5374(Long), 9470(Long), 5375(Long), 9471(Long), 9472(Long), 1281(Long), 9473(Long), 1282(Long), 9474(Long), 9475(Long), 9476(Long), 9477(Long), 9478(Long), 9479(Long), 9480(Long), 9481(Long), 9482(Long), 9483(Long), 9484(Long), 9485(Long), 9486(Long), 9487(Long), 9488(Long), 9489(Long), 9490(Long), 9491(Long), 9492(Long), 9493(Long), 9494(Long), 9495(Long), 5400(Long), 9496(Long), 9497(Long), 9498(Long), 9499(Long), 9500(Long), 9501(Long), 9502(Long), 9503(Long), 9504(Long), 9505(Long), 5410(Long), 9506(Long), 5411(Long), 9507(Long), 5412(Long), 9508(Long), 5413(Long), 9509(Long), 5414(Long), 9510(Long), 5415(Long), 9511(Long), 9512(Long), 9513(Long), 9514(Long), 9515(Long), 5420(Long), 9516(Long), 5421(Long), 9517(Long), 5422(Long), 9518(Long), 5423(Long), 9519(Long), 5424(Long), 9520(Long), 5425(Long), 9521(Long), 9522(Long), 9523(Long), 9524(Long), 9525(Long), 9526(Long), 9527(Long), 9528(Long), 9529(Long), 9530(Long), 9531(Long), 9532(Long), 9533(Long), 9534(Long), 9535(Long), 9536(Long), 9537(Long), 9538(Long), 9539(Long), 9540(Long), 9541(Long), 9542(Long), 9543(Long), 9544(Long), 9545(Long), 9546(Long), 9547(Long), 9548(Long), 9549(Long), 9550(Long), 9551(Long), 9552(Long), 9553(Long), 9554(Long), 9555(Long), 9556(Long), 9557(Long), 9558(Long), 9559(Long), 9560(Long), 9561(Long), 9562(Long), 9563(Long), 9564(Long), 9565(Long), 9566(Long), 9567(Long), 9568(Long), 9569(Long), 9570(Long), 9571(Long), 9572(Long), 9573(Long), 9574(Long), 9575(Long), 9576(Long), 9577(Long), 9578(Long), 9579(Long), 9580(Long), 9581(Long), 9582(Long), 9583(Long), 9584(Long), 9585(Long), 9586(Long), 9587(Long), 9588(Long), 9589(Long), 9590(Long), 9591(Long), 9592(Long), 9593(Long), 9594(Long), 9595(Long), 5500(Long), 9596(Long), 9597(Long), 9598(Long), 9599(Long), 9600(Long), 9601(Long), 9602(Long), 9603(Long), 9604(Long), 9605(Long), 5510(Long), 5511(Long), 5512(Long), 5513(Long), 5514(Long), 5515(Long), 5530(Long), 5531(Long), 5532(Long), 5533(Long), 5534(Long), 5535(Long), 5540(Long), 5541(Long), 5542(Long), 5543(Long), 5544(Long), 5545(Long), 5550(Long), 5551(Long), 5552(Long), 5553(Long), 5554(Long), 5555(Long), 5560(Long), 5561(Long), 5562(Long), 5563(Long), 5564(Long), 5565(Long), 5566(Long), 9700(Long), 9702(Long), 9703(Long), 9704(Long), 5610(Long), 9706(Long), 5611(Long), 5612(Long), 9708(Long), 5613(Long), 5614(Long), 5615(Long), 9711(Long), 9713(Long), 9716(Long), 9718(Long), 9720(Long), 9723(Long), 5630(Long), 9726(Long), 5631(Long), 5632(Long), 9728(Long), 5633(Long), 9729(Long), 5634(Long), 9730(Long), 5635(Long), 9735(Long), 5640(Long), 9736(Long), 5641(Long), 5642(Long), 5643(Long), 9739(Long), 5644(Long), 9740(Long), 5645(Long), 9741(Long), 9742(Long), 9743(Long), 9744(Long), 9745(Long), 5650(Long), 9746(Long), 5651(Long), 9747(Long), 5652(Long), 9748(Long), 5653(Long), 9749(Long), 5654(Long), 5655(Long), 5660(Long), 5661(Long), 5662(Long), 5663(Long), 5664(Long), 5665(Long), 5670(Long), 5671(Long), 5672(Long), 5673(Long), 5674(Long), 5675(Long), 5680(Long), 5681(Long), 5700(Long), 5710(Long), 5711(Long), 5712(Long), 5713(Long), 5714(Long), 5715(Long), 5720(Long), 5721(Long), 5722(Long), 5723(Long), 5724(Long), 5725(Long), 5750(Long), 5751(Long), 5752(Long), 5753(Long), 5754(Long), 5755(Long), 5756(Long), 5757(Long), 5758(Long), 5759(Long), 5780(Long), 5781(Long), 5782(Long), 5783(Long), 5784(Long), 5785(Long), 5786(Long), 5787(Long), 5788(Long), 5789(Long), 5790(Long), 5791(Long), 5792(Long), 5793(Long), 5794(Long), 5795(Long), 5796(Long), 5797(Long), 5798(Long), 5799(Long), 5800(Long), 5801(Long), 5802(Long), 5803(Long), 5804(Long), 5805(Long), 5806(Long), 5807(Long), 5808(Long), 5809(Long), 5810(Long), 5811(Long), 5819(Long), 5820(Long), 5821(Long), 5822(Long), 5823(Long), 5824(Long), 5825(Long), 5830(Long), 5831(Long), 5832(Long), 5833(Long), 5834(Long), 5835(Long), 5836(Long), 5840(Long), 5841(Long), 5842(Long), 5843(Long), 5844(Long), 5845(Long), 5846(Long), 5847(Long), 5848(Long), 5849(Long), 5850(Long), 5851(Long), 5852(Long), 5853(Long), 5854(Long), 5855(Long), 5856(Long), 5857(Long), 5858(Long), 5859(Long), 5860(Long), 5861(Long), 5862(Long), 5863(Long), 5867(Long), 5868(Long), 5869(Long), 5870(Long), 5871(Long), 5872(Long), 5873(Long), 5874(Long), 5875(Long), 5876(Long), 5877(Long), 5878(Long), 5879(Long), 5881(Long), 5882(Long), 5883(Long), 5884(Long), 5885(Long), 5886(Long), 5887(Long), 5888(Long), 5889(Long), 5890(Long), 5891(Long), 5892(Long), 5893(Long), 5894(Long), 5895(Long), 5896(Long), 5897(Long), 5898(Long), 5899(Long), 5900(Long), 5901(Long), 5906(Long), 5907(Long), 5908(Long), 5909(Long), 5910(Long), 5911(Long), 5912(Long), 5913(Long), 5914(Long), 5915(Long), 5916(Long), 5917(Long), 5918(Long), 5919(Long), 5920(Long), 5921(Long), 5922(Long), 5923(Long), 5924(Long), 5925(Long), 5926(Long), 5927(Long), 5928(Long), 5929(Long), 5930(Long), 5931(Long), 5950(Long), 5951(Long), 5952(Long), 5953(Long), 5954(Long), 5955(Long), 5956(Long), 5957(Long), 5958(Long), 5959(Long), 5960(Long), 5961(Long), 5962(Long), 5966(Long), 5967(Long), 5969(Long), 5970(Long), 5971(Long), 5972(Long), 5973(Long), 5974(Long), 5975(Long), 5976(Long), 5977(Long), 5978(Long), 5979(Long), 5980(Long), 5981(Long), 5982(Long), 5983(Long), 5984(Long), 5985(Long), 6100(Long), 6101(Long), 6102(Long), 2083(Long), 2084(Long), 2085(Long), 2086(Long), 2087(Long), 2088(Long), 2089(Long), 2090(Long), 2091(Long), 2092(Long), 2093(Long), 2094(Long), 2095(Long), 2096(Long), 2097(Long), 2098(Long), 2099(Long), 2100(Long), 2101(Long), 2102(Long), 2103(Long), 2104(Long), 6200(Long), 2105(Long), 6201(Long), 2106(Long), 6202(Long), 2107(Long), 2108(Long), 2109(Long), 2110(Long), 2111(Long), 2112(Long), 2113(Long), 2114(Long), 2115(Long), 2116(Long), 2117(Long), 2118(Long), 2119(Long), 2120(Long), 2121(Long), 2122(Long), 2123(Long), 2124(Long), 2125(Long), 2126(Long), 2127(Long), 2128(Long), 2129(Long), 2130(Long), 2131(Long), 2132(Long), 2133(Long), 2134(Long), 2135(Long), 2136(Long), 2137(Long), 2138(Long), 2139(Long), 2140(Long), 2141(Long), 2142(Long), 2143(Long), 2144(Long), 2145(Long), 2146(Long), 2147(Long), 2148(Long), 2149(Long), 2150(Long), 2151(Long), 2152(Long), 2153(Long), 2154(Long), 2155(Long), 2156(Long), 2157(Long), 2158(Long), 2159(Long), 2160(Long), 6300(Long), 6301(Long), 6302(Long), 6400(Long), 6401(Long), 6402(Long), 6403(Long), 6404(Long), 6405(Long), 6406(Long), 6411(Long), 6412(Long), 6413(Long), 6414(Long), 6415(Long), 6416(Long), 6417(Long), 6419(Long), 6420(Long), 6421(Long), 6422(Long), 6423(Long), 6424(Long), 6425(Long), 6426(Long), 6427(Long), 6428(Long), 6429(Long), 6430(Long), 6431(Long), 6432(Long), 6433(Long), 6434(Long), 6435(Long), 6440(Long), 6441(Long), 6442(Long), 6445(Long), 6446(Long), 6451(Long), 6452(Long), 6453(Long), 6454(Long), 6455(Long), 6456(Long), 6457(Long), 6458(Long), 6461(Long), 6462(Long), 6463(Long), 6464(Long), 6465(Long), 6466(Long), 6467(Long), 6468(Long), 6470(Long), 6471(Long), 6472(Long), 6473(Long), 6474(Long), 6475(Long), 6476(Long), 6477(Long), 6480(Long), 6481(Long), 6482(Long), 6483(Long), 6484(Long), 6485(Long), 6486(Long), 2391(Long), 6487(Long), 2392(Long), 2393(Long), 2394(Long), 6490(Long), 2395(Long), 2396(Long), 2397(Long), 2398(Long), 2399(Long), 2400(Long), 2401(Long), 2402(Long), 2403(Long), 2404(Long), 6500(Long), 2405(Long), 2406(Long), 2407(Long), 2408(Long), 2409(Long), 2410(Long), 2411(Long), 2412(Long), 2413(Long), 2414(Long), 6510(Long), 2415(Long), 2416(Long), 2417(Long), 2418(Long), 2419(Long), 6515(Long), 2420(Long), 2421(Long), 2422(Long), 2423(Long), 2424(Long), 6520(Long), 2425(Long), 6521(Long), 2426(Long), 2427(Long), 2428(Long), 2429(Long), 2430(Long), 2431(Long), 2432(Long), 2433(Long), 6530(Long), 6531(Long), 6540(Long), 6541(Long), 6542(Long), 2447(Long), 2448(Long), 2449(Long), 6545(Long), 2450(Long), 2451(Long), 2452(Long), 2453(Long), 6550(Long), 6551(Long), 6560(Long), 6561(Long), 6562(Long), 6563(Long), 6564(Long), 2472(Long), 6570(Long), 6571(Long), 6572(Long), 6573(Long), 2478(Long), 6574(Long), 2479(Long), 6575(Long), 2480(Long), 6576(Long), 2481(Long), 6577(Long), 2482(Long), 6578(Long), 2483(Long), 6579(Long), 2484(Long), 6580(Long), 2485(Long), 6581(Long), 2486(Long), 6582(Long), 2487(Long), 2488(Long), 2489(Long), 2490(Long), 2491(Long), 2492(Long), 2493(Long), 2494(Long), 2495(Long), 2497(Long), 6600(Long), 6610(Long), 6611(Long), 2516(Long), 6612(Long), 2517(Long), 2518(Long), 2519(Long), 2520(Long), 2521(Long), 2522(Long), 2523(Long), 2524(Long), 2525(Long), 2526(Long), 2527(Long), 2528(Long), 2529(Long), 2530(Long), 2531(Long), 2532(Long), 2533(Long), 2534(Long), 2535(Long), 2536(Long), 2543(Long), 2544(Long), 2546(Long), 2560(Long), 2561(Long), 2562(Long), 2563(Long), 2564(Long), 2565(Long), 2566(Long), 2567(Long), 2568(Long), 2569(Long), 2570(Long), 2571(Long), 2572(Long), 2573(Long), 2574(Long), 2575(Long), 2576(Long), 2577(Long), 2578(Long), 2579(Long), 2580(Long), 2581(Long), 2582(Long), 2583(Long), 2584(Long), 2585(Long), 2586(Long), 2587(Long), 2588(Long), 2589(Long), 2590(Long), 2591(Long), 2592(Long), 2593(Long), 2594(Long), 2595(Long), 2596(Long), 2597(Long), 2598(Long), 2599(Long), 2600(Long), 2601(Long), 2602(Long), 2603(Long), 2604(Long), 6700(Long), 2605(Long), 2606(Long), 2607(Long), 2608(Long), 2609(Long), 2610(Long), 2611(Long), 2612(Long), 2613(Long), 2614(Long), 6710(Long), 2615(Long), 6711(Long), 2616(Long), 6712(Long), 2617(Long), 6713(Long), 2618(Long), 6714(Long), 2619(Long), 2620(Long), 2621(Long), 2622(Long), 2623(Long), 2624(Long), 6720(Long), 2625(Long), 6721(Long), 2626(Long), 6722(Long), 2627(Long), 6723(Long), 2628(Long), 6724(Long), 2629(Long), 2630(Long), 2631(Long), 2632(Long), 2633(Long), 2634(Long), 6730(Long), 2635(Long), 6731(Long), 2636(Long), 6732(Long), 2637(Long), 6733(Long), 2638(Long), 6734(Long), 2639(Long), 6735(Long), 2640(Long), 6736(Long), 2641(Long), 6737(Long), 2642(Long), 6738(Long), 2643(Long), 6739(Long), 2644(Long), 6740(Long), 2645(Long), 6741(Long), 2646(Long), 6742(Long), 2647(Long), 6743(Long), 2648(Long), 6744(Long), 2649(Long), 6745(Long), 2650(Long), 6746(Long), 2651(Long), 6747(Long), 2652(Long), 6748(Long), 2653(Long), 6749(Long), 2654(Long), 6750(Long), 2655(Long), 6751(Long), 2656(Long), 6752(Long), 2657(Long), 6753(Long), 2658(Long), 6754(Long), 2659(Long), 6755(Long), 2660(Long), 6756(Long), 2661(Long), 6757(Long), 2662(Long), 6758(Long), 2663(Long), 6759(Long), 2664(Long), 6760(Long), 2665(Long), 6761(Long), 2666(Long), 6762(Long), 2667(Long), 6763(Long), 2668(Long), 6764(Long), 2669(Long), 6765(Long), 2670(Long), 6766(Long), 2671(Long), 6767(Long), 2672(Long), 6768(Long), 2673(Long), 6769(Long), 2674(Long), 6770(Long), 2675(Long), 6771(Long), 2676(Long), 6772(Long), 2677(Long), 6773(Long), 2678(Long), 6774(Long), 2679(Long), 6775(Long), 2680(Long), 6776(Long), 2681(Long), 6777(Long), 2682(Long), 6778(Long), 2683(Long), 6779(Long), 2684(Long), 6780(Long), 2685(Long), 6781(Long), 2686(Long), 6782(Long), 2687(Long), 6783(Long), 2688(Long), 6784(Long), 2689(Long), 6785(Long), 2690(Long), 6786(Long), 2691(Long), 6787(Long), 2692(Long), 6788(Long), 2693(Long), 2694(Long), 2695(Long), 2696(Long), 2697(Long), 2698(Long), 2699(Long), 2700(Long), 2701(Long), 2702(Long), 2703(Long), 2704(Long), 2705(Long), 2706(Long), 2707(Long), 2708(Long), 2709(Long), 2710(Long), 2711(Long), 2712(Long), 2713(Long), 2714(Long), 2715(Long), 2716(Long), 2717(Long), 2718(Long), 2720(Long), 2721(Long), 2722(Long), 2723(Long), 2724(Long), 2725(Long), 2726(Long), 2727(Long), 2728(Long), 2729(Long), 2730(Long), 2731(Long), 2732(Long), 2733(Long), 2734(Long), 2735(Long), 2736(Long), 2737(Long), 2738(Long), 2739(Long), 2740(Long), 2741(Long), 2742(Long), 2755(Long), 2758(Long), 2759(Long), 2760(Long), 2761(Long), 2762(Long), 2763(Long), 2764(Long), 2765(Long), 2767(Long), 2768(Long), 2769(Long), 2770(Long), 2771(Long), 2773(Long), 2774(Long), 2775(Long), 2776(Long), 2777(Long), 2778(Long), 2779(Long), 2780(Long), 2781(Long), 2782(Long), 2783(Long), 2784(Long), 2785(Long), 2786(Long), 2787(Long), 2788(Long), 2789(Long), 2790(Long), 2791(Long), 2792(Long), 2793(Long), 2794(Long), 2795(Long), 2796(Long), 2798(Long), 2799(Long), 2800(Long), 2801(Long), 2913(Long), 2915(Long), 2916(Long), 2917(Long), 2918(Long), 2919(Long), 2920(Long), 2921(Long), 2922(Long), 2923(Long), 2924(Long), 3000(Long), 3001(Long), 3002(Long), 3003(Long), 3004(Long), 3005(Long), 3006(Long), 3007(Long), 3008(Long), 3009(Long), 3010(Long), 3011(Long), 3012(Long), 3013(Long), 3014(Long), 3015(Long), 3016(Long), 3017(Long), 3018(Long), 3019(Long), 3020(Long), 3021(Long), 3022(Long), 3023(Long), 3024(Long), 3025(Long), 3026(Long), 3027(Long), 3028(Long), 3029(Long), 3030(Long), 3031(Long), 3032(Long), 3033(Long), 3034(Long), 3035(Long), 3036(Long), 3037(Long), 3038(Long), 3039(Long), 3040(Long), 3041(Long), 3042(Long), 3043(Long), 3044(Long), 3045(Long), 3046(Long), 3047(Long), 3048(Long), 3049(Long), 3050(Long), 3051(Long), 3052(Long), 3053(Long), 3054(Long), 3055(Long), 3056(Long), 3057(Long), 3058(Long), 3059(Long), 3060(Long), 3061(Long), 3062(Long), 3063(Long), 3064(Long), 3065(Long), 3066(Long), 3067(Long), 3068(Long), 3069(Long), 3070(Long), 3071(Long), 3072(Long), 3073(Long), 3074(Long), 3075(Long), 3076(Long), 3077(Long), 3078(Long), 3079(Long), 3080(Long), 3081(Long), 3082(Long), 3083(Long), 3084(Long), 3085(Long), 3086(Long), 3087(Long), 3088(Long), 3089(Long), 3090(Long), 3091(Long), 3092(Long), 3100(Long), 3101(Long), 3102(Long), 3103(Long), 3104(Long), 3105(Long), 3106(Long), 3107(Long), 3108(Long), 3109(Long), 3110(Long), 3111(Long), 3112(Long), 3113(Long), 3114(Long), 3115(Long), 3120(Long), 3121(Long), 3122(Long), 3123(Long), 3124(Long), 3130(Long), 3131(Long), 3132(Long), 3150(Long), 3151(Long), 3160(Long), 3161(Long), 3162(Long), 3163(Long), 3164(Long), 3165(Long), 3166(Long), 3170(Long), 3171(Long), 3172(Long), 3173(Long), 3180(Long), 3181(Long), 3182(Long), 3183(Long), 3190(Long), 3191(Long), 3200(Long), 3201(Long), 3202(Long), 3203(Long), 3210(Long), 3211(Long), 3220(Long), 3230(Long), 3231(Long), 3232(Long), 3233(Long), 3300(Long), 3301(Long), 3302(Long), 3303(Long), 3310(Long), 3311(Long), 3320(Long), 3321(Long), 3322(Long), 3323(Long), 3324(Long), 3330(Long), 3331(Long), 3332(Long), 3333(Long), 3334(Long), 3340(Long), 3341(Long), 3350(Long), 3351(Long), 3352(Long), 3353(Long), 3360(Long), 3370(Long), 7500(Long), 7510(Long), 7511(Long), 7512(Long), 7513(Long), 7514(Long), 7515(Long), 7516(Long), 7517(Long), 7518(Long), 7520(Long), 7521(Long), 7522(Long), 7523(Long), 7524(Long), 7526(Long), 7527(Long), 7530(Long), 7531(Long), 7532(Long), 7533(Long), 7534(Long), 7540(Long), 7541(Long), 7542(Long), 7543(Long), 7544(Long), 7545(Long), 7546(Long), 7547(Long), 7548(Long), 7550(Long), 7551(Long), 7552(Long), 7553(Long), 7554(Long), 7560(Long), 7561(Long), 7570(Long), 7571(Long), 7572(Long), 7573(Long), 7574(Long), 7580(Long), 7581(Long), 7582(Long), 7583(Long), 7584(Long), 7590(Long), 7591(Long), 7592(Long), 7593(Long), 7594(Long), 7595(Long), 7600(Long), 7601(Long), 7602(Long), 7603(Long), 7604(Long), 7610(Long), 7611(Long), 7612(Long), 7613(Long), 7614(Long), 7620(Long), 7621(Long), 7622(Long), 7623(Long), 7624(Long), 7630(Long), 7631(Long), 7632(Long), 7633(Long), 7634(Long), 7640(Long), 7641(Long), 7642(Long), 7643(Long), 7644(Long), 7645(Long), 7646(Long), 7650(Long), 7651(Long), 7652(Long), 7653(Long), 7654(Long), 7660(Long), 7661(Long), 7662(Long), 7663(Long), 7664(Long), 7670(Long), 7671(Long), 7672(Long), 7673(Long), 7674(Long), 7680(Long), 7681(Long), 7690(Long), 7691(Long), 7692(Long), 7693(Long), 7694(Long), 7700(Long), 7701(Long), 7702(Long), 7703(Long), 7704(Long), 7710(Long), 7711(Long), 7720(Long), 7721(Long), 7722(Long), 7723(Long), 7724(Long), 7730(Long), 7731(Long), 7732(Long), 7733(Long), 7734(Long), 7900(Long), 7901(Long), 7902(Long), 7903(Long), 4000(Long), 4001(Long), 4002(Long), 4003(Long), 4004(Long), 8100(Long), 4005(Long), 8101(Long), 4006(Long), 4007(Long), 4008(Long), 4009(Long), 4010(Long), 4011(Long), 4012(Long), 4013(Long), 4014(Long), 4015(Long), 4016(Long), 4017(Long), 4018(Long), 4031(Long), 4032(Long), 4033(Long), 4034(Long), 4035(Long), 4036(Long), 4037(Long), 4038(Long), 4039(Long), 4040(Long), 4041(Long), 4042(Long), 4043(Long), 4044(Long), 4045(Long), 4047(Long), 4048(Long), 4049(Long), 4050(Long), 4051(Long), 4052(Long), 4053(Long), 4054(Long), 4055(Long)
+2026-10-20 19:06:23.878 [tomcat-handler-2] [] [] [39mDEBUG[0;39m [36mc.z.m.s.d.mysql.permission.MenuMapper.selectByIds:135[0;39m - <==      Total: 2022
+2026-10-20 19:06:23.983 [tomcat-handler-2] [] [] [34mINFO [0;39m [36mc.z.f.a.core.interceptor.ApiAccessLogInterceptor:76[0;39m - [afterCompletion][完成请求 URL(/admin-api/system/auth/get-permission-info) 耗时(1059 ms)]

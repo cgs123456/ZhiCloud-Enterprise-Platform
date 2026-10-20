@@ -1,0 +1,10 @@
+锛堣烦杩?1-3锛氬簱宸茶縼绉汇€佽处鍙峰凡寮曞锛?
+
+=== 4. server 鏈嶅姟锛坙ocal profile + SPRING_FLYWAY_ENABLED=false锛?==
+  鏈嶅姟宸茬洃鍚?48083
+  flyway 鏈熬: version | success | 218 | 1 | 217 | 1
+
+=== 5. 鐧诲綍 + 鏉冮檺鎺ュ彛 ===
+  鐧诲綍: {"code": 0, "msg": "", "data": {"userId": 225, "accessToken": "7066409a855c46218d18ea724dc4c7de", "refreshToken": "7956ea962889428f9fa79acc8b58f2d7", "expiresTime": 1792496182690}}
+  鏉冮檺鎺ュ彛 code=0 椤剁骇鑿滃崟=29 鏉冮檺=1646
+  椤剁骇鑿滃崟: ['浣滆€呭姩鎬?, 'Boot 寮€鍙戞枃妗?, '璐ㄩ噺绠＄悊 QMS', '璐㈠姟绠＄悊 FMS', '浜哄姏璧勬簮 HRM', 'Cloud 寮€鍙戞枃妗?, '绯荤粺绠＄悊', '鍩虹璁炬柦', '娉㈡鍗曠鐞?, '鎶ヨ〃绠＄悊']

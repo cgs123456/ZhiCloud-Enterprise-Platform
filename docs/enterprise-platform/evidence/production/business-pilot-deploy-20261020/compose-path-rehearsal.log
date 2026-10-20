@@ -1,0 +1,51 @@
+=== 1. compose 鐨?MySQL锛氱┖搴擄紙涓嶅啀鎸?initdb 鑴氭湰锛?==
+  鍒濆琛ㄦ暟: COUNT(*)
+0
+
+=== 2. db-migration 鏈嶅姟锛坈lean baseline + Flyway V2..V218 + 璇箟鏍￠獙锛?==
+  exit=0
+    [flyway-migration] target=jdbc:mysql://127.0.0.1:55101/zhicloud_compose_probe mode=clean
+    [flyway-migration] clean baseline: sourceSha256=5b202dcb1223343844aea26dcdc10417f324ac8dbcefa25c912e3c5901d3f181, outputSha256=1eede7a86b9905cbcc01992a89b7889d9f39e88109e83e71df425
+    | OK    | V91 self-check passed | ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION |
+    | ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION | ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_
+    [flyway-migration] verification PASS: resource=db/verification/V116_verify.sql, checks=3
+    [flyway-migration] verification PASS: resource=db/verification/V117_verify.sql, checks=3
+    [flyway-migration] verification PASS: resource=db/verification/V118_verify.sql, checks=2
+    [flyway-migration] verification PASS: resource=db/verification/V119_verify.sql, checks=4
+    [flyway-migration] verification PASS: resource=db/verification/V120_verify.sql, checks=4
+    [flyway-migration] verification PASS: resource=db/verification/V121_verify.sql, checks=1
+    [flyway-migration] verification PASS: resource=db/verification/V216_verify.sql, checks=5
+    [flyway-migration] verification PASS: resource=db/verification/V217_verify.sql, checks=3
+    [flyway-migration] verification PASS: resource=db/verification/V218_verify.sql, checks=4
+    [flyway-migration] success: applied=222, initialVersion=1.1, targetVersion=218, cost=203370ms
+
+=== 3. bootstrap-admin 鏈嶅姟 ===
+  exit=0 [bootstrap-admin] success: action=created username=zhicloudadmin tenantId=1 roleId=1 postId=4 cost=2542ms
+
+=== 4. server 鏈嶅姟锛坙ocal profile + SPRING_FLYWAY_ENABLED=false锛?==
+  鏈嶅姟鏈捣鏉ワ紝鏃ュ織灏鹃儴锛?
+	at java.base/java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:510)
+	at java.base/java.util.concurrent.CompletableFuture.completeExceptionally(CompletableFuture.java:2194)
+	at org.redisson.client.protocol.CommandData.tryFailure(CommandData.java:87)
+	at org.redisson.client.handler.CommandDecoder.decode(CommandDecoder.java:414)
+	at org.redisson.client.handler.CommandDecoder.decodeCommand(CommandDecoder.java:220)
+	at org.redisson.client.handler.CommandDecoder.decode(CommandDecoder.java:148)
+	at org.redisson.client.handler.CommandDecoder.decode(CommandDecoder.java:124)
+	at io.netty.handler.codec.ByteToMessageDecoder.decodeRemovalReentryProtection(ByteToMessageDecoder.java:545)
+	at io.netty.handler.codec.ReplayingDecoder.callDecode(ReplayingDecoder.java:366)
+	at io.netty.handler.codec.ByteToMessageDecoder.channelRead(ByteToMessageDecoder.java:296)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:357)
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.channelRead(DefaultChannelPipeline.java:1429)
+	at io.netty.channel.DefaultChannelPipeline.fireChannelRead(DefaultChannelPipeline.java:918)
+	at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:176)
+	at io.netty.channel.nio.AbstractNioChannel$AbstractNioUnsafe.handle(AbstractNioChannel.java:445)
+	at io.netty.channel.nio.NioIoHandler$DefaultNioRegistration.handle(NioIoHandler.java:388)
+	at io.netty.channel.nio.NioIoHandler.processSelectedKey(NioIoHandler.java:596)
+	at io.netty.channel.nio.NioIoHandler.processSelectedKeysOptimized(NioIoHandler.java:571)
+	at io.netty.channel.nio.NioIoHandler.processSelectedKeys(NioIoHandler.java:512)
+	at io.netty.channel.nio.NioIoHandler.run(NioIoHandler.java:484)
+	at io.netty.channel.SingleThreadIoEventLoop.runIo(SingleThreadIoEventLoop.java:225)
+	at io.netty.channel.SingleThreadIoEventLoop.run(SingleThreadIoEventLoop.java:196)
+	... 4 common frames omitted
+Caused by: org.redisson.client.RedisWrongPasswordException: WRONGPASS invalid username-password pair or user is disabled.. channel: [id: 0x24555627, L:/127.0.0.1:23289 - R:127.0.0.1/127.0.0.1:6379] data: CommandData [command=(AUTH), params: (password masked), codec=null]
+	... 23 common frames omitted

@@ -11,7 +11,12 @@
 | 路径 | 组成 | 适用 |
 | --- | --- | --- |
 | A. Kubernetes（Helm + ArgoCD） | `deploy/helm/zhicloud`：PreSync 迁移 Job → PreSync 引导管理员 Job → Deployment（`SPRING_FLYWAY_ENABLED=false`，只在 Job 里迁移） | 客户已有 K8s |
-| B. 单机 Docker Compose | `script/docker/docker-compose.yml`：MySQL/Redis/PostgreSQL + zhicloud-server | 单客户试点、单机交付 |
+| B. 单机 Docker Compose | `script/docker/docker-compose.yml`：MySQL/Redis/PostgreSQL + `db-migration`（一次性）+ `bootstrap-admin`（一次性）+ `server` | 单客户试点、单机交付 |
+
+> 两条路径的**迁移链完全一致**（clean baseline → Flyway V2..V218 → 引导管理员），
+> 差别只在编排方式。**不要**再往 MySQL 的 initdb.d 里挂 `sql/mysql/*.sql`：
+> 那批模块 SQL 与 `zhicloud_platform.sql` 已经不同步（例如 `hr.sql` 往 `system_dict_type` 写 `tenant_id`，
+> 而平台 SQL 建表时没有这一列），init 会直接失败、容器根本起不来。
 
 两条路径的**关键约束**一致：
 
@@ -21,6 +26,10 @@
    幂等语义为 `ensure`（已存在则不动），口令由 Secret 注入，不写死在脚本或镜像里。
 3. **prod profile 禁止自动 DDL**：`flowable.database-schema-update=false`、Flowable/Quartz 等引擎表由迁移链建好
    （见 V218）。这是本轮补上的缺口：**在此之前，全新安装 + prod profile 必然启动失败**。
+4. **单机 compose 的服务顺序**：`mysql` → `db-migration`（跑完退出）→ `bootstrap-admin`（跑完退出）→ `server`。
+   业务进程带 `SPRING_FLYWAY_ENABLED=false`，不会自己迁移。
+5. **演示业务数据另行导入**：compose 默认只装平台 schema 与平台种子数据；
+   需要演示数据时执行 `demo-data/sql/mysql/*_demo_seed.sql`（租户 9001 专用，独立于交付库）。
 
 ## 2. prod profile 必填环境变量
 
@@ -106,6 +115,9 @@
 | 增量迁移 | `DatabaseMigrationRunner`（`existing` 模式） | 应用 V218，语义校验扩到 9 个脚本全 PASS |
 | prod profile 启动 | `--spring.profiles.active=prod` + 完整环境变量 | `Started ZhiCloudServerApplication in 149.637 seconds` |
 | 登录 + 权限 | `POST /admin-api/system/auth/login`（带 `tenant-id` 头） | `code=0`，拿到 accessToken；`get-permission-info` → `code=0`，顶级菜单 29、权限 1646 |
+
+单机 compose 路径（空库 → db-migration → bootstrap-admin → server）的代码级彩排同样跑通：
+222 个迁移 + 9 个语义校验全 PASS、账号创建成功、登录 `code=0`、权限接口 29 顶级菜单 / 1646 权限。
 
 证据文件：`docs/enterprise-platform/evidence/production/business-pilot-deploy-20261020/`。
 

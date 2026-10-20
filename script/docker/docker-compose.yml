@@ -26,26 +26,10 @@ services:
     volumes:
       - mysql:/var/lib/mysql/
       # 初始化脚本按文件名字典序依次执行，序号前缀用于控制顺序：
-      # 0x 核心（system/infra）→ 1x 平台能力（调度 / AI）→ 2x~6x 各业务模块
-      - ../../sql/mysql/zhicloud_platform.sql:/docker-entrypoint-initdb.d/01-zhicloud_platform.sql:ro
-      - ../../sql/mysql/quartz.sql:/docker-entrypoint-initdb.d/10-quartz.sql:ro
-      - ../../sql/mysql/ai_prompt_template.sql:/docker-entrypoint-initdb.d/11-ai_prompt_template.sql:ro
-      - ../../sql/mysql/aimultiagent.sql:/docker-entrypoint-initdb.d/12-aimultiagent.sql:ro
-      - ../../sql/mysql/hr.sql:/docker-entrypoint-initdb.d/20-hr.sql:ro
-      - ../../sql/mysql/erp.sql:/docker-entrypoint-initdb.d/30-erp.sql:ro
-      - ../../sql/mysql/erp_cost.sql:/docker-entrypoint-initdb.d/31-erp_cost.sql:ro
-      - ../../sql/mysql/erp_mps.sql:/docker-entrypoint-initdb.d/32-erp_mps.sql:ro
-      - ../../sql/mysql/erp_tax.sql:/docker-entrypoint-initdb.d/33-erp_tax.sql:ro
-      - ../../sql/mysql/mes.sql:/docker-entrypoint-initdb.d/40-mes.sql:ro
-      - ../../sql/mysql/mes_rework.sql:/docker-entrypoint-initdb.d/41-mes_rework.sql:ro
-      - ../../sql/mysql/mes_tpm.sql:/docker-entrypoint-initdb.d/42-mes_tpm.sql:ro
-      - ../../sql/mysql/qms.sql:/docker-entrypoint-initdb.d/50-qms.sql:ro
-      - ../../sql/mysql/qms_ext.sql:/docker-entrypoint-initdb.d/51-qms_ext.sql:ro
-      - ../../sql/mysql/qms_document_audit.sql:/docker-entrypoint-initdb.d/52-qms_document_audit.sql:ro
-      - ../../sql/mysql/qms_instrument.sql:/docker-entrypoint-initdb.d/53-qms_instrument.sql:ro
-      - ../../sql/mysql/wms.sql:/docker-entrypoint-initdb.d/60-wms.sql:ro
-      - ../../sql/mysql/wms_wave.sql:/docker-entrypoint-initdb.d/61-wms_wave.sql:ro
-      - ../../sql/mysql/wms_zone_location.sql:/docker-entrypoint-initdb.d/62-wms_zone_location.sql:ro
+      # schema 与平台种子数据统一由 db-migration 服务按 jar 内的 clean baseline + Flyway 迁移链建立。
+      # 这里不再挂 sql/mysql/*.sql：这些模块 SQL 与 zhicloud_platform.sql 已不同步
+      # （例如 hr.sql 往 system_dict_type 写 tenant_id，而平台 SQL 建表时没有该列），
+      # init 会直接失败导致容器起不来。需要演示业务数据时，另行执行 demo-data/sql/mysql/*_demo_seed.sql。
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}"]
       interval: 10s
@@ -244,7 +228,66 @@ services:
       - loki
     networks: [zhicloud-net]
 
+  # ---------------- 数据迁移（一次性，跑完即退出）----------------
+  # 与 K8s PreSync Job 同一个入口：clean baseline 建 schema + 平台种子，再由 Flyway 执行 V2..V218，
+  # 最后跑一遍迁移后语义校验（V116-V121/V216/V217/V218），任一不通过就阻断发布。
+  db-migration:
+    container_name: zhicloud-db-migration
+    image: zhicloud-server
+    restart: "no"
+    entrypoint:
+      - java
+      - -XX:MaxRAMPercentage=50
+      - -Duser.timezone=Asia/Shanghai
+      - -Dloader.main=cn.zhicloud.server.DatabaseMigrationRunner
+      - -cp
+      - /zhicloud-server/app.jar
+      - org.springframework.boot.loader.launch.PropertiesLauncher
+    environment:
+      MIGRATION_BASELINE_MODE: ${MIGRATION_BASELINE_MODE:-clean}
+      MASTER_DATASOURCE_URL: ${MASTER_DATASOURCE_URL:-jdbc:mysql://zhicloud-mysql:3306/zhicloud_platform?useSSL=true&requireSSL=true&verifyServerCertificate=false&enabledTLSProtocols=TLSv1.2,TLSv1.3&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true}
+      MASTER_DATASOURCE_USERNAME: ${MASTER_DATASOURCE_USERNAME:-root}
+      MASTER_DATASOURCE_PASSWORD: ${MASTER_DATASOURCE_PASSWORD:?MASTER_DATASOURCE_PASSWORD is required}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks: [zhicloud-net]
+
+  # ---------------- 引导管理员（一次性，跑完即退出）----------------
+  # 说明：init SQL 只建表不建账号，不跑这一步的话 compose 起来后没有任何账号能登录。
+  # 走的是与 K8s PreSync Job 同一个 BootstrapAdminRunner（ensure 模式：已存在则不改口令）。
+  bootstrap-admin:
+    container_name: zhicloud-bootstrap-admin
+    image: zhicloud-server
+    restart: "no"
+    entrypoint:
+      - java
+      - -XX:MaxRAMPercentage=50
+      - -Duser.timezone=Asia/Shanghai
+      - -Dloader.main=cn.zhicloud.server.BootstrapAdminRunner
+      - -cp
+      - /zhicloud-server/app.jar
+      - org.springframework.boot.loader.launch.PropertiesLauncher
+    environment:
+      BOOTSTRAP_ADMIN_MODE: ${BOOTSTRAP_ADMIN_MODE:-ensure}
+      BOOTSTRAP_ADMIN_USERNAME: ${BOOTSTRAP_ADMIN_USERNAME:-zhicloud_admin}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:?BOOTSTRAP_ADMIN_PASSWORD is required}
+      BOOTSTRAP_ADMIN_TENANT_ID: ${BOOTSTRAP_ADMIN_TENANT_ID:-1}
+      BOOTSTRAP_ADMIN_ROLE_ID: ${BOOTSTRAP_ADMIN_ROLE_ID:-1}
+      BOOTSTRAP_ADMIN_POST_ID: ${BOOTSTRAP_ADMIN_POST_ID:-4}
+      BOOTSTRAP_ADMIN_BCRYPT_COST: ${BOOTSTRAP_ADMIN_BCRYPT_COST:-12}
+      MASTER_DATASOURCE_URL: ${MASTER_DATASOURCE_URL:-jdbc:mysql://zhicloud-mysql:3306/zhicloud_platform?useSSL=true&requireSSL=true&verifyServerCertificate=false&enabledTLSProtocols=TLSv1.2,TLSv1.3&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true}
+      MASTER_DATASOURCE_USERNAME: ${MASTER_DATASOURCE_USERNAME:-root}
+      MASTER_DATASOURCE_PASSWORD: ${MASTER_DATASOURCE_PASSWORD:?MASTER_DATASOURCE_PASSWORD is required}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks: [zhicloud-net]
+
   # ---------------- 应用服务器 ----------------
+  # ARGS 是多行 plain scalar：里面只能写 --key=value，不能插 # 注释行（会把标量截断导致 YAML 解析失败）。
+  # AI-RAG 默认关闭（--zhicloud.airag.enabled=false）：启用需要 classpath:airag/ 下的 BGE 模型文件（jar 内不含），
+  # 缺模型时开启会直接启动失败；部署 Postgres+pgvector 并下载模型后再改 true。
   server:
     container_name: zhicloud-server
     build:
@@ -257,6 +300,8 @@ services:
       - "48090:48090" # Actuator 管理端口
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-local}
+      # 迁移只由 db-migration 一次性服务执行，业务进程不再自动迁移（与 K8s Deployment 一致）
+      SPRING_FLYWAY_ENABLED: "false"
       JAVA_OPTS:
         ${JAVA_OPTS:-
           -Xms512m
@@ -275,8 +320,6 @@ services:
         --spring.data.redis.host=${REDIS_HOST:-zhicloud-redis}
         --spring.data.redis.port=6379
         --spring.data.redis.password=${REDIS_PASSWORD:?REDIS_PASSWORD is required}
-        # AI-RAG 默认关闭：需要 classpath:airag/ 下的 BGE 模型文件（jar 内不含），
-        # 缺模型时开启会直接启动失败。部署 Postgres+pgvector 并下载模型后再改 true。
         --zhicloud.airag.enabled=false
         --zhicloud.airag.datasource.url=jdbc:postgresql://zhicloud-postgres:5432/${POSTGRES_DB:-zhicloud_rag}
         --zhicloud.airag.datasource.username=${POSTGRES_USER:-zhicloud}
@@ -290,6 +333,10 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
+      db-migration:
+        condition: service_completed_successfully
+      bootstrap-admin:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:48090/actuator/health || exit 1"]
       interval: 30s
