@@ -23,7 +23,7 @@ class BootstrapAdminRunnerTest {
     private static final String DB_URL =
             "jdbc:h2:mem:bootstrap_runner;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1";
     private static final String USERNAME = "zhicloud_admin";
-    private static final String PASSWORD = "correct-horse-battery-staple";
+    private static final String PASSWORD = "correct-horse-1";
     private static final String TENANT_ID = "1";
 
     @BeforeEach
@@ -91,7 +91,7 @@ class BootstrapAdminRunnerTest {
         assertEquals(0, run(baseEnv(PASSWORD)));
         String firstHash = scalar("SELECT password FROM system_users WHERE tenant_id = 1 AND username = ?");
 
-        Map<String, String> env = baseEnv("different-password-value");
+        Map<String, String> env = baseEnv("different-pass-1");
         assertEquals(1, run(env));
 
         assertEquals(firstHash, scalar("SELECT password FROM system_users WHERE tenant_id = 1 AND username = ?"));
@@ -105,7 +105,7 @@ class BootstrapAdminRunnerTest {
             statement.execute("UPDATE system_user_role SET deleted = 1 WHERE tenant_id = 1");
             statement.execute("UPDATE system_user_post SET deleted = 1 WHERE tenant_id = 1");
         }
-        String newPassword = "new-correct-horse-battery";
+        String newPassword = "new-correct-1";
         Map<String, String> env = baseEnv(newPassword);
         env.put(BootstrapAdminRunner.MODE_ENV, BootstrapAdminRunner.ROTATE_MODE);
 
@@ -149,6 +149,12 @@ class BootstrapAdminRunnerTest {
     @Test
     void shortPasswordIsRejectedBeforeDatabaseMutation() throws Exception {
         assertEquals(1, run(baseEnv("too-short")));
+        assertEquals(0, count("SELECT COUNT(*) FROM system_users WHERE tenant_id = 1"));
+    }
+
+    @Test
+    void overlongPasswordIsRejectedBeforeDatabaseMutation() throws Exception {
+        assertEquals(1, run(baseEnv("correct-horse-1234")));
         assertEquals(0, count("SELECT COUNT(*) FROM system_users WHERE tenant_id = 1"));
     }
 

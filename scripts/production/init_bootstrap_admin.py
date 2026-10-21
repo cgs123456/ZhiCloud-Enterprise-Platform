@@ -7,7 +7,7 @@
     口令是公开的弱 BCrypt(cost=04) 哈希，导入生产即等于把后门写进库里。
     这些行已经从生产安装脚本中移出（见 demo-data/sql/<dialect>/*_demo_seed.sql，禁止导入生产），
     生产只允许通过本脚本创建**唯一一个**初始管理员：
-      1. 口令由 secrets 模块随机生成（默认 24 字节 URL-safe，约 32 字符）；
+      1. 口令由 secrets 模块随机生成（默认 12 字节 URL-safe，16 字符，匹配登录接口上限）；
       2. 口令哈希用 BCrypt cost=12、$2a$ 前缀生成（Spring Security 可校验）；
       3. 明文口令只在本次 stdout 打印一次，不落盘、不写日志、不进版本库。
 
