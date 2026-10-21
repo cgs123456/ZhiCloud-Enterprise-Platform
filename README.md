@@ -6,6 +6,7 @@
 
 ![WMS 首页看板：入库/出库/移库单据与 30 天趋势](docs/images/wms-dashboard.png)
 
+更多页面截图：[ERP / MES / WMS / QMS / CRM / HRM / OA / TMS 页面画廊](docs/screenshots.md)
 ## 快速开始
 
 前置：Docker 24+ 与 Docker Compose v2。后端、中间件、数据库迁移和首个管理员账号由 Compose 一并完成。
