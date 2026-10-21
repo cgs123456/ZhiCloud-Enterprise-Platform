@@ -415,15 +415,15 @@
   "artifacts": {
     "sql": {
       "path": "demo-data/sql/mysql/demo_business_documents.sql",
-      "payload_sha256": "575d1abc24f5a039fd8e2acab1d288efa9c23c3eeafb188a614400c1bbd2dd1d",
-      "file_sha256": "575d1abc24f5a039fd8e2acab1d288efa9c23c3eeafb188a614400c1bbd2dd1d",
-      "bytes": 627005
+      "payload_sha256": "366f46919fe674f685c12a638df2b83b611a0e14214fe15f84d0f067f87dd2b6",
+      "file_sha256": "366f46919fe674f685c12a638df2b83b611a0e14214fe15f84d0f067f87dd2b6",
+      "bytes": 627157
     },
     "json": {
       "path": "demo-data/schema/demo_business_documents.json",
-      "payload_sha256": "a89d827faed794ff79650565f2e6a92817de403a8e90289d1834ee1a31add028",
-      "file_sha256": "a89d827faed794ff79650565f2e6a92817de403a8e90289d1834ee1a31add028",
-      "bytes": 866685
+      "payload_sha256": "64f95e0abef8f94c45ea271a77e0fa210437a51c70f482f05338549206f8de1f",
+      "file_sha256": "64f95e0abef8f94c45ea271a77e0fa210437a51c70f482f05338549206f8de1f",
+      "bytes": 866837
     }
   },
   "status": "STATIC_ONLY —— 未在任何数据库执行过，可执行性未验证"

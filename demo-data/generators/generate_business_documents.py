@@ -769,7 +769,7 @@ def build_erp(b: Builder):
             "out_time": biz_datetime(i * 7 + 3, 10, 30),
             "status": ERP_SALE_ORDER_STATUS[i % len(ERP_SALE_ORDER_STATUS)],
             "total_count": qty(sum(l["sale_count"] for l in lines)),
-            "total_amount": money(total), "remark": "DEMO_演示销售订单",
+            "total_price": money(total), "total_amount": money(total), "remark": "DEMO_演示销售订单",
         })
         so_items.append(lines)
     b.emit("erp_sale_order", so_heads)
@@ -802,7 +802,7 @@ def build_erp(b: Builder):
             "status": ERP_OUT_STATUS[i % len(ERP_OUT_STATUS)],
             "receipt_status": ERP_RECEIPT_STATUS[i % len(ERP_RECEIPT_STATUS)],
             "total_count": qty(sum(l["sale_count"] for l in lines)),
-            "total_amount": money(total), "remark": "DEMO_演示销售出库",
+            "total_price": money(total), "total_amount": money(total), "remark": "DEMO_演示销售出库",
         })
         out_items.append(lines)
     b.emit("erp_sale_out", out_heads)
@@ -835,7 +835,7 @@ def build_erp(b: Builder):
             "status": ERP_OUT_STATUS[i % len(ERP_OUT_STATUS)],
             "refund_status": ERP_REFUND_STATUS[i % len(ERP_REFUND_STATUS)],
             "total_count": qty(sum(l["sale_count"] for l in lines)),
-            "total_amount": money(total), "remark": "DEMO_演示销售退货",
+            "total_price": money(total), "total_amount": money(total), "remark": "DEMO_演示销售退货",
         })
         sr_items.append(lines)
     b.emit("erp_sale_return", sr_heads)
@@ -867,7 +867,7 @@ def build_erp(b: Builder):
             "in_time": biz_datetime(i * 6 + 4, 9, 30),
             "status": ERP_PURCHASE_ORDER_STATUS[i % len(ERP_PURCHASE_ORDER_STATUS)],
             "total_count": qty(sum(l["purchase_count"] for l in lines)),
-            "total_amount": money(total), "remark": "DEMO_演示采购订单",
+            "total_price": money(total), "total_amount": money(total), "remark": "DEMO_演示采购订单",
         })
         po_items.append(lines)
     b.emit("erp_purchase_order", po_heads)
@@ -900,7 +900,7 @@ def build_erp(b: Builder):
             "status": ERP_STOCK_STATUS[i % len(ERP_STOCK_STATUS)],
             "payment_status": ERP_PAY_STATUS[i % len(ERP_PAY_STATUS)],
             "total_count": qty(sum(l["purchase_count"] for l in lines)),
-            "total_amount": money(total), "remark": "DEMO_演示采购入库",
+            "total_price": money(total), "total_amount": money(total), "remark": "DEMO_演示采购入库",
         })
         pi_items.append(lines)
     b.emit("erp_purchase_in", pi_heads)
@@ -933,7 +933,7 @@ def build_erp(b: Builder):
             "status": ERP_STOCK_STATUS[i % len(ERP_STOCK_STATUS)],
             "refund_status": ERP_REFUND_STATUS[i % len(ERP_REFUND_STATUS)],
             "total_count": qty(sum(l["purchase_count"] for l in lines)),
-            "total_amount": money(total), "remark": "DEMO_演示采购退货",
+            "total_price": money(total), "total_amount": money(total), "remark": "DEMO_演示采购退货",
         })
         pr_items.append(lines)
     b.emit("erp_purchase_return", pr_heads)

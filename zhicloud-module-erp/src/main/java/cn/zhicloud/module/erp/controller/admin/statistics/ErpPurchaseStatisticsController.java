@@ -42,10 +42,10 @@ public class ErpPurchaseStatisticsController {
         LocalDateTime month = LocalDateTimeUtils.getMonth();
         LocalDateTime year = LocalDateTimeUtils.getYear();
         ErpPurchaseSummaryRespVO summary = new ErpPurchaseSummaryRespVO()
-                .setTodayPrice(purchaseStatisticsService.getPurchasePrice(today, null))
+                .setTodayPrice(purchaseStatisticsService.getPurchasePrice(today, today.plusDays(1)))
                 .setYesterdayPrice(purchaseStatisticsService.getPurchasePrice(yesterday, today))
-                .setMonthPrice(purchaseStatisticsService.getPurchasePrice(month, null))
-                .setYearPrice(purchaseStatisticsService.getPurchasePrice(year, null));
+                .setMonthPrice(purchaseStatisticsService.getPurchasePrice(month, month.plusMonths(1)))
+                .setYearPrice(purchaseStatisticsService.getPurchasePrice(year, year.plusYears(1)));
         return success(summary);
     }
 
