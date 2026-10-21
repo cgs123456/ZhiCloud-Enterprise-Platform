@@ -47,7 +47,13 @@ IGNORE_LOOKBACK = 0
 # 逐条复核：17 处全部是同一条已认可理由 —— Flyway/引导 CLI 运行在 Spring 容器之外，
 # 硬套 ServiceException 只会污染业务错误码空间；与既有豁免同类，不是新类型的债。
 # 若将来要把这类 CLI 异常统一成专用异常类型，应一次性还债并把本数字降回去。
-MAX_EXEMPTIONS = 81
+#
+# 2026-10-21：81 → 82。6cd6f5bec（prod profile 启动阻塞修复）在
+# BootstrapAdminRunner 增加“管理员口令不得超过登录接口 16 位上限”的校验，
+# 新增 1 处豁免；理由与既有 BootstrapAdminRunner 豁免完全同类：
+# 引导 CLI 运行在 Spring 容器之外，不应把该错误注册进业务错误码空间。
+# 该豁免已在代码行内保留完整理由，本上限随本次有意识修改同步上调。
+MAX_EXEMPTIONS = 82
 
 
 def in_comment(text, pos):
