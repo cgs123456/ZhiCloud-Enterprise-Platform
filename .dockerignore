@@ -53,9 +53,6 @@ docs/
 # ---- 前端 UI 源码（后端镜像不需要）----
 zhicloud-ui/
 
-# ---- 截图与图片资源 ----
-.image/
-
 # ---- Spring Modulith 临时解压目录 ----
 .tmp_core/
 .tmp_runtime/
