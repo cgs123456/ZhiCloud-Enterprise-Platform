@@ -1,0 +1,26 @@
+pages_with_primary_list=325 pass=323 fail=0 external=2
+
+== FAIL ==
+
+== EXTERNAL ==
+公众号管理	2104	free-publish	/mp/free-publish/page	http=200	code=1006006000	获得已成功发布列表失败，原因：不合法的 AppID ，请开发者检查 AppID 的正确性，避免异常字符，注意大小写
+公众号管理	2108	draft	/mp/draft/page	http=200	code=1006007000	获得草稿列表失败，原因：不合法的 AppID ，请开发者检查 AppID 的正确性，避免异常字符，注意大小写
+
+== PASS by domain ==
+MES 系统	67
+ERP 系统	56
+系统管理	27
+WMS 系统	25
+人力资源 HRM	22
+质量管理 QMS	21
+CRM 系统	17
+AI 大模型	13
+IM 即时通讯	13
+基础设施	13
+OA管理	11
+公众号管理	8
+工作流程	8
+运输管理	8
+财务管理 FMS	7
+erp	6
+wms	1

@@ -1,0 +1,48 @@
+﻿domain,id,name,endpoint,params_tried,params_used,http,code,msg,verdict
+AI 大模型,6100,Agent编排执行,/aimultiagent/checkpoint/list,executionLogId=1,executionLogId=1,200,0,,OK_WITH_CONTEXT
+ERP 系统,9424,主生产计划,/erp/mps-plan/detail/list,planId=1,planId=1,200,0,,OK_WITH_CONTEXT
+ERP 系统,9434,供应商评估,/erp/supplier-evaluation/item/list,evaluationId=1,evaluationId=1,200,0,,OK_WITH_CONTEXT
+IM 即时通讯,6540,群聊列表,/im/manager/group/member/list,groupId=1,groupId=1,200,0,,OK_WITH_CONTEXT
+MES 系统,5220,班组设置,/mes/cal/team-member/page,teamId=1,teamId=1,200,0,,OK_WITH_CONTEXT
+MES 系统,5260,排班日历,/mes/cal/calendar/list,startDay=2026-10-01%2000:00:00&endDay=2026-10-31%2023:59:59&queryType=TYPE&calendarType=1,startDay=2026-10-01%2000:00:00&endDay=2026-10-31%2023:59:59&queryType=TYPE&calendarType=1,200,0,,OK_WITH_CONTEXT
+MES 系统,5510,常见缺陷,/mes/qc/defect-record/page,qcType=1&qcId=1,qcType=1&qcId=1,200,0,,OK_WITH_CONTEXT
+MES 系统,5530,生产工单,/mes/pro/work-order-bom/page,workOrderId=5960000 | workOrderCode=DEMO-WO-00001 | id=5960000,workOrderId=5960000,200,0,,OK_WITH_CONTEXT
+MES 系统,5560,工序流转,/mes/pro/card-process/page,cardId=1 | cardCode=1 | id=1,cardId=1,200,0,,OK_WITH_CONTEXT
+MES 系统,5630,质检方案,/mes/qc/template/indicator/page,templateId=1 | id=1,templateId=1,200,0,,OK_WITH_CONTEXT
+MES 系统,5650,过程检验,/mes/qc/ipqc/line/page,ipqcId=1 | id=1,ipqcId=1,200,0,,OK_WITH_CONTEXT
+MES 系统,5660,出货检验,/mes/qc/oqc/line/page,oqcId=1 | id=1,oqcId=1,200,0,,OK_WITH_CONTEXT
+MES 系统,5670,退料检验,/mes/qc/rqc/line/page,rqcId=1 | id=1,rqcId=1,200,0,,OK_WITH_CONTEXT
+MES 系统,5792,到货通知,/mes/wm/arrival-notice-line/page,noticeId=1 | arrivalNoticeId=1 | id=1,noticeId=1,200,0,,OK_WITH_CONTEXT
+MES 系统,5805,生产领料,/mes/wm/product-issue-line/page,issueId=1 | productIssueId=1 | id=1,issueId=1,200,0,,OK_WITH_CONTEXT
+MES 系统,5830,采购退货,/mes/wm/return-vendor-line/page,returnId=1 | returnVendorId=1 | id=1,returnId=1,200,0,,OK_WITH_CONTEXT
+MES 系统,5840,生产退料,/mes/wm/return-issue-line/page,issueId=1,issueId=1,200,0,,OK_WITH_CONTEXT
+MES 系统,5857,杂项出库,/mes/wm/misc-issue-line/page,issueId=1 | miscIssueId=1 | id=1,issueId=1,200,0,,OK_WITH_CONTEXT
+MES 系统,5881,外协发料,/mes/wm/outsource-issue-line/page,issueId=1 | outsourceIssueId=1 | id=1,issueId=1,200,0,,OK_WITH_CONTEXT
+MES 系统,5888,杂项入库,/mes/wm/misc-receipt-line/page,receiptId=1 | miscReceiptId=1 | id=1,receiptId=1,200,0,,OK_WITH_CONTEXT
+MES 系统,5917,装箱管理,/mes/wm/package-line/page,packageId=1 | id=1,packageId=1,200,0,,OK_WITH_CONTEXT
+MES 系统,5922,转移调拨,/mes/wm/transfer-line/list,transferId=1,transferId=1,200,0,,OK_WITH_CONTEXT
+MES 系统,5951,盘点方案,/mes/wm/stocktaking-plan-param/page,planId=1 | stockTakingPlanId=1 | id=1,planId=1,200,0,,OK_WITH_CONTEXT
+OA管理,3200,文章评论,/oa/knowledge-comment/list,articleId=1,articleId=1,200,0,,OK_WITH_CONTEXT
+WMS 系统,6441,库存统计,/wms/inventory/list,warehouseId=916000 | warehouseCode=DEMO_WWH01,warehouseId=916000,200,0,,OK_WITH_CONTEXT
+人力资源 HRM,9110,员工管理,/hrm/employee/certificate/list,employeeId=925000,employeeId=925000,200,0,,OK_WITH_CONTEXT
+人力资源 HRM,9237,员工薪资,/hrm/salary/change-record/list,employeeId=925000,employeeId=925000,200,0,,OK_WITH_CONTEXT
+人力资源 HRM,9241,月度工资表,/hrm/salary/month-employee-record/list,monthRecordId=32,monthRecordId=32,200,0,,OK_WITH_CONTEXT
+人力资源 HRM,9246,工资条发放,/hrm/portal/salary/slip/list,startMonth=2026-01&endMonth=2026-12,startMonth=2026-01&endMonth=2026-12,200,0,,OK_WITH_CONTEXT
+公众号管理,2099,粉丝管理,/mp/user/page,accountId=1,accountId=1,200,0,,OK_WITH_CONTEXT
+公众号管理,2103,消息管理,/mp/message/page,accountId=1,accountId=1,200,0,,OK_WITH_CONTEXT
+公众号管理,2104,图文发表记录,/mp/free-publish/page,accountId=1,accountId=1,200,1006006000,获得已成功发布列表失败，原因：不合法的 AppID ，请开发者检查 AppID 的正确性，避免异常字符，注意大小写,EXTERNAL_WECHAT_CONFIG
+公众号管理,2108,图文草稿箱,/mp/draft/page,accountId=1,accountId=1,200,1006007000,获得草稿列表失败，原因：不合法的 AppID ，请开发者检查 AppID 的正确性，避免异常字符，注意大小写,EXTERNAL_WECHAT_CONFIG
+公众号管理,2113,素材管理,/mp/material/page,accountId=1,accountId=1,200,0,,OK_WITH_CONTEXT
+公众号管理,2119,菜单管理,/mp/menu/list,accountId=1,accountId=1,200,0,,OK_WITH_CONTEXT
+公众号管理,2120,自动回复,/mp/auto-reply/page,accountId=1,accountId=1,200,0,,OK_WITH_CONTEXT
+基础设施,115,代码生成,/infra/codegen/table/list,dataSourceConfigId=1,dataSourceConfigId=1,200,0,,OK_WITH_CONTEXT
+基础设施,2490,主子表（标准）,/infra/demo03-student-erp/demo03-course/page,studentId=1,studentId=1,200,0,,OK_WITH_CONTEXT
+系统管理,100,用户管理,/system/user/list,ids=1,ids=1,200,0,,OK_WITH_CONTEXT
+财务管理 FMS,9010,账套管理,/fms/config/account-user/list,accountSetId=1,accountSetId=1,200,0,,OK_WITH_CONTEXT
+财务管理 FMS,9030,凭证字管理,/fms/config/voucher-word/list,accountSetId=1,accountSetId=1,200,0,,OK_WITH_CONTEXT
+财务管理 FMS,9040,常用摘要管理,/fms/config/digest/list,accountSetId=1,accountSetId=1,200,0,,OK_WITH_CONTEXT
+财务管理 FMS,9050,辅助核算管理,/fms/config/auxiliary-item/list,accountSetId=1,accountSetId=1,200,0,,OK_WITH_CONTEXT
+财务管理 FMS,9060,凭证模板管理,/fms/config/voucher-template/list,accountSetId=1,accountSetId=1,200,0,,OK_WITH_CONTEXT
+财务管理 FMS,9070,财务指标管理,/fms/config/finance-indicator/list,accountSetId=1,accountSetId=1,200,0,,OK_WITH_CONTEXT
+质量管理 QMS,7630,MSA 分析,/qms/msa/measurement/list,studyId=1,studyId=1,200,0,,OK_WITH_CONTEXT
+质量管理 QMS,7640,不合格品处理,/qms/ncr/mrb-record/list,ncrId=6360000,ncrId=6360000,200,0,,OK_WITH_CONTEXT
