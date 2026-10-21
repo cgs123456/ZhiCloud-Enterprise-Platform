@@ -4,7 +4,7 @@
 
 ![JDK](https://img.shields.io/badge/JDK-21-orange) ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5-blue) ![Vue](https://img.shields.io/badge/Vue-3-42b883) ![MySQL](https://img.shields.io/badge/MySQL-8-4479A1) ![License](https://img.shields.io/badge/License-MIT-yellow)
 
-![WMS 首页看板：入库/出库/移库单据与 30 天趋势](docs/images/wms-dashboard.png)
+![WMS 首页看板：入库/出库/移库单据与近 30 天趋势](docs/images/screenshots/wms-overview.png)
 
 更多页面截图：[ERP / MES / WMS / QMS / CRM / HRM / OA / TMS 页面画廊](docs/screenshots.md)
 ## 快速开始
@@ -81,11 +81,11 @@ python scripts/production/check_migration_contract.py   # 迁移契约门禁
 
 - 私有化安装、两条交付路径与必填变量：[交付手册](docs/enterprise-platform/handoff/pilot-deployment-20261020.md)
 - Helm Chart 与 K8s 清单：[deploy/helm/zhicloud](deploy/helm/zhicloud)、[k8s](k8s)
-- 业务试点验收记录：[business-pilot-20261020.md](docs/enterprise-platform/handoff/business-pilot-20261020.md)
+- 业务试点验收记录：[2026-10-20 验收](docs/enterprise-platform/handoff/business-pilot-20261020.md) · [2026-10-21 数据/API smoke 复核](docs/enterprise-platform/evidence/production/business-pilot-data-20261021/report.md)
 
 ## 已知限制
 
-- **未达生产就绪**：`production_ready=false`，Go/No-Go = No-Go；第三方许可门禁需法务处置后方可对外分发。
+- **未达生产就绪**：`production_ready=false`，Go/No-Go = No-Go；许可证、R-011/R-029 生产等价证据与独立复核仍未闭环，详见 [No-Go 处置说明](docs/enterprise-platform/handoff/no-go-disposition-20261021.md)。
 - IM / MP 随应用构建与启动，但未纳入本次试点验收范围。
 - 报表模块已接入 server（GoView 数据/项目 API）；GoView / 积木报表设计器需另部署独立服务。
 - AI 能力需外部模型 Key；RAG 还需 BGE 模型文件与 pgvector，默认关闭。
