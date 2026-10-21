@@ -21,20 +21,20 @@
       <el-form-item label="部门 ID" prop="deptId">
         <el-input-number v-model="queryParams.deptId" class="!w-240px" :controls="false" clearable placeholder="请输入部门 ID" />
       </el-form-item>
-      <el-form-item label="报销类型（10 差旅 20 招待 30 办公 40 交通 50 其他）" prop="reimburseType">
-        <el-input-number v-model="queryParams.reimburseType" class="!w-240px" :controls="false" clearable placeholder="请输入报销类型（10 差旅 20 招待 30 办公 40 交通 50 其他）" />
+      <el-form-item label="报销类型" prop="reimburseType">
+        <el-input-number v-model="queryParams.reimburseType" class="!w-240px" :controls="false" clearable placeholder="请输入报销类型" />
       </el-form-item>
       <el-form-item label="报销总额" prop="totalAmount">
         <el-input-number v-model="queryParams.totalAmount" class="!w-240px" :controls="false" clearable placeholder="请输入报销总额" />
       </el-form-item>
-      <el-form-item label="支付状态（10 未支付 20 部分支付 30 已支付）" prop="paymentStatus">
-        <el-input-number v-model="queryParams.paymentStatus" class="!w-240px" :controls="false" clearable placeholder="请输入支付状态（10 未支付 20 部分支付 30 已支付）" />
+      <el-form-item label="支付状态" prop="paymentStatus">
+        <el-input-number v-model="queryParams.paymentStatus" class="!w-240px" :controls="false" clearable placeholder="请输入支付状态" />
       </el-form-item>
       <el-form-item label="工作流编号" prop="processInstanceId">
         <el-input v-model="queryParams.processInstanceId" class="!w-240px" clearable placeholder="请输入工作流编号" @keyup.enter="handleQuery" />
       </el-form-item>
-      <el-form-item label="状态（10 草稿 20 审批中 30 已通过 40 已驳回 50 已撤销）" prop="status">
-        <el-input-number v-model="queryParams.status" class="!w-240px" :controls="false" clearable placeholder="请输入状态（10 草稿 20 审批中 30 已通过 40 已驳回 50 已撤销）" />
+      <el-form-item label="状态" prop="status">
+        <el-input-number v-model="queryParams.status" class="!w-240px" :controls="false" clearable placeholder="请输入状态" />
       </el-form-item>
       <el-form-item label="备注" prop="remark">
         <el-input v-model="queryParams.remark" class="!w-240px" clearable placeholder="请输入备注" @keyup.enter="handleQuery" />
@@ -68,15 +68,15 @@
       <el-table-column align="center" label="报销主题" prop="reimburseName" min-width="120" show-overflow-tooltip />
       <el-table-column align="center" label="申请人 ID" prop="applicantUserId" min-width="120" />
       <el-table-column align="center" label="部门 ID" prop="deptId" min-width="120" />
-      <el-table-column align="center" label="报销类型（10 差旅 20 招待 30 办公 40 交通 50 其他）" prop="reimburseType" min-width="120" />
+      <el-table-column align="center" label="报销类型" prop="reimburseType" min-width="120" />
       <el-table-column align="center" :formatter="dateFormatter" label="报销日期" prop="reimburseDate" width="170" />
       <el-table-column align="center" label="报销总额" prop="totalAmount" min-width="120" />
-      <el-table-column align="center" label="支付状态（10 未支付 20 部分支付 30 已支付）" prop="paymentStatus" min-width="120" />
+      <el-table-column align="center" label="支付状态" prop="paymentStatus" min-width="120" />
       <el-table-column align="center" label="工作流编号" prop="processInstanceId" min-width="120" show-overflow-tooltip />
-      <el-table-column align="center" label="状态（10 草稿 20 审批中 30 已通过 40 已驳回 50 已撤销）" prop="status" min-width="120" />
+      <el-table-column align="center" label="状态" prop="status" min-width="120" />
       <el-table-column align="center" label="备注" prop="remark" min-width="120" show-overflow-tooltip />
       <el-table-column align="center" :formatter="dateFormatter" label="创建时间" prop="createTime" width="170" />
-      <el-table-column align="center" fixed="right" label="操作" width="140">
+      <el-table-column align="center" fixed="right" label="操作" width="120">
         <template #default="scope">
           <el-button
             v-hasPermi="['oa:reimburse:update']"

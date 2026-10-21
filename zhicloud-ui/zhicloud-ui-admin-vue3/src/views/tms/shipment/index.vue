@@ -27,8 +27,8 @@
       <el-form-item label="终点地址" prop="destinationAddress">
         <el-input v-model="queryParams.destinationAddress" class="!w-240px" clearable placeholder="请输入终点地址" @keyup.enter="handleQuery" />
       </el-form-item>
-      <el-form-item label="运单类型（10 采购入库 / 20 销售出库 / 30 调拨 / 40 退货）" prop="shipmentType">
-        <el-input-number v-model="queryParams.shipmentType" class="!w-240px" :controls="false" clearable placeholder="请输入运单类型（10 采购入库 / 20 销售出库 / 30 调拨 / 40 退货）" />
+      <el-form-item label="运单类型" prop="shipmentType">
+        <el-input-number v-model="queryParams.shipmentType" class="!w-240px" :controls="false" clearable placeholder="请输入运单类型" />
       </el-form-item>
       <el-form-item label="来源单据号" prop="sourceOrderNo">
         <el-input v-model="queryParams.sourceOrderNo" class="!w-240px" clearable placeholder="请输入来源单据号" @keyup.enter="handleQuery" />
@@ -45,8 +45,8 @@
       <el-form-item label="运费金额" prop="freightAmount">
         <el-input-number v-model="queryParams.freightAmount" class="!w-240px" :controls="false" clearable placeholder="请输入运费金额" />
       </el-form-item>
-      <el-form-item label="状态（10 待发车 / 20 运输中 / 30 已到达 / 40 已签收 / 50 已取消）" prop="status">
-        <el-input-number v-model="queryParams.status" class="!w-240px" :controls="false" clearable placeholder="请输入状态（10 待发车 / 20 运输中 / 30 已到达 / 40 已签收 / 50 已取消）" />
+      <el-form-item label="状态" prop="status">
+        <el-input-number v-model="queryParams.status" class="!w-240px" :controls="false" clearable placeholder="请输入状态" />
       </el-form-item>
       <el-form-item label="备注" prop="remark">
         <el-input v-model="queryParams.remark" class="!w-240px" clearable placeholder="请输入备注" @keyup.enter="handleQuery" />
@@ -82,7 +82,7 @@
       <el-table-column align="center" label="司机编号" prop="driverId" min-width="120" />
       <el-table-column align="center" label="起点地址" prop="originAddress" min-width="120" show-overflow-tooltip />
       <el-table-column align="center" label="终点地址" prop="destinationAddress" min-width="120" show-overflow-tooltip />
-      <el-table-column align="center" label="运单类型（10 采购入库 / 20 销售出库 / 30 调拨 / 40 退货）" prop="shipmentType" min-width="120" />
+      <el-table-column align="center" label="运单类型" prop="shipmentType" min-width="120" />
       <el-table-column align="center" label="来源单据号" prop="sourceOrderNo" min-width="120" show-overflow-tooltip />
       <el-table-column align="center" label="合计数量" prop="totalQuantity" min-width="120" />
       <el-table-column align="center" label="合计重量" prop="totalWeight" min-width="120" />
@@ -91,7 +91,7 @@
       <el-table-column align="center" :formatter="dateFormatter" label="发车时间" prop="departureTime" width="170" />
       <el-table-column align="center" :formatter="dateFormatter" label="预计到达时间" prop="estimatedArrivalTime" width="170" />
       <el-table-column align="center" :formatter="dateFormatter" label="实际到达时间" prop="actualArrivalTime" width="170" />
-      <el-table-column align="center" label="状态（10 待发车 / 20 运输中 / 30 已到达 / 40 已签收 / 50 已取消）" prop="status" min-width="120" />
+      <el-table-column align="center" label="状态" prop="status" min-width="120" />
       <el-table-column align="center" label="备注" prop="remark" min-width="120" show-overflow-tooltip />
       <el-table-column align="center" :formatter="dateFormatter" label="创建时间" prop="createTime" width="170" />
       <el-table-column align="center" fixed="right" label="操作" width="330">

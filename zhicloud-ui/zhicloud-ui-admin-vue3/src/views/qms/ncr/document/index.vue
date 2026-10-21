@@ -51,10 +51,6 @@
     <el-table v-loading="loading" :data="list" :show-overflow-tooltip="true" :stripe="true">
       <el-table-column align="center" label="NCR 单号" prop="ncrNo" min-width="110" />
       <el-table-column align="center" label="来源" prop="source" min-width="110" />
-      <el-table-column align="center" label="检验单 ID" prop="inspectionOrderId" min-width="110" />
-      <el-table-column align="center" label="产品 ID" prop="productId" min-width="110" />
-      <el-table-column align="center" label="供应商 ID" prop="supplierId" min-width="110" />
-      <el-table-column align="center" label="工单 ID" prop="workOrderId" min-width="110" />
       <el-table-column align="center" label="缺陷描述" prop="defectDescription" min-width="120" />
       <el-table-column align="center" label="缺陷等级" prop="defectLevel" min-width="110" />
       <el-table-column align="center" label="不合格数量" prop="quantity" min-width="110" />
